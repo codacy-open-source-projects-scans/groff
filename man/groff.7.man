@@ -1492,7 +1492,7 @@ See section \[lq]Strings\[rq] below.
 .br
 .ne 4v
 .P
-There is no general limit on argument length or quantity.
+There is no inherent limit on argument length or quantity.
 .
 Most requests take one or more arguments,
 and ignore any they do not expect.
@@ -1702,11 +1702,18 @@ parameters to other escape sequences.
 .
 .
 .P
-Requests permit escape sequence interpretation to be deactivated
+The escape character can be interpolated
+.RB ( \[rs]e ).
+.
+Requests permit the escape mechanism to be deactivated
 .RB ( eo )
 and restored,
 or the escape character changed
-.RB ( ec ).
+.RB ( ec ),
+and to save and restore it
+.RB ( ecs
+and
+.BR ecr ).
 .\" END Keep (roughly) parallel with groff.texi node "Using Escape
 .\" Sequences".
 .
@@ -2665,11 +2672,13 @@ Unplant page location trap
 .
 .
 .TPx
-.REQ .ch "name vertical-position"
-Change a planted page location trap
+.REQ .ch "name vpos"
+Change page location trap
 .I name
+planted by
+.request .wh
 by moving its location to
-.I vertical-position
+.I vpos
 (default scaling unit\~\c
 .scaleindicator v ).
 .
@@ -2796,9 +2805,9 @@ occurs at the start of a control line in the current conditional block.
 Define or redefine
 .I macro
 until
-.BI . end
-is called at the start of a control line in the current conditional
-block.
+.I end
+is invoked or called at the start of a control line in the current
+conditional block.
 .
 .
 .TPx
@@ -2810,7 +2819,8 @@ but disable compatibility mode during macro expansion.
 .TPx
 .REQ .de1 "macro end"
 As
-.request ".de\~\f[I]macro\~end\f[]" ,
+.RB \[lq] .de
+.IR "macro end" \[rq],
 but disable compatibility mode during macro expansion.
 .
 .
@@ -2899,20 +2909,25 @@ As
 .request ".dei\~\f[I]macro\~end\f[]" ,
 but disable compatibility mode during macro expansion.
 .
-.
 .TPx
 .REQ .device "anything"
 Write
 .IR anything ,
 read in copy mode,
-to the intermediate output as a device control command.
+to
+.I @g@troff
+output as a device control command.
+.
+An initial neutral double quote is stripped to allow embedding of
+leading spaces.
 .
 .TPx
 .REQ .devicem "name"
 Write contents of macro or string
 .I name
-to the intermediate output as a device control command.
-.
+to
+.I @g@troff
+output as a device control command.
 .
 .TPx
 .REQ .di
@@ -3052,11 +3067,11 @@ Exit with successful status.
 .
 .TPx
 .REQ .fam
-Return to previous font family.
+Set default font family to previous value.
 .
 .TPx
 .REQ .fam "name"
-Set the current font family to
+Set default font family to
 .IR name .
 .
 .TPx
@@ -3109,20 +3124,20 @@ Sets
 Flush output buffer.
 .
 .TPx
-.REQ .fp "n font"
-Mount
-.I font
-at position
-.IR n .
+.REQ .fp "pos id"
+Mount font with font description file name
+.I id
+at non-negative
+.RI position\~ n .
 .
 .TPx
-.REQ .fp "n internal external"
-Mount font with description file
-.I external
-under the name
-.I internal
-at position
-.IR n .
+.REQ .fp "pos id font-description-file-name"
+Mount font with
+.I font-description-file-name
+as name
+.I id
+at non-negative
+.RI position\~ n .
 .
 .TPx
 .REQ .fschar "f c anything"
@@ -3151,7 +3166,10 @@ are special.
 .
 .TPx
 .REQ .ft
-Select previous style or font;
+.TQ
+.REQ ".ft P"
+Select previous font mounting position
+(abstract style or font);
 same as
 .esc f[]
 or
@@ -3159,13 +3177,19 @@ or
 .
 .TPx
 .REQ .ft "font"
-Select style,
-font name,
-or mounting position
-.IR font ;
+Select typeface
+.I font,
+which can be a
+mounting position,
+abstract style,
+or font name;
 same as
 .esc[] f font
 escape sequence.
+.
+.I font
+cannot be
+.BR P .
 .
 .TPx
 .REQ .ftr "font1 font2"
@@ -3175,16 +3199,20 @@ to
 .IR font2 .
 .
 .TPx
-.REQ .fzoom "font"
-Don't magnify
+.REQ .fzoom font
+.TQ
+.REQ .fzoom font\~\f[CB]0\f[]
+Stop magnifying
 .IR font .
 .
 .TPx
-.REQ .fzoom "font zoom"
+.REQ .fzoom "font z"
 Set zoom factor for
 .I font
-(in multiples of 1/1000th).
-.
+.RI to\~ z
+(in thousandths;
+default:
+1000).
 .
 .TPx
 .REQ .gcolor
@@ -3242,20 +3270,19 @@ Append hyphenation patterns from
 .
 .TPx
 .REQ .hpfcode "a b \fR[\fPc d\fR] .\|.\|.\fP"
-Define mapping values for character codes in pattern files read with the
+Define mappings for character codes in hyphenation pattern files read
+with
 .request .hpf
 and
-.request .hpfa
-requests.
+.request .hpfa .
 .
 .TPx
 .REQ .hw "word \fR.\|.\|.\fP"
-Define how each
-.I  word
-is to be hyphenated,
-with each hyphen
+Define hyphenation overrides for each
+.I word;
+a hyphen
 .RB \[lq] \- \[rq]
-indicating a hyphenation point.
+indicates a hyphenation point.
 .
 .
 .TPx
@@ -3299,13 +3326,13 @@ Set the hyphenation space to
 .
 .TPx
 .REQ .hys hyphenation-space
-Suppress hyphenation of the line in adjustment modes
+Suppress automatic hyphenation in adjustment modes
 .RB \[lq] b \[rq]
 or
 .RB \[lq] n \[rq]
-if it can be justified by adding no more than
+if the line can be justified with the addition of up to
 .I hyphenation-space
-extra space to each inter-word space
+to each inter-word space
 (default scaling unit\~\c
 .scaleindicator m ).
 .
@@ -3710,12 +3737,18 @@ for writing and associate the stream named
 .I stream
 with it.
 .
+Unsafe request;
+disabled by default.
+.
 .TPx
 .REQ .opena "stream file"
 As
 .request .open ,
 but append to
 .I file.
+.
+Unsafe request;
+disabled by default.
 .
 .TPx
 .REQ .os
@@ -3749,12 +3782,15 @@ Page number character.
 Report the state of the current environment followed by that of all
 other environments to the standard error stream.
 .
-.
 .TPx
 .REQ .pi "program"
 Pipe output to
 .I program
-(nroff only).
+.RI ( nroff
+only).
+.
+Unsafe request;
+disabled by default.
 .
 .TPx
 .REQ .pl
@@ -3831,12 +3867,15 @@ See registers
 .BR ury .
 .
 .TPx
-.REQ .pso "command"
-This behaves like the
-.request .so
-request except that input comes from the standard output of
-.IR command .
+.REQ .pso "command-line"
+Execute
+.I command-line
+with
+.MR popen 3
+and interpolate its output.
 .
+Unsafe request;
+disabled by default.
 .
 .TPx
 .REQ .ptr
@@ -4097,16 +4136,16 @@ is
 .REQ .ss n
 Set minimal inter-word spacing to
 .IR n \~12ths
-of the space width of the current font.
+of current font's space width.
 .
 .TPx
 .REQ .ss "n m"
 As
-.B .ss\~\c
-.IR n ,
+.RB \[lq] .ss\~\c
+.IR n \[rq],
 and set additional inter-sentence space to
 .IR m \~12ths
-of the space width of the current font.
+of current font's space width.
 .
 .TPx
 .REQ .stringdown stringvar
@@ -4122,7 +4161,7 @@ with its uppercase version.
 .
 .TPx
 .REQ .sty "n style"
-Associate
+Associate abstract
 .I style
 with font position
 .IR n .
@@ -4141,14 +4180,20 @@ Negative indices count backwards from the end of the string.
 .
 .TPx
 .REQ .sv
-Save
+As
+.request .ne ,
+but save
 .scalednumber "1 v"
-of vertical space.
+for output with
+.request .os
+request.
 .
 .TPx
-.REQ .sv n
-Save the vertical distance
-.I n
+.REQ .sv d
+As
+.request .ne ,
+but save distance
+.I d
 for later output with
 .request .os
 request
@@ -4158,9 +4203,13 @@ request
 .
 .TPx
 .REQ .sy "command-line"
-Execute program
-.IR command-line .
+Execute
+.I command-line
+with
+.MR system 3 .
 .
+Unsafe request;
+disabled by default.
 .
 .TPx
 .REQ .ta "n1 n2 \fR\&.\|.\|.\&\fP n\fRn\fP \f[CB]T\f[] r1 r2 \
@@ -4236,7 +4285,7 @@ Enable track kerning for
 .TPx
 .REQ .tl "\f[CB]\[aq]\f[]left\f[CB]\[aq]\f[]center\f[CB]\[aq]\f[]right\
 \f[CB]\[aq]\f[]"
-Three-part title.
+Format three-part title.
 .
 .TPx
 .REQ .tm message
@@ -4262,14 +4311,14 @@ without emitting a newline.
 .
 .TPx
 .REQ .tr "abcd\fR\&.\|.\|.\&\fP"
-Translate
+Translate ordinary or special characters
 .I a
 to
 .IR b ,
 .I c
 to
 .IR d ,
-etc.\& on output.
+and so on prior to output.
 .
 .TPx
 .REQ .trf file
@@ -4284,19 +4333,17 @@ are rejected.
 .
 .TPx
 .REQ .trin "abcd\fR\&.\|.\|.\&\fP"
-This is the same as the
-.request .tr
-request except that the
-.B asciify
-request uses the character code (if any) before the character
-translation.
+As
+.request .tr ,
+except that
+.request .asciify
+ignores the translation when a diversion is interpolated.
 .
 .TPx
 .REQ .trnt "abcd\fR\&.\|.\|.\&\fP"
-This is the same as the
-.request .tr
-request except that the translations do not apply to text that is
-transparently throughput into a diversion with
+As
+.request .tr ,
+except that translations are suppressed in the argument to
 .esc ! .
 .
 .TPx
@@ -4404,23 +4451,22 @@ default:
 .
 .
 .TPx
-.REQ .wh vertical-position
-Remove active trap at
-.I vertical-position
+.REQ .wh vpos
+Remove visible page location trap at
+.I vpos
 (default scaling unit\~\c
 .scaleindicator v ).
 .
 .
 .TPx
-.REQ .wh "vertical-position name"
-Plant trap,
-calling macro
+.REQ .wh "vpos name"
+Plant macro
 .I name
-when page location
-.I vertical-position
-is reached or passed
+as page location trap at
+.I vpos
 (default scaling unit\~\c
-.scaleindicator v ).
+.scaleindicator v ),
+removing any visible trap already there.
 .
 .
 .TPx
@@ -4726,9 +4772,9 @@ Interpolate glyph with name
 .
 .
 .TP
-.ESC[] "" "base-glyph comp1 comp2 \fR\&.\|.\|."
+.ESC[] "" "base-char comp1 comp2 \fR\&.\|.\|."
 Interpolate composite glyph constructed from
-.I base-glyph
+.I base-char
 and components
 .IR comp1 ,
 .IR comp2 ,
@@ -4751,10 +4797,10 @@ in uppercase hexadecimal.
 .
 .
 .TP
-.ESC[] "" "\f[CB]u\f[]base-glyph\f[R][\f[]\f[CB]_\f[]\
+.ESC[] "" "\f[CB]u\f[]base-char\f[R][\f[]\f[CB]_\f[]\
 combining-component\f[R]].\|.\|."
 Interpolate composite glyph from Unicode character
-.I base-glyph
+.I base-char
 and
 .IR combining-components .
 .
@@ -4813,12 +4859,8 @@ Move downward \[12]\~em on typesetters.
 .
 .
 .TP
-.ESCq D anything
-Send
-.I anything
-to the output device as a drawing command;
-see
-.MR groff_out @MAN5EXT@ .
+.ESCq D drawing-command
+See subsection \[lq]Drawing commands\[rq] below.
 .
 .
 .TP
@@ -4832,57 +4874,67 @@ As
 .esc e ,
 but not interpreted in copy mode.
 .
+.TP
+.ESC fP
+Select previous font mounting position
+(abstract style or font);
+same as
+.RB \[lq] .ft \[rq]
+or
+.RB \[lq] .ft\~P \[rq].
 .
 .TP
 .ESC f F
-Change to font or style with one-character name or one-digit
+Select font mounting position,
+abstract style,
+or font with one-character name or one-digit
 .RI position\~ F .
 .
-.
-.TP
-.ESC fP
-Switch to previous font or style.
-.
+.IR F \~cannot
+be
+.BR P .
 .
 .TP
 .ESC f( ft
-Change to font with two-character name or two-digit
+Select font mounting position,
+abstract style,
+or font with two-character name or two-digit
 .RI position\~ ft .
-.
 .
 .TP
 .ESC[] f font
-Change to font with arbitrarily long name or position
+Select font mounting position,
+abstract style,
+or font with arbitrarily long name or position
 .IR font .
 .
+.I font
+cannot be
+.BR P .
 .
 .TP
 .ESC[] f ""
-Switch to previous font or style.
-.
+Select previous font mounting position
+(abstract style or font).
 .
 .TP
 .ESC F f
-Change to font family with one-character
+Set default font family to that with one-character
 .RI name\~ f .
-.
 .
 .TP
 .ESC F( fm
-Change to font family with two-character
+Set default font family to that with two-character
 .RI name\~ fm .
-.
 .
 .TP
 .ESC[] F fam
-Change to font family with arbitrarily long name
+Set default font family to that with arbitrarily long name
 .IR fam .
-.
 .
 .TP
 .ESC[] F ""
-Switch to previous font family.
-.
+Set default font family to previous value.
 .
 .TP
 .ESC g r
@@ -4939,21 +4991,28 @@ Mark horizontal position in register with arbitrarily long
 .
 .
 .TP
-.ESCq l N\f[R][\f[]c\f[R]]
+.ESCq l N\/\f[R][\f[]c\f[R]]
 Draw horizontal line of length
-.IR N \~ems
-(or specified units),
-optionally using
-.RI glyph\~ c .
+.I N
+with character
+.B c
+(default:
+.BR \[rs][ru] ;
+default scaling unit\~\c
+.scaleindicator m ).
+.
 .
 .
 .TP
-.ESCq L N\f[R][\f[]g\f[R]]
+.ESCq L N\/\f[R][\f[]c\f[R]]
 Draw vertical line of length
-.IR N \~vees
-(or specified units),
-optionally using
-.RI glyph\~ g .
+.I N
+with character
+.B c
+(default:
+.BR \[rs][br] ;
+default scaling unit\~\c
+.scaleindicator v ).
 .
 .
 .TP
@@ -5026,27 +5085,25 @@ Interpolate glyph with
 .RI index\~ n
 in the current font.
 .
-.
 .TP
-.ESCq o abc\fR\&.\|.\|.\&\fP
-Overstrike glyphs
+.ESCq o abc\f[R].\|.\|.\f[]
+Overstrike centered glyphs of characters
 .IR a ,
 .IR b ,
 .IR c ,
 and so on.
 .
-.
 .TP
 .ESC O0
 At the outermost suppression level,
-disable emission of glyphs and geometric primitives to the output
+disable emission of glyphs and geometric objects to the output
 driver.
 .
 .
 .TP
 .ESC O1
 At the outermost suppression level,
-enable emission of glyphs and geometric primitives to the output driver.
+enable emission of glyphs and geometric objects to the output driver.
 .
 .
 .TP
@@ -5236,43 +5293,79 @@ Increase vertical spacing of pending output line by
 negative before,
 positive after).
 .
-.
 .TP
 .ESCq X anything
 Write
-.IR anything ,
-read in copy mode,
-to the intermediate output as a device control command.
+.I anything
+to
+.I @g@troff
+output as a device control command.
 .
+Within
+.IR anything ,
+the escape sequences
+.BR \[rs]& ,
+.BR \[rs]) ,
+.BR \[rs]% ,
+and
+.B \[rs]:
+are ignored;
+.BI \[rs] space
+and
+.B \[rs]\[ti]
+are converted to single space characters;
+and
+.B \[rs]\[rs]
+has its escape character stripped.
+.
+So that the basic Latin subset of the Unicode character
+set can be reliably encoded in
+.I anything,
+the special character escape sequences
+.BR \[rs]\- ,
+.BR \[rs][aq] ,
+.BR \[rs][dq] ,
+.BR \[rs][ga] ,
+.BR \[rs][ha] ,
+.BR \[rs][rs] ,
+and
+.B \[rs][ti]
+are mapped to basic Latin characters;
+see
+.MR groff_char @MAN7EXT@ .
+.
+For this transformation,
+character translations and special character definitions are ignored.
 .
 .TP
 .ESC Y n
 Write contents of macro or string
 .I n
-to the intermediate output as a device control command.
-.
+to
+.I @g@troff
+output as a device control command.
 .
 .TP
 .ESC Y( nm
 Write contents of macro or string
 .I nm
-to the intermediate output as a device control command.
-.
+to
+.I @g@troff
+output as a device control command.
 .
 .TP
 .ESC[] Y name
 Write contents of macro or string
 .I name
-to the intermediate output as a device control command.
-.
+to
+.I @g@troff
+output as a device control command.
 .
 .TP
 .ESC z c
-Output glyph
+Format character
 .I c
-without advancing the print position,
-as if it were zero-width.
-.
+with zero width\[em]without advancing the drawing position.
 .
 .TP
 .ESCq Z anything
@@ -5281,6 +5374,197 @@ format
 .IR anything ,
 then restore it.
 .LE
+.
+.
+.\" ====================================================================
+.SS "Drawing commands"
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Drawing
+.\" commands".
+Drawing commands direct the output device to render geometrical objects
+rather than glyphs.
+.
+Specific devices may support only a subset,
+or may feature additional ones;
+consult the man page for the output driver in use.
+.
+Terminal devices in particular implement almost none.
+.
+.
+.P
+Rendering starts at the drawing position;
+when finished,
+the drawing position is left at the rightmost point of the object,
+even for closed figures,
+except where noted.
+.
+GNU
+.I troff \" GNU
+draws stroked (outlined) objects with the stroke color,
+and shades filled ones with the fill color.
+.
+See section \[lq]Colors\[rq] above.
+.
+Coordinates
+.I h
+and
+.I v
+are horizontal and vertical motions relative to the drawing position
+or previous point in the command.
+.
+The default scaling unit for horizontal measurements is
+.BR m ;
+for vertical ones,
+.BR v .
+.
+.
+.P
+Circles,
+ellipses,
+and polygons can be drawn stroked or filled.
+.
+These are independent properties;
+if you want a filled,
+stroked figure,
+you must draw the same figure twice using each drawing command.
+.
+A filled figure is always smaller than an outlined one because the
+former is drawn only within its defined area,
+whereas strokes have a line thickness
+(set with
+.BR \[rs]D\[aq]t\[aq] ).
+.
+.
+.P
+.LS
+.TP
+.BI \[rs]D\[aq]\[ti]\~ "h1 v1"\~\c
+.RI .\|.\|.\~ "hn vn"\c
+.B \[aq]
+Draw B-spline to each point in sequence,
+leaving drawing position at
+.RI ( hn ,\~ vn ).
+.
+.\" XXX: This is one case where a valid coordinate pair could be off the
+.\" page (even negative) and we need to discuss this frankly.
+.TP
+.BI \[rs]D\[aq]a\~ "hc hv h v" \[aq]
+Draw circular arc centered at
+.RI ( hc ,\~ vc )
+counterclockwise from the drawing position to a point
+.RI ( h ,\~ v )
+relative to the center.
+.
+.RI ( hc ,\~ vc )
+is adjusted to the point nearest the perpendicular bisector of the arc's
+chord.
+.
+.TP
+.BI \[rs]D\[aq]c\~ "d" \[aq]
+Draw circle of diameter
+.I d
+with its leftmost point at the drawing position.
+.
+.TP
+.BI \[rs]D\[aq]C\~ "d" \[aq]
+As
+.BR \[rs]D\[aq]C\[aq] ,
+but the circle is filled.
+.
+.TP
+.BI \[rs]D\[aq]e\~ "h v" \[aq]
+Draw ellipse of width
+.I h
+and height
+.I v
+with its leftmost point at the drawing position.
+.
+.\" How do we draw an ellipse with rotated axes?
+.TP
+.BI \[rs]D\[aq]E\~ "h v" \[aq]
+As
+.BR \[rs]D\[aq]e\[aq] ,
+but the ellipse is filled.
+.
+.\" XXX: Df and dF are taken care of by \M and .defcolor.
+.TP
+.BI \[rs]D\[aq]l\~ "h v" \[aq]
+Draw line from the drawing position to
+.RI ( h ,\~ v ).
+.
+.TP
+.BI \[rs]D\[aq]p\~ "h1 v1"\~\c
+.RI .\|.\|.\~ "hn vn"\c
+.B \[aq]
+Draw polygon with vertices at drawing position and each point
+in sequence.
+.
+GNU
+.I troff \" GNU
+closes the polygon by drawing a line from
+.RI ( hn ,\~ vn )
+back to the initial drawing position.
+.
+.\" XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
+.\" src/libs/libdriver/input.cpp.  It is neither the rightmost point
+.\" of the figure nor the initial drawing position that GNU troff
+.\" automatically returned to to close the figure.
+Afterward,
+the drawing position is left at
+.RI ( hn ,\~ vn ).
+.
+.TP
+.BI \[rs]D\[aq]P\~ "h1 v1"\~\c
+.RI .\|.\|.\~ "hn vn"\c
+.B \[aq]
+As
+.BR \[rs]D\[aq]p\[aq] ,
+but the polygon is filled.
+.
+.TP
+.BI \[rs]D\[aq]t\~ "n" \[aq]
+Set stroke thickness of geometric objects to
+.RI to\~ n
+basic units.
+.
+A zero
+.I n
+selects the minimal supported thickness.
+.
+A negative
+.I n
+selects a thickness proportional to the type size;
+this is the default.
+.LE
+.\" END Keep (roughly) parallel with groff.texi node "Drawing
+.\" commands".
+.
+.
+.\" ====================================================================
+.SS "Device control commands"
+.\" ====================================================================
+.
+The
+.B .device
+and
+.B .devicem
+requests,
+and
+.B \[rs]X
+and
+.B \[rs]Y
+escape sequences,
+enable documents to pass information directly to a postprocessor.
+.
+These are useful for
+exercising device-specific capabilities that the
+.I groff
+language does not abstract or generalize;
+such functions include the embedding of hyperlinks and image files.
+.
+Device-specific functions are documented in
+each output driver's man page.
 .
 .
 .\" ====================================================================
@@ -5682,7 +5966,7 @@ see
 .
 .TP
 .REG .fam
-Name of font family (string-valued).
+Name of default font family (string-valued).
 .
 .TP
 .REG .fn
@@ -5694,7 +5978,7 @@ and
 .
 .TP
 .REG .fp
-Next free font mounting position index.
+Next non-zero free font mounting position index.
 .
 .TP
 .REG .g
@@ -5944,7 +6228,7 @@ of the selected font.
 .
 .TP
 .REG .sty
-Font style (string-valued);
+Selected abstract style (string-valued);
 see
 .request .ft
 and
@@ -6331,7 +6615,17 @@ properties.)
 .
 A
 .I "text font"
-is a combination of a family with a style.
+is thus often a family combined with a style,
+but it need not be:
+consider the
+.B ps
+and
+.B pdf
+devices'
+.B ZCMI
+(Zapf Chancery Medium italic)\[em]\c
+often,
+no other style of Zapf Chancery Medium is provided.
 .
 On typesetting devices,
 at least one
@@ -6374,7 +6668,7 @@ in GNU
 an output device can associate a style in the abstract sense with a
 mounting position.
 .
-Thus the current family can be combined with a style dynamically,
+Thus the default family can be combined with a style dynamically,
 producing a
 .I "resolved font name."
 .
@@ -6409,14 +6703,13 @@ and a special font
 .
 .
 .P
-Each typesetting output device configures a default family;
-for those provided by
-.I groff,
-this is always
-.BR T .
+The default family used with abstract styles can be changed at any time;
+initially,
+it
+.RB is\~ T .
 .
-Conventionally,
-the styles are arranged in the first four mounting positions in the
+Typically,
+abstract styles are arranged in the first four mounting positions in the
 order shown above.
 .
 The default mounting position,
@@ -6435,7 +6728,8 @@ Terminal output devices cannot change font families and lack special
 fonts.
 .
 They support style changes by overstriking,
-or by altering ISO\~6429/\:ECMA-48 \[lq]graphic renditions\[rq]
+or by altering ISO\~6429/\:ECMA-48
+.I "graphic renditions"
 (character cell attributes).
 .\" END Keep (roughly) parallel with groff.texi node "Using Fonts".
 .
@@ -6572,7 +6866,7 @@ values 4 and\~16,
 and values 8 and\~32.
 .
 As noted,
-it is superfluous to add\~1 to any nonzero even mode.
+it is superfluous to add\~1 to any non-zero even mode.
 .
 .
 .P
@@ -6952,8 +7246,9 @@ with its corresponding amount of motion
 .
 A
 .I page location trap
-is called when the vertical drawing position reaches or passes the place
-at which it is planted
+is sprung when the vertical drawing position reaches or passes,
+in the downward direction,
+the place at which it is planted
 (with
 .B .wh
 or
@@ -7447,22 +7742,21 @@ after
 .SS "Underlining by overstriking with \e(ul"
 .\" ====================================================================
 .
-You can use the
+The
 .B \[rs]z
-escape sequence to format a glyph while suppressing advancement of its
-drawing position;
-this is another form of overstriking.
+escape sequence writes a glyph without advancing the
+drawing position,
+enabling overstriking.
 .
 Thus,
 .BI \[rs]z c \[rs](ul
 formats
 .I c
-without advancement,
-then draws the underrule glyph on top of it.
+with an underrule glyph on top of it.
 .
-Because video terminals implement the underrule glyph by setting the
-underline attribute on the character cell,
-this works in both
+Video terminals implement the underrule by setting a character cell's
+underline attribute,
+so this technique works in both
 .I nroff \" mode
 and
 .I troff \" mode

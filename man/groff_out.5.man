@@ -10,7 +10,7 @@ intermediate output format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -313,36 +313,31 @@ ignored.
 .SS "Argument units"
 .\" ====================================================================
 .
-Some commands take integer arguments that are assumed to represent
-values in a measurement unit, but the letter for the corresponding
-.I scaling indicator
-is not written with the output command arguments;
+Some commands accept integer arguments that represent measurements,
+but the scaling units of the formatter's language are never used.
+.
+Most commands assume a scaling unit
+.RB of\~\[lq] u \[rq]
+(basic units),
+and others
+.RB use\~\[lq] z \[rq]
+(scaled points);
+.
+These are defined by the parameters specified in the device's
+.I DESC
+file;
 see
+.MR groff_font @MAN5EXT@
+and,
+for more on scaling units,
 .MR groff @MAN7EXT@
 and
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
-Texinfo manual,
-for more on this topic.
+Texinfo manual.
 .
-Most commands assume the scaling
-.RB indicator\~\[lq] u \[rq],
-the basic unit of the device, some
-.RB use\~\[lq] z \[rq],
-the
-.I scaled point unit
-of the device,
-while others,
-such as the color commands,
-expect plain integers.
-.
-Note that these scaling indicators are relative to the chosen device.
-.
-They are defined by the parameters specified in the device's
-.I DESC
-file; see
-.MR groff_font @MAN5EXT@ .
+Color-related commands use dimensionless integers.
 .
 .
 .P
@@ -493,7 +488,7 @@ same line.
 .
 A separating
 .I syntactical space
-is only necessary when two integer arguments would clash or if the
+is necessary only when two integer arguments would clash or if the
 preceding argument ends with a string argument.
 .
 .

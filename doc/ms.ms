@@ -1238,7 +1238,7 @@ reset to zero when a more significant depth increases.
 \[lq]1\[rq]\~is the most significant or coarsest division of the
 document.
 .
-Only nonzero values are output.
+Only non-zero values are output.
 .
 If
 .I depth

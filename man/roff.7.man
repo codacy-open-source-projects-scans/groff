@@ -156,10 +156,8 @@ To a
 system,
 a
 .I word
-is any sequence of one or more characters that aren't
-spaces,
-tabs,
-or newlines.
+is any sequence of one or more characters that aren't spaces or
+newlines.
 .
 The exceptions separate words.
 .
@@ -256,10 +254,10 @@ in certain circumstances.
 .
 .
 .P
-Once an output line has been filled,
-whether or not hyphenation has occurred on that line,
-the next word read from the input will be placed on a different output
-line;
+Once an output line is full,
+the next word
+(or remainder of a hyphenated one)
+is placed on a different output line;
 this is called a
 .I break.
 .
@@ -377,7 +375,7 @@ there are many details to track
 when using the \[lq]tab\[rq] and \[lq]field\[rq] low-level features,
 so most users turn to the
 .MR @g@tbl @MAN1EXT@
-preprocessor for table construction.
+preprocessor to lay out tables.
 .\" END Keep roughly parallel with groff.texi nodes "Text" through "Tab
 .\" Stops".
 .
@@ -548,7 +546,7 @@ it keeps track of its
 .I drawing position,
 which is the location at which the next glyph will be written,
 from which the next motion will be measured,
-or where a geometric primitive will commence rendering.
+or where a geometric object will commence rendering.
 .
 Notionally,
 glyphs are drawn from the text baseline upward and to the right.
@@ -727,7 +725,7 @@ see
 .I groff
 supports named
 .I colors
-for glyph rendering and drawing of geometric primitives.
+for glyph rendering and drawing of geometric objects.
 .
 Stroke and fill colors are distinct;
 the stroke color is used for glyphs.
@@ -1382,8 +1380,7 @@ project historically has been
 .IR groff ,
 the GNU implementation of
 .IR troff ,
-developed from scratch by James Clark starting in 1989 and distributed
-under
+developed by James Clark starting in 1989 and distributed under
 .UR http://\:www\:.gnu\:.org/\:copyleft
 copyleft
 .UE
@@ -1396,15 +1393,15 @@ systems to that point.
 .
 .I groff
 rapidly attracted contributors,
-and has served as a complete replacement for almost all applications of
-AT&T
+and has served as a replacement for almost all applications of AT&T
 .I troff
 (exceptions include
 .IR mv ,
 a macro package for preparation of viewgraphs and slides,
 and the
 .I ideal
-preprocessor for producing diagrams from a constraint-based language).
+preprocessor,
+which produces diagrams from mathematical constraints).
 .
 Beyond that,
 it has added numerous features;
@@ -1436,7 +1433,7 @@ standard today.
 .
 In 2007, \" TODO: verify
 Caldera/SCO and Sun Microsystems,
-having acquired rights to AT&T Documenter's Workbench
+having acquired rights to AT&T Documenter's Workbench (DWB)
 .I troff
 (a descendant of the Bell Labs code),
 released it under a free but GPL-incompatible license.
@@ -1458,9 +1455,23 @@ Heirloom Doctools
 In July 2013,
 Ali Gholami Rudi announced
 .UR https://\:github\:.com/\:aligrudi/\:neatroff
-.IR neatroff ,
-.UE
+.I neatroff
+.UE ,
 a permissively licensed new implementation.
+.
+.
+.P
+Another descendant of DWB
+.I troff \" DWB
+is part of
+.UR https://\:9fans\:.github\:.io/\:plan9port/
+Plan\~9 from User Space
+.UE .
+.
+Since 2021,
+this
+.I troff \" Plan 9 from User Space
+has been available under permissive terms.
 .
 .
 .\" ====================================================================
@@ -1578,7 +1589,7 @@ man pages are a prominent example.
 Many features of the
 .I roff
 language are seldom needed by users;
-only authors of macro packages need a substantial command of them.
+only authors of macro packages require a substantial command of them.
 .
 .
 .\" ====================================================================
@@ -1816,8 +1827,7 @@ The macro definitions of a package are typically kept in a file called
 .BI tmac. name\/\c\" Italic correction comes before \c !
 ).
 .
-Details on the naming of macro packages and their placement is found
-in
+Find details on the naming and placement of macro packages in
 .MR groff_tmac @MAN5EXT@ .
 .
 .
@@ -2565,8 +2575,7 @@ system potentially has many man pages,
 each describing an aspect of it.
 .
 Unfortunately,
-there is no general naming scheme for the documentation among the
-different
+there is no consistent naming scheme for these pages among the different
 .I roff
 implementations.
 .

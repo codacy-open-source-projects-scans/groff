@@ -1,3 +1,38 @@
+2023-06-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[docs]: Migrate terminology to "scaling unit".
+
+	...from "scaling indicator".
+
+	Fixes <https://savannah.gnu.org/bugs/?60957>.  Thanks to Ingo
+	Schwarze for the discussion.
+
+2023-05-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[docs]: Revise discussion of fonts.
+
+	* doc/groff.texi:
+	- Rename node/section "Fonts and Symbols" to "Using Fonts".  Add
+	  giant new introduction, properly establishing terminology.
+	- Rename node/section "Changing Fonts" to "Selecting Fonts".
+	  Shift location of `.fn` and `.sty` register documentation.
+	  Rewrite presentation of `ft` and `\f`.  Discuss typeface
+	  selection by mounting position and font (or style) name
+	  together; since arguments to these formatter instructions are
+	  always interpreted as mounting positions first, it doesn't
+	  make much sense to me to present them separately, and the new
+	  introduction provides the necessary background.  Tighten
+	  example.  Document that current and previous font selections
+	  are environment properties.
+	- Add several concept index entries.
+	- Do more migration from "symbol" and "glyph" names to "special
+	  character" names.
+
+	* man/groff.7 (Using fonts): Introduce new section, synced with
+	the renamed node from our Texinfo manual above.
+
+	Fixes <https://savannah.gnu.org/bugs/?62973>.
+
 2023-05-22  Dave Kemper <saint.snit@gmail.com>
 
 	[docs]: Correct minor punctuation, grammar, and spelling issues.

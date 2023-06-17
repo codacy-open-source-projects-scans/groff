@@ -1,7 +1,7 @@
-'\" t
+'\" et
 .TH @g@eqn @MAN1EXT@ "@MDATE@" "groff @VERSION@"
 .SH Name
-@g@eqn \- format equations for
+@g@eqn \- format mathematics (equations) for
 .I groff
 or MathML
 .
@@ -104,20 +104,23 @@ document formatting system.
 .I @g@eqn
 is a
 .MR @g@troff @MAN1EXT@
-preprocessor that translates descriptions of equations embedded in
+preprocessor that translates expressions in its own language,
+embedded in
 .MR roff @MAN7EXT@
-input files into the language understood by
+input files,
+into mathematical notation typeset by
 .MR @g@troff @MAN1EXT@ .
 .
-It copies the contents of each
-.I file
-to the standard output stream,
-except that lines between
+It copies each
+.IR file 's
+contents to the standard output stream,
+translating each
+.I equation
+between lines starting with
 .B .EQ
 and
-.B .EN
-(or within a pair of user-specified delimiters)
-are interpreted as equation descriptions.
+.BR .EN ,
+or within a pair of user-specified delimiters.
 .
 Normally,
 .I @g@eqn
@@ -214,16 +217,12 @@ GNU
 .I eqn
 sets the input token
 .RB \[lq] .\|.\|.\& \[rq]
-as three periods or low dots,
-rather than the three centered dots of
-AT&T
+as an ellipsis on the text baseline,
+not the three centered dots of AT&T
 .IR eqn . \" AT&T
 .
-To get three centered dots,
-write
-.B cdots
-or
-.RB \[lq] "cdot cdot cdot" \[rq].
+Set an ellipsis on the math axis with the GNU extension macro
+.BR cdots .
 .
 .
 .\" ====================================================================
@@ -266,12 +265,13 @@ is a token.
 .
 .
 Spaces and newlines are interchangeable;
-they separate input tokens but do not break lines or produce space in
+they separate tokens but do not break lines or produce space in
 the output.
 .
 .
 .P
-A handful of tokens manages the grouping and spacing of other tokens.
+The following input characters not only separate tokens,
+but manage their grouping and spacing as well.
 .
 .
 .TP
@@ -295,6 +295,13 @@ means
 e sup { a b } .
 .EN
 .\}
+.
+When immediately preceded by a
+.RB \[lq] left \[rq]
+or
+.RB \[lq] right \[rq]
+primitive,
+a brace loses its special meaning.
 .
 .
 .TP
@@ -323,16 +330,19 @@ necessary to disambiguate the input;
 .I @g@eqn
 will diagnose an error in this event.
 .
+(See subsection \[lq]Macros\[rq] below for additional token separation
+rules.)
+.
 .
 .P
 Other tokens are primitives,
 macros,
 an argument to either of the foregoing,
-or a component of an equation.
+or components of an equation.
 .
 .
 .br
-.ne 2v
+.ne 4v
 .P
 .I Primitives
 are fundamental keywords of the
@@ -384,9 +394,11 @@ constants,
 numeric literals,
 and operators.
 .
-.I eqn \" general
-remaps some input character sequences for economy in equation entry and
-to ensure that glyphs from an unstyled font are used;
+.I @g@eqn
+remaps some input character sequences to
+.I groff
+special character escape sequences for economy in equation entry and to
+ensure that glyphs from an unstyled font are used;
 see
 .MR groff_char @MAN7EXT@ .
 .
@@ -444,7 +456,7 @@ large operator such as
 .rm Su
 T}
 binary	binary operator such as \[lq]\[pl]\[rq]
-relation	relation such as \[lq]=\[rq]
+relation	relational operator such as \[lq]=\[rq]
 opening	opening bracket such as \[lq](\[rq]
 closing	closing bracket such as \[lq])\[rq]
 punctuation	punctuation character such as \[lq],\[rq]
@@ -673,6 +685,10 @@ beginning with
 .B .EQ
 or
 .BR .EN .
+.
+If a relative path name,
+.I file
+is sought relative to the current working directory.
 .
 .
 .TP
@@ -968,20 +984,21 @@ about the
 a horizontal line upon which fraction bars and characters such as
 \[lq]\[pl]\[rq] and \[lq]\[mi]\[rq] are aligned.
 .
-For example,
+MathML already behaves this way,
+so
+.I @g@eqn
+ignores this primitive when producing that output format.
+.
+The built-in
 .B sum
-is defined as follows.
+macro is defined as if by the following.
 .
 .RS
 .IP
 .EX
-{ type "operator" vcenter size +5 \[rs](*S }
+define sum ! { type "operator" vcenter size +5 \[rs](*S } !
 .EE
 .RE
-.
-.IP
-.B vcenter
-is silently ignored when generating MathML.
 .
 .
 .br
@@ -1061,7 +1078,7 @@ Negative values are accepted but have no effect.
 .
 If more than one
 .I n
-occurs in a matrix,
+occurs in a matrix or pile,
 the largest is used.
 .
 .
@@ -1070,9 +1087,9 @@ the largest is used.
 .\" ====================================================================
 .
 When
-.I eqn
+.I @g@eqn
 generates
-.I troff \" generic
+.I @g@troff
 input,
 the appearance of equations is controlled by a large number of
 parameters.
@@ -1516,28 +1533,34 @@ In GNU
 .IR eqn , \" GNU
 macros can take arguments.
 .
-In a macro body,
+A word defined by any of the
+.BR \%define ,
+.BR \%ndefine ,
+or
+.B \%tdefine
+primitives followed immediately by a left parenthesis is treated as a
+.I "parameterized macro call:"
+subsequent tokens up to a matching right parenthesis are treated as
+comma-separated arguments.
+.
+In this context only,
+commas and parentheses also serve as token separators.
+.
+A macro argument is not terminated by a comma inside parentheses nested
+within it.
+.
+In a macro definition,
 .BI $ n\c
 ,
 where
 .I n
-is between 1 and\~9,
+is between 1 and\~9 inclusive,
 is replaced by the
 .IR n th
-argument if the macro is called with arguments;
+argument;
 if there are fewer than
 .IR n \~arguments,
 it is replaced by nothing.
-.
-A word containing a left parenthesis where the part of the word before
-the left parenthesis has been defined using the
-.B \%define
-primitive is recognized as a macro call with arguments;
-characters following the left parenthesis up to a matching right
-parenthesis are treated as comma-separated arguments.
-.
-Commas inside nested parentheses
-do not terminate an argument.
 .
 .
 .\" ====================================================================
@@ -1644,7 +1667,7 @@ and
 which sets a dollar sign,
 and
 .BR ldots ,
-which sets three dots on the baseline.
+which sets an ellipsis on the text baseline.
 .
 .
 .\" ====================================================================
@@ -1930,14 +1953,15 @@ and do not cross line boundaries.
 .SH Caveats
 .\" ====================================================================
 .
-Words must be quoted anywhere they occur in
+Tokens must be double-quoted in
 .I eqn \" generic
 input if they are not to be recognized as names of macros or primitives,
 or if they are to be interpreted by
 .IR troff . \" generic
 .
-These names,
-particularly short ones like
+In particular,
+short ones,
+like
 .RB \[lq] pi \[rq]
 and
 .RB \[lq] PI \[rq],
@@ -1988,6 +2012,17 @@ see the package's documentation.
 .SH Bugs
 .\" ====================================================================
 .
+.I eqn \" generic
+abuses terminology\[em]its
+\[lq]equations\[rq]
+can be inequalities,
+bare expressions,
+or unintelligible gibberish.
+.
+But there's no changing it now.
+.
+.
+.P
 In
 .I nroff \" mode
 mode,
@@ -2111,23 +2146,40 @@ x = { - b ~ \[+-] ~ sqrt { b sup 2 - 4 a c } } over { 2 a }
 .
 .
 .P
-We could alternatively define the plus-minus sign as a binary operator.
+Alternatively,
+we could define the plus-minus sign as a binary operator.
 .
-The default parameters put 0.06 em less space on either side of that
-symbol,
-this being the difference between the
+Automatic spacing puts 0.06\~em less space on either side of the
+plus-minus than \[ti] does,
+this being the difference between the widths of the
 .B medium_space
-used by binary operators and the width of the full space.
+parameter used by binary operators and that of the full space.
+.
+Independently,
+we can define a macro \[lq]frac\[rq] for setting fractions.
 .
 .
 .RS
 .P
 .EX
 \&.EQ
-chartype "binary" \[rs][+-]
-x = { \- b \[rs][+\-] sqrt { b sup 2 \- 4 a c } } over { 2 a }
+chartype "binary" \[rs][+\-]
+define frac ! { $1 } over { $2 } !
+x = frac(\- b \[rs][+\-] sqrt { b sup 2 \- 4 a c }, 2 a)
 \&.EN
 .EE
+.if t \{\
+.
+.
+.P
+.RS
+.EQ
+chartype "binary" \[+-]
+define frac ! { $1 } over { $2 } !
+x = frac(- b \[+-] sqrt { b sup 2 - 4 a c }, 2 a)
+.EN
+.RE
+.\}
 .RE
 .
 .

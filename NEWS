@@ -1924,8 +1924,8 @@ o It is now possible to have whitespace between the first and second dot
     .  !
     ..
 
-o `.fn' is a new string-valued register which returns the (internal)
-  real font name; styles and families are properly concatenated.
+o `.fn' is a new string-valued register that returns the resolved font
+  font name; a font family and abstract style are catenated.
 
 o Three new read/write registers `seconds', `minutes', and `hours'
   contain the current time, set at start-up of troff.  Use the `af'

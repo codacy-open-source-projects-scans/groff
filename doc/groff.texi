@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle Edition 1.23.0
-@subtitle May 2023
+@subtitle June 2023
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -611,69 +611,47 @@ resources.
 @cindex @code{groff} capabilities
 @cindex capabilities of @code{groff}
 
-So what exactly is @code{groff} capable of doing?  @code{groff} provides
-a wide range of low-level text formatting operations.  Using these, it
-is possible to perform a wide range of formatting tasks, such as
-footnotes, table of contents, multiple columns, etc.  Here's a list of
-the most important operations supported by @code{groff}:
+GNU @code{troff} is a typesetting document formatter; it provides a wide
+range of low-level text and page operations within the framework of a
+programming language.  These operations compose to generate footnotes,
+tables of contents, mathematical equations, diagrams, multi-column text,
+and other elements of typeset works.  Here is a survey of formatter
+features; all are under precise user control.
 
 @itemize @bullet
 @item
-text filling, adjustment, and centering
+text filling, breaking, alignment to the left or right margin; centering
 
 @item
-hyphenation
+adjustment of inter-word space size to justify text, and of
+inter-sentence space size to suit local style conventions
 
 @item
-page control
+automatic determination of hyphenation break points
 
 @item
-font and glyph size control
+pagination control
 
 @item
-vertical spacing (e.g., double-spacing)
+selection of any font available to the output device
 
 @item
-line length and indenting
+adjustment of type size and vertical spacing (or ``leading'')
 
 @item
-macros, strings, diversions, and traps
+configuration of line length and indentation amounts; columnation
 
 @item
-registers
+drawing of geometric primitives (lines, arcs, polygons, circles,
+@dots{})
 
 @item
-tabs, leaders, and fields
+setup of stroke and fill colors (where supported by the output
+device)
 
 @item
-input and output conventions and character translation
-
-@item
-overstrike, bracket, line drawing, and zero-width functions
-
-@item
-local horizontal and vertical motions and the width function
-
-@item
-three-part titles
-
-@item
-output line numbering
-
-@item
-conditional acceptance of input
-
-@item
-environment switching
-
-@item
-insertions from the standard input
-
-@item
-input/output file switching
-
-@item
-output and error messages
+embedding of hyperlinks, images, document metadata, and other inclusions
+(where supported by the output device)
 @end itemize
 
 
@@ -684,14 +662,15 @@ output and error messages
 @cindex macro package, introduction
 @cindex package, macro, introduction
 
-Since @code{groff} provides such low-level facilities, it can be quite
-difficult to use by itself.  However, @code{groff} provides a
-@dfn{macro} facility to specify how certain routine operations, such as
-starting paragraphs, or printing headers and footers, should be done.
-These macros can be collected together into a @dfn{macro package}.
-There are a number of macro packages available; the most common (and the
-ones described in this manual) are @file{man}, @file{mdoc}, @file{me},
-@file{ms}, and @file{mm}.
+Elemental typesetting functions can be be challenging to use directly
+with complex documents.  A @dfn{macro} facility specifies how certain
+routine operations, such as starting paragraphs, or printing headers and
+footers, should be performed in terms of those low-level instructions.
+Macros can be specific to one document or collected together into a
+@dfn{macro package} for use by many.  Several macro packages available;
+the most widely used are provided with @code{groff}.  They are
+@file{man}, @file{mdoc}, @file{me}, @file{mm}, @file{mom}, and
+@file{ms}.
 
 
 @c =====================================================================
@@ -700,37 +679,32 @@ ones described in this manual) are @file{man}, @file{mdoc}, @file{me},
 @section Preprocessors
 @cindex preprocessors
 
-Although @code{groff} provides most functions needed to format a
-document, some operations would be unwieldy (e.g., to draw pictures).
-Therefore, programs called @dfn{preprocessors} were written that
-understand their own language and produce the necessary @code{groff}
-operations.  These preprocessors are able to differentiate their own
-input from the rest of the document via markers.
-
-To use a preprocessor, Unix pipes are used to feed the output from the
-preprocessor into @code{groff}.  Any number of preprocessors may be used
-on a given document; in this case, the preprocessors are linked together
-into one pipeline.  However, with @code{groff}, the user does not need
-to construct the pipe, but only tell @code{groff} what preprocessors to
+An alternative approach to complexity management, particularly when
+constructing tables, setting mathematics, or drawing diagrams, lies in
+preprocessing.  A @dfn{preprocessor} employs a domian-specific language
+to ease the generation of tables, equations, and so forth in terms that
+are convenient for human entry.  Each preprocessor reads a document and
+translates the parts of it that apply to it into GNU @code{troff} input.
+Command-line options to @command{groff} tell it which preprocessors to
 use.
 
-@code{groff} currently has preprocessors for producing tables
-(@code{tbl}), typesetting equations (@code{eqn}), drawing pictures
-(@code{pic} and @code{grn}), processing bibliographies
-(@code{refer}), and drawing chemical structures (@code{chem}).  An
-associated program that is useful when dealing with preprocessors is
-@code{soelim}.
+@code{groff} provides preprocessors for laying out tables
+(@command{gtbl}), typesetting equations (@command{geqn}), drawing
+diagrams (@command{gpic} and @command{ggrn}), inserting bibliographic
+references (@command{grefer}), and drawing chemical structures
+(@command{gchem}).  An associated program that is useful when dealing
+with preprocessors is @command{gsoelim}.@footnote{The @samp{g} prefix is
+not used on all systems; see @ref{Invoking groff}.}
 
-A free implementation of @code{grap}, a preprocessor for drawing graphs,
-can be obtained as an extra package; @code{groff} can use @code{grap}
-also.
+@code{groff} also supports @code{grap}, a preprocessor for drawing
+graphs.  A free implementation of it can be obtained separately.
 
 Unique to @code{groff} is the @code{preconv} preprocessor that enables
-@code{groff} to handle documents in various input encodings.
+@code{groff} to handle documents in a variety of input encodings.
 
-Other preprocessors exist, but, unfortunately, no free implementations
-are available.  Among them is a preprocessor for drawing mathematical
-pictures (@code{ideal}).
+Other preprocessors exist, but no free implementations
+are known.  An example is @command{ideal}, which draws diagrams using a
+mathematical constraint language.
 
 
 @c =====================================================================
@@ -741,12 +715,14 @@ pictures (@code{ideal}).
 @cindex output devices
 @cindex devices for output
 
-@code{groff} produces device-independent code that may be fed into a
-postprocessor to produce output for a particular device.  Currently,
-@code{groff} has postprocessors for PostScript devices, character
-terminals, X11 (for previewing), DVI, HP LaserJet@tie{}4 and Canon LBP
-printers (which use @acronym{CaPSL}), @acronym{HTML}, @acronym{XHTML},
-and @acronym{PDF}.
+GNU @code{troff}'s output is in a device-independent page description
+language, which is then read by an @dfn{output driver} that translates
+this language into a file format or byte stream that a piece of
+(possibly emulated) hardware understands.  @code{groff} features output
+drivers for PostScript devices, terminal emulators (and other simple
+typewriter-like machines), X11 (for previewing), @TeX{} DVI, HP
+LaserJet@tie{}4/PCL5 and Canon LBP printers (which use @acronym{CaPSL}),
+@acronym{HTML}, @acronym{XHTML}, and @acronym{PDF}.
 
 
 @c =====================================================================
@@ -755,9 +731,10 @@ and @acronym{PDF}.
 @section Installation
 @cindex installation
 
-Installation procedures are documented by the files @file{INSTALL},
+Locate installation instructions in the files @file{INSTALL},
 @file{INSTALL.extra}, and @file{INSTALL.REPO} in the @code{groff} source
-distribution.
+distribution.  Being a GNU project, @code{groff} supports the familiar
+@samp{./configure && make} command sequence.
 
 
 @c =====================================================================
@@ -835,17 +812,16 @@ formally.@footnote{@xref{Line Layout}.}
 @section Credits
 @cindex credits
 
-Large portions of this manual were taken from existing documents---most
-notably, the manual pages for the @code{groff} package by James Clark,
-and Eric Allman's papers on the @file{me} macro package.  Larry Kollar
+We adapted portions of this manual from existing documents.  James
+Clark's man pages were an essential resource; we have updated them in
+parallel with the development of this manual.  We based the tutorial for
+macro users on Eric Allman's introduction to his @file{me} macro package
+(which we also provide, little altered from 4.4BSD).  Larry Kollar
 contributed much of the material on the @file{ms} macro package.
 
 
 @c =====================================================================
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @node Invoking groff, Tutorial for Macro Users, Introduction, Top
 @chapter Invoking @code{groff}
@@ -3353,7 +3329,7 @@ Set an automatically numbered heading.
 any depth desired, with the numbering of each depth increasing
 automatically and being reset to zero when a more significant level is
 increased.  ``1''@tie{}is the most significant or coarsest division of
-the document.  Only nonzero values are output.  If @var{depth} is
+the document.  Only non-zero values are output.  If @var{depth} is
 omitted, it is taken to be @samp{1}.
 
 If you specify @var{depth} such that an ascending gap occurs relative to
@@ -4857,9 +4833,6 @@ Names containing the characters @code{*}, @code{@@}, and@tie{}@code{:}.
 Names containing only uppercase letters and digits.
 @end itemize
 
-@codequotebacktick off
-@codequoteundirected off
-
 
 @c =====================================================================
 @c =====================================================================
@@ -4900,7 +4873,7 @@ not interested in details.
 * Conditionals and Loops::
 * Writing Macros::
 * Page Motions::
-* Drawing Requests::
+* Drawing Geometric Objects::
 * Deferring Output::
 * Traps::
 * Diversions::
@@ -4917,9 +4890,6 @@ not interested in details.
 
 
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @c BEGIN Keep roughly parallel with roff(7) section "Concepts".
 @node Text, Measurements, GNU troff Reference, GNU troff Reference
@@ -4973,11 +4943,12 @@ line-ending convention.  It reads input a character at a time,
 collecting words as it goes, and fits as many words together on an
 output line as it can---this is known as @dfn{filling}.  To GNU
 @code{troff}, a @dfn{word} is any sequence of one or more characters
-that aren't spaces, tabs, or newlines.  The exceptions separate
-words.@footnote{There are also @emph{escape sequences} which can
-function as word characters, word separators, or neither---the last
-simply have no effect on GNU @code{troff}'s idea of whether an input
-character is within a word or not.}  To disable filling, see
+that aren't spaces or newlines.  The exceptions separate
+words.@footnote{@slanted{Tabs} and @slanted{leaders} also separate
+words.  @slanted{Escape sequences} can function as word characters, word
+separators, or neither---the last simply have no effect on GNU
+@code{troff}'s idea of whether an input character is within a word.
+We'll discuss all of these in due course.}  To disable filling, see
 @ref{Manipulating Filling and Adjustment}.
 
 @Example
@@ -5158,16 +5129,15 @@ several parameters that can prevent it in certain circumstances.
 @cindex line break, output
 @cindex output line break
 
-Once an output line has been filled, whether or not hyphenation has
-occurred on that line, the next word read from the input will be placed
-on a different output line; this is called a @dfn{break}.  In this
-manual and in @code{roff} discussions generally, a ``break'' if not
-further qualified always refers to the termination of an output line.
-When the formatter is filling text, it introduces breaks automatically
-to keep output lines from exceeding the configured line length.  After
-an automatic break, GNU @code{troff} adjusts the line if applicable (see
-below), and then resumes collecting and filling text on the next output
-line.
+Once an output line is full, the next word (or remainder of a hyphenated
+one) is placed on a different output line; this is called a @dfn{break}.
+In this manual and in @code{roff} discussions generally, a ``break'' if
+not further qualified always refers to the termination of an output
+line.  When the formatter is filling text, it introduces breaks
+automatically to keep output lines from exceeding the configured line
+length.  After an automatic break, GNU @code{troff} adjusts the line if
+applicable (see below), and then resumes collecting and filling text on
+the next output line.
 
 Sometimes, a line cannot be broken automatically.  This usually does
 not happen with natural language text unless the output line length has
@@ -5264,7 +5234,7 @@ mechanism for table arrangement.} The tab and leader glyphs can be
 configured, and further facilities for sophisticated table composition
 are available; see @ref{Tabs and Fields}.  There are many details to
 track when using such low-level features, so most users turn to the
-@cite{tbl@r{(1)}} preprocessor for table construction.
+@cite{tbl@r{(1)}} preprocessor to lay out tables.
 
 @c ---------------------------------------------------------------------
 
@@ -5728,7 +5698,7 @@ within numeric ranges corresponding to the page boundaries.
 While the formatter (and, later, output driver) is processing a page, it
 keeps track of its @dfn{drawing position}, which is the location at
 which the next glyph will be written, from which the next motion will be
-measured, or where a geometric primitive will commence rendering.
+measured, or where a geometric object will commence rendering.
 @cindex text baseline
 @cindex baseline, text
 Notionally, glyphs are drawn from the text baseline upward and to the
@@ -5948,7 +5918,7 @@ quanta, respectively, of the output device in basic units.
 @endDefreg
 
 For example, we might draw short baseline rules on a terminal device as
-follows.  @xref{Drawing Requests}.
+follows.  @xref{Drawing Geometric Objects}.
 
 @Example
 .tm \n[.H]
@@ -6291,7 +6261,7 @@ current position (at the end of the argument just emitted, @code{\$1})
 to the beginning of the input line.  Thus, the @code{\l} escape sequence
 in this case draws a line from right to left.  A macro call occurs at
 the beginning of an input line;@footnote{Control structure syntax
-creates an exception to this rule, but is designed to remain useful:
+creates an exception to this rule, but is designed to remain useful:@:
 recalling our example, @samp{.if 1 .Underline this} would underline only
 ``this'', precisely.  @xref{Conditionals and Loops}.} if the @code{|}
 operator were omitted, then the underline would be drawn at zero
@@ -6668,7 +6638,7 @@ non-destructively replaced.  @xref{Strings}.
 @cindex tabs, and request arguments
 @cindex request arguments, and tabs
 @cindex arguments to requests, and tabs
-There is no general limit on argument length or quantity.  Most
+There is no inherent limit on argument length or quantity.  Most
 requests take one or more arguments, and ignore any they do not expect.
 A request may be separated from its arguments by tabs or spaces, but
 only spaces can separate an argument from its successor.  Only one
@@ -6698,14 +6668,14 @@ them.
 .de center
 .  if \\n[.br] \
 .    br
-.  ce \\$@@
+.  ce \\$1
 ..
 .
 .
 .de right-align
 .@arrow{}if \\n[.br] \
 .@arrow{}@arrow{}br
-.@arrow{}rj \\$@@
+.@arrow{}rj \\$1
 ..
 @endExample
 
@@ -6722,14 +6692,14 @@ definitions (or any input lines) with blank lines.
 .de center
 .  if \\n[.br] \
 .    br
-.  ce \\$@@
+.  ce \\$1
 ..
 
 
 .de right-align
 .@arrow{}if \\n[.br] \
 .@arrow{}@arrow{}br
-.@arrow{}rj \\$@@
+.@arrow{}rj \\$1
 ..
 
 .blm             \" deactivate blank line trap
@@ -6933,7 +6903,8 @@ escape sequences is necessary; see @ref{Strings}.}
 
 @c @need 1000
 The escape character is nearly always interpreted when encountered; it
-is therefore desirable to have a way to interpolate it.
+is therefore desirable to have a way to interpolate it, disable it, or
+change it.
 
 @cindex formatting the escape character (@code{\e})
 @cindex escape character, formatting (@code{\e})
@@ -7374,10 +7345,10 @@ traces, the check for the overfull line hasn't been done yet at the
 point where @code{\R} gets handled, and you get a value for the
 @code{.k} register that is even greater than the current line length.
 
-In the second input line, the insertion of @code{\h'0'} to emit an
-invisible zero-width space forces GNU @code{troff} to check the line
-length, which in turn causes the start of a new output line.  Now
-@code{.k} returns the expected value.
+In the second input line, the insertion of @code{\h'0'} to cause a
+zero-width motion forces GNU @code{troff} to check the line length,
+which in turn causes the start of a new output line.  Now @code{.k}
+returns the expected value.
 @endDefreq
 
 @code{nr} and @code{\R} each have two additional special forms to
@@ -7454,7 +7425,7 @@ suppression of warnings.
 @cindex alias, register, removing (@code{rr})
 @cindex removing alias for register (@code{rr})
 @cindex register, removing alias for (@code{rr})
-To remove a register alias, call @code{rr} on its name.  A register's
+To remove a register alias, invoke @code{rr} on its name.  A register's
 contents do not become inaccessible until it has no more names.
 @endDefreq
 @c END Keep (roughly) parallel with subsection "Registers" of groff(7).
@@ -7712,7 +7683,7 @@ found in @ref{Register Index}.
 We present here a few built-in registers that are not described
 elsewhere in this manual; they have to do with invariant properties of
 GNU @code{troff}, or obtain information about the formatter's
-command-line options or the operating environment.
+command-line options, processing progress, or the operating environment.
 
 @table @code
 @item \n[.A]
@@ -8546,7 +8517,7 @@ mode@tie{}12 causes GNU @code{troff} to hyphenate neither the last two
 nor the first two characters of a word.  Some values cannot be used
 together because they contradict; for instance, values 4 and@tie{}16,
 and values 8 and@tie{}32.  As noted, it is superfluous to add 1 to any
-nonzero even mode.
+non-zero even mode.
 
 @cindex hyphenation pattern files
 @cindex pattern files, for hyphenation
@@ -8784,8 +8755,8 @@ read-only register @code{.hlc}.
 Set the (right) hyphenation margin to @var{length}.  If the adjustment
 mode is not @samp{b} or @samp{n}, the line is not hyphenated if it is
 shorter than @var{length}.  Without an argument, the hyphenation margin
-is reset to its default value, 0.  The default scaling indicator is
-@samp{m}.  The hyphenation margin is associated with the environment
+is reset to its default value, 0.  The default scaling unit is @samp{m}.
+The hyphenation margin is associated with the environment
 (@pxref{Environments}).
 
 A negative argument resets the hyphenation margin to zero, emitting a
@@ -8805,7 +8776,7 @@ Suppress hyphenation of the line in adjustment modes @samp{b} or
 @samp{n} if it can be justified by adding no more than
 @var{hyphenation-space} extra space to each inter-word space.  Without
 an argument, the hyphenation space adjustment threshold is set to its
-default value, 0.  The default scaling indicator is @samp{m}.  The
+default value, 0.  The default scaling unit is @samp{m}.  The
 hyphenation space adjustment threshold is associated with the
 environment (@pxref{Environments}).
 
@@ -8935,7 +8906,7 @@ post-vertical line spacing.
 
 Use of @code{\x} can be necessary in combination with the
 bracket-building escape sequence @code{\b},@footnote{@xref{Drawing
-Requests}.} as the following example shows.
+Geometric Objects}.} as the following example shows.
 
 @Example
 .nf
@@ -8971,9 +8942,9 @@ Enable @dfn{no-space mode}.  Vertical spacing, whether by @code{sp}
 requests or blank input lines, is disabled.  The @code{bp} request to
 advance to the next page is also disabled, unless it is accompanied by a
 page number (@pxref{Page Control}).  No-space mode ends automatically
-when text@footnote{or geometric primitives; see @ref{Drawing Requests}}
-is formatted for output @footnote{to the top-level diversion; see
-@ref{Diversions}} or the @code{rs} request is invoked, which ends
+when text@footnote{or geometric objects; see @ref{Drawing Geometric
+Objects}} is formatted for output @footnote{to the top-level diversion;
+see @ref{Diversions}} or the @code{rs} request is invoked, which ends
 no-space mode.  The read-only register @code{.ns} interpolates a Boolean
 value indicating the enablement of no-space mode.
 
@@ -9163,7 +9134,7 @@ Only a single character of @var{c} is recognized; any excess is ignored.
 @cindex tab, line-tabs mode
 @cindex line-tabs mode
 @cindex mode, line-tabs
-If @var{n} is missing or nonzero, activate @dfn{line-tabs}; deactivate
+If @var{n} is missing or non-zero, activate @dfn{line-tabs}; deactivate
 it otherwise (the default).  Active line-tabs cause GNU @code{troff}
 to compute tab distances relative to the start of the output line
 instead of the input line.
@@ -9205,7 +9176,7 @@ interpolates@tie{}1 if line-tabs are active, and 0 otherwise.
 Sometimes it is desirable to fill a tab stop with a given glyph,
 but also use tab stops normally on the same output line.  An example is
 a table of contents entry that uses dots to bridge the entry name with
-its page number, which is itself aligned within a tab stop.  The
+its page number, which is itself aligned between tab stops.  The
 @code{roff} language provides @dfn{leaders} for this
 purpose.@footnote{This is pronounced to rhyme with ``feeder'', and
 refers to how the glyphs ``lead'' the eye across the page to the
@@ -9215,8 +9186,8 @@ corresponding page number or other datum.}
 A leader character (@acronym{ISO} and @acronym{EBCDIC} code
 point@tie{}1, also known as @acronym{SOH} or ``start of heading''),
 behaves similarly to a tab character:@: it moves to the next tab stop.
-The difference is that for this movement, the default fill glyph is a
-period @samp{.}.
+The difference is that for this movement, the default fill character is
+a period @samp{.}.
 
 @Defesc {\\a, , , }
 @cindex leader character, non-interpreted (@code{\a})
@@ -9505,9 +9476,6 @@ file @file{tty.tmac}, which is loaded by the startup file
 
 @xref{Conditionals and Loops}, for more details on built-in conditions.
 
-@codequotebacktick off
-@codequoteundirected off
-
 
 @c =====================================================================
 
@@ -9631,7 +9599,7 @@ is no indentation.
 
 If @code{in} is called without an argument, the indentation is reset to
 the previous value before the last call to @code{in}.  The default
-scaling indicator is @samp{m}.
+scaling unit is @samp{m}.
 
 If a negative indentation value is specified (which is not allowed),
 @code{gtroff} emits a warning in category @samp{range} and sets the
@@ -9655,7 +9623,7 @@ increment or decrement value is specified, adjust the temporary
 indentation relative to the value set by the @code{in} request.
 
 This request causes a break; its value is associated with the
-environment (@pxref{Environments}).  The default scaling indicator is
+environment (@pxref{Environments}).  The default scaling unit is
 @samp{m}.  A call of @code{ti} without an argument is ignored.
 
 If the total indentation value is negative (which is not allowed),
@@ -9683,8 +9651,8 @@ indentation value or a temporary indentation value is active.
 Set the line length to @var{length} (or increment or decrement the
 current value by @var{length}).  Initially, the line length is set to
 6.5@dmn{i}.  The effect of @code{ll} is delayed until a partially
-collected line (if it exists) is output.  The default scaling indicator
-is @samp{m}.
+collected line (if it exists) is output.  The default scaling unit is
+@samp{m}.
 
 If @code{ll} is called without an argument, the line length is reset to
 the previous value before the last call to @code{ll}.  If a negative
@@ -9815,9 +9783,6 @@ request invocation or macro call.}
 
 
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @node Page Layout, Page Control, Line Continuation, GNU troff Reference
 @section Page Layout
@@ -10046,8 +10011,10 @@ Spacing}).  While the @code{sv} request allows negative values for
 @cindex vertical drawing position (@code{nl})
 @cindex vertical position, drawing (@code{nl})
 @cindex drawing position, vertical (@code{nl})
+@c TODO: We should talk somewhere prior to this point about how the
+@c formatter doesn't start a page until it has to.
 @code{nl} interpolates or sets the vertical drawing position.  When the
-formatter starts and first page transition hasn't happened yet,
+formatter starts, the first page transition hasn't happened yet, and
 @code{nl} is negative.  If a header trap has been planted on the page
 (typically at vertical position @code{0}), you can assign a negative
 value to @code{nl} to spring it if that page has already started
@@ -10085,9 +10052,6 @@ one.
 @code{.d} registers.
 @endDefreg
 
-@codequotebacktick off
-@codequoteundirected off
-
 
 @c =====================================================================
 
@@ -10120,19 +10084,21 @@ upright and slanted shapes with normal and heavy stroke weights:
 @slanted{bold-italic}.  For linguistic text, GNU @code{troff} groups
 typefaces into @dfn{families} containing each of these
 styles.@footnote{Font designers prepare families such that the styles
-share esthetic properties.}   A @dfn{text font} is a combination of a
-family with a style.  On typesetting devices, at least one @dfn{special
-font} is available, comprising @dfn{unstyled} glyphs for mathematical
-operators and other purposes.
+share esthetic properties.}  A @dfn{text font} is thus often a family
+combined with a style, but it need not be:@: consider the @code{ps} and
+@code{pdf} devices' @code{ZCMI} (Zapf Chancery Medium italic)---often,
+no other style of Zapf Chancery Medium is provided.  On typesetting
+devices, at least one @dfn{special font} is available, comprising
+@dfn{unstyled} glyphs for mathematical operators and other purposes.
 
 @cindex font description file
 @cindex description file, font
 @cindex file, font description
 @cindex font metrics
 @cindex metrics, font
-@cindex font mounting position
-@cindex mounting position, font
-@cindex position, font mounting
+@cindex mounting position
+@cindex mounting position
+@cindex position, mounting
 Like @acronym{AT&T} @code{troff}, GNU @code{troff} does not itself load
 or manipulate a digital font file;@footnote{Historically, the fonts
 @code{troff}s dealt with were not Free Software or, as with the Graphic
@@ -10143,11 +10109,15 @@ each glyph.@footnote{@xref{Font Description File Format}.}  This
 information permits the formatter to accurately place glyphs with
 respect to each other.  Before using a font description, the formatter
 associates it with a @dfn{mounting position}, a place in an ordered list
-of available typefaces.  So that a document need not be strongly coupled
-to a specific font family, in GNU @code{troff} an output device can
-associate a style in the abstract sense with a mounting position.  Thus
-the current family can be combined with a style dynamically, producing a
-@dfn{resolved font name}.
+of available typefaces.
+@cindex abstract font style
+@cindex font style, abstract
+@cindex style, font, abstract
+So that a document need not be strongly coupled to a specific font
+family, in GNU @code{troff} an output device can associate a style in
+the abstract sense with a mounting position.  Thus the default family
+can be combined with a style dynamically, producing a @dfn{resolved font
+name}.
 
 Fonts often have trademarked names, and even Free Software fonts can
 require renaming upon modification.  @code{groff} maintains a
@@ -10158,17 +10128,21 @@ monospaced family @samp{C} (``Courier'').  Historical inertia has driven
 names, as with @samp{TR}, @samp{TI}, @samp{TB}, @samp{TBI}, and a
 special font @samp{S}.
 
-Each typesetting output device configures a default
-family;@footnote{@xref{DESC File Format}.} for those provided by
-@code{groff}, this is always @samp{T}.  Conventionally, the styles are
-arranged in the first four mounting positions in the order shown above.
-The default mounting position, and therefore style, is always @samp{1}
-(@samp{R}).  By issuing appropriate formatter instructions, you can
-override these defaults before your document writes its first glyph.
+The default family used with abstract styles can be changed at any time;
+initially, it is @samp{T}.  Typically, abstract styles are arranged in
+the first four mounting positions in the order shown above.  The default
+mounting position, and therefore style, is always @samp{1} (@samp{R}).
+By issuing appropriate formatter instructions, you can override these
+defaults before your document writes its first glyph.
 
+@cindex graphic renditions
+@cindex renditions, graphic
+@cindex character cell attributes
+@cindex attributes, character cell
+@cindex cell, character, attributes
 Terminal output devices cannot change font families and lack special
 fonts.  They support style changes by overstriking, or by altering
-ISO@tie{}6429/ECMA-48 ``graphic renditions'' (character cell
+ISO@tie{}6429/ECMA-48 @dfn{graphic renditions} (character cell
 attributes).
 @c END Keep (roughly) parallel with section "Using fonts" of groff(7).
 
@@ -10192,8 +10166,8 @@ attributes).
 @cindex font, selection
 
 We use @dfn{font} to refer to any of several means of identifying a
-font: by mounting position (@samp{3}), by style (@samp{B}), or by its
-font description file name (@samp{TB}).
+font: by mounting position (@samp{3}), by abstract style (@samp{B}), or
+by its identifier (@samp{TB}).
 
 @DefreqList {ft, [@Var{font}]}
 @DefescItemx {\\f, , f, }
@@ -10215,12 +10189,11 @@ The @code{ft} request selects the typeface @var{font}.  If the argument
 is absent or @samp{P}, it selects the previously chosen font.  If
 @var{font} is a non-negative integer, it is interpreted as mounting
 position; the font mounted there is selected.  If that position refers
-to a style, as set with the @code{sty} request or with the @code{styles}
-command in the output device's @file{DESC} file, it is combined with the
-current family (see @code{fam} and @code{\F} below) to make a resolved
-font name.  If the mounting position is not a style and no font is
-mounted there, GNU @code{troff} emits a warning in category @samp{font}
-and ignores the request.
+to an abstract style, it is combined with the default family (see
+@code{fam} and @code{\F} below) to make a resolved font name.  If the
+mounting position is not a style and no font is mounted there, GNU
+@code{troff} emits a warning in category @samp{font} and ignores the
+request.
 
 If @var{font} matches a style name, it is combined with the current
 family to make a resolved font name.  Otherwise, @var{font} is assumed
@@ -10229,20 +10202,16 @@ to already be a resolved font name.
 @cindex automatic font mounting
 @cindex font mounting, automatic
 @cindex mounting, font, automatic
-The resolved font name is subject to translation (see request
-@code{ftr} below).  Next, the (possibly translated) font name's mounting
-position is looked up; if not mounted, @var{font} is sought on the file
-system as a font description file and, if located, automatically mounted
-at the next available position (see register @code{.fp} below).  If a
-font description file for the resolved font name is not found, GNU
+The resolved font name is subject to translation (see request @code{ftr}
+below).  Next, the (possibly translated) font name's mounting position
+is looked up; if not mounted, @var{font} is sought on the file system as
+a font description file and, if located, automatically mounted at the
+next available position (see register @code{.fp} below).  If the font
+was mounted using an identifier different from its font description file
+name (see request @code{fp} below), that file name is then looked up.
+If a font description file for the resolved font name is not found, GNU
 @code{troff} emits a warning in category @samp{font} and ignores the
 request.
-
-It is not possible to switch to a font with the name @samp{DESC}.
-@c XXX: TODO: Catch this earlier and throw an error for it.
-@c XXX: This identifier could be used as a style name, but no one's
-@c exercised this freedom in 30+ years, and we should consider
-@c prohibiting it.  --GBR
 
 The @code{\f} escape sequence is similar, using one-character name (or
 mounting position) @var{f}, two-character name @var{fn}, or a name
@@ -10301,6 +10270,8 @@ named@tie{}@var{f} is referred to in a @code{\f} escape sequence, in the
 @code{fspecial}, @code{fp}, or @code{sty} requests, font@tie{}@var{g} is
 used.  If @var{g} is missing or equal to@tie{}@var{f} the translation is
 undone.
+@c XXX: Do font translations work on mounting positions?  Abstract
+@c styles?
 
 Font translations cannot be chained.
 
@@ -10336,8 +10307,9 @@ Palatino and \f[CR]Courier\f[]
 @endExample
 
 A missing or zero value of @var{zoom} is the same as a value of 1000,
-which means no magnification.  @var{f}@tie{}must be a real font name,
-not a style.
+which means no magnification.  @var{f}@tie{}must be a resolved font
+name, not an abstract style.
+@c XXX: What about a mounting position?  It's not rejected...
 
 The magnification of a font is completely transparent to GNU
 @code{troff}; a change of the zoom factor doesn't cause any effect
@@ -10358,21 +10330,21 @@ there is no magnification.
 @cindex font styles
 @cindex styles, font
 
-Due to the variety of fonts available, @code{gtroff} has added the
-concept of @dfn{font families} and @dfn{font styles}.  The fonts are
-specified as the concatenation of the font family and style.  Specifying
-a font without the family part causes @code{gtroff} to use that style of
-the current family.
+To accommodate the wide variety of fonts available, GNU @code{troff}
+distinguishes @dfn{font families} and @dfn{font styles}.  A resolved
+font name is the catenation of a font family and a style.  Selecting an
+abstract style causes GNU @code{troff} to combine it with the default
+font family.
 
-@cindex PostScript fonts
-@cindex fonts, PostScript
-Currently, fonts for the devices @option{-Tps}, @option{-Tpdf},
-@option{-Tdvi}, @option{-Tlj4}, @option{-Tlbp}, and the X11 fonts are
-set up to this mechanism.  By default, @code{gtroff} uses the Times
-family with the four styles @samp{R}, @samp{I}, @samp{B}, and @samp{BI}.
+You can thus compose a document using abstract styles exclusively for
+its body or running text, selecting a specific family only for titles or
+examples, for instance, and change the default family on the command
+line (recall @ref{Groff Options}).
 
-This way, it is possible to use the basic four fonts and to select a
-different font family on the command line (@pxref{Groff Options}).
+Fonts for the devices @code{ps}, @code{pdf}, @code{dvi}, @code{lj4},
+@code{lbp}, and the X11 devices support this mechanism.  By default,
+GNU @code{troff} uses the Times family with the four styles @samp{R},
+@samp{I}, @samp{B}, and @samp{BI}.
 
 @DefreqList {fam, [@Var{family}]}
 @DefregItemx {.fam}
@@ -10381,27 +10353,34 @@ different font family on the command line (@pxref{Groff Options}).
 @DefescListEnd {\\F, [, family, ]}
 @cindex changing font family (@code{fam}, @code{\F})
 @cindex font family, changing (@code{fam}, @code{\F})
-Set the font family to @var{family} (one-character name@tie{}@var{f},
-two-character name @var{fm}).  If no argument is given, switch to the
-previous font family, or the default family if there is none.  Use
-@samp{\F[]} to do this with an escape sequence; @samp{\FP} selects font
-family @samp{P} instead.  The initial font family is @samp{T} (Times),
-but can be overridden by the output device description file---@xref{DESC
-File Format}.  The current font family is available in the read-only
-string-valued register @code{.fam}; it is associated with the
-environment (@pxref{Environments}).
+Set the default font family, used in combination with abstract styles to
+construct a resolved font name, to @var{family} (one-character
+name@tie{}@var{f}, two-character name @var{fm}).  If no argument is
+given, GNU @code{troff} selects the previous font family; if there none,
+is it falls back to the device's default@footnote{@xref{DESC File
+Format}.} or its own (@samp{T}).
+
+The @code{\F} escape sequence works similarly.  In disanalogy to
+@code{\f}, @samp{\FP} makes @samp{P} the default family.  Use
+@samp{\F[]} to select the previous default family.  The default font
+family is available in the read-only string-valued register @code{.fam};
+it is associated with the environment (@pxref{Environments}).
 
 @Example
+spam,     \" startup defaults are T (Times) R (roman)
+.fam H    \" make Helvetica the default family
+spam,     \" family H + style R = HR
+.ft B     \" family H + style B = HB
 spam,
-.fam H    \" helvetica family
-spam,     \" used font is family H + style R = HR
-.ft B     \" family H + style B = font HB
+.ft CR    \" Courier roman (default family not changed)
 spam,
-.fam T    \" times family
-spam,     \" used font is family T + style B = TB
+.ft       \" back to Helvetica bold
+spam,
+.fam T    \" make Times the default family
+spam,     \" family T + style B = TB
 .ft AR    \" font AR (not a style)
 baked beans,
-.ft R     \" family T + style R = font TR
+.ft R     \" family T + style R = TR
 and spam.
 @endExample
 
@@ -10414,172 +10393,137 @@ a single character as an argument) to change the font family on the fly.
 @endExample
 @endDefreq
 
+@need 1000
 @DefreqList {sty, n style}
 @DefregListEndx {.sty}
-@cindex changing font style (@code{sty})
-@cindex font style, changing (@code{sty})
+@cindex setting up an abstract font style (@code{sty})
+@cindex abstract font style, setting up (@code{sty})
+@cindex font style, abstract, setting up (@code{sty})
+@cindex style, font, abstract, setting up (@code{sty})
 @cindex @code{cs} request, and font styles
 @cindex @code{bd} request, and font styles
 @cindex @code{tkf} request, and font styles
 @cindex @code{uf} request, and font styles
 @cindex @code{fspecial} request, and font styles
-Associate @var{style} with font position@tie{}@var{n}.  A font position
-can be associated either with a font or with a style.  The current font
-is the index of a font position and so is also either a font or a style.
-If it is a style, the font that is actually used is the font whose name
-is the concatenation of the name of the current family and the name of
-the current style.  For example, if the current font is@tie{}1 and font
-position@tie{}1 is associated with style @samp{R} and the current font
-family is @samp{T}, then font @samp{TR} is used.  If the current font is
-not a style, then the current family is ignored.  If the requests
-@code{cs}, @code{bd}, @code{tkf}, @code{uf}, or @code{fspecial} are
-applied to a style, they are instead applied to the member of the
-current family corresponding to that style.
-
-@var{n}@tie{}must be a non-negative integer.
+Associate an abstract style @var{style} with mounting
+position@tie{}@var{n}, which must be a non-negative integer.  If the
+requests @code{cs}, @code{bd}, @code{tkf}, @code{uf}, or @code{fspecial}
+are applied to an abstract style, they are instead applied to the member
+of the current family corresponding to that style.
 
 @pindex DESC
 @kindex styles
 The default family can be set with the @option{-f} option (@pxref{Groff
 Options}).  The @code{styles} command in the @file{DESC} file controls
-which font positions (if any) are initially associated with styles
-rather than fonts.  For example, the default setting for PostScript
-fonts
+which font positions (if any) are initially associated with abstract
+styles rather than fonts.
+
+@strong{Caution:@:} The @var{style} argument is not validated.
+@c XXX: This would be a really good thing to fix.
+Errors may occur later, when the formatter attempts to construct a
+resolved font name, or format a character for output.
 
 @Example
-styles R I B BI
-@endExample
-
-@noindent
-is equivalent to
-
-@Example
-.sty 1 R
-.sty 2 I
-.sty 3 B
-.sty 4 BI
-@endExample
-
-@code{fam} and @code{\F} always check whether the current font position
-is valid; this can give surprising results if the current font position
-is associated with a style.
-
-In the following example, we want to access the PostScript font
-@code{FooBar} from the font family @code{Foo}:
-
-@Example
+.nr BarPos \n[.fp]
 .sty \n[.fp] Bar
 .fam Foo
-    @error{} warning: can't find font 'FooR'
+.ft \n[BarPos]
+.tm .f=\n[.f]
+A
+    @error{} error: no font family named 'Foo' exists
+    @error{} .f=41
+    @error{} error: cannot format glyph: no current font
 @endExample
 
-@noindent
-The default font position at startup is@tie{}1; for the PostScript
-device, this is associated with style @samp{R}, so @code{gtroff} tries
-to open @code{FooR}.
-
-A solution to this problem is to use a dummy font like the following:
-
-@Example
-.fp 0 dummy TR    \" set up dummy font at position 0
-.sty \n[.fp] Bar  \" register style `Bar'
-.ft 0             \" switch to font at position 0
-.fam Foo          \" activate family `Foo'
-.ft Bar           \" switch to font `FooBar'
-@endExample
-
-@xref{Font Positions}.
-
-The style name of the selected font is available in the read-only
-string-valued register @samp{.sty}; it is associated with the
-environment (@pxref{Environments}).  If the current font is unstyled,
-@samp{.sty} interpolates nothing.
+When an abstract style has been selected, the read-only string-valued
+register @samp{.sty} interpolates its name; this datum is associated
+with the environment (@pxref{Environments}).  Otherwise, @samp{.sty}
+interpolates nothing.
 @endDefreq
 
 @c ---------------------------------------------------------------------
-
-@codequotebacktick on
-@codequoteundirected on
 
 @node Font Positions, Using Symbols, Font Families, Using Fonts
 @subsection Font Positions
 @cindex font positions
 @cindex positions, font
 
-To support typeface indirection through styles, and for compatibility
-with @acronym{AT&T} @code{troff}, the formatter maintains a list of font
-@dfn{positions} at which fonts required by a document are @dfn{mounted}.
-An output device's description file @file{DESC} typically configures a
-set of pre-mounted fonts; see @ref{Device and Font Description Files}.
-A font need not be explicitly mounted before it is selected; GNU
-@code{troff} will search @env{GROFF_FONT_PATH} for it by name and mount
-it at the first free mounting position on demand.
+To support typeface indirection through abstract styles, and for
+compatibility with @acronym{AT&T} @code{troff}, the formatter maintains
+a list of font @dfn{positions} at which fonts required by a document are
+@dfn{mounted}.  An output device's description file @file{DESC}
+typically configures a set of pre-mounted fonts; see @ref{Device and
+Font Description Files}.  A font need not be explicitly mounted before
+it is selected; GNU @code{troff} will search @env{GROFF_FONT_PATH} for
+it by name and mount it at the first free mounting position on demand.
 
-@DefreqList {fp, pos font [@Var{external-name}]}
+@need 500
+@DefreqList {fp, pos id [@Var{font-description-file-name}]}
 @DefregItemx {.f}
 @DefregListEndx {.fp}
-@cindex mounting font (@code{fp})
+@cindex mounting a font (@code{fp})
 @cindex font, mounting (@code{fp})
-Mount the font named @var{font} at position @var{pos}, a non-negative
-integer.  This numeric index can then be referred to with font selection
-instructions.  When the formatter starts up, it reads the output
+Mount a font under the name @var{id} at mounting position @var{pos}, a
+non-negative integer.  When the formatter starts up, it reads the output
 device's description to mount an initial set of faces, and selects font
 position@tie{}1.  Position@tie{}0 is unused by default.  Unless the
-@var{external-name} argument is given, the name @var{font} should be
-that of a font description file stored in a directory corresponding to
-the selected output device.
-
-@cindex font position register (@code{.f})
-The position of the currently selected font (or style) is available in
-the read-only register @samp{.f}.  It is associated with the environment
-(@pxref{Environments}).
-
-The value of @code{.f} can be copied to another register to save the
-current font or style for later recall.
-
-@Example
-.nr saved-font \n[.f]
-.ft B
-@r{@dots{}} text text text @r{@dots{}}
-.ft \n[saved-font]
-@endExample
-
-@cindex next free font position register (@code{.fp})
-The index of the next (nonzero) free font position is available in the
-read-only register @samp{.fp}.
-@cindex @file{DESC} file, and font mounting
-Fonts not listed in the @file{DESC} file are automatically mounted at
-position @samp{\n[.fp]} when selected.  When mounting a font at a
-position explicitly with the @code{fp} request, this same practice
-should be followed, although GNU @code{troff} does not enforce this
-strictly.
-
-If there is no third argument, the font description is sought in the
-file system under the name @var{font}.
+@var{font-description-file-name} argument is given, @var{id} should be
+the name of a font description file stored in a directory corresponding
+to the selected output device.  GNU @code{troff} does not traverse
+directories to locate the font description file.
 
 @c The third argument was a late revision to device-independent troff.
 @c It wasn't in the "Unix 4.0" version of CSTR #54 (January 1981), which
 @c featured Kernighan's device-independent rewrite, but appeared by the
 @c time of its 1992 revision.
-The optional third argument @var{external-name} is the name of a font
-description file in the operating environment.  GNU @code{troff} refuses
-to traverse directories to locate the font description.  The second
-argument @var{font} is then the internal name of the font, which
-identifies it to GNU @code{troff} once it has been mounted.  This
-feature enables font names to be aliased, which can be necessary in
-compatibility mode since AT&T @code{troff} syntax affords no means of
-identifying fonts with names longer than two characters, like @samp{TBI}
-or @samp{ZCMI}, in a font selection escape sequence.
-@xref{Compatibility Mode}.  You can also alias fonts on mounting for
-convenience or abstraction.
+@cindex font aliasing with third argument to @code{fp} request
+@cindex aliasing fonts with third argument to @code{fp} request
+The optional third argument enables font names to be aliased, which can
+be necessary in compatibility mode since AT&T @code{troff} syntax
+affords no means of identifying fonts with names longer than two
+characters, like @samp{TBI} or @samp{ZCMI}, in a font selection escape
+sequence.  @xref{Compatibility Mode}.  You can also alias fonts on
+mounting for convenience or abstraction.  (See below regarding the
+@code{.fp} register.)
 
 @Example
-.ft SC ZCMI \" "script" font
+.fp \n[.fp] SC ZCMI
 Send a \f(SChand-written\fP thank-you note.
-.ft Emph I
-.ft Strong B
+.fp \n[.fp] Emph TI
+.fp \n[.fp] Strong TB
 Are \f[Emph]these names\f[] \f[Strong]comfortable\f[]?
 @endExample
+
+@samp{DESC}, @samp{P}, and non-negative integers are not usable as font
+identifiers.
+@c XXX: TODO: Catch the DESC case earlier and throw an error for it.
+@c XXX: This identifier could be used as a style name, but no one's
+@c exercised this freedom in 30+ years, and we should consider
+@c prohibiting it.  --GBR
+
+@cindex font position register (@code{.f})
+The position of the currently selected font (or abstract style) is
+available in the read-only register @samp{.f}.  It is associated with
+the environment (@pxref{Environments}).
+
+You can copy the value of @code{.f} to another register to save it for
+later use.
+
+@Example
+.nr saved-font \n[.f]
+@r{@dots{} @i{text involving many font changes} @dots{}}
+.ft \n[saved-font]
+@endExample
+
+@cindex next free font position register (@code{.fp})
+The index of the next (non-zero) free font position is available in the
+read-only register @samp{.fp}.
+@cindex @file{DESC} file, and font mounting
+Fonts not listed in the @file{DESC} file are automatically mounted at
+position @samp{\n[.fp]} when selected with the @code{ft} request or
+@code{\f} escape sequence.  When mounting a font at a position
+explicitly with the @code{fp} request, this same practice should be
+followed, although GNU @code{troff} does not enforce this strictly.
 @endDefreq
 
 @c ---------------------------------------------------------------------
@@ -10850,21 +10794,22 @@ instead, you have to define @code{u0041_0328}.
 @cindex named character (@code{\C})
 @cindex character, named (@code{\C})
 Typeset the glyph of the special character @var{xxx}.  Normally, it is
-more convenient to use @code{\[@var{xxx}]}, but @code{\C} has the
-advantage that it is compatible with @acronym{AT&T} device-independent
-@code{troff} and is available in compatibility mode.
+more convenient to use @code{\[@var{xxx}]}, but @code{\C} has some
+advantages: it is compatible with @acronym{AT&T} device-independent
+@code{troff} (and therefore available in compatibility
+mode@footnote{@xref{Compatibility Mode}.}) and can interpolate special
+characters with @samp{]} in their names.  The delimiter need not be
+a neutral apostrophe; see @ref{Delimiters}.
 @endDefesc
 
-@Defreq {composite, from to}
+@Defreq {composite, id1 id2}
 @pindex composite.tmac
-Map glyph name @var{from} to glyph name @var{to} if it is used in
-@code{\[...]} with more than one component.  See above for examples.
-
-This mapping is based on glyph names only; no check for the existence of
-either glyph is done.
-
-A set of default mappings for many accents can be found in the file
-@file{composite.tmac}, which is loaded at startup.
+Map special character name @var{id1} to @var{id2} if @var{id1} is used
+in @code{\[...]} with more than one component.  See above for examples.
+This is a strict rewriting of the special character name; no check is
+performed for the existence of a glyph for either.  A set of default
+mappings for many accents can be found in the file
+@file{composite.tmac}, loaded by the default @file{troffrc} at startup.
 @endDefreq
 
 @Defesc {\\N, @code{'}, n, @code{'}}
@@ -10894,32 +10839,29 @@ description file after the @code{charset} command.  It is possible to
 include unnamed glyphs in the font description file by using a name of
 @samp{---}; the @code{\N} escape sequence is the only way to use these.
 
-No kerning is applied to glyphs accessed with @code{\N}.
+No kerning is applied to glyphs accessed with @code{\N}.  The delimiter
+need not be a neutral apostrophe; see @ref{Delimiters}.
 @endDefesc
 
-A few more escape sequences are also special characters.
+A few escape sequences are also special characters.
 
 @Defesc {\@code{'}, , , }
-A backslash followed by the apostrophe character,
-@acronym{ASCII} character @code{0x27} (@acronym{EBCDIC} character
-@code{0x7D}), is a synonym for @code{\[aa]}, the acute accent.
+An escaped neutral apostrophe is a synonym for @code{\[aa]} (acute
+accent).
 @endDefesc
 
 @Defesc {\@code{`}, , , }
-A backslash followed by @acronym{ASCII} character @code{0x60}
-(@acronym{EBCDIC} character @code{0x79} [usually]), is a synonym for
-@code{\[ga]}, the grave accent.
+An escaped grave accent is a synonym for @code{\[ga]} (grave accent).
 @endDefesc
 
 @Defesc {\\-, , , }
-A backslash followed by a dash is a synonym for @code{\[-]}, the minus
-sign.
+An escaped hyphen-minus is a synonym for @code{\[-]} (minus sign).
 @endDefesc
 
 @Defesc {\\_, , , }
-A backslash followed by an underscore is a synonym for @code{\[ul]}, the
-underrule.  On @code{troff}-mode (typesetter) devices it may be
-font-invariant and drawn lower than the underscore glyph @samp{_}.
+An escaped underscore (``low line'') is a synonym for @code{\[ul]}
+(underrule).  On typesetting devices, the underrule is font-invariant
+and drawn lower than the underscore @samp{_}.
 @endDefesc
 
 @Defreq {cflags, n c1 c2 @dots{}}
@@ -11290,7 +11232,7 @@ necessary in GNU @code{troff}.  Nevertheless, they are supported.
 @cindex height, font, changing (@code{\H})
 Change (increment, decrement) the height of the current font, but not
 the width.  If @var{height} is zero, restore the original height.
-Default scaling indicator is @samp{z}.
+Default scaling unit is @samp{z}.
 
 The read-only register @code{.height} contains the font height as set by
 @code{\H}.
@@ -11446,8 +11388,8 @@ is taken from the current font size (as set with the @code{ps} request)
 when the font is effectively in use.  Without second and third argument,
 constant glyph space mode is deactivated.
 
-Default scaling indicator for @var{em-size} is @samp{z}; @var{width} is
-an integer.
+Default scaling unit for @var{em-size} is @samp{z}; @var{width} is an
+integer.
 @endDefreq
 
 @c ---------------------------------------------------------------------
@@ -11537,8 +11479,8 @@ width is increased by @var{n2}; if the type size is greater than or
 equal to @var{s1} and less than or equal to @var{s2} the increase in
 width is a linear function of the type size.
 
-The default scaling indicator is @samp{z} for @var{s1} and @var{s2},
-@samp{p} for @var{n1} and @var{n2}.
+The default scaling unit is @samp{z} for @var{s1} and @var{s2}, @samp{p}
+for @var{n1} and @var{n2}.
 
 The track kerning amount is added even to the rightmost glyph in a line;
 for large values it is thus recommended to increase the line length by
@@ -12024,9 +11966,9 @@ the read-only string-valued register @code{.sr}.  Both are associated
 with the environment (@pxref{Environments}).
 
 For example, if a type size of 10.95 points is requested, and the
-nearest size permitted by a @code{sizes} request (or a @code{sizescale}
-directive in the device's @file{DESC} file) is 11 points, the latter
-value is used by the output driver.
+nearest size permitted by a @code{sizes} request (or by the @code{sizes}
+or @code{sizescale} directives in the device's @file{DESC} file) is 11
+points, the output driver uses the latter value.
 @endDefreg
 
 The @code{\s} escape sequence offers the following syntax forms that
@@ -12107,7 +12049,7 @@ the range 0--65,535 (0--FFFF).
 @cindex scaling unit @code{f}
 Alternatively, each color component can be specified as a decimal
 fraction in the range 0--1, interpreted using a default scaling
-indicator of@tie{}@code{f}, which multiplies its value by 65,536 (but
+unit of@tie{}@code{f}, which multiplies its value by 65,536 (but
 clamps it at 65,535).
 
 @Example
@@ -12168,17 +12110,9 @@ the color on the fly:
 @DefescItem {\\M, (, co, }
 @DefescItem {\\M, [, color, ]}
 @DefregListEndx {.M}
-Set fill color for objects drawn with @code{\D'@dots{}'} escape
-sequences.
-
-Create an ellipse with a red interior as follows.
-
-@Example
-\M[red]\h'0.5i'\D'E 2i 1i'\M[]
-@endExample
-
-The escape sequence @code{\M[]} restores the previous fill color, as
-does an @code{fcolor} request without an argument.
+Set the fill color for objects drawn with @code{\D'@dots{}'} escape
+sequences.  The escape sequence @code{\M[]} restores the previous fill
+color, as does an @code{fcolor} request without an argument.
 
 @cindex background color name register (@code{.M})
 @cindex name, background color, register (@code{.M})
@@ -12189,9 +12123,14 @@ does an @code{fcolor} request without an argument.
 The name of the current fill color is available in the read-only
 string-valued register @samp{.M}; it is associated with the environment
 (@pxref{Environments}).  It interpolates nothing when the fill color
-is the default.
+is the default.  @code{\M} doesn't produce an input token in GNU
+@code{troff}.
 
-@code{\M} doesn't produce an input token in GNU @code{troff}.
+Create an ellipse with a red interior as follows.
+
+@Example
+\M[red]\h'0.5i'\D'E 2i 1i'\M[]
+@endExample
 @endDefesc
 @c END Keep (roughly) parallel with section "Colors" of groff(7).
 
@@ -12824,7 +12763,7 @@ requests may be interposed between the @code{ie} branch and the
 
 @Example
 .nr a 0
-.ie \na a is nonzero.
+.ie \na a is non-zero.
 .nr a +1
 .el a was not positive but is now \na.
     @result{} a was not positive but is now 1.
@@ -12861,7 +12800,8 @@ To conveniently nest conditionals, keep reading.
 It is frequently desirable for a control structure to govern more than
 one request, macro call, text line, or a combination of the foregoing.
 The opening and closing brace escape sequences @code{\@{} and @code{\@}}
-perform such grouping; such @dfn{conditional blocks} can be nested.
+define such groups.  These @dfn{conditional blocks} can furthermore be
+nested.
 
 @DefescList {\@\{, , , }
 @DefescListEnd {\@\}, , , }
@@ -12879,9 +12819,9 @@ perform such grouping; such @dfn{conditional blocks} can be nested.
 @cindex closing brace escape sequence (@code{\@})}
 @cindex brace escape sequence, opening (@code{\@})}
 @cindex brace escape sequence, closing (@code{\@})}
-@code{\@{} begins a conditional block; it @code{\@{} must appear (after
-optional spaces and tabs) immediately subsequent to the conditional
-expression of an @code{if}, @code{ie}, or @code{while}
+@code{\@{} begins a conditional block; it must appear (after optional
+spaces and tabs) immediately subsequent to the conditional expression of
+an @code{if}, @code{ie}, or @code{while}
 request,@footnote{@xref{while}.} or as the argument to an @code{el}
 request.
 
@@ -13608,7 +13548,7 @@ sequence for the minus sign glyph.
 
 @c =====================================================================
 
-@node Page Motions, Drawing Requests, Writing Macros, GNU troff Reference
+@node Page Motions, Drawing Geometric Objects, Writing Macros, GNU troff Reference
 @section Page Motions
 @cindex page motions
 @cindex motions, page
@@ -13637,7 +13577,7 @@ The @code{rt} request returns @emph{upward} to the location marked with
 the last @code{mk} request.  If used with an argument, it returns to a
 vertical position@tie{}@var{dist} from the top of the page (no previous
 call to @code{mk} is necessary in this case).  The default scaling
-indicator is @samp{v}.
+unit is @samp{v}.
 
 If a page break occurs between a @code{mk} request and its matching
 @code{rt} request, the @code{rt} request is silently ignored.
@@ -13922,33 +13862,34 @@ A read-only register containing the current horizontal output position
 (relative to the current indentation).
 @endDefreg
 
-@Defesc {\\o, @code{'}, abc, @code{'}}
+@Defesc {\\o, @code{'}, abc@dots{}, @code{'}}
 @cindex overstriking glyphs (@code{\o})
 @cindex glyphs, overstriking (@code{\o})
-Overstrike glyphs @var{a}, @var{b}, @var{c}, @dots{}; the glyphs are
-centered, and the resulting spacing is the largest width of the affected
-glyphs.
+Overstrike the glyphs of characters @var{a}, @var{b}, @var{c}, @dots{};
+the glyphs are centered, written, and the drawing position advanced by
+the widest of the glyphs.
 @endDefesc
 
 @Defesc {\\z, , c, }
 @cindex zero-width printing (@code{\z}, @code{\Z})
 @cindex printing, zero-width (@code{\z}, @code{\Z})
-Print glyph @var{c} with zero width, i.e., without spacing.  Use this to
-overstrike glyphs left-aligned.
+Format the character @var{c} with zero width; that is, without advancing
+the drawing position.  Use @code{\z} to overstrike glyphs aligned to
+their left edges, in contrast to @code{\o}'s centering.
 @endDefesc
 
 @Defesc {\\Z, @code{'}, anything, @code{'}}
 @cindex zero-width printing (@code{\z}, @code{\Z})
 @cindex printing, zero-width (@code{\z}, @code{\Z})
-Save the drawing position, format @var{anything}, then restore it.  The
-argument may not contain tabs or leaders.
+Save the drawing position, format @var{anything}, then restore it.  Tabs
+and leaders in the argument are ignored with an error diagnostic.
 
-An example of a strike-through macro follows.
+We might implement a strike-through macro thus.
 
 @Example
 .de ST
-.nr ww \w'\\$1'
-\Z@@\v'-.25m'\l'\\n[ww]u'@@\\$1
+.nr width \w'\\$1'
+\Z@@\v'-.25m'\l'\\n[width]u'@@\\$1
 ..
 .
 This is
@@ -13957,54 +13898,45 @@ an actual emergency!
 @endExample
 @endDefesc
 
-@codequotebacktick off
-@codequoteundirected off
-
 
 @c =====================================================================
 
-@node Drawing Requests, Traps, Page Motions, GNU troff Reference
-@section Drawing Requests
+@node Drawing Geometric Objects, Traps, Page Motions, GNU troff Reference
+@section Drawing Geometric Objects
 @cindex drawing requests
 @cindex requests for drawing
 
-@code{gtroff} provides a number of ways to draw lines and other figures
-on the page.  Used in combination with the page motion commands
-(@pxref{Page Motions}), a wide variety of figures can be drawn.
-However, for complex drawings these operations can be quite cumbersome,
-and it may be wise to use graphic preprocessors like @code{gpic} or
-@code{ggrn}.
+A few of the formatter's escape sequences draw lines and other geometric
+objects.  Combined with each other and with page motion commands
+(@pxref{Page Motions}), a wide variety of figures is possible.  For
+complex drawings, these operations can be cumbersome; the preprocessors
+@code{gpic} or @code{ggrn} are typically used instead.
 
-All drawing is done via escape sequences.
+The @code{\l} and @code{\L} escape sequences draw horizontal and
+vertical sequences of glyphs, respectively.  Even the simplest of
+output devices supports them.
 
 @DefescList {\\l, @code{'}, l, @code{'}}
 @DefescListEnd {\\l, @code{'}, lc, @code{'}}
 @cindex drawing horizontal lines (@code{\l})
 @cindex horizontal line, drawing (@code{\l})
 @cindex line, horizontal, drawing (@code{\l})
-Draw a line horizontally.  @var{l} is the length of the line to be
-drawn.  If it is positive, start the line at the current location and
-draw to the right; its end point is the new current location.  Negative
-values are handled differently: The line starts at the current location
-and draws to the left, but the current location doesn't move.
+Draw a horizontal line of length @var{l} from the drawing position.
+Rightward motion is positive.  Afterward, the drawing position is at the
+right end of the line.  The default scaling unit is @samp{m}.
 
-@var{l} can also be specified absolutely (i.e., with a leading
-@samp{|}), which draws back to the beginning of the input line.  Default
-scaling indicator is @samp{m}.
-
-@cindex underscore glyph (@code{\[ru]})
+@cindex baseline rule special character(@code{\[ru]})
 @cindex glyph, underscore (@code{\[ru]})
 @cindex line drawing glyph
 @cindex glyph, for line drawing
-The optional second parameter@tie{}@var{c} is a glyph to draw the line
-with.  If this second argument is not specified, @code{gtroff} uses the
-underscore glyph, @code{\[ru]}.
+The optional second parameter@tie{}@var{c} is a character with which to
+draw the line.  The default is the baseline rule special character,
+@code{\[ru]}.
 
-@cindex dummy character (@code{\&}), effect on @code{\l} escape
-@cindex character, dummy (@code{\&}), effect on @code{\l} escape
-To separate the two arguments (to prevent @code{gtroff} from
-interpreting a drawing glyph as a scaling indicator if the glyph is
-represented by a single character) use @code{\&}.
+@cindex dummy character (@code{\&}), effect on @code{\l} escape sequence
+@cindex character, dummy (@code{\&}), effect on @code{\l} escape sequence
+If @var{c} is a valid scaling unit, put @code{\&} after @var{l} to
+disambiguate the input.
 
 @Example
 .de textbox
@@ -14013,15 +13945,18 @@ represented by a single character) use @code{\&}.
 @endExample
 
 @noindent
-The above works by outputting a box rule (a vertical line), then the
-text given as an argument and then another box rule.  Finally, the
-line-drawing escape sequences both draw from the current location to the
-beginning of the @emph{input} line---this works because the line length
-is negative, not moving the current point.
+The foregoing outputs a box rule (a vertical line), the text
+argument(s), and another box rule.  We employ the boundary-relative
+motion operator @samp{|}.  Finally, the line-drawing escape sequences
+draw a radical extender (a form of overline) and an underline from the
+drawing position to the position coresponding to beginning of the
+@emph{input} line.  The drawing position returns to just after the
+right-hand box rule because the lengths of the drawn lines are negative,
+as noted above.
 @endDefesc
 
 @DefescList {\\L, @code{'}, l, @code{'}}
-@DefescListEnd {\\L, @code{'}, lg, @code{'}}
+@DefescListEnd {\\L, @code{'}, lc, @code{'}}
 @cindex drawing vertical lines (@code{\L})
 @cindex vertical line drawing (@code{\L})
 @cindex line, vertical, drawing (@code{\L})
@@ -14029,51 +13964,129 @@ is negative, not moving the current point.
 @cindex glyph for line drawing
 @cindex box rule glyph (@code{\[br]})
 @cindex glyph, box rule (@code{\[br]})
-Draw vertical lines.  Its parameters are similar to the @code{\l}
-escape, except that the default scaling indicator is @samp{v}.  The
-movement is downward for positive values, and upward for negative
-values.  The default glyph is the box rule glyph, @code{\[br]}.  As with
-the vertical motion escape sequences, text processing blindly continues
-where the line ends.
+Draw a vertical line of length @var{l} from the drawing position.
+Downward motion is positive.  The default scaling unit is @samp{v}.  The
+default character is the box rule, @code{\[br]}.  As with vertical
+motion escape sequences, text processing continues where the line ends.
+@code{\L} is otherwise similar to @code{\l}.
 
 @Example
+$ nroff <<EOF
 This is a \L'3v'test.
+EOF
+    @result{} This is a
+    @result{}           |
+    @result{}           |
+    @result{}           |test.
 @endExample
 
 @noindent
-Here is the result, produced with @code{grotty}.
-
-@Example
-This is a
-          |
-          |
-          |test.
-@endExample
+When writing text, the drawing position is at the text baseline; recall
+@ref{Page Geometry}.
 @endDefesc
 
-@Defesc {\\D, @code{'}, command arg @dots{}, @code{'}}
-The @code{\D} escape provides a variety of drawing functions.  On
-character devices, only vertical and horizontal lines are supported
-within @code{grotty}; other devices may only support a subset of the
-available drawing functions.
+@c BEGIN Keep (roughly) parallel with subsection "Drawing commands" of
+@c groff(7).
+The @code{\D} escape sequence provides @dfn{drawing commands} that
+direct the output device to render geometrical objects rather than
+glyphs.  Specific devices may support only a subset, or may feature
+additional ones; consult the man page for the output driver in use.
+Terminal devices in particular implement almost none.  @xref{Graphics
+Commands}.
 
-The default scaling indicator for all subcommands of @code{\D} is
-@samp{m} for horizontal distances and @samp{v} for vertical ones.
-Exceptions are @samp{\D'f @dots{}'} and @samp{\D't @dots{}'}, which use
-@code{u} as the default, and @samp{\D'F@var{x} @dots{}'}, which
-arguments are treated similar to the @code{defcolor} request.
+Rendering starts at the drawing position; when finished, the drawing
+position is left at the rightmost point of the object, even for closed
+figures, except where noted.  GNU @code{troff} draws stroked (outlined)
+objects with the stroke color, and shades filled ones with the fill
+color.  @xref{Colors}.  Coordinates @var{h} and @var{v} are horizontal
+and vertical motions relative to the drawing position or previous point
+in the command.  The default scaling unit for horizontal measurements is
+@samp{m}; for vertical ones, @samp{v}.
+
+Circles, ellipses, and polygons can be drawn filled or stroked.  These
+are independent properties; if you want a filled, stroked figure, you
+must draw the same figure twice using each drawing command.  A filled
+figure is always smaller than an outlined one because the former is
+drawn only within its defined area, whereas strokes have a line
+thickness (set with @samp{\D't'}).
+
+@Example
+\h'1i'\v'1i'\
+\# increase line thickness
+\Z'\D't 5p''\
+\# draw stroked (unfilled) polygon
+\Z'\D'p 3 3 -6 0''\
+\# draw filled (solid) polygon
+\Z'\D'P 3 3 -6 0''
+@endExample
+
+@need 500
+@Defesc {\\D, @code{'}, command argument @dots{}, @code{'}}
+Drawing command escape sequence parameters begin with an ordinary
+character, @var{command}, selecting the type of object to be drawn,
+followed by @var{argument}s whose meaning is determined by
+@var{command}.
 
 @table @code
+@item \D'~ @var{h1} @var{v1} @dots{} @var{hn} @var{vn}'
+@cindex drawing a spline (@samp{\D'~ @dots{}'})
+@cindex spline, drawing (@samp{\D'~ @dots{}'})
+Draw a B-spline to each point in sequence, leaving the drawing position
+at (@var{hn}, @var{vn}).
+
+@item \D'a @var{hc} @var{vc} @var{h} @var{v}'
+@cindex arc, drawing (@samp{\D'a @dots{}'})
+@cindex drawing an arc (@samp{\D'a @dots{}'})
+Draw a circular arc centered at (@var{hc}, @var{vc}) counterclockwise
+from the drawing position to a point (@var{h}, @var{v}) relative to the
+center.  @footnote{(@var{hc}, @var{vc}) is adjusted to the point nearest
+the perpendicular bisector of the arc's chord.}
+
+@item \D'c @var{d}'
+@cindex circle, stroked, drawing (@samp{\D'c @dots{}'})
+@cindex drawing a stroked circle (@samp{\D'c @dots{}'})
+@cindex stroked circle, drawing (@samp{\D'c @dots{}'})
+@cindex circle, outlined, drawing (@samp{\D'c @dots{}'})
+@cindex drawing an outlined circle (@samp{\D'c @dots{}'})
+@cindex outlined circle, drawing (@samp{\D'c @dots{}'})
+Draw a circle of diameter @var{d} with its leftmost point at the drawing
+position.
+
+@item \D'C @var{d}'
+@cindex circle, filled, drawing (@samp{\D'C @dots{}'})
+@cindex drawing a filled circle (@samp{\D'C @dots{}'})
+@cindex filled circle, drawing (@samp{\D'C @dots{}'})
+@cindex circle, solid, drawing (@samp{\D'C @dots{}'})
+@cindex drawing a solid circle (@samp{\D'C @dots{}'})
+@cindex solid circle, drawing (@samp{\D'C @dots{}'})
+As @samp{\D'C @r{@dots{}}'}, but the circle is filled.
+
+@item \D'e @var{h} @var{v}'
+@cindex ellipse, stroked, drawing (@samp{\D'e @dots{}'})
+@cindex drawing a stroked ellipse (@samp{\D'e @dots{}'})
+@cindex stroked ellipse, drawing (@samp{\D'e @dots{}'})
+@cindex ellipse, outlined, drawing (@samp{\D'e @dots{}'})
+@cindex drawing an outlined ellipse (@samp{\D'e @dots{}'})
+@cindex outlined ellipse, drawing (@samp{\D'e @dots{}'})
+Draw an ellipse of width @var{h} and height @var{v} with its leftmost
+point at the drawing position.
+
+@item \D'E @var{x} @var{y}'
+@cindex ellipse, filled, drawing (@samp{\D'E @dots{}'})
+@cindex drawing a filled ellipse (@samp{\D'E @dots{}'})
+@cindex filled ellipse, drawing (@samp{\D'E @dots{}'})
+@cindex ellipse, solid, drawing (@samp{\D'E @dots{}'})
+@cindex drawing a solid ellipse (@samp{\D'E @dots{}'})
+@cindex solid ellipse, drawing (@samp{\D'E @dots{}'})
+As @samp{\D'e @r{@dots{}}'}, but the ellipse is filled.
+
 @item \D'l @var{dx} @var{dy}'
 @cindex line, drawing (@samp{\D'l @dots{}'})
 @cindex drawing a line (@samp{\D'l @dots{}'})
-Draw a line from the current location to the relative point specified by
-(@var{dx},@var{dy}), where positive values mean right and down,
-respectively.  The end point of the line is the new current location.
+Draw line from the drawing position to (@var{h}, @var{v}).
 
-The following example is a macro for creating a box around a text
-string; for simplicity, the box margin is taken as a fixed value,
-0.2@dmn{m}.
+The following is a macro for drawing a box around a text argument; for
+simplicity, the box margin is a fixed at 0.2@dmn{m}.
 
 @Example
 .de TEXTBOX
@@ -14091,96 +14104,41 @@ string; for simplicity, the box margin is taken as a fixed value,
 @endExample
 
 @noindent
-First, the width of the string is stored in register @code{@@wd}.  Then,
-four lines are drawn to form a box, properly offset by the box margin.
-The registers @code{rst} and @code{rsb} are set by the @code{\w} escape,
-containing the largest height and depth of the whole string.
+The argument is measured with the @code{\w} escape sequence.  Its width
+is stored in register @code{@@wd}.  @code{\w} also sets the registers
+@code{rst} and @code{rsb}; these contain its maximum vertical extents of
+the argument.  Then, four lines are drawn to form a box, offset by the
+box margin.
 
-@item \D'c @var{d}'
-@cindex circle, drawing (@samp{\D'c @dots{}'})
-@cindex drawing a circle (@samp{\D'c @dots{}'})
-Draw a circle with a diameter of@tie{}@var{d} with the leftmost point at
-the current position.  After drawing, the current location is positioned
-at the rightmost point of the circle.
-
-@item \D'C @var{d}'
-@cindex circle, solid, drawing (@samp{\D'C @dots{}'})
-@cindex drawing a solid circle (@samp{\D'C @dots{}'})
-@cindex solid circle, drawing (@samp{\D'C @dots{}'})
-Draw a solid circle with the same parameters and behaviour as an
-outlined circle.  No outline is drawn.
-
-@item \D'e @var{x} @var{y}'
-@cindex drawing an ellipse (@samp{\D'e @dots{}'})
-@cindex ellipse, drawing (@samp{\D'e @dots{}'})
-Draw an ellipse with a horizontal diameter of @var{x} and a vertical
-diameter of @var{y} with the leftmost point at the current position.
-After drawing, the current location is positioned at the rightmost point
-of the ellipse.
-
-@item \D'E @var{x} @var{y}'
-@cindex ellipse, solid, drawing (@samp{\D'E @dots{}'})
-@cindex drawing a solid ellipse (@samp{\D'E @dots{}'})
-@cindex solid ellipse, drawing (@samp{\D'E @dots{}'})
-Draw a solid ellipse with the same parameters and behaviour as an
-outlined ellipse.  No outline is drawn.
-
-@item \D'a @var{dx1} @var{dy1} @var{dx2} @var{dy2}'
-@cindex arc, drawing (@samp{\D'a @dots{}'})
-@cindex drawing an arc (@samp{\D'a @dots{}'})
-Draw an arc clockwise from the current location through the two
-specified relative locations (@var{dx1},@var{dy1}) and
-(@var{dx2},@var{dy2}).  The coordinates of the first point are relative
-to the current position, and the coordinates of the second point are
-relative to the first point.  After drawing, the current position is
-moved to the final point of the arc.
-
-@item \D'~ @var{dx1} @var{dy1} @var{dx2} @var{dy2} @dots{}'
-@cindex drawing a spline (@samp{\D'~ @dots{}'})
-@cindex spline, drawing (@samp{\D'~ @dots{}'})
-Draw a spline from the current location to the relative point
-(@var{dx1},@var{dy1}) and then to (@var{dx2},@var{dy2}), and so on.  The
-current position is moved to the terminal point of the drawn curve.
-
-@item \D'f @var{n}'
-@cindex gray shading (@samp{\D'f @dots{}'})
-@cindex shading filled objects (@samp{\D'f @dots{}'})
-Set the shade of gray to be used for filling solid objects
-to@tie{}@var{n}; @var{n}@tie{}must be an integer between 0
-and@tie{}1000, where 0 corresponds solid white and 1000 to solid black,
-and values in between correspond to intermediate shades of gray.  This
-applies only to solid circles, solid ellipses, and solid polygons.  By
-default, a level of 1000 is used.
-
-Nonintuitively, the current point is moved horizontally to the
-right by@tie{}@var{n}.
-
-@cindex @samp{\D'f @dots{}'} and horizontal motion quantum
-Don't use this command!  It has the serious drawback that it is always
-rounded to the next integer multiple of the horizontal motion quantum
-(the value of the @code{hor} keyword in the @file{DESC} file).  Use
-@code{\M} (@pxref{Colors}) or @samp{\D'Fg @dots{}'} instead.
-
-@item \D'p @var{dx1} @var{dy1} @var{dx2} @var{dy2} @dots{}'
-@cindex drawing a polygon (@samp{\D'p @dots{}'})
-@cindex polygon, drawing (@samp{\D'p @dots{}'})
-Draw a polygon from the current location to the relative position
-(@var{dx1},@var{dy1}) and then to (@var{dx2},@var{dy2}) and so on.  When
-the specified data points are exhausted, a line is drawn back to the
-starting point.  The current position is changed by adding the sum of
-all arguments with odd index to the actual horizontal position and the
-even ones to the vertical position.
+@item \D'p @var{h1} @var{v1} @dots{} @var{hn} @var{vn}'
+@cindex polygon, stroked, drawing (@samp{\D'p @dots{}'})
+@cindex drawing a stroked polygon (@samp{\D'p @dots{}'})
+@cindex stroked polygon, drawing (@samp{\D'p @dots{}'})
+@cindex polygon, outlined, drawing (@samp{\D'p @dots{}'})
+@cindex drawing an outlined polygon (@samp{\D'p @dots{}'})
+@cindex outlined polygon, drawing (@samp{\D'p @dots{}'})
+Draw polygon with vertices at drawing position and each point in
+sequence.  GNU @code{troff} closes the polygon by drawing a line from
+(@var{hn}, @var{vn}) back to the initial drawing position.
+@c XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
+@c src/libs/libdriver/input.cpp.  It is neither the rightmost point
+@c of the figure nor the initial drawing position that GNU troff
+@c automatically returned to to close the figure.
+Afterward, the drawing position is left at (@var{hn}, @var{vn}).
 
 @item \D'P @var{dx1} @var{dy1} @var{dx2} @var{dy2} @dots{}'
+@cindex polygon, filled, drawing (@samp{\D'P @dots{}'})
+@cindex drawing a filled polygon (@samp{\D'P @dots{}'})
+@cindex filled polygon, drawing (@samp{\D'P @dots{}'})
 @cindex polygon, solid, drawing (@samp{\D'P @dots{}'})
 @cindex drawing a solid polygon (@samp{\D'P @dots{}'})
 @cindex solid polygon, drawing (@samp{\D'P @dots{}'})
-Draw a solid polygon with the same parameters and behaviour as an
-outlined polygon.  No outline is drawn.
+As @samp{\D'P @r{@dots{}}'}, but the polygon is filled.
 
-Here a better variant of the box macro to fill the box with some color.
-The box must be drawn before the text since colors in GNU @code{troff}
-are not transparent; the filled polygon would hide the text completely.
+The following macro is like the @samp{\D'l'} example, but shades the
+box.  We draw the box before writing the text because colors in GNU
+@code{troff} have no transparency; in othe opposite order, the filled
+polygon would occlude the text.
 
 @Example
 .de TEXTBOX
@@ -14199,66 +14157,28 @@ are not transparent; the filled polygon would hide the text completely.
 ..
 @endExample
 
-If you want a filled polygon that has exactly the same size as an
-unfilled one, you must draw both an unfilled and a filled polygon.  A
-filled polygon is always smaller than an unfilled one because the latter
-uses straight lines with a given line thickness to connect the polygon's
-corners, while the former simply fills the area defined by the
-coordinates.
-
-@Example
-\h'1i'\v'1i'\
-\# increase line thickness
-\Z'\D't 5p''\
-\# draw unfilled polygon
-\Z'\D'p 3 3 -6 0''\
-\# draw filled polygon
-\Z'\D'P 3 3 -6 0''
-@endExample
-
 @item \D't @var{n}'
 @cindex line thickness (@samp{\D't @dots{}'})
 @cindex thickness of lines (@samp{\D't @dots{}'})
-Set the current line thickness to @var{n}@tie{}basic units.  A value
-of zero selects the smallest available line thickness.  A negative value
-makes the line thickness proportional to the current type size (this is
-the default behaviour of @acronym{AT&T} @code{troff}).
-
-Nonintuitively, the current point is moved horizontally to the
-right by@tie{}@var{n}.
-
-@item \D'F@var{scheme} @var{color_components}'
-@cindex unnamed fill colors (@code{\D'F@dots{}'})
-@cindex fill colors, unnamed (@code{\D'F@dots{}'})
-@cindex colors, fill, unnamed (@code{\D'F@dots{}'})
-Change current fill color.  @var{scheme} is a single letter denoting the
-color scheme: @samp{r} (rgb), @samp{c} (cmy), @samp{k} (cmyk), @samp{g}
-(gray), or @samp{d} (default color).  The color components use exactly
-the same syntax as in the @code{defcolor} request (@pxref{Colors}); the
-command @code{\D'Fd'} doesn't take an argument.
-
-@emph{No} position changing!
-
-Examples:
-
-@Example
-\D'Fg .3'      \" same gray as \D'f 700'
-\D'Fr #0000ff' \" blue
-@endExample
+Set the stroke thickness of geometric objects to @var{n} basic units.  A
+zero @var{n} selects the minimal supported thickness.  A negative
+@var{n} selects a thickness proportional to the type size; this is the
+default.
 @end table
 @endDefesc
+@c END Keep (roughly) parallel with subsection "Drawing commands" of
+@c groff(7).
 
-@xref{Graphics Commands}.
-
-@codequotebacktick on
-@codequoteundirected on
+In a hazy penumbra between text rendering and drawing commands we locate
+the bracket-building escape sequence, @code{\b}.  It can assemble
+apparently large glyphs by vertically stacking ordinary ones.
 
 @Defesc {\\b, @code{'}, contents, @code{'}}
 @cindex pile, glyph (@code{\b})
 @cindex glyph pile (@code{\b})
 @cindex stacking glyphs (@code{\b})
 Pile and center a sequence of glyphs vertically on the output line.
-@dfn{Piling} vertically stacks glyphs corresponding to each character in
+@dfn{Piling} stacks glyphs corresponding to each character in
 @var{contents}, read from left to right, and placed from top to bottom.
 GNU @code{troff} separates the glyphs vertically by 1@dmn{m}, and the
 pile itself is centered 0.5@dmn{m} above the text baseline.  The
@@ -14271,22 +14191,25 @@ This rather inflexible positioning algorithm doesn't work with the
 @code{dvi} output device since its bracket pieces vary in height.
 Instead, use the @code{geqn} preprocessor.
 
-@xref{Manipulating Spacing}, to see how to adjust the vertical spacing
+@ref{Manipulating Spacing} describes how to adjust the vertical spacing
 of the output line with the @code{\x} escape sequence.
 
-The idiomatic use of @code{\b} is for building large brackets and
-braces, hence its name.  We might construct a large opening brace as
-follows.
+The application of @code{\b} that lends its name is construction of
+brackets, braces, and parentheses when typesetting mathematics.  We
+might construct a large opening (left) brace as follows.
 
 @Example
 \b'\[lt]\[bv]\[lk]\[bv]\[lb]'
 @endExample
+
+See @cite{groff_char@r{(7)}} for a list of special character
+identifiers.
 @endDefesc
 
 
 @c =====================================================================
 
-@node Deferring Output, Traps, Drawing Requests, GNU troff Reference
+@node Deferring Output, Traps, Drawing Geometric Objects, GNU troff Reference
 @section Deferring Output
 @cindex deferred output
 
@@ -14416,15 +14339,18 @@ A page can't be ejected if @code{vpt} is set to zero.
 @cindex page location traps
 @cindex traps, page location
 
+A @dfn{page location trap} is sprung when the vertical drawing position
+reaches or passes, in the downward direction, the place at which it is
+planted.
+
 @Defreq {wh, dist [@Var{name}]}
-Call macro @var{name} when the vertical position @var{dist} on the page
-is reached or passed in the downward direction.  The default scaling
-unit is @samp{v}.  Non-negative values for @var{dist} set the trap
-relative to the top of the page; negative values set the trap relative
-to the bottom of the page.  It is not possible to plant a trap less than
-one basic unit from the page bottom: a @var{dist} of @code{-0} is
-interpreted as @code{0}, the top of the page.@footnote{@xref{The
-Implicit Page Trap}.} An existing @emph{visible} trap (see below) at
+Plant macro @var{name} as page location trap at @var{dist}.  The default
+scaling unit is @samp{v}.  Non-negative values for @var{dist} set the
+trap relative to the top of the page; negative values set the trap
+relative to the bottom of the page.  It is not possible to plant a trap
+less than one basic unit from the page bottom: a @var{dist} of @code{-0}
+is interpreted as @code{0}, the top of the page.@footnote{@xref{The
+Implicit Page Trap}.}  An existing @emph{visible} trap (see below) at
 @var{dist} is removed; this is @code{wh}'s sole function if @var{name}
 is missing.
 
@@ -15706,20 +15632,21 @@ line emitted in the environment.
 @Defesc {\\O, [, num, ]}
 @cindex suppressing output (@code{\O})
 @cindex output, suppressing (@code{\O})
-Suppress GNU @code{troff} output of glyphs and geometric primitives.
-The sequences @code{\O2}, @code{\O3}, @code{\O4}, and @code{\O5} are
+Suppress GNU @code{troff} output of glyphs and geometric objects.  The
+sequences @code{\O2}, @code{\O3}, @code{\O4}, and @code{\O5} are
 intended for internal use by @code{grohtml}.
 
 @table @samp
 @item \O0
-Disable the emission of glyphs and geometric primitives to the output
-driver, provided that this sequence occurs at the outermost level
-(see @code{\O3} and @code{\04} below).  Horizontal motions corresponding
-to non-overstruck glyph widths still occur.
+Disable the emission of glyphs and geometric objects to the output
+driver, provided that this sequence occurs at the outermost suppression
+level (see @code{\O3} and @code{\04} below).  Horizontal motions
+corresponding to non-overstruck glyph widths still occur.
 
 @item \O1
-Enable the emission of glyphs and geometric primitives to the output
-driver, provided that this sequence occurs at the outermost level.
+Enable the emission of glyphs and geometric objects to the output
+driver, provided that this sequence occurs at the outermost suppression
+level.
 @end table
 
 @vindex opminx
@@ -15729,40 +15656,41 @@ driver, provided that this sequence occurs at the outermost level.
 @code{\O0} and @code{\O1} also reset the four registers @code{opminx},
 @code{opminy}, @code{opmaxx}, and @code{opmaxy} to @minus{}1.  These
 four registers mark the top left and bottom right hand corners of a box
-encompassing all written glyphs.
+encompassing all written or drawn output.
 
 @table @samp
 @item \O2
-Provided that this sequence occurs at the outermost level, enable
-emission of glyphs and geometric primitives, and write to the standard
-error stream the page number and values of the four aforementioned
-registers encompassing glyphs written since the last interpolation of a
-@code{\O} sequence, as well as the page offset, line length, image file
-name (if any), horizontal and vertical device motion quanta, and input
-file name.  Numeric values are in basic units.
+At the outermost suppression level, enable emission of glyphs and
+geometric objects, and write to the standard error stream the page
+number and values of the four aforementioned registers encompassing
+glyphs written since the last interpolation of a @code{\O} sequence, as
+well as the page offset, line length, image file name (if any),
+horizontal and vertical device motion quanta, and input file name.
+Numeric values are in basic units.
 
 @item \O3
-Begin a nesting level.  This is an internal mechanism for @code{grohtml}
-while producing images.  At startup, @code{gtroff} is at the outermost
-level.  These sequences are generated when processing the source
-document with @command{pre-grohtml}, which uses @command{gtroff} with
+Begin a nested suppression level.  @command{grohtml} uses this mechanism
+to create images of output preprocessed with @command{gpic},
+@command{geqn}, and @command{gtbl}.  At startup, GNU @code{troff} is at
+the outermost suppression level.  @command{pre-grohtml} generates these
+sequences when processing the document, using GNU @command{troff} with
 the @code{ps} output device, Ghostscript, and the PNM tools to produce
 images in PNG format.  They start a new page if the device is not
-@code{html} or @code{xhtml}, to reduce the possibility of images
-crossing a page boundary.
+@code{html} or @code{xhtml}, to reduce the number of images crossing a
+page boundary.
 
 @item \O4
-End a nesting level.
+End a nested suppression level.
 @end table
 
 @table @samp
 @item \O[5@var{P}@var{file}]
-Provided that this sequence occurs at the outermost level, write the
-name @code{file} to the standard error stream at position @var{P}, which
-must be one of @code{l}, @code{r}, @code{c}, or@tie{}@code{i},
-corresponding to left, right, centered, and inline alignments within the
-document, respectively.  @var{file} is a name associated with the
-production of the next image.
+At the outermost suppression level, write the name @code{file} to the
+standard error stream at position @var{P}, which must be one of
+@code{l}, @code{r}, @code{c}, or@tie{}@code{i}, corresponding to left,
+right, centered, and inline alignments within the document,
+respectively.  @var{file} is a name associated with the production of
+the next image.
 @end table
 @endDefesc
 
@@ -16193,10 +16121,14 @@ its escape character stripped.  So that the basic Latin subset of the
 Unicode character set@footnote{that is, ISO@tie{}646:1991-IRV or,
 popularly, ``US-ASCII''} can be reliably encoded in device control
 commands, seven special character escape sequences (@samp{\-},
-@samp{\aq}, @samp{\dq}, @samp{\ga}, @samp{\ha}, @samp{\rs}, and
-@samp{\ti},) are mapped to basic Latin glyphs; see the
-@cite{groff_char@r{(7)}} man page.  The use of any other escape sequence
-in @code{\X} arguments is normally an error.
+@samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]}, @samp{\[ha]}, @samp{\[rs]},
+and @samp{\[ti]},) are mapped to basic Latin characters; see the
+@cite{groff_char@r{(7)}} man page.  For this transformation, character
+translations and special character definitions are
+ignored.@footnote{They are bypassed because these parameters are not
+rendered as glyphs in the output; instead, they remain abstract
+characters---in a PDF bookmark or a URL, for example.} The use of any
+other escape sequence in @code{\X} parameters is normally an error.
 
 @kindex use_charnames_in_special
 @cindex @file{DESC} file, and @code{use_charnames_in_special} keyword
@@ -16338,23 +16270,15 @@ both the @code{.nm} and @code{.nn} registers.
   Test line numbering.
   .is-numbered
   .nm 1
-  .nn 2
-  .is-numbered
+  .nn 1
   .is-numbered
   .is-numbered
   .nm
   .is-numbered
-@endExample
-
-@noindent
-The output lines correctly report their numbering status.
-
-@Example
-  Test line numbering.  This line ISN'T numbered.
-  This line ISN'T numbered.
-  This line ISN'T numbered.
-    1 This line IS numbered.
-  This line ISN'T numbered.
+    @result{} Test line numbering.  This line ISN@quoteright{}T numbered.
+    @result{} This line ISN@quoteright{}T numbered.
+    @result{}   1 This line IS numbered.
+    @result{} This line ISN@quoteright{}T numbered.
 @endExample
 
 @Defreq {mc, [@Var{margin-character} [@Var{distance}]}
@@ -16420,11 +16344,8 @@ documents.  The @code{groff} distribution ships a program,
 @command{gdiffmk}, to assist with this task.@footnote{Historically,
 tools named @command{nrchbar} and @command{changebar} were developed for
 marking changes with margin characters and could be found in archives of
-the @code{comp.sources.unix} USENET group.  Some proprietary Unices also
-offer(ed) a @command{diffmk} program.}
-
-@codequotebacktick off
-@codequoteundirected off
+the @code{comp.sources.unix} @acronym{USENET} group.  Some proprietary
+Unices also offer(ed) a @command{diffmk} program.}
 
 @DefreqList {psbb, file}
 @DefregItemx {llx}
@@ -16435,15 +16356,18 @@ offer(ed) a @command{diffmk} program.}
 @cindex bounding box
 Retrieve the bounding box of the PostScript image found in @var{file},
 which must conform to Adobe's @dfn{Document Structuring Conventions}
-(DSC).  The request searches for a @code{%%BoundingBox} comment and
-extracts the bounding box values into the registers @code{llx},
+(DSC), locate a @code{%%BoundingBox} comment, and store the (upper-,
+lower-, @w{-left}, @w{-right}) values into the registers @code{llx},
 @code{lly}, @code{urx}, and @code{ury}.  If an error occurs (for
-example, @code{psbb} cannot find the @code{%%BoundingBox} comment), it
-sets the four registers to zero.
+example, if no @code{%%BoundingBox} comment is present), the formatter
+sets these registers to@tie{}0.
 
 The search path for @var{file} can be controlled with the @option{-I}
 command-line option.
 @endDefreq
+
+@codequotebacktick off
+@codequoteundirected off
 
 
 @c =====================================================================
@@ -16586,6 +16510,9 @@ restore tokens are removed.
 
 
 @c =====================================================================
+
+@codequotebacktick on
+@codequoteundirected on
 
 @need 1000
 @c BEGIN Keep parallel with section "Debugging" of groff(7).
@@ -16749,7 +16676,6 @@ Write the state of the input stack to the standard error stream.
 
 Consider the following in a file @file{test}.
 
-@codequoteundirected on
 @Example
 .de xxx
 .  backtrace
@@ -16763,7 +16689,6 @@ Consider the following in a file @file{test}.
     @error{} troff: backtrace: 'test':5: macro 'yyy'
     @error{} troff: backtrace: file 'test':8
 @endExample
-@codequoteundirected off
 
 The @option{-b} option of GNU @code{troff} causes a backtrace to be
 generated on each error or warning.  Some warnings have to be enabled;
@@ -16789,9 +16714,8 @@ Emit a @code{break} warning if the additional space inserted for each
 space between words in an output line adjusted to both margins with
 @w{@samp{.ad b}} is larger than or equal to @var{limit}.  A negative
 value is treated as zero; an absent argument toggles the warning on and
-off without changing @var{limit}.  The default scaling indicator is
-@samp{m}.  At startup, @code{spreadwarn} is inactive and @var{limit} is
-3@dmn{m}.
+off without changing @var{limit}.  The default scaling unit is @samp{m}.
+At startup, @code{spreadwarn} is inactive and @var{limit} is 3@dmn{m}.
 
 For example,
 
@@ -17009,9 +16933,6 @@ targeting @code{groff} are encouraged to use this setting.
 @c END Keep parallel with section "Warnings" of troff(1).
 
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @node Implementation Differences, Safer Mode, Debugging, GNU troff Reference
 @section Implementation Differences
@@ -17309,10 +17230,10 @@ may exist, using any valid identifiers for their names
 @cindex sizes, fractional
 @cindex @code{ps} request, incompatibilities with @acronym{AT&T} @code{troff}
 Fractional type sizes cause one noteworthy incompatibility.  In
-@acronym{AT&T} @code{troff} the @code{ps} request ignores scale
-indicators and thus @samp{.ps 10u} sets the type size to
-10@tie{}points, whereas in GNU @code{troff} it sets the type size to
-10@tie{}@emph{scaled} points.  @xref{Using Fractional Type Sizes}.
+@acronym{AT&T} @code{troff} the @code{ps} request ignores scaling units
+and thus @samp{.ps 10u} sets the type size to 10@tie{}points, whereas in
+GNU @code{troff} it sets the type size to 10@tie{}@emph{scaled} points.
+@xref{Using Fractional Type Sizes}.
 
 @cindex @code{ab} request, incompatibilities with @acronym{AT&T} @code{troff}
 The @code{ab} request differs from @acronym{AT&T} @code{troff}:
@@ -17322,8 +17243,8 @@ successful one.
 
 @cindex @code{bp} request, incompatibilities with @acronym{AT&T} @code{troff}
 The @code{bp} request differs from @acronym{AT&T} @code{troff}:
-GNU @code{troff} does not accept a scaling indicator on the argument, a
-page number; the former (somewhat uselessly) does.
+GNU @code{troff} does not accept a scaling unit on the argument, a page
+number; the former (somewhat uselessly) does.
 
 @cindex @code{pm} request, incompatibilities with @acronym{AT&T} @code{troff}
 The @code{pm} request differs from @acronym{AT&T} @code{troff}:
@@ -17435,6 +17356,9 @@ following two sections describe their format.
 
 @c =====================================================================
 
+@codequotebacktick on
+@codequoteundirected on
+
 @c BEGIN TODO: Make parallel with groff_out(5).
 @node gtroff Output, Device and Font Description Files, File Formats, File Formats
 @section @code{gtroff} Output
@@ -17500,7 +17424,7 @@ refers to this intermediate output language, and never to the
 @code{groff} language intended for direct use by document authors.
 Intermediate output commands comprise several categories: glyph output;
 font, color, and text size selection; motion of the printing position;
-page advancement; drawing of geometric primitives; and device control
+page advancement; drawing of geometric objects; and device control
 commands, a catch-all for operations not easily classified as any of the
 foregoing, such as directives to start and stop output, identify the
 intended output device, or place URL hyperlinks in supported output
@@ -17559,11 +17483,11 @@ can occur everywhere.  They are just ignored.
 @subsubsection Argument Units
 
 Some commands take integer arguments that are assumed to represent
-values in a measurement unit, but the letter for the corresponding scale
-indicator is not written with the output command arguments.  Most
-commands assume the scaling indicator @samp{u}, the basic unit of the
-device, some use @samp{z}, the scaled point unit of the device, while
-others, such as the color commands, expect plain integers.
+values in a measurement unit, but the letter for the corresponding
+scaling unit is not written with the output command arguments.  Most
+commands assume the scaling unit @samp{u}, the basic unit of the device,
+some use @samp{z}, the scaled point unit of the device, while others,
+such as the color commands, expect plain integers.
 
 Single characters can have the eighth bit set, as can the names of
 fonts and special characters.  The names of characters and fonts can be
@@ -17650,7 +17574,7 @@ of whitespace.  Optionally, syntactical space can be inserted before,
 after, and between the command letter and its arguments.  All of these
 commands are stackable; i.e., they can be preceded by other simple
 commands or followed by arbitrary other commands on the same line.  A
-separating syntactical space is only necessary when two integer
+separating syntactical space is necessary only when two integer
 arguments would clash or if the preceding argument ends with a string
 argument.
 
@@ -17818,7 +17742,7 @@ for vertical distances where positive means down, negative up.  All
 these distances are offsets relative to the current location.
 
 Each graphics command directly corresponds to a similar @code{gtroff}
-@code{\D} escape sequence.  @xref{Drawing Requests}.
+@code{\D} escape sequence.  @xref{Drawing Geometric Objects}.
 
 Unknown @samp{D} commands are assumed to be device-specific.  Its
 arguments are parsed as strings; the whole information is then sent to
@@ -18119,9 +18043,6 @@ commands @samp{t} and @samp{u} provide a better functionality.
 
 @c ---------------------------------------------------------------------
 
-@codequotebacktick on
-@codequoteundirected on
-
 @node Intermediate Output Examples, Output Language Compatibility, Command Reference, gtroff Output
 @subsection Intermediate Output Examples
 
@@ -18248,9 +18169,6 @@ Due to the obsolete jump-and-write command, the text clusters in the
 @acronym{AT&T} @code{troff} output are almost unreadable.
 @end table
 
-@codequotebacktick off
-@codequoteundirected off
-
 @c ---------------------------------------------------------------------
 
 @node Output Language Compatibility,  , Intermediate Output Examples, gtroff Output
@@ -18323,9 +18241,6 @@ follow quite naturally.
 
 
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @c BEGIN Keep parallel with groff_font(5).
 @node Device and Font Description Files,  , gtroff Output, File Formats
@@ -18492,8 +18407,8 @@ The default is@tie{}@code{1}.  @xref{Using Fractional Type Sizes}.
 
 @item styles @var{S1} @r{@dots{}} @var{Sm}
 @kindex styles
-The first@tie{}@var{m} font mounting positions are associated with
-styles @var{S1}, @dots{}, @var{Sm}.
+The first@tie{}@var{m} mounting positions are associated with styles
+@var{S1}, @dots{}, @var{Sm}.
 
 @item tcommand
 @kindex tcommand
