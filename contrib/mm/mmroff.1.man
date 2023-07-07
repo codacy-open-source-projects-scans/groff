@@ -88,7 +88,8 @@ first with
 .B \-z
 and
 .B \-rRef=1
-to collect cross references and update the cross-reference file,
+to populate cross-reference and index files with their corresponding
+entries,
 and then again to produce the document.
 .
 It also handles the inclusion of PostScript images with the
@@ -98,6 +99,9 @@ macro.
 Documents that do not use these features of
 .I "groff mm"
 (the
+.BR INITI ,
+.BR IND ,
+.BR INDP ,
 .BR INITR ,
 .BR SETR ,
 .BR GETHN ,
