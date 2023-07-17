@@ -2020,7 +2020,7 @@ request to create a register of our own,
 We initialized it to zero and assigned it an auto-increment of 1.
 .
 Each time we use the escape sequence
-.CW \[rs]n+[PI]
+.CW \[rs]n+[step]
 (note the plus sign),
 the formatter applies the increment just before interpolating the
 register's value.
@@ -3028,11 +3028,13 @@ provides several strings that you can customize for your own purposes,
 or redefine to adapt the macro package to languages other than English.
 .
 It is already localized for
-.\" cs, de, fr, it, sv
+.\" cs, de, fr, it, ru, es, sv
 Czech,
 German,
 French,
 Italian,
+Russian,
+Spanish,
 and
 Swedish.
 .

@@ -1696,18 +1696,20 @@ A timestamp
 to use as the output creation timestamp in place of the current time.
 .
 The time is converted to human-readable form using
-.MR ctime 3
+.MR gmtime 3
+and
+.MR asctime 3 ,
 and recorded in a PostScript comment.
 .
 .
 .TP
 .I TZ
-The time zone to use when converting the current time
-(or value of
-.IR SOURCE_DATE_EPOCH )
-to human-readable form;
+The time zone to use when converting the current time to human-readable form;
 see
 .MR tzset 3 .
+If
+.I SOURCE_DATE_EPOCH
+is used, it is always converted to human-readable form using UTC.
 .
 .
 .\" ====================================================================

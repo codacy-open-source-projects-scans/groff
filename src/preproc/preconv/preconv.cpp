@@ -380,7 +380,7 @@ emacs_to_mime[] = {
 char *
 emacs2mime(char *emacs_enc)
 {
-  int emacs_enc_len = strlen(emacs_enc);
+  size_t emacs_enc_len = strlen(emacs_enc);
   if (emacs_enc_len > 4
       && !strcasecmp(emacs_enc + emacs_enc_len - 4, "-dos"))
     emacs_enc[emacs_enc_len - 4] = 0;

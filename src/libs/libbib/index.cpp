@@ -61,7 +61,7 @@ class index_search_item : public search_item {
   char *pool;
   char *key_buffer;
   char *filename_buffer;
-  int filename_buflen;
+  size_t filename_buflen;
   char **common_words_table;
   int common_words_table_size;
   const char *ignore_fields;
@@ -486,7 +486,7 @@ const char *index_search_item::munge_filename(const char *filename)
   const char *cwd = pool;
   int need_slash = (cwd[0] != 0
 		    && strchr(DIR_SEPS, strchr(cwd, '\0')[-1]) == 0);
-  int len = strlen(cwd) + strlen(filename) + need_slash + 1;
+  size_t len = strlen(cwd) + strlen(filename) + need_slash + 1;
   if (len > filename_buflen) {
     delete[] filename_buffer;
     filename_buflen = len;

@@ -28,6 +28,8 @@
 # include <config.h>
 #endif
 
+#include <attribute.h> // gnulib: MAYBE_UNUSED
+
 #include <stdio.h>
 
 /* This needs to come after some library #include
@@ -248,8 +250,7 @@ exchange (char **argv, struct _getopt_data *d)
 /* Initialize the internal data when the first call is made.  */
 
 static const char *
-_getopt_initialize (__attribute__((__unused__)) int argc,
-		    __attribute__((__unused__)) char **argv,
+_getopt_initialize (MAYBE_UNUSED int argc, MAYBE_UNUSED char **argv,
 		    const char *optstring, int posixly_correct,
 		    struct _getopt_data *d)
 {

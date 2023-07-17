@@ -361,7 +361,7 @@ int main(int argc, char **argv)
       }
       break;
     case 'f':
-      set_gfont(optarg);
+      set_gifont(optarg);
       break;
     case 'T':
       device = optarg;
@@ -429,17 +429,16 @@ int main(int argc, char **argv)
 	 ".do if !dEN .ds EN\n");
   if (output_format == troff) {
     printf(".if !'\\*(.T'%s' "
-	   ".if !'\\*(.T'html' "	// the html device uses '-Tps' to render
-				  // equations as images
-	   ".tm warning: %s should have been given a '-T\\*(.T' option\n",
-	   device, program_name);
+	   // the html device uses '-Tps' to render equations as images
+	   ".if !'\\*(.T'html' "
+	   ".tm \\n[.F]: warning: %s should have been given a"
+	   " '-T\\*(.T' option\n", device, program_name);
     printf(".if '\\*(.T'html' "
 	   ".if !'%s'ps' "
-	   ".tm warning: %s should have been given a '-Tps' option\n",
-	   device, program_name);
+	   ".tmc \\n[.F]: warning: %s should have been given a '-Tps'"
+	   " option\n", device, program_name);
     printf(".if '\\*(.T'html' "
-	   ".if !'%s'ps' "
-	   ".tm warning: (it is advisable to invoke groff via: groff -Thtml -e)\n",
+	   ".if !'%s'ps' .tm1 (consider invoking 'groff -Thtml -e')\n",
 	   device);
   }
   if (load_startup_file) {

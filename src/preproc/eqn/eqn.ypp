@@ -100,6 +100,7 @@ void yyerror(const char *);
 %token SET
 %token GRFONT
 %token GBFONT
+%token GIFONT
 
 /* The original eqn manual says that 'left' is right associative. It's lying.
 Consider 'left ( ~ left ( ~ right ) right )'. */
@@ -202,7 +203,7 @@ simple:
 	| '^'
 		{ $$ = new half_space_box; }
 	| '~'
-		{ $$ = new space_box; }
+		{ $$ = new full_space_box; }
 	| '\t'
 		{ $$ = new tab_box; }
 	| '{' equation '}'
@@ -236,7 +237,7 @@ simple:
 	| BOLD simple
 		{ $$ = new font_box(strsave(get_gbfont()), $2); }
 	| ITALIC simple
-		{ $$ = new font_box(strsave(get_gfont()), $2); }
+		{ $$ = new font_box(strsave(get_gifont()), $2); }
 	| FAT simple
 		{ $$ = new fat_box($2); }
 	| FONT text simple

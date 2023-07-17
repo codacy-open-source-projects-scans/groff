@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -31,7 +30,7 @@ public:
   void debug_print();
   int compute_metrics(int);
   void output();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
 };
 
 box *make_over_box(box *pp, box *qq)
@@ -197,8 +196,14 @@ void over_box::debug_print()
   fprintf(stderr, " }");
 }
 
-void over_box::check_tabs(int level)
+void over_box::diagnose_tab_stop_usage(int level)
 {
-  num->check_tabs(level + 1);
-  den->check_tabs(level + 1);
+  num->diagnose_tab_stop_usage(level + 1);
+  den->diagnose_tab_stop_usage(level + 1);
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

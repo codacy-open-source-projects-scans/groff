@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -235,7 +234,13 @@ void list_box::debug_print()
   list.list_debug_print(" ");
 }
 
-void list_box::check_tabs(int level)
+void list_box::diagnose_tab_stop_usage(int level)
 {
-  list.list_check_tabs(level);
+  list.list_diagnose_tab_stop_usage(level);
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

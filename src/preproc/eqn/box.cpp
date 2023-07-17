@@ -23,12 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 const char *current_roman_font;
 
-char *gfont = 0;
-char *grfont = 0;
-char *gbfont = 0;
+char *gifont = 0 /* nullptr */;
+char *grfont = 0 /* nullptr */;
+char *gbfont = 0 /* nullptr */;
 int gsize = 0;
 
-int script_size_reduction = -1;	// negative means reduce by a percentage 
+int script_size_reduction = -1;	// negative means reduce by a percentage
 
 int positive_space = -1;
 int negative_space = -1;
@@ -47,8 +47,10 @@ int delimiter_shortfall = 50;
 int null_delimiter_space = 12;
 int script_space = 5;
 int thin_space = 17;
+int half_space = 17;
 int medium_space = 22;
 int thick_space = 28;
+int full_space = 28;
 
 int num1 = 70;
 int num2 = 40;
@@ -94,6 +96,8 @@ struct S {
   { "thin_space", &thin_space },
   { "medium_space", &medium_space },
   { "thick_space", &thick_space },
+  { "half_space", &half_space },
+  { "full_space", &full_space },
   { "num1", &num1 },
   { "num2", &num2 },
   { "denom1", &denom1 },
@@ -187,9 +191,9 @@ void set_script_reduction(int n)
   script_size_reduction = n;
 }
 
-const char *get_gfont()
+const char *get_gifont()
 {
-  return gfont ? gfont : "I";
+  return gifont ? gifont : "I";
 }
 
 const char *get_grfont()
@@ -202,10 +206,10 @@ const char *get_gbfont()
   return gbfont ? gbfont : "B";
 }
 
-void set_gfont(const char *s)
+void set_gifont(const char *s)
 {
-  delete[] gfont;
-  gfont = strsave(s);
+  delete[] gifont;
+  gifont = strsave(s);
 }
 
 void set_grfont(const char *s)
@@ -294,7 +298,7 @@ void box::top_level()
     printf(".nr " SAVED_FONT_REG " \\n[.f]\n");
     printf(".ft\n");
     printf(".nr " SAVED_PREV_FONT_REG " \\n[.f]\n");
-    printf(".ft %s\n", get_gfont());
+    printf(".ft %s\n", get_gifont());
     printf(".nr " SAVED_SIZE_REG " \\n[.ps]\n");
     if (gsize > 0) {
       char buf[INT_DIGITS + 1];
@@ -303,7 +307,7 @@ void box::top_level()
     }
     current_roman_font = get_grfont();
     // This catches tabs used within \Z (which aren't allowed).
-    b->check_tabs(0);
+    b->diagnose_tab_stop_usage(0);
     int r = b->compute_metrics(DISPLAY_STYLE);
     printf(".ft \\n[" SAVED_PREV_FONT_REG "]\n");
     printf(".ft \\n[" SAVED_FONT_REG "]\n");
@@ -334,7 +338,7 @@ void box::top_level()
 	   "\\s'\\En[" SAVED_INLINE_SIZE_REG "]u'"
 	   "\n");
     printf(".as1 " LINE_STRING " \\&\\E*[" SAVE_FONT_STRING "]");
-    printf("\\f[%s]", get_gfont());
+    printf("\\f[%s]", get_gifont());
     printf("\\s'\\En[" SAVED_SIZE_REG "]u'");
     current_roman_font = get_grfont();
     b->output();
@@ -413,7 +417,7 @@ void box::output()
 {
 }
 
-void box::check_tabs(int)
+void box::diagnose_tab_stop_usage(int)
 {
 }
 
@@ -435,7 +439,7 @@ int box::right_is_italic()
 void box::hint(unsigned)
 {
 }
-  
+
 void box::handle_char_type(int, int)
 {
 }
@@ -470,10 +474,10 @@ box_list::~box_list()
   delete[] p;
 }
 
-void box_list::list_check_tabs(int level)
+void box_list::list_diagnose_tab_stop_usage(int level)
 {
   for (int i = 0; i < len; i++)
-    p[i]->check_tabs(level);
+    p[i]->diagnose_tab_stop_usage(level);
 }
 
 
@@ -499,7 +503,8 @@ int pointer_box::compute_metrics(int style)
 void pointer_box::compute_subscript_kern()
 {
   p->compute_subscript_kern();
-  printf(".nr " SUB_KERN_FORMAT " \\n[" SUB_KERN_FORMAT "]\n", uid, p->uid);
+  printf(".nr " SUB_KERN_FORMAT " \\n[" SUB_KERN_FORMAT "]\n", uid,
+	 p->uid);
 }
 
 void pointer_box::compute_skew()
@@ -509,9 +514,9 @@ void pointer_box::compute_skew()
 	 uid, p->uid);
 }
 
-void pointer_box::check_tabs(int level)
+void pointer_box::diagnose_tab_stop_usage(int level)
 {
-  p->check_tabs(level);
+  p->diagnose_tab_stop_usage(level);
 }
 
 int simple_box::compute_metrics(int)
@@ -568,7 +573,7 @@ void quoted_text_box::output()
   }
 }
 
-tab_box::tab_box() : disabled(0)
+tab_box::tab_box() : disabled(false)
 {
 }
 
@@ -580,26 +585,12 @@ void tab_box::output()
     printf("\\t");
 }
 
-void tab_box::check_tabs(int level)
+void tab_box::diagnose_tab_stop_usage(int level)
 {
   if (level > 0) {
-    error("tabs allowed only at outermost level");
-    disabled = 1;
+    error("tabs allowed only at outermost lexical level");
+    disabled = true;
   }
-}
-
-space_box::space_box()
-{
-  spacing_type = SUPPRESS_TYPE;
-}
-
-void space_box::output()
-{
-  if (output_format == troff)
-    printf("\\h'%dM'", thick_space);
-  else if (output_format == mathml)
-    // &ThickSpace; doesn't display right under Firefox 1.5.
-    printf("<mtext>&ensp;</mtext>");
 }
 
 half_space_box::half_space_box()
@@ -610,9 +601,56 @@ half_space_box::half_space_box()
 void half_space_box::output()
 {
   if (output_format == troff)
+    printf("\\h'%dM'", half_space);
+  else if (output_format == mathml)
+    printf("<mtext>&ThinSpace;</mtext>");
+  else
+    assert("unimplemented output format");
+}
+
+full_space_box::full_space_box()
+{
+  spacing_type = SUPPRESS_TYPE;
+}
+
+void full_space_box::output()
+{
+  if (output_format == troff)
+    printf("\\h'%dM'", full_space);
+  else if (output_format == mathml)
+    printf("<mtext>&ThickSpace;</mtext>");
+  else
+    assert("unimplemented output format");
+}
+
+thick_space_box::thick_space_box()
+{
+  spacing_type = SUPPRESS_TYPE;
+}
+
+void thick_space_box::output()
+{
+  if (output_format == troff)
+    printf("\\h'%dM'", thick_space);
+  else if (output_format == mathml)
+    printf("<mtext>&ThickSpace;</mtext>");
+  else
+    assert("unimplemented output format");
+}
+
+thin_space_box::thin_space_box()
+{
+  spacing_type = SUPPRESS_TYPE;
+}
+
+void thin_space_box::output()
+{
+  if (output_format == troff)
     printf("\\h'%dM'", thin_space);
   else if (output_format == mathml)
     printf("<mtext>&ThinSpace;</mtext>");
+  else
+    assert("unimplemented output format");
 }
 
 void box_list::list_debug_print(const char *sep)
@@ -634,9 +672,19 @@ void half_space_box::debug_print()
   fprintf(stderr, "^");
 }
 
-void space_box::debug_print()
+void full_space_box::debug_print()
 {
   fprintf(stderr, "~");
+}
+
+void thick_space_box::debug_print()
+{
+  fprintf(stderr, "~");
+}
+
+void thin_space_box::debug_print()
+{
+  fprintf(stderr, "^");
 }
 
 void tab_box::debug_print()

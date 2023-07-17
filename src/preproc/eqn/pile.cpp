@@ -127,9 +127,9 @@ pile_box::pile_box(box *pp) : col(pp)
 {
 }
 
-void pile_box::check_tabs(int level)
+void pile_box::diagnose_tab_stop_usage(int level)
 {
-  col.list_check_tabs(level);
+  col.list_diagnose_tab_stop_usage(level);
 }
 
 void pile_box::debug_print()
@@ -295,10 +295,10 @@ void matrix_box::append(column *pp)
   p[len++] = pp;
 }
 
-void matrix_box::check_tabs(int level)
+void matrix_box::diagnose_tab_stop_usage(int level)
 {
   for (int i = 0; i < len; i++)
-    p[i]->list_check_tabs(level);
+    p[i]->list_diagnose_tab_stop_usage(level);
 }
 
 void matrix_box::debug_print()

@@ -131,7 +131,7 @@ extern int get_integer(int *result);
 extern int get_number(units *result, unsigned char si, units prev_value);
 extern int get_integer(int *result, int prev_value);
 
-void interpolate_number_reg(symbol, int);
+extern void interpolate_register(symbol, int);
 
 const char *asciify(int c);
 

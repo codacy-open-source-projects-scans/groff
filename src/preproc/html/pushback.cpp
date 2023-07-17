@@ -190,8 +190,8 @@ void pushBackBuffer::skipUntilToken (void)
 
 int pushBackBuffer::isString (const char *s)
 {
-  int length=strlen(s);
-  int i=0;
+  ptrdiff_t length=ptrdiff_t(strlen(s));
+  ptrdiff_t i=0;
 
   while ((i<length) && (putPB(getPB())==s[i])) {
     if (getPB() != s[i]) {

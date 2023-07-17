@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -225,6 +225,8 @@ class environment {
   color *prev_glyph_color;
   color *fill_color;
   color *prev_fill_color;
+  unsigned char control_character;
+  unsigned char no_break_control_character;
 
   tab_type distance_to_next_tab(hunits *);
   tab_type distance_to_next_tab(hunits *distance, hunits *leftpos);
@@ -251,13 +253,15 @@ public:
   int seen_break;
   tab_stops tabs;
   const symbol name;
-  unsigned char control_char;
-  unsigned char no_break_control_char;
   charinfo *hyphen_indicator_char;
-  
+
   environment(symbol);
   environment(const environment *);	// for temporary environment
   ~environment();
+  unsigned char get_control_character();
+  bool set_control_character(unsigned char);
+  unsigned char get_no_break_control_character();
+  bool set_no_break_control_character(unsigned char);
   statem *construct_state(int only_eol);
   void print_env();
   void copy(const environment *);
@@ -404,7 +408,7 @@ extern void pop_env();
 extern void push_env(int);
 
 void init_environments();
-void read_hyphen_file(const char *name);
+bool is_family_valid(const char *);
 
 extern double spread_limit;
 

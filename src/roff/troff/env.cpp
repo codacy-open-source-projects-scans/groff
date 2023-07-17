@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -723,14 +723,14 @@ environment::environment(symbol nm)
   prev_glyph_color(&default_color),
   fill_color(&default_color),
   prev_fill_color(&default_color),
+  control_character('.'),
+  no_break_control_character('\''),
   seen_space(0),
   seen_eol(0),
   suppress_next_eol(0),
   seen_break(0),
   tabs(units_per_inch/2, TAB_LEFT),
   name(nm),
-  control_char('.'),
-  no_break_control_char('\''),
   hyphen_indicator_char(0)
 {
   prev_family = family = lookup_family(default_family);
@@ -816,14 +816,14 @@ environment::environment(const environment *e)
   prev_glyph_color(e->prev_glyph_color),
   fill_color(e->fill_color),
   prev_fill_color(e->prev_fill_color),
+  control_character(e->control_character),
+  no_break_control_character(e->no_break_control_character),
   seen_space(e->seen_space),
   seen_eol(e->seen_eol),
   suppress_next_eol(e->suppress_next_eol),
   seen_break(e->seen_break),
   tabs(e->tabs),
   name(e->name),		// so that, e.g., '.if "\n[.ev]"0"' works
-  control_char(e->control_char),
-  no_break_control_char(e->no_break_control_char),
   hyphen_indicator_char(e->hyphen_indicator_char)
 {
 }
@@ -866,8 +866,8 @@ void environment::copy(const environment *e)
   width_total = 0;
   space_total = 0;
   input_line_start = 0;
-  control_char = e->control_char;
-  no_break_control_char = e->no_break_control_char;
+  control_character = e->control_character;
+  no_break_control_character = e->no_break_control_character;
   hyphen_indicator_char = e->hyphen_indicator_char;
   spread_flag = 0;
   line = 0;
@@ -914,6 +914,32 @@ environment::~environment()
   delete leader_node;
   delete_node_list(line);
   delete_node_list(numbering_nodes);
+}
+
+unsigned char environment::get_control_character()
+{
+  return control_character;
+}
+
+bool environment::set_control_character(unsigned char c)
+{
+  if (c == no_break_control_character)
+    return false;
+  control_character = c;
+  return true;
+}
+
+unsigned char environment::get_no_break_control_character()
+{
+  return no_break_control_character;
+}
+
+bool environment::set_no_break_control_character(unsigned char c)
+{
+  if (c == control_character)
+    return false;
+  no_break_control_character = c;
+  return true;
 }
 
 hunits environment::get_input_line_position()
@@ -1209,10 +1235,10 @@ void font_change()
 {
   symbol s = get_name();
   bool is_number = true;
-  if (s.is_null() || s == P_symbol) {
+  if (s.is_null())
     s = P_symbol;
+  if (s == P_symbol)
     is_number = false;
-  }
   else {
     for (const char *p = s.contents(); p != 0 && *p != 0; p++)
       if (!csdigit(*p)) {
@@ -1230,9 +1256,29 @@ void font_change()
   skip_line();
 }
 
+bool is_family_valid(const char *fam)
+{
+  // std::vector<const char *> styles{"R", "I", "B", "BI"}; // C++11
+  const size_t nstyles = 4;
+  const char *st[nstyles] = { "R", "I", "B", "BI" };
+  std::vector<const char *> styles(st, (st + nstyles));
+  // for (auto style : styles) // C++11
+  std::vector<const char *>::iterator style;
+  for (style = styles.begin(); style != styles.end(); style++)
+    if (!check_font(fam, *style))
+      return false;
+  return true;
+}
+
 void family_change()
 {
   symbol s = get_name();
+  if (s != 0 /* nullptr */)
+    if (!is_family_valid(s.contents())) {
+      error("'%1' is not a valid font family", s.contents());
+      skip_line();
+      return;
+    }
   curenv->set_family(s);
   skip_line();
 }
@@ -1532,30 +1578,6 @@ void continuous_underline()
 void underline()
 {
   do_underline(0);
-}
-
-void control_char()
-{
-  curenv->control_char = '.';
-  if (has_arg()) {
-    if (tok.ch() == 0)
-      error("bad control character");
-    else
-      curenv->control_char = tok.ch();
-  }
-  skip_line();
-}
-
-void no_break_control_char()
-{
-  curenv->no_break_control_char = '\'';
-  if (has_arg()) {
-    if (tok.ch() == 0)
-      error("bad control character");
-    else
-      curenv->no_break_control_char = tok.ch();
-  }
-  skip_line();
 }
 
 void margin_character()
@@ -3423,8 +3445,6 @@ void init_env_requests()
   init_request("ad", adjust);
   init_request("br", break_request);
   init_request("brp", break_spread_request);
-  init_request("c2", no_break_control_char);
-  init_request("cc", control_char);
   init_request("ce", center);
   init_request("cu", continuous_underline);
   init_request("ev", environment_switch);

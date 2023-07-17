@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -64,11 +63,17 @@ public:
 };
 
 extern object_dictionary register_dictionary;
-extern void set_number_reg(symbol nm, units n);
+extern void set_register(symbol nm, units n);
 extern void check_output_limits(int x, int y);
 extern void reset_output_registers();
 
-reg *lookup_number_reg(symbol);
+extern reg *look_up_register(symbol);
 #if 0
-void inline_define_reg();
+void inline_define_register();
 #endif
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

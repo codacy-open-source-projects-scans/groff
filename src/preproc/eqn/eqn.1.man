@@ -604,9 +604,10 @@ are discussed in subsection \[lq]Spacing and typeface\[rq] above;
 .RB \[lq] set \[rq]
 in subsection \[lq]Customization\[rq] below;
 and
-.B grfont
+.BR gbfont ,
+.BR gifont ,
 and
-.B gbfont
+.B grfont
 in subsection \[lq]Fonts\[rq] below.
 .
 In the following synopses,
@@ -1238,11 +1239,6 @@ The width of subscripts and superscripts is increased by this amount
 This amount of space is automatically inserted after punctuation
 characters.
 .
-It also configures the width of the space produced by the
-.B \[ha]
-token
-.RB ( 17 ).
-.
 .
 .TP
 .B medium_space
@@ -1256,7 +1252,18 @@ binary operators
 This amount of space is automatically inserted on either side of
 relations.
 .
-It also configures the width of the space produced by the
+.
+.TP
+.B half_space
+configures the width of the space produced by the
+.B \[ha]
+token
+.RB ( 17 ).
+.
+.
+.TP
+.B full_space
+configures the width of the space produced by the
 .B \[ti]
 token
 .RB ( 28 ).
@@ -1684,15 +1691,15 @@ and bold.
 .
 Assign each a
 .I groff
-typeface with the primitives
-.BR gfont ,
+typeface with the GNU extension primitives
 .BR \%grfont ,
+.BR \%gifont ,
 and
 .B \%gbfont.
 .
 The defaults are the styles
-.BR I ,
 .BR R ,
+.BR I ,
 and
 .B B
 (applied to the current font family).
@@ -1719,21 +1726,25 @@ primitive to select an (upright) bold style.
 .RI Select\~ f
 as the bold font.
 .
-This is a GNU extension.
-.
 .
 .TP
-.BI gfont\~ f
+.BI gifont\~ f
 .RI Select\~ f
 as the italic font.
+.
+For
+AT&T
+.I eqn \" AT&T
+compatibility,
+.B gfont
+is recognized as a synonym for
+.BR gifont .
 .
 .
 .TP
 .BI grfont\~ f
 .RI Select\~ f
 as the roman font.
-.
-This is a GNU extension.
 .
 .
 .br
@@ -1785,7 +1796,7 @@ statements in the source file override this option.
 .TP
 .BI \-f\~ F
 is equivalent to
-.RB \[lq] gfont
+.RB \[lq] gifont
 .IR F \[rq].
 .
 .

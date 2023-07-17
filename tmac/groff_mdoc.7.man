@@ -5123,6 +5123,15 @@ The default is\~1.
 .
 .
 .Pp
+The
+.Ql PO
+register configures the page offset.
+.
+The default is device-dependent;
+typically 0 for terminal devices and 1i otherwise.
+.
+.
+.Pp
 To change the document font size to 11p or 12p,
 set register
 .Ql S

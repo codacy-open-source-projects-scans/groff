@@ -4447,6 +4447,10 @@ or
 default:
 .BR i ).
 .
+Ignored in
+.B nroff
+mode.
+.
 .
 .TPx
 .REQ .wh vpos
@@ -7261,9 +7265,9 @@ page ejection status
 .RB ( \[rs]n[.pe] ),
 and
 leading space count
-.RB ( \[rs]n[.lsn] )
+.RB ( \[rs]n[lsn] )
 with its corresponding amount of motion
-.RB ( \[rs]n[.lss] ).
+.RB ( \[rs]n[lss] ).
 .
 .
 .\" ====================================================================

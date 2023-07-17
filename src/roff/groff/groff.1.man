@@ -760,7 +760,7 @@ $ \c
 $ \c
 .B echo \[dq]Hello, world!\[dq] | groff \-Tdvi > hello.dvi
 $ \c
-.B xdvi hello.html
+.B xdvi hello.dvi
 .EE
 .
 .
@@ -1876,19 +1876,21 @@ A time stamp
 to use as the output creation time stamp in place of the current time.
 .
 The time is converted to human-readable form using
-.MR localtime 3
+.MR gmtime 3
+and
+.MR asctime 3
 when the formatter starts up and stored in registers usable by documents
 and macro packages.
 .
 .
 .TP
 .I TZ
-The time zone to use when converting the current time
-(or value of
-.IR SOURCE_DATE_EPOCH )
-to human-readable form;
+The time zone to use when converting the current time to human-readable form;
 see
 .MR tzset 3 .
+If
+.I SOURCE_DATE_EPOCH
+is used, it is always converted to human-readable form using UTC.
 .
 .
 .\" ====================================================================

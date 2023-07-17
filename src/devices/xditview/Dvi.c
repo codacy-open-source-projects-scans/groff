@@ -165,9 +165,9 @@ WidgetClass dviWidgetClass = (WidgetClass) &dviClassRec;
 
 static void ClassInitialize (void)
 {
-	int len1 = strlen(default_font_map_1);
-	int len2 = strlen(default_font_map_2);
-	int len3 = strlen(default_font_map_3);
+	size_t len1 = strlen(default_font_map_1);
+	size_t len2 = strlen(default_font_map_2);
+	size_t len3 = strlen(default_font_map_3);
 	char *dfm = XtMalloc(len1 + len2 + len3 + 1);
 	char *ptr = dfm;
 	strcpy(ptr, default_font_map_1); ptr += len1;

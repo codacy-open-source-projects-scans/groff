@@ -645,9 +645,7 @@ public:
   mtsm state;
 };
 
-#ifndef POPEN_MISSING
 extern char *pipe_command;
-#endif
 
 extern output_file *the_output;
 extern void init_output();

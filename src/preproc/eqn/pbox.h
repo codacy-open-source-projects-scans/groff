@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -30,6 +29,8 @@ extern int script_space;
 extern int thin_space;
 extern int medium_space;
 extern int thick_space;
+extern int half_space;
+extern int full_space;
 
 extern int num1;
 extern int num2;
@@ -138,3 +139,9 @@ void set_script_size();
 enum { HINT_PREV_IS_ITALIC = 01, HINT_NEXT_IS_ITALIC = 02 };
 
 extern const char *current_roman_font;
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

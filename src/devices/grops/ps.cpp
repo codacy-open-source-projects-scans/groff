@@ -169,7 +169,7 @@ ps_output &ps_output::end_comment()
 
 ps_output &ps_output::comment_arg(const char *s)
 {
-  int len = strlen(s);
+  size_t len = strlen(s);
   if (col + len + 1 > max_line_length) {
     putc('\n', fp);
     fputs("%%+", fp);
@@ -200,10 +200,10 @@ ps_output &ps_output::put_delimiter(char c)
   return *this;
 }
 
-ps_output &ps_output::put_string(const char *s, int n)
+ps_output &ps_output::put_string(const char *s, size_t n)
 {
-  int len = 0;
-  int i;
+  size_t len = 0;
+  size_t i;
   for (i = 0; i < n; i++) {
     char c = s[i];
     if (is_ascii(c) && csprint(c)) {
@@ -290,7 +290,7 @@ ps_output &ps_output::put_number(int n)
 {
   char buf[1 + INT_DIGITS + 1];
   sprintf(buf, "%d", n);
-  int len = strlen(buf);
+  size_t len = strlen(buf);
   if (col > 0 && col + len + need_space > max_line_length) {
     putc('\n', fp);
     col = 0;
@@ -309,7 +309,7 @@ ps_output &ps_output::put_number(int n)
 ps_output &ps_output::put_fix_number(int i)
 {
   const char *p = if_to_a(i, fixed_point);
-  int len = strlen(p);
+  size_t len = strlen(p);
   if (col > 0 && col + len + need_space > max_line_length) {
     putc('\n', fp);
     col = 0;
@@ -329,7 +329,7 @@ ps_output &ps_output::put_float(double d)
 {
   char buf[128];
   sprintf(buf, "%.4f", d);
-  int last = strlen(buf) - 1;
+  ptrdiff_t last = strlen(buf) - 1;
   while (buf[last] == '0')
     last--;
   if (buf[last] == '.')
@@ -352,7 +352,7 @@ ps_output &ps_output::put_float(double d)
 
 ps_output &ps_output::put_symbol(const char *s)
 {
-  int len = strlen(s);
+  size_t len = strlen(s);
   if (col > 0 && col + len + need_space > max_line_length) {
     putc('\n', fp);
     col = 0;
@@ -372,7 +372,7 @@ ps_output &ps_output::put_color(unsigned int c)
 {
   char buf[128];
   sprintf(buf, "%.3g", double(c) / double(color::MAX_COLOR_VAL));
-  int len = strlen(buf);
+  size_t len = strlen(buf);
   if (col > 0 && col + len + need_space > max_line_length) {
     putc('\n', fp);
     col = 0;
@@ -390,7 +390,7 @@ ps_output &ps_output::put_color(unsigned int c)
 
 ps_output &ps_output::put_literal_symbol(const char *s)
 {
-  int len = strlen(s);
+  size_t len = strlen(s);
   if (col > 0 && col + len + 1 > max_line_length) {
     putc('\n', fp);
     col = 0;
@@ -1390,13 +1390,8 @@ ps_printer::~ps_printer()
      .end_comment();
   {
     fputs("%%CreationDate: ", out.get_file());
-#ifdef LONG_FOR_TIME_T
-    long
-#else
-    time_t
-#endif
-    t = current_time();
-    fputs(ctime(&t), out.get_file());
+    struct tm *t = current_time();
+    fputs(asctime(t), out.get_file());
   }
   for (font_pointer_list *f = font_list; f; f = f->next) {
     ps_font *psf = (ps_font *)(f->p);

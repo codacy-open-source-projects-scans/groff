@@ -919,9 +919,9 @@ void mark()
   if (s.is_null())
     curdiv->marked_place = curdiv->get_vertical_position();
   else if (curdiv == topdiv)
-    set_number_reg(s, nl_reg_contents);
+    set_register(s, nl_reg_contents);
   else
-    set_number_reg(s, curdiv->get_vertical_position().to_units());
+    set_register(s, curdiv->get_vertical_position().to_units());
   skip_line();
 }
 
@@ -1183,11 +1183,11 @@ void init_div_requests()
   init_request("vpt", vertical_position_traps);
   init_request("wh", when_request);
   register_dictionary.define(".a",
-		       new readonly_register(&last_post_line_extra_space));
+      new readonly_register(&last_post_line_extra_space));
   register_dictionary.define(".d", new vertical_position_reg);
   register_dictionary.define(".h", new high_water_mark_reg);
   register_dictionary.define(".ne",
-			       new constant_vunits_reg(&needed_space));
+      new constant_vunits_reg(&needed_space));
   register_dictionary.define(".ns", new no_space_mode_reg);
   register_dictionary.define(".o", new page_offset_reg);
   register_dictionary.define(".p", new page_length_reg);
@@ -1195,9 +1195,9 @@ void init_div_requests()
   register_dictionary.define(".pn", new next_page_number_reg);
   register_dictionary.define(".t", new distance_to_next_trap_reg);
   register_dictionary.define(".trunc",
-			       new constant_vunits_reg(&truncated_space));
+      new constant_vunits_reg(&truncated_space));
   register_dictionary.define(".vpt",
-		       new readonly_register(&vertical_position_traps_flag));
+      new readonly_register(&vertical_position_traps_flag));
   register_dictionary.define(".z", new diversion_name_reg);
   register_dictionary.define("dl", new variable_reg(&dl_reg_contents));
   register_dictionary.define("dn", new variable_reg(&dn_reg_contents));

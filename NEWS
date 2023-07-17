@@ -7,6 +7,82 @@
 This file describes recent user-visible changes in groff.  Bug fixes are
 not described.  There are more details in the man and info pages.
 
+VERSION next
+============
+
+troff
+-----
+
+o In nroff mode (in other words, when producing output for terminal
+  devices), the formatter now reports warning diagnostics regarding
+  certain output problems using units of lines instead of inches (or the
+  unit configured with the `warnscale` request) to describe the vertical
+  drawing position where the problem occurred.
+
+eqn
+---
+
+o The "gifont" primitive replaces "gfont" as the means of configuring
+  the global italic face within an equation.  "gfont" remains recognized
+  as a synonym for backward compatibility.  The new name is intended to
+  ease acquisition of the eqn language in light of GNU eqn's
+  thirty-year-old extensions "gbfont" and "grfont".
+
+o New parameters tunable with the GNU eqn "set" primitive, "half_space"
+  and "full_space", enable a document to configure the space widths
+  produced by the eqn tokens '^' and '~', respectively.  Previously,
+  their widths were determined by the "thin_space" and "thick_space"
+  parameters used to tune GNU eqn's automatic spacing computations.
+
+Macro packages
+--------------
+
+o The an (man) and doc (mdoc) macro packages now support a `PO` register
+  to configure the page offset used by the formatter.
+
+o The new macro file "koi8-r.tmac" supports the KOI8-R character
+  encoding, which supports the new Russian locale for groff.
+
+o The m (mm) macro package's `HU` macro now supports a second argument
+  as a GNU extension.  It corresponds to the optional third argument of
+  the `H` macro.
+
+o The m (mm) macro package's `IND` macro (a GNU extension), now calls
+  `SK` only if no `TXIND` macro is defined, instead of performing this
+  action as part of the fallback when no `TYIND` macro is defined.
+
+o The s (ms) macro package now sets the vertical spacing register
+  defaults for normal (`VS`) and footnote (`FVS`) text to 120% of the
+  existing type size rather than 2 points larger to comport with
+  generally accepted typesetting principles.  Thus, when formatting a
+  document with a type size of 20 points, the vertical spacing now
+  defaults to 24 points rather than 22.
+
+Miscellaneous
+-------------
+
+o Russian language input documents using the KOI8-R encoding are now
+  supported, including hyphenation patterns from the ruhyphen project
+  and localized strings for the man, ms, me, mm, and mom packages.
+  Thanks to Nikita Ivanov.
+
+o Spanish language input documents are now supported, including
+  hyphenation patterns from the hyph-utf8 project and localized strings
+  for the man, ms, me, mm, and mom packages.  Thanks to Eloi Montañés.
+
+o If groff programs have their current time overridden by the
+  SOURCE_DATE_EPOCH environment variable, then that time is always
+  displayed in UTC.  That environment variable is normally only set when
+  specifically requesting build systems to produce reproducible output,
+  and it is useful for reproducibility test harnesses to vary the TZ
+  environment variable and ensure that it does not affect the output of
+  the build; those harnesses have no way to set TZ=UTC only for groff
+  programs.  People setting SOURCE_DATE_EPOCH are likely to be more in
+  the "system programmer" camp as described in the release notes for
+  1.23.0, so it is easier to defend time-zone-invariant output to them.
+  In all other cases, the current time remains displayed in local time.
+
+
 VERSION 1.23.0
 ==============
 

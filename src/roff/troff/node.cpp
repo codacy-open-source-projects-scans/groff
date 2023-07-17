@@ -721,9 +721,7 @@ tfont::tfont(tfont_spec &spec) : tfont_spec(spec)
 /* output_file */
 
 class real_output_file : public output_file {
-#ifndef POPEN_MISSING
   int piped;
-#endif
   int printing;		// decision via optional page list
   int output_on;	// \O[0] or \O[1] escape sequences
   virtual void really_transparent_char(unsigned char) = 0;
@@ -1651,7 +1649,6 @@ void output_file::off()
 real_output_file::real_output_file()
 : printing(0), output_on(1)
 {
-#ifndef POPEN_MISSING
   if (pipe_command) {
     if ((fp = popen(pipe_command, POPEN_WT)) != 0) {
       piped = 1;
@@ -1660,7 +1657,6 @@ real_output_file::real_output_file()
     error("pipe open failed: %1", strerror(errno));
   }
   piped = 0;
-#endif /* not POPEN_MISSING */
   fp = stdout;
 }
 
@@ -1679,7 +1675,6 @@ real_output_file::~real_output_file()
     fp = 0;
     fatal("unable to flush output file: %1", strerror(errno));
   }
-#ifndef POPEN_MISSING
   if (piped) {
     int result = pclose(fp);
     fp = 0;
@@ -1697,7 +1692,6 @@ real_output_file::~real_output_file()
     }
   }
   else
-#endif /* not POPEN MISSING */
   if (fclose(fp) < 0) {
     fp = 0;
     fatal("unable to close output file: %1", strerror(errno));
@@ -6028,9 +6022,7 @@ bool mount_style(int n, symbol name)
   return true;
 }
 
-/* global functions */
-
-void font_translate()
+static void translate_font()
 {
   symbol from = get_name(true /* required */);
   if (!from.is_null()) {
@@ -6043,7 +6035,7 @@ void font_translate()
   skip_line();
 }
 
-void font_position()
+static void mount_font_at_position()
 {
   int n;
   if (get_integer(&n)) {
@@ -6155,7 +6147,7 @@ void font_family::invalidate_fontno(int n)
   }
 }
 
-void style()
+static void associate_style_with_font_position()
 {
   int n;
   if (get_integer(&n)) {
@@ -6211,7 +6203,7 @@ static bool has_font(font_lookup_info *finfo)
 
 static int underline_fontno = 2;
 
-void underline_font()
+static void select_underline_font()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo))
@@ -6226,7 +6218,7 @@ int get_underline_fontno()
   return underline_fontno;
 }
 
-void define_font_special_character()
+static void define_font_specific_character()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo)) {
@@ -6242,7 +6234,7 @@ void define_font_special_character()
   }
 }
 
-void remove_font_special_character()
+static void remove_font_specific_character()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo))
@@ -6293,7 +6285,7 @@ static void read_special_fonts(special_font_list **sp)
   }
 }
 
-void font_special_request()
+static void set_font_specific_special_fonts()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo))
@@ -6304,13 +6296,13 @@ void font_special_request()
   skip_line();
 }
 
-void special_request()
+static void set_special_fonts()
 {
   read_special_fonts(&global_special_fonts);
   skip_line();
 }
 
-void font_zoom_request()
+static void zoom_font()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo))
@@ -6421,21 +6413,24 @@ hunits env_narrow_space_width(environment *env)
     return font_table[fn]->get_narrow_space_width(fs);
 }
 
-void bold_font()
+// XXX: We can only conditionally (un)embolden a font specified by name,
+// not position.  Does ".bd 1 2" mean "embolden font position 1 by 2
+// units" (really one unit), or "stop conditionally emboldening font 2
+// when font 1 is selected"?
+
+static void embolden_font()
 {
   font_lookup_info finfo;
-  if (!has_font(&finfo))
+  if (!(has_arg()))
+    warning(WARN_MISSING, "font name or position expected in"
+	    " emboldening request");
+  else if (!has_font(&finfo))
     font_lookup_error(finfo, "for emboldening");
   else {
     int n = finfo.position;
     if (has_arg()) {
-      // This is a bit non-orthogonal, but faithful to CSTR #54.  We can
-      // only conditionally embolden a font specified by name, not
-      // position, so ".bd S B 4" works but ".bd 5 3 4" does not.  The
-      // latter bolds the font at position 5 unconditionally, and
-      // ignores the third argument.
       if (tok.usable_as_delimiter()) {
-      font_lookup_info finfo2;
+	font_lookup_info finfo2;
 	if (!has_font(&finfo2))
 	  font_lookup_error(finfo2, "for conditional emboldening");
 	else {
@@ -6448,9 +6443,7 @@ void bold_font()
 	}
       }
       else {
-	font_lookup_info finfo2;
-	  if (!has_font(&finfo2))
-	    font_lookup_error(finfo2, "for conditional emboldening");
+	// A numeric second argument must be an emboldening amount.
 	units offset;
 	if (get_number(&offset, 'u') && offset >= 1)
 	  font_table[n]->set_bold(hunits(offset - 1));
@@ -6516,7 +6509,7 @@ hunits track_kerning_function::compute(int size)
     return H0;
 }
 
-void track_kern()
+static void configure_track_kerning()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo))
@@ -6540,7 +6533,7 @@ void track_kern()
   skip_line();
 }
 
-void constant_space()
+static void constantly_space_font()
 {
   font_lookup_info finfo;
   if (!has_font(&finfo))
@@ -6562,7 +6555,7 @@ void constant_space()
   skip_line();
 }
 
-void ligature()
+static void set_ligature_mode()
 {
   int lig;
   if (has_arg() && get_integer(&lig) && lig >= 0 && lig <= 2)
@@ -6572,7 +6565,7 @@ void ligature()
   skip_line();
 }
 
-void kern_request()
+static void set_kerning_mode()
 {
   int k;
   if (has_arg() && get_integer(&k))
@@ -6582,7 +6575,7 @@ void kern_request()
   skip_line();
 }
 
-void set_soft_hyphen_char()
+static void set_soft_hyphen_character()
 {
   soft_hyphen_char = get_optional_char();
   if (!soft_hyphen_char)
@@ -6625,26 +6618,27 @@ const char *printing_reg::get_string()
 
 void init_node_requests()
 {
-  init_request("bd", bold_font);
-  init_request("cs", constant_space);
-  init_request("fp", font_position);
-  init_request("fschar", define_font_special_character);
-  init_request("fspecial", font_special_request);
-  init_request("fzoom", font_zoom_request);
-  init_request("ftr", font_translate);
-  init_request("kern", kern_request);
-  init_request("lg", ligature);
-  init_request("rfschar", remove_font_special_character);
-  init_request("shc", set_soft_hyphen_char);
-  init_request("special", special_request);
-  init_request("sty", style);
-  init_request("tkf", track_kern);
-  init_request("uf", underline_font);
-  register_dictionary.define(".fp", new next_available_font_position_reg);
+  init_request("bd", embolden_font);
+  init_request("cs", constantly_space_font);
+  init_request("fp", mount_font_at_position);
+  init_request("fschar", define_font_specific_character);
+  init_request("fspecial", set_font_specific_special_fonts);
+  init_request("fzoom", zoom_font);
+  init_request("ftr", translate_font);
+  init_request("kern", set_kerning_mode);
+  init_request("lg", set_ligature_mode);
+  init_request("rfschar", remove_font_specific_character);
+  init_request("shc", set_soft_hyphen_character);
+  init_request("special", set_special_fonts);
+  init_request("sty", associate_style_with_font_position);
+  init_request("tkf", configure_track_kerning);
+  init_request("uf", select_underline_font);
+  register_dictionary.define(".fp",
+			     new next_available_font_position_reg);
   register_dictionary.define(".kern",
-			       new readonly_register(&global_kern_mode));
+			     new readonly_register(&global_kern_mode));
   register_dictionary.define(".lg",
-			       new readonly_register(&global_ligature_mode));
+			     new readonly_register(&global_ligature_mode));
   register_dictionary.define(".P", new printing_reg);
   soft_hyphen_char = get_charinfo(HYPHEN_SYMBOL);
 }

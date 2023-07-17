@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -82,9 +82,7 @@ int break_flag = 0;
 int class_flag = 0;
 int color_flag = 1;		// colors are on by default
 static int backtrace_flag = 0;
-#ifndef POPEN_MISSING
-char *pipe_command = 0;
-#endif
+char *pipe_command = 0 /* nullptr */;
 charinfo *charset_table[256];
 unsigned char hpf_code_table[256];
 
@@ -118,7 +116,7 @@ bool have_multiple_params = false;	// e.g., \[e aa], \*[foo bar]
 double spread_limit = -3.0 - 1.0;	// negative means deactivated
 
 double warn_scale;
-char warn_scaling_indicator;
+char warn_scaling_unit;
 int debug_state = 0;		// turns on debugging of the html troff state
 
 search_path *mac_path = &safer_macro_path;
@@ -161,18 +159,40 @@ void process_input_stack();
 void chop_macro();	// declare to avoid friend name injection
 
 
-void set_escape_char()
+static void assign_escape_character()
 {
+  char ec = '\0';
+  bool is_invalid = false;
   if (has_arg()) {
-    if (tok.ch() == 0) {
-      error("cannot select invalid escape character; using '\\'");
-      escape_char = '\\';
-    }
+    if (tok.ch() == 0)
+      is_invalid = true;
     else
-      escape_char = tok.ch();
+      ec = tok.ch();
   }
   else
+    ec = '\\';
+  bool do_nothing = false;
+  char already_cc[] = "the control character is already";
+  char already_nbcc[] = "the no-break control character is already";
+  char *already_message = 0 /* nullptr */;
+  if (curenv->get_control_character() == ec) {
+      already_message = already_cc;
+      do_nothing = true;
+  }
+  else if (curenv->get_no_break_control_character() == ec) {
+      already_message = already_nbcc;
+      do_nothing = true;
+  }
+  if (do_nothing)
+    error("ignoring escape character change request; %1%2 %3",
+	  is_invalid ? "cannot select invalid escape character, and"
+	  : "", already_message, input_char_description(ec));
+  else if (is_invalid) {
+    error("cannot select invalid escape character; using '\\'");
     escape_char = '\\';
+  }
+  else
+    escape_char = ec;
   skip_line();
 }
 
@@ -193,6 +213,82 @@ void save_escape_char()
 void restore_escape_char()
 {
   escape_char = saved_escape_char;
+  skip_line();
+}
+
+void assign_control_character()
+{
+  char cc = '\0';
+  bool is_invalid = false;
+  if (has_arg()) {
+    if (tok.ch() == 0)
+      is_invalid = true;
+    else
+      cc = tok.ch();
+  }
+  else
+    cc = '\\';
+  bool do_nothing = false;
+  char already_ec[] = "the escape character is already";
+  char already_nbcc[] = "the no-break control character is already";
+  char *already_message = 0 /* nullptr */;
+  if (cc == escape_char) {
+      already_message = already_ec;
+      do_nothing = true;
+  }
+  else if (curenv->get_no_break_control_character() == cc) {
+      already_message = already_nbcc;
+      do_nothing = true;
+  }
+  if (do_nothing)
+    error("ignoring control character change request; %1%2 %3",
+	  is_invalid ? "cannot select invalid control character, and"
+	  : "", already_message, input_char_description(cc));
+  else if (is_invalid) {
+    error("cannot select invalid control character; using '.'");
+    assert(curenv->set_control_character('.'));
+  }
+  else
+    assert(curenv->set_control_character(cc));
+  skip_line();
+}
+
+void assign_no_break_control_character()
+{
+  char nbcc = '\0';
+  bool is_invalid = false;
+  if (has_arg()) {
+    if (tok.ch() == 0)
+      is_invalid = true;
+    else
+      nbcc = tok.ch();
+  }
+  else
+    nbcc = '\\';
+  bool do_nothing = false;
+  char already_ec[] = "the escape character is already";
+  char already_cc[] = "the (breaking) control character is already";
+  char *already_message = 0 /* nullptr */;
+  if (nbcc == escape_char) {
+      already_message = already_ec;
+      do_nothing = true;
+  }
+  else if (curenv->get_control_character() == nbcc) {
+      already_message = already_cc;
+      do_nothing = true;
+  }
+  if (do_nothing)
+    error("ignoring no-break control character change request; %1%2 %3",
+	  is_invalid ? "cannot select invalid no-break control"
+	               " character, and"
+	  : "", already_message, input_char_description(nbcc));
+  else if (is_invalid) {
+    error("cannot select invalid no-break control character;"
+	  " using \"\'\"");
+    assert(curenv->set_no_break_control_character('\''));
+  }
+  else
+    assert(curenv->set_no_break_control_character(nbcc));
   skip_line();
 }
 
@@ -234,12 +330,12 @@ private:
 };
 
 input_iterator::input_iterator()
-: is_diversion(0), ptr(0), eptr(0)
+: is_diversion(0), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
 {
 }
 
 input_iterator::input_iterator(int is_div)
-: is_diversion(is_div), ptr(0), eptr(0)
+: is_diversion(is_div), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
 {
 }
 
@@ -310,10 +406,8 @@ void file_iterator::close()
 {
   if (fp == stdin)
     clearerr(stdin);
-#ifndef POPEN_MISSING
   else if (popened)
     pclose(fp);
-#endif /* not POPEN_MISSING */
   else
     fclose(fp);
 }
@@ -464,7 +558,7 @@ input_iterator *input_stack::top = &nil_iterator;
 int input_stack::level = 0;
 int input_stack::limit = DEFAULT_INPUT_STACK_LIMIT;
 int input_stack::div_level = 0;
-statem *input_stack::diversion_state = 0;
+statem *input_stack::diversion_state = 0 /* nullptr */;
 int suppress_push=0;
 
 
@@ -1052,7 +1146,7 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
 	int inc;
 	symbol s = read_increment_and_escape_parameter(&inc);
 	if (!(s.is_null() || s.is_empty()))
-	  interpolate_number_reg(s, inc);
+	  interpolate_register(s, inc);
 	break;
       }
     case 'g':
@@ -1591,7 +1685,7 @@ static node *do_zero_width()
   }
   curenv = oldenv;
   node *rev = env.extract_output_line();
-  node *n = 0;
+  node *n = 0 /* nullptr */;
   while (rev) {
     node *tem = rev;
     rev = rev->next;
@@ -1704,18 +1798,20 @@ token::~token()
 token::token(const token &t)
 : nm(t.nm), c(t.c), val(t.val), dim(t.dim), type(t.type)
 {
-  // Use two statements to work around bug in SGI C++.
-  node *tem = t.nd;
-  nd = tem ? tem->copy() : 0;
+  if (t.nd != 0 /* nullptr */)
+    nd = t.nd->copy();
+  else
+    nd = 0 /* nullptr */;
 }
 
 void token::operator=(const token &t)
 {
   delete nd;
   nm = t.nm;
-  // Use two statements to work around bug in SGI C++.
-  node *tem = t.nd;
-  nd = tem ? tem->copy() : 0;
+  if (t.nd != 0 /* nullptr */)
+    nd = t.nd->copy();
+  else
+    nd = 0 /* nullptr */;
   c = t.c;
   val = t.val;
   dim = t.dim;
@@ -2153,7 +2249,7 @@ void token::next()
 	  int inc;
 	  symbol s = read_increment_and_escape_parameter(&inc);
 	  if (!(s.is_null() || s.is_empty()))
-	    interpolate_number_reg(s, inc);
+	    interpolate_register(s, inc);
 	  break;
 	}
       case 'N':
@@ -2402,18 +2498,20 @@ bool token::usable_as_delimiter(bool report_error)
 
 const char *token::description()
 {
-  static char buf[4];
+  const size_t bufsz = strlen("character 'x'") + 1;
+  static char buf[bufsz];
   switch (type) {
   case TOKEN_BACKSPACE:
     return "a backspace character";
   case TOKEN_CHAR:
-    if (c == INPUT_DELETE)
+    if (INPUT_DELETE == c)
       return "a delete character";
+    else if ('\'' == c) {
+      (void) snprintf(buf, bufsz, "character \"%c\"", c);
+      return buf;
+    }
     else {
-      buf[0] = '\'';
-      buf[1] = c;
-      buf[2] = '\'';
-      buf[3] = '\0';
+      (void) snprintf(buf, bufsz, "character '%c'", c);
       return buf;
     }
   case TOKEN_DUMMY:
@@ -2847,9 +2945,9 @@ void process_input_stack()
       {
 	unsigned char ch = tok.c;
 	if (bol && !have_input
-	    && (ch == curenv->control_char
-		|| ch == curenv->no_break_control_char)) {
-	  break_flag = ch == curenv->control_char;
+	    && (curenv->get_control_character() == ch
+		|| curenv->get_no_break_control_character() == ch)) {
+	  break_flag = (curenv->get_control_character() == ch);
 	  // skip tabs as well as spaces here
 	  do {
 	    tok.next();
@@ -3485,7 +3583,8 @@ protected:
   symbol nm;
   string_iterator();
 public:
-  string_iterator(const macro &, const char * = 0, symbol = NULL_SYMBOL);
+  string_iterator(const macro &, const char * = 0 /* nullptr */,
+		  symbol = NULL_SYMBOL);
   int fill(node **);
   int peek();
   int get_location(int, const char **, int *);
@@ -3629,12 +3728,14 @@ public:
 inline
 #endif
 temp_iterator::temp_iterator(const char *s, int len)
+: base(0 /* nullptr */)
 {
-  base = new unsigned char[len];
-  if (len > 0)
+  if (len > 0) {
+    base = new unsigned char[len];
     memcpy(base, s, len);
-  ptr = base;
-  eptr = base + len;
+    ptr = base;
+    eptr = base + len;
+  }
 }
 
 temp_iterator::~temp_iterator()
@@ -3648,7 +3749,7 @@ input_iterator *make_temp_iterator(const char *s)
   if (s == 0)
     return new temp_iterator(s, 0);
   else {
-    int n = strlen(s);
+    size_t n = strlen(s);
     return new temp_iterator(s, n);
   }
 }
@@ -4186,7 +4287,7 @@ enum comp_mode { COMP_IGNORE, COMP_DISABLE, COMP_ENABLE };
 void do_define_string(define_mode mode, comp_mode comp)
 {
   symbol nm;
-  node *n = 0;		// pacify compiler
+  node *n = 0 /* nullptr */;
   int c;
   nm = get_name(true /* required */);
   if (nm.is_null()) {
@@ -4258,7 +4359,7 @@ void append_nocomp_string()
 
 void do_define_character(char_mode mode, const char *font_name)
 {
-  node *n = 0;		// pacify compiler
+  node *n = 0 /* nullptr */;
   int c;
   tok.skip();
   charinfo *ci = tok.get_char(true /* required */);
@@ -4525,7 +4626,7 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
   // doing this here makes the line numbers come out right
   int c = get_copy(&n, true /* is defining*/);
   macro mac;
-  macro *mm = 0;
+  macro *mm = 0 /* nullptr */;
   if (mode == DEFINE_NORMAL || mode == DEFINE_APPEND) {
     request_or_macro *rm =
       (request_or_macro *)request_dictionary.lookup(nm);
@@ -4705,7 +4806,7 @@ void alias_macro()
     symbol s2 = get_name(true /* required */);
     if (!s2.is_null()) {
       if (!request_dictionary.alias(s1, s2))
-	warning(WARN_MAC, "macro '%1' not defined", s2.contents());
+	error("cannot alias undefined object '%1'", s2.contents());
     }
   }
   skip_line();
@@ -4718,13 +4819,13 @@ void chop_macro()
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
     if (!m)
-      error("cannot chop request");
+      error("cannot chop request '%1'", s.contents());
     else if (m->empty())
-      error("cannot chop empty macro");
+      error("cannot chop empty object '%1'", s.contents());
     else {
       int have_restore = 0;
-      // we have to check for additional save/restore pairs which could be
-      // there due to empty am1 requests.
+      // We have to check for additional save/restore pairs which could
+      // be there due to empty am1 requests.
       for (;;) {
 	if (m->get(m->len - 1) != POP_GROFFCOMP_MODE)
 	  break;
@@ -4739,7 +4840,7 @@ void chop_macro()
 	  break;
       }
       if (m->len == 0)
-	error("cannot chop empty macro");
+	error("cannot chop empty object '%1'", s.contents());
       else {
 	if (have_restore)
 	  m->set(POP_GROFFCOMP_MODE, m->len - 1);
@@ -4765,7 +4866,7 @@ void do_string_case_transform(case_xform_mode mode)
   request_or_macro *p = lookup_request(s);
   macro *m = p->to_macro();
   if (!m) {
-    error("cannot apply string case transformation to a request ('%1')",
+    error("cannot apply string case transformation to request '%1'",
 	  s.contents());
     skip_line();
     return;
@@ -4810,7 +4911,7 @@ void substring_request()
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
     if (!m)
-      error("cannot apply 'substring' on a request");
+      error("cannot extract substring of request '%1'", s.contents());
     else {
       int end = -1;
       if (!has_arg() || get_integer(&end)) {
@@ -4871,7 +4972,7 @@ void substring_request()
 	}
 	macro mac;
 	for (; i <= end; i++) {
-	  node *nd = 0;		// pacify compiler
+	  node *nd = 0 /* nullptr */;
 	  int c = iter.get(&nd);
 	  while (c == PUSH_GROFF_MODE
 		 || c == PUSH_COMP_MODE
@@ -4925,7 +5026,7 @@ void length_request()
   if (r)
     r->set_value(len);
   else
-    set_number_reg(ret, len);
+    set_register(ret, len);
   tok.next();
 }
 
@@ -4936,12 +5037,12 @@ void asciify_macro()
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
     if (!m)
-      error("cannot asciify request");
+      error("cannot asciify request '%1'", s.contents());
     else {
       macro am;
       string_iterator iter(*m);
       for (;;) {
-	node *nd = 0;		// pacify compiler
+	node *nd = 0 /* nullptr */;
 	int c = iter.get(&nd);
 	if (c == EOF)
 	  break;
@@ -4963,12 +5064,12 @@ void unformat_macro()
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
     if (!m)
-      error("cannot unformat request");
+      error("cannot unformat request '%1'", s.contents());
     else {
       macro am;
       string_iterator iter(*m);
       for (;;) {
-	node *nd = 0;		// pacify compiler
+	node *nd = 0 /* nullptr */;
 	int c = iter.get(&nd);
 	if (c == EOF)
 	  break;
@@ -4992,9 +5093,9 @@ static void interpolate_environment_variable(symbol nm)
     input_stack::push(make_temp_iterator(s));
 }
 
-void interpolate_number_reg(symbol nm, int inc)
+void interpolate_register(symbol nm, int inc)
 {
-  reg *r = lookup_number_reg(nm);
+  reg *r = look_up_register(nm);
   if (inc < 0)
     r->decrement();
   else if (inc > 0)
@@ -5268,7 +5369,7 @@ static void do_register()
   if (r)
     r->set_value(val);
   else
-    set_number_reg(nm, val);
+    set_register(nm, val);
 }
 
 // this implements the \w escape sequence
@@ -5331,7 +5432,7 @@ void read_title_parts(node **part, hunits *part_width)
 	break;
       }
       if (page_character != 0 && tok.get_char() == page_character)
-	interpolate_number_reg(percent_symbol, 0);
+	interpolate_register(percent_symbol, 0);
       else
 	tok.process();
       tok.next();
@@ -5394,7 +5495,7 @@ node *non_interpreted_node::copy()
 int non_interpreted_node::interpret(macro *m)
 {
   string_iterator si(mac);
-  node *n = 0;		// pacify compiler
+  node *n = 0 /* nullptr */;
   for (;;) {
     int c = si.get(&n);
     if (c == EOF)
@@ -5673,7 +5774,7 @@ void line_file()
 {
   int n;
   if (get_integer(&n)) {
-    const char *filename = 0;
+    const char *filename = 0 /* nullptr */;
     if (has_arg()) {
       symbol s = get_long_name();
       filename = s.contents();
@@ -5938,7 +6039,7 @@ void while_request()
   int level = 0;
   mac.append(new token_node(tok));
   for (;;) {
-    node *n = 0;		// pacify compiler
+    node *n = 0 /* nullptr */;
     int c = input_stack::get(&n);
     if (c == EOF)
       break;
@@ -6063,25 +6164,21 @@ void pipe_source()
     skip_line();
   }
   else {
-#ifdef POPEN_MISSING
-    error("pipes not available on this system");
-    skip_line();
-#else /* not POPEN_MISSING */
     if (tok.is_newline() || tok.is_eof())
       error("missing command");
     else {
       int c;
       while ((c = get_copy(0)) == ' ' || c == '\t')
 	;
-      int buf_size = 24;
+      size_t buf_size = 24;
       char *buf = new char[buf_size];
-      int buf_used = 0;
+      size_t buf_used = 0;
       for (; c != '\n' && c != EOF; c = get_copy(0)) {
 	const char *s = asciify(c);
-	int slen = strlen(s);
+	size_t slen = strlen(s);
 	if (buf_used + slen + 1> buf_size) {
 	  char *old_buf = buf;
-	  int old_buf_size = buf_size;
+	  size_t old_buf_size = buf_size;
 	  buf_size *= 2;
 	  buf = new char[buf_size];
 	  memcpy(buf, old_buf, old_buf_size);
@@ -6100,7 +6197,6 @@ void pipe_source()
       delete[] buf;
     }
     tok.next();
-#endif /* not POPEN_MISSING */
   }
 }
 
@@ -6690,9 +6786,16 @@ const char *input_char_description(int c)
     return buf;
   }
   if (csprint(c)) {
-    buf[0] = '\'';
-    buf[1] = c;
-    buf[2] = '\'';
+    if ('\'' == c) {
+      buf[0] = '"';
+      buf[1] = c;
+      buf[2] = '"';
+    }
+    else {
+      buf[0] = '\'';
+      buf[1] = c;
+      buf[2] = '\'';
+    }
     return buf;
   }
   sprintf(buf, "character code %d", c);
@@ -6902,7 +7005,7 @@ void write_macro_request()
   request_or_macro *p = lookup_request(s);
   macro *m = p->to_macro();
   if (!m)
-    error("cannot write request");
+    error("cannot write request '%1' to a stream", s.contents());
   else {
     string_iterator iter(*m);
     for (;;) {
@@ -6935,7 +7038,7 @@ void warnscale_request()
 	      "scaling unit '%1' invalid; using 'i' instead", c);
       c = 'i';
     }
-    warn_scaling_indicator = c;
+    warn_scaling_unit = c;
   }
   skip_line();
 }
@@ -7145,7 +7248,7 @@ void define_class()
     return;
   }
   charinfo *ci = get_charinfo(nm);
-  charinfo *child1 = 0, *child2 = 0;
+  charinfo *child1 = 0 /* nullptr */, *child2 = 0 /* nullptr */;
   while (!tok.is_newline() && !tok.is_eof()) {
     tok.skip();
     if (child1 != 0 && tok.ch() == '-') {
@@ -7301,7 +7404,7 @@ int token::add_to_zero_width_node_list(node **pp)
 {
   hunits w;
   int s;
-  node *n = 0;
+  node *n = 0 /* nullptr */;
   switch (type) {
   case TOKEN_CHAR:
     *pp = (*pp)->add_char(charset_table[c], curenv, &w, &s);
@@ -7322,7 +7425,7 @@ int token::add_to_zero_width_node_list(node **pp)
   case TOKEN_LEFT_BRACE:
     break;
   case TOKEN_MARK_INPUT:
-    set_number_reg(nm, curenv->get_input_line_position().to_units());
+    set_register(nm, curenv->get_input_line_position().to_units());
     break;
   case TOKEN_NODE:
   case TOKEN_HORIZONTAL_SPACE:
@@ -7412,7 +7515,7 @@ void token::process()
   case TOKEN_LEFT_BRACE:
     break;
   case TOKEN_MARK_INPUT:
-    set_number_reg(nm, curenv->get_input_line_position().to_units());
+    set_register(nm, curenv->get_input_line_position().to_units());
     break;
   case TOKEN_NEWLINE:
     curenv->newline();
@@ -7625,10 +7728,6 @@ void pipe_output()
     skip_line();
   }
   else {
-#ifdef POPEN_MISSING
-    error("pipes not available on this system");
-    skip_line();
-#else /* not POPEN_MISSING */
     if (the_output) {
       error("can't pipe: output already started");
       skip_line();
@@ -7649,7 +7748,6 @@ void pipe_output()
       else
 	pipe_command = pc;
     }
-#endif /* not POPEN_MISSING */
   }
 }
 
@@ -7760,7 +7858,7 @@ int page_range::contains(int n)
   return n >= first && (last <= 0 || n <= last);
 }
 
-page_range *output_page_list = 0;
+page_range *output_page_list = 0 /* nullptr */;
 
 int in_output_page_list(int n)
 {
@@ -7966,7 +8064,7 @@ static void do_register_assignment(const char *s)
     buf[1] = 0;
     units n;
     if (evaluate_expression(s + 1, &n))
-      set_number_reg(buf, n);
+      set_register(buf, n);
   }
   else {
     char *buf = new char[p - s + 1];
@@ -7974,7 +8072,7 @@ static void do_register_assignment(const char *s)
     buf[p - s] = 0;
     units n;
     if (evaluate_expression(p + 1, &n))
-      set_number_reg(buf, n);
+      set_register(buf, n);
     delete[] buf;
   }
 }
@@ -8048,9 +8146,9 @@ int main(int argc, char **argv)
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int c;
-  string_list *macros = 0;
-  string_list *register_assignments = 0;
-  string_list *string_assignments = 0;
+  string_list *macros = 0 /* nullptr */;
+  string_list *register_assignments = 0 /* nullptr */;
+  string_list *string_assignments = 0 /* nullptr */;
   int iflag = 0;
   int tflag = 0;
   int fflag = 0;
@@ -8212,7 +8310,7 @@ int main(int argc, char **argv)
   sizescale = font::sizescale;
   device_has_tcommand = font::has_tcommand;
   warn_scale = (double)units_per_inch;
-  warn_scaling_indicator = 'i';
+  warn_scaling_unit = 'i';
   if (!fflag && font::family != 0 && *font::family != '\0')
     default_family = symbol(font::family);
   font_size::init_size_table(font::sizes);
@@ -8235,6 +8333,9 @@ int main(int argc, char **argv)
 	warning(WARN_FONT, "cannot mount font '%1' directed by 'DESC'"
 		" file for device '%2'", font::font_name_table[i],
 		device);
+  if (fflag && !(is_family_valid(default_family.contents())))
+      fatal("'%1' is not a valid font family",
+	    default_family.contents());
   curdiv = topdiv = new top_level_diversion;
   if (nflag)
     topdiv->set_next_page_number(next_page_number);
@@ -8297,26 +8398,18 @@ void warn_request()
 
 static void init_registers()
 {
-#ifdef LONG_FOR_TIME_T
-  long
-#else /* not LONG_FOR_TIME_T */
-  time_t
-#endif /* not LONG_FOR_TIME_T */
-    t = current_time();
-  struct tm *tt = localtime(&t);
-  set_number_reg("seconds", int(tt->tm_sec));
-  set_number_reg("minutes", int(tt->tm_min));
-  set_number_reg("hours", int(tt->tm_hour));
-  set_number_reg("dw", int(tt->tm_wday + 1));
-  set_number_reg("dy", int(tt->tm_mday));
-  set_number_reg("mo", int(tt->tm_mon + 1));
-  set_number_reg("year", int(1900 + tt->tm_year));
-  set_number_reg("yr", int(tt->tm_year));
-  set_number_reg("$$", getpid());
+  struct tm *t = current_time();
+  set_register("seconds", int(t->tm_sec));
+  set_register("minutes", int(t->tm_min));
+  set_register("hours", int(t->tm_hour));
+  set_register("dw", int(t->tm_wday + 1));
+  set_register("dy", int(t->tm_mday));
+  set_register("mo", int(t->tm_mon + 1));
+  set_register("year", int(1900 + t->tm_year));
+  set_register("yr", int(t->tm_year));
+  set_register("$$", getpid());
   register_dictionary.define(".A",
-			       new readonly_text_register(ascii_output_flag
-						? "1"
-						: "0"));
+      new readonly_text_register(ascii_output_flag ? "1" : "0"));
 }
 
 /*
@@ -8370,6 +8463,8 @@ void init_input_requests()
   init_request("backtrace", backtrace_request);
   init_request("blm", blank_line_macro);
   init_request("break", while_break_request);
+  init_request("cc", assign_control_character);
+  init_request("c2", assign_no_break_control_character);
   init_request("cf", copy_file);
   init_request("cflags", char_flags);
   init_request("char", define_character);
@@ -8390,7 +8485,7 @@ void init_input_requests()
   init_request("do", do_request);
   init_request("ds", define_string);
   init_request("ds1", define_nocomp_string);
-  init_request("ec", set_escape_char);
+  init_request("ec", assign_escape_character);
   init_request("ecr", restore_escape_char);
   init_request("ecs", save_escape_char);
   init_request("el", else_request);
@@ -8421,9 +8516,7 @@ void init_input_requests()
   init_request("pi", pipe_output);
   init_request("pm", print_macros);
   init_request("psbb", ps_bbox_request);
-#ifndef POPEN_MISSING
   init_request("pso", pipe_source);
-#endif /* not POPEN_MISSING */
   init_request("rchar", remove_character);
   init_request("rd", read_request);
   init_request("return", return_macro_request);
@@ -8687,7 +8780,7 @@ static void read_color_draw_node(token &start)
   }
   unsigned char scheme = tok.ch();
   tok.next();
-  color *col = 0;
+  color *col = 0 /* nullptr */;
   char end = start.ch();
   switch (scheme) {
   case 'c':
@@ -8832,16 +8925,33 @@ static void do_error(error_type type,
     fputs("debug: ", stderr);
     break;
   case OUTPUT_WARNING:
-    double fromtop = topdiv->get_vertical_position().to_units() / warn_scale;
-    fprintf(stderr, "warning [p %d, %.1f%c",
-	    topdiv->get_page_number(), fromtop, warn_scaling_indicator);
-    if (topdiv != curdiv) {
-      double fromtop1 = curdiv->get_vertical_position().to_units()
-			/ warn_scale;
-      fprintf(stderr, ", div '%s', %.1f%c",
-	      curdiv->get_diversion_name(), fromtop1, warn_scaling_indicator);
+    if (nroff_mode) {
+      int fromtop = topdiv->get_vertical_position().to_units()
+		    / vresolution;
+      fprintf(stderr, "warning [page %d, line %d",
+	      topdiv->get_page_number(), fromtop);
+      if (topdiv != curdiv) {
+	int fromdivtop = curdiv->get_vertical_position().to_units()
+			 / vresolution;
+	fprintf(stderr, ", diversion '%s', line %d",
+		curdiv->get_diversion_name(), fromdivtop);
+      }
+      fprintf(stderr, "]: ");
     }
-    fprintf(stderr, "]: ");
+    else {
+      double fromtop = topdiv->get_vertical_position().to_units()
+		       / warn_scale;
+      fprintf(stderr, "warning [page %d, %.1f%c",
+	      topdiv->get_page_number(), fromtop, warn_scaling_unit);
+      if (topdiv != curdiv) {
+	double fromtop1 = curdiv->get_vertical_position().to_units()
+			  / warn_scale;
+	fprintf(stderr, " (diversion '%s', %.1f%c)",
+		curdiv->get_diversion_name(), fromtop1,
+		warn_scaling_unit);
+      }
+      fprintf(stderr, "]: ");
+    }
     break;
   }
   errprint(format, arg1, arg2, arg3);

@@ -542,7 +542,7 @@ void draw_dvi_printer::end_page(int len)
 
 void dvi_printer::do_special(const char *s)
 {
-  int len = strlen(s);
+  size_t len = strlen(s);
   if (len == 0)
     return;
   possibly_begin_line();

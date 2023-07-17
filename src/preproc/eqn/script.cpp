@@ -33,7 +33,7 @@ public:
   void debug_print();
   int left_is_italic();
   void hint(unsigned);
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
 };
 
 /* The idea is that the script should attach to the rightmost box
@@ -234,13 +234,13 @@ void script_box::debug_print()
   }
 }
 
-void script_box::check_tabs(int level)
+void script_box::diagnose_tab_stop_usage(int level)
 {
   if (sup)
-    sup->check_tabs(level + 1);
+    sup->diagnose_tab_stop_usage(level + 1);
   if (sub)
-    sub->check_tabs(level + 1);
-  p->check_tabs(level);
+    sub->diagnose_tab_stop_usage(level + 1);
+  p->diagnose_tab_stop_usage(level);
 }
 
 // Local Variables:

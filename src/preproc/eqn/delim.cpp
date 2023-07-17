@@ -170,7 +170,7 @@ public:
   ~delim_box();
   int compute_metrics(int);
   void output();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
   void debug_print();
 };
 
@@ -295,7 +295,7 @@ static void define_extensible_string(char *delim, int uid,
 {
   printf(".ds " DELIM_STRING "\n");
   delimiter *d = delim_table;
-  int delim_len = strlen(delim);
+  size_t delim_len = strlen(delim);
   int i;
   for (i = 0; i < DELIM_TABLE_SIZE; i++, d++)
     if (strncmp(delim, d->name, delim_len) == 0 
@@ -397,9 +397,9 @@ void delim_box::output()
   }
 }
 
-void delim_box::check_tabs(int level)
+void delim_box::diagnose_tab_stop_usage(int level)
 {
-  p->check_tabs(level);
+  p->diagnose_tab_stop_usage(level);
 }
 
 void delim_box::debug_print()

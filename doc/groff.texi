@@ -24,7 +24,7 @@
 
 
 @copying
-This manual documents GNU @code{troff} version 1.23.0.
+This manual documents GNU @code{troff} version 1.23.0+Git.
 
 Copyright @copyright{} 1994--2023 Free Software Foundation, Inc.
 
@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle Edition 1.23.0
-@subtitle June 2023
+@subtitle July 2023
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -894,39 +894,48 @@ output drivers can be found in the man pages @cite{gpic@r{(1)}},
 @cite{gropdf@r{(1)}}, @cite{grohtml@r{(1)}}, @cite{grodvi@r{(1)}},
 @cite{grolj4@r{(1)}}, @cite{grolbp@r{(1)}}, and @cite{gxditview@r{(1)}}.
 
-The command-line format for @code{groff} is:
+A summary of @command{groff}'s usage is as follows.
 
 @Example
-groff [ -abceghijklpstvzCEGNRSUVXZ ] [ -d@var{cs} ] [ -D@var{arg} ]
-      [ -f@var{fam} ] [ -F@var{dir} ] [ -I@var{dir} ] [ -K@var{arg} ]
-      [ -L@var{arg} ] [ -m@var{name} ] [ -M@var{dir} ] [ -n@var{num} ]
-      [ -o@var{list} ] [ -P@var{arg} ] [ -r@var{cn} ] [ -T@var{dev} ]
-      [ -w@var{name} ] [ -W@var{name} ] [ @var{files}@dots{} ]
+groff [-abcCeEgGijklNpRsStUVXzZ] [-d @var{c}@var{s}]@
+[-d @var{string}=@var{text}]
+      [-D @var{fallback-encoding}] [-f @var{font-family}]
+      [-F @var{font-directory}] [-I @var{inclusion-directory}]
+      [-K @var{input-encoding}] [-L @var{spooler-argument}]
+      [-m @var{macro-package}] [-M @var{macro-directory}]
+      [-n @var{page-number}] [-o @var{page-list}]
+      [-P @var{postprocessor-argument}]@
+[-r @var{c}@var{numeric-expression}]
+      [-r @var{register}=@var{numeric-expression}]@
+[-T @var{output-device}]
+      [-w @var{warning-category}] [-W @var{warning-category}]
+      [@var{file} @dots{}]
 @endExample
 
-The command-line format for @code{gtroff} is as follows.
+@code{gtroff} shares much of this interface; @command{groff} passes
+relevant options and operands to it.
 
 @Example
-gtroff [ -abcivzCERU ] [ -d@var{cs} ] [ -f@var{fam} ] [ -F@var{dir} ]
-       [ -m@var{name} ] [ -M@var{dir} ] [ -n@var{num} ] [ -o@var{list} ]
-       [ -r@var{cn} ] [ -T@var{name} ] [ -w@var{name} ] [ -W@var{name} ]
-       [ @var{files}@dots{} ]
+gtroff [-abcCEiRUz] [-f @var{font-family}] [-F @var{font-directory}]
+       [-I @var{inclusion-directory}] [-m @var{macro-package}]
+       [-M @var{macro-directory}] [-n @var{page-number}]@
+[-o @var{page-list}]
+       [-r @var{c}@var{numeric-expression}]
+       [-r @var{register}=@var{numeric-expression}]@
+[-T @var{output-device}]
+       [-w @var{warning-category}] [-W @var{warning-category}]
+       [@var{file} @dots{}]
 @endExample
 
-@noindent
-Obviously, many of the options to @code{groff} are actually passed on to
-@code{gtroff}.
-
-Options without an argument can be grouped behind a
+Options that don't take arguments can be clustered after a
 single@tie{}@option{-}.  A filename of@tie{}@file{-} denotes the
-standard input.  Whitespace is permitted between an option and its
-argument.
+standard input stream.
 
-The @code{grog} command can be used to guess the correct @code{groff}
-command to format a file.  See its man page @cite{grog@r{(1)}}; type
-@samp{man grog} at the command line to view it.
+All @code{groff} commands accept a @option{--help} option, which
+summarizes usage similarly to the foregoing, and @option{--version},
+which discloses release information.  Both exit after reporting.
 
-@command{groff}'s command-line options are as follows.
+The rest of @command{groff}'s command-line options are as follows.
 
 @cindex command-line options
 @table @samp
@@ -1389,15 +1398,16 @@ overrides @env{GROFF_TYPESETTER}.
 @tindex SOURCE_DATE_EPOCH@r{, environment variable}
 A timestamp (expressed as seconds since the Unix epoch) to use as the
 output creation timestamp in place of the current time.  The time is
-converted to human-readable form using @cite{localtime@r{(3)}} when the
-formatter starts up and stored in registers usable by documents and
-macro packages (@pxref{Built-in Registers}).
+converted to human-readable form using @cite{gmtime@r{(3)}} and
+@cite{asctime@r{(3)}} when the formatter starts up and stored in
+registers usable by documents and macro packages (@pxref{Built-in
+Registers}).
 
 @item TZ
 @tindex TZ@r{, environment variable}
-The time zone to use when converting the current time (or value of
-@env{SOURCE_DATE_EPOCH}) to human-readable form; see
-@cite{tzset@r{(3)}}.
+The time zone to use when converting the current time to human-readable
+form; see @cite{tzset@r{(3)}}.  If @env{SOURCE_DATE_EPOCH} is used, it
+is always converted to human-readable form using UTC.
 @end table
 
 MS-DOS and MS-Windows ports of @code{groff} use semicolons, rather than
@@ -1553,7 +1563,7 @@ fine-tune these locations during the source configuration process.
 
 In @code{groff}, the page dimensions for the formatter GNU @code{troff}
 and for output devices are handled separately.  @xref{Page Layout}, for
-vertical manipulation of the page size, and @xref{Line Layout}, for
+vertical manipulation of the page size, and @ref{Line Layout}, for
 horizontal changes.
 @pindex papersize.tmac
 @pindex troffrc
@@ -1674,8 +1684,8 @@ process; their users need not have mastered the full formatting
 language, nor understand features like diversions, traps, and
 environments.  This chapter aims to familiarize you with basic concepts
 and mechanisms common to many macro packages (like ``displays'').  If
-you prefer a meticulous and comprehensive presentation, try @ref{GNU
-troff Reference} instead.
+you prefer a meticulous and comprehensive presentation of the language
+and its formatter, peruse @ref{GNU troff Reference} instead.
 
 @menu
 * Basics::
@@ -1888,9 +1898,9 @@ do not, instead fulfilling narrow, specific tasks.  Find a list in the
 @cite{groff_tmac@r{(5)}} man page.  Type @samp{man groff_tmac} at the
 command line to view it.
 
-We survey several capabilities of full-service macro package below.
-Each package employs its own macros to exercise them.  For details,
-consult its man page or, for @file{ms}, see @ref{ms}.
+We present several capabilities of full-service macro packages below.
+Each package employs its own macro names to exercise them.  For details,
+consult the package's man page or, for @file{ms}, see @ref{ms}.
 
 @menu
 * Paragraphs::
@@ -1915,9 +1925,12 @@ consult its man page or, for @file{ms}, see @ref{ms}.
 @subsection Paragraphs
 @cindex paragraphs
 
-Paragraphs can be separated and indented in various ways.  Some start
-with a blank line and have a first-line indentation, like most of the
-ones in this manual.  Block paragraphs omit the indentation.
+@cindex indented paragraphs
+@cindex block paragraphs
+Paragraphs can be formatted in various ways.  Some indent their first
+line.  Block paragraphs like the following example omit this
+indentation, and must be separated with vertical space for readability.
+Separation can be configured for other paragraph types as well.
 
 @Example
   @result{} Some  men  look  at constitutions with sanctimonious
@@ -1928,9 +1941,9 @@ ones in this manual.  Block paragraphs omit the indentation.
 @cindex tags, paragraph
 @cindex tagged paragraphs
 @cindex lists
-@noindent
 We also frequently encounter @slanted{tagged} paragraphs, which begin
-with a tag or label at the left margin and indent the remaining text.
+with a label, or @slanted{tag}, at the left margin, and indent the
+remaining text.
 
 @Example
   @result{} one  This  is the first paragraph.  Notice how the
@@ -1939,7 +1952,7 @@ with a tag or label at the left margin and indent the remaining text.
 @endExample
 
 @noindent
-If the tag is too wide for the indentation, the line is broken.
+If the tag is too wide for the indentation amount, the line is broken.
 
 @Example
   @result{} longlabel
@@ -1947,7 +1960,6 @@ If the tag is too wide for the indentation, the line is broken.
   @result{}      lines, but they align with each other.
 @endExample
 
-@noindent
 A variation of the tagged paragraph is the itemized or enumerated
 paragraph, which might use punctuation or a digit for a tag,
 respectively.  These are frequently used to construct lists.
@@ -1976,7 +1988,11 @@ The simplest kind of section heading is unnumbered, set in a bold or
 italic style, and occupies a line by itself.  Others possess
 automatically numbered multi-level headings and/or different typeface
 styles or sizes at different levels.  More sophisticated macro packages
-supply macros for designating chapters and appendices.
+supply macros for designating chapters and appendices, and permit
+@cindex run-in headings
+@cindex headings, run-in
+``run-in headings'', where there is no break between the end of the
+heading text and the start of the subsequent paragraph.
 
 @c ---------------------------------------------------------------------
 
@@ -2013,17 +2029,17 @@ values.
 @cindex displays
 
 @slanted{Displays} are sections of text set off from the surrounding
-material (typically paragraphs), often differing in indentation, and/or
+material (typically paragraphs), often differing in indentation and/or
 spacing.  Tables, block quotations, and figures are displayed.
 Equations and code examples, when not much shorter than an output line,
-often are.  Lists may or may not be.  Packages for setting man pages
-support example displays but not keeps.
-@c XXX: man, mdoc keep support planned
+often are.  Lists may or may not be.
 
 @cindex keeps (introduction)
 A @slanted{keep} is a group of output lines, often a display, that is
 formatted on a single page if possible; it causes a page break to happen
-early so as to not interrupt the kept material.
+early so as to not interrupt the kept material.  Packages for setting
+man pages support example displays but not keeps.
+@c XXX: man, mdoc keep support planned
 
 @cindex keep, floating
 @cindex floating keep
@@ -2140,9 +2156,10 @@ for @command{gpic}.
 @node Configuration and Customization,  , Preprocessor Support, Common Features
 @subsection Configuration and Customization
 
-Packages provide means of customizing many of the details of how the
-package behaves.  These range from setting the default type size to
-changing the appearance of section headers.
+Each package provides means of customizing details of its behavior.
+Often, this is achieved with register and string definitions.  Such
+parameters include the default type size and the appearance of section
+headings.
 
 @codequotebacktick off
 @codequoteundirected off
@@ -2230,8 +2247,10 @@ command line to view it.
 @subsection Optional @file{man} extensions
 
 @pindex man.local
-Use the file @file{man.local} for local extensions to the @code{man}
-macros or for style changes.
+Use the file @file{man.local} to configure its rendering parameters on a
+persistent basis.  With care, its macros can be redefined there (except
+for @code{TH}, to which one should, at most, append with the @code{am}
+family of requests).
 
 @unnumberedsubsubsec Custom headers and footers
 @cindex @code{man} macros, custom headers and footers
@@ -2387,6 +2406,11 @@ are printed in Helvetica bold.
 @code{groff}'s implementation of the BSD @file{doc} package for man
 pages is documented in the @cite{groff_mdoc@r{(7)}} man page.  Type
 @samp{man groff_mdoc} at the command line to view it.
+
+Use the file @file{mdoc.local} to configure its rendering parameters on
+a persistent basis.  With care, its macros can be redefined there
+(except for @code{Dd}, to which one should, at most, append with the
+@code{am} family of requests).
 
 
 @c =====================================================================
@@ -3692,10 +3716,10 @@ A numbered list:
 Here we have employed the @code{nr} request to create a register of our
 own, @samp{step}.  We initialized it to zero and assigned it an
 auto-increment of 1.  Each time we use the escape sequence
-@samp{\n+[PI]} (note the plus sign), the formatter applies the increment
-just before interpolating the register's value.  Preparing the @code{PI}
-register as well enables us to rearrange the list without the tedium of
-updating macro calls.
+@samp{\n+[step]} (note the plus sign), the formatter applies the
+increment just before interpolating the register's value.  Preparing the
+@code{PI} register as well enables us to rearrange the list without the
+tedium of updating macro calls.
 
 The next example illustrates a glossary-style list.
 @cindex example markup, glossary-style list [@file{ms}]
@@ -5527,6 +5551,23 @@ page writers; see the @cite{groff_char@r{(7)}} man page.}
 Other encodings are supported by means of macro packages.
 
 @table @code
+@item koi8-r
+@cindex encoding, input, @w{KOI8-R}
+@cindex @w{KOI8-R}, input encoding
+@cindex input encoding, @w{KOI8-R}
+@pindex koi8-r.tmac
+To use @w{KOI8-R}, an encoding for the Russian language, either place
+@w{@samp{.mso koi8-r.tmac}} at the very beginning of your document or
+supply @samp{-mkoi8-r} as a command-line argument to @code{groff}.  The
+localization file @file{ru.tmac} takes care of this automatically; see
+@ref{Manipulating Hyphenation}.@footnote{KOI8-R code points in the range
+@code{0x80}--@code{0x9F} are not valid input on systems using ISO
+character codings natively; see @ref{Identifiers}.  This should be no
+impediment to practical documents, as these KOI8-R code points do not
+encode letters, but box-drawing symbols and characters that are better
+obtained via special character escape sequences; see the
+@cite{groff_char@r{(7)}} man page.}
+
 @item latin2
 @cindex encoding, input, @w{Latin-2} (ISO @w{8859-2})
 @cindex @w{Latin-2} (ISO @w{8859-2}), input encoding
@@ -6619,14 +6660,18 @@ with the @code{cc} and @code{c2} requests, respectively.
 @Defreq {cc, [@Var{o}]}
 Recognize the ordinary character@tie{}@var{o} as the control character.
 If@tie{}@var{o} is absent or invalid, the default control character
-@samp{.} is selected.  The identity of the control character is
+@samp{.} is selected.  If @var{o} (or @samp{.} if @var{o} is invalid) is
+already the escape or no-break control character, an error is diagnosed
+and the request ignored.  The identity of the control character is
 associated with the environment (@pxref{Environments}).
 @endDefreq
 
 @Defreq {c2, [@Var{o}]}
 Recognize the ordinary character@tie{}@var{o} as the no-break control
 character.  If@tie{}@var{o} is absent or invalid, the default no-break
-control character @samp{'} is selected.  The identity of the no-break
+control character @samp{'} is selected.  If @var{o} (or @samp{'} if
+@var{o} is invalid) is already the escape or control character, an error
+is diagnosed and the request ignored.  The identity of the no-break
 control character is associated with the environment
 (@pxref{Environments}).
 @endDefreq
@@ -6977,7 +7022,9 @@ sequence in interpretation mode.
 @cindex character, escape, changing (@code{ec})
 Recognize the ordinary character@tie{}@var{o} as the escape character.
 If@tie{}@var{o} is absent or invalid, the default escape character
-@samp{\} is selected.
+@samp{\} is selected.  If @var{o} (or @samp{\} if @var{o} is invalid) is
+already the control or no-break control character, an error is diagnosed
+and the request ignored.
 @endDefreq
 
 Switching escape sequence interpretation off to define a macro and back
@@ -8564,6 +8611,7 @@ together because they contradict; for instance, values 4 and@tie{}16,
 and values 8 and@tie{}32.  As noted, it is superfluous to add 1 to any
 non-zero even mode.
 
+@c TODO: Add @pindex for hyphenation pattern and exception files.
 @cindex hyphenation pattern files
 @cindex pattern files, for hyphenation
 The automatic placement of hyphens in words is determined by
@@ -8611,6 +8659,8 @@ the @cite{groff_tmac@r{(5)}} man page for more information on GNU
 @item        German traditional @tab det          @tab 2        @tab 2
 @item        German reformed    @tab den          @tab 2        @tab 2
 @item        Italian            @tab it           @tab 2        @tab 2
+@item        Russian            @tab ru           @tab 2        @tab 2
+@item        Spanish            @tab es           @tab 2        @tab 2
 @item        Swedish            @tab sv           @tab 1        @tab 2
 @end multitable
 
@@ -8692,9 +8742,11 @@ be used.  By default, every code maps to itself except those for letters
 @pindex cs.tmac
 @pindex de.tmac
 @pindex en.tmac
+@pindex es.tmac
 @pindex fr.tmac
 @pindex it.tmac
 @pindex ja.tmac
+@pindex ru.tmac
 @pindex sv.tmac
 @pindex zh.tmac
 The set of hyphenation patterns is associated with the language set by
@@ -16756,7 +16808,9 @@ exhausted.  The default is 1,000.
 @Defreq {warnscale, su}
 Set the scaling unit used in certain warnings @c `output_warning()`
 to @var{su}, which can take the values @samp{u}, @samp{i}, @samp{c},
-@samp{p}, and @samp{P}.  The default is @samp{i}.
+@samp{p}, and @samp{P}.  The default is @samp{i}.  Ignored on
+@code{nroff}-mode output devices, for which these diagnostics report the
+vertical page location in lines.
 @endDefreq
 
 @Defreq {spreadwarn, [@Var{limit}]}

@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -35,7 +34,7 @@ public:
   int compute_metrics(int);
   void output();
   void debug_print();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
 };
 
 box *make_accent_box(box *p, box *q)
@@ -146,10 +145,10 @@ void accent_box::output()
   }
 }
 
-void accent_box::check_tabs(int level)
+void accent_box::diagnose_tab_stop_usage(int level)
 {
-  ab->check_tabs(level + 1);
-  p->check_tabs(level + 1);
+  ab->diagnose_tab_stop_usage(level + 1);
+  p->diagnose_tab_stop_usage(level + 1);
 }
 
 void accent_box::debug_print()
@@ -256,7 +255,7 @@ public:
   int compute_metrics(int);
   void output();
   void compute_subscript_kern();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
   void debug_print();
 };
 
@@ -321,10 +320,10 @@ void uaccent_box::output()
   }
 }
 
-void uaccent_box::check_tabs(int level)
+void uaccent_box::diagnose_tab_stop_usage(int level)
 {
-  ab->check_tabs(level + 1);
-  p->check_tabs(level + 1);
+  ab->diagnose_tab_stop_usage(level + 1);
+  p->diagnose_tab_stop_usage(level + 1);
 }
 
 void uaccent_box::compute_subscript_kern()
@@ -704,3 +703,8 @@ void vcenter_box::debug_print()
   fprintf(stderr, " }");
 }
 
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

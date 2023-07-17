@@ -298,7 +298,7 @@ bool variable_reg::get_value(units *res)
   return true;
 }
 
-void define_number_reg()
+void define_register()
 {
   symbol nm = get_name(true /* required */);
   if (nm.is_null()) {
@@ -323,7 +323,7 @@ void define_number_reg()
 }
 
 #if 0
-void inline_define_reg()
+void inline_define_register()
 {
   token start;
   start.next();
@@ -355,7 +355,7 @@ void inline_define_reg()
 }
 #endif
 
-void set_number_reg(symbol nm, units n)
+void set_register(symbol nm, units n)
 {
   reg *r = (reg *)register_dictionary.lookup(nm);
   if (r == 0) {
@@ -365,7 +365,7 @@ void set_number_reg(symbol nm, units n)
   r->set_value(n);
 }
 
-reg *lookup_number_reg(symbol nm)
+reg *look_up_register(symbol nm)
 {
   reg *r = (reg *)register_dictionary.lookup(nm);
   if (r == 0) {
@@ -428,7 +428,7 @@ void alias_reg()
     symbol s2 = get_name(true /* required */);
     if (!s2.is_null()) {
       if (!register_dictionary.alias(s1, s2))
-	warning(WARN_REG, "register '%1' not defined", s2.contents());
+	error("cannot alias undefined register '%1'", s2.contents());
     }
   }
   skip_line();
@@ -445,7 +445,7 @@ void rename_reg()
   skip_line();
 }
 
-void print_number_regs()
+void print_registers()
 {
   object_dictionary_iterator iter(register_dictionary);
   reg *r;
@@ -465,11 +465,11 @@ void print_number_regs()
 void init_reg_requests()
 {
   init_request("rr", remove_reg);
-  init_request("nr", define_number_reg);
+  init_request("nr", define_register);
   init_request("af", alter_format);
   init_request("aln", alias_reg);
   init_request("rnn", rename_reg);
-  init_request("pnr", print_number_regs);
+  init_request("pnr", print_registers);
 }
 
 // Local Variables:

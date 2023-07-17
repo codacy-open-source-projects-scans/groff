@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -43,7 +42,7 @@ public:
   enum { FOUND_NOTHING = 0, FOUND_MARK = 1, FOUND_LINEUP = 2 };
   void set_spacing_type(char *type);
   virtual void hint(unsigned);
-  virtual void check_tabs(int);
+  virtual void diagnose_tab_stop_usage(int);
 };
 
 class box_list {
@@ -56,7 +55,7 @@ public:
   box_list(box *);
   ~box_list();
   void append(box *);
-  void list_check_tabs(int);
+  void list_diagnose_tab_stop_usage(int);
   void list_debug_print(const char *sep);
   friend class list_box;
 };
@@ -76,7 +75,7 @@ public:
   int compute_metrics(int);
   void compute_subscript_kern();
   void output();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
   void append(box *);
   list_box *to_list_box();
   void handle_char_type(int, int);
@@ -108,7 +107,7 @@ public:
   int compute_metrics(int);
   void output();
   void debug_print();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
   void set_alignment(alignment a) { col.set_alignment(a); }
   void set_space(int n) { col.set_space(n); }
   void append(box *p) { col.append(p); }
@@ -125,7 +124,7 @@ public:
   void append(column *);
   int compute_metrics(int);
   void output();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
   void debug_print();
 };
 
@@ -139,7 +138,7 @@ public:
   void compute_subscript_kern();
   void compute_skew();
   void debug_print() = 0;
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
 };
 
 class vcenter_box : public pointer_box {
@@ -176,20 +175,34 @@ public:
   void debug_print();
 };
 
-class space_box : public simple_box {
+class full_space_box : public simple_box {
 public:
-  space_box();
+  full_space_box();
+  void output();
+  void debug_print();
+};
+
+class thick_space_box : public simple_box {
+public:
+  thick_space_box();
+  void output();
+  void debug_print();
+};
+
+class thin_space_box : public simple_box {
+public:
+  thin_space_box();
   void output();
   void debug_print();
 };
 
 class tab_box : public box {
-  int disabled;
+  bool disabled;
 public:
   tab_box();
   void output();
   void debug_print();
-  void check_tabs(int);
+  void diagnose_tab_stop_usage(int);
 };
 
 class size_box : public pointer_box {
@@ -256,10 +269,10 @@ box *make_special_box(char *, box *);
 
 void set_space(int);
 int set_gsize(const char *);
-void set_gfont(const char *);
+void set_gifont(const char *);
 void set_grfont(const char *);
 void set_gbfont(const char *);
-const char *get_gfont();
+const char *get_gifont();
 const char *get_grfont();
 const char *get_gbfont();
 void start_string();
@@ -276,3 +289,9 @@ void init_char_table();
 void init_extensible();
 void define_extensible(const char *name, const char *ext, const char *top = 0,
 		       const char *mid = 0, const char *bot = 0);
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

@@ -3551,6 +3551,13 @@ The default is\~1.
 .
 .
 .TP
+.BI \-rPO= page-offset
+Set page offset;
+the default is 0 for terminal devices
+and 1i for typesetting devices.
+.
+.
+.TP
 .BI \-rS type-size
 Use
 .I type-size

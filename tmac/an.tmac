@@ -805,7 +805,7 @@ contains unsupported escape sequence
 .\" Set a paragraph with a hanging indentation.
 .\" .HP [indent]
 .de1 HP
-.  if !\\n[mS] \\*[an-deprecation-warn]\c
+.  if !\\n[mS] \\*[an-deprecation-warn]\\
 .  an-break-paragraph
 .  ne (1v + 1u)
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
@@ -1294,7 +1294,7 @@ contains unsupported escape sequence
      : \n[an*is-output-terminal]) \
 .  nr an*can-hyperlink 1
 .
-.ds an*body-family T \" Times
+.ds an*body-family \n[.fam]
 .ds an*example-family C \" Courier
 .
 .\" Map monospaced fonts to standard styles for groff's nroff devices.
@@ -1478,6 +1478,10 @@ contains unsupported escape sequence
 .    el               .nr % 0\n[P]
 .  \}
 .\}
+.
+.\" page offset
+.if r PO \
+.  po \n[PO]u
 .
 .\" type size
 .if !r S \{\
