@@ -4239,7 +4239,7 @@ This is a string-valued register.
 .
 .TP
 .B \[rs]n[.fp]
-Interpolate next free font mounting position.
+Interpolate next free non-zero font mounting position.
 .
 .
 .TP

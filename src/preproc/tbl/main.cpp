@@ -993,7 +993,6 @@ format *process_format(table_input &in, options *opt,
 	  size_expression &ps = list->type_size;
 	  ps.relativity = size_expression::ABSOLUTE;
 	  ps.whole = 0;
-	  c = in.get();
 	  do {
 	    c = in.get();
 	  } while (c == ' ' || c == '\t');
@@ -1045,7 +1044,6 @@ format *process_format(table_input &in, options *opt,
 	  size_expression &vs = list->vertical_spacing;
 	  vs.whole = 0;
 	  vs.relativity = size_expression::ABSOLUTE;
-	  c = in.get();
 	  do {
 	    c = in.get();
 	  } while (c == ' ' || c == '\t');

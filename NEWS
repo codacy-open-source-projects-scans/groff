@@ -37,6 +37,11 @@ o New parameters tunable with the GNU eqn "set" primitive, "half_space"
 Macro packages
 --------------
 
+o Hyperlink support is now enabled by default on non-HTML devices that
+  support it (PDF and terminal devices) for an (man) documents.
+  Instructions and commented code for disabling it remain in the
+  "man.local" file.
+
 o The an (man) and doc (mdoc) macro packages now support a `PO` register
   to configure the page offset used by the formatter.
 

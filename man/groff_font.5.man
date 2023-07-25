@@ -48,7 +48,8 @@ device and font description files
 .SH Description
 .\" ====================================================================
 .
-.\" BEGIN Keep parallel with groff.texi node "Device and Font Files".
+.\" BEGIN Keep parallel with groff.texi node "Device and Font
+.\" Description Files".
 The
 .I groff
 font and output device description formats are slight
@@ -673,8 +674,9 @@ The list of ligatures must not extend over more than one line.
 .B special
 The font is
 .IR special :
-when a glyph is requested that is not present in the current font,
-it is sought in any mounted fonts that bear this property.
+when a glyph is requested that is not present in the formatter's
+currently selected font,
+the glyph is sought in any mounted fonts that bear this property.
 .
 .
 .P
@@ -1020,7 +1022,8 @@ the space between them should be increased
 .
 Most kerning pairs should have a negative value
 .RI for\~ n .
-.\" END Keep parallel with groff.texi node "Device and Font Files".
+.\" END Keep parallel with groff.texi node "Device and Font Description
+.\" Files".
 .
 .
 .br

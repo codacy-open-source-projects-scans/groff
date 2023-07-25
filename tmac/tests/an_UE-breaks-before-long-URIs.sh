@@ -48,10 +48,10 @@ wail () {
     fail=yes
 }
 
-output=$(printf "%s" "$input" | "$groff" -Tascii -P-cbou -man)
+output=$(printf "%s" "$input" | "$groff" -rU0 -man -Tascii -P-cbou)
 echo "$output"
 error=$(printf "%s" "$input" \
-    | "$groff" -Tascii -P-cbou -man -ww -z 2>&1)
+    | "$groff" -rU0 -man -Tascii -P-cbou -ww -z 2>&1)
 
 echo "testing that no diagnostic messages are produced" >&2
 test -z "$error" || wail

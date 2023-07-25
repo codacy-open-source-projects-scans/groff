@@ -1521,7 +1521,7 @@ examples of its use.
 .
 .
 .TP
-.B .PS
+.BI .PS\~ "h v"
 .TQ
 .B .PE
 .TQ
@@ -1536,6 +1536,13 @@ or
 .B .PF
 ends it,
 the latter with \[lq]flyback\[rq] to the vertical position at its top.
+.
+.I h
+and
+.I v
+are the horizontal and vertical dimensions of the picture;
+.I pic
+supplies them automatically.
 .
 .
 .TP

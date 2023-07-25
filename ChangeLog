@@ -1,3 +1,108 @@
+2023-07-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Improve documentation of pic(1) usage.
+
+	* tmac/groff_ms.7.man
+	(Tables, figures, equations, and references): Document the
+	mandatory arguments to `PS`.  Explain that pic(1) will supply
+	them.  (This is documentation of the _package's_ interface.)
+
+	* doc/groff.texi: As above, and add example of pic(1) input.
+	Also tighten wording.
+
+	* doc/ms.ms: As above, and supply pic output corresponding to
+	example (if typesetting).  Add a keep.
+
+	* doc/doc.am (doc/ms.ps): Preprocess with pic; call groff with
+	`-p` option when generating document.
+
+	* src/utils/grog/tests/smoke-test.sh: Drop a test case; we no
+	longer have an ms(7) document in the tree that uses tbl and eqn
+	but not pic.
+
+2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Fix post-1.23.0 regression.
+
+	* src/preproc/tbl/main.cpp (process_format): Fix thinkos
+	introduced in commit ba420961c3, 19 May, which caused the first
+	character after [PpVv] column modifiers to be ignored.  Problem
+	visible in typeset renderings of our "ms.ms" document, where
+	some table entries were getting rendered at a type size of 1p.
+
+2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Fix Savannah #64438.
+
+	* tmac/s.tmac (@PS): Stop treating excess arguments as
+	erroneous, foregoing preparation for pic(1) output.  Fixes
+	regression from groff 1.22.4.
+
+	Fixes <https://savannah.gnu.org/bugs/?64438>.  Thanks to Doug
+	McIlroy for the report, Dave Kemper for root-cause analysis, and
+	Deri James for usability feedback.
+
+2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* arch/djgpp/config.site:
+	* arch/misc/shdeps.sh:
+	* bootstrap:
+	* font/devdvi/generate/CompileFonts:
+	* font/devps/generate/afmname:
+	* font/devps/generate/make-zapfdr:
+	* font/util/make-Rproto:
+	* gendef.sh:
+	* m4/groff.m4:
+	* mdate.pl:
+	* src/devices/grops/grops.1.man:
+	* src/devices/xditview/ad2c:
+	* src/libs/libgroff/config.charset:
+	* src/libs/libgroff/make-uniuni:
+	* src/preproc/eqn/neqn.sh:
+	* src/roff/nroff/nroff.sh:
+	* src/utils/afmtodit/make-afmtodit-tables:
+	* test-groff.in:
+	* tmac/hyphenex.pl: Stop endorsing shebang line space myth.
+	Fixes <https://savannah.gnu.org/bugs/?64058>.
+
+2023-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_PROG_YACC): Behave more like `AC_PROG_YACC`
+	where useful, seeking "bison" first.  Drop comment claiming that
+	"Bison-generated parsers have problems with C++ compilers other
+	than g++", which dates back to groff 1.10, 26 November 1995.
+	Let us optimistically assume that GNU Bison (and C++ compilers)
+	have improved since then.
+
+2023-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp (main): Update copyright notice and
+	warranty disclaimer.  Bump year.  Lead with declaration as free
+	software (join us now); specify GPL version and user's option to
+	upgrade to later version.  Use a warranty disclaimer inspired by
+	GNU Bison.  Drop mention of "COPYING" file, which is not
+	installed by groff's "install" make(1) target and not sufficient
+	information to aid users of groff packages prepared by
+	distributors (which neverless are legally bound to provide
+	licensing information via some means, and do so with high
+	reliability).  After almost 35 years, we can have some hope that
+	people have heard of the GNU GPL and can locate a copy of it
+	without great difficulty.  Also drop use of term "subprogram".
+
+2023-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/man.local: Stop disabling hyperlinks on non-HTML output
+	devices.  less(1) version 566 and later are in wide distribution
+	now and will be more so by the time of the next groff release.
+
+	* tmac/tests/an_UE-breaks-before-long-URIs.sh: Force hyperlinks
+	off with `-rU0` to preserve test validity.
+
+	* NEWS: Add item.
+
+	Thanks to Colin Watson for pioneering these changes in Debian's
+	groff 1.23.0-1 package.
+
 2023-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/html/pushback.cpp (pushBackBuffer::isString):

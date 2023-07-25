@@ -2495,6 +2495,7 @@ T}
 _
 T{
 \&.PS
+.I "h v"
 .br
 \&.PE
 .br
@@ -2511,10 +2512,17 @@ or
 ends it,
 the latter with \[lq]flyback\[rq] to the vertical position at its top.
 .
-You can create
+Create
 .I pic
 input manually or with a program such as
 .I xfig (1).
+.
+.I h
+and
+.I v
+are the horizontal and vertical dimensions of the picture;
+.I pic
+supplies them automatically.
 T}
 _
 T{
@@ -2644,10 +2652,40 @@ giving us more flexibility to reorganize the document.
 p ~ = ~ q sqrt { 1 + ~ ( x / q sup 2 ) }
 .EN
 .
-Use
+.
+.PP
+Create diagrams with
+.I pic .
+.
+.
+.TS
+box center;
+Lf(CR).
+\&.PS
+circle "input";
+arrow;
+box width 1.5i "\[rs]f[CR]groff \-Rept \-ms\[rs]f[]";
+arrow;
+circle "output";
+\&.PE
+.TE
+.
+.
+.if t \{\
+.PS
+circle "input";
+arrow;
+box width 1.5i "\f[CR]groff \-Rept \-ms\f[]";
+arrow;
+circle "output";
+.PE
+.\}
+.
+.
+.PP
 .I groff
 options
-to run preprocessors on the input:
+run preprocessors on the input:
 .CW \-e
 for
 .I eqn ,
@@ -2814,6 +2852,7 @@ this macro has an empty definition.
 is a GNU extension.
 .
 .
+.KS
 .PP
 The following input was used to produce the first sentence in this
 section.
@@ -2834,6 +2873,7 @@ like this symbolic footnote
 \&.FE
 or arbitrary user-specified text.
 .TE
+.KE
 .
 .
 .PP

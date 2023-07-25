@@ -345,9 +345,9 @@ doc/meintro_fr.ps: doc/meintro_fr.me preconv
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 	&& $(DOC_GROFF) -K utf8 -t -Tps -me -mfr $< >$@
 
-doc/ms.ps: $(doc_srcdir)/ms.ms $(TMAC_PACKAGE_MS) eqn tbl
+doc/ms.ps: $(doc_srcdir)/ms.ms $(TMAC_PACKAGE_MS) eqn pic tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
-	&& $(DOC_GROFF) -et -Tps -ms $(doc_srcdir)/ms.ms >$@
+	&& $(DOC_GROFF) -pet -Tps -ms $(doc_srcdir)/ms.ms >$@
 
 doc/pic.ps: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS) eqn pic tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
