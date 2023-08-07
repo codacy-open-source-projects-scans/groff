@@ -134,7 +134,7 @@ Here are some portability notes on writing automated tests.
   But see below regarding the opening braces.
 
 * POSIX doesn't say that sed has to accept semicolons as command
-  separators after label (':') and branch ('t') commands, or after brace
+  separators after label (':') and test ('t') commands, or after brace
   commands, so macOS sed doesn't.  GNU sed does.
 
   So rewrite tidy, compact sed scripts like this:

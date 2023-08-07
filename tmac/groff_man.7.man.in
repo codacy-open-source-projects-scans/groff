@@ -1229,6 +1229,9 @@ brackets surround optional arguments,
 and an ellipsis indicates that the previous syntactical element may be
 repeated arbitrarily.
 .
+Where whitespace separates optional arguments,
+a space precedes the ellipsis.
+.
 .
 .IP \(bu
 The non-breaking adjustable space escape sequence
@@ -2571,7 +2574,7 @@ zero-width on terminals);
 a non-breaking space.
 .
 Used primarily in ellipses
-(\(lq.\e|.\e|.\(rq)
+(\(lq.\e|.\e|.\(rq)\&
 to space the dots more pleasantly on typesetting devices like
 .BR dvi ,
 .BR pdf ,
@@ -2591,13 +2594,14 @@ the end of a text line is treated like a space;
 .\" end-of-sentence detection is performed, and...
 an output line
 .I may
-be broken there
-(if not,
-an adjustable space is inserted);
+break there
+(if it does not,
+.I @g@troff
+inserts an adjustable space;
 if filling is disabled,
 the line
 .I will
-be broken there,
+break there,
 as in
 .BR .EX / .EE
 examples.
@@ -3668,7 +3672,7 @@ before any other macros.
 .
 A
 .I man
-program or user typing,
+program or a user typing,
 for example,
 .RB \[lq] "groff \-mandoc page.1" \[rq],
 need not know which package the file
@@ -3977,10 +3981,10 @@ values.
 .
 .
 .IP
-Another approach you can use with tagged paragraphs is to place an
+Another approach to tagged paragraphs places an
 .B .RS
-call immediately after the paragraph tag;
-this will also force a break regardless of the width of the tag,
+call immediately after the tag;
+this will also force a break regardless of the tag's width,
 which some authors prefer.
 .
 Follow-up paragraphs under the tag can then be set with

@@ -133,7 +133,6 @@ MOSTLYCLEANFILES += \
    tmac/*-wrap
 
 EXTRA_DIST += \
-  tmac/fixmacros.sed \
   tmac/groff_ms.7.man \
   tmac/groff_man.7.man.in \
   tmac/groff_me.7.man \

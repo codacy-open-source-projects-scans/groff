@@ -413,9 +413,8 @@ Run
 .MR @g@refer @MAN1EXT@
 preprocessor.
 .
-No mechanism is provided for passing arguments to
-.I @g@refer
-because most
+No mechanism is provided for passing arguments to it;
+most
 .I @g@refer
 options have equivalent language elements that can be specified within
 the document.
@@ -2268,6 +2267,21 @@ is the primary
 manual.
 .
 You can browse it interactively with \[lq]info groff\[rq].
+.
+.
+.P
+A list of all
+.I groff
+man pages follows.
+.
+A few
+.RI ( \%grohtml ,
+.IR gropdf ,
+.IR gxditview ,
+and
+.IR xtotroff )
+will be unavailable if their corresponding programs were disabled during
+compilation.
 .
 .
 .\" groff ships 59 man pages generated from 58 source files.  The

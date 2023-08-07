@@ -1013,6 +1013,11 @@ multiplied by the difference of
 and
 .IR depth .
 .
+.B GROWPS
+and
+.B PSINCR
+are GNU extensions.
+.
 .
 .P
 The
@@ -1037,6 +1042,8 @@ or
 .I eqn
 region between the heading and the subsequent paragraph suppresses this
 grouping.
+.
+This is a GNU extension.
 .
 .
 .\" ====================================================================
@@ -1154,6 +1161,10 @@ or
 Typeset
 .I text
 with an underline.
+.
+On terminal devices,
+.I text
+is bracketed with underscores (\[lq]_\[rq]).
 .
 .I post,
 if present,
@@ -1308,6 +1319,8 @@ request forces a page break if there is not at least the amount of
 vertical space specified in its argument remaining on the page.
 .
 .
+.br
+.ne 5v
 .PP
 A
 .I boxed keep
@@ -1572,6 +1585,8 @@ If specified,
 is set right-aligned.
 .
 .
+.br
+.ne 3v
 .TP
 .B .[
 .TQ

@@ -571,13 +571,12 @@ ever undertaken.
 @c https://minnie.tuhs.org/pipermail/tuhs/2022-March/025535.html
 
 A history relating @code{groff} to its predecessors @code{roff},
-@code{nroff}, and @code{troff} is available in the @cite{roff@r{(7)}}
-man page.
+@code{nroff}, and @code{troff} is available in @cite{roff@r{(7)}}.
 
 
 @c =====================================================================
 
-@node What Is @code{groff}?, @code{groff} Capabilities, Introduction, Introduction
+@node What Is @code{groff}?, @code{groff} Capabilities, Background, Introduction
 @section What Is @code{groff}?
 @cindex what is @code{groff}?
 @cindex @code{groff}---what is it?
@@ -662,9 +661,9 @@ embedding of hyperlinks, images, document metadata, and other inclusions
 @cindex macro package, introduction
 @cindex package, macro, introduction
 
-Elemental typesetting functions can be be challenging to use directly
-with complex documents.  A @dfn{macro} facility specifies how certain
-routine operations, such as starting paragraphs, or printing headers and
+Elemental typesetting functions can be be laborious to use directly with
+complex documents.  A @dfn{macro} facility specifies how certain routine
+operations, such as starting paragraphs, or printing headers and
 footers, should be performed in terms of those low-level instructions.
 Macros can be specific to one document or collected together into a
 @dfn{macro package} for use by many.  Several macro packages available;
@@ -783,9 +782,9 @@ $ echo '.tm all is well.' | groff > /dev/null
     @error{} all is well.
 @endExample
 
-Sometimes we use @result{} somewhat abstractly to represent formatted
-text that you will need to use a PostScript or PDF viewer program (or a
-printer) to observe.  While arguably an abuse of notation, we think this
+Sometimes we use @result{} abstractly to represent formatted text that
+you will need to use a PostScript or PDF viewer program (or a printer)
+to observe.  While arguably an abuse of notation, we think this
 preferable to requiring the reader to understand the syntax of these
 page description languages.
 
@@ -804,6 +803,21 @@ direct the formatter to set a line length (with @samp{.ll}) that will
 fit within the page margins of this manual.  We mention this so that you
 know why it is there before we discuss the @code{ll} request
 formally.@footnote{@xref{Line Layout}.}
+
+@cindex man pages (introduction)
+We refer occasionally to @slanted{man pages}, in which aspects of the
+@code{groff} system or of its operating environment are further
+documented.@footnote{@code{roff} is the language of historical Unix
+manuals, and of man pages to this day.} When you see a citation like
+@cite{groff_man@r{(7)}}, understand that you can type @samp{man
+groff_man} at the command line to view it.  The numbered category
+distinguishes pages by their purpose.  You can try @samp{man 'groff(1)'}
+and @samp{man 'groff(7)'} to observe this distinction.@footnote{POSIX
+has not standardized a mechanism for the @code{man} command to
+distinguish pages by numeric category.  If @samp{man 'groff(7)'}
+produces an error, attempt @samp{man 7 groff} or @samp{man -s 7 groff}.}
+Your system likely offers an @w{@cite{intro@r{(1)}}} page that will help
+you make the most of this resource.
 
 
 @c =====================================================================
@@ -879,10 +893,10 @@ exception.} (with more or less compatible changes).  Similarly, we say
 @pindex preconv
 @code{groff} normally runs the @code{gtroff} program and a
 postprocessor appropriate for the selected device.  The default device
-is @samp{ps} (but it can be changed when @code{groff} is configured and
-built).  It can optionally preprocess with any of @code{gpic},
-@code{geqn}, @code{gtbl}, @code{ggrn}, @code{grap}, @code{gchem},
-@code{grefer}, @code{gsoelim}, or @code{preconv}.
+is @samp{ps} (but it can be changed at @code{groff}'s build-time
+configuration).  It can optionally preprocess input with any of
+@code{gpic}, @code{geqn}, @code{gtbl}, @code{ggrn}, @code{grap},
+@code{gchem}, @code{grefer}, @code{gsoelim}, or @code{preconv}.
 
 This section documents only options to the @code{groff} front end.  Many
 of the arguments to @code{groff} are passed on to @code{gtroff};
@@ -928,8 +942,8 @@ gtroff [-abcCEiRUz] [-f @var{font-family}] [-F @var{font-directory}]
 @endExample
 
 Options that don't take arguments can be clustered after a
-single@tie{}@option{-}.  A filename of@tie{}@file{-} denotes the
-standard input stream.
+single@tie{}@option{-}.  A @var{file} argument of @tie{}@file{-} denotes
+the standard input stream.
 
 All @code{groff} commands accept a @option{--help} option, which
 summarizes usage similarly to the foregoing, and @option{--version},
@@ -993,10 +1007,10 @@ between @command{groff} and @acronym{AT&T} @command{troff}.
 Define @code{roff} string @var{c} or @var{string} as@tie{}@var{t} or
 @var{text}.  @var{c}@tie{}must be one character; @var{string} can be
 of arbitrary length.  Such string assignments happen before any macro
-file is loaded, including the startup file.  Due to @code{getopt_long}
-limitations, @var{c}@tie{}cannot be, and @var{string} cannot contain, an
-equals sign, even though that is a valid character in a @code{roff}
-identifier.
+file is loaded, including the startup file.  Due to
+@cite{getopt_long@r{(3)}} limitations, @var{c}@tie{}cannot be, and
+@var{string} cannot contain, an equals sign, even though that is a valid
+character in a @code{roff} identifier.
 
 @item -D@var{enc}
 Set fallback input encoding used by @command{preconv} to @var{enc};
@@ -1142,15 +1156,15 @@ Set @code{roff} register@tie{}@var{c} or @var{register} to the value
 @var{numeric-expression} (@pxref{Numeric Expressions}).
 @var{c}@tie{}must be one character; @var{register} can be of arbitrary
 length.  Such register assignments happen before any macro file is
-loaded, including the startup file.  Due to @code{getopt_long}
+loaded, including the startup file.  Due to @cite{getopt_long@r{(3)}}
 limitations, @var{c}@tie{}cannot be, and @var{register} cannot contain,
 an equals sign, even though that is a valid character in a @code{roff}
 identifier.
 
 @item -R
 Run @command{grefer} preprocessor.  No mechanism is provided for passing
-arguments to @command{grefer} because most @command{grefer} options have
-equivalent language elements that can be specified within the document.
+arguments to it; most @command{grefer} options have equivalent language
+elements that can be specified within the document.
 
 @pindex troffrc
 @pindex troffrc-end
@@ -1358,8 +1372,7 @@ preprocessor's @option{-e} option to select the character encoding of
 input files.  This variable's existence implies the @code{groff} option
 @option{-k}.  If set but empty, @code{groff} calls @code{preconv}
 without an @option{-e} option.  @code{groff}'s @option{-K} option
-overrides @env{GROFF_ENCODING}.  See the @cite{preconv@r{(7)}} man page;
-type @samp{man preconv} at the command line to view it.
+overrides @env{GROFF_ENCODING}.  See @cite{preconv@r{(7)}}.
 
 @item GROFF_FONT_PATH
 @tindex GROFF_FONT_PATH@r{, environment variable}
@@ -1712,88 +1725,89 @@ consists of text, or words to be printed, and embedded commands
 (@slanted{requests} and @slanted{escape sequences}), which tell GNU
 @code{troff} how to format the output.  @xref{Formatter Instructions}.
 
-The word @slanted{argument} is used in this chapter to mean a word or
-number that appears on the same line as a request, and which modifies
-the meaning of that request.  For example, the request
+The primary function of GNU @code{troff} is to collect words from input
+lines, fill output lines with those words, break the line at the
+right-hand (possibly by hyphenating a word), adjust the line to the
+margin by widening spaces, and output the result.
 
 @Example
-.sp
+@c .ll 42n
+In fact, we know full well today that it is futile to
+speak of liberty as long as economic slavery exists.
+(Kropotkin)
+  @result{} In  fact,  we know full well today that it
+  @result{} is futile to speak of liberty as  long  as
+  @result{} economic slavery exists.  (Kropotkin)
+@endExample
+
+@cindex break (introduction)
+@cindex line break (introduction)
+Sometimes a new output line should start even though the current line is
+not yet full---for example, at the end of a paragraph.  Command a break
+with the @code{br} request.  Some requests cause a break automatically,
+as do (normally) blank input lines and input lines beginning with a
+space or tab.
+
+Not all input lines are @slanted{text lines} containing words to be
+formatted.  @slanted{Control lines} start with a dot (@samp{.}) or an
+apostrophe (@samp{'}) as the first character, and are followed by a
+request or macro name that tells a macro package (or GNU @code{troff}
+directly) how to format the text.
+
+For example, as implied above, the control line
+
+@Example
+.br
 @endExample
 
 @noindent
-spaces one line, but
+will break the output line.
+
+Manu requests and macro calls accept @slanted{arguments} that influence
+their behavior.  The @code{sp} request, without an argument, breaks and
+puts a blank line on the output.  But
 
 @Example
 .sp 4
 @endExample
 
 @noindent
-spaces four lines.  The number@tie{}4 is an argument to the @code{sp}
-request, which says to space four lines instead of one.  Arguments are
-separated from the request and from each other by spaces (@emph{not}
-tabs).  @xref{Invoking Requests}.
+spaces four lines instead.  Arguments are separated from the request and
+from each other by spaces (@emph{not} tabs).  @xref{Invoking Requests}.
 
-The primary function of GNU @code{troff} is to collect words from input
-lines, fill output lines with those words, adjust the line to the
-right-hand margin by widening spaces, and output the result.  For
-example, the input:
-
-@Example
-Now is the time
-for all good men
-to come to the aid
-of their party.
-Four score and seven
-years ago, etc.
-@endExample
-
-@noindent
-is read, packed onto output lines, and justified to produce:
-
-@Example
-  @result{} Now is the time for all good men to come to the aid of
-  @result{} their party.  Four score and seven years ago, etc.
-@endExample
-
-Sometimes a new output line should be started even though the current
-line is not yet full---for example, at the end of a paragraph.  To do
-this it is possible to force a @slanted{break}, starting a new output
-line.  Some requests cause a break automatically, as do (normally) blank
-input lines and input lines beginning with a space or tab.
-
-Not all input lines are @slanted{text lines}---words to be formatted.
-Some are @slanted{control lines} that tell a macro package (or GNU
-@code{troff} directly) how to format the text.  Control lines start with
-a dot (@samp{.}) or an apostrophe (@samp{'}) as the first character, and
-can be followed by a @slanted{macro call}.
-
-The formatter also does more complex things, such as automatically
-numbering pages, skipping over page boundaries, putting footnotes in the
-correct place, and so forth.
+A @slanted{macro} bundles text and/or control lines into a named
+collection that can be called like a request, or set to ``go off''
+automatically at certain places on the page.  Thus, while requests
+perform primitive operations, macro packages handle complex ones, like
+altering the page numbering scheme, collecting and writing out
+footnotes, or managing page headers and footers.
 
 Here are a few hints for preparing text for input to GNU @code{troff}.
 
 @itemize @bullet
 @item
 First, keep the input lines short.  Short input lines are easier to
-edit, and GNU @code{troff} packs words onto longer lines anyhow.
+edit, and, when filling, GNU @code{troff} packs words onto longer lines
+anyhow.
 
 @item
-In keeping with this, it is helpful to begin a new line after every
-comma or phrase, since common corrections are to add or delete sentences
-or phrases.
+Second, it is helpful to begin a new line after every sentence,
+comma, semicolon, colon, since common revisions are to add, delete, or
+replace sentences, clauses, phrases, or members of lists.
 
 @item
-End each sentence with two spaces---or better, start each sentence on a
-new line.  GNU @code{troff} recognizes characters that usually end a
+If you don't start a sentence on a new line, put two spaces after the
+previous one.  GNU @code{troff} recognizes characters that usually end a
 sentence, and inserts inter-sentence space accordingly.
 
-@item
-Do not hyphenate words at the end of lines---GNU @code{troff} is smart
-enough to hyphenate words as needed, but is not smart enough to take
-hyphens out and join a word back together.  Also, words such as
-``mother-in-law'' should not be broken over a line, since then a space
-can occur where not wanted, such as ``@w{mother- in}-law''.
+@c I don't think anyone does the following anymore, since it's a
+@c typewriter-era practice. --GBR
+@c @item
+@c Do not hyphenate words at the end of lines---GNU @code{troff} is
+@c smart enough to hyphenate words as needed, but is not smart enough to
+@c take hyphens out and join a word back together.  Also, words such as
+@c ``mother-in-law'' should not be broken over a line, since then a
+@c space can occur where not wanted, such as ``@w{mother- in}-law''.
 @end itemize
 
 We offer further advice in @ref{Input Conventions}.
@@ -1815,10 +1829,8 @@ operations.  The macro packages for writing man pages, @file{man} and
 @file{mdoc}, don't encourage explicit use of these requests at all.
 
 @cindex spacing (introduction)
-The request @w{@samp{.sp @var{N}}} leaves @var{N}@tie{}lines of blank
-space.  @var{N}@tie{}can be omitted (skipping a single line) or can
-be of the form @var{N}i (for @var{N}@tie{}inches) or @var{N}c (for
-@var{N}@tie{}centimeters).  For example, the input:
+Arguments to requests and macro calls can often be
+@slanted{measurements} rather than simple integers.  For instance,
 
 @Example
 .sp 1.5i
@@ -1827,7 +1839,7 @@ My thoughts on the subject
 @endExample
 
 @noindent
-leaves one and a half inches of space, followed by the line ``My
+outputs one and a half inches of space, followed by the line ``My
 thoughts on the subject'', followed by a single blank line (more
 measurement units are available; see @ref{Measurements}).
 
@@ -1855,7 +1867,7 @@ lines to center
 
 @noindent
 The @w{@samp{.ce 0}} request tells GNU @code{troff} to center zero more
-lines, in other words, stop centering.
+lines---in other words, to stop centering.
 
 @cindex right-aligning lines (introduction)
 @cindex lines, right-aligning (introduction)
@@ -1867,14 +1879,12 @@ epigraphs.
 
 @cindex page break (introduction)
 @cindex break, page (introduction)
-The @code{bp} request starts a new page; this necessarily implies an
-ordinary (line) break.
+The @code{bp} request starts a new page.
 
 @cindex break (introduction)
 @cindex line break (introduction)
 All of these requests cause a break; that is, they always start a new
-line.  To start a new line without performing any other action, use
-@code{br}.  If you invoke them with the apostrophe @samp{'}, the
+line.  If you invoke them with the apostrophe @samp{'}, the
 @slanted{no-break control character}, the (initial) break they normally
 perform is suppressed.  @samp{'br} does nothing.
 
@@ -1894,9 +1904,8 @@ are then collected into a @slanted{macro package}.
 
 Macro packages come in two varieties:@: ``major'' or ``full-service''
 ones that manage page layout, and ``minor'' or ``auxiliary'' ones that
-do not, instead fulfilling narrow, specific tasks.  Find a list in the
-@cite{groff_tmac@r{(5)}} man page.  Type @samp{man groff_tmac} at the
-command line to view it.
+do not, instead fulfilling narrow, specific tasks.  Find a list in
+@cite{groff_tmac@r{(5)}}.
 
 We present several capabilities of full-service macro packages below.
 Each package employs its own macro names to exercise them.  For details,
@@ -1936,6 +1945,7 @@ Separation can be configured for other paragraph types as well.
   @result{} Some  men  look  at constitutions with sanctimonious
   @result{} reverence,  and  deem  them  like  the  ark  of  the
   @result{} covenant, too sacred to be touched.
+@c Jefferson
 @endExample
 
 @cindex tags, paragraph
@@ -2085,8 +2095,7 @@ might work in this manner, providing lists of figures or tables.
 A table of contents is often found at the end of a GNU @code{troff}
 document because the formatter processes the document in a single pass.
 The @command{gropdf} output driver supports a PDF feature that relocates
-pages at the time the document is rendered; see the @cite{gropdf@r{(1)}}
-man page.  Type @samp{man gropdf} at the command line to view it.
+pages at the time the document is rendered; see @cite{gropdf@r{(1)}}.
 
 @c ---------------------------------------------------------------------
 
@@ -2206,9 +2215,8 @@ groff -m man -m ms foo.man bar.doc
 Many auxiliary, or ``minor'', macro packages are also available.  They
 may in general be used with any full-service macro package and handle a
 variety of tasks from character encoding selection, to language
-localization, to inlining of raster images.  See the
-@cite{groff_tmac@r{(5)}} man page for a list.  Type @samp{man
-groff_tmac} at the command line to view it.
+localization, to inlining of raster images.  See
+@cite{groff_tmac@r{(5)}} for a list.
 
 @menu
 * man::
@@ -2233,9 +2241,7 @@ The @code{man} macro package is the most widely used and probably the
 most important ever developed for @code{troff}.  It is easy to use, and
 a vast majority of manual pages (``man pages'') are written in it.
 
-@code{groff}'s implementation is documented in the
-@cite{groff_man@r{(7)}} man page.  Type @samp{man groff_man} at the
-command line to view it.
+@code{groff}'s implementation is documented in @cite{groff_man@r{(7)}}.
 
 @menu
 * Optional man extensions::
@@ -2404,8 +2410,7 @@ are printed in Helvetica bold.
 @cindex @code{mdoc} macros
 
 @code{groff}'s implementation of the BSD @file{doc} package for man
-pages is documented in the @cite{groff_mdoc@r{(7)}} man page.  Type
-@samp{man groff_mdoc} at the command line to view it.
+pages is documented in @cite{groff_mdoc@r{(7)}}.
 
 Use the file @file{mdoc.local} to configure its rendering parameters on
 a persistent basis.  With care, its macros can be redefined there
@@ -2422,9 +2427,8 @@ a persistent basis.  With care, its macros can be redefined there
 @code{groff}'s implementation of the BSD @file{me} macro package is
 documented using itself.  A tutorial, @file{meintro.me}, and reference,
 @file{meref.me}, are available in @code{groff}'s documentation
-directory.  A @cite{groff_me@r{(7)}} man page is also available and
-identifies the installation path for these documents.  Type @samp{man
-groff_me} at the command line to view it.
+directory.  @cite{groff_me@r{(7)}} identifies the installation path for
+these documents.
 
 A French translation of the tutorial is available as
 @file{meintro_fr.me} and installed parallel to the English version.
@@ -2437,8 +2441,7 @@ A French translation of the tutorial is available as
 @cindex @code{mm} macro package
 
 @code{groff}'s implementation of the @acronym{AT&T} memorandum macro
-package is documented in the @cite{groff_mm@r{(7)}} man page.  Type
-@samp{man groff_mm} at the command line) to view it.
+package is documented in @cite{groff_mm@r{(7)}}.
 
 A Swedish localization of @file{mm} is also available; see
 @cite{groff_mmse@r{(7)}}.
@@ -3485,8 +3488,9 @@ heading produced by these macros increases by @code{PSINCR} units over
 the size specified by @code{PS} multiplied by the difference of
 @code{GROWPS} and @var{level}.  The value stored in @code{PSINCR} is
 interpreted in @code{groff} basic units; the @code{p} scaling unit
-should be employed when assigning a value specified in points.  For
-example, the sequence
+should be employed when assigning a value specified in points.
+
+The input
 
 @CartoucheExample
 .nr PS 10
@@ -3503,9 +3507,9 @@ Machairodontinae
 @endCartoucheExample
 
 @noindent
-will cause ``1. Carnivora'' to be printed in 13-point text, followed by
+causes ``1. Carnivora'' to be printed in 13-point text, followed by
 ``1.1. Felinae'' in 11.5-point text, while ``1.1.1. Felis catus'' and
-all more deeply nested heading levels will remain in the 10-point text
+all more deeply nested heading levels remains in the 10-point text
 specified by the @code{PS} register.  ``Machairodontinae'' is printed at
 11.5 points, since it corresponds to heading level@tie{}2.
 
@@ -3572,8 +3576,9 @@ use unbreakable space or horizontal motion escape sequences (@code{\~},
 @endDefmac
 
 @Defmac {UL, [@Var{text} [@Var{post}]], ms}
-Typeset @var{text} with an underline.  @var{post}, if present, is set
-after @var{text} with no intervening space.
+Typeset @var{text} with an underline.  On terminal devices, @var{text}
+is bracketed with underscores `_'.  @var{post}, if present, is set after
+@var{text} with no intervening space.
 @endDefmac
 
 @Defmac {LG, , ms}
@@ -4028,10 +4033,8 @@ specified, @var{label} is set right-aligned.
 @DefmacList {[, , ms}
 @DefmacListEndx {], , ms}
 Demarcate a bibliographic citation to be processed by the @code{refer}
-preprocessor.  The GNU @cite{refer@r{(1)}} man page provides a
-comprehensive reference to the preprocessor and the format of its
-bibliographic database.  Type @samp{man refer} at the command line to
-view it.
+preprocessor.  @cite{grefer@r{(1)}} provides a comprehensive reference
+to the preprocessor and the format of its bibliographic database.
 @endDefmac
 
 When @code{refer} emits collected references (as might be done on a
@@ -8327,12 +8330,16 @@ doomed to success. \[em] C. A. R. Hoare
 @cindex sentence space size register (@code{.sss})
 @cindex size of sentence space register (@code{.sss})
 @cindex space between sentences register (@code{.sss})
-Set the sizes of spaces between words and
-sentences@footnote{Recall @ref{Filling} and @ref{Sentences} for the
-definitions of word and sentence boundaries, respectively.} in twelfths
-of font's space width (typically one-fourth to one-third em for Western
-scripts).  The default for both parameters is@tie{}12.  Negative values
-are erroneous.
+@cindex CSTR@tie{}#54 errata
+@cindex CSTR@tie{}#54 erratum, @code{ss} request
+Set the sizes of spaces between words and sentences@footnote{Recall
+@ref{Filling} and @ref{Sentences} for the definitions of word and
+sentence boundaries, respectively.} in twelfths of the space width of
+the currently selected font.@footnote{@xref {Font Description File
+Format}.  This request is incorrectly documented in the @acronym{AT&T}
+@code{troff} manual as using units of 1/36 em.}  (An inter-word space is
+typically one-fourth to one-third em for Western scripts.)  The default
+for both parameters is@tie{}12.  Negative values are erroneous.
 @cindex inter-word spacing, minimal
 @cindex minimal inter-word spacing
 @cindex space, between words
@@ -8361,8 +8368,7 @@ present, are adjusted as normal.
 The read-only registers @code{.ss} and @code{.sss} hold the minimal
 inter-word space and additional inter-sentence space amounts,
 respectively.  These parameters are part of the environment
-(@pxref{Environments}), and rounded down to the nearest multiple
-of@tie{}12 on terminals.
+(@pxref{Environments}).
 
 @cindex discardable horizontal space
 @cindex space, discardable, horizontal
@@ -8386,7 +8392,7 @@ Reprints no longer available through FCS.
 
 @noindent
 If @emph{undiscardable} space is required, use the @code{\h} escape
-sequence.
+sequence to put horizontal motion on the output.
 @endDefreq
 
 
@@ -8909,17 +8915,20 @@ The hyphenation space adjustment threshold is available in the
 @cindex spacing, manipulating
 
 A break causes the formatter to update the vertical drawing position at
-which the new text baseline is aligned.  You can alter this location.
+which the new text baseline is placed; you can alter this location.
 
 @Defreq {sp, [@Var{distance}]}
 Break and move the next text baseline down by @var{distance}, or until
 springing a page location trap.@footnote{@xref{Page Location Traps}.}
 If invoked with the no-break control character, @code{sp} moves the
-pending output line's text baseline by @var{distance}.  A negative
-@var{distance} will not reduce the position of the text baseline below
-zero.  Inside a diversion, any @var{distance} argument is ignored.  The
-default scaling unit is @samp{v}.  If @var{distance} is not specified,
-@samp{1v} is assumed.
+text baseline applied to the entire pending output line by
+@var{distance}.@footnote{To shift the text baseline for
+@emph{part} of an output line---to set super- or subscripts, for
+instance--use the @code{\v} escape sequence.  @xref{Page Motions}.}  A
+negative @var{distance} will not reduce the position of the text
+baseline below zero.  Inside a diversion, any @var{distance} argument is
+ignored.  The default scaling unit is @samp{v}.  If @var{distance} is
+not specified, @samp{1v} is assumed.
 
 @Example
 .pl 5v \" Set page length to 5 vees.
@@ -8943,25 +8952,24 @@ baz on page \n%
     @result{} baz on page 2
 @endExample
 
-You might use the following macros to set the baseline of the next
-output text at a given distance from the top or the bottom of the page.
-We subtract one line height (@code{\n[.v]}) because the @code{|}
-operator moves to one vee below the page top (recall @ref{Numeric
-Expressions}).
+The following macros place the next text baseline relative to the page
+top or bottom.  We subtract one line height (@code{\n[.v]}) because the
+@code{|} operator moves the drawing position relative to the first
+baseline on the page (recall @ref{Numeric Expressions}).
 
 @Example
 .de y-from-top-down
 .  sp |\\$1-\\n[.v]u
 ..
-.
+@c . @c Restore this if it ever fits on a U.S. letter page again.
 .de y-from-bot-up
 .  sp |\\n[.p]u-\\$1-\\n[.v]u
 ..
 @endExample
 
 @noindent
-A call to @samp{.y-from-bot-up 10c} means that the next text baseline
-will be 10@tie{}cm from the bottom edge of the paper.
+The input @samp{.y-from-bot-up 10c} sets the next text baseline
+10@tie{}cm from the bottom edge of the paper.
 @endDefreq
 
 @DefreqList {ls, [@Var{count}]}
@@ -8971,15 +8979,6 @@ Set the line spacing; add @w{@var{count}@minus{}1} blank lines after each
 line of text.  With no argument, GNU @code{troff} uses the previous
 value before the last @code{ls} call.  The default is @code{1}.
 
-@c This example is fairly obvious, doesn't realistically reflect the
-@c fact that formatted text would occur between each of these requests,
-@c and doesn't fit well on the (PDF) page as of this writing.
-@c @Example
-@c .ls 2    \" begin double-spaced output
-@c .ls 3    \" begin triple-spaced output
-@c .ls      \" return to double-spaced output
-@c @endExample
-
 @cindex line spacing register (@code{.L})
 The read-only register @code{.L} contains the current line spacing; it
 is associated with the environment (@pxref{Environments}).
@@ -8988,6 +8987,19 @@ is associated with the environment (@pxref{Environments}).
 The @code{ls} request is a coarse mechanism.  @xref{Changing the Type
 Size}, for the requests @code{vs} and @code{pvs} as alternatives to
 @code{ls}.
+
+@Example
+.de SetNewLineSpacing
+.  if r *old-vs .ab cannot nest SetNewLineSpacing
+.  nr *old-vs \\n[.v]
+.  vs (\\n[.v] * \\$1)
+..
+.
+.de RestoreOldLineSpacing
+.  vs \\n[*old-vs]
+.  rr *old-vs
+..
+@endExample
 
 @DefescList {\\x, @code{'}, spacing, @code{'}}
 @DefregListEndx {.a}
@@ -10070,10 +10082,9 @@ that amount is less than @var{space}.  The default scaling unit is
 in category @samp{number} and ignores the argument.  If @var{space} is
 not specified, @samp{1v} is assumed.
 
-@cindex widow
 We can require space for at least the first two output lines of a
-paragraph, preventing its first line from being @slanted{widowed} at the
-page bottom.
+paragraph, preventing its first line from being isolated at the page
+bottom.
 
 @Example
 .ne 2v
@@ -10084,7 +10095,15 @@ when the lights of health go down,
 the undiscovered countries that are then disclosed,
 what wastes and deserts of the soul a slight attack
 of influenza brings to view,
-@c -- Virgina Woolf, "On Being Ill", 1926
+what precipices and lawns sprinkled with bright flowers
+a little rise of temperature reveals,
+what ancient and obdurate oaks are uprooted in us
+in the act of sickness,
+how we go down into the pit of death
+and feel the waters of annihilation
+close above our heads.\|.\|.
+.sp
+Virgina Woolf, \[lq]On Being Ill\[rq], 1926
 @endExample
 
 @c XXX: Some of this might be better placed in a revised Chapter 3.
@@ -10307,7 +10326,7 @@ mounting position is not a style and no font is mounted there, GNU
 @code{troff} emits a warning in category @samp{font} and ignores the
 request.
 
-If @var{font} matches a style name, it is combined with the current
+If @var{font} matches a style name, it is combined with the default
 family to make a resolved font name.  Otherwise, @var{font} is assumed
 to already be a resolved font name.
 
@@ -10341,8 +10360,8 @@ spam,
 and sausage.
 .br
 eggs, bacon, \fIspam,\fP and sausage.
-    @result{} eggs, bacon, @slanted{spam,} and sausage
-    @result{} eggs, bacon, @slanted{spam,} and sausage
+    @result{} eggs, bacon, @slanted{spam,} and sausage.
+    @result{} eggs, bacon, @slanted{spam,} and sausage.
 @endExample
 
 The current and previously selected fonts are properties of the
@@ -10380,19 +10399,10 @@ named@tie{}@var{f} is referred to in a @code{\f} escape sequence, in the
 @code{F} and @code{S} conditional operators, or in the @code{ft},
 @code{ul}, @code{bd}, @code{cs}, @code{tkf}, @code{special},
 @code{fspecial}, @code{fp}, or @code{sty} requests, font@tie{}@var{g} is
-used.  If @var{g} is missing or equal to@tie{}@var{f} the translation is
-undone.
+used.  If @var{g} is missing or equal to@tie{}@var{f}, the translation
+is undone.
 @c XXX: Do font translations work on mounting positions?  Abstract
 @c styles?
-
-Font translations cannot be chained.
-
-@Example
-.ftr XXX TR
-.ftr XXX YYY
-.ft XXX
-    @error{} warning: can't find font 'XXX'
-@endExample
 @endDefreq
 
 @DefreqList {fzoom, f [@Var{zoom}]}
@@ -10406,10 +10416,10 @@ Font translations cannot be chained.
 @cindex font, optical size
 @cindex size, optical, of a font
 Set magnification of font@tie{}@var{f} to factor @var{zoom}, which must
-be a non-negative integer multiple of 1/1000th.  This request is useful
-to adjust the optical size of a font in relation to the others.  In the
-example below, font @code{CR} is magnified by 10% (the zoom factor is
-thus 1.1).
+be a non-negative integer, a multiplier of the current type size in
+thousandths.  @code{fzoom} adjusts the apparent size of a font in
+relation to others.  In the example below, font @code{CR} is magnified
+by 10% (the zoom factor is thus 1.1).
 
 @Example
 .fam P
@@ -10418,19 +10428,19 @@ thus 1.1).
 Palatino and \f[CR]Courier\f[]
 @endExample
 
-A missing or zero value of @var{zoom} is the same as a value of 1000,
-which means no magnification.  @var{f}@tie{}must be a resolved font
-name, not an abstract style.
+A missing or zero value of @var{zoom} is treated as @samp{1000}, meaning
+no magnification.  @var{f}@tie{}must be a resolved font name, not an
+abstract style.
 @c XXX: What about a mounting position?  It's not rejected...
 
-The magnification of a font is completely transparent to GNU
-@code{troff}; a change of the zoom factor doesn't cause any effect
-except that the dimensions of glyphs, (word) spaces, kerns, etc., of the
-affected font are adjusted accordingly.
+The magnification of a font is transparent to GNU @code{troff}; a change
+of the zoom factor doesn't cause any effect except that the dimensions
+of glyphs, (word) spaces, kerns, etc., of the affected font are adjusted
+accordingly.
 
 The zoom factor of the current font is available in the read-only
-register @samp{.zoom}, in multiples of 1/1000th.  It returns zero if
-there is no magnification.
+register @samp{.zoom}.  It interpolates zero if there is no
+magnification.
 @endDefreq
 
 @c ---------------------------------------------------------------------
@@ -10521,7 +10531,7 @@ Associate an abstract style @var{style} with mounting
 position@tie{}@var{n}, which must be a non-negative integer.  If the
 requests @code{cs}, @code{bd}, @code{tkf}, @code{uf}, or @code{fspecial}
 are applied to an abstract style, they are instead applied to the member
-of the current family corresponding to that style.
+of the default family corresponding to that style.
 
 @pindex DESC
 @kindex styles
@@ -13683,7 +13693,7 @@ You can @dfn{mark} a location on a page for subsequent @dfn{return}.
 @code{mk} takes an argument, a register name in which to store the
 current page location.  If given no argument, it stores the location in
 an internal register.  This location can be used later by the @code{rt}
-or the @code{sp} requests (or the @code{\v} escape).
+or the @code{sp} requests (or the @code{\v} escape sequence).
 
 The @code{rt} request returns @emph{upward} to the location marked with
 the last @code{mk} request.  If used with an argument, it returns to a
@@ -14677,6 +14687,13 @@ Since the @code{.trunc} register is set only by traps, it doesn't make
 sense to interpolate it outside of macros called by traps.
 @endDefreg
 
+@Defreg {.trap}
+@cindex next trap name register (@code{.trap})
+@cindex trap name, next, register (@code{.trap})
+This read-only, string-valued register interpolates the name of the next
+vertical position trap that will be sprung.
+@endDefreg
+
 @Defreg {.pe}
 @cindex @code{bp} request, and traps (@code{.pe})
 @cindex traps, sprung by @code{bp} request (@code{.pe})
@@ -15371,9 +15388,9 @@ the output device, filtering out @var{contents} again.
 Latin (@acronym{ASCII}) characters, characters translated with the
 @code{trin} request, space characters, and some escape sequences, that
 were formatted and diverted into @var{div} are treated like ordinary
-input characters when @var{div} is reread.  Doing so can be useful in
-conjunction with the @code{writem} request.  @code{asciify} can be also
-used for gross hacks; for example, the following sets
+input characters when @var{div} is interpolated.  Doing so can be useful
+in conjunction with the @code{writem} request.  @code{asciify} can be
+also used for gross hacks; for example, the following sets
 register@tie{}@code{n} to@tie{}1.
 
 @Example
@@ -15911,8 +15928,8 @@ subject to copy mode interpretation.  If the file does not end with a
 newline, @code{trf} adds one.  Both requests cause a break.
 
 When used in a diversion, these requests embed a node (@pxref{Gtroff
-Internals}) in it that, when reread, causes the contents of @var{file}
-to be transparently copied to the output.  In @acronym{AT&T}
+Internals}) in it that, when interpolated, causes the contents of
+@var{file} to be transparently copied to the output.  In @acronym{AT&T}
 @code{troff}, the contents of @var{file} are immediately copied to the
 output regardless of whether there is a current diversion; this
 behaviour is so anomalous that it must be considered a bug.
@@ -16557,8 +16574,8 @@ Elements 1, 7, and@tie{}8 are inserted by @code{gtroff}; the latter two
 (which are always present) specify the vertical extent of the last line,
 possibly modified by @code{\x}.  The @code{br} request finishes the
 pending output line, inserting a newline input token, which is
-subsequently converted to a space when the diversion is reread.  Note
-that the word space node has a fixed width that isn't adjustable
+subsequently converted to a space when the diversion is interpolated.
+Note that the word space node has a fixed width that isn't adjustable
 anymore.  To convert horizontal space nodes back to input tokens, use
 the @code{unformat} request.
 
@@ -17411,10 +17428,10 @@ the input
 @noindent
 produces @samp{\\} in GNU @code{troff}.  Each pair of backslashes
 becomes one backslash @emph{glyph}; the resulting backslashes are thus
-not interpreted as escape @emph{characters} when they are reread as the
-diversion is output.  @acronym{AT&T} @code{troff} @emph{would} interpret
-them as escape characters when rereading them and end up printing one
-@samp{\}.
+not interpreted as escape @emph{characters} when they are interpolated
+as the diversion is output.  @acronym{AT&T} @code{troff} @emph{would}
+interpret them as escape characters when interpolating them and end up
+printing one @samp{\}.
 
 @cindex printing backslash (@code{\\}, @code{\e}, @code{\E}, @code{\[rs]})
 @cindex backslash, printing (@code{\\}, @code{\e}, @code{\E}, @code{\[rs]})
@@ -17442,9 +17459,10 @@ in those of its lineal descendant, Heirloom Doctools @code{troff}, as of
 the latter's 060716 release (July 2006).}
 
 To store an escape sequence in a diversion that is interpreted when the
-diversion is reread, either use the traditional @code{\!} transparent
-output facility, or, if this is unsuitable, the new @code{\?} escape
-sequence.  @xref{Diversions} and @ref{Gtroff Internals}.
+diversion is interpolated, either use the traditional @code{\!}
+transparent output facility, or, if this is unsuitable, the new
+@code{\?} escape sequence.  @xref{Diversions} and @ref{Gtroff
+Internals}.
 
 In the somewhat pathological case where a diversion exists containing a
 partially collected line and a partially collected line at the top-level
@@ -17827,9 +17845,9 @@ such values, but @code{groff}'s output driver library handles them.
 
 @item w
 Indicate an inter-word space.  No action is performed; the command is
-present to make the output more easily parsed.  Only adjustable,
-breakable inter-word spaces are thus described; those resulting from
-@code{\~} or horizontal motion escape sequences are not.  GNU
+present to make the output more easily parsed.  Only inter-word spaces
+on an output line (be they breakable or not) are thus described; those
+resulting from horizontal motion escape sequences are not.  GNU
 @code{troff} issues this command but @code{groff}'s output driver
 library ignores it.  See @code{h} and @code{H} above.
 @end table

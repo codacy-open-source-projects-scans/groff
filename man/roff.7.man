@@ -73,9 +73,9 @@ The manual pages on Unix systems
 (\[lq]man\~pages\[rq])
 and bestselling books on software engineering,
 including Brian Kernighan and Dennis Ritchie's
-.I The C Programming Language
+.I "The C Programming Language"
 and W.\& Richard Stevens's
-.I Advanced Programming in the Unix Environment
+.IR "Advanced Programming in the Unix Environment" ,
 have been written using
 .I roff
 systems.
@@ -1576,7 +1576,7 @@ Most
 .I roff
 input files employ the macros of a document formatting package,
 intermixed with instructions for one or more preprocessors,
-and seasoned with escape sequences and requests from the
+and are seasoned with escape sequences and requests from the
 .I roff
 language.
 .
@@ -1757,7 +1757,7 @@ particularly if they are similar.
 The names of the devices and their driver programs are not standardized.
 .
 Technological fashions evolve;
-the devices used for document preparation when AT&T
+the devices popular for document preparation when AT&T
 .I troff \" AT&T
 was first written in the 1970s are no longer used in production
 environments.

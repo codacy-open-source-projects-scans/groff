@@ -44,6 +44,7 @@ groff_TESTS = \
   src/roff/groff/tests/dot-cp_register_works.sh \
   src/roff/groff/tests/dot-nm_register_works.sh \
   src/roff/groff/tests/dot-nn_register_works.sh \
+  src/roff/groff/tests/dot-trap_register_works.sh \
   src/roff/groff/tests/draw-arc.sh \
   src/roff/groff/tests/draw-circle.sh \
   src/roff/groff/tests/draw-ellipse.sh \

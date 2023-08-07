@@ -250,6 +250,15 @@ vunits macro_diversion::distance_to_next_trap()
     return vunits(INT_MAX - vresolution);
 }
 
+const char *macro_diversion::get_next_trap_name()
+{
+  if (!diversion_trap.is_null()
+      && (diversion_trap_pos > vertical_position))
+    return diversion_trap.contents();
+  else
+    return "";
+}
+
 void macro_diversion::transparent_output(unsigned char c)
 {
   mac->append(c);
@@ -370,6 +379,16 @@ vunits top_level_diversion::distance_to_next_trap()
     return page_length - vertical_position;
   else
     return d - vertical_position;
+}
+
+const char *top_level_diversion::get_next_trap_name()
+{
+  vunits next_trap_pos;
+  trap *next_trap = find_next_trap(&next_trap_pos);
+  if (0 /* nullptr */ == next_trap)
+    return "";
+  else
+    return next_trap->nm.contents();
 }
 
 void top_level_diversion::output(node *nd, int retain_size,
@@ -1059,6 +1078,16 @@ const char *diversion_name_reg::get_string()
   return curdiv->get_diversion_name();
 }
 
+class next_trap_name_reg : public reg {
+public:
+  const char *get_string();
+};
+
+const char *next_trap_name_reg::get_string()
+{
+  return curdiv->get_next_trap_name();
+}
+
 class page_number_reg : public general_reg {
 public:
   page_number_reg();
@@ -1194,6 +1223,7 @@ void init_div_requests()
   register_dictionary.define(".pe", new page_ejecting_reg);
   register_dictionary.define(".pn", new next_page_number_reg);
   register_dictionary.define(".t", new distance_to_next_trap_reg);
+  register_dictionary.define(".trap", new next_trap_name_reg);
   register_dictionary.define(".trunc",
       new constant_vunits_reg(&truncated_space));
   register_dictionary.define(".vpt",

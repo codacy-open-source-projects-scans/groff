@@ -1418,7 +1418,7 @@ The result is:
 The punctuation is not recognized and all is output in the
 font used by
 .Ql .Ar .
-If the punctuation is separated by a leading white space:
+If the punctuation is separated by a leading whitespace:
 .
 .
 .Pp

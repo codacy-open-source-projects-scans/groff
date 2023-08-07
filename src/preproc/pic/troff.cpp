@@ -554,22 +554,24 @@ void troff_output::dot(const position &cent, const line_type &lt)
 	   "\\v'%.3fi+%.2fm'"
 	   ".\n.sp -1\n",
 	   c.x,
-	   c.y, 
+	   c.y,
 	   DOT_AXIS);
   }
 }
 
 void troff_output::set_location(const char *s, int n)
 {
-  if (last_filename != 0 && strcmp(s, last_filename) == 0)
-    printf(".lf %d\n", n);
-  else {
+  assert(s != 0 /* nullptr */);
+  if ((s != 0 /* nullptr */) && (last_filename != 0 /* nullptr */)
+      && strcmp(s, last_filename) == 0) {
     printf(".lf %d %s\n", n, s);
     char *lfn = strdup(s);
-    if (0 == lfn)
+    if (0 /* nullptr */ == lfn)
       fatal("memory allocation failure while copying file name");
     last_filename = lfn;
   }
+  else
+    printf(".lf %d\n", n);
 }
 
 // Local Variables:

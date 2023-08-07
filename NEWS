@@ -19,6 +19,13 @@ o In nroff mode (in other words, when producing output for terminal
   unit configured with the `warnscale` request) to describe the vertical
   drawing position where the problem occurred.
 
+o GNU troff output now reports unbreakable spaces (those produced with
+  the `\~` escape sequence) as word breaks with the documentary 'w'
+  command, just as it does for regular breakable spaces.
+
+o A new read-only, string-valued register, `.trap`, interpolates the
+  name of the next vertical position trap that will be sprung.
+
 eqn
 ---
 
@@ -647,11 +654,11 @@ o groff's Texinfo manual is included in the distribution archive in
 
 o A compilation of all of groff's man pages in PDF and UTF-8-encoded
   text (with SGR escape sequences) is produced by the build.  Many of
-  the documents in this 380+-page document have been heavily revised or
-  rewritten, including tbl(1), groff(1), groff_diff(7), groff_font(5),
-  groff(7), groff_char(7), and roff(7).  The PDF version uses pdfmark
-  extensions to produce an internal bookmark for every man page
-  document, section heading, and subsection heading.
+  the documents in this 380+-page collection have been heavily revised
+  or rewritten, including tbl(1), groff(1), groff_diff(7),
+  groff_font(5), groff(7), groff_char(7), and roff(7).  The PDF version
+  uses pdfmark extensions to produce an internal bookmark for every man
+  page document, section heading, and subsection heading.
 
 o Larry Kollar's "Using groff with the ms Macro Package" has been
   resurrected after 20+ years, revised, and updated.
@@ -670,7 +677,7 @@ o Building groff from its distribution archive no longer requires byacc
   (or GNU Bison) to be installed.
 
 o m4 is now required to build.  Any m4 that implements the features
-  documented in the Version 7 Unix m4(1) man page, and the `-D` option,
+  documented in the Unix Version 7 m4(1) man page, and the `-D` option,
   should suffice.
 
 o New 'configure' options '--{en,dis}able-groff-allocator' control
@@ -2502,7 +2509,7 @@ o The `asciify' request has been extended to `unformat' space characters
   unbreakable space character.
 
 o The new `unformat' request is similar to `asciify' but only handles
-  space characters and tabs specially if the diversion is reread,
+  space characters and tabs specially if the diversion is interpolated,
   retaining font information.  This makes it possible to reformat
   diversions; for example the following
 
@@ -3562,7 +3569,7 @@ vertical position trap to be sprung.
 
 The `cf' request now behaves sensibly in a diversion.  If used in a
 diversion, it now arranges for the file to be copied to the output when
-the diversion is reread.
+the diversion is interpolated.
 
 There is a new request `trf' (transparent file) similar to `cf', but
 more like `\!'.

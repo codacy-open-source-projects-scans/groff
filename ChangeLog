@@ -1,3 +1,174 @@
+2023-08-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Drop tmac/fixmacros.sed.  We hadn't ever actually installed it;
+	it was provided only in our distribution archives, as far back
+	as our history indicates.
+
+	* tmac/fixmacros.sed: Delete.
+	* tmac/tmac.am (EXTRA_DIST): Stop shipping it.
+	* PROBLEMS: Recast and update relevant item description.  This
+	is the only place the file was documented.
+
+2023-07-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (doc-parse-args): Set ellipses in roman.
+
+	Thanks to Lennart Jablonka for reminding me of this issue on the
+	linux-man mailing list.
+
+2023-07-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/fontfile.cpp (font::open_file): Do more
+	parameter validation.  Don't construct a file name for opening
+	from components that are null pointers.  Also `assert()` this
+	since it should be an invariant.  Migrate from `sprintf()` to
+	`snprintf()`; we have the size of the destination buffer handy.
+	Update `#include`s.
+
+	Fixes <https://savannah.gnu.org/bugs/?64485>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-07-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/pic/troff.cpp (troff_output::set_location): Do
+	more parameter validation.  Generate the two-argument form of
+	the `lf` request only if the C string holding the new file name
+	to write isn't a null pointer.  Also `assert()` this since it
+	should be an invariant.
+
+	Fixes <https://savannah.gnu.org/bugs/?64488>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-07-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[gxditview]: Add accelerators for "Print" action.
+
+	An apparent bug in a support library affects some users; it
+	disables gxditview's pop-up menu.  (The menu pops up, but no
+	item can be selected.)  Also, "Print" was the only action for
+	which no keyboard accelerator was defined.  "p" (unmodified) is
+	already bound to `PreviousPage()`; bind "p" with any of the
+	modifiers Shift, Ctrl, Alt, or Meta to `Print()`.
+
+	* src/devices/xditview/GXditview.ad: Do it.
+	* src/devices/xditview/gxditview.1.man: Document it.
+
+2023-07-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/es.tmac: Scream the entire word "BIBLIOGRAPHÍA", instead
+	of dying off to a murmur at the last two letters.
+
+2023-07-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add new `.trap` built-in register.
+
+	* src/roff/troff/div.h (class diversion, class macro_diversion,
+	class top_level_diversion): Declare new member function
+	`get_next_trap_name`.
+	* src/roff/troff/div.cpp (macro_diversion::get_next_trap_name):
+	New member function returns name of diversion trap if any, and
+	if its position is greater than the vertical drawing position,
+	otherwise an empty string.
+	(top_level_diversion::get_next_trap_name): New member function
+	returns the name of the next vertical position trap, if any,
+	otherwise an empty string.
+	(class next_trap_name_reg): New class has one member, a
+	`get_string()` function.
+	(next_trap_name_reg::get_string): New function.
+	(init_div_requests): Add `.trap` to the register dictionary and
+	wire it up to `next_trap_name_reg`.
+
+	* doc/groff.texi (Page Location Traps):
+	* man/groff.7.man (Read-only registers):
+	* man/groff_diff.7.man (New registers): Document it.
+
+	* src/roff/groff/tests/dot-trap_register_works.sh: Test it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	* NEWS: Add item.
+
+	Fixes <https://savannah.gnu.org/bugs/?64212>.  Thanks to Dave
+	Kemper for feedback.
+
+2023-07-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (unbreakable_space_node::tprint):
+	Write word marker ('w' command) to output.
+	* NEWS: Add item.
+
+	Fixes <https://savannah.gnu.org/bugs/?64356>.
+
+2023-07-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/papersize.tmac: Set register `#R_MARGIN` for mom(7)'s
+	benefit, not `R_MARGIN`, which it neither tests nor interpolates
+	as a register.  Continues commit bed42a77cb, 2022-11-16.
+
+2023-07-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/papersize.tmac: If the `paper` string is defined when
+	this macro file is loaded, set the `O` (mm page offset register)
+	independently of the `W` (mm line length ["width"] register).
+
+2023-07-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[docs]: Revise material in our Texinfo manual.
+
+	* doc/groff.texi (Manipulating Filling and Adjustment): Document
+	a CSTR #54 erratum; the arguments to the `ss` request are in
+	12ths of the selected font's `spacewidth` parameter, not 36ths
+	of an em.  Drop false claim of rounding of `.ss` and `.sss`
+	register values on terminal devices.  (Rounding of any resulting
+	adjustment quantities might still occur, but this is part of the
+	usual application of motion quanta and not particular to the
+	`ss` request.)  Characterize "undiscardable space" as
+	"horizontal motion" to help the reader acquire this essential
+	distinction between horizontal spaces and motions.
+	(Manipulating Spacing): Clarify behavior.  Distinguish `sp`
+	request from `\v` escape sequence and cross reference the
+	latter.  Recast to squeeze presentation of `ss` request onto one
+	U.S. letter page when typeset.  Drop (commented-out) trivial
+	example of `ls` usage in favor of new example illustrating some
+	macros using `vs` instead, for pedagogical purposes and to eat
+	up a lot of dead space on the page caused by a later lengthy
+	example.  (Knuth-Plass for the...uh...win.)
+	(Page Control): Stop (arguably) mis-applying the term "widow",
+	in favor of less metaphorical language.  Extend Woolf example to
+	narrow the seas of vertical space produced by TeX's formatting
+	of the page it occupies.  (Our blanched discourse can use the
+	purple prose.)
+	(Page Motion): Fix straggling use of "escape" as a noun; we
+	prefer "escape sequence".
+
+	* man/groff.7.man (Request short reference) <ss>: Sync.
+
+	Fixes <https://savannah.gnu.org/bugs/?64440>.  Thanks to Dave
+	Kemper for the report and review.
+
+2023-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::print_env): Fix error in
+	report.  The units of {minimum inter-word, additional
+	inter-sentence} space size are 12ths of the font's "spacewidth"
+	parameter, not 36ths of an em.
+
+	Consider the following input.
+	  .\" groff -T ps -Z
+	  .nf
+	  foo bar1
+	  .ss 12
+	  foo bar2 \" cases 1 and 2 are the same
+	  foo\h'1m/3u'bar3 \" wider than 1 & 2
+	  foo\h'1m/36u*12u'bar4 \" slightly narrower than case 3
+	  .ss 11
+	  foo bar5 \" narrower than case 1 (as expected)
+	  foo\h'1m/36u*11u'bar6 \" between cases (1,2) and 4
+
+2023-07-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/papersize.tmac: If not already defined, set `PO` register
+	to one inch to integrate with ms(7), man(7), and mdoc(7).
+
 2023-07-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[ms]: Improve documentation of pic(1) usage.

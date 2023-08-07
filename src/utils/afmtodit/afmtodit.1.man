@@ -573,9 +573,9 @@ is
 is
 .BR \%Delta ,
 and
-.I z
+.I XXXX
 is
-.BR uni0394 ,
+.BR 0394 ,
 .I \%afmtodit
 is telling you that the
 .I groff

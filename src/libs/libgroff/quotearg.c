@@ -69,7 +69,7 @@ needs_quoting(const char *string)
         
   while (*string) {
     /* Scan non-NULL strings, up to '\0' terminator,
-     * returning 'TRUE' if quote or white space found.
+     * returning 'TRUE' if quote or whitespace found.
      */
 
     if (*string == '"' || isspace(*string))
@@ -80,7 +80,7 @@ needs_quoting(const char *string)
     ++string;
   }
 
-  /* Fall through, if no quotes or white space found,
+  /* Fall through, if no quotes or whitespace found,
    * in which case, return 'FALSE'.
    */
 

@@ -164,7 +164,7 @@ the
 register;
 and the
 .B OK
-(other keywords),
+(other keywords)
 and
 .B PM
 (proprietary markings)
@@ -4598,9 +4598,8 @@ see
 .\" XXX: This may be insufficiently general; see Savannah #62825.
 .TP
 .B H1h
-is a copy of
-A copy of register
-.RB register\~ H1 ,
+is a copy of register
+.BR H1 ,
 but it is incremented just before a page break.
 .
 This can be useful in user-defined macros;

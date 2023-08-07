@@ -53,9 +53,9 @@ output driver for typewriter-like (terminal) devices
 .
 .SY grotty
 .RB [ \-dfho ]
-.RB [ \-i | \-r ]
+.RB [ \-i \||\| \-r ]
 .RB [ \-F\~\c
-.IR dir ]
+.IR font-directory ]
 .RI [ file\~ .\|.\|.]
 .YS
 .
@@ -63,7 +63,7 @@ output driver for typewriter-like (terminal) devices
 .SY "grotty \-c"
 .RB [ \-bBdfhouU ]
 .RB [ \-F\~\c
-.IR dir ]
+.IR font-directory ]
 .RI [ file\~ .\|.\|.]
 .YS
 .
@@ -292,10 +292,15 @@ There is therefore no need to filter its output through
 .\" ====================================================================
 .
 .I grotty
-understands one device control function produced by the
+supports one device control function,
+accessed with the
+.I groff
+request
+.B device
+or
 .I roff
 .B \[rs]X
-escape sequence in a document.
+escape sequence.
 .
 .
 .TP
@@ -688,13 +693,6 @@ lines are not supported.
 .
 .
 .IP \[bu]
-Characters above the first line
-(that is,
-with a vertical drawing position of\~0)
-cannot be rendered.
-.
-.
-.IP \[bu]
 Color handling differs from other output drivers.
 .
 The
@@ -719,7 +717,7 @@ varies:
 (5)\~foreground color;
 (6)\~background color;
 and
-(7)\~horizontal and vertical line-drawing.
+(7)\~horizontal and vertical line drawing.
 .
 .
 .P
@@ -763,19 +761,17 @@ $ \c
 .SH "See also"
 .\" ====================================================================
 .
+.UR http://\:www\:.ecma\-international\:.org/\:publications/\:files/\:\
+ECMA\-ST/\:\%Ecma\-048\:.pdf
 \[lq]Control Functions for Coded Character Sets\[rq]
 (ECMA-48)
 5th\~edition,
-Ecma International,
-June\~1991.
+\%Ecma International,
+June 1991.
+.UE
 .
 A gratis version of ISO\~6429,
 this document includes a normative description of SGR escape sequences.
-.
-Available at
-.UR http://\:www\:.ecma\-international\:.org/\:publications/\:files/\:\
-ECMA\-ST/\:Ecma\-048\:.pdf
-.UE .
 .
 .
 .P

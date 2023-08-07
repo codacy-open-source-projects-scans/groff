@@ -174,7 +174,7 @@ may have one
 .I @g@grn
 command.
 .
-Commands consist of one or two strings separated by white space,
+Commands consist of one or two strings separated by whitespace,
 the first string being the command and the second its operand.
 .
 Commands may be upper- or lowercase and abbreviated down to one

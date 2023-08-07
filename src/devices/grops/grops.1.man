@@ -510,23 +510,25 @@ where
 is the PostScript name of the font,
 and
 .I file
-is the name of the file containing it;
-lines beginning with
+is the name of the file containing it.
+.
+Blank lines and those
+beginning with
 .B #
-and blank lines are ignored;
+are ignored;
 fields may be separated by tabs or spaces.
 .
 .I file
-is sought using the same mechanism as that for
+is sought using the same mechanism as for
 .I groff
 font description files.
 .
 The
 .I download
-file itself is also sought using this mechanism;
+file itself is as well;
 currently,
-only the first matching file found in the device and font description
-search path is used.
+the first matching file found in the device and font description search
+path is used.
 .
 .
 .P
@@ -605,7 +607,7 @@ should be used.
 .
 .
 .P
-The default stroke and fill color is black.
+The default stroke color and fill color is black.
 .
 For colors defined in the \[lq]rgb\[rq] color space,
 .B setrgbcolor

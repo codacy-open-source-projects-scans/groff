@@ -3309,8 +3309,9 @@ void environment::print_env()
   errprint("  font number: %1\n", fontno);
   errprint("  previous family: '%1'\n", prev_family->nm.contents());
   errprint("  family: '%1'\n", family->nm.contents());
-  errprint("  space size: %1/36 em\n", space_size);
-  errprint("  sentence space size: %1/36 em\n", sentence_space_size);
+  errprint("  space size: %1/12 of font spacewidth\n", space_size);
+  errprint("  sentence space size: %1/12 of font spacewidth\n",
+	   sentence_space_size);
   errprint("  previous line interrupted: %1\n",
 	   prev_line_interrupted ? "yes" : "no");
   errprint("  fill mode: %1\n", fill ? "on" : "off");

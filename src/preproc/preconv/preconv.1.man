@@ -263,7 +263,8 @@ interprets the following syntax if it occurs in a
 comment
 in the first or second line of the input file.
 .
-Both \[lq]\[rs]"\[rq] and \[lq]\[rs]#\[rq] comment forms are recognized,
+Both \[lq]\^\[rs]"\^\[rq] and \[lq]\^\[rs]#\^\[rq] comment forms are
+recognized,
 but the control
 (or no-break control)
 character must be the default and must begin the line.
@@ -383,14 +384,14 @@ each of which is mapped to an appropriate value from the list above.
 .
 .
 .PP
-Trailing
+Any
 \[lq]\-dos\[rq],
 \[lq]\-unix\[rq],
-and
+or
 \[lq]\-mac\[rq]
-suffixes on coding tags
-(which indicate the end-of-line convention used in the file)
-are disregarded for the purpose of comparison with the above tags.
+suffix on a coding tag
+(which indicates the end-of-line convention used in the file)
+is ignored during comparison with the above tags.
 .
 .
 .\" ====================================================================

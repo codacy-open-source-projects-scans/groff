@@ -5833,6 +5833,7 @@ int word_space_node::is_tag()
 void unbreakable_space_node::tprint(troff_output_file *out)
 {
   out->fill_color(col);
+  out->word_marker();
   if (is_html) {
     // we emit the space width as a negative glyph index
     out->flush_tbuf();

@@ -521,7 +521,7 @@ were accessed with the
 .B ft
 request
 (that is,
-abstract styles and font translation are applied),
+abstract styles are resolved and font translations applied),
 but
 .I fnt
 cannot be a mounting position,
@@ -544,11 +544,11 @@ is defined.
 .
 .TP
 .BI S\~ sty
-True if a style
+True if an abstract style
 .I sty
 is registered.
 .
-Font translation applies.
+Font translations apply.
 .
 .
 .TP
@@ -622,7 +622,9 @@ escape sequences
 .BR \[rs]s ,
 .BR \[rs]$ ,
 and
-.BR \[rs]* ).
+.BR \[rs]* ),
+and alters the behavior of
+.BR \[rs]X .
 .
 In the following list,
 escape sequences are collated alphabetically at first,
@@ -752,7 +754,7 @@ Select
 which may be a mounting position,
 abstract style,
 or font name,
-to choose the typeface.
+as the typeface.
 .
 .B \[rs]f[]
 and
@@ -1036,25 +1038,6 @@ character translations and definitions are ignored.
 Other escape sequences are not supported.
 .
 .
-.IP
-If the
-.B \%use_charnames_in_special
-directive appears in the output device's
-.I DESC
-file,
-the use of special character escape sequences is
-.I not
-an error;
-they are simply output verbatim
-(with the exception of the seven mapped to Unicode basic Latin
-characters,
-discussed above).
-.
-.B \%use_charnames_in_special
-is currently employed only by
-.MR grohtml @MAN1EXT@ .
-.
-.
 .TP
 .BI \[rs]Y m
 .TQ
@@ -1093,7 +1076,7 @@ Tabs and leaders in the argument are ignored with an error diagnostic.
 .
 .TP
 .B \[rs]#
-Everything up to and including the next newline is ignored.
+Ignore everything up to and including the next newline.
 .
 This escape sequence is interpreted even in copy mode.
 .
@@ -1270,13 +1253,14 @@ so the remainder of the word is subject to hyphenation as normal.
 .TP
 .BI \[rs]? anything \[rs]?
 When used in a diversion,
-this transparently embeds
+transparently embed
 .I anything
-in the diversion.
+in it.
+.
 .I anything
 is read in copy mode.
 .
-When the diversion is reread,
+When the diversion is interpolated,
 .I anything
 is interpreted.
 .I anything
@@ -1290,37 +1274,6 @@ The escape sequence
 is also recognized in copy mode and becomes an internal code;
 it is this code that terminates
 .IR anything .
-Thus
-.
-.
-.RS
-.IP
-.EX
-.ne 14v+\n(.Vu
-\&.nr x 1
-\&.nf
-\&.di d
-\&\[rs]?\[rs]\[rs]?\[rs]\[rs]\[rs]\[rs]?\[rs]\[rs]\[rs]\[rs]\[rs]\[rs]\
-\[rs]\c
-\&\[rs]nx\[rs]\[rs]\[rs]\[rs]?\[rs]\[rs]?\[rs]?
-\&.di
-\&.nr x 2
-\&.di e
-\&.d
-\&.di
-\&.nr x 3
-\&.di f
-\&.e
-\&.di
-\&.nr x 4
-\&.f
-.EE
-.RE
-.
-.
-.IP
-prints\~\c
-.BR 4 .
 .
 .
 .TP
@@ -1555,7 +1508,7 @@ that were formatted in the diversion
 .I div
 are treated like ordinary input characters when
 .I div
-is reread.
+is interpolated.
 .
 Doing so can be useful in conjunction with the
 .B writem
@@ -1567,22 +1520,6 @@ for example,
 the following sets
 .RB register\~ n
 to\~1.
-.
-.
-.RS
-.IP
-.EX
-.ne 8v+\n(.Vu
-\&.tr @.
-\&.di x
-\&@nr n 1
-\&.br
-\&.di
-\&.tr @@
-\&.asciify x
-\&.x
-.EE
-.RE
 .
 .
 .IP
@@ -3574,22 +3511,6 @@ When they do not,
 use substrings and/or catenation.
 .
 .
-.IP
-.RS
-.RS
-.EX
-.B .ds resume R\e[\[aq]e]sum\e[\[aq]e]\e"
-.B \e*[resume]
-.B .stringdown resume
-.B \e*[resume]
-.B .stringup resume
-.B \e*[resume]
-R\['e]sum\['e] r\['e]sum\['e] R\['E]SUM\['E]
-.EE
-.RE
-.RE
-.
-.
 .TP
 .BI .sty\~ n\~s
 Associate abstract
@@ -3621,20 +3542,6 @@ Negative indices count backwards from the end of the string:
 the last character has index\~\-1,
 the character before the last has index\~\-2,
 and so on.
-.
-.
-.RS
-.IP
-.EX
-.B .ds xxx abcdefgh
-.B .substring xxx 1 \-4
-.B \e*[xxx]
-bcde
-.B .substring xxx 2
-.B \e*[xxx]
-de
-.EE
-.RE
 .
 .
 .TP
@@ -3731,32 +3638,6 @@ request uses the character code
 (if any)
 before the character translation.
 .
-Example:
-.
-.
-.RS
-.IP
-.EX
-\&.trin ax
-\&.di xxx
-\&a
-\&.br
-\&.di
-\&.xxx
-\&.trin aa
-\&.asciify xxx
-\&.xxx
-.EE
-.RE
-.
-.
-.IP
-The result is \[lq]x\~a\[rq].
-.
-Using
-.BR tr ,
-the result would be \[lq]x\~x\[rq].
-.
 .
 .TP
 .BI .trnt\~ abcd
@@ -3765,30 +3646,6 @@ This is the same as the
 request except that the translations do not apply to text that is
 transparently throughput into a diversion with
 .BR \[rs]! .
-For example,
-.
-.
-.RS
-.IP
-.EX
-\&.tr ab
-\&.di x
-\&\[rs]!.tm a
-\&.di
-\&.x
-.EE
-.RE
-.
-.
-.IP
-prints\~\c
-.BR b ;
-if
-.B trnt
-is used instead of
-.B tr
-it prints\~\c
-.BR a .
 .
 .
 .TP
@@ -4017,7 +3874,7 @@ is read in copy mode.
 .BI .cf\~ file
 In a diversion,
 embed an object which,
-when reread,
+when interpolated,
 will cause the contents of
 .I file
 to be copied verbatim to the output.
@@ -4053,7 +3910,11 @@ and
 respectively:
 a \[lq]compatibility save\[rq] token is inserted at the beginning,
 and a \[lq]compatibility restore\[rq] token at the end,
-with compatibility mode switched on during execution.
+with compatibility mode switched on during interpolation of the
+applicable macro definition,
+appendment,
+or string
+.I contents.
 .
 .
 .TP
@@ -4144,21 +4005,6 @@ and\~0 otherwise.
 This facility allows the reliable modification of requests.
 .
 Using this register outside of a macro definition makes no sense.
-.
-.
-.RS
-.IP
-.ne 6v+\n(.Vu
-.EX
-\&.als bp*orig bp
-\&.de bp
-\&.tm before bp
-\&.ie \[rs]\[rs]n[.br] .bp*orig
-\&.el \[aq]bp*orig
-\&.tm after bp
-\&..
-.EE
-.RE
 .
 .
 .TP
@@ -4369,6 +4215,12 @@ Interpolate\~1 if output line numbering is enabled
 .
 .
 .TP
+.B \[rs]n[.nn]
+Interpolate count of output lines remaining to have numbering
+suppressed.
+.
+.
+.TP
 .B \[rs]n[.ns]
 Interpolate\~1 if no-space mode is enabled,
 0\~otherwise.
@@ -4466,6 +4318,14 @@ Interpolate representation of the tab stop settings in a form suitable
 for passage to the
 .B ta
 request.
+.
+.
+.TP
+.B \[rs]n[.trap]
+Interpolate the name of the next vertical position trap that will be
+sprung.
+.
+This is a string-valued register.
 .
 .
 .TP
@@ -4910,17 +4770,6 @@ GNU
 .I troff \" GNU
 permits tabs and spaces after the first dot on a control line that ends
 a macro definition.
-.
-.RS
-.ne 5v+\n(.Vu
-.EX
-\&.if t \[rs]{\[rs]
-\&.\&  de bar
-\&.\&    nop Hello, I\[aq]m \[aq]bar\[aq].
-\&.\&  .
-\&.\[rs]}
-.EE
-.RS
 .
 .
 .\" ====================================================================
@@ -5720,22 +5569,6 @@ or properties of the environment
 (the rest)
 and therefore do not create output nodes.
 .
-For example,
-this code produces bold output in both cases,
-but the text differs,
-.
-.RS
-.EX
-\&.de xx \[aq]
-Hello!
-\&..
-\&\[rs]fB.xx\[rs]fP
-.EE
-.RE
-.
-formatting \[lq].xx\[rq] normally and \[lq]Hello!\[rq] in compatibility
-mode.
-.
 .
 .P
 GNU
@@ -5968,38 +5801,6 @@ by a macro:
 it does not inherit any of the special properties that the character
 from which it was constructed might have had.
 .
-For example,
-the input
-.
-.br
-.ne 5v
-.RS
-.EX
-\&.di x
-\[rs]\[rs]\[rs]\[rs]
-\&.br
-\&.di
-\&.x
-.EE
-.RE
-.
-produces
-.RB \[lq]\^ \[rs]\[rs] \[rq]
-in GNU
-.IR troff . \" GNU
-Each pair of backslashes becomes one backslash
-.I glyph;
-the resulting backslashes are thus not interpreted as escape
-.I characters
-when they are reread as the diversion is output.
-.
-AT&T
-.I troff \" AT&T
-.I would
-interpret them as escape characters when rereading them and end up
-printing one
-.RB \[lq] \[rs] \[rq].
-.
 .
 .P
 One way to format a backslash in most documents is with the
@@ -6042,7 +5843,7 @@ as of its 060716 release (July 2006).]
 .
 .P
 To store an escape sequence in a diversion that is interpreted when the
-diversion is reread,
+diversion is interpolated,
 either use the traditional
 .B \[rs]!\&
 transparent output facility,

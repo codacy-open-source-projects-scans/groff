@@ -187,29 +187,7 @@ By design,
 the DVI format doesn't care about the physical dimensions of the output
 medium.
 .
-Instead,
-.I grodvi
-emits the equivalent to \*[tx]'s
-.BI \%\[rs]special{\:\%papersize= width , length }
-on the first page;
-.I dvips
-(or another DVI driver)
-then sets the page size accordingly.
-.
-If either the page width or length is not positive,
-no
-.B \%papersize
-special is output.
-.
-.
-.P
-A device control escape sequence
-.BI \[rs]X\[aq] anything \[aq]
-is translated to the same DVI file instructions as would be produced by
-.BI \%\[rs]special{ anything }
-in \*[tx];
-.I anything
-cannot contain a newline.
+See subsection \[lq]Device control commands\[rq] below.
 .
 .
 .\" ====================================================================
@@ -371,6 +349,67 @@ glyphs.
 .I ec.tmac
 must be loaded before any language-specific macro files because it does
 not set up the codes necessary for automatic hyphenation.
+.
+.
+.\" ====================================================================
+. SS "Device control commands"
+.\" ====================================================================
+.
+.I grodvi
+emits the equivalent to \*[tx]'s
+.BI \%\[rs]special{\:\%papersize= width , length }
+on the first page;
+.I dvips
+(or another DVI driver)
+then sets the page size accordingly.
+.
+If either the page width or length is not positive,
+no
+.B \%papersize
+special is output.
+.
+.
+.P
+.I grodvi
+supports one device control function,
+accessed with the
+.I groff
+request
+.B device
+or
+.I roff
+.B \[rs]X
+escape sequence.
+.
+.
+.TP
+.BI \[rs]X\[aq]papersize= paper-format \[aq]
+where the
+.I paper-format
+parameter is the same as that to the
+.B papersize
+directive.
+.
+See
+.MR groff_font @MAN5EXT@ .
+.
+You can thus alter the page size at will within the DVI file created by
+.IR grodvi .
+.
+Changes to the paper format should occur prior to the first page,
+or during page ejection before starting a subsequent one.
+.
+.
+.P
+The parameter(s) to
+.B device
+and
+.B \[rs]X
+are translated to the same DVI file instructions as would be produced by
+.BI \%\[rs]special{ anything }
+in \*[tx];
+.I anything
+cannot contain a newline.
 .
 .
 .\" ====================================================================

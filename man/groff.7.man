@@ -494,7 +494,7 @@ the Control+A character (U+0001) in text is interpreted as a
 .
 .
 .P
-Horizontal white space characters are significant to
+Horizontal whitespace characters are significant to
 .I groff,
 but trailing spaces on text lines are ignored.
 .\" slack text for widow/orphan control: trailing tabs are not
@@ -4132,18 +4132,24 @@ is
 .
 .TPx
 .REQ .ss n
-Set minimal inter-word spacing to
+Set minimum inter-word space and additional inter-sentence space sizes
+to
 .IR n \~12ths
-of current font's space width.
+of the selected font's
+.B spacewidth
+parameter
+(default: 12).
 .
 .TPx
 .REQ .ss "n m"
 As
 .RB \[lq] .ss\~\c
 .IR n \[rq],
-and set additional inter-sentence space to
-.IR m \~12ths
-of current font's space width.
+but set additional inter-sentence space size to
+.IR n \~12ths
+of the selected font's
+.B spacewidth
+parameter.
 .
 .TPx
 .REQ .stringdown stringvar
@@ -4531,16 +4537,14 @@ are interpreted even in copy mode.
 .
 .TP
 .ESC \[dq]
-Comment.
-.
-Everything up to the end of the line is ignored.
+Comment;
+ignore everything up to the next newline.
 .
 .
 .TP
 .ESC #
-Comment.
-.
-Everything up to and including the next newline is ignored.
+Comment;
+ignore everything up to and including the next newline.
 .
 .
 .\" ========= strings =========
@@ -5805,7 +5809,8 @@ The value of the increment is specified with a third argument to the
 .request .nr
 request,
 and a special interpolation syntax,
-.BI \[rs]n \[+-]
+.BI \[rs]n \[+-]\c
+,
 is used to alter and then retrieve
 the register's value.
 .
@@ -5940,9 +5945,8 @@ see
 .TP
 .REG .csk
 Skew of the last glyph formatted in the environment;
-.\" TODO: Give page a discussion of glyph properties and move this.
-skew is how far to the right of the center of a glyph the center of an
-accent over that glyph should be placed.
+see
+.register skw .
 .
 .TP
 .REG .d
@@ -6259,6 +6263,16 @@ Representation of tab settings suitable for use as argument to
 (string-valued).
 .
 .TP
+.REG .trap
+Name of the next vertical position trap that will be sprung
+(string-valued);
+see
+.request .wh ,
+.request .ch ,
+and
+.request .dt .
+.
+.TP
 .REG .trunc
 Amount of vertical space truncated by the most recently sprung
 vertical position trap,
@@ -6408,7 +6422,8 @@ Count of hours elapsed since midnight (0\[en]23).
 .
 .TP
 .REG hp
-Horizontal drawing position relative to start of input line.
+Horizontal drawing position relative to that at the start of the input
+line.
 .
 .TP
 .REG llx
@@ -6526,8 +6541,8 @@ after rendering into dummy environment by
 .TP
 .REG systat
 Return value of
-.I system()
-function; see
+.MR system 3 ;
+see
 .request .sy .
 .
 .TP
@@ -6939,9 +6954,17 @@ the definition ends with the control line
 .RB \[lq] .. \[rq]\&
 (two dots).
 .
+Tabs and spaces are permitted between the dots.
+.
 Alternatively,
-a second argument names a macro whose call syntax ends the definition;
-this \[lq]end macro\[rq] is then called normally.
+a second argument to
+.B .de
+names a macro whose call
+(or request whose invocation)
+syntax ends the definition;
+this
+.I "end macro"
+is then interpreted normally.
 .
 Spaces or tabs are permitted after the first control character in the
 line containing this ending token,
@@ -6985,7 +7008,7 @@ remove,
 and rename a macro,
 respectively.
 .
-.B .return
+.B \%.return
 stops the execution of a macro immediately,
 returning to the enclosing context.
 .
@@ -7342,7 +7365,8 @@ their positions are reported in basic units.
 .
 An
 .I implicit page trap
-always exists in the top-level diversion;
+always exists in the top-level diversion
+(see below);
 it works like a trap in some ways but not others.
 .
 Its purpose is to eject the current page and start the next one.
@@ -7446,7 +7470,7 @@ see section \[lq]Strings\[rq] above.
 .B box
 and
 .B boxa
-works similarly,
+work similarly,
 but ignore partially collected lines.
 .
 Call any of these macros again without an argument to end the diversion.
@@ -7474,9 +7498,9 @@ including the top level.
 .
 .P
 The
-.B \[rs]!\%
+.B \[rs]!\&
 and
-.B \[rs]?\%
+.B \[rs]?\&
 escape sequences and
 .B output
 request escape from a diversion,

@@ -422,7 +422,14 @@ This default uses the same fonts as
 uses when it embeds fonts in a PDF file.
 .
 .
-.LP
+.P
+The default stroke color and fill color is black.
+.
+.
+.\" ====================================================================
+. SS Typefaces
+.\" ====================================================================
+.
 In the default setup there are styles called
 .BR R ,
 .BR I ,
@@ -668,17 +675,24 @@ device control command,
 which reverses the direction of letters within words.
 .
 .
-.LP
-The default color for
-.B \[rs]m
-and
-.B \[rs]M
-is black.
+.\" ====================================================================
+. SS "Device control commands"
+.\" ====================================================================
 .
-.
-.LP
 .I gropdf
-understands some of the device control commands supported by
+supports many device control functions,
+accessed with the
+.I groff
+request
+.B device
+or
+.I roff
+.B \[rs]X
+escape sequence.
+.
+First,
+it
+understands many of the device control commands supported by
 .MR grops 1 .
 .
 .
@@ -846,9 +860,8 @@ tags are silently ignored.
 .
 .
 .LP
-One
-.B \[rs]X
-device control command used by the DVI driver is also recognised.
+.I gropdf
+also recognizes a device control command used by the DVI driver.
 .
 .
 .TP
@@ -862,12 +875,11 @@ directive.
 See
 .MR groff_font @MAN5EXT@ .
 .
-This means that you can alter the page size at will within the PDF file
-being created by
+You can thus alter the page size at will within the PDF file created by
 .IR gropdf .
 .
-If you do want to change the paper format,
-it must be done before you start creating the page.
+Changes to the paper format should occur prior to the first page,
+or during page ejection before starting a subsequent one.
 .
 .
 .LP
@@ -990,7 +1002,7 @@ The convenience macro for this command is
 .
 .
 .TP
-.BI "\[rs]X'pdf: switchtopage\~" "when name" \[aq]
+.BI "\[rs]X\[aq]pdf: switchtopage\~" "when name" \[aq]
 Normally each new page is appended to the end of the document,
 this command allows following pages to be inserted at a
 .I \[oq]named\[cq]

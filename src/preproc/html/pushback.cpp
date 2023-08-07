@@ -301,7 +301,7 @@ double pushBackBuffer::readNumber (void)
 }
 
 /*
- *  readString - reads a string terminated by white space
+ *  readString - reads a string terminated by whitespace
  *               and returns a malloced area of memory containing
  *               a copy of the characters.
  */

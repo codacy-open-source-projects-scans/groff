@@ -822,11 +822,10 @@ Indicate an inter-word space.
 No action is performed;
 the command is present to make the output more easily parsed.
 .
-Only adjustable,
-breakable inter-word spaces are thus described;
-those resulting from
-.B \[rs]\[ti]
-or horizontal motion escape sequences are not.
+Only inter-word spaces on an output line
+(be they breakable or not)
+are thus described;
+those resulting from horizontal motion escape sequences are not.
 .
 GNU
 .I troff \" GNU

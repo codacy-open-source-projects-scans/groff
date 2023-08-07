@@ -6234,7 +6234,7 @@ static int ury_reg_contents = 0;
 #define DSC_LINE_MAX_ENFORCE    0
 #define DSC_LINE_MAX_CHECKED    1
 
-// Input characters to be considered as white space, when reading
+// Input characters to be considered as whitespace, when reading
 // PostScript file comments.
 //
 cset white_space("\n\r \t");
@@ -6415,7 +6415,7 @@ int psbb_locator::parse_bounding_box(const char *context)
     }
     else {
       // ...but if we can't parse four numbers, skip over any
-      // initial white space...
+      // initial whitespace...
       //
       while (*context == '\x20' || *context == '\t')
 	context++;

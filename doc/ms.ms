@@ -36,8 +36,8 @@
 .nr TC-MARGIN \w'00' \" expect 2-digit page numbers at most
 .ie t .nr PI 3.5n
 .el   .nr PI 4n
-.ND May 2023
-.EH '%''May 2023'
+.ND July 2023
+.EH '%''July 2023'
 .EF ''''
 .OH 'Using \f[I]groff\f[] with the \f[I]ms\f[] macros''%'
 .OF ''''
@@ -697,6 +697,10 @@ is mandatory if
 is called.
 .
 .
+.if n \{
+.  br
+.  ne 12v
+.\}
 .TS H
 box;
 lb lb
@@ -1469,9 +1473,13 @@ multiplied by the difference of
 and
 .I depth .
 .
+.CW GROWPS
+and
+.CW PSINCR
+are GNU extensions.
 .
-For example,
-the sequence
+.
+The input
 .
 .TS
 box center;
@@ -1491,10 +1499,10 @@ Machairodontinae
 .
 .
 .LP
-will cause \[lq]1. Carnivora\[rq] to be printed in 13-point text,
+causes \[lq]1. Carnivora\[rq] to be printed in 13-point text,
 followed by \[lq]1.1. Felinae\[rq] in 11.5-point text,
 while \[lq]1.1.1. Felis catus\[rq] and all more deeply nested headings
-will remain in the 10-point text specified by the
+remain in the 10-point text specified by the
 .CW PS
 register.
 .
@@ -1527,6 +1535,8 @@ region
 (see subsequent sections)
 between the heading and the subsequent paragraph suppresses this
 grouping.
+.
+This is a GNU extension.
 .
 .
 .\" The next table is huge and we need a lot of room for it, but we
@@ -1671,6 +1681,10 @@ Typeset
 .I text
 with an
 .UL underline .
+.
+On terminal devices,
+.I text
+is bracketed with underscores (\[lq]_\[rq]).
 .
 .I post,
 if present,
@@ -1931,6 +1945,9 @@ that a
 argument remains affixed to the first call.
 .
 .
+.\" We assume Times roman font metrics for these examples.
+.if t .ds gwidth 0.4i
+.if n .ds gwidth 0.5i
 .TS H
 box center;
 cb cb
@@ -1987,7 +2004,7 @@ _
 T{
 .nf
 A glossary-style list:
-\&.IP lawyers 0.4i
+\&.IP lawyers \*[gwidth]
 Two or more attorneys.
 \&.IP guns
 Firearms,
@@ -1999,7 +2016,7 @@ lawyers and guns!
 T}	T{
 A glossary-style list:
 .
-.IP lawyers 0.4i
+.IP lawyers \*[gwidth]
 Two or more attorneys.
 .IP guns
 Firearms,
@@ -2012,23 +2029,18 @@ T}
 .
 .PP
 In the enumerated list example,
-we employed the
+we created a register
+.CW step
+with the
 .CW nr
-request to create a register of our own,
-.CW step .
-.
-We initialized it to zero and assigned it an auto-increment of 1.
+request,
+initializing it to zero and setting its auto-increment to 1.
 .
 Each time we use the escape sequence
 .CW \[rs]n+[step]
 (note the plus sign),
 the formatter applies the increment just before interpolating the
 register's value.
-.
-Preparing the
-.CW PI
-register as well enables us to rearrange the list without the tedium of
-updating macro calls.
 .
 .
 .PP
@@ -2089,7 +2101,7 @@ T}	T{
 .fi
 T}	T{
 .nf
-\&.IP guns\[rs]h\[aq]0.4i\[aq]
+\&.IP guns\[rs]h\[aq]\*[gwidth]\[aq]
 Firearms,
 .fi
 T}
@@ -2102,14 +2114,27 @@ _
 T{
 A glossary-style list:
 .
-.IP lawyers 0.4i
+.IP lawyers \*[gwidth]
 Two or more attorneys.
-.IP guns\h\[aq]0.4i\[aq] 0.4i
+.IP guns\h\[aq]\*[gwidth]\[aq] \*[gwidth]
 Firearms,
 preferably large-caliber.
 .IP money
 Gotta pay for those lawyers and guns!
 T}
+.TE
+.
+.
+.PP
+If you need a measurement more than once,
+you can store the measured width of text in a register.
+.
+.
+.TS
+box center;
+lf(CR).
+\&.nr width \[rs]w\[aq]guns\[aq]
+\&.IP guns\[rs]h\[aq]\[rs]n[width]\[aq]
 .TE
 .
 .
@@ -3675,6 +3700,8 @@ T}
 .TE
 .KE
 .
+.
+.ne 8v
 .nr SavedPageNumber \n%
 .nr SavedH1 \n[H1] \" groff ms internal name
 .nr SavedH2 \n[H2] \" groff ms internal name
@@ -3841,6 +3868,8 @@ T{
 T}
 .TE
 .
+.
+.ne 8v
 .nr SavedPageNumber \n%
 .nr SavedH1 \n[H1] \" groff ms internal name
 .nr SavedH2 \n[H2] \" groff ms internal name
@@ -3982,7 +4011,7 @@ rather than to ignore them silently.
 .PP
 Tenth Edition \" possibly 9th
 Research Unix supported
-.B P1 /
+.B P1 /\c
 .B P2
 macros to bracket code examples;
 .I "groff ms"
