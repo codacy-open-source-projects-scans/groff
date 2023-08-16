@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2023 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -16,37 +16,47 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-set -e
+fail=
 
-# Regression-test Savannah #60025.
+wail () {
+    echo ...FAILED >&2
+    fail=YES
+}
+
+# Regression-test Debian #1038391.
 #
-# Ensure .Mt renders correctly.
+# Text blocks should honor row staggering.
 
-input='.Dd 2021-02-10
-.Dt foo 1
-.Os groff test suite
-.Sh Name
-.Nm foo
-.Nd frobnicate a bar
-.Sh Authors
-.An -nosplit
-The
-.Nm mandoc
-utility was written by
-.An Kristaps Dzonsons Aq Mt kristaps@bsd.lv
-and is maintained by
-.An Ingo Schwarze Aq Mt schwarze@openbsd.org .'
+input='.
+.\" based on a test case from наб <nabijaczleweli@nabijaczleweli.xyz>
+The capital letters should appear struck-through due to row staggering.
+.sp
+.TS
+tab(@);
+L  L  C  R  A  L
+Lu Lu Cu Ru Au Lu .
+a@b@c@d@e@f
+_
+A@T{
+B
+T}@T{
+C
+T}@T{
+D
+T}@T{
+E
+T}@F
+.TE'
 
-output=$(echo "$input" | "$groff" -Tascii -P-cbou -mdoc)
+output=$(printf "%s\n" "$input" | "$groff" -tZ -T ps)
+
+# This sadly seems fragile and device-dependent.  But a table entry
+# generally doesn't know where on the page it is typeset.
 echo "$output"
-
-echo "$output" \
-    | grep -Fq 'written by Kristaps Dzonsons <kristaps@bsd.lv>'
-
-echo "$output" \
-    | grep -Fq 'is maintained by Ingo Schwarze <schwarze@openbsd.org>.'
+test $(echo "$output" | grep -c 'V *44000') -eq 5
 
 # vim:set ai et sw=4 ts=4 tw=72:

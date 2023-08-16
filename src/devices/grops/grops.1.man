@@ -166,7 +166,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-F dir" + 2n
 .BI \-b\~ n
 Work around problems with spoolers,
 previewers,
@@ -1402,7 +1402,7 @@ The following is a step-by-step font installation guide for
 .I grops.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 Convert your font to something
 .I groff
 understands.

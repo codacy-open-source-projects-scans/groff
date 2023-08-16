@@ -55,7 +55,7 @@ language reference
 .\" start a macro, escape sequence, or register definition
 .
 .de TPx
-.  TP 10n
+.  TP 11n \" ".linetabs" + 2n
 ..
 .\" ====================================================================
 .\" .Text anything ...
@@ -362,10 +362,16 @@ requirements.
 Several input characters are syntactically significant to
 .IR groff .
 .
+The most important of these distinguish
+.I "control lines,"
+which instruct the formatter,
+from
+.I "text lines"
+that are formatted as output.
+.
 .
 .IP . 4n
-A dot at the beginning of an input line marks it as a
-.I control line.
+A dot at the beginning of an input line marks it as a control line.
 .
 It can also follow the
 .request .el
@@ -500,13 +506,12 @@ but trailing spaces on text lines are ignored.
 .\" slack text for widow/orphan control: trailing tabs are not
 .
 .
-.TP 8n
+.TP 9n \" "newline" + 2n
 .I space
-Space characters separate arguments in request invocations,
-macro calls,
-and string interpolations.
+On control lines and within bracketed escape sequences,
+spaces separate arguments.
 .
-In text,
+On text lines,
 they separate words.
 .
 Multiple adjacent space characters in text cause
@@ -544,8 +549,8 @@ see section \[lq]Escape sequences\[rq] below.
 .
 .TP
 .I newline
-In text,
-a newline puts an inter-word space onto the output and,
+On text lines,
+a newline formats an inter-word space and,
 if filling is enabled,
 triggers end-of-sentence recognition on the preceding text.
 .
@@ -554,8 +559,8 @@ See section \[lq]Line continuation\[rq] below.
 .
 .TP
 .I tab
-A tab character in text causes the drawing position to advance to the
-next defined tab stop.
+A tab character on a text line causes the drawing position to advance to
+the next defined tab stop.
 .
 .
 .\" ====================================================================
@@ -1817,7 +1822,7 @@ prohibit many delimiters.
 .
 .
 .RS
-.IP \[bu] 2n
+.IP \[bu] 3n
 the numerals 0\[en]9 and the decimal point
 .RB \[lq] . \[rq]
 .
@@ -3204,12 +3209,13 @@ Stop magnifying
 .IR font .
 .
 .TPx
-.REQ .fzoom "font z"
-Set zoom factor for
+.REQ .fzoom "font zoom"
+Set magnification of mounted
 .I font
-.RI to\~ z
-(in thousandths;
-default:
+to
+.IR zoom ,
+a multiplier of the current type size in thousandths
+(default:
 1000).
 .
 .TPx
@@ -4685,9 +4691,9 @@ or unformatted as an output comparand in a conditional expression.
 .
 .\" ========= spaces and fixed-width horizontal motions =========
 .
-.TP
+.TP 8n \" "\space" + 2n
 .ESC \f[I]space
-Move right one word space.
+Move right one inter-word space.
 .
 .
 .TP
@@ -7595,7 +7601,7 @@ see section \[lq]Debugging\[rq] below.
 Environments store the following information.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 a partially collected line, if any
 .
 .

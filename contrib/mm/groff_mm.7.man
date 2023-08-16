@@ -147,7 +147,7 @@ implementation found in the AT&T Documenter's Workbench (DWB),
 with the following limitations.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 Omitted features include
 the logo and company name strings,
 .B }Z
@@ -171,7 +171,7 @@ and
 macros.
 .
 .
-.IP \[bu] 2n
+.IP \[bu]
 The
 .B CS
 (output cover sheet)
@@ -588,7 +588,7 @@ published interface but are documented aspects of
 .I groff mm.
 .
 .
-.TP
+.TP 8n \" "COVEND" + 2n
 .BI )E\  "level text"
 Add heading text
 .I text
@@ -3933,7 +3933,7 @@ localizable text.
 These are presented in quotation marks.
 .
 .
-.TP
+.TP 8n \" "Apptxt" + 2n
 .B App
 \[lq]APPENDIX\[rq]
 .

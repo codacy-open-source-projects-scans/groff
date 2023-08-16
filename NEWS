@@ -19,9 +19,9 @@ o In nroff mode (in other words, when producing output for terminal
   unit configured with the `warnscale` request) to describe the vertical
   drawing position where the problem occurred.
 
-o GNU troff output now reports unbreakable spaces (those produced with
-  the `\~` escape sequence) as word breaks with the documentary 'w'
-  command, just as it does for regular breakable spaces.
+o The output now reports unbreakable spaces (those produced with the
+  `\~` escape sequence) as word breaks with the documentary 'w' command,
+  just as it does for regular breakable spaces.
 
 o A new read-only, string-valued register, `.trap`, interpolates the
   name of the next vertical position trap that will be sprung.
@@ -48,6 +48,16 @@ o Hyperlink support is now enabled by default on non-HTML devices that
   support it (PDF and terminal devices) for an (man) documents.
   Instructions and commented code for disabling it remain in the
   "man.local" file.
+
+o The an (man) and doc (mdoc) macro packages now support a `BP` register
+  to configure the ("base") paragraph indentation amount; that is the
+  amount used by man(7) for paragraphs not within an `RS`/`RE` relative
+  inset, and in mdoc(7) for all paragraphs.  Formerly, the `IN` register
+  configured this amount with other indentation and inset amount
+  parameters used by man(7).  (In mdoc(7), it had no other purpose.)
+  The base paragraph indentation default is now 5n, corresponding to
+  that used by historical man(7) and mdoc(7) implementations going back
+  to Unix Version 7 and 4.3BSD-Reno, respectively.
 
 o The an (man) and doc (mdoc) macro packages now support a `PO` register
   to configure the page offset used by the formatter.

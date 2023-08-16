@@ -1486,35 +1486,40 @@ static void activate_color()
 
 static void define_color()
 {
-  symbol color_name = get_long_name(true /* required */);
+  symbol color_name = get_long_name();
   if (color_name.is_null()) {
+    warning(WARN_MISSING, "missing identifier in color definition"
+	    " request");
     skip_line();
     return;
   }
   if (color_name == default_symbol) {
-    warning(WARN_COLOR, "default color can't be redefined");
+    warning(WARN_COLOR, "default color cannot be redefined");
     skip_line();
     return;
   }
-  symbol style = get_long_name(true /* required */);
-  if (style.is_null()) {
+  symbol color_space = get_long_name();
+  if (color_space.is_null()) {
+    warning(WARN_MISSING, "missing color space in color definition"
+	    " request");
     skip_line();
     return;
   }
   color *col;
-  if (strcmp(style.contents(), "rgb") == 0)
+  if (strcmp(color_space.contents(), "rgb") == 0)
     col = read_rgb();
-  else if (strcmp(style.contents(), "cmyk") == 0)
+  else if (strcmp(color_space.contents(), "cmyk") == 0)
     col = read_cmyk();
-  else if (strcmp(style.contents(), "gray") == 0)
+  else if (strcmp(color_space.contents(), "gray") == 0)
     col = read_gray();
-  else if (strcmp(style.contents(), "grey") == 0)
+  else if (strcmp(color_space.contents(), "grey") == 0)
     col = read_gray();
-  else if (strcmp(style.contents(), "cmy") == 0)
+  else if (strcmp(color_space.contents(), "cmy") == 0)
     col = read_cmy();
   else {
     warning(WARN_COLOR, "unknown color space '%1';"
-	    " use 'rgb', 'cmyk', 'gray' or 'cmy'", style.contents());
+	    " use 'rgb', 'cmyk', 'gray' or 'cmy'",
+	    color_space.contents());
     skip_line();
     return;
   }
@@ -2500,6 +2505,7 @@ const char *token::description()
 {
   const size_t bufsz = strlen("character 'x'") + 1;
   static char buf[bufsz];
+  (void) memset(buf, 0, bufsz);
   switch (type) {
   case TOKEN_BACKSPACE:
     return "a backspace character";
@@ -6770,9 +6776,8 @@ const char *input_char_description(int c)
   case '\0':
     return "a node";
   }
-  size_t bufsz = sizeof "magic character code " + INT_DIGITS + 1;
-  // repeat expression; no VLAs in ISO C++
-  static char buf[sizeof "magic character code " + INT_DIGITS + 1];
+  const size_t bufsz = sizeof "magic character code " + INT_DIGITS + 1;
+  static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   if (is_invalid_input_char(c)) {
     const char *s = asciify(c);

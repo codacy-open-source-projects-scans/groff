@@ -470,7 +470,7 @@ For example:
 .
 .
 .TP
-.B .HnS n
+.BI .HnS\~ n
 Begin heading.
 .
 The numeric heading level

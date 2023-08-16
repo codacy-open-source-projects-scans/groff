@@ -62,9 +62,8 @@ static const char *input_char_description(int c)
   case '\177':
     return "a delete character";
   }
-  size_t bufsz = sizeof "character code " + INT_DIGITS + 1;
-  // repeat expression; no VLAs in ISO C++
-  static char buf[sizeof "character code " + INT_DIGITS + 1];
+  const size_t bufsz = sizeof "character code " + INT_DIGITS + 1;
+  static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   if (csprint(c)) {
     buf[0] = '\'';

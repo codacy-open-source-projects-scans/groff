@@ -1258,13 +1258,16 @@ void font_change()
 
 bool is_family_valid(const char *fam)
 {
-  // std::vector<const char *> styles{"R", "I", "B", "BI"}; // C++11
+#if 0 // C++11, some day
+  std::vector<const char *> styles{"R", "I", "B", "BI"}; // C++11
+  for (auto style : styles) // C++11
+#else
   const size_t nstyles = 4;
   const char *st[nstyles] = { "R", "I", "B", "BI" };
   std::vector<const char *> styles(st, (st + nstyles));
-  // for (auto style : styles) // C++11
   std::vector<const char *>::iterator style;
   for (style = styles.begin(); style != styles.end(); style++)
+#endif
     if (!check_font(fam, *style))
       return false;
   return true;

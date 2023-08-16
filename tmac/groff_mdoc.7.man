@@ -566,7 +566,7 @@ Use the special character escape sequence
 .Ql \[rs](dq
 to format it.
 .\" That's NOT a groffism, but showed up in the "post" and "Latin1"
-.\" devices of Tenth Edition Research Unix.
+.\" devices of Documenter's Workbench (DWB) 3.3 troff.
 .
 Further,
 this glyph should not be used for conventional quotation;
@@ -5088,17 +5088,16 @@ register to zero.
 .Pp
 The paragraph and subsection heading indentation amounts can be changed
 by setting the registers
-.Ql IN
+.Ql BP
 and
 .Ql SN .
 .
-.Dl groff \-Tutf8 \-rIN=5n \-rSN=2n \-mdoc foo.man | less \-R
+.Dl groff \-Tutf8 \-rBP=4n \-rSN=2n \-mdoc foo.man | less \-R
 .
-The default paragraph indentation is 7.2n on typesetters and 7n on
-terminals.
+The default paragraph and subsection heading indentation amounts are 5n
+and 3n, respectively.
 .
-The default subsection heading indentation amount is 3n;
-section headings are set with an indentation of zero.
+Section headings are set with an indentation of zero.
 .
 .
 .Pp

@@ -1298,7 +1298,7 @@ The description below applies to normal evaluation,
 except where otherwise specified.
 .
 .
-.TP
+.TP 8n \" "expr-n" + 2n
 .I field
 .TQ
 .I field\~n
@@ -1843,8 +1843,7 @@ command instead of in the normal way.
 .
 .TP
 .I REFER
-If set,
-overrides the default database.
+Assign this variable a file name to override the default database.
 .
 .
 .\" ====================================================================

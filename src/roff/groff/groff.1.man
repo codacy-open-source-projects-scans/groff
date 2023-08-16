@@ -223,12 +223,13 @@ or are interpreted differently by
 .IR groff .
 .
 .
-.TP
+.TP 8n \" "-D enc" + 2n
 .BI \-D\~ enc
-Set fallback input encoding used by
-.MR preconv @MAN1EXT@
-to
-.IR enc ;
+Use
+.I enc
+as
+.MR preconv @MAN1EXT@ 's
+fallback input encoding;
 implies
 .BR \-k .
 .
@@ -536,7 +537,7 @@ The following options are passed as-is to the formatter program
 and described in more detail in its man page.
 .
 .
-.TP
+.TP 8n \" "-f fam" + 2n
 .B \-a
 Generate a plain text approximation of the typeset output.
 .
@@ -666,8 +667,8 @@ comprising preprocessors,
 macro packages,
 output drivers
 (or \[lq]postprocessors\[rq]),
-a suite of utilities,
-and the formatter
+and a suite of utilities,
+with the formatter program
 .I @g@troff
 at its heart.
 .

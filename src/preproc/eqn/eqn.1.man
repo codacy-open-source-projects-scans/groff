@@ -197,7 +197,7 @@ these may safely be ignored if you do not know \*[tx].
 Three points are worth special note. \" good, bad, and different
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 GNU
 .I eqn \" GNU
 emits Presentation MathML output when invoked with the
@@ -1763,7 +1763,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-M dir" + 2n
 .B \-C
 Recognize
 .B .EQ
@@ -1908,7 +1908,7 @@ degree
 does.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 .I @g@eqn
 customization parameters have no effect on generated MathML.
 .

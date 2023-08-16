@@ -77,7 +77,7 @@ which they apply, we find the following.
                                     Macros: mm                     NN
                                     Macros: mom                    NN
                                     Macros: ms                     NN
-                                    Macros: other/general          NN
+                                    Macros: others/general         NN
                                     Preprocessor: eqn              NN
                                     Preprocessor: grn              NN
                                     Preprocessor: pic              NN
@@ -183,9 +183,12 @@ Doug McIlroy
 Eloi Montañés
 Frederic Chartier
 Heinz-Jürgen Oertel
+Ingo Schwarze
 Lennart Jablonka
 Michał Kruszewski
 Mike Fulton
 Nikita Ivanov
 Peter Schaffter
 Ralph Corderoy
+Thorsten Glaser
+наб

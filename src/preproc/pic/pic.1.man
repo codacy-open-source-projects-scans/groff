@@ -208,7 +208,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-T dev" + 2n
 .B \-c
 Be more compatible with
 .IR tpic ;
@@ -318,6 +318,7 @@ GNU
 .I pic \" GNU
 always does this.
 .
+.
 .TP
 .BI \-T\~ dev
 Generate output for the
@@ -339,7 +340,7 @@ is device-independent.
 .
 This section primarily discusses the differences between GNU
 .I pic \" GNU
-and the Eighth Edition Research Unix version of AT&T
+and the Eighth Edition Unix version of AT&T
 .I pic \" AT&T
 (1985).
 .
@@ -1491,7 +1492,7 @@ The interpretation of
 .B \%fillval
 is incompatible with the
 .I pic \" AT&T
-in Tenth Edition Research Unix,
+in Research Tenth Edition Unix,
 which interprets 0 as black and 1 as white.
 .
 .

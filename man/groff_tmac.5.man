@@ -216,7 +216,7 @@ are used to format a given document,
 a wrapper is available.
 .
 .
-.TP
+.TP 8n \" "mandoc" + 2n
 .I \%andoc
 .TQ
 .I mandoc
@@ -455,7 +455,7 @@ Chinese.
 .SS "Input encodings"
 .\" ====================================================================
 .
-.TP
+.TP 8n \" "latin1" + 2n
 .I latin1
 .TQ
 .I latin2
@@ -537,7 +537,7 @@ documents.
 .\"   europs
 .\"   psatk
 .\"   psfig
-.TP
+.TP 8n \" "pdfpic" + 2n
 .I 62bit
 provides macros for addition,
 multiplication,

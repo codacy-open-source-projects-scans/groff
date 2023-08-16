@@ -170,7 +170,7 @@
 .
 .de an-reset-margin-and-inset-level
 .  nr an-inset-level 1
-.  nr an-margin \\n[IN]
+.  nr an-margin \\n[BP]
 .  nr an-saved-margin1 \\n[IN]
 .  nr an-prevailing-indent \\n[IN]
 .  nr an-saved-prevailing-indent1 \\n[IN]
@@ -262,7 +262,7 @@
 .  \}
 .
 .  \" The previous document rendered in a batch may have been in a
-.  \" different language.  If this one is in English, (re-)init strings.
+.  \" different language.
 .  if '\\*[locale]'english' .an*localize-strings
 .
 .  ps \\n[PS]u
@@ -279,7 +279,6 @@
 .  an-reset-paragraph-spacing
 .  an-reset-margin-and-inset-level
 .
-.  nr an-tag-separation 1n
 .  nr an-need-no-space-mode 0
 .  nr an-need-break 0
 .  nr an-is-in-diversion 0
@@ -633,7 +632,7 @@ contains unsupported escape sequence
 .  ne (2v + 1u)
 .  \" Does the tag fit within the paragraph indentation?
 .  nr an-tag-fits \
-     (\\n[dl] + \\n[an-tag-separation] <= \\n[an-prevailing-indent])
+     (\\n[dl] + \\n[TS] <= \\n[an-prevailing-indent])
 .  if \\n[an-tag-fits] .DEVTAG-COL 1
 .  an-div
 .  if \\n[an-tag-fits] .sp -1v
@@ -681,7 +680,7 @@ contains unsupported escape sequence
 .  an-break-paragraph
 .  an-reset-margin-and-inset-level
 .  fi
-.  in \\n[an-margin]u
+.  in \\n[BP]u
 .  ti 0
 .  nr an-devtag-needs-end-of-heading 1
 .  DEVTAG-SH 1
@@ -708,7 +707,7 @@ contains unsupported escape sequence
 .  an-break-paragraph
 .  an-reset-margin-and-inset-level
 .  fi
-.  in \\n[IN]u
+.  in \\n[BP]u
 .  ti \\n[SN]u
 .  nr an-devtag-needs-end-of-heading 1
 .  DEVTAG-SH 2
@@ -751,9 +750,24 @@ contains unsupported escape sequence
 .  if \\n[.$] \&\\$*
 ..
 .
-.\" Set arguments (or next input line producing written or drawn output
-.\" if none) in bold style at smaller type size.
+.\" Deprecated: Set arguments (or next input line producing written or
+.\" drawn output if none) in bold style at smaller type size.
+.\"
+.\" This is a SunOS 4.0 extension.
+.\"
+.\" Instead of
+.\"   .SB whatever
+.\" say
+.\"   .SM
+.\"   .B whatever
+.\" or
+.\"   .B
+.\"   .SM whatever
+.\" to portably get an identical effect.
+.\"
+.\" .SB [text]
 .de1 SB
+.  nop \\*[an-deprecation-warn]\\
 .  it 1 an-input-trap
 .  ps -1
 .  ft B
@@ -990,6 +1004,11 @@ contains unsupported escape sequence
 .
 .\" Deprecated: Style an option with an argument (mandatory if
 .\" specified) for a command synopsis.
+.\"
+.\" This is a Documenter's Workbench troff extension.  It is not
+.\" flexible enough to handle GNU-style options like
+.\" `--input=file-name`.  Use font alternation macros instead.
+.\"
 .\" .OP flag [option-parameter]
 .de1 OP
 .  nop \\*[an-deprecation-warn]\\
@@ -1324,6 +1343,10 @@ contains unsupported escape sequence
 .  if !r PDFHREF.VIEW.LEADING .nr PDFHREF.VIEW.LEADING 10p
 .\}
 .
+.\" base paragraph indentation
+.if !r BP \
+.  nr BP 5n
+.
 .\" continuous rendering (one long page)
 .if !r cR \{\
 .  ie n .nr cR 1
@@ -1491,6 +1514,10 @@ contains unsupported escape sequence
 .  if '\*[.T]'X100-12' \
 .    nr S 12
 .\}
+.
+.\" required paragraph tag separation
+.if !r TS \
+.  nr TS 2n
 .
 .\" subsection indentation
 .if !r SN \

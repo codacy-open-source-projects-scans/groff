@@ -5940,6 +5940,9 @@ static symbol get_font_translation(symbol nm)
 
 dictionary font_dictionary(50);
 
+// Mount font at position `n` with troff identifier `name` and
+// description file name `external_name`.  If `check_only`, just look up
+// `name` in the existing list of mounted fonts.
 static bool mount_font_no_translate(int n, symbol name,
 				    symbol external_name,
 				    bool check_only = false)
@@ -6305,25 +6308,63 @@ static void set_special_fonts()
 
 static void zoom_font()
 {
-  font_lookup_info finfo;
-  if (!has_font(&finfo))
-    font_lookup_error(finfo, "to set a zoom factor for it");
-  else {
-    int n = finfo.position;
-    if (font_table[n]->is_style())
-      warning(WARN_FONT, "can't set zoom factor for a style");
-    else {
-      int zoom;
-      if (has_arg() && get_integer(&zoom)) {
-	if (zoom < 0)
-	  warning(WARN_FONT, "can't use negative zoom factor");
-	else
-	  font_table[n]->set_zoom(zoom);
-      }
-      else
-        font_table[n]->set_zoom(0);
-    }
+  if (!(has_arg())) {
+    warning(WARN_MISSING, "font name expected in zoom factor setting"
+	    " request");
+    skip_line();
+    return;
   }
+  symbol font_name = get_name();
+  assert(font_name != 0 /* nullptr */); // has_arg() should ensure this
+  // XXX: What other requests demand an argument with this constraint?
+  if (strspn(font_name.contents(), "0123456789")
+      == strlen(font_name.contents())) {
+    warning(WARN_FONT, "cannot set zoom factor of a font mounting"
+	    " position");
+    skip_line();
+    return;
+  }
+  if (!(has_arg())) {
+    warning(WARN_MISSING, "zoom factor expected in zoom factor setting"
+	    " request");
+    skip_line();
+    return;
+  }
+  int fpos = next_available_font_position();
+  if (!(mount_font(fpos, font_name))) {
+    error("cannot mount font '%1' to set a zoom factor for it",
+	  font_name.contents());
+    skip_line();
+    return;
+  }
+#if 0
+  // This would be a good diagnostic to have, but mount_font() is too
+  // formally complex to make it easy.  Instead it will fail in the
+  // above test on a font named "R", for instance, when that is
+  // literally true but might not help users who don't understand that
+  // "R", "I", "B", and "BI" are (by default) abstract styles, not fonts
+  // in the GNU troff sense.  It is a shame that a lot of our validation
+  // functions are willing only to handle arguments that they eat from
+  // the input stream (i.e., you can't pass them information you
+  // obtained elsewhere).  That design also forces us to validate
+  // request arguments in the order they appear in the input, and seems
+  // unnecessarily inflexible to me.  --GBR
+  if (font_table[fpos]->is_style()) {
+    warning(WARN_FONT, "ignoring request to set font zoom factor on an"
+	    " abstract style");
+    skip_line();
+    return;
+  }
+#endif
+  int zoom = 0;
+  get_integer(&zoom);
+  if (zoom < 0) {
+    warning(WARN_RANGE, "ignoring negative font zoom factor '%1'",
+	    zoom);
+    skip_line();
+    return;
+  }
+  font_table[fpos]->set_zoom(zoom);
   skip_line();
 }
 

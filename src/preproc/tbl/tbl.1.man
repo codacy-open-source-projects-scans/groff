@@ -246,7 +246,7 @@ region options makes a table \[lq]boxed\[rq] for the purpose of later
 discussion.
 .
 .
-.TP
+.TP 8n \" "allbox" + 2n
 .B allbox
 Enclose each table entry in a box;
 implies
@@ -885,7 +885,7 @@ of its range.
 Move the column up one half-line,
 \[lq]staggering\[rq] the rows.
 .
-This is a GNU extension.
+This is a Research Tenth Edition Unix extension.
 .
 .
 .TP
@@ -1066,7 +1066,7 @@ do not persist between entries.
 Several forms of table entry are interpreted specially.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 If a table row contains only an underscore or equals sign
 .RB ( _
 or
@@ -1076,7 +1076,7 @@ respectively,
 is drawn across the table at that point.
 .
 .
-.IP \[bu] 2n
+.IP \[bu]
 A table entry containing only
 .B _
 or
@@ -1088,7 +1088,7 @@ joining its
 neighbors.
 .
 .
-.IP \[bu] 2n
+.IP \[bu]
 Prefixing a lone underscore or equals sign with a backslash also has
 meaning.
 .
@@ -1398,7 +1398,7 @@ removes constraints endured by users of AT&T
 .IR tbl .\" AT&T
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 Region options can be specified in any lettercase.
 .
 .

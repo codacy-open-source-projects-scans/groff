@@ -43,7 +43,7 @@ to within a granularity of
 output=$(echo "$input" | "$groff" -Tascii -mdoc -P-cbou)
 echo "$output"
 
-str=' {7}timerdday\(struct-timespec \*earliest, struct-timespec \*latest,'
+str=' {5}timerdday\(struct-timespec \*earliest, struct-timespec \*latest,'
 echo "$output" | grep -Eqx "$str"
 
 # vim:set ai et sw=4 ts=4 tw=72:

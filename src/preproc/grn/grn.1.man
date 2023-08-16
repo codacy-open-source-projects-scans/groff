@@ -580,14 +580,14 @@ POLYGON@@6
 .TE
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 The first line of each
 .I gremlin
 file contains either the string
-.RB \[lq] gremlinfile \[rq]
+.RB \%\[lq] gremlinfile \[rq]
 (AED)
 or
-.RB \[lq] sungremlinfile \[rq]
+.RB \%\[lq] sungremlinfile \[rq]
 (Sun/X11).
 .
 .
@@ -647,7 +647,7 @@ Lines longer than 127 characters are truncated to that length.
 .SS "Element specifications"
 .\" ====================================================================
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 The first line of each element contains a single decimal number giving
 the type of the element (AED) or its name (Sun/X11).
 .
@@ -722,11 +722,9 @@ nB l.
 .
 .IP
 For polygons,
-one more value,
-0,
-is valid.
-.
-It specifies a polygon with an invisible border.
+0
+is also valid:
+it specifies an invisible border.
 .
 For text,
 the brush selects a font as follows.
@@ -860,7 +858,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-F dir" + 2n
 .B \-C
 Recognize
 .B .GS

@@ -383,21 +383,29 @@ escape sequence.
 .
 .
 .TP
-.BI \[rs]X\[aq]papersize= paper-format \[aq]
-where the
-.I paper-format
-parameter is the same as that to the
-.B papersize
-directive.
+.BI \[rs]X\[aq]papersize= width , length \[aq]
+Set the page dimensions in centimeters to
+.I width
+by
+.I length.
 .
-See
-.MR groff_font @MAN5EXT@ .
+If the
+.B \-l
+option was specified,
+these dimensions are swapped.
 .
-You can thus alter the page size at will within the DVI file created by
-.IR grodvi .
-.
-Changes to the paper format should occur prior to the first page,
+Changes to the paper dimensions should occur prior to the first page,
 or during page ejection before starting a subsequent one.
+.
+.
+.IP
+.I Caution:
+the ordering of dimensions differs from that used by
+.I papersize.tmac
+and
+.MR @g@troff @MAN1EXT@ 's
+.RB \[lq] "\-d paper" \[rq]
+option.
 .
 .
 .P
@@ -492,7 +500,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n
 .B \-d
 Do not use
 .I tpic

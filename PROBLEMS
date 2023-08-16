@@ -472,7 +472,7 @@ The solution is to fix the manual page.
 
 It might be better still to avoid such computations in macro arguments,
 however; programs that are not *roff formatters that attempt to
-interpret man pages can lack the ability to interpret numeric
+interpret man pages can lack the ability to evaluate numeric
 expressions.  See section "Portability" of groff_man_style(7).
 
 
@@ -755,8 +755,7 @@ To get PostScript output from `man -t', you also need to create a
 * I'm having problems formatting HP-UX 9.0 man pages with groff -man.
 
 Copy HP's tmac.an into /usr/local/share/groff/site-tmac/an.tmac, and
-either put `.cp 1' at the beginning or filter it (and any files it
-.so's) through tmac/fixmacros.sed.
+either put `.cp 1' at the beginning.
 
 ----------------------------------------------------------------------
 

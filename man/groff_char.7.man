@@ -870,7 +870,7 @@ glyph name repertoire is presented in tabular form.
 The meanings of the columns are as follows.
 .
 .
-.TP 8n
+.TP 9n \" "Unicode" + 2n
 .B Output
 shows the glyph as it appears on the device used to render this
 document;

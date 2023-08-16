@@ -414,7 +414,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-F dir" + 2n
 .B \-b
 Suppress the use of overstriking for bold characters in legacy output
 format.
@@ -681,7 +681,7 @@ See
 is intended only for simple documents.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 There is no support for fractional horizontal or vertical motions.
 .
 .

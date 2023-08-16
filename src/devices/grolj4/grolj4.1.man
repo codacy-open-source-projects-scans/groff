@@ -755,7 +755,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-d [n]" + 2n
 .BI \-c\~ num-copies
 Format
 .I num-copies

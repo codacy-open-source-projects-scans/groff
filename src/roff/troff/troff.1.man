@@ -152,7 +152,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP
+.TP 8n \" "-f fam" + 2n
 .B \-a
 Generate a plain text approximation of the typeset output.
 .
@@ -164,7 +164,7 @@ This option produces a sort of abstract preview of the formatted output.
 .
 .
 .RS
-.IP \[bu] 2n
+.IP \[bu] 3n
 Page breaks are marked by a phrase in angle brackets;
 for example,
 \[lq]<beginning of page>\[rq].

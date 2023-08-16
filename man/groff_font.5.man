@@ -158,7 +158,7 @@ character and extend to the end of a line.
 Empty lines are ignored.
 .
 .
-.TP
+.TP 8n \" "vert n" + 2n
 .BI family\~ fam
 The default font family is
 .IR fam .
@@ -598,7 +598,7 @@ and the same comment syntax is supported.
 Empty lines are ignored throughout.
 .
 .
-.TP
+.TP 8n \" "name F" + 2n
 .BI name\~ F
 The name of the font
 .RI is\~ F .

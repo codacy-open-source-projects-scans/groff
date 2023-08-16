@@ -1552,7 +1552,7 @@ language input to the formatter,
 which in turn generates a document in a page description language that
 is then interpreted by a postprocessor for viewing,
 printing,
-or further processing.
+or further handling.
 .
 .
 .P
@@ -2075,7 +2075,7 @@ formatter.
 Several traditions have accrued in service of these goals.
 .
 .
-.IP \[bu] 2n
+.IP \[bu] 3n
 Follow sentence endings in the input with newlines to ease their
 recognition.
 .\" Texinfo: (@pxref{Sentences}).
@@ -2278,7 +2278,7 @@ It is also possible to have the mode automatically selected when a
 file is loaded into the editor.
 .
 .
-.IP \(bu 2n
+.IP \(bu 3n
 The most general method is to include file-local variables at the end of
 the file;
 we can also configure the fill column this way.
