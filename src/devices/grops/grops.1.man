@@ -130,7 +130,7 @@ is \[lq]\-\[rq],
 .I grotty
 reads the standard input stream.
 .
-Output is written to the standard output stream.
+It writes to the standard output stream.
 .
 .
 .P
@@ -626,7 +626,6 @@ some older printers.
 .SS Typefaces
 .\" ====================================================================
 .
-.P
 Styles called
 .BR R ,
 .BR I ,
@@ -648,7 +647,7 @@ each having members in each of these styles.
 .
 .
 .RS
-.TP
+.TP 8n \" BMBI + 2n + hand-tuned for PDF
 .B AR
 .FT AR
 AvantGarde-Book
@@ -843,13 +842,13 @@ Times-BoldItalic
 .
 .
 .br
-.ne 2v
+.ne 3v
 .P
 Another text font is not a member of a family.
 .
 .
 .RS
-.TP
+.TP 8n \" BMBI (above) + 2n + hand-tuned for PDF
 .B ZCMI
 .FT ZCMI
 ZapfChancery-MediumItalic
@@ -871,7 +870,7 @@ Symbol;
 which offers a Euro glyph for use with old devices lacking it;
 and
 .BR ZDR ,
-a reversed version of ZapfDingbats
+a reversed version of Zapf Dingbats
 (with symbols flipped about the vertical axis).
 .
 Most glyphs in these fonts are unnamed and must be accessed using

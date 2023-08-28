@@ -1,3 +1,95 @@
+2023-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/box.cpp (set_param): Migrate iteration style
+	to use new `array_size()` instead of null pointer guards at the
+	end of an array of structs.
+
+2023-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[src]: Add template function for obtaining the length of an
+	array.
+
+	* src/include/lib.h (array_size) [__cplusplus]: Do it.
+
+2023-08-22  Dave Kemper <saint.snit@gmail.com>
+
+	* doc/pic.ms: Document `PY` macro, new to groff 1.23.0.
+
+	Fixes <https://savannah.gnu.org/bugs/?64575>.
+
+2023-08-22  Dave Kemper <saint.snit@gmail.com>
+
+	* tmac/pic.tmac (PY): Call `PF` rather than duplicating its
+	{three bytes of} code.  This is almost too trivial to DRY, but
+	{1} the new form is a cue to the human reader that .PY is meant
+	to be an alias of .PF; and {2} .PE was already defined as a
+	variant of .PF with an explicit call to it, so this makes the
+	.PY definition conform to that precedent.
+
+2023-08-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Stop setting `an*can-hyperlink` if formatting
+	for PDF; we don't yet have support for this implemented, leading
+	to vanishing text when the `U` register is true and, for
+	instance, `UR`/`UE` are called with no link text.
+
+	Fixes <https://savannah.gnu.org/bugs/?64572>.
+
+2023-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (PROCESSEDFILES_DEPS_HTML): Depend on
+	tmac/html{,-end}.tmac.
+	(PROCESSEDFILES_DEPS_PDF): Depend on tmac/pdf.tmac.
+	(PROCESSEDFILES_DEPS_PS): Depend on tmac/ps.tmac.
+	(PROCESSEDFILES_DEPS_TXT): Depend on tmac/tty.tmac.
+
+2023-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/ps.cpp (ps_printer::define_encoding):
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog)
+	(resource_manager::supply_resource): Report more intelligible
+	diagnostics when libgroff's `font::open_file()` returns a null
+	pointer without setting `errno`.  The only way this can happen
+	is if it rejected the file name for containing a slash, thus
+	attempting directory traversal (recall Savannah #61424).  Also
+	fix code style nits: explicitly `#include` errno.h C standard
+	library header, align style of null pointer checks, and stop
+	explicitly setting `errno` to zero before (indirectly) calling
+	`fopen()`; we inspect `errno`'s value only under a documented
+	error condition (a null stream pointer).  See errno(3).
+
+	* NEWS: Add item; we should have mentioned this (and produced
+	these better diagnostics) when 1.23.0 was released.
+	Distributors may find this change desirable to backport.
+
+	Fixes <https://savannah.gnu.org/bugs/?64577>.  Thanks to Phil
+	Chadwick for the report and Deri James for swiftly finding a
+	correct workaround that suited the reporter.
+
+2023-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (class tfont_spec): Stop declaring
+	copy constructor.  The implicitly defined one suffices.
+	Resolves "-Wdeprecated-copy" warning from GCC.
+
+	Fixes <https://savannah.gnu.org/bugs/?57515>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-08-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* configure.ac: Include paper format in configuration report.
+
+	* m4/groff.m4 (GROFF_PAGE): Slightly refactor, and help users to
+	figure out how the "configure" script decided upon the paper
+	format it did by supplementing the `AC_MSG_RESULT` message.  If
+	not falling back to the "letter" default or honoring a
+	command-line setting (e.g., "./configure PAGE=a4"), report which
+	file or command was used to infer the paper locale.  Apply DRY
+	principle by using shell variables more.
+
+	Prompted by discussion with Damian McGuckin on the groff list.
+	<https://lists.gnu.org/archive/html/groff/2023-07/msg00072.html>
+
 2023-08-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Our "Makefile.am" defines an `RM` macro if make(1) itself does
@@ -6,6 +98,7 @@
 
 	* font/devpdf/devpdf.am (mostlyclean_devpdf_extra)
 	(uninstall_devpdf):
+	* src/devices/xditview/xditview.am (uninstall_xditview):
 	* src/libs/libgroff/libgroff.am (install_charset_data):
 	* src/roff/nroff/nroff.am (nroff):
 	* src/utils/indxbib/indxbib.am (install_indxbib):
@@ -47,7 +140,9 @@
 
 	* tmac/an.tmac: Introduce new interface register, `BP`, to
 	control the base paragraph indentation amount.  Formerly, `IN`
-	determined it _and_ the default relative inset amount.
+	determined it, the default relative inset amount, and the
+	default amount of additional indentation used by `IP`, `TP`, and
+	the deprecated `HP`.
 	(an-reset-margin-and-inset-level, SH, SS): Use it.
 
 	* tmac/doc.tmac: Introduce `BP` register, replacing `IN`.
@@ -99,7 +194,16 @@
 
 2023-08-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[tbl]: Fix staggering of text block cells.
+	* man/groff_diff.7.man: Drop displayed examples.  Man pages'
+	honor as references, not tutorials, has been vigorously
+	championed on the groff mailing list.  Accordingly, drop
+	displayed examples from this page; all are available in groff's
+	Texinfo manual.
+	* NEWS: Add item in case people wonder where they've gone.
+
+2023-08-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Fix staggering of text block entries.
 
 	* src/preproc/tbl/table.cpp: Add C preprocessor macro storing a
 	"text block staggering macro" name.
@@ -140,10 +244,10 @@
 	troff normally ignore the `\c` escape sequence, the use of which
 	would be necessary to get the desired effect.  In groff since
 	1.22.4, the man(7) `TP` macro uses GNU troff's `itc` request,
-	which _does_ respect `\c`.  (mandoc(1) behaves compatibly with
-	groff man >= 1.22.4.)  Solaris 11 switched to groff as its troff
-	implementation, so there is no reason for newly written or
-	currently maintained man pages to employ `SB`.
+	which _does_ respect `\c`.  (mandoc(1) 1.14.2 and later behave
+	compatibly with groff man >= 1.22.4.)  Solaris 11 switched to
+	groff as its troff implementation, so there is no reason for
+	newly written or currently maintained man pages to employ `SB`.
 
 	* tmac/an.tmac (SB): Throw deprecation warning.
 
@@ -183,12 +287,12 @@
 
 2023-07-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* src/libs/libgroff/fontfile.cpp (font::open_file): Do more
-	parameter validation.  Don't construct a file name for opening
-	from components that are null pointers.  Also `assert()` this
-	since it should be an invariant.  Migrate from `sprintf()` to
-	`snprintf()`; we have the size of the destination buffer handy.
-	Update `#include`s.
+	* src/libs/libgroff/fontfile.cpp: Update `#include`s.
+	(font::open_file): Do more parameter validation.  Don't
+	construct a file name for opening from components that are null
+	pointers.  Also `assert()` this since it should be an invariant.
+	Migrate from `sprintf()` to `snprintf()`; we have the size of
+	the destination buffer handy.
 
 	Fixes <https://savannah.gnu.org/bugs/?64485>.  Thanks to Bjarni
 	Ingi Gislason for the report.

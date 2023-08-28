@@ -1,3 +1,63 @@
+2023-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (Qrf): Define string contents using `\E` instead of
+	`\\` for better robustness.  See our Texinfo manual,
+	node/section "Copy mode".
+
+2023-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mmroff.pl: Fix code style nits; resolve Perl warnings.
+	Initialize scalars `max_height` and `max_width` before using
+	them.  Add to `cur` hash instead of reinitializing it when
+	reading "PIC id" comment from input.
+	(ps_calc): Return early if bounding box keys in `cur` hash not
+	populated.
+	(psbb): Use `return` instead of `next` to exit early from
+	non-loop.  Improve diagnostic message: identify who is speaking,
+	what operation failed, and end with newline.
+
+2023-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Validate reference system state and user input.
+
+	* m.tmac (qrf*validate-identifier): New macro tests argument for
+	validity as roff identifier, since user input is applied to this
+	purpose.
+	(INITR): Throw error if mandatory argument omitted; keeps us
+	from creating a (likely unwanted) dotfile, ".qrf".
+	(SETR, GETST, GETHN, GETPN, GETR): Throw error if reference
+	system macros used without initialization.
+	(SETR, GETST, GETHN, GETPN): Validate arguments to be used as
+	string identifiers.
+
+2023-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Flush displays at end of input even if they cause page
+	breaks.  Inspection of source code suggests that the problem
+	dates back to the introduction of the package in groff 1.04,
+	1991-11-17.  Our mm stumbled into a pitfall of AT&T
+	compatibility.  Our Texinfo manual (which did not exist yet in
+	1991) says: "For historical reasons (compatibility with AT&T
+	'troff'), the end-of-input macro exits as soon as it causes a
+	page break if no partially collected line remains. ..."
+
+	Fixes <https://savannah.gnu.org/bugs/?64336>.
+
+2023-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #64336.
+
+	* tests/flush-long-displays-at-end-of-input.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2023-08-16 G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* groff_mm.7.man: Document difference from DWB in paragraph
+	indentation for semi-blocked letter style.  Correct
+	mischaracterization of it in `LT` macro descriptions.
+
+	Fixes <https://savannah.gnu.org/bugs/?64315>.
+
 2023-07-04 G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac: Stop suppressing warnings if Boolean register `Ref` is

@@ -165,7 +165,7 @@ Put a macro call on a line by itself.
 .
 Use
 .CW .PP
-if you want your paragraph's first line to be indented,
+if you want your paragraph's first line indented,
 or
 .CW .LP
 if you don't.
@@ -624,7 +624,7 @@ and
 registers use the larger value if the vertical motion quantum of the
 output device is too coarse for the smaller one;
 usually,
-this is the case only for output to terminals and emulators thereof.
+this is the case only for output to terminals.
 .
 .
 .\" ------------------------
@@ -929,11 +929,12 @@ registers set the type size and vertical spacing
 (distance between text baselines),
 respectively.
 .
-The font family and type size are ignored on terminal devices.
+The font family and type size are ignored on terminals.
 .
-Setting these parameters before the first call of a heading,
+Set these parameters before the first call of a heading,
 paragraphing,
-or (non-date) document description macro also applies them to headers,
+or (non-date) document description macro to apply them to
+headers,
 footers,
 and
 (for
@@ -1657,7 +1658,7 @@ and draw a
 .BX box
 around it.
 .
-On terminal devices,
+On terminals,
 reverse video is used instead
 (see the implementation note below).
 .
@@ -1681,7 +1682,7 @@ Typeset
 with an
 .UL underline .
 .
-On terminal devices,
+On terminals,
 .I text
 is bracketed with underscores (\[lq]_\[rq]).
 .
@@ -1703,13 +1704,13 @@ type size,
 paragraphing,
 or heading macro call.
 .
-You can
+Call
 .LG
-specify this macro
+the macro
 .LG
 multiple times
 .NL
-to enlarge the type size as needed.
+to enlarge the type size further.
 T}
 _
 \&.SM	T{
@@ -1723,13 +1724,13 @@ type size,
 paragraphing,
 or heading macro call.
 .
-You can
+Call
 .SM
-specify this macro
+the macro
 .SM
 multiple times
 .NL
-to reduce the type size as needed.
+to reduce the type size further.
 T}
 _
 \&.NL	T{
@@ -2968,7 +2969,7 @@ lf(CR) lx .
 _
 0	T{
 Set an automatic number as a superscript
-(on typesetter devices)
+(on typesetters)
 or surrounded by square brackets
 (on terminals).
 .
@@ -4069,7 +4070,7 @@ they do so not by incrementing or decrementing it,
 but by setting it absolutely.
 .
 This can cause problems for documents that define additional macros of
-their own that try to manipulate indentation.
+their own that manipulate indentation.
 .
 Use
 .CW .RS

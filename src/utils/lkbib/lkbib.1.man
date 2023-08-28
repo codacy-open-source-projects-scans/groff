@@ -165,7 +165,7 @@ is\~6.
 .
 .TP
 .I REFER
-Default database.
+Assign this variable a file name to override the default database.
 .
 .
 .\" ====================================================================

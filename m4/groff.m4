@@ -972,13 +972,17 @@ AC_DEFUN([GROFF_BROKEN_SPOOLER_FLAGS],
 
 AC_DEFUN([GROFF_PAGE], [
   AC_MSG_CHECKING([default paper format])
+  whence=
   groff_prefix=$prefix
   test "$prefix" = NONE && groff_prefix=$ac_default_prefix
-  if test -z "$PAGE" && test -r /etc/papersize
+  papersize=/etc/papersize
+  if test -z "$PAGE" && test -r "$papersize"
   then
     sedexpr='s/#.*//;s/[ \t]\+/ /;s/ \+$//;s/^ \+//;/^$/d;p'
-    PAGE=`sed -n "$sedexpr" /etc/papersize`
+    PAGE=`sed -n "$sedexpr" "$papersize"`
+    test -n "$PAGE" && whence=$papersize
   fi
+
   if test -z "$PAGE"
   then
     descfile=
@@ -1008,24 +1012,29 @@ AC_DEFUN([GROFF_PAGE], [
       then
 	PAGE=A4
       fi
+      test -n "$PAGE" && whence=$descfile
     fi
   fi
 
   if test -z "$PAGE"
   then
+    resolvconf=/etc/resolv.conf
     domains=
-    if test -r /etc/resolv.conf
+    if test -r "$resolvconf"
     then
       sedexpr='s/#.*//;s/[ \t]\+/ /;s/ \+$//;s/^ \+//;/^$/d;
 /^\(domain\|search\)/!d;s/\(domain\|search\) //;p'
-      domains=`sed -n "$sedexpr" /etc/resolv.conf`
+      domains=`sed -n "$sedexpr" "$resolvconf"`
     fi
+    test -n "$domains" && whence=$resolvconf
     if test -z "$domains"
     then
       domains=`(domainname) 2>/dev/null | tr -d '+'`
+      test -n "$domains" && whence="'domainname' command"
       if test -z "$domains" || test "$domains" = '(none)'
       then
         domains=`(hostname) 2>/dev/null | grep '\.'`
+        test -n "$domains" && whence="'hostname' command"
       fi
     fi
     # resolv.conf's "search" directive might return multiple domains.
@@ -1042,8 +1051,16 @@ AC_DEFUN([GROFF_PAGE], [
     done
   fi
 
-  test -n "$PAGE" || PAGE=letter
-  AC_MSG_RESULT([$PAGE])
+  message=
+  test -n "$PAGE" && test -n "$whence" \
+    && message=" (inferred from $whence)"
+
+  if test -z "$PAGE"
+  then
+    PAGE=letter
+  fi
+
+  AC_MSG_RESULT([$PAGE$message])
   AC_SUBST([PAGE])
 ])
 

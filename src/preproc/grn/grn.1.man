@@ -554,6 +554,7 @@ Files representing the same picture are shown below.
 .
 .
 .PP
+.EX
 .ie t .ne 18v
 .el   .ne 19v
 .TS
@@ -578,6 +579,7 @@ POLYGON@@6
 0@@0
 \-1@@\-1
 .TE
+.EE
 .
 .
 .IP \[bu] 3n
@@ -682,11 +684,14 @@ AED Number@Sun/X11 Name@Description
 .
 .
 .IP \[bu]
-After the object type comes a variable number of lines,
-each specifying a point used to display the element.
+Each line after the object type specifies a point used to display the
+element.
 .
-Each line contains an x-coordinate and a y-coordinate in floating-point
-format,
+It contains an
+.I x
+and a
+.I y
+coordinate in floating-point format,
 separated by spaces.
 .
 The list of points is terminated by a line containing the string
@@ -858,7 +863,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP 8n \" "-F dir" + 2n
+.TP 8.125n \" "-F dir" + 2n + hand-tuned for PDF
 .B \-C
 Recognize
 .B .GS

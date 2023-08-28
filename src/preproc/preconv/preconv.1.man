@@ -256,7 +256,9 @@ This notation appears in specially marked regions of an input file
 designated for \[lq]file-local variables\[rq].
 .
 .
-.PP
+.br
+.ne 4v
+.P
 .I preconv
 interprets the following syntax if it occurs in a
 .I roff

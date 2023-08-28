@@ -12170,7 +12170,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .       if \\n[#EXTEND]=1 \{\
 \E*[EXT]\c
 .       \}
-.    nr #Q_PP +1
+.       nr #Q_PP +1
 .    \}
 .\" This takes care of multi-paragraph dialogue, where each para
 .\" is introduced by an open quote whereas the previous para has
@@ -12281,7 +12281,8 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .    ie \\n[@TOP] \
 .       br
 .    el 'br
-.    if \\n[#PP]>0 .rr #START
+.    ie \\n[#PP]>0 .rr #START
+.    el .nr #PP 1 1
 .    if '\\n[.z]'FLOAT*DIV' .nr Q-float 1
 .    if \\n[#LINENUMBERS]=1 \{\
 .       nr #LINENUMBERS 2
@@ -12445,7 +12446,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          SMARTQUOTES
 .       \}
 .       if \\n[#QUOTE] .sp -1
-.       if \\n[pdfbx-end] .if !\\n[#QUOTE] .sp -1
+.       if \\n[pdfbx-end] .if !\\n[#QUOTE] 'sp
 .    \}
 .END
 \#
@@ -22252,7 +22253,7 @@ does not fit on page \\n[pgnum]\\*[col-num].
 .      ds ref*spec!4 i A m p T2 B G O C I D P O n
 .   \}
 .\}
-.if r [T \{\
+.if \\n[[T] \{\
 .   als [T1 [T
 .   als [T2 [T
 .\}
@@ -23634,7 +23635,8 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 \#   <image file> <width> <height> are required.
 \#
 .MAC PDF_IMAGE END
-.    br
+.    ie \\n[#PP]=0 .PP
+.    el .br
 .    if !'\\n[.z]'FLOAT*DIV' \{\
 .       nr pdf-img:float 1
 .       FLOAT
@@ -23867,7 +23869,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .       nr pdf-img*label-lead-diff \\n[lead-pre-label]-\\n[.v]
 .       sp -.5+\\*[$CAP_HEIGHT]+\\n[pdf-img*label-lead-diff]u
 .       if !'\\*[pdf-img*label-space]'' .sp \\*[pdf-img*label-space]
-.       if \\n[pdfbx-running] \{\
+.       if r pdfbx-running \{\
 .          in -(\\*[wt\\n[stack]])+\\*[gap\\n[stack]]u
 .          ll -(\\*[wt\\n[stack]])+\\*[gap\\n[stack]]u
 .       \}

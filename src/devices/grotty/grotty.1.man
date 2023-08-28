@@ -101,7 +101,6 @@ is invoked by
 when the latter is given one of the
 .RB \[lq] \-T\~ascii \[rq],
 .RB \[lq] \-T\~latin1 \[rq],
-.BR \-Tlatin1 ,
 or
 .RB \[lq] \-T\~utf8 \[rq]
 options on systems using ISO character encoding standards,
@@ -130,7 +129,7 @@ is \[lq]\-\[rq],
 .I grotty
 reads the standard input stream.
 .
-Output is written to the standard output stream.
+It writes to the standard output stream.
 .
 .
 .P
@@ -292,13 +291,9 @@ There is therefore no need to filter its output through
 .\" ====================================================================
 .
 .I grotty
-supports one device control function,
-accessed with the
-.I groff
-request
-.B device
-or
-.I roff
+supports a device control command accessed with the
+.RB \%\[lq] device \[rq]
+request or
 .B \[rs]X
 escape sequence.
 .
@@ -776,7 +771,7 @@ this document includes a normative description of SGR escape sequences.
 .
 .P
 .UR https://\:gist\:.github\:.com/\:egmontkob/\:\
-eb114294efbcd5ad\:b1944c9f3cb5feda
+eb114294\:efbcd5ad\:b1944c9f\:3cb5feda
 \[lq]Hyperlinks in Terminal Emulators\[rq]
 .UE ,
 Egmont Koblinger.

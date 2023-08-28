@@ -152,9 +152,6 @@ o GNU tools, or otherwise POSIX-conforming ones, are generally required
 o Solaris 10 has known problems with automated tests; see the "PROBLEMS"
   file in the distribution archive.
 
-o There is a problem building on "newlib"-using systems when X11 support
-  is enabled; see the "PROBLEMS" file in the distribution archive.
-
 News
 ====
 
@@ -189,6 +186,7 @@ Michał Kruszewski
 Mike Fulton
 Nikita Ivanov
 Peter Schaffter
+Phil Chadwick
 Ralph Corderoy
 Thorsten Glaser
 наб

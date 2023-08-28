@@ -840,7 +840,7 @@ you make the most of this resource.
 @cindex credits
 
 We adapted portions of this manual from existing documents.  James
-Clark's man pages were an essential resource; we have updated them in
+Clark's man pages were an invaluable foundation; we have updated them in
 parallel with the development of this manual.  We based the tutorial for
 macro users on Eric Allman's introduction to his @file{me} macro package
 (which we also provide, little altered from 4.4BSD).  Larry Kollar
@@ -1514,8 +1514,8 @@ follows.
 
 @noindent
 The foregoing assumes that the version of @code{groff} is 1.23.0, and
-that the installation prefix was @file{/usr/local}.  It is possible to
-fine-tune these locations during the source configuration process.
+that the installation prefix was @file{/usr/local}.  These locations can
+be customized as part of the build-time configuration process.
 @end itemize
 
 
@@ -1529,13 +1529,13 @@ fine-tune these locations during the source configuration process.
 @cindex fonts, searching
 
 @code{groff} enforces few restrictions on how font description files are
-named.  For its family/style mechanism to work (@pxref{Font Families}),
-the names of fonts within a family should start with the family name,
-followed by the style.  For example, the Times family uses @samp{T} for
-the family name and @samp{R}, @samp{B}, @samp{I}, and @samp{BI} to
-indicate the styles `roman', `bold', `italic', and `bold italic',
-respectively.  Thus the final font names are @samp{TR}, @samp{TB},
-@samp{TI}, and @samp{TBI}.
+named.  For its family/style mechanism to work, the names of fonts
+within a family should start with the family name, followed by the
+style.  For example, the Times family uses @samp{T} for the family name
+and @samp{R}, @samp{B}, @samp{I}, and @samp{BI} to indicate the styles
+`roman', `bold', `italic', and `bold italic', respectively.  Their
+resolved font names are thus @samp{TR}, @samp{TB}, @samp{TI}, and
+@samp{TBI}.  @xref{Using Fonts}.
 
 @cindex font path
 @cindex path, for font files
@@ -1574,8 +1574,8 @@ they are as follows.
 
 @noindent
 The foregoing assumes that the version of @code{groff} is 1.23.0, and
-that the installation prefix was @file{/usr/local}.  It is possible to
-fine-tune these locations during the source configuration process.
+that the installation prefix was @file{/usr/local}.  These locations can
+be customized as part of the build-time configuration process.
 @end itemize
 
 
@@ -1591,38 +1591,43 @@ fine-tune these locations during the source configuration process.
 @cindex orientation, landscape
 @cindex page orientation, landscape
 
-In @code{groff}, the page dimensions for the formatter GNU
-@command{troff} and for output devices are handled separately.
-@xref{Page Layout}, for vertical manipulation of the page size, and
-@ref{Line Layout}, for horizontal changes.
-@pindex papersize.tmac
-@pindex troffrc
-The @file{papersize} macro package, normally loaded by @file{troffrc} at
-startup, provides an interface for configuring page dimensions by
-convenient names, like @samp{letter} or @samp{a4}; see
-@cite{groff_tmac@r{(5)}}.  The default used by the formatter depends on
-its build configuration, but is usually one of the foregoing, as
-geographically appropriate.
-@c groff(1), being generated, says what the default is.
+@c BEGIN Keep parallel with groff(1), subsection "Paper format".
+GNU @command{troff} reads the device description file
+@file{DESC}@footnote{@xref{Device and Font Description Files}.} for the
+selected output device when it starts; page dimensions declared there
+are used if present.  @code{groff}'s build process configures a default
+page format and writes it to typesetters' @file{DESC} files.  This
+installation's default is documented in @cite{gtroff@r{(1)}}.  If the
+@file{DESC} file lacks this information, the formatter and output driver
+use a page length of @code{11i} (inches) for compatibility with
+@acronym{AT&T} @code{troff}.
 
-It is up to each macro package to respect the page dimensions configured
-in this way.
+In the formatter, the @code{pl} request changes the page length, but
+macro packages often do not support alteration of the paper format
+within a document.  One might, for instance, want to switch between
+portrait and landscape orientations.  Macro packages lack a consistent
+approach to configuration of parameters dependent on the paper format;
+some, like @file{ms}, benefit from a preamble in the document prior to
+the first macro call, while others, like @file{mm}, instead require the
+specification of registers on the command line to configure page
+dimensions.
 
-For each output device, the size of the output medium can be set in its
-@file{DESC} file.  Most output drivers also recognize a command-line
-option @option{-p} to override the default dimensions and an option
-@option{-l} to use landscape orientation.  @xref{DESC File Format}, for
-a description of the @code{papersize} keyword, which takes an argument
-of the same form as @option{-p}.  The output driver's man page, such as
-@cite{grops@r{(1)}}, may also be helpful.
+Output drivers for typesetters also recognize command-line options
+@option{-p} to override the default page dimensions and @option{-l}
+to use landscape orientation.  The output driver's man page, such as
+@cite{grops@r{(1)}}, may be helpful.
 
-@command{groff} uses the command-line option @option{-P} to pass options
-to postprocessors; for example, use the following for PostScript output
+@command{groff}'s @code{-d paper} command-line option is a convenient
+means of setting the paper format; see @cite{groff_tmac@r{(5)}}.
+Combine it with appropriate @option{-P} options for the output driver,
+overriding its defaults.  The following command formats for PostScript
 on A4 paper in landscape orientation.
 
 @Example
-groff -Tps -dpaper=a4l -P-pa4 -P-l -ms foo.ms > foo.ps
+@c The next line is right at the 59n limit.
+$ groff -T ps -d paper=a4l -P -pa4 -P -l -ms foo.ms >foo.ps
 @endExample
+@c END Keep parallel with groff(1), subsection "Paper format".
 
 
 @c =====================================================================
@@ -1633,9 +1638,9 @@ groff -Tps -dpaper=a4l -P-pa4 -P-l -ms foo.ms > foo.ps
 @cindex invocation examples
 @cindex examples of invocation
 
-@code{roff} systems are best known for formatting man pages.  Once a
-@command{man} librarian program has located a man page, it may execute
-a @command{groff} command much like the following.
+@code{roff} systems are best known for formatting man pages.  A
+@command{man} librarian program, having located a page, may render it
+with a @command{groff} command.
 
 @Example
 groff -t -man -Tutf8 /usr/share/man/man1/groff.1
@@ -1924,8 +1929,8 @@ performed.  These common tasks are grouped into @slanted{macros}, which
 are then collected into a @slanted{macro package}.
 
 Macro packages come in two varieties:@: ``major'' or ``full-service''
-ones that manage page layout, and ``minor'' or ``auxiliary'' ones that
-do not, instead fulfilling narrow, specific tasks.  Find a list in
+ones that manage page layout with traps, and ``minor'' or ``auxiliary''
+ones that do not, but fulfill narrower purposes.  Find a list in
 @cite{groff_tmac@r{(5)}}.
 
 We present several capabilities of full-service macro packages below.
@@ -2128,8 +2133,8 @@ pages at the time the document is rendered; see @cite{gropdf@r{(1)}}.
 An index is similar to a table of contents, in that entry labels and
 locations must be collected, but poses a greater challenge because it
 needs to be sorted before it is output.  Here, processing the document
-in multiple passes is inescapable, and tools like the @code{makeindex}
-program are necessary.
+in multiple passes is inescapable, and tools like the
+@cite{makeindex@r{(1)}} program are necessary.
 
 @c ---------------------------------------------------------------------
 
@@ -2157,10 +2162,10 @@ formatting offer a facility for setting multiple columns on the page.
 @subsection Font and Size Changes
 
 The formatter's requests and escape sequences for setting the typeface
-and size are not always intuitive in their behavior, so all packages
-provide macros to simplify input of these operations.  They can also
-make mid-word font style changes more convenient, and can handle italic
-corrections automatically.  @xref{Italic Corrections}.
+and size are not always intuitive in their behavior, so all full-service
+packages provide macros to simplify input of these operations.  They can
+also make mid-word font style changes more convenient, and can handle
+italic corrections automatically.  @xref{Italic Corrections}.
 
 @c ---------------------------------------------------------------------
 
@@ -2176,10 +2181,10 @@ the date, or to perform operations like super- and subscripting.
 @subsection Preprocessor Support
 
 All macro packages provide support for various preprocessors and may
-extend their functionality by defining macros to set their contents in
-displays.  Examples include @code{TS} and @code{TE} for @command{gtbl},
-@code{EQ} and @code{EN} for @command{geqn}, and @code{PS} and @code{PE}
-for @command{gpic}.
+extend their functionality by defining macros to caption them and/or set
+their contents in displays.  Examples include @code{TS} and @code{TE}
+for @command{gtbl}, @code{EQ} and @code{EN} for @command{geqn}, and
+@code{PS} and @code{PE} for @command{gpic}.
 
 @c ---------------------------------------------------------------------
 
@@ -2570,8 +2575,7 @@ preferred text editor.  If you're in a hurry to start, know that
 @file{ms} needs one of its macros called at the beginning of a document
 so that it can initialize.  A @dfn{macro} is a formatting instruction to
 @file{ms}.  Put a macro call on a line by itself.  Use @samp{.PP} if you
-want your paragraph's first line to be indented, or @samp{.LP} if you
-don't.
+want your paragraph's first line indented, or @samp{.LP} if you don't.
 
 After that, start typing normally.  It is a good practice to start each
 sentence on a new line, or to put two spaces after sentence-ending
@@ -2604,6 +2608,7 @@ denied than admitted.
 @arrow{}That's what Dijkstra said, anyway.
 @endCartoucheExample
 
+@need 750
 @file{ms} exposes many aspects of document layout to user control via
 @code{groff}'s @dfn{registers} and @dfn{strings}, which store numbers
 and text, respectively.  Measurements in @code{groff} are expressed with
@@ -3019,7 +3024,7 @@ the bottom of a column or page.  This is a Berkeley extension.
 @table @code
 @item 0
 Set an automatic number@footnote{defined in @ref{ms Footnotes}} as a
-superscript (on typesetter devices) or surrounded by square brackets (on
+superscript (on typesetters) or surrounded by square brackets (on
 terminals).  The footnote paragraph is indented as with @code{PP} if
 there is an @code{FS} argument or an automatic number, and as with
 @code{LP} otherwise.  This is the default.
@@ -3069,8 +3074,7 @@ Default: @code{\n[PD] / 2}.
 Defines the ratio of the footnote line length to the current line
 length.  This is a GNU extension.
 
-Effective: next footnote in single-column arrangements, next page
-otherwise.
+Effective: next footnote if single-column layout, next page otherwise.
 
 Default: @code{11/12}.
 @endDefmpstr
@@ -3274,9 +3278,9 @@ The @code{FAM} string, a GNU extension, sets the font family for body
 text; the default is @samp{T}.  The @code{PS} and @code{VS} registers
 set the type size and vertical spacing (distance between text
 baselines), respectively.  The font family and type size are ignored on
-terminal devices.  Setting these parameters before the first call of a
-heading, paragraphing, or (non-date) document description macro also
-applies them to headers, footers, and (for @code{FAM}) footnotes.
+terminals.  Set these parameters before the first call of a heading,
+paragraphing, or (non-date) document description macro to apply them to
+headers, footers, and (for @code{FAM}) footnotes.
 
 Which font families are available depends on the output device; as a
 convention, @code{T} selects a serif family (``Times''), @code{H} a
@@ -3511,6 +3515,7 @@ the size specified by @code{PS} multiplied by the difference of
 interpreted in @code{groff} basic units; the @code{p} scaling unit
 should be employed when assigning a value specified in points.
 
+@need 1000
 The input
 
 @CartoucheExample
@@ -3590,35 +3595,33 @@ instead of bold.  This is a Research Tenth Edition Unix extension.
 @endDefmac
 
 @Defmac {BX, [@Var{text}], ms}
-Typeset @var{text} and draw a box around it.  On terminal devices,
-reverse video is used instead.  If you want @var{text} to contain space,
-use unbreakable space or horizontal motion escape sequences (@code{\~},
+Typeset @var{text} and draw a box around it.  On terminals, reverse
+video is used instead.  If you want @var{text} to contain space, use
+unbreakable space or horizontal motion escape sequences (@code{\~},
 @code{\@key{SP}}, @code{\^}, @code{\|}, @code{\0} or @code{\h}).
 @endDefmac
 
 @Defmac {UL, [@Var{text} [@Var{post}]], ms}
-Typeset @var{text} with an underline.  On terminal devices, @var{text}
-is bracketed with underscores `_'.  @var{post}, if present, is set after
+Typeset @var{text} with an underline.  On terminals, @var{text} is
+bracketed with underscores `_'.  @var{post}, if present, is set after
 @var{text} with no intervening space.
 @endDefmac
 
 @Defmac {LG, , ms}
 Set subsequent text in larger type (two points larger than the
 current size) until the next type size, paragraphing, or heading macro
-call.  You can specify this macro multiple times to enlarge the type
-size as needed.
+call.  Call the macro multiple times to enlarge the type size further.
 @endDefmac
 
 @Defmac {SM, , ms}
 Set subsequent text in smaller type (two points smaller than the current
 size) until the next type size, paragraphing, or heading macro call.
-You can specify this macro multiple times to reduce the type size as
-needed.
+Call the macro multiple times to reduce the type size further.
 @endDefmac
 
 @Defmac {NL, , ms}
-Set subsequent text at the normal type size (the amount in the @code{PS}
-register).
+Set subsequent text at the normal type size (the amount in register
+@code{PS}).
 @endDefmac
 
 @var{pre} and @var{post} arguments are typically used to simplify the
@@ -3633,6 +3636,7 @@ The CS course's students found one C language keyword
 most troublesome.
 @endCartoucheExample
 
+@need 1000
 The foregoing example produces output as follows.
 
 @CartoucheExample
@@ -3688,6 +3692,7 @@ definition lists.  If you set the paragraph indentation register
 the list without having to ensure that a @var{width} argument remains
 affixed to the first call.
 
+@need 1000
 The following is an example of a bulleted list.
 @cindex example markup, bulleted list [@file{ms}]
 @cindex bulleted list, example markup [@file{ms}]
@@ -3747,6 +3752,7 @@ increment just before interpolating the register's value.  Preparing the
 @code{PI} register as well enables us to rearrange the list without the
 tedium of updating macro calls.
 
+@need 1000
 The next example illustrates a glossary-style list.
 @cindex example markup, glossary-style list [@file{ms}]
 @cindex glossary-style list, example markup [@file{ms}]
@@ -4223,10 +4229,10 @@ operator precedence (parentheses are honored).
 @code{groff} @file{ms} provides several strings that you can customize
 for your own purposes, or redefine to adapt the macro package to
 languages other than English.  It is already localized for
-@c cs, de, fr, it, sv
-Czech, German, French, Italian, and Swedish.  Load the desired
-localization macro package after @file{ms}; see the
-@cite{groff_tmac@r{(5)}} man page.
+@c cs, de, es, fr, it, ru, sv
+Czech, German, Spanish, French, Italian, Russian, and Swedish.  Load the
+desired localization macro package after @file{ms}; see
+@cite{groff_tmac@r{(5)}}.
 
 @CartoucheExample
 $ groff -ms -mfr bienvenue.ms
@@ -4460,6 +4466,7 @@ Set the page number to@tie{}1, the page number format to lowercase Roman
 numerals, and call @code{PX} (with a @code{no} argument, if present).
 @endDefmac
 
+@need 1000
 Here's an example of typical @file{ms} table of contents preparation.
 We employ horizontal escape sequences @code{\h} to indent the entries by
 sectioning depth.
@@ -4614,9 +4621,9 @@ Many @code{groff} @file{ms} macros, including those for paragraphs,
 headings, and displays, cause a reset of paragraph rendering parameters,
 and may change the indentation; they do so not by incrementing or
 decrementing it, but by setting it absolutely.  This can cause problems
-for documents that define additional macros of their own that try to
-manipulate indentation.  Use the @file{ms} @code{RS} and @code{RE}
-macros instead of the @code{in} request.
+for documents that define additional macros of their own that manipulate
+indentation.  Use the @file{ms} @code{RS} and @code{RE} macros instead
+of the @code{in} request.
 
 @item
 @cindex fractional type sizes in @file{ms} macros
@@ -5179,8 +5186,8 @@ escape sequences whose purpose is to obtain glyphs that are not easily
 typed at the keyboard, or which have special meaning to GNU @code{troff}
 (like @code{\} itself).@footnote{The mnemonics for the special
 characters shown here are ``dagger'', ``double dagger'', ``right
-(double) quote'', and ``closing (single) quote''.  See the
-@cite{groff_char@r{(7)}} man page.}
+(double) quote'', and ``closing (single) quote''.  See
+@cite{groff_char@r{(7)}}.}
 
 @Example
 \[lq]The idea that the poor should have leisure has always
@@ -5584,7 +5591,7 @@ character set is also a valid ISO @w{Latin-1} document; the standards
 are interchangeable in their first 128 code points.@footnote{The
 @emph{semantics} of certain punctuation code points have gotten stricter
 with the successive standards, a cause of some frustration among man
-page writers; see the @cite{groff_char@r{(7)}} man page.}
+page writers; see @cite{groff_char@r{(7)}}.}
 
 Other encodings are supported by means of macro packages.
 
@@ -5603,8 +5610,8 @@ localization file @file{ru.tmac} takes care of this automatically; see
 character codings natively; see @ref{Identifiers}.  This should be no
 impediment to practical documents, as these KOI8-R code points do not
 encode letters, but box-drawing symbols and characters that are better
-obtained via special character escape sequences; see the
-@cite{groff_char@r{(7)}} man page.}
+obtained via special character escape sequences; see
+@cite{groff_char@r{(7)}}.}
 
 @item latin2
 @cindex encoding, input, @w{Latin-2} (ISO @w{8859-2})
@@ -5814,8 +5821,9 @@ its resolution and page dimensions (@pxref{DESC File Format}).
 A @dfn{page} is a two-dimensional structure upon which a @code{roff}
 system imposes a rectangular coordinate system with its upper left
 corner as the origin.  Coordinate values are in basic units and increase
-down and to the right.  Useful ones are therefore always positive and
-within numeric ranges corresponding to the page boundaries.
+down and to the right.  Useful ones are typically positive and within
+numeric ranges corresponding to the page boundaries.
+@c You could draw an arc of a circle whose center is off the page.
 
 @cindex drawing position
 @cindex position, drawing
@@ -10225,23 +10233,23 @@ one.
 @cindex font, unstyled
 In digital typography, a @dfn{font} is a collection of characters in a
 specific typeface that a device can render as glyphs at a desired
-size.@footnote{Terminals and some output devices have fonts that render
-at only one or two sizes.  As examples of the latter, take the
-@code{groff} @code{lj4} device's Lineprinter, and @code{lbp}'s Courier
-and Elite faces.}  A @code{roff} formatter can change typefaces at any
-point in the text.  The basic faces are a set of @dfn{styles} combining
-upright and slanted shapes with normal and heavy stroke weights:
-@samp{R}, @samp{I}, @samp{B}, and @samp{BI}---these stand for
-@slanted{roman}, @slanted{italic}, @slanted{bold}, and
-@slanted{bold-italic}.  For linguistic text, GNU @code{troff} groups
-typefaces into @dfn{families} containing each of these
-styles.@footnote{Font designers prepare families such that the styles
-share esthetic properties.}  A @dfn{text font} is thus often a family
-combined with a style, but it need not be:@: consider the @code{ps} and
-@code{pdf} devices' @code{ZCMI} (Zapf Chancery Medium italic)---often,
-no other style of Zapf Chancery Medium is provided.  On typesetting
-devices, at least one @dfn{special font} is available, comprising
-@dfn{unstyled} glyphs for mathematical operators and other purposes.
+size.@footnote{Terminals and some typesetters have fonts that render at
+only one or two sizes.  As examples of the latter, take the @code{groff}
+@code{lj4} device's Lineprinter, and @code{lbp}'s Courier and Elite
+faces.}  A @code{roff} formatter can change typefaces at any point in
+the text.  The basic faces are a set of @dfn{styles} combining upright
+and slanted shapes with normal and heavy stroke weights: @samp{R},
+@samp{I}, @samp{B}, and @samp{BI}---these stand for @slanted{roman},
+@slanted{italic}, @slanted{bold}, and @slanted{bold-italic}.  For
+linguistic text, GNU @code{troff} groups typefaces into @dfn{families}
+containing each of these styles.@footnote{Font designers prepare
+families such that the styles share esthetic properties.}  A @dfn{text
+font} is thus often a family combined with a style, but it need not
+be:@: consider the @code{ps} and @code{pdf} devices' @code{ZCMI} (Zapf
+Chancery Medium italic)---often, no other style of Zapf Chancery Medium
+is provided.  On typesetters, at least one @dfn{special font} is
+available, comprising @dfn{unstyled} glyphs for mathematical operators
+and other purposes.
 
 @cindex font description file
 @cindex description file, font
@@ -10251,17 +10259,17 @@ devices, at least one @dfn{special font} is available, comprising
 @cindex mounting position
 @cindex mounting position
 @cindex position, mounting
-Like @acronym{AT&T} @code{troff}, GNU @code{troff} does not itself load
-or manipulate a digital font file;@footnote{Historically, the fonts
-@code{troff}s dealt with were not Free Software or, as with the Graphic
-Systems C/A/T, did not even exist in the digital domain.} instead it
-works with a @dfn{font description file} that characterizes it,
-including its glyph repertoire and the @dfn{metrics} (dimensions) of
-each glyph.@footnote{@xref{Font Description File Format}.}  This
-information permits the formatter to accurately place glyphs with
-respect to each other.  Before using a font description, the formatter
-associates it with a @dfn{mounting position}, a place in an ordered list
-of available typefaces.
+Like the @acronym{AT&T} @code{troff} formatter, GNU @code{troff} does
+not itself load or manipulate a digital font
+file;@footnote{Historically, the fonts @code{troff}s dealt with were not
+Free Software or, as with the Graphic Systems C/A/T, did not even exist
+in the digital domain.} instead it works with a @dfn{font description
+file} that characterizes it, including its glyph repertoire and the
+@dfn{metrics} (dimensions) of each glyph.@footnote{@xref{Font
+Description File Format}.}  This information permits the formatter to
+accurately place glyphs with respect to each other.  Before using a font
+description, the formatter associates it with a @dfn{mounting position},
+a place in an ordered list of available typefaces.
 @cindex abstract font style
 @cindex font style, abstract
 @cindex style, font, abstract
@@ -10269,7 +10277,8 @@ So that a document need not be strongly coupled to a specific font
 family, in GNU @code{troff} an output device can associate a style in
 the abstract sense with a mounting position.  Thus the default family
 can be combined with a style dynamically, producing a @dfn{resolved font
-name}.
+name}.  A user-specified font name that combines family and style (or
+refers to a font that is not a member of a family) is also ``resolved''.
 
 Fonts often have trademarked names, and even Free Software fonts can
 require renaming upon modification.  @code{groff} maintains a
@@ -10292,8 +10301,8 @@ document writes its first glyph.
 @cindex character cell attributes
 @cindex attributes, character cell
 @cindex cell, character, attributes
-Terminal output devices cannot change font families and lack special
-fonts.  They support style changes by overstriking, or by altering
+Terminals cannot change font families and lack special fonts.  They
+support style changes by overstriking, or by altering
 ISO@tie{}6429/ECMA-48 @dfn{graphic renditions} (character cell
 attributes).
 @c END Keep (roughly) parallel with section "Using fonts" of groff(7).
@@ -10319,8 +10328,8 @@ attributes).
 
 We use @dfn{font} to refer to any of several means of identifying a
 typeface: by its mounting position (@samp{3}), by its identifier
-(@samp{TB}), by an abstract style (@samp{B}) combined with a default
-family.
+(@samp{TB}), or by an abstract style (@samp{B}) to be combined with the
+default family.
 
 @DefreqList {ft, [@Var{font}]}
 @DefescItemx {\\f, , f, }
@@ -10340,7 +10349,7 @@ family.
 @cindex font, previous, slecting (@code{ft})
 The @code{ft} request selects the typeface @var{font}.  If the argument
 is absent or @samp{P}, it selects the previously chosen font.  If
-@var{font} is a non-negative integer, it is interpreted as mounting
+@var{font} is a non-negative integer, it is interpreted as a mounting
 position; the font mounted there is selected.  If that position refers
 to an abstract style, it is combined with the default family (see
 @code{fam} and @code{\F} below) to make a resolved font name.  If the
@@ -10349,8 +10358,8 @@ mounting position is not a style and no font is mounted there, GNU
 request.
 
 If @var{font} matches a style name, it is combined with the default
-family to make a resolved font name.  Otherwise, @var{font} is assumed
-to already be a resolved font name.
+family to make a resolved font name.  If not, @var{font} is assumed
+to be resolved already.
 
 @cindex automatic font mounting
 @cindex font mounting, automatic
@@ -10366,9 +10375,9 @@ If a font description file for the resolved font name is not found, GNU
 @code{troff} emits a warning in category @samp{font} and ignores the
 request.
 
-The @code{\f} escape sequence is similar, using one-character name (or
-mounting position) @var{f}, two-character name @var{fn}, or a name
-@var{font} of arbitrary length.
+The @code{\f} escape sequence is similar, accepting names or mounting
+positions of one character @var{f}, two characters @var{fn}, or
+arbitrary length @var{font}.
 @cindex previous font, selecting (@code{\f[]}, @code{\fP})
 @cindex font, previous, selecting (@code{\f[]}, @code{\fP})
 @samp{\f[]} selects the previous font.  The syntax form @samp{\fP} is
@@ -10386,11 +10395,18 @@ eggs, bacon, \fIspam,\fP and sausage.
     @result{} eggs, bacon, @slanted{spam,} and sausage.
 @endExample
 
-The current and previously selected fonts are properties of the
+The currently and previously selected fonts are properties of the
 environment (@pxref{Environments}).
 
 The read-only string-valued register @code{.fn} contains the resolved
-font name of the selected font.
+font name of the selected font.  Copy its value to a string to save it
+for later use.
+
+@Example
+.nr saved-font \n[.fn]
+@r{@dots{} @i{text involving many font changes} @dots{}}
+.ft \*[saved-font]
+@endExample
 
 @code{\f} doesn't produce an input token in GNU @code{troff}; it thus
 can be used in requests that expect a single-character argument.  We can
@@ -10444,14 +10460,20 @@ altering a font's apparent size in relation to others.  A missing or
 zero @var{zoom} is treated as @samp{1000}---no magnification.
 @var{font} must be a resolved font name, not an abstract style.
 
-Font magnification is transparent to GNU @code{troff}; a change of the
-zoom factor affects scaling of glyph sizes, inter-word and
-inter-sentence spaces, and kerning adjustments on the output device.  It
-is not reflected in registers that report the requested or current type
-size, or the measurements reported by the @code{\w} escape sequence.
+Font magnification is transparent to some aspects of GNU @code{troff}.
+A change of the zoom factor affects scaling of glyph sizes, inter-word
+and inter-sentence spaces, and kerning adjustments on the output device,
+but @emph{not} vertical spacing.  It is not reflected in registers that
+report the requested or current type size, or the minimum inter-word and
+additional inter-sentence space sizes.  It @emph{is} reflected in
+measurements of formatted output:@: the horizontal drawing position
+register @code{hp}, interpolation of the @code{\w} escape sequence, and
+the registers updated by that escape sequence or the formatting of a
+glyph in the environment.  @xref{Environments}.
 
 @code{fzoom} can harmonize the apparent cap-heights of fonts from
-different families when formatted on the same baseline.
+different families when formatted on the same baseline at the same type
+size.
 
 @Example
 .fzoom HR 900
@@ -10463,8 +10485,8 @@ and \F[P]Palatino\F[].
 M\F[H]M\F[C]M\F[P]M
 @endExample
 
-The zoom factor of the current font is available in the read-only
-register @samp{.zoom}.  It interpolates zero if there is no
+The zoom factor of the currently selected font is available in the
+read-only register @samp{.zoom}.  It interpolates zero if there is no
 magnification.
 @endDefreq
 
@@ -10486,12 +10508,7 @@ font family.
 You can thus compose a document using abstract styles exclusively for
 its body or running text, selecting a specific family only for titles or
 examples, for instance, and change the default family on the command
-line (recall @ref{Groff Options}).
-
-Fonts for the devices @code{ps}, @code{pdf}, @code{dvi}, @code{lj4},
-@code{lbp}, and the X11 devices support this mechanism.  By default,
-GNU @code{troff} uses the Times family with the four styles @samp{R},
-@samp{I}, @samp{B}, and @samp{BI}.
+line.
 
 @DefreqList {fam, [@Var{family}]}
 @DefregItemx {.fam}
@@ -10601,7 +10618,7 @@ a list of font @dfn{positions} at which fonts required by a document are
 typically configures a set of pre-mounted fonts; see @ref{Device and
 Font Description Files}.  A font need not be explicitly mounted before
 it is selected; GNU @code{troff} will search @env{GROFF_FONT_PATH} for
-it by name and mount it at the first free mounting position on demand.
+it by name and mount it at the first free position on demand.
 
 @need 500
 @DefreqList {fp, pos id [@Var{font-description-file-name}]}
@@ -10652,13 +10669,13 @@ The position of the currently selected font (or abstract style) is
 available in the read-only register @samp{.f}.  It is associated with
 the environment (@pxref{Environments}).
 
-You can copy the value of @code{.f} to another register to save it for
-later use.
+Copy the value of @code{.f} to another register to save it for later
+use.
 
 @Example
-.nr saved-font \n[.f]
+.nr sF \n(.f
 @r{@dots{} @i{text involving many font changes} @dots{}}
-.ft \n[saved-font]
+.ft \n(sF
 @endExample
 
 @cindex next free font position register (@code{.fp})
@@ -11020,14 +11037,14 @@ Assign properties encoded by the number @var{n} to characters @var{c1},
 
 Input characters, including special characters introduced by an escape,
 have certain properties associated with them.@footnote{Output glyphs
-don't---to GNU @code{troff}, a glyph is simply a box with an index into
-a font, a given height above and depth below the baseline, and a width.}
-These properties can be modified with this request.  The first argument
-is the sum of the desired flags and the remaining arguments are the
-characters to be assigned those properties.  Spaces between the @var{cn}
-arguments are optional.  Any argument @var{cn} can be a character class
-defined with the @code{class} request rather than an individual
-character.  @xref{Character Classes}.
+have different properties.  The only ones known to GNU @code{troff} are
+those in its font's description file.  Recall @ref{Using Fonts}.}  These
+properties can be modified with this request.  The first argument is the
+sum of the desired flags and the remaining arguments are the characters
+to be assigned those properties.  Spaces between the @var{cn} arguments
+are optional.  Any argument @var{cn} can be a character class defined
+with the @code{class} request rather than an individual character.
+@xref{Character Classes}.
 
 The non-negative integer @var{n} is the sum of any of the following.
 Some combinations are nonsensical, such as @samp{33} (1 + 32).
@@ -12099,8 +12116,8 @@ scaling units.
 @cindex type size registers, last-requested (@code{.psr}, @code{.sr})
 @cindex last-requested point size registers (@code{.psr}, @code{.sr})
 @cindex point size registers, last-requested (@code{.psr}, @code{.sr})
-@cindex @code{.ps} register, in comparison with @code{.psr}
-@cindex @code{.s} register, in comparison with @code{.sr}
+@cindex @code{.ps} register, compared to @code{.psr}
+@cindex @code{.s} register, compared to @code{.sr}
 Output devices may be limited in the type sizes they can employ.  The
 @code{.s} and @code{.ps} registers represent the type size selected by
 the output driver as it understands a device's capability.  The last
@@ -13368,6 +13385,8 @@ one level higher.  This is used to define a wrapper macro for
 @subsection Parameters
 @cindex parameters
 
+@c BEGIN Keep (roughly) parallel with subsection "Parameters" of
+@c groff(7).
 Macro calls and string interpolations optionally accept a list of
 arguments; recall @ref{Calling Macros}.  At the time such an
 interpolation takes place, these @dfn{parameters} can be examined using
@@ -13403,6 +13422,8 @@ to@tie{}@var{n} are no longer available.  Shifting by a non-positive
 amount performs no operation.  The register @code{.$} is adjusted
 accordingly.
 @endDefreq
+@c END Keep (roughly) parallel with subsection "Parameters" of
+@c groff(7).
 
 @cindex copy mode, and macro parameters
 @cindex mode, copy, and macro parameters
@@ -14135,7 +14156,7 @@ The @code{\D} escape sequence provides @dfn{drawing commands} that
 direct the output device to render geometrical objects rather than
 glyphs.  Specific devices may support only a subset, or may feature
 additional ones; consult the man page for the output driver in use.
-Terminal devices in particular implement almost none.  @xref{Graphics
+Terminals in particular implement almost none.  @xref{Graphics
 Commands}.
 
 Rendering starts at the drawing position; when finished, the drawing
@@ -18921,7 +18942,7 @@ for@tie{}@var{n}.
 
 Request names appear without a leading control character; the defaults
 are @code{.} for the regular control character and @code{'} for the
-no-break control character.
+no-break control character.  @xref{Invoking Requests}.
 
 @printindex rq
 
@@ -18936,10 +18957,10 @@ no-break control character.
 The escape character, @code{\} by default, is always followed by at
 least one more input character, making an escape @emph{sequence}.  Any
 input token @code{\@var{X}} with @var{X} not in the list below emits a
-warning and interpolates glyph @var{X}.  Note the entries for @code{\.},
-which may be obscured by the leader dots, and for @code{\@key{RET}} and
-@code{\@key{SP}}, which are sorted alphabetically, not by code point
-order.
+warning and interpolates character @var{X}.  Note the entries for
+@code{\.}, which may be obscured by the leader dots, and for
+@code{\@key{RET}} and @code{\@key{SP}}, which are sorted alphabetically,
+not by code point order.  @xref{Using Escape Sequences}.
 
 @printindex es
 
@@ -18951,6 +18972,8 @@ order.
 @node Operator Index, Register Index, Escape Sequence Index, Top
 @appendix Operator Index
 
+@xref{Numeric Expressions}.
+
 @printindex op
 
 
@@ -18961,13 +18984,12 @@ order.
 @node Register Index, Macro Index, Operator Index, Top
 @appendix Register Index
 
-The macro package or program a specific register belongs to is appended
-in brackets.
+Where not used by the formatter itself, a register's associated macro
+package or program appears in brackets after the register's name.
 
-A register name@tie{}@code{x} consisting of exactly one character can be
-accessed as @samp{\nx}.  A register name @code{xx} consisting of exactly
-two characters can be accessed as @samp{\n(xx}.  Register names
-@code{xxx} of any length can be accessed as @samp{\n[xxx]}.
+Interpolate a register name of exactly one character@tie{}@code{x} with
+@samp{\nx}; of exactly two characters @code{xx} with @samp{\n(xx}; or of
+any length @code{xxx} with @samp{\n[xxx]}.  @xref{Registers}.
 
 @printindex vr
 
@@ -18979,8 +19001,9 @@ two characters can be accessed as @samp{\n(xx}.  Register names
 @node Macro Index, String Index, Register Index, Top
 @appendix Macro Index
 
-The macro package a specific macro belongs to is appended in brackets.
-They appear without the leading control character (normally @samp{.}).
+The package or program with which a macro is associated appears in
+brackets after the macro's name.  They appear without a leading control
+character (normally @samp{.}).  @xref{Calling Macros}.
 
 @printindex ma
 
@@ -18992,9 +19015,13 @@ They appear without the leading control character (normally @samp{.}).
 @node String Index, File Keyword Index, Macro Index, Top
 @appendix String Index
 
-The macro package or program a that defines or uses each string is
-appended in brackets. (Only one string, @code{.T}, is defined by the
-@code{troff} formatter itself.)  @xref{Strings}.
+The macro package or program with which a string is associated appears
+in brackets after the strings's name.  The formatter itself defines only
+one string, @code{.T}.
+
+Interpolate a string name of exactly one character@tie{}@code{x} with
+@samp{\*x}; of exactly two characters @code{xx} with @samp{\*(xx}; or of
+any length @code{xxx} with @samp{\*[xxx]}.  @xref{Strings}.
 
 
 @printindex st
@@ -19006,6 +19033,8 @@ appended in brackets. (Only one string, @code{.T}, is defined by the
 
 @node File Keyword Index, Program and File Index, String Index, Top
 @appendix File Keyword Index
+
+@xref{Device and Font Description Files}.
 
 @printindex ky
 

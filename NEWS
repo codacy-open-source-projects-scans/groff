@@ -62,6 +62,12 @@ o The an (man) and doc (mdoc) macro packages now support a `BP` register
 o The an (man) and doc (mdoc) macro packages now support a `PO` register
   to configure the page offset used by the formatter.
 
+o The an (man) macro package now supports a `TS` register to configure
+  the minimum space required between a paragraph's tag and its body.
+  (If the width of the tag's formatted text plus this space exceeds the
+  paragraph indentation, the line is broken after the tag.)  This
+  parameter, formerly hard-coded as `1n`, now defaults to `2n`.
+
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
 
@@ -75,10 +81,11 @@ o The m (mm) macro package's `IND` macro (a GNU extension), now calls
 
 o The s (ms) macro package now sets the vertical spacing register
   defaults for normal (`VS`) and footnote (`FVS`) text to 120% of the
-  existing type size rather than 2 points larger to comport with
-  generally accepted typesetting principles.  Thus, when formatting a
-  document with a type size of 20 points, the vertical spacing now
-  defaults to 24 points rather than 22.
+  type size configured in the `PS` and `FPS` registers, respectively,
+  rather than 2 points larger to comport with generally accepted
+  typesetting principles.  Thus, when formatting a document with a type
+  size of 20 points, the vertical spacing now defaults to 24 points
+  rather than 22.
 
 Miscellaneous
 -------------
@@ -103,6 +110,9 @@ o If groff programs have their current time overridden by the
   the "system programmer" camp as described in the release notes for
   1.23.0, so it is easier to defend time-zone-invariant output to them.
   In all other cases, the current time remains displayed in local time.
+
+o The groff_diff(7) man page no longer contains examples.  They remain
+  in groff's Texinfo manual.
 
 
 VERSION 1.23.0
@@ -613,6 +623,15 @@ o On output devices using the Latin-1 character encoding ("groff -T
   PostScript, PDF, and other output devices supporting them by typing
   sequences like `this' in the input (character remapping with 'char'
   requests and similar notwithstanding).
+
+o The grops driver (which produces PostScript), like the `fp` request
+  in the troff formatter (see above), no longer no longer accepts file
+  names with slashes in them as a document prologue, encoding file, or
+  resource (such as a font to be downloaded).  All such files must be
+  accessible within the directory of the output device for which they
+  were prepared.  Use the GROFF_FONT_PATH environment variable or
+  groff's "-F" command-line option to specify additional directories in
+  which such files should be sought.
 
 gropdf
 ------

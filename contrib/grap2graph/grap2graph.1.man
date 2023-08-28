@@ -159,7 +159,7 @@ default is to forbid this.
 .I TMP
 .TQ
 .I TEMP
-These environment variables are searched in the given order to determine
+These environment variables are searched in the order shown to determine
 the directory where temporary files will be created.
 .
 If none are set,

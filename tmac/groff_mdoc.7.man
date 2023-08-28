@@ -354,10 +354,9 @@ precede it with the dummy character.
 .
 .Pp
 In this document,
-macros whose argument lists are parsed for callable arguments are
-referred to as
-.Em parsed ,
-and those that may be called from an argument list are referred to as
+a macro that parses its argument list for other macro names is termed
+.Em parsed ;
+macros that permit other macros to call them thus are described as
 .Em callable .
 .
 This usage is a technical
@@ -568,12 +567,10 @@ to format it.
 .\" That's NOT a groffism, but showed up in the "post" and "Latin1"
 .\" devices of Documenter's Workbench (DWB) 3.3 troff.
 .
-Further,
-this glyph should not be used for conventional quotation;
-.Xr mdoc
-offers several quotation macros.
-.
-See subsection
+Avoid using
+.Ql \[rs](dq
+for conventional quotation;
+see subsection
 .Sx "Enclosure and quoting macros"
 below.
 .
@@ -823,6 +820,7 @@ literal.
 .
 .Pp
 Many macros possess an implicit width,
+.\" See tmac/mdoc/doc-common for values.
 used when they are contained in lists and displays.
 .
 If you avoid relying on these default measurements,
@@ -2566,6 +2564,8 @@ X/Open
 .El
 .Pp
 .
+.br
+.ne 4v
 Miscellaneous
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
@@ -5206,8 +5206,8 @@ subdirectory.
 .
 .
 .It Pa @MACRODIR@/\:mdoc\:.tmac
-is a wrapper that loads
-.Pa doc.tmac .
+is a wrapper enabling the package to be loaded with the option
+.Dq Li "\-m mdoc" .
 .
 .
 .It Pa @MACRODIR@/\:mdoc/\:doc\-common

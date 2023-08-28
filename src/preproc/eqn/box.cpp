@@ -82,7 +82,7 @@ int matrix_side_sep = 17;	// = thin space
 
 int nroff = 0;			// should we grok ndefine or tdefine?
 
-struct S {
+struct param {
   const char *name;
   int *ptr;
 } param_table[] = {
@@ -126,12 +126,11 @@ struct S {
   { "body_height", &body_height },
   { "body_depth", &body_depth },
   { "nroff", &nroff },
-  { 0, 0 }
 };
 
 void set_param(const char *name, int value)
 {
-  for (int i = 0; param_table[i].name != 0; i++)
+  for (size_t i = 0; i < array_size(param_table); i++)
     if (strcmp(param_table[i].name, name) == 0) {
       *param_table[i].ptr = value;
       return;

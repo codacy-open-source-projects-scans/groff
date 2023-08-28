@@ -504,12 +504,13 @@ the second and any further rows' first and second columns are left- and
 right-aligned,
 respectively.
 .
-.\" slack text for window/orphan control
-.\"If more rows of entries are added to the table data,
-.\"they reuse the row definition
-.\".RB \[lq] LR \[rq].
+If more rows of entries are added to the table data,
+they reuse the row definition
+.RB \[lq] LR \[rq].
 .
 .
+.br
+.ne 3v
 .P
 The row definition with the most column descriptors determines the
 number of columns in the table;

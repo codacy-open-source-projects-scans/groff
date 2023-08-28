@@ -31,6 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "curtime.h"
 
 #include "ps.h"
+
+#include <errno.h> // errno
 #include <time.h>
 
 #ifdef NEED_DECLARATION_PUTENV
@@ -788,8 +790,13 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
     vec[i] = 0;
   char *path;
   FILE *fp = font::open_file(encoding, &path);
-  if (fp == 0)
+  if (0 /* nullptr */ == fp) {
+    // If errno not valid, assume file rejected due to '/'.
+    if (errno <= 0)
+      fatal("refusing to traverse directories to open PostScript"
+	    " encoding file '%1'");
     fatal("can't open encoding file '%1'", encoding);
+  }
   int lineno = 1;
   const int BUFFER_SIZE = 512;
   char buf[BUFFER_SIZE];

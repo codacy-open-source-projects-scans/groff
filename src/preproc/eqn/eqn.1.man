@@ -270,8 +270,7 @@ the output.
 .
 .
 .P
-The following input characters not only separate tokens,
-but manage their grouping and spacing as well.
+The following input characters separate tokens along with other tasks.
 .
 .
 .TP
@@ -351,7 +350,7 @@ language.
 .
 They can configure an aspect of the preprocessor's state,
 as when setting a \[lq]global\[rq] font selection or type size
-.RB ( gfont
+.RB ( gifont
 and
 .BR gsize ),
 or declaring or deleting macros
@@ -1068,14 +1067,14 @@ or select others.
 .BI rpile\~ n\~\c
 .BR {\~ .\|.\|.\& \~}
 The integer
-.RI value\~ n
-(in hundredths of an em)
+.RI value\~ n ,
+in hundredths of an em,
 increases the vertical spacing between rows,
 using
 .IR groff 's
 .B \[rs]x
-escape sequence
-(the value has no effect in MathML mode).
+escape sequence;
+the value has no effect in MathML mode.
 .
 Negative values are accepted but have no effect.
 .
@@ -1237,7 +1236,8 @@ The width of subscripts and superscripts is increased by this amount
 .TP
 .B thin_space
 This amount of space is automatically inserted after punctuation
-characters.
+characters
+.RB ( 17 ).
 .
 .
 .TP
@@ -1250,7 +1250,8 @@ binary operators
 .TP
 .B thick_space
 This amount of space is automatically inserted on either side of
-relations.
+relations
+.RB ( 28 ).
 .
 .
 .TP
@@ -1763,7 +1764,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP 8n \" "-M dir" + 2n
+.TP 8.125n \" "-M dir" + 2n + hand-tuned for PDF
 .B \-C
 Recognize
 .B .EQ
@@ -1891,16 +1892,19 @@ The default output device is
 .
 .TP
 .I @MACRODIR@/\:\%eqnrc
-Initialization file.
+initializes the preprocessor.
+.
+Any
+.I @g@eqn
+valid input is accepted.
 .
 .
 .\" ====================================================================
 .SH "MathML mode limitations"
 .\" ====================================================================
 .
-MathML is designed on the assumption that it cannot know the exact
-physical characteristics of the media and devices on which it will
-be rendered.
+MathML's design assumes that it cannot know the exact physical
+characteristics of the media and devices on which it will be rendered.
 .
 It does not support control of motions and sizes to the same
 degree
@@ -1986,12 +1990,12 @@ For instance,
 the
 .I eqn \" generic
 command
-.RB \%\[lq]\^ "gfont PI" \^\[rq]
+.RB \%\[lq]\^ "gifont PI" \^\[rq]
 does not select
 .IR groff 's
 Palatino italic font for the global italic face;
 you must use
-.RB \%\[lq]\^ "gfont \[dq]PI\[dq]" \^\[rq]
+.RB \%\[lq]\^ "gifont \[dq]PI\[dq]" \^\[rq]
 instead.
 .
 .
@@ -2132,8 +2136,9 @@ delim off
 .
 .
 .P
-The quadratic formula illustrates use of fractions and radicals,
-and affords an opportunity to use the full space token
+The quadratic formula affords an opportunity to use fractions,
+radicals,
+and the full space token
 .BR \[ti] .
 .
 .

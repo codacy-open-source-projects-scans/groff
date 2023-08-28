@@ -282,11 +282,10 @@ option).
 details these processes.
 .
 Output is prepared for
-.I terminal
-devices,
+.I terminals
 or for more capable
-.I typesetting
-devices that can change the type size and font family.
+.I typesetters
+that can change the type size and font family.
 .
 .
 .P
@@ -300,11 +299,11 @@ put its name after a dot on a control line.
 .\" You never need to indent macro calls in man(7), or call them with
 .\" the no-break control character.
 .
-We refer to macros in this document using this leading dot.
+This document uses the leading dot to identify macros.
 .
 Some macros interpret
 .I arguments,
-words that follow the macro name.
+words that follow its name.
 .
 A newline,
 unless escaped
@@ -537,7 +536,7 @@ A valid
 .I man
 document calls
 .B .TH
-once,
+only once,
 early in the file,
 prior to any other macro calls.
 _ifstyle()dnl
@@ -1996,7 +1995,8 @@ _ifstyle()dnl
 .
 .
 .P
-The inset amount and indentation are related but distinct concepts.
+The inset amount and indentation are related but distinct parameters
+with the same defaults.
 .
 The former is manipulated by
 .B .RS
@@ -2153,21 +2153,16 @@ and the deprecated
 .BR .HP .
 .
 The default inter-section and inter-paragraph spacing is
-is 1v for terminals
+is 1v for terminals and 0.4v for typesetters.
 _ifstyle()dnl
-and 0.4v for typesetters
-(\(lqv\(rq is a unit of vertical distance,
-where 1v is the distance between adjacent text baselines in a
-single-spaced document).
-_endif()dnl
-_ifnotstyle()dnl
-and 0.4v for typesetters.
+\(lqv\(rq is a unit of vertical distance,
+where 1v is the distance between adjacent text baselines.
 _endif()dnl
 .
 (The deprecated macro
 .B .PD
 can change this vertical spacing,
-but its use is discouraged.)
+but we discourage its use.)
 .
 Between
 .B .EX
@@ -3388,7 +3383,7 @@ reader preferences,
 man pages should never manipulate them.
 .
 .
-.TP 8n \" "-rcR=1" + 2n
+.TP 9.25n \" "-rHY=0" + 2n + hand-tuned for PDF
 .BI \-dAD= adjustment-mode
 Set line adjustment to
 .I adjustment-mode,
@@ -3416,7 +3411,7 @@ Set the indentation amount for ordinary paragraphs not within an
 .BR .RS / .RE
 inset.
 .
-The default is 5n.
+The default is\~5n.
 .
 .
 .TP
@@ -3492,7 +3487,7 @@ the page text is broken before writing the footer.
 .
 Ignored if continuous rendering is enabled.
 .
-The default is \-0.5i.
+The default is\~\-0.5i.
 .
 .
 .TP
@@ -3618,33 +3613,40 @@ See subsection \(lqFont style macros\(rq above for the default.
 Set indentation of subsection headings to
 .I subsection-indentation.
 .
-The default is 3n.
+The default is\~3n.
+.
+.
+.TP
+.BI \-rTS= separation
+Require the given
+.I separation
+between an
+.B IP
+or
+.B TP
+paragraph's tag and its body.
+.
+The default is\~2n.
 .
 .
 .br
-.ne 4v
+.ne 3v
 .TP
-.B \-rU1
-Enable generation of URI hyperlinks in the
-.I grohtml
-and
-.I grotty
-output drivers.
-.
-.I grohtml
-enables them by default;
-.I grotty
-does not,
-pending more widespread pager support for OSC\~8 escape sequences.
-.
-Use
 .B \-rU0
-to disable hyperlinks;
-this will make the arguments to
+Disable generation of URI hyperlinks in output drivers capable of them,
+making the arguments to
 .B MT
 and
 .B UR
-calls visible in the document text produced by link-capable drivers.
+calls visible as formatted text.
+.
+.MR grohtml @MAN1EXT@
+and
+.MR grotty @MAN1EXT@
+enable hyperlinks by default
+(the latter only if not in legacy output mode);
+.MR gropdf @MAN1EXT@
+does not (yet).
 .
 .
 .TP
@@ -3779,14 +3781,16 @@ implementations that give up scans for indexing material early.
 .
 .TP
 .I @MACRODIR@/\:man\:.tmac
-This is a wrapper that loads
-.IR an.tmac .
+is a wrapper enabling the package to be loaded with the option
+.RB \[lq] "\-m man" \[rq].
 .
 .
 .TP
 .I @MACRODIR@/\:\%mandoc\:.tmac
-This is a wrapper that loads
-.IR \%andoc.tmac .
+is a wrapper enabling
+.I \&andoc.tmac
+to be loaded with the option
+.RB \[lq] "\-m mandoc" \[rq].
 .
 .
 .TP

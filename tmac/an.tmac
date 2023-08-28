@@ -1110,6 +1110,9 @@ contains unsupported escape sequence
 .    ie \\n[dn] \{\
 .      if \\n[an*is-output-html] \
 .        nop \X^html:<a href="\\*[an*prefix]\\*[an*hyperlink]">^\c
+.      if \\n[an*is-output-pdf] \
+.        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- \
+\\*[an*hyperlink]\c
 .      if \\n[an*is-output-terminal] \
 .        nop \X^tty: link \\*[an*prefix]\\*[an*hyperlink]^\c
 .      \" Strip off the final newline of the diversion and emit it.
@@ -1127,6 +1130,9 @@ contains unsupported escape sequence
 .      if \\n[an*is-output-html] \
 .        nop \X^html:<a href="\\*[an*prefix]\\*[an*hyperlink]">\
 \\*[an*hyperlink]</a>^\c
+.      if \\n[an*is-output-pdf] \
+.        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- \
+\\*[an*hyperlink]\c
 .      if \\n[an*is-output-terminal] \
 .        nop \X^tty: link \\*[an*prefix]\\*[an*hyperlink]^\
 \\*[an*hyperlink]\X^tty: link^\c
@@ -1309,7 +1315,6 @@ contains unsupported escape sequence
 .
 .nr an*can-hyperlink 0
 .if (  \n[an*is-output-html] \
-     : \n[an*is-output-pdf] \
      : \n[an*is-output-terminal]) \
 .  nr an*can-hyperlink 1
 .

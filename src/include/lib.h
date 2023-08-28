@@ -152,6 +152,14 @@ int mksdir(char *tmpl);
 
 static const double PI = 3.14159265358979323846;
 
+#ifdef __cplusplus
+template <typename T, size_t N>
+// constexpr // C++11
+size_t array_size(T(&)[N]) {
+    return N;
+}
+#endif
+
 #endif /* GROFF_LIB_H */
 
 // Local Variables:

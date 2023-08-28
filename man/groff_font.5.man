@@ -733,20 +733,15 @@ spaces or tabs and organized as follows.
 .P
 .I name
 identifies the glyph:
-if
-.I name
-is a printable
-.RI character\~ c ,
-it corresponds to the
+a printable
+.RI character\~ c
+corresponds to the
 .I troff \" generic
 ordinary
-.RI character\~ c .
-.
-If
-.I name
-is a multi-character sequence not beginning with
+.RI character\~ c ,
+and a multi-character sequence not beginning with
 .BR \[rs] ,
-it corresponds to the GNU
+corresponds to the GNU
 .I troff \" GNU
 special character escape sequence
 \[lq]\c

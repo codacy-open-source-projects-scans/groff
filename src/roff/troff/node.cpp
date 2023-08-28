@@ -189,7 +189,6 @@ protected:
   int slant;
 public:
   tfont_spec(symbol, int, font *, font_size, int, int);
-  tfont_spec(const tfont_spec &spec) { *this = spec; }
   tfont_spec plain();
   int operator==(const tfont_spec &);
   friend tfont *font_info::get_tfont(font_size fs, int, int, int);

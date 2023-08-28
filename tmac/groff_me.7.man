@@ -475,8 +475,8 @@ support for
 .
 .TP
 .I @MACRODIR@/me.tmac
-is a wrapper enabling the package to be loaded with
-.RB \[lq] "groff \-m me" \[rq].
+is a wrapper enabling the package to be loaded with the option
+.RB \[lq] "\-m me" \[rq].
 .
 .
 .\" ====================================================================

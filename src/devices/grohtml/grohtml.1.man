@@ -161,7 +161,7 @@ is
 .I \%grohtml
 reads the standard input stream.
 .
-Output is written to the standard output stream.
+It writes to the standard output stream.
 .
 .
 .P
@@ -190,7 +190,7 @@ to HTML.
 .
 .P
 .I \%grohtml
-writes output encoded in \%UTF-8 and has built-in HTML entities for all
+writes \%UTF-8-\:encoded output and has built-in HTML entities for all
 non-composite Unicode characters.
 .
 In spite of this,
@@ -198,8 +198,8 @@ In spite of this,
 may issue warnings about unknown special characters if they can't be
 found during the first pass.
 .
-Such warnings can be safely ignored unless the special characters
-appear inside a table or equation.
+You can ignore these warnings unless the special characters appear
+inside a table or equation.
 .
 .
 .\" ====================================================================

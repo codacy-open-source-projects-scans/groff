@@ -3828,7 +3828,7 @@ Next page number
 .
 .TPx
 .REQ .pnr
-Write the names and contents of all defined registers to the standard
+Report the names and contents of all defined registers to the standard
 error stream.
 .
 .TPx
@@ -5400,7 +5400,7 @@ Specific devices may support only a subset,
 or may feature additional ones;
 consult the man page for the output driver in use.
 .
-Terminal devices in particular implement almost none.
+Terminals in particular implement almost none.
 .
 .
 .P
@@ -6322,7 +6322,7 @@ Vertical position traps are enabled (Boolean-valued).
 .
 .TP
 .REG .w
-Width of previous glyph formatted in the environment.
+Width of last glyph formatted in the environment.
 .
 .TP
 .REG .warn
@@ -6592,7 +6592,7 @@ a
 is a collection of characters in a specific typeface that a device can
 render as glyphs at a desired size.
 .
-(Terminals and some output devices have fonts that render at only one or
+(Terminals and some typesetters have fonts that render at only one or
 two sizes.
 .
 As examples of the latter,
@@ -6650,7 +6650,7 @@ devices'
 often,
 no other style of Zapf Chancery Medium is provided.
 .
-On typesetting devices,
+On typesetters,
 at least one
 .I "special font"
 is available,
@@ -6660,8 +6660,9 @@ glyphs for mathematical operators and other purposes.
 .
 .
 .P
-Like AT&T
-.I troff, \" AT&T
+Like the AT&T
+.I troff \" AT&T
+formatter,
 GNU
 .I troff \" GNU
 does not itself load or manipulate a digital font file;
@@ -6694,6 +6695,10 @@ mounting position.
 Thus the default family can be combined with a style dynamically,
 producing a
 .I "resolved font name."
+.
+A user-specified font name that combines family and style
+(or refers to a font that is not a member of a family)
+is also \[lq]resolved\[rq].
 .
 .
 .P
@@ -6747,14 +6752,42 @@ glyph.
 .
 .
 .P
-Terminal output devices cannot change font families and lack special
-fonts.
+Terminals cannot change font families and lack special fonts.
 .
 They support style changes by overstriking,
 or by altering ISO\~6429/\:ECMA-48
 .I "graphic renditions"
 (character cell attributes).
 .\" END Keep (roughly) parallel with groff.texi node "Using Fonts".
+.
+.
+.P
+The
+.B ft
+request
+and
+.B \[rs]f
+escape sequence select a typeface by name,
+abstract style,
+or mounting position.
+.
+The
+.B fam
+request
+and
+.B \[rs]F
+escape sequence set the default font family.
+.
+The
+.B ftr
+request remaps a (resolved) font name;
+.B fzoom
+magnifies one.
+.
+.B sty
+and
+.B fp
+associate abstract styles and font names with mounting positions.
 .
 .
 .\" ====================================================================
@@ -7023,6 +7056,7 @@ returning to the enclosing context.
 .SS Parameters
 .\" ====================================================================
 .
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Parameters".
 Macro call and string interpolation parameters can be accessed using
 escape sequences starting with
 .RB \[lq] \|\[rs]$ \[rq].
@@ -7031,7 +7065,7 @@ The
 .B \[rs]n[.$]
 read-only register stores the count of parameters available to a macro
 or string;
-its value can be changed by the
+change its value with the
 .B .shift
 request,
 which dequeues parameters from the current list.
@@ -7041,6 +7075,7 @@ The
 escape sequence interpolates the name by which a macro was called.
 .
 Applying string interpolation to a macro does not change this name.
+.\" END Keep (roughly) parallel with groff.texi node "Parameters".
 .
 .
 .\" ====================================================================
@@ -7693,7 +7728,7 @@ There exists a
 request
 .B .ul
 (see above)
-that underlines subsequent source lines on terminal devices,
+that underlines subsequent source lines on terminals,
 but on typesetters,
 it selects an italic font style instead.
 .

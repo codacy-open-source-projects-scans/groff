@@ -421,7 +421,7 @@ and
 registers use the larger value if the vertical motion quantum of the
 output device is too coarse for the smaller one;
 usually,
-this is the case only for output to terminals and emulators thereof.
+this is the case only for output to terminals.
 .
 The \[lq]gutter\[rq] affected by
 .B \[rs]n[MINGW]
@@ -637,11 +637,12 @@ registers set the type size and vertical spacing
 (distance between text baselines),
 respectively.
 .
-The font family and type size are ignored on terminal devices.
+The font family and type size are ignored on terminals.
 .
-Setting these parameters before the first call of a heading,
+Set these parameters before the first call of a heading,
 paragraphing,
-or (non-date) document description macro also applies them to headers,
+or (non-date) document description macro to apply them to
+headers,
 footers,
 and
 (for
@@ -891,6 +892,8 @@ resumes using the specified indices as their predecessors.
 This feature is a Berkeley extension.
 .
 .
+.br
+.ne 3v
 .P
 After
 .B .NH
@@ -1137,7 +1140,7 @@ Typeset
 .I text
 and draw a box around it.
 .
-On terminal devices,
+On terminals,
 reverse video is used instead.
 .
 If you want
@@ -1161,7 +1164,7 @@ Typeset
 .I text
 with an underline.
 .
-On terminal devices,
+On terminals,
 .I text
 is bracketed with underscores (\[lq]_\[rq]).
 .
@@ -1181,8 +1184,7 @@ type size,
 paragraphing,
 or heading macro call.
 .
-You can specify this macro multiple times to enlarge the type size as
-needed.
+Call the macro multiple times to enlarge the type size further.
 .
 .
 .TP
@@ -1194,8 +1196,7 @@ type size,
 paragraphing,
 or heading macro call.
 .
-You can specify this macro multiple times to reduce the type size as
-needed.
+Call the macro multiple times to reduce the type size further.
 .
 .
 .TP
@@ -1366,6 +1367,8 @@ and
 calls.
 .
 .
+.br
+.ne 2v
 .P
 .I Displays
 turn off filling;
@@ -1750,7 +1753,7 @@ or a specified
 .I marker
 argument,
 as a superscript
-(on typesetter devices)
+(on typesetters)
 or surrounded by square brackets
 (on terminals).
 .
@@ -2414,7 +2417,7 @@ they do so not by incrementing or decrementing it,
 but by setting it absolutely.
 .
 This can cause problems for documents that define additional macros of
-their own that try to manipulate indentation.
+their own that manipulate indentation.
 .
 Use
 .B .RS
@@ -2823,8 +2826,8 @@ support for
 .
 .TP
 .I @MACRODIR@/\:ms\:.tmac
-is a wrapper enabling the package to be loaded with
-.RB \[lq] "groff \-m ms" \[rq].
+is a wrapper enabling the package to be loaded with the option
+.RB \[lq] "\-m ms" \[rq].
 .
 .
 .

@@ -529,7 +529,7 @@ The drawing position is not advanced.
 .
 .TP
 .command c c
-Typeset the glyph of the ordinary character
+Typeset the glyph of the ordinary
 .RI character\~ c .
 .
 The drawing position is not advanced.

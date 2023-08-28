@@ -568,33 +568,46 @@ available in the devps directory.
 * I've configured groff for A4 paper, but GNU troff still seems to think
   that the length of a page (interpolated by `\n(.p`) is 11 inches.
 
-This is intentional.  The PAGE option recognized during configuration
-populates the device description files for the output drivers grodvi(1),
-groplbp(1), grolj4(1), gropdf(1), and grops(1) with groff's new
-"papersize" directive.  If this directive is not present, the formatter
-assumes a page length of 11 inches for compatibility with AT&T troff.
+The "configure" script recognizes a PAGE parameter.  Set it like this.
 
-The page length can be changed with the `pl` request, but macro packages
-often do not support alteration of the paper format within a document.
-One might, for instance, want to switch between portrait and landscape
-orientations.  Packages do not take a consistent approach to
+  $ ./configure PAGE=A4
+
+If the parameter is not set, the script undertakes a variety of efforts
+to figure out the correct default paper format, such as checking an
+"/etc/papersize" file.  If it determines the paper format through such
+inference, the source of information is reported in the Autoconf
+"checking default paper format" message.
+
+This paper format populates the device description files for the output
+drivers grodvi(1), groplbp(1), grolj4(1), gropdf(1), and grops(1) with a
+"papersize" directive.  (See groff_font(5).)  If this directive is not
+present, the formatter and output drivers assume a page length of 11
+inches for compatibility with AT&T troff.
+
+In the formatter, the `pl` request changes the page length, but macro
+packages often do not support alteration of the paper format within a
+document.  One might, for instance, want to switch between portrait and
+landscape orientations.  Macro packages lack a consistent approach to
 configuration of parameters dependent on the paper format; some, like
 "ms", benefit from a preamble in the document prior to the first macro
 call, while others, like "mm", instead require the specification of
-registers on the command line to configure paper dimensions (including
-the page offset).
+registers on the command line to configure page dimensions.
 
-A convenient means of setting paper dimensions when formatting is to use
-the -dpaper option of groff(1) or troff(1) together with appropriate -P
-options for the output driver (overriding the default).  For example,
-use the following command for PostScript output on A4 paper in landscape
+Output drivers for typesetters also recognize command-line options `-p`
+to override the default page dimensions and `-l` to use landscape
+orientation.  The output driver's man page, such as grops(1), may be
+helpful.
+
+groff's "-d paper" command-line option is a convenient means of setting
+the paper format; see groff_tmac(5).  Combine it with appropriate `-P`
+options for the output driver, overriding its defaults.
+
+The following command formats for PostScript on A4 paper in landscape
 orientation.
 
-  $ groff -Tps -dpaper=a4l -P-pa4 -P-l -ms foo.ms > foo.ps
+  $ groff -T ps -d paper=a4l -P -pa4 -P -l -ms foo.ms > foo.ps
 
-See groff(1), section "Paper format"; groff_tmac(5), subsection
-"Auxiliary packages", entry "papersize"; and groff_font(5), section
-"DESC file format", entry "papersize".
+See groff(1), section "Paper format".
 
 ----------------------------------------------------------------------
 
@@ -755,7 +768,7 @@ To get PostScript output from `man -t', you also need to create a
 * I'm having problems formatting HP-UX 9.0 man pages with groff -man.
 
 Copy HP's tmac.an into /usr/local/share/groff/site-tmac/an.tmac, and
-either put `.cp 1' at the beginning.
+put `.cp 1' at the beginning.
 
 ----------------------------------------------------------------------
 

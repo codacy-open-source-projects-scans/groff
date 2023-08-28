@@ -2168,7 +2168,8 @@ With two non-zero arguments, it scales to the maximum height.
 How Scaling is Handled
 .PP
 When \fBpic\fP processes a picture description on input, it passes
-\fB.PS\fP, \fB.PE\fP, and \fB.PF\fP through to the postprocessor.
+\fB.PS\fP, \fB.PE\fP, \fB.PF\fP, and \fB.PY\fP through to the
+postprocessor.
 The \fB.PS\fP gets decorated with two numeric arguments which are the X
 and Y\~dimensions of the picture in inches.
 The post-processor can use these to reserve space for the picture and
@@ -2200,13 +2201,18 @@ the following definitions:
 .vs
 .KE
 .LP
-Equivalent definitions of these and of \fB.PF\fP are supplied by GNU
-\fIpic\/\fP(1) if you use the \-mpic option; this should make it usable
-with macro pages other than \fIms\/\fR(1).
+Equivalent definitions of these and of \fB.PF\fP and \fB.PY\fP are
+supplied by GNU \fIpic\/\fP(1) if you use the \-mpic option; this should
+make it usable with macro packages other than \fIms\/\fR.
 .PP
 If \fB.PF\fP is used instead of \fB.PE\fP, the \fBtroff\fP position is
 restored to what it was at the picture start (Kernighan notes that
 the\~F stands for \[lq]flyback\[rq]).
+GNU \fIpic\/\fP(1) supports \fB.PY\fP as a synonym of \fB.PF\fP to work
+around a name space collision with the \fImm\fP macro package, which
+uses the same name for a page footer management macro.
+Use \fB.PF\fP preferentially unless a similar problem faces your
+document.
 .PP
 The invocation
 .DS
@@ -2754,14 +2760,14 @@ In no case, however, the X and Y\~dimensions of the picture exceed the
 values of the style variables \fBmaxpswid\fP and \fBmaxpsheight\fP
 (which default to the normal 8.5\^i by 11\^i page size).
 .PP
-If the ending `.PE' is replaced by `.PF', the page vertical position is
-restored to its value at the time `.PS' was encountered.
+If the ending `.PE' is replaced by `.PF' or `.PY', the page vertical
+position is restored to its value at the time `.PS' was encountered.
 Another alternate form of invocation is `.PS\~<\s[-1]FILENAME\s[0]',
 which replaces the `.PS' line with a file to be interpreted by \fBpic\fR
 (but this feature is deprecated).
 .PP
-The `.PS', `.PE', and `.PF' macros to perform centering and scaling are
-normally supplied by the post-processor.
+The `.PS', `.PE', `.PF', and `.PY' macros to perform centering and
+scaling are normally supplied by the post-processor.
 .PP
 In the following, either `|' or a new line starts an alternative.
 .DS
