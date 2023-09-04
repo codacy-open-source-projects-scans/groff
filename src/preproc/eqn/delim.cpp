@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -242,7 +242,7 @@ static void build_extensible(const char *ext, const char *top, const char *mid,
     printf("/2");
   printf(">?0+\\n[" EXT_HEIGHT_REG "]+\\n[" EXT_DEPTH_REG "]-1/(\\n["
 	 EXT_HEIGHT_REG "]+\\n[" EXT_DEPTH_REG "])\n");
-  
+
   printf(".nr " TOTAL_HEIGHT_REG " +(\\n[" EXT_HEIGHT_REG "]+\\n["
 	 EXT_DEPTH_REG "]*\\n[" TEMP_REG "]");
   if (mid)
@@ -250,7 +250,7 @@ static void build_extensible(const char *ext, const char *top, const char *mid,
   printf(")\n");
   printf(".ds " DELIM_STRING " \\Z" DELIMITER_CHAR
 	 "\\v'-%dM-(\\n[" TOTAL_HEIGHT_REG "]u/2u)'\n",
-	 axis_height);
+	 get_param("axis_height"));
   if (top)
     printf(".as " DELIM_STRING " \\v'\\n[" TOP_HEIGHT_REG "]u'"
 	   "\\Z" DELIMITER_CHAR "%s" DELIMITER_CHAR
@@ -313,7 +313,7 @@ static void define_extensible_string(char *delim, int uid,
 	 ".nr " TOTAL_HEIGHT_REG " \\n[rst]-\\n[rsb]\n"
 	 ".if \\n[" TOTAL_HEIGHT_REG "]<\\n[" DELTA_REG "] "
 	 "\\{",
-	 current_roman_font, d->small, axis_height,
+	 current_roman_font, d->small, get_param("axis_height"),
 	 current_roman_font, d->small);
 
   char buf[256];
@@ -337,7 +337,7 @@ static void define_extensible_string(char *delim, int uid,
 	 ".el .nr " INDEX_REG " 0-1\n"
 	 "..\n"
 	 "." TEMP_MACRO "\n",
-	 buf, buf, axis_height, buf);
+	 buf, buf, get_param("axis_height"), buf);
   if (d->ext) {
     printf(".if \\n[" INDEX_REG "]<0 \\{.if c%s \\{\\\n", d->ext);
     build_extensible(d->ext, d->top, d->mid, d->bot);
@@ -348,10 +348,10 @@ static void define_extensible_string(char *delim, int uid,
   printf(".nr " WIDTH_FORMAT " +\\n[" DELIM_WIDTH_REG "]\n", uid);
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]"
 	 ">?(\\n[" TOTAL_HEIGHT_REG "]/2+%dM)\n",
-	 uid, uid, axis_height);
+	 uid, uid, get_param("axis_height"));
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]"
 	 ">?(\\n[" TOTAL_HEIGHT_REG "]/2-%dM)\n",
-	 uid, uid, axis_height);
+	 uid, uid, get_param("axis_height"));
 }
 
 int delim_box::compute_metrics(int style)
@@ -362,10 +362,12 @@ int delim_box::compute_metrics(int style)
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " DELTA_REG " \\n[" HEIGHT_FORMAT "]-%dM"
 	 ">?(\\n[" DEPTH_FORMAT "]+%dM)\n",
-	 p->uid, axis_height, p->uid, axis_height);
+	 p->uid, get_param("axis_height"), p->uid,
+	 get_param("axis_height"));
   printf(".nr " DELTA_REG " 0\\n[" DELTA_REG "]*%d/500"
 	 ">?(\\n[" DELTA_REG "]*2-%dM)\n",
-	 delimiter_factor, delimiter_shortfall);
+	 get_param("delimiter_factor"),
+	 get_param("delimiter_shortfall"));
   if (left) {
     define_extensible_string(left, uid, LEFT_DELIM);
     printf(".rn " DELIM_STRING " " LEFT_DELIM_STRING_FORMAT "\n",

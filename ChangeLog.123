@@ -1113,7 +1113,7 @@ Version 1.23.0 released 2023-07-05
 	* src/preproc/tbl/table.cpp (table::compute_column_positions):
 	If a table has "left separation" (it is boxed, or has a vertical
 	rule on the left-hand side), increase the first column's start
-	register value by 1n, for symmetry with the right-hand size.
+	register value by 1n, for symmetry with the right-hand side.
 
 	* src/preproc/tbl/tests/check-horizontal-line-length.sh:
 	* src/preproc/tbl/tests/check-line-intersections.sh:
@@ -18652,7 +18652,7 @@ ________________________________________________________________________
 
 ##### License
 
-Copyright 2018-2021 Free Software Foundation, Inc.
+Copyright 2018-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

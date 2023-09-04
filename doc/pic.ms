@@ -864,7 +864,7 @@ and \fBoutlined\fP.
 .PP
 Predefined color names for \fI[gtn]roff\/\fP-based \fBpic\fP
 implementations are defined in the device macro files, for example
-\f(CWps.tmac\fP; additional colors can be defined with the
+\f(CRps.tmac\fP; additional colors can be defined with the
 \fB.defcolor\fP request (see the manual page of GNU \fItroff\/\fP(1)
 for more details).
 Currently, color support is not available at all in \*[tx] mode.
@@ -1661,7 +1661,7 @@ A number is a valid expression, of course (all numbers are stored
 internally as floating-point).
 Decimal-point notation is acceptable;
 in GNU \fBgpic\fR, scientific notation in C's `e' format (like
-\f(CW5e-2\fP) is accepted.
+\f(CR5e-2\fP) is accepted.
 .PP
 Anywhere a number is expected, the language also accepts a
 variable.
@@ -1877,8 +1877,8 @@ tripped up by the comma by wrapping the pair in parentheses.
 Macros persist through pictures.
 To undefine a macro, say \fBundef\fP \fIname\fR; for example,
 .DS
-\f(CWundef jumper\fP
-\f(CWundef jumperblock\fP
+\f(CRundef jumper\fP
+\f(CRundef jumperblock\fP
 .DE
 .LP
 would undefine the two macros in the jumper block example.
@@ -1895,7 +1895,7 @@ File and Table Insertion
 .PP
 The statement
 .DS
-\f(CWcopy\fP \fIfilename\fR
+\f(CRcopy\fP \fIfilename\fR
 .DE
 .LP
 inserts the contents of \fIfilename\fR in the \fBpic\fP input stream.
@@ -1906,7 +1906,7 @@ A variant of this statement replicates the \fBcopy thru\fP feature of
 \fIgrap\/\fP(1).
 The call
 .DS
-\f(CWcopy\fP \fIfilename\fR \f(CWthru\fP \fImacro\fP
+\f(CRcopy\fP \fIfilename\fR \f(CRthru\fP \fImacro\fP
 .DE
 .LP
 calls \fImacro\fP (which may be either a name or replacement text)
@@ -1918,7 +1918,7 @@ instances of any character not appearing in the rest of the text.
 .PP
 If you write
 .DS
-\f(CWcopy\fP \f(CWthru\fP \fImacro\fP
+\f(CRcopy\fP \f(CRthru\fP \fImacro\fP
 .DE
 .LP
 omitting the filename, lines to be parsed are taken from the input
@@ -2017,7 +2017,7 @@ Executing Shell Commands
 .PP
 The command
 .DS
-\f(CWsh\fP \f(CW{\fP \fIanything.\|.\|.\fP \f(CW}\fP
+\f(CRsh\fP \f(CR{\fP \fIanything.\|.\|.\fP \f(CR}\fP
 .DE
 .LP
 macro-expands the text in braces, then executes it as a shell command.
@@ -2310,7 +2310,7 @@ below it;
 would avoid this.
 .PP
 To make the vbox having a positive height and a depth of zero (as used
-e.g.\& by \*(lx's \f(CW\%graphics.sty\fP), define the following macro in
+e.g.\& by \*(lx's \f(CR\%graphics.sty\fP), define the following macro in
 your document:
 .KS
 .DS

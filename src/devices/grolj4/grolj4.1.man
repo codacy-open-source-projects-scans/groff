@@ -156,6 +156,19 @@ and
 .B UC
 having members in each style.
 .
+For the convenience of a consistent font repertoire in
+.IR groff ,
+.I lj4.tmac
+(see section \[lq]Files\[rq] below)
+uses
+.B ftr
+requests to remap
+.B H
+(\[lq]Helvetica\[rq])
+font names to the
+.B U
+names shown below.
+.
 .
 .RS
 .TP 9n \" "TNRBI" + 2n + hand-tuned for PDF

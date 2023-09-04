@@ -243,8 +243,7 @@ void printer::set_numbered_char(int num, const environment *env, int
     return;
   }
   if (!f->contains(g)) {
-    error("font '%1' does not contain numbered character %2",
-	  f->get_name(), num);
+    error("font '%1' has no glyph at index %2", f->get_name(), num);
     return;
   }
   int w = f->get_width(g, env->size);

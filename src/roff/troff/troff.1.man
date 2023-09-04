@@ -175,6 +175,12 @@ Lines are broken where they would be in the formatted output.
 .
 .
 .IP \[bu]
+Vertical motion,
+apart from that implied by a break,
+is not represented.
+.
+.
+.IP \[bu]
 A horizontal motion of any size is represented as one space.
 .
 Adjacent horizontal motions are not combined.
@@ -187,14 +193,9 @@ are not represented.
 .
 .
 .IP \[bu]
-Vertical motions are not represented.
-.
-.
-.IP \[bu]
 Special characters are rendered in angle brackets;
 for example,
-the default soft hyphen character appears as
-\[lq]<hy>\[rq].
+the hyphen character appears as \[lq]<hy>\[rq].
 .RE
 .
 .

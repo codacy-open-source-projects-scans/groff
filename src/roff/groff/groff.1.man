@@ -132,7 +132,6 @@ is a typesetting system that reads plain text input files that include
 formatting commands to produce output in PostScript,
 PDF,
 HTML,
-DVI,
 or other formats,
 or for display to a terminal.
 .

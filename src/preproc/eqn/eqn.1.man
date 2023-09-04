@@ -1101,10 +1101,12 @@ which delegates typesetting to a MathML rendering engine.
 .
 Configure these parameters with the
 .B set
-primitive.
+and
+.B reset
+primitives.
 .
 .
-.TP
+.TP 9n \" "set p n" + 2n
 .BI set\~ "p n"
 assigns
 .RI parameter\~ p
@@ -1112,33 +1114,37 @@ the integer
 .RI value\~ n ;
 .IR n \~is
 interpreted in units of hundredths of an em unless otherwise stated.
-.
 For example,
 .
-.
 .RS
-.IP
+.RS
 .EX
 set x_height 45
 .EE
 .RE
 .
-.
-.IP
 says that
 .I @g@eqn
 should assume that the font's x-height is 0.45\~ems.
+.RE
 .
 .
-.RS
+.TP
+.BI reset\~ p
+restores the default value of
+.RI parameter\~ p.
+.
+.
 .P
-Available parameters are as follows;
+Available parameters
+.I p
+are as follows;
 defaults are shown in parentheses.
 .
 We intend these descriptions to be expository rather than rigorous.
 .
 .
-.TP 17n
+.TP 24n \" "default_rule_thickness" + 2n
 .B minimum_size
 sets a floor for the type size
 (in scaled points)
@@ -1532,7 +1538,6 @@ and
 .B cp1047
 devices,
 .RB otherwise\~ 0 .
-.RE
 .
 .
 .\" ====================================================================
@@ -1749,7 +1754,7 @@ as the roman font.
 .
 .
 .br
-.ne 4v
+.ne 6v
 .\" ====================================================================
 .SH Options
 .\" ====================================================================
@@ -1865,24 +1870,28 @@ This option is deprecated.
 Prepare output for the device
 .IR dev .
 .
-In most cases,
-the effect of this is to define a macro
+This option
+defines a macro
 .I dev
-with a value
-.RB of\~ 1 ;
+with the
+.RB value\~ 1 ;
 .I eqnrc
-uses this to provide definitions appropriate for the device.
+thereby provides definitions appropriate to the device.
 .
 However,
-if the specified driver is \[lq]MathML\[rq],
-the output is MathML markup rather than
-.I @g@troff
-input,
+if
+.I dev
+is
+.RB \[lq] MathML \[rq],
+.I @g@eqn
+produces output in that language rather than
+.IR roff ,
 and
 .I eqnrc
-is not loaded at all.
+is not loaded.
+.\" XXX: why NOT load eqnrc?
 .
-The default output device is
+The default device is
 .BR @DEVICE@ .
 .
 .
@@ -2225,12 +2234,13 @@ above in greater detail.
 .
 .
 .P
-.MR groff_char @MAN7EXT@ ,
-particularly subsections \[lq]Logical symbols\[rq],
-\[lq]Mathematical symbols\[rq],
-and \[lq]Greek glyphs\[rq],
+.MR groff_char @MAN7EXT@
 documents a variety of special character escape sequences useful in
 mathematical typesetting.
+.
+See subsections \[lq]Logical symbols\[rq],
+\[lq]Mathematical symbols\[rq],
+and \[lq]Greek glyphs\[rq] in particular.
 .
 .
 .P

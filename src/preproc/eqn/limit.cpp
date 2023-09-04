@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -115,20 +115,22 @@ int limit_box::compute_metrics(int style)
   if (to != 0) {
     printf(".nr " SUP_RAISE_FORMAT " %dM+\\n[" DEPTH_FORMAT
 	   "]>?%dM+\\n[" HEIGHT_FORMAT "]\n",
-	   uid, big_op_spacing1, to->uid, big_op_spacing3, p->uid);
+	   uid, get_param("big_op_spacing1"), to->uid,
+	   get_param("big_op_spacing3"), p->uid);
     printf(".nr " HEIGHT_FORMAT " \\n[" SUP_RAISE_FORMAT "]+\\n["
 	   HEIGHT_FORMAT "]+%dM\n",
-	   uid, uid, to->uid, big_op_spacing5);
+	   uid, uid, to->uid, get_param("big_op_spacing5"));
   }
   else
     printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]\n", uid, p->uid);
   if (from != 0) {
     printf(".nr " SUB_LOWER_FORMAT " %dM+\\n[" HEIGHT_FORMAT
 	   "]>?%dM+\\n[" DEPTH_FORMAT "]\n",
-	   uid, big_op_spacing2, from->uid, big_op_spacing4, p->uid);
+	   uid, get_param("big_op_spacing2"), from->uid,
+	   get_param("big_op_spacing4"), p->uid);
     printf(".nr " DEPTH_FORMAT " \\n[" SUB_LOWER_FORMAT "]+\\n["
 	   DEPTH_FORMAT "]+%dM\n",
-	   uid, uid, from->uid, big_op_spacing5);
+	   uid, uid, from->uid, get_param("big_op_spacing5"));
   }
   else
     printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]\n", uid, p->uid);

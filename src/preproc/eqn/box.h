@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -282,6 +282,10 @@ void restore_compatibility();
 void set_script_reduction(int n);
 void set_minimum_size(int n);
 void set_param(const char *name, int value);
+void reset_param(const char *name);
+int get_param(const char *name);
+void init_param_table();
+void free_param_table();
 
 void set_char_type(const char *type, char *ch);
 

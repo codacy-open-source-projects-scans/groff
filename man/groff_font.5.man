@@ -95,7 +95,7 @@ among many others,
 while the
 .B utf8
 device
-(for terminal emulators)
+(for terminals)
 has only font descriptions for the roman,
 italic,
 bold,
@@ -610,7 +610,7 @@ Simple integers are valid,
 but their use is discouraged.
 .
 .RI ( groff
-requests and escape sequences interpret non-negative font names as
+requests and escape sequences interpret non-negative integers as
 mounting positions instead.
 .
 Further,
@@ -712,7 +712,7 @@ The directive
 .B charset
 starts the character set subsection.
 .
-(For typesetter devices,
+(On typesetters,
 this directive is misnamed since it starts a list of glyphs,
 not characters.)
 .
@@ -872,7 +872,7 @@ it should be less than the italic correction.
 .
 .
 .P
-For fonts used with typesetting devices,
+For fonts used with typesetters,
 the
 .I type
 field gives a featural description of the glyph:
@@ -890,7 +890,7 @@ and stored in the
 .B ct
 register.
 .
-In font descriptions for terminal devices,
+In font descriptions for terminals,
 all glyphs might have a type of zero,
 regardless of their appearance.
 .

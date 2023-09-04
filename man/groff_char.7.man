@@ -150,7 +150,7 @@ formatted.
 .
 This page was rendered for device
 .B \*[.T]
-using font
+primarily using font
 .BR \n[.fn] .
 .
 .
@@ -355,7 +355,7 @@ like
 .BR ds ,
 also treat
 .B \[dq]
-non-literally.)
+non-literally at the beginning of an argument.)
 .
 Furthermore,
 not all of the special character escape sequences are portable to AT&T
@@ -431,7 +431,8 @@ character in input outside an escape sequence
 to mean a hyphen,
 as in the phrase \[lq]long-term\[rq].
 .
-For a minus sign in running text or a Unix command-line option dash,
+For a minus sign in running text or a Unix file name or command-line
+option dash,
 use
 .B \[rs]\-
 (or
@@ -784,7 +785,7 @@ with hexadecimal letters accepted in uppercase form only.
 Thus,
 .B \[rs][u02DA]
 accesses the (spacing) ring accent,
-producing \[lq]\[u02DA]\[rq].
+producing \[lq]\^\[u02DA]\^\[rq].
 .
 .
 .\" Use "GNU troff" in this paragraph because the contrast with AT&T

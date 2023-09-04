@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -60,7 +60,7 @@ int accent_box::compute_metrics(int style)
   printf(".nr " WIDTH_FORMAT " 0\\n[" WIDTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " SUP_RAISE_FORMAT " \\n[" HEIGHT_FORMAT "]-%dM>?0\n",
-	 uid, p->uid, x_height);
+	 uid, p->uid, get_param("x_height"));
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]+\\n["
 	 SUP_RAISE_FORMAT "]\n",
 	 uid, ab->uid, uid);
@@ -109,7 +109,7 @@ int accent_box::compute_metrics(int style)
 	 uid, p->uid, ab->uid, p->uid, uid);
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " SUP_RAISE_FORMAT " \\n[" HEIGHT_FORMAT "]-%dM>?0\n",
-	 uid, p->uid, x_height);
+	 uid, p->uid, get_param("x_height"));
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]+\\n["
 	 SUP_RAISE_FORMAT "]\n",
 	 uid, ab->uid, uid);
@@ -174,10 +174,12 @@ overline_char_box::overline_char_box()
 void overline_char_box::output()
 {
   if (output_format == troff) {
-    printf("\\v'-%dM/2u-%dM'", 7*default_rule_thickness, x_height);
+    printf("\\v'-%dM/2u-%dM'", 7 * get_param("default_rule_thickness"),
+	   get_param("x_height"));
     printf((draw_flag ? "\\D'l%dM 0'" : "\\l'%dM\\&\\(ru'"),
-	   accent_width);
-    printf("\\v'%dM/2u+%dM'", 7*default_rule_thickness, x_height);
+	   get_param("accent_width"));
+    printf("\\v'%dM/2u+%dM'", 7 * get_param("default_rule_thickness"),
+	   get_param("x_height"));
   }
   else if (output_format == mathml)
     printf("<mo>&macr;</mo>");
@@ -213,7 +215,7 @@ int overline_box::compute_metrics(int style)
   int r = p->compute_metrics(cramped_style(style));
   // 9
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]+%dM\n",
-	 uid, p->uid, default_rule_thickness*5);
+	 uid, p->uid, get_param("default_rule_thickness") * 5);
   printf(".nr " WIDTH_FORMAT " 0\\n[" WIDTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]\n", uid, p->uid);
   return r;
@@ -225,7 +227,7 @@ void overline_box::output()
     // 9
     printf("\\Z" DELIMITER_CHAR);
     printf("\\v'-\\n[" HEIGHT_FORMAT "]u-(%dM/2u)'",
-	   p->uid, 7*default_rule_thickness);
+	   p->uid, 7 * get_param("default_rule_thickness"));
     if (draw_flag)
       printf("\\D'l\\n[" WIDTH_FORMAT "]u 0'", p->uid);
     else
@@ -354,10 +356,10 @@ underline_char_box::underline_char_box()
 void underline_char_box::output()
 {
   if (output_format == troff) {
-    printf("\\v'%dM/2u'", 7*default_rule_thickness);
+    printf("\\v'%dM/2u'", 7 * get_param("default_rule_thickness"));
     printf((draw_flag ? "\\D'l%dM 0'" : "\\l'%dM\\&\\(ru'"),
-	   accent_width);
-    printf("\\v'-%dM/2u'", 7*default_rule_thickness);
+	   get_param("accent_width"));
+    printf("\\v'-%dM/2u'", 7 * get_param("default_rule_thickness"));
   }
   else if (output_format == mathml)
     printf("<mo>&lowbar;</mo>");
@@ -395,7 +397,7 @@ int underline_box::compute_metrics(int style)
   int r = p->compute_metrics(style);
   // 10
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]+%dM\n",
-	 uid, p->uid, default_rule_thickness*5);
+	 uid, p->uid, get_param("default_rule_thickness") * 5);
   printf(".nr " WIDTH_FORMAT " 0\\n[" WIDTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]\n", uid, p->uid);
   return r;
@@ -407,7 +409,7 @@ void underline_box::output()
     // 10
     printf("\\Z" DELIMITER_CHAR);
     printf("\\v'\\n[" DEPTH_FORMAT "]u+(%dM/2u)'",
-	   p->uid, 7*default_rule_thickness);
+	   p->uid, 7 * get_param("default_rule_thickness"));
     if (draw_flag)
       printf("\\D'l\\n[" WIDTH_FORMAT "]u 0'", p->uid);
     else
@@ -553,7 +555,7 @@ int fat_box::compute_metrics(int style)
 {
   int r = p->compute_metrics(style);
   printf(".nr " WIDTH_FORMAT " 0\\n[" WIDTH_FORMAT "]+%dM\n",
-	 uid, p->uid, fat_offset);
+	 uid, p->uid, get_param("fat_offset"));
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]\n", uid, p->uid);
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]\n", uid, p->uid);
   return r;
@@ -564,7 +566,7 @@ void fat_box::output()
   if (output_format == troff) {
     p->output();
     printf("\\h'-\\n[" WIDTH_FORMAT "]u'", p->uid);
-    printf("\\h'%dM'", fat_offset);
+    printf("\\h'%dM'", get_param("fat_offset"));
     p->output();
   }
   else if (output_format == mathml) {
@@ -678,7 +680,7 @@ int vcenter_box::compute_metrics(int style)
   printf(".nr " WIDTH_FORMAT " 0\\n[" WIDTH_FORMAT "]\n", uid, p->uid);
   printf(".nr " SUP_RAISE_FORMAT " \\n[" DEPTH_FORMAT "]-\\n["
 	 HEIGHT_FORMAT "]/2+%dM\n",
-	 uid, p->uid, p->uid, axis_height);
+	 uid, p->uid, p->uid, get_param("axis_height"));
   printf(".nr " HEIGHT_FORMAT " \\n[" HEIGHT_FORMAT "]+\\n["
 	 SUP_RAISE_FORMAT "]>?0\n", uid, p->uid, uid);
   printf(".nr " DEPTH_FORMAT " \\n[" DEPTH_FORMAT "]-\\n["

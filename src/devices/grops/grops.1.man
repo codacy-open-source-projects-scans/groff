@@ -1611,7 +1611,8 @@ versions 1.19.2 and earlier contained descriptions of a slightly
 different set of the base 35 PostScript level 2 fonts defined by Adobe.
 .
 The older set has 229 glyphs and a larger set of kerning pairs;
-the newer one has 314 glyphs and includes the Euro glyph.
+the newer one has 314 glyphs,
+including the Euro sign.
 .
 For backwards compatibility,
 these old font descriptions are also installed in the

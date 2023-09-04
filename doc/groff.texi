@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle Edition 1.23.0+Git
-@subtitle August 2023
+@subtitle September 2023
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -587,10 +587,10 @@ A history relating @code{groff} to its forerunners @code{roff},
 @c and on the groff home page.
 @code{groff} (GNU @code{roff}) is a typesetting system that reads plain
 text input files that include formatting commands to produce output in
-PostScript, PDF, HTML, DVI, or other formats, or for display to a
-terminal.  Formatting commands can be low-level typesetting primitives,
-macros from a supplied package, or user-defined macros.  All three
-approaches can be combined.
+PostScript, PDF, HTML, or other formats, or for display to a terminal.
+Formatting commands can be low-level typesetting primitives, macros from
+a supplied package, or user-defined macros.  All three approaches can be
+combined.
 
 A reimplementation and extension of the typesetter from @acronym{AT&T}
 Unix, @code{groff} is present on most @acronym{POSIX} systems owing to
@@ -696,9 +696,9 @@ constructing tables, setting mathematics, or drawing diagrams, lies in
 preprocessing.  A @dfn{preprocessor} employs a domian-specific language
 to ease the generation of tables, equations, and so forth in terms that
 are convenient for human entry.  Each preprocessor reads a document and
-translates the parts of it that apply to it into GNU @command{troff}
-input.  Command-line options to @command{groff} tell it which
-preprocessors to use.
+translates relevant portions of it into GNU @command{troff} input.
+Command-line options to @command{groff} tell it which preprocessors to
+use.
 
 @code{groff} provides preprocessors for laying out tables
 (@command{gtbl}), typesetting equations (@command{geqn}), drawing
@@ -709,7 +709,9 @@ with preprocessors is @command{gsoelim}.@footnote{The @samp{g} prefix is
 not used on all systems; see @ref{Invoking groff}.}
 
 @code{groff} also supports @code{grap}, a preprocessor for drawing
-graphs.  A free implementation of it can be obtained separately.
+graphs.  A free implementation of it can be obtained
+separately.@footnote{@
+@uref{https://www.lunabase.org/~faber/Vault/software/grap/}}
 
 Unique to @code{groff} is the @code{preconv} preprocessor that enables
 GNU @command{troff} to handle documents in a variety of input encodings.
@@ -984,17 +986,17 @@ Page breaks are marked by a phrase in angle brackets; for example,
 Lines are broken where they would be in the formatted output.
 
 @item
+Vertical motion, apart from that implied by a break, is not represented.
+
+@item
 A horizontal motion of any size is represented as one space.  Adjacent
 horizontal motions are not combined.  Inter-sentence space nodes (those
 arising from the second argument to the @code{ss} request) are not
 represented.
 
 @item
-Vertical motions are not represented.
-
-@item
 Special characters are rendered in angle brackets; for example, the
-default soft hyphen character appears as @samp{<hy>}.
+hyphen character appears as @samp{<hy>}.
 @end itemize
 
 The above description should not be considered a specification; the
@@ -1058,7 +1060,7 @@ Run @command{grap} preprocessor; implies @option{-p}.
 Display a usage message and exit.
 
 @item -i
-Read the standard input after all the named input files have been
+Read the standard input stream after all the named input files have been
 processed.
 
 @item -I@var{dir}
@@ -1343,7 +1345,7 @@ Suppress formatted output from @command{gtroff}.
 
 @item -Z
 Disable postprocessing.  @command{gtroff} output will appear on the
-standard output stream (unless suppressed with @option{-z}; see
+standard output stream (unless suppressed with @option{-z}); see
 @ref{gtroff Output} for a description of this format.
 @end table
 
@@ -1356,8 +1358,8 @@ standard output stream (unless suppressed with @option{-z}; see
 @cindex variables in environment
 
 Several environment variables (of the operating system, unrelated to GNU
-@command{troff}'s @slanted{environments}) that can modify the behavior
-of @command{groff}.
+@command{troff}'s @slanted{environments}) can modify the behavior of
+@command{groff}.
 
 @table @code
 @item GROFF_BIN_PATH
@@ -1493,18 +1495,18 @@ The current working directory (only if in unsafe mode using the
 @item
 @cindex home directory
 @cindex directory, home
-The user's home directory, @env{HOME}.
+The user's home directory, found in the @env{HOME} environment variable.
 
 @item
 @cindex site-local directory
 @cindex directory, site-local
 @cindex platform-specific directory
 @cindex directory, platform-specific
-A platform-dependent directory, a site-local (platform-independent)
-directory, and the main @slanted{tmac} directory.  The locations
-corresponding to your installation are listed in section ``Environment''
-of @cite{gtroff@r{(1)}}.  If not otherwise configured, they are as
-follows.
+A site-local platform-dependent directory, a site-local
+platform-independent directory, and the stock @slanted{tmac} directory.
+The locations corresponding to your installation are listed in section
+``Environment'' of @cite{gtroff@r{(1)}}.  If not otherwise configured,
+they are as follows.
 
 @Example
 /usr/local/lib/groff/site-tmac
@@ -2003,7 +2005,8 @@ respectively.  These are frequently used to construct lists.
 @Example
   @result{} o    This  list  item  starts with a bullet.  When
   @result{}      producing output for a device using the ASCII
-  @result{}      character set, an 'o' is formatted instead.
+  @result{}      character set, an @quoteleft{}o@quoteright{} is @
+formatted instead.
 @endExample
 
 @noindent
@@ -2012,7 +2015,8 @@ Often, use of the same macro without a tag continues such a discussion.
 @Example
   @result{} -xyz  This option is recognized but ignored.
   @result{}
-  @result{}       It had a security hole that we don't discuss.
+  @result{}       It had a security hole that we don@quoteright{}t @
+discuss.
 @endExample
 
 @c ---------------------------------------------------------------------
@@ -8306,10 +8310,12 @@ between the `.ce' and the `.ad c' requests.
 .FR
     @result{} This is a small text fragment that shows
     @result{}              the differences
-    @result{} between the @quoteleft{}.ce@quoteright{} and the @quoteleft{}.ad c@quoteright{} requests.
+    @result{} between the @quoteleft{}.ce@quoteright{} and the @
+@quoteleft{}.ad c@quoteright{} requests.
     @result{}
     @result{} This is a small text fragment that shows
-    @result{}  the differences between the @quoteleft{}.ce@quoteright{} and
+    @result{}  the differences between the @
+@quoteleft{}.ce@quoteright{} and
     @result{}         the @quoteleft{}.ad c@quoteright{} requests.
 @endExample
 
@@ -9924,14 +9930,14 @@ flushing out the pending output line in the usual way.
 
 @cindex interrupted line register (@code{.int})
 @cindex continued output line register (@code{.int})
-The @code{.int} register contains a positive value if the last output
-line was continued with @code{\c}; this datum is associated with the
-environment (@pxref{Environments}).@footnote{Historically, the @code{\c}
-escape sequence has proven challenging to characterize.  Some sources
-say it ``connects the next input text'' (to the input line on which it
-appears); others describe it as ``interrupting'' text, on the grounds
-that a text line is interrupted without breaking, perhaps to inject a
-request invocation or macro call.}
+The @code{.int} register contains a positive value if the most recently
+formatted text was continued with @code{\c}; this datum is associated
+with the environment (@pxref{Environments}).@footnote{Historically, the
+@code{\c} escape sequence has proven challenging to characterize.  Some
+sources say it ``connects the next input text'' (to the input line on
+which it appears); others describe it as ``interrupting'' text, on the
+grounds that a text line is interrupted without breaking, perhaps to
+inject a request invocation or macro call.}
 @endDefesc
 
 
@@ -10234,12 +10240,12 @@ one.
 In digital typography, a @dfn{font} is a collection of characters in a
 specific typeface that a device can render as glyphs at a desired
 size.@footnote{Terminals and some typesetters have fonts that render at
-only one or two sizes.  As examples of the latter, take the @code{groff}
-@code{lj4} device's Lineprinter, and @code{lbp}'s Courier and Elite
-faces.}  A @code{roff} formatter can change typefaces at any point in
-the text.  The basic faces are a set of @dfn{styles} combining upright
-and slanted shapes with normal and heavy stroke weights: @samp{R},
-@samp{I}, @samp{B}, and @samp{BI}---these stand for @slanted{roman},
+only one or two sizes.  As examples, take the @code{groff} @code{lj4}
+device's Lineprinter, and @code{lbp}'s Courier and Elite faces.}  A
+@code{roff} formatter can change typefaces at any point in the text.
+The basic faces are a set of @dfn{styles} combining upright and slanted
+shapes with normal and heavy stroke weights: @samp{R}, @samp{I},
+@samp{B}, and @samp{BI}---these stand for @slanted{roman},
 @slanted{italic}, @slanted{bold}, and @slanted{bold-italic}.  For
 linguistic text, GNU @code{troff} groups typefaces into @dfn{families}
 containing each of these styles.@footnote{Font designers prepare
@@ -10348,14 +10354,14 @@ default family.
 @cindex previous font, selecting (@code{ft})
 @cindex font, previous, slecting (@code{ft})
 The @code{ft} request selects the typeface @var{font}.  If the argument
-is absent or @samp{P}, it selects the previously chosen font.  If
-@var{font} is a non-negative integer, it is interpreted as a mounting
-position; the font mounted there is selected.  If that position refers
-to an abstract style, it is combined with the default family (see
-@code{fam} and @code{\F} below) to make a resolved font name.  If the
-mounting position is not a style and no font is mounted there, GNU
-@code{troff} emits a warning in category @samp{font} and ignores the
-request.
+is absent or @samp{P}, it selects the previously used typeface; if there
+is none, it ignores the request.  If @var{font} is a non-negative
+integer, it is interpreted as a mounting position; the font mounted
+there is selected.  If that position refers to an abstract style, it is
+combined with the default family (see @code{fam} and @code{\F} below) to
+make a resolved font name.  If the mounting position is not a style and
+no font is mounted there, GNU @code{troff} emits a warning in category
+@samp{font} and ignores the request.
 
 If @var{font} matches a style name, it is combined with the default
 family to make a resolved font name.  If not, @var{font} is assumed
@@ -10432,15 +10438,13 @@ assign a font to a margin character as follows (@pxref{Miscellaneous}).
 @cindex @code{if} request, and font translations
 @cindex @code{ie} request, and font translations
 @cindex @code{while} request, and font translations
-Translate font@tie{}@var{f} to font@tie{}@var{g}.  Whenever a font
-named@tie{}@var{f} is referred to in a @code{\f} escape sequence, in the
-@code{F} and @code{S} conditional operators, or in the @code{ft},
-@code{ul}, @code{bd}, @code{cs}, @code{tkf}, @code{special},
-@code{fspecial}, @code{fp}, or @code{sty} requests, font@tie{}@var{g} is
-used.  If @var{g} is missing or equal to@tie{}@var{f}, the translation
-is undone.
-@c XXX: Do font translations work on mounting positions?  Abstract
-@c styles?
+Translate font name@tie{}@var{f} to@tie{}@var{g}.  Where the @code{\f}
+escape sequence, the @code{F} and @code{S} conditional operators, and
+the @code{ft}, @code{ul}, @code{bd}, @code{cs}, @code{tkf},
+@code{special}, @code{fspecial}, @code{fp}, or @code{sty} requests refer
+to@tie{}@var{f}, GNU @command{troff} uses @var{g} instead.  Omit @var{g}
+or repeat @var{f} as@tie{}@var{g} to untranslate @var{f}.  @var{f} and
+@var{g} need not be mounted fonts.
 @endDefreq
 
 @DefreqList {fzoom, font [@Var{zoom}]}
@@ -10506,8 +10510,8 @@ abstract style causes GNU @code{troff} to combine it with the default
 font family.
 
 You can thus compose a document using abstract styles exclusively for
-its body or running text, selecting a specific family only for titles or
-examples, for instance, and change the default family on the command
+its body or running text---selecting a specific family only for titles
+or examples, for instance---and change the default family on the command
 line.
 
 @DefreqList {fam, [@Var{family}]}
@@ -10521,8 +10525,8 @@ Set the default font family, used in combination with abstract styles to
 construct a resolved font name, to @var{family} (one-character
 name@tie{}@var{f}, two-character name @var{fm}).  If no argument is
 given, GNU @code{troff} selects the previous font family; if there none,
-is it falls back to the device's default@footnote{@xref{DESC File
-Format}.} or its own (@samp{T}).
+it falls back to the device's default@footnote{@xref{DESC File Format}.}
+or its own (@samp{T}).
 
 The @code{\F} escape sequence works similarly.  In disanalogy to
 @code{\f}, @samp{\FP} makes @samp{P} the default family.  Use
@@ -12764,7 +12768,7 @@ True if formatting the comparands @var{xxx} and @var{yyy} produces the
 same output commands.  The delimiter need not be a neutral apostrophe:
 the output comparison operator accepts the same delimiters as most
 escape sequences; see @ref{Delimiters}.  This @dfn{output comparison
-operator} formats @var{xxx} and @var{yyy} in separate environments;
+operator} formats @var{xxx} and @var{yyy} in separate scratch buffers;
 after the comparison, the resulting data are discarded.
 
 @Example
@@ -12853,6 +12857,9 @@ true.@footnote{This bizarre behavior maintains compatibility with
 The unexpected @samp{r x} in the output is a clue that our conditional
 was not interpreted as we planned, but matters may not always be so
 obvious.
+
+Conditional operators do not create @code{roff} language objects as
+interpolations with @code{\n} and @code{\*} escape sequences do.
 @c END Keep (roughly) parallel with subsection "Conditional expressions"
 @c of groff(7).
 
@@ -12957,7 +12964,7 @@ To conveniently nest conditionals, keep reading.
 @cindex blocks, conditional
 
 It is frequently desirable for a control structure to govern more than
-one request, macro call, text line, or a combination of the foregoing.
+one request, macro call, text line, or combination of the foregoing.
 The opening and closing brace escape sequences @code{\@{} and @code{\@}}
 define such groups.  These @dfn{conditional blocks} can furthermore be
 nested.
@@ -13115,17 +13122,17 @@ instead write a recursive macro.  It will be parsed only
 once.@footnote{unless you redefine it}
 
 @Example
-.de yyy
-.  if (\\n[num] > 0) \@{\
+.de yy
+.  if (\\n(nm > 0) \@{\
 .    \" many lines of code
-.    nr num -1
-.    yyy
+.    nr nm -1
+.    yy
 .  \@}
 ..
 .
-.de xxx
-.  nr num 10
-.  yyy
+.de xx
+.  nr nm 10
+.  yy
 ..
 @endExample
 
@@ -14015,7 +14022,7 @@ beginning of a string for highlighting or other decoration.
 @cindex input line, horizontal position, register (@code{hp})
 @cindex position, horizontal, in input line, register (@code{hp})
 @cindex line, input, horizontal position, register (@code{hp})
-The current horizontal position at the input line.
+The horizontal position relative to that at the start of the input line.
 @endDefreg
 
 @Defreg {.k}
@@ -14052,13 +14059,13 @@ and leaders in the argument are ignored with an error diagnostic.
 We might implement a strike-through macro thus.
 
 @Example
-.de ST
+.de strikeout
 .nr width \w'\\$1'
 \Z@@\v'-.25m'\l'\\n[width]u'@@\\$1
 ..
 .
 This is
-.ST "a test"
+.strikeout "a test"
 an actual emergency!
 @endExample
 @endDefesc
@@ -18444,9 +18451,9 @@ a font description file is called@tie{}@file{@var{f}}, where
 For example, the @code{ps} (PostScript) device has @code{groff} font
 description files for Times roman (@file{TR}) and Zapf Chancery Medium
 italic (@file{ZCMI}), among many others, while the @code{utf8} device
-(for terminal emulators) has only font descriptions for the roman,
-italic, bold, and bold-italic styles (@file{R}, @file{I}, @file{B}, and
-@file{BI}, respectively).
+(for terminals) has only font descriptions for the roman, italic, bold,
+and bold-italic styles (@file{R}, @file{I}, @file{B}, and @file{BI},
+respectively).
 
 Device and font description files are read both by the formatter, GNU
 @code{troff}, and by output drivers.  The programs delegate these files'
@@ -18703,8 +18710,8 @@ throughout.
 The name of the font is@tie{}@var{f}.  @samp{DESC} is an invalid font
 name.  Simple integers are valid, but their use is
 discouraged.@footnote{@code{groff} requests and escape sequences
-interpret non-negative font names as mounting positions instead.
-Further, a font named @samp{0} cannot be automatically mounted by the
+interpret non-negative integers as mounting positions instead.  Further,
+a font named @samp{0} cannot be automatically mounted by the
 @code{fonts} directive of a @file{DESC} file.}
 
 @item spacewidth @var{n}
@@ -18750,11 +18757,10 @@ is optional.
 
 @kindex charset
 The directive @code{charset} starts the character set
-subsection.@footnote{For typesetter devices, this directive is misnamed
-since it starts a list of glyphs, not characters.}  It precedes a series
-of glyph descriptions, one per line.  Each such glyph description
-comprises a set of fields separated by spaces or tabs and organized as
-follows.
+subsection.@footnote{On typesetters, this directive is misnamed since it
+starts a list of glyphs, not characters.}  It precedes a series of glyph
+descriptions, one per line.  Each such glyph description comprises a set
+of fields separated by spaces or tabs and organized as follows.
 
 @quotation
 @var{name} @var{metrics} @var{type} @var{code} [@var{entity-name}]
@@ -18847,13 +18853,13 @@ upright glyph.  The @var{subscript-correction} is the amount of space
 that should be added after an oblique glyph to be followed by a
 subscript; it should be less than the italic correction.
 
-For fonts used with typesetting devices, the @var{type} field gives a
-featural description of the glyph: it is a bit mask recording whether
-the glyph is an ascender, descender, both, or neither.  When a @code{\w}
-escape sequence is interpolated, these values are bitwise or-ed
-together for each glyph and stored in the @code{nr} register.  In font
-descriptions for terminal devices, all glyphs might have a type of zero,
-regardless of their appearance.
+For fonts used with typesetters, the @var{type} field gives a featural
+description of the glyph: it is a bit mask recording whether the glyph
+is an ascender, descender, both, or neither.  When a @code{\w} escape
+sequence is interpolated, these values are bitwise or-ed together for
+each glyph and stored in the @code{nr} register.  In font descriptions
+for terminals, all glyphs might have a type of zero, regardless of their
+appearance.
 
 @table @code
 @item 0

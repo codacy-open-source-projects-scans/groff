@@ -5205,6 +5205,14 @@ package and loads further components as needed from the
 subdirectory.
 .
 .
+.It Pa @MACRODIR@/\:doc\-old\:.tmac
+implements a legacy version of the
+.Xr mdoc
+package;
+it was superseded in 4.4BSD (1994)
+and is needed only to render certain man pages from 4.3BSD-Reno.
+.
+.
 .It Pa @MACRODIR@/\:mdoc\:.tmac
 is a wrapper enabling the package to be loaded with the option
 .Dq Li "\-m mdoc" .

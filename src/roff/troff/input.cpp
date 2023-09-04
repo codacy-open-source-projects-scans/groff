@@ -5945,7 +5945,7 @@ int do_if_request()
       skip_alternative();
       return 0;
     }
-    result = check_font(curenv->get_family()->nm, nm);
+    result = is_font_name(curenv->get_family()->nm, nm);
   }
   else if (c == 'S') {
     tok.next();
@@ -5954,7 +5954,7 @@ int do_if_request()
       skip_alternative();
       return 0;
     }
-    result = check_style(nm);
+    result = is_abstract_style(nm);
   }
   else if (tok.is_space())
     result = 0;

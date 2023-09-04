@@ -126,6 +126,7 @@ fonts,
 strings/\:macros/\:diversions,
 environments,
 special characters,
+character classes,
 streams,
 and colors can be of any length.
 .
@@ -261,7 +262,7 @@ an output device can select a scaling factor that subdivides a point
 into \[lq]scaled points\[rq].
 .
 A type size expressed in scaled points can thus represent a non-integral
-type size.
+type size in points.
 .
 .
 .P
@@ -439,7 +440,7 @@ and offers three new operators.
 .
 .TP 8n \" "e1>?e2" +2n
 .IB e1 >? e2
-Interpolate the greater of
+Interpolate the greater of expressions
 .I e1
 and
 .IR e2 .
@@ -447,7 +448,7 @@ and
 .
 .TP
 .IB e1 <? e2
-Interpolate the lesser of
+Interpolate the lesser of expressions
 .I e1
 and
 .IR e2 .
@@ -455,7 +456,7 @@ and
 .
 .TP
 .BI ( c ; e )
-Evaluate
+Evaluate expression
 .I e
 using
 .I c
@@ -633,7 +634,8 @@ and then by symbol roughly in Unicode code point order.
 .\" order more agreeable to the development of a topic.
 .
 .
-.TP 8n \" "\s+'n'" + 2n
+.\"TP 10n \" "\D'E h v'" + 2n + hand-tuned for PDF
+.TP 14n \" "\A'anything'" + 2n
 .BI \[rs]A\[aq] anything \[aq]
 Interpolate 1 if
 .I anything
@@ -748,17 +750,16 @@ or which will be interpolated at varying macro nesting depths.
 .
 .
 .TP
-.BI \[rs]f[ font ]
-Select
-.IR font ,
+.BI \[rs]f\^[ fnt ]
+Select typeface
+.IR fnt ,
 which may be a mounting position,
 abstract style,
-or font name,
-as the typeface.
+or font name.
 .
-.B \[rs]f[]
+.B \[rs]f\^[]
 and
-.B \[rs]fP
+.B \[rs]f\^P
 are synonyms;
 we recommend the former.
 .
@@ -768,7 +769,7 @@ we recommend the former.
 .TQ
 .BI \[rs]F( fm
 .TQ
-.BI \[rs]F[ family ]
+.BI \[rs]F[ fml ]
 Select default font family.
 .
 .B \[rs]F[]
@@ -776,7 +777,7 @@ makes the previous font family the default.
 .
 .B \[rs]FP
 is unlike
-.BR \[rs]fP ;
+.BR \[rs]f\^P ;
 it selects font family \[lq]P\[rq] as the default.
 .
 See the
@@ -1828,15 +1829,7 @@ and produces
 .I contents
 on output.
 .
-Every time
-.I c
-is to be formatted,
-.I contents
-is processed in a temporary environment and the result is wrapped up
-into a single object.
-.
-Compatibility mode is turned off and the escape character is
-set
+Compatibility mode is disabled and the escape character set
 .RB to\~ \[rs]
 while
 .I contents
@@ -1969,7 +1962,7 @@ form
 .RB \[lq] \[rs][ .\|.\|. ] \[rq],
 thus you must use the
 .B \[rs]C
-escape to access a class with such a name.
+escape sequence to access a class with such a name.
 .
 .
 .IP
@@ -2036,10 +2029,14 @@ to character name
 .I c2
 when
 .I c1
-is a combining component in a composite glyph.
+is a combining component in a composite character.
 .
 Typically,
-this remaps a spacing glyph to a combining one.
+.B composite
+is used to map a spacing character to a combining one.
+.
+See
+.MR groff_char @MAN7EXT@ .
 .
 .
 .TP
@@ -2100,7 +2097,7 @@ or
 is accepted as a synonym of
 .RB \[lq] gray \[rq].
 .
-The color components can be encoded as a hexadecimal value starting
+Each color component can be encoded as a hexadecimal value starting
 with
 .B #
 or
@@ -2111,10 +2108,9 @@ The former indicates that each component is in the range 0\[en]255
 the latter the range 0\[en]65535 (0\[en]FFFF).
 .
 Alternatively,
-each color component can be specified as a decimal fraction in the range
-0\[en]1,
+a component can be specified as a decimal fraction in the range 0\[en]1,
 interpreted using a default scaling unit
-.RB of\~\[lq] f \[rq],
+.RB of\~\[lq] f \^\[rq],
 which multiplies its value by 65,536
 (but clamps it at 65,535).
 .
@@ -2169,7 +2165,9 @@ to
 .I @g@troff
 output as a device control command.
 .
-An initial neutral double quote is stripped to allow the embedding of
+An initial neutral double quote in
+.I anything
+is stripped to allow the embedding of
 leading spaces.
 .
 .
@@ -2266,7 +2264,7 @@ escape sequence);
 .
 .IP \[bu]
 the count of remaining lines to center,
-to right-justify,
+to right-align,
 or to underline
 (with or without underlined spaces)\[em]these are set to zero;
 .
@@ -2296,16 +2294,17 @@ the count of consecutive hyphenated lines
 .
 .TP
 .BR .fam\~ [\c
-.IR family ]
+.IR fml ]
 Set default font family to
-.IR family .
+.IR fml .
 .
-If no argument is given,
+With no argument,
 the previous font family is selected,
-or the formatter's default family if there is none.
+and if none,
+the formatter's default family.
 .
-The formatter's default font family is \[lq]T\[rq] (Times),
-but it can be overridden by the output device\[em]see
+This default is \[lq]T\[rq] (Times),
+but can be overridden by the output device\[em]see
 .MR groff_font @MAN5EXT@ .
 .
 The default font family is associated with the environment.
@@ -2321,17 +2320,13 @@ Define fallback
 as
 .IR contents .
 .
-The syntax of this request is the same as the
-.B char
-request;
-the difference is that a character defined with
+While
 .B char
 hides a glyph with the same name in the selected font,
-whereas characters defined with
 .B fchar
-are checked only if
-.I c
-isn't found in the selected font.
+definitions are used only if the font
+lacks a glyph for
+.IR c .
 .
 This test happens before special fonts are searched.
 .
@@ -3983,7 +3978,7 @@ Interpolate indentation amount applicable to the pending output line.
 .
 .TP
 .B \[rs]n[.int]
-Interpolate\~1 if the previous output line was interrupted
+Interpolate\~1 if the most recently formatted text was interrupted
 (ended with
 .BR \[rs]c ),
 0\~otherwise.
@@ -4265,7 +4260,7 @@ The following (writable) registers are set by the
 request.
 .
 .
-.TP
+.TP 9n \" "\n[ury]" + 2n
 .B \[rs]n[llx]
 .TQ
 .B \[rs]n[lly]
@@ -4288,7 +4283,7 @@ The following (writable) registers are set by the
 escape sequence.
 .
 .
-.TP 8n
+.TP 9n \" "\n[ury]" + 2n
 .B \[rs]n[rst]
 .TQ
 .B \[rs]n[rsb]
@@ -4531,7 +4526,7 @@ interpolation depth different from that of the arguments themselves.
 .
 Similarly,
 in bracket-form escape sequences like
-.B \[rs]f[ZCMI],
+.B \[rs]f\^[ZCMI],
 a right bracket
 .B ]
 does not end the sequence unless it occurs at the same interpolation

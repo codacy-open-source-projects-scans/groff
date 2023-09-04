@@ -41,8 +41,24 @@ o New parameters tunable with the GNU eqn "set" primitive, "half_space"
   their widths were determined by the "thin_space" and "thick_space"
   parameters used to tune GNU eqn's automatic spacing computations.
 
+o The new "reset" primitive restores a named parameter to its default.
+
 Macro packages
 --------------
+
+o The device-specific macro files loaded by "troffrc" automatically on
+  startup, such as "ps.tmac" and "html.tmac", no longer perform font
+  translations for font names used by varieties of AT&T troff ('C',
+  'Hb', 'HX', and many others).  These names are not portable: in AT&T
+  troff, the font repertoire, like the special character repertoire, was
+  device-dependent.  Since groff 1.23.0, our diagnostic messages report
+  problems with attempts to use nonexistent font names.  We recommend
+  addressing such portability issues wherever suits you; in a document,
+  perhaps by using `ie` and `el` requests and the `.g` register to test
+  for groff extensions; in your "troffrc" file; or by modifying these
+  macro files.  Users of the "dvi" and "lbp" output devices should be
+  aware that these devices don't supply full families of monospaced
+  fonts (and never have).  See grodvi(1) and grolbp(1).
 
 o Hyperlink support is now enabled by default on non-HTML devices that
   support it (PDF and terminal devices) for an (man) documents.
@@ -532,7 +548,7 @@ o The "ptx.tmac" macro file, a counterpart to the GNU coreutils ptx(1)
   long been part of the source distribution.
 
 o The s (ms) macro package now enables the formatter's "no-space mode"
-  after ending displays (`DE`), equations (`EN`), tables (`TS`), and
+  after ending displays (`DE`), equations (`EN`), tables (`TE`), and
   pictures without flyback (`PE`).  This means that display distance
   spacing (the `DD` register) overrides the spacing that may follow in a
   subsequent paragraph, section heading, or display instead of
@@ -706,8 +722,8 @@ o Building groff from its distribution archive no longer requires byacc
   (or GNU Bison) to be installed.
 
 o m4 is now required to build.  Any m4 that implements the features
-  documented in the Unix Version 7 m4(1) man page, and the `-D` option,
-  should suffice.
+  documented in the Seventh Edition Unix m4(1) man page, and the `-D`
+  option, should suffice.
 
 o New 'configure' options '--{en,dis}able-groff-allocator' control
   whether groff uses its own malloc/free-wrapping allocator to implement

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -15,48 +15,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
-extern int fat_offset;
-
-extern int over_hang;
-extern int accent_width;
-
-extern int delimiter_factor;
-extern int delimiter_shortfall;
-
-extern int null_delimiter_space;
-extern int script_space;
-extern int thin_space;
-extern int medium_space;
-extern int thick_space;
-extern int half_space;
-extern int full_space;
-
-extern int num1;
-extern int num2;
-// we don't use num3, because we don't have \atop
-extern int denom1;
-extern int denom2;
-extern int axis_height;
-extern int sup1;
-extern int sup2;
-extern int sup3;
-extern int default_rule_thickness;
-extern int sub1;
-extern int sub2;
-extern int sup_drop;
-extern int sub_drop;
-extern int x_height;
-extern int big_op_spacing1;
-extern int big_op_spacing2;
-extern int big_op_spacing3;
-extern int big_op_spacing4;
-extern int big_op_spacing5;
-
-extern int baseline_sep;
-extern int shift_down;
-extern int column_sep;
-extern int matrix_side_sep;
 
 // ms.eqn relies on this!
 

@@ -1,3 +1,18 @@
+2023-08-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Rename test scripts for consistency.
+
+	* tests/LT_SP_AU_without_AT_works.sh:
+	* tests/LT_SP_multi-word_LO_SJ_works.sh:
+	* tests/MT_5_includes_AT_in_SG.sh:
+	* tests/ms_cover_sheet_robust_to_missing_AF.sh: Rename these...
+	* tests/LT-SP-AU-without-AT-works.sh:
+	* tests/LT-SP-multi-word-LO-SJ-works.sh:
+	* tests/MT-5-includes-AT-in-SG.sh:
+	* tests/ms-cover-sheet-robust-to-missing-AF.sh: ...to these.
+
+	* mm.am (mm_TESTS): Reflect renames.
+
 2023-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (Qrf): Define string contents using `\E` instead of
@@ -182,7 +197,7 @@
 
 2023-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[mm]: Add `--help` option support to mmroff.
+	Add `--help` option support to mmroff.
 
 	* mmroff.pl: Recognize `--help` option.
 	* mmroff.1.man (Synopsis, Options): Document.
@@ -483,7 +498,7 @@
 
 2022-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[mm]: Add `--version` option support to mmroff.
+	Add `--version` option support to mmroff.
 
 	* mm.am (mmroff): Replace `@VERSION@` token in script.
 	* mmroff.pl: Recognize `--version` option.
@@ -504,7 +519,7 @@
 
 2022-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[mm]: Refactor generation of "mmroff" script.
+	Refactor generation of "mmroff" script.
 
 	* mmroff.pl: Replace absolute filespec with `@PERL@` replacement
 	token.  This is documentary; the filespec was getting replaced
@@ -796,9 +811,7 @@
 
 2021-05-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[mm]: Cease warning level manipulation.
-
-	Stop mm macro package from manipulating warnings.
+	Cease warning level manipulation.
 
 	* m.tmac: Remove code that attempted to enable all warnings if
 	none were given on the command line.  It did this by simply

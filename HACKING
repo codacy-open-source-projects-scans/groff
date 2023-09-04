@@ -22,6 +22,12 @@ Standard Template Library is little used.  A modest effort is underway
 to update the code to more idiomatic C++98.  Where a C++11 feature
 promises to be advantageous, it may be annotated in a code comment.
 
+Portability notes:
+
+* `std::size` is not available in C++98.  Use the `array_length`
+  template function in src/include/lib.h instead of `sizeof` and
+  dividing.
+
 
 Automake
 --------

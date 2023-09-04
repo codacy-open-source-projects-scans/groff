@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -64,25 +64,25 @@ static int compute_spacing(int is_script, int left, int right)
   if (left == SUPPRESS_TYPE || right == SUPPRESS_TYPE)
     return 0;
   if (left == PUNCTUATION_TYPE)
-    return is_script ? 0 : thin_space;
+    return is_script ? 0 : get_param("thin_space");
   if (left == OPENING_TYPE || right == CLOSING_TYPE)
     return 0;
   if (right == BINARY_TYPE || left == BINARY_TYPE)
-    return is_script ? 0 : medium_space;
+    return is_script ? 0 : get_param("medium_space");
   if (right == RELATION_TYPE) {
     if (left == RELATION_TYPE)
       return 0;
     else
-      return is_script ? 0 : thick_space;
+      return is_script ? 0 : get_param("thick_space");
   }
   if (left == RELATION_TYPE)
-    return is_script ? 0 : thick_space;
+    return is_script ? 0 : get_param("thick_space");
   if (right == OPERATOR_TYPE)
-    return thin_space;
+    return get_param("thin_space");
   if (left == INNER_TYPE || right == INNER_TYPE)
-    return is_script ? 0 : thin_space;
+    return is_script ? 0 : get_param("thin_space");
   if (left == OPERATOR_TYPE && right == ORDINARY_TYPE)
-    return thin_space;
+    return get_param("thin_space");
   return 0;
 }
 

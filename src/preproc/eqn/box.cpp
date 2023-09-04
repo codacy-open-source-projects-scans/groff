@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -35,57 +35,57 @@ int negative_space = -1;
 
 int minimum_size = 5;
 
-int fat_offset = 4;
-int body_height = 85;
-int body_depth = 35;
+static int fat_offset = 4;
+static int over_hang = 0;
+static int accent_width = 31;
+static int delimiter_factor = 900;
+static int delimiter_shortfall = 50;
 
-int over_hang = 0;
-int accent_width = 31;
-int delimiter_factor = 900;
-int delimiter_shortfall = 50;
+static int null_delimiter_space = 12;
+static int script_space = 5;
+static int thin_space = 17;
+static int half_space = 17;
+static int medium_space = 22;
+static int thick_space = 28;
+static int full_space = 28;
 
-int null_delimiter_space = 12;
-int script_space = 5;
-int thin_space = 17;
-int half_space = 17;
-int medium_space = 22;
-int thick_space = 28;
-int full_space = 28;
-
-int num1 = 70;
-int num2 = 40;
+static int num1 = 70;
+static int num2 = 40;
 // we don't use num3, because we don't have \atop
-int denom1 = 70;
-int denom2 = 36;
-int axis_height = 26;		// in 100ths of an em
-int sup1 = 42;
-int sup2 = 37;
-int sup3 = 28;
-int default_rule_thickness = 4;
-int sub1 = 20;
-int sub2 = 23;
-int sup_drop = 38;
-int sub_drop = 5;
-int x_height = 45;
-int big_op_spacing1 = 11;
-int big_op_spacing2 = 17;
-int big_op_spacing3 = 20;
-int big_op_spacing4 = 60;
-int big_op_spacing5 = 10;
+static int denom1 = 70;
+static int denom2 = 36;
+static int axis_height = 26;	// in 100ths of an em
+static int sup1 = 42;
+static int sup2 = 37;
+static int sup3 = 28;
+static int default_rule_thickness = 4;
+static int sub1 = 20;
+static int sub2 = 23;
+static int sup_drop = 38;
+static int sub_drop = 5;
+static int x_height = 45;
+static int big_op_spacing1 = 11;
+static int big_op_spacing2 = 17;
+static int big_op_spacing3 = 20;
+static int big_op_spacing4 = 60;
+static int big_op_spacing5 = 10;
 
 // These are for piles and matrices.
 
-int baseline_sep = 140;		// = num1 + denom1
-int shift_down = 26;		// = axis_height
-int column_sep = 100;		// = em space
-int matrix_side_sep = 17;	// = thin space
+static int baseline_sep = 140;		// = num1 + denom1
+static int shift_down = 26;		// = axis_height
+static int column_sep = 100;		// = em space
+static int matrix_side_sep = 17;	// = thin space
 
-int nroff = 0;			// should we grok ndefine or tdefine?
+static int body_height = 85;
+static int body_depth = 35;
+
+static int nroff = 0;		// should we grok ndefine or tdefine?
 
 struct param {
   const char *name;
   int *ptr;
-} param_table[] = {
+} default_param_table[] = {
   { "fat_offset", &fat_offset },
   { "over_hang", &over_hang },
   { "accent_width", &accent_width },
@@ -128,14 +128,58 @@ struct param {
   { "nroff", &nroff },
 };
 
+struct param *param_table = 0 /* nullptr */;
+
+// Use the size of default_param_table to iterate through both it and
+// param_table, because the former is known constant to the compiler.
+
 void set_param(const char *name, int value)
 {
-  for (size_t i = 0; i < array_size(param_table); i++)
+  for (size_t i = 0; i <= array_length(default_param_table); i++)
     if (strcmp(param_table[i].name, name) == 0) {
-      *param_table[i].ptr = value;
+      *(param_table[i].ptr) = value;
       return;
     }
-  error("unrecognised parameter '%1'", name);
+  error("'set' primitive does not recognize parameter name '%1'", name);
+}
+
+void reset_param(const char *name)
+{
+  for (size_t i = 0; i < array_length(default_param_table); i++)
+    if (strcmp(param_table[i].name, name) == 0) {
+      *param_table[i].ptr = *(default_param_table[i].ptr);
+      return;
+    }
+  error("'reset' primitive does not recognize parameter name '%1'",
+	name);
+}
+
+int get_param(const char *name)
+{
+  for (size_t i = 0; i < array_length(default_param_table); i++)
+    if (strcmp(param_table[i].name, name) == 0)
+      return *(param_table[i].ptr);
+  assert(0 == "attempted to access parameter not in table");
+  fatal("internal error: unrecognized parameter name '%1'", name);
+}
+
+void init_param_table()
+{
+  param_table = new param[array_length(default_param_table)];
+  for (size_t i = 0; i < array_length(default_param_table); i++) {
+    param_table[i].name = default_param_table[i].name;
+    param_table[i].ptr = new int(*(default_param_table[i].ptr));
+  }
+}
+
+void free_param_table()
+{
+  if (param_table != 0 /* nullptr */) {
+    for (size_t i = 0; i < array_length(default_param_table); i++)
+      delete param_table[i].ptr;
+    delete[] param_table;
+    param_table = 0 /* nullptr */;
+  }
 }
 
 int script_style(int style)

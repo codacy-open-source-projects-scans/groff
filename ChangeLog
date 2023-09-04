@@ -1,3 +1,175 @@
+2023-09-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tmac]: Drop AT&T troff font aliases/remappings.  Now that we
+	have working diagnostics for font selection problems, users will
+	be made aware of portability issues and can address them where
+	they feel appropriate; in a document, in the "troffrc" file, or
+	by modifying these files.
+
+	* tmac/X.tmac:
+	* tmac/dvi.tmac:
+	* tmac/html.tmac:
+	* tmac/lbp.tmac:
+	* tmac/lj4.tmac:
+	* tmac/ps.tmac:  Do it.
+
+	* NEWS: Add item.
+
+2023-08-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/localization-works.sh: Test hyphenation modes for
+	Spanish and Russian.
+
+2023-08-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/es.tmac: Correct hyphenation mode used when suppressing
+	hyphenation before traps.  A "base" mode of 1 should map to 2,
+	not to 6, as (possibly) copied-and-pasted from "fr.tmac".
+
+2023-08-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tmac]: Improve robustness of mm translations.
+
+	* tmac/cs.tmac (\*[locale]-qrf):
+	* tmac/de.tmac (\*[locale]-qrf):
+	* tmac/es.tmac (\*[locale]-qrf):
+	* tmac/fr.tmac (\*[locale]-qrf):
+	* tmac/it.tmac (\*[locale]-qrf):
+	* tmac/ru.tmac (\*[locale]-qrf):
+	* tmac/sv.tmac (\*[locale]-qrf): Define string contents using
+	`\E` instead of `\\`, for better robustness.  See our Texinfo
+	manual, node/section "Copy mode".
+
+2023-08-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tmac]: Rename test file for consistency.
+
+	* tmac/tests/doc_synopsis_is_not_adjusted.sh: Rename this...
+	* tmac/tests/doc_synopsis-is-not-adjusted.sh: ...to this.
+
+	* tmac/tmac.am (tmac_TESTS): Reflect rename.
+
+2023-08-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libdriver, grohtml]: Revise diagnostics.
+
+	* src/devices/grohtml/post-html.cpp
+	(html_printer::set_number_reg):
+	* src/libs/libdriver/printer.cpp (printer::set_numbered_char):
+	Use wording consistent with our documentation if \N'xxx' fails.
+
+2023-08-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/lib.h (array_size): Rename to...
+	(array_length): ...this.
+
+	* src/preproc/eqn/box.cpp (set_param, reset_param, get_param)
+	(init_param_table, free_param_table): Migrate call sites.
+
+	Thanks to Alex Colomar for the discussion.
+
+2023-08-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am (EXTRA_DIST): Ship ancient groff ChangeLog files
+	split off from ChangeLog.115 (.old, .111, .112, .113, .114).
+
+2023-08-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (translate_font): Validate arguments.
+
+2023-08-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor; add utility function.
+
+	* src/roff/troff/node.cpp (is_nonnegative_integer): New function
+	tests C-style string for validity as such; promoted from open
+	code because I just spotted a second place we can use it.
+
+2023-08-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor; demote `int`-returning functions to
+	Boolean-returning ones and rename.
+	- check_font -> is_font_name
+	- check_style -> is_abstract_style
+
+	* src/roff/troff/node.h:
+	* src/roff/troff/node.cpp: Do it.
+
+	* src/roff/troff/env.cpp (is_family_valid):
+	* src/roff/troff/input.cpp (do_if_request): Update call sites.
+
+2023-08-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/main.cpp (main): Trivially refactor; demote
+	`int` `load_startup_file` to Boolean `want_startup_file`.
+
+2023-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[eqn]: Implement "reset" keyword.
+
+	* src/preproc/eqn/box.cpp: Use `static` storage class for
+	parametric defaults, moving them to file scope from global.
+	Rename `param_table` array of structs to `default_param_table`.
+	Use the length of this array for iteration since it is known at
+	compile time.  Convert `param_table` to a null pointer.
+	(set_param): Update diagnostic message text.
+	(reset_param): New function restores a rendering parameter in
+	`param_table` to its corresponding value in
+	`default_param_table`.
+	(get_param): New function accesses `param_table` entries via a C
+	string rather than integer lvalues.  Use `assert()` to dump
+	core; this function is never called by the parser, but only by
+	static logic.  Add `fatal()` under this same circumstance, in
+	case anyone `#define`s `NDEBUG`.
+	(init_param_table): New function populates the (mutable)
+	`param_table` from the (immutable) `default_param_table` using
+	heap storage.
+	(free_param_table): New function avoids memory leak by freeing
+	the heap storage allocated for `param_table`.
+	* src/preproc/eqn/eqn.h: Drop external declaration of `nroff`.
+	* src/preproc/eqn/eqn.ypp: Add new token `RESET`.
+	* src/preproc/eqn/lex.cpp: Map C string "reset" to token `RESET`
+	in untagged struct `token_table`.
+	(do_reset): Handle new keyword; if argument valid, call
+	`reset_param()` with it.
+	(yylex): Hook up token `RESET` to `do_reset()`.
+	* src/preproc/eqn/box.h: Declare `reset_param()`, `get_param()`,
+	`init_param_table()`, and `free_param_table()`.
+	* src/preproc/eqn/main.cpp (main): Call `init_param_table()`
+	when starting up.  Register `free_param_table()` with
+	`std::atexit()`.
+	* src/preproc/eqn/pbox.h: Drop external declarations of
+	rendering parameters.
+	* src/preproc/eqn/delim.cpp (build_extensible)
+	(define_extensible_string, delim_box::compute_metrics):
+	* src/preproc/eqn/lex.cpp (yylex):
+	* src/preproc/eqn/limit.cpp (limit_box::compute_metrics):
+	* src/preproc/eqn/list.cpp (compute_spacing):
+	* src/preproc/eqn/other.cpp (accent_box::compute_metrics)
+	(overline_char_box::overline_char_box):
+	(overline_box::compute_metrics, overline_box::output):
+	(underline_char_box::underline_char_box):
+	(underline_box::compute_metrics, underline_box::output):
+	(fat_box::compute_metrics, fat_box::output):
+	(vcenter_box::compute_metrics):
+	* src/preproc/eqn/over.cpp (over_box::compute_metrics):
+	(over_box::output):
+	* src/preproc/eqn/pile.cpp (pile_box::compute_metrics):
+	(matrix_box::compute_metrics, matrix_box::output):
+	* src/preproc/eqn/script.cpp (script_box::compute_metrics):
+	* src/preproc/eqn/sqrt.cpp (sqrt_box::compute_metrics): Migrate
+	from lvalue access to `get_param()` for parameter retrieval.
+
+	* src/preproc/eqn/eqn.1.man (Customization): Document it.
+
+	* src/preproc/eqn/tests/parameters-can-be-set-and-reset.sh: Test
+	it.
+	* src/preproc/eqn/eqn.am (eqn_TESTS): Run test.
+
+	* NEWS: Add item.
+
+	Fixes <https://savannah.gnu.org/bugs/?62692>.
+
 2023-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/eqn/box.cpp (set_param): Migrate iteration style

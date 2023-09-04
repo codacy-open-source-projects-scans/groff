@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -110,6 +110,7 @@ static struct {
   { "type", TYPE },
   { "vcenter", VCENTER },
   { "set", SET },
+  { "reset", RESET },
   { "opprime", PRIME },
   { "grfont", GRFONT },
   { "gbfont", GBFONT },
@@ -1155,6 +1156,18 @@ void do_set()
   set_param(param.contents(), n);
 }
 
+void do_reset()
+{
+  int t = get_token(2);
+  if (t != TEXT && t != QUOTED_TEXT) {
+    lex_error("invalid parameter name argument to 'reset' primitive");
+    return;
+  }
+  token_buffer += '\0';
+  string param = token_buffer;
+  reset_param(param.contents());
+}
+
 int yylex()
 {
   for (;;) {
@@ -1170,13 +1183,13 @@ int yylex()
       do_definition(0);
       break;
     case TDEFINE:
-      if (!nroff)
+      if (!get_param("nroff"))
 	do_definition(0);
       else
 	ignore_definition();
       break;
     case NDEFINE:
-      if (nroff)
+      if (get_param("nroff"))
 	do_definition(0);
       else
 	ignore_definition();
@@ -1213,6 +1226,9 @@ int yylex()
       break;
     case SET:
       do_set();
+      break;
+    case RESET:
+      do_reset();
       break;
     case QUOTED_TEXT:
     case TEXT:

@@ -1967,7 +1967,7 @@ It is frequently desirable for a control structure to govern more than
 one request,
 macro call,
 or text line,
-or a combination of the foregoing.
+or combination of the foregoing.
 .
 The opening and closing brace escape sequences
 .esc {
@@ -2141,7 +2141,7 @@ formats
 .I s1
 and
 .I s2
-in separate environments;
+in separate scratch buffers;
 after the comparison,
 the resulting data are discarded.
 .
@@ -2210,6 +2210,16 @@ they end the predicate and the conditional evaluates true.
 .
 (This bizarre behavior maintains compatibility with AT&T
 .IR troff .)
+.
+.
+.P
+Conditional operators do not create
+.I roff
+language objects as interpolations with
+.B \[rs]n
+and
+.B \[rs]*
+escape sequences do.
 .\" END Keep (roughly) parallel with groff.texi node "Operators in
 .\" Conditionals".
 .
@@ -3195,11 +3205,16 @@ cannot be
 .BR P .
 .
 .TPx
-.REQ .ftr "font1 font2"
-Translate
-.I font1
+.REQ .ftr f
+Remove transalation of font named
+.IR f .
+.
+.TPx
+.REQ .ftr "f1 f2"
+Translate font name
+.I f1
 to
-.IR font2 .
+.IR f2 .
 .
 .TPx
 .REQ .fzoom font
@@ -5765,6 +5780,8 @@ and aliasing
 .request .als).
 .
 .
+.br
+.ne 2v
 .P
 When a request,
 macro,
@@ -6595,7 +6612,7 @@ render as glyphs at a desired size.
 (Terminals and some typesetters have fonts that render at only one or
 two sizes.
 .
-As examples of the latter,
+As examples,
 take the
 .I groff
 .B lj4
@@ -6780,9 +6797,9 @@ escape sequence set the default font family.
 .
 The
 .B ftr
-request remaps a (resolved) font name;
+request translates one font name to another;
 .B fzoom
-magnifies one.
+magnifies a resolved one.
 .
 .B sty
 and
@@ -6844,6 +6861,8 @@ localization macro files loaded by
 and macro packages often override it.
 .
 .
+.br
+.ne 3v
 .TP
 .B 0
 disables hyphenation.

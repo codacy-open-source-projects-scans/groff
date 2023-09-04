@@ -5994,14 +5994,15 @@ bool mount_font(int n, symbol name, symbol external_name)
   return mount_font_no_translate(n, name, external_name);
 }
 
-int check_font(symbol fam, symbol name)
+// True for abstract styles and resolved font names.
+bool is_font_name(symbol fam, symbol name)
 {
-  if (check_style(name))
+  if (is_abstract_style(name))
     name = concat(fam, name);
   return mount_font_no_translate(0, name, name, true /* check only */);
 }
 
-int check_style(symbol s)
+bool is_abstract_style(symbol s)
 {
   int i = symbol_fontno(s);
   return i < 0 ? 0 : font_table[i]->is_style();
@@ -6025,16 +6026,38 @@ bool mount_style(int n, symbol name)
   return true;
 }
 
+// True for valid (not necessarily used) font mounting positions.
+static bool is_nonnegative_integer(const char *str)
+{
+  return strspn(str, "0123456789") == strlen(str);
+}
+
 static void translate_font()
 {
-  symbol from = get_name(true /* required */);
-  if (!from.is_null()) {
-    symbol to = get_name();
-    if (to.is_null() || from == to)
-      font_translation_dictionary.remove(from);
-    else
-      (void)font_translation_dictionary.lookup(from, (void *)to.contents());
+  if (!(has_arg())) {
+    warning(WARN_MISSING, "one or two font names expected in font"
+	    " translation request");
+    skip_line();
+    return;
   }
+  symbol from = get_name(true /* required */);
+  assert(!from.is_null()); // has_arg() should ensure this
+  if (is_nonnegative_integer(from.contents())) {
+    error("cannot translate a font mounting position");
+    skip_line();
+    return;
+  }
+  symbol to = get_name();
+  if ((!to.is_null()) && is_nonnegative_integer(to.contents())) {
+    error("cannot translate to a font mounting position");
+    skip_line();
+    return;
+  }
+  if (to.is_null() || from == to)
+    font_translation_dictionary.remove(from);
+  else
+    (void) font_translation_dictionary.lookup(from,
+					      (void *)to.contents());
   skip_line();
 }
 
@@ -6315,9 +6338,7 @@ static void zoom_font()
   }
   symbol font_name = get_name();
   assert(font_name != 0 /* nullptr */); // has_arg() should ensure this
-  // XXX: What other requests demand an argument with this constraint?
-  if (strspn(font_name.contents(), "0123456789")
-      == strlen(font_name.contents())) {
+  if (is_nonnegative_integer(font_name.contents())) {
     warning(WARN_FONT, "cannot set zoom factor of a font mounting"
 	    " position");
     skip_line();

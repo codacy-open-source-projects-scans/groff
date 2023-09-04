@@ -79,28 +79,22 @@ or a
 .I groff
 front end.
 .
-.
-.P
-Each macro package stores its macro,
-string,
-and register definitions in one or more
-.I tmac
-files.
-.
-This name originated in early Unix culture as an abbreviation of
+The \[lq]tmac\[rq] name originated in early Unix culture as an
+abbreviation of
 .RI \[lq] troff \" generic
 macros\[rq].
 .
 .
 .P
-A macro file must have a name in the form
+A macro file's name must have the form
 .RI name .tmac
 (or
 .IR tmac. name)
 and be placed in a
 .RI \[lq] tmac
 directory\[rq] to be loadable with the
-.BI \-m name
+.RB \[lq] \-m
+.IR name \[rq]
 option.
 .
 Section \[lq]Environment\[rq] of
@@ -114,8 +108,6 @@ document requiring a macro file can load it with the
 .B mso
 (\[lq]macro source\[rq]) request.
 .
-.
-.P
 Like any other
 .I roff
 document,
@@ -180,26 +172,20 @@ documents.
 .SS "Man pages"
 .\" ====================================================================
 .
-.TP
+.TP 9n \" "mandoc" + 2n + hand-tuned for PDF
 .I an
-.TQ
-.I man
-.I an
-is used to compose man pages in the format originating in Version\~7
-Unix (1979).
+constructs man pages in a format introduced by Seventh Edition Unix
+(1979).
 .
-It has a small macro interface and is widely used;
+Its macro interface is small,
+and the package widely used;
 see
 .MR groff_man @MAN7EXT@ .
 .
 .
 .TP
 .I doc
-.TQ
-.I mdoc
-.I doc
-is used to compose man pages in the format originating in 4.3BSD-Reno
-(1990).
+constructs man pages in a format introduced by 4.3BSD-Reno (1990).
 .
 It provides many more features than
 .IR an ,
@@ -216,18 +202,13 @@ are used to format a given document,
 a wrapper is available.
 .
 .
-.TP 8n \" "mandoc" + 2n
+.TP 9n \" "mandoc" + 2n + hand-tuned for PDF
 .I \%andoc
-.TQ
-.I mandoc
-This macro file,
-specific to
-.IR groff ,
-recognizes whether a document uses
-.I man
+recognizes a document's use of
+.I an
 or
-.I mdoc
-format and loads the corresponding macro package.
+.I doc
+and loads the corresponding macro package.
 .
 Multiple man pages,
 in either format,
@@ -241,36 +222,33 @@ reloads each macro package as necessary.
 .\" ====================================================================
 .
 The packages in this section provide a complete set of macros for
-writing documents of any kind, up to whole books.
+writing documents of any kind,
+from single-page memos to lengthy monographs.
 .
-They are similar in functionality; it is a matter of taste which one
-to use.
+They are similar in functionality;
+select one that suits your taste.
 .
 .
 .TP
 .I me
-The classical
-.I me
-macro package; see
+originates in 2BSD (1978);
+see
 .MR groff_me @MAN7EXT@ .
 .
 .
 .TP
 .I mm
-The semi-classical
-.I mm
-macro package; see
+originates in Programmer's Workbench (PWB) Unix 1.0 (1977);
+see
 .MR groff_mm @MAN7EXT@ .
 .
 .
 .TP
 .I mom
-The
-.I mom
-macro package, only available in groff.
-.
-As this was not based on other packages, it was freely designed as
-quite a nice, modern macro package.
+was contributed to
+.I groff
+in 2002,
+and freely exercises its many extended features.
 .
 See
 .MR groff_mom @MAN7EXT@ .
@@ -278,9 +256,8 @@ See
 .
 .TP
 .I ms
-The classical
-.I ms
-macro package; see
+originates in Sixth Edition Unix (1975);
+see
 .MR groff_ms @MAN7EXT@ .
 .
 .
@@ -531,13 +508,11 @@ documents.
 .
 .
 .\" TODO:
-.\"   a4
 .\"   devtag
-.\"   doc-old
 .\"   europs
 .\"   psatk
 .\"   psfig
-.TP 8n \" "pdfpic" + 2n
+.TP 11n \" "papersize" + 2n
 .I 62bit
 provides macros for addition,
 multiplication,
@@ -546,6 +521,8 @@ and division of 62-bit integers
 for example).
 .
 .
+.br
+.ne 4v
 .TP
 .I hdtbl
 allows the generation of tables using a syntax similar to the HTML table
@@ -643,7 +620,7 @@ of
 .
 This macro file is normally loaded at startup by the
 .I troffrc
-file when formatting for a typesetting device
+file when formatting for a typesetter
 (but not a terminal).
 .
 .
@@ -1029,7 +1006,18 @@ the manuscript macro package was stored as
 and loaded with the option
 .BR \-ms .
 .
+It has since become conventional in operating systems to use a suffixed
+file name extension to suggest a file type or format,
+thus we see
+.I roff
+documents with names ending in
+.IR .man ,
+.IR .me ,
+and so on.
 .
+.
+.br
+.ne 2v
 .P
 .I groff
 commands permit space between an option and its argument.
@@ -1056,23 +1044,6 @@ all of
 and
 .RB \[lq] "groff \-mms" \[rq]
 serve to load the manuscript macros.
-.
-.
-.P
-Wrappers are not provided for packages of more recent vintage,
-like
-.IR www.tmac .
-.
-.
-.P
-As noted in passing above,
-AT&T
-.I troff \" AT&T
-named macro files in the form
-.IR tmac. name.
-.
-It has since become conventional in operating systems to use a suffixed
-file name extension to suggest a file type or format.
 .
 .
 .\" ====================================================================
@@ -1138,6 +1109,12 @@ strips any such suffix and tries again with a
 prefix,
 and vice versa.
 .
+As a rule,
+it is adequate
+(and convenient)
+for a document to load auxiliary packages it requires with
+.BR mso .
+.
 .
 .P
 If a sourced file requires preprocessing,
@@ -1151,21 +1128,18 @@ the preprocessor
 .MR @g@soelim @MAN1EXT@
 must be used.
 .
-This can be achieved with a pipeline or,
-in
-.IR groff ,
-by specifying
-the
+This can be achieved with a pipeline or by specifying the
 .B \-s
-option to the formatter
-(or front end).
+option to
+.MR groff @MAN1EXT@ .
 .
 .MR man 1
 librarian programs generally call
 .I @g@soelim
 automatically.
 .
-(Macro packages themselves generally do not require preprocessing.)
+(As a rule,
+macro packages themselves do not require preprocessing.)
 .
 .
 .ig
@@ -1231,6 +1205,7 @@ man\~pages only the following characters should be used:
 .
 .
 ..
+.\" XXX: The next section requires significant revision.
 .\" ====================================================================
 .SH "Writing macros"
 .\" ====================================================================
@@ -1276,53 +1251,51 @@ see
 .
 .
 .\" ====================================================================
-.SS "Draft mode"
+.SS "Drafting macros"
 .\" ====================================================================
 .
-Writing groff macros is easy when the escaping mechanism is temporarily
-disabled.
+Temporarily disabling the escape mechanism can ease macro composition.
 .
-In groff, this is done by enclosing the macro definition(s) within a
-pair of
-.B .eo
+Do this by bracketing a macro definition with
+.B eo
 and
-.B .ec
+.B ec
 requests.
 .
-Then the body in the macro definition is just like a normal part of
-the document \[em] text enhanced by calls of requests, macros,
-strings, registers, etc.
 .
-For example, the code above can be written in a simpler way by
-.
-.
-.IP
+.RS
 .ds @1 \[rs]f[I]\[rs]$0\[rs]f[]\"
 .ds @2 arguments:\"
 .EX
 \&.eo
 \&.ds midpart was called with the following
 \&.de print_args
-\&\*[@1]\ \[rs]*[midpart]\ \[rs]n[.$]\ \*[@2]
+\&\*[@1]\~\[rs]*[midpart]\~\[rs]n[.$]\~\*[@2]
 \&\[rs]$*
 \&..
 \&.ec
 .EE
 .rm @1
 .rm @2
+.RE
 .
 .
 .P
-Unfortunately, draft mode cannot be used universally.
+This drafting procedure has limitations;
+it is unsuitable for a macro that requires certain interpolations at the
+time it is defined,
+or for indirect definitions of identifiers.
 .
-Although it is good enough for defining normal macros, draft mode
-fails with advanced applications, such as indirectly defined
-strings, registers, etc.
+See section \[lq]Copy mode\[rq] of
+.MR groff @MAN7EXT@ .
 .
-An optimal way is to define and test all macros in draft mode and then
-do the backslash doubling as a final step; do not forget to remove the
-.I .eo
-request.
+In such cases,
+you might define and test the macro with the escape mechanism doubled,
+then double the backslashes and remove the
+.B eo
+and
+.B ec
+requests as a final step.
 .
 .
 .\" ====================================================================
@@ -1459,15 +1432,7 @@ manual.
 You can browse it interactively with \[lq]info groff\[rq].
 .
 .
-.LP
-The
-.UR https://\:wiki\:.linuxfoundation\:.org/\:lsb/\:fhs
-Filesystem Hierarchy Standard
-.UE
-is maintained by the Linux Foundation.
-.
-.
-.TP
+.TP 18n "groff_rfc1345(7)" + 2n
 .MR groff @MAN1EXT@
 is an overview of the
 .I groff
@@ -1490,7 +1455,8 @@ system.
 .MR groff_rfc1345 @MAN7EXT@ ,
 .TQ
 .MR groff_trace @MAN7EXT@ ,
-\~and
+.TQ
+and
 .TQ
 .MR groff_www @MAN7EXT@
 are

@@ -1268,7 +1268,7 @@ bool is_family_valid(const char *fam)
   std::vector<const char *>::iterator style;
   for (style = styles.begin(); style != styles.end(); style++)
 #endif
-    if (!check_font(fam, *style))
+    if (!is_font_name(fam, *style))
       return false;
   return true;
 }

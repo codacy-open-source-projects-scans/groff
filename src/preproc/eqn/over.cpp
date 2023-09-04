@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -76,27 +76,31 @@ int over_box::compute_metrics(int style)
   }
   if (reduce_size)
     printf(".ps \\n[" SIZE_FORMAT "]u\n", uid);
-  printf(".nr " WIDTH_FORMAT " (\\n[" WIDTH_FORMAT "]>?\\n[" WIDTH_FORMAT "]", 
+  printf(".nr " WIDTH_FORMAT " (\\n[" WIDTH_FORMAT "]>?\\n[" WIDTH_FORMAT "]",
 	 uid, num->uid, den->uid);
   // allow for \(ru being wider than both the numerator and denominator
   if (!draw_flag)
     fputs(">?\\w" DELIMITER_CHAR "\\(ru" DELIMITER_CHAR, stdout);
-  printf(")+%dM\n", null_delimiter_space*2 + over_hang*2);
+  printf(")+%dM\n", get_param("null_delimiter_space") * 2
+         + get_param("over_hang") * 2);
   // 15b
   printf(".nr " SUP_RAISE_FORMAT " %dM\n",
-	 uid, (reduce_size ? num2 : num1));
+	 uid, (reduce_size ? get_param("num2") : get_param("num1")));
   printf(".nr " SUB_LOWER_FORMAT " %dM\n",
-	 uid, (reduce_size ? denom2 : denom1));
+	 uid, (reduce_size ? get_param("denom2")
+			   : get_param("denom1")));
 
   // 15d
   printf(".nr " SUP_RAISE_FORMAT " +(\\n[" DEPTH_FORMAT
 	 "]-\\n[" SUP_RAISE_FORMAT "]+%dM+(%dM/2)+%dM)>?0\n",
-	 uid, num->uid, uid, axis_height, default_rule_thickness,
-	 default_rule_thickness*(reduce_size ? 1 : 3));
+	 uid, num->uid, uid, get_param("axis_height"),
+	 get_param("default_rule_thickness"),
+	 get_param("default_rule_thickness") * (reduce_size ? 1 : 3));
   printf(".nr " SUB_LOWER_FORMAT " +(\\n[" HEIGHT_FORMAT
 	 "]-\\n[" SUB_LOWER_FORMAT "]-%dM+(%dM/2)+%dM)>?0\n",
-	 uid, den->uid, uid, axis_height, default_rule_thickness,
-	 default_rule_thickness*(reduce_size ? 1 : 3));
+	 uid, den->uid, uid, get_param("axis_height"),
+	 get_param("default_rule_thickness"),
+	 get_param("default_rule_thickness") * (reduce_size ? 1 : 3));
 
 
   printf(".nr " HEIGHT_FORMAT " \\n[" SUP_RAISE_FORMAT "]+\\n["
@@ -166,14 +170,14 @@ void over_box::output()
     if (reduce_size)
       printf("\\s[\\n[" SIZE_FORMAT "]u]", uid);
     // draw the line
-    printf("\\h'%dM'", null_delimiter_space);
-    printf("\\v'-%dM'", axis_height);
+    printf("\\h'%dM'", get_param("null_delimiter_space"));
+    printf("\\v'-%dM'", get_param("axis_height"));
     fputs(draw_flag ? "\\D'l" : "\\l'", stdout);
     printf("\\n[" WIDTH_FORMAT "]u-%dM",
-	   uid, 2*null_delimiter_space);
+	   uid, 2 * get_param("null_delimiter_space"));
     fputs(draw_flag ? " 0'" : "\\&\\(ru'", stdout);
-    printf("\\v'%dM'", axis_height);
-    printf("\\h'%dM'", null_delimiter_space);
+    printf("\\v'%dM'", get_param("axis_height"));
+    printf("\\h'%dM'", get_param("null_delimiter_space"));
   }
   else if (output_format == mathml) {
     // FIXME: passing a displaystyle attribute doesn't validate.
