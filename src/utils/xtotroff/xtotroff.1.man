@@ -90,7 +90,7 @@ Each line in
 .I font-map
 pairs a
 .I groff
-font name with an X font name as a X Logical Font Description (XLFD)
+font name with an X font name as an X Logical Font Description (XLFD)
 pattern.
 .
 The pair's members are separated by spaces and/or tabs.

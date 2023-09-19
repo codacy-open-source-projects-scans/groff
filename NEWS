@@ -13,11 +13,11 @@ VERSION next
 troff
 -----
 
-o In nroff mode (in other words, when producing output for terminal
-  devices), the formatter now reports warning diagnostics regarding
-  certain output problems using units of lines instead of inches (or the
-  unit configured with the `warnscale` request) to describe the vertical
-  drawing position where the problem occurred.
+o In nroff mode (in other words, when producing output for devices that
+  claim to be terminals), the formatter now reports warning diagnostics
+  regarding certain output problems using units of lines instead of
+  inches (or the unit configured with the `warnscale` request) to
+  describe the vertical drawing position where the problem occurred.
 
 o The output now reports unbreakable spaces (those produced with the
   `\~` escape sequence) as word breaks with the documentary 'w' command,
@@ -46,6 +46,9 @@ o The new "reset" primitive restores a named parameter to its default.
 Macro packages
 --------------
 
+o mom version 2.6 is distributed with this release.  It supports
+  multi-line headings.
+
 o The device-specific macro files loaded by "troffrc" automatically on
   startup, such as "ps.tmac" and "html.tmac", no longer perform font
   translations for font names used by varieties of AT&T troff ('C',
@@ -53,12 +56,16 @@ o The device-specific macro files loaded by "troffrc" automatically on
   troff, the font repertoire, like the special character repertoire, was
   device-dependent.  Since groff 1.23.0, our diagnostic messages report
   problems with attempts to use nonexistent font names.  We recommend
-  addressing such portability issues wherever suits you; in a document,
-  perhaps by using `ie` and `el` requests and the `.g` register to test
-  for groff extensions; in your "troffrc" file; or by modifying these
-  macro files.  Users of the "dvi" and "lbp" output devices should be
-  aware that these devices don't supply full families of monospaced
-  fonts (and never have).  See grodvi(1) and grolbp(1).
+  addressing such portability issues wherever suits you: (1) in a
+  document, perhaps by using `ie` and `el` requests and the `.g`
+  register to test for groff extensions, then `ie` and `el` again with
+  the `F` groff conditional expression operator to check for font
+  availability, and performing font remappings with the groff `ftr`
+  request as desired; (2) doing so in your "troffrc" file; or (3) by
+  modifying these macro files similarly.  Users of the "dvi" and "lbp"
+  output devices should be aware that these devices don't supply full
+  families of monospaced fonts (and never have).  See grodvi(1) and
+  grolbp(1).
 
 o Hyperlink support is now enabled by default on non-HTML devices that
   support it (PDF and terminal devices) for an (man) documents.
@@ -98,7 +105,7 @@ o The m (mm) macro package's `IND` macro (a GNU extension), now calls
 o The s (ms) macro package now sets the vertical spacing register
   defaults for normal (`VS`) and footnote (`FVS`) text to 120% of the
   type size configured in the `PS` and `FPS` registers, respectively,
-  rather than 2 points larger to comport with generally accepted
+  rather than 2 points larger, to comport with generally accepted
   typesetting principles.  Thus, when formatting a document with a type
   size of 20 points, the vertical spacing now defaults to 24 points
   rather than 22.
@@ -126,6 +133,12 @@ o If groff programs have their current time overridden by the
   the "system programmer" camp as described in the release notes for
   1.23.0, so it is easier to defend time-zone-invariant output to them.
   In all other cases, the current time remains displayed in local time.
+
+o grog(1) no longer supports the `--ligatures` and `--run` options.
+  Simulate the former (which was specific to the "pdf" output device)
+  with the option sequence "-P -U -P y", and the latter by using the
+  command substitution feature of your shell; see section "Examples" of
+  groff(1).
 
 o The groff_diff(7) man page no longer contains examples.  They remain
   in groff's Texinfo manual.

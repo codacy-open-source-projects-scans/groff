@@ -718,7 +718,7 @@ void begin_page()
     tok.next();
   if (curdiv == topdiv) {
     if (topdiv->before_first_page) {
-      if (!break_flag) {
+      if (!want_break) {
 	if (got_arg)
 	  topdiv->set_next_page_number(n);
 	if (got_arg || !topdiv->no_space_mode)
@@ -751,7 +751,7 @@ void begin_page()
     }
     else {
       push_page_ejector();
-      if (break_flag)
+      if (want_break)
 	curenv->do_break();
       if (got_arg)
 	topdiv->set_next_page_number(n);
@@ -788,7 +788,7 @@ sprung, then we don't actually do the space. */
 void space_request()
 {
   postpone_traps();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   vunits n;
   if (!has_arg() || !get_vunits(&n, 'v'))
@@ -870,7 +870,7 @@ void flush_output()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   if (the_output)
     the_output->flush();

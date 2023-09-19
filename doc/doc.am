@@ -356,6 +356,9 @@ doc/pic.ps: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS) eqn pic tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 	&& $(DOC_GROFF) -pet -Tps -ms $(doc_srcdir)/pic.ms >$@
 
+# groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
+# soelim even though the document doesn't require them.
+doc/webpage.ps: grn soelim
 doc/webpage.ps: $(DOC_GNU_EPS) tmac/www.tmac tbl
 doc/webpage.ps: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
@@ -375,11 +378,12 @@ doc/pic.html: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS)
 	&& $(DOC_GROFF) -pet -P-Ipic -P-Dimg -P-jpic -Thtml -ms \
 	  $(doc_srcdir)/pic.ms > pic.html
 
-doc/webpage.html: tbl
-doc/webpage.html: tmac/www.tmac
-doc/webpage.html: $(DOC_GNU_EPS)
+# groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
+# soelim even though the document doesn't require them.
+doc/webpage.html: grn soelim
+doc/webpage.html: $(DOC_GNU_EPS) tmac/www.tmac tbl
 doc/webpage.html: $(doc_srcdir)/groff.css
-doc/webpage.html: $(doc_srcdir)/webpage.ms
+doc/webpage.html: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) $(doc_builddir) \
 	&& cd $(doc_builddir) \
 	&& $(DOC_GROFF) -t -I $(doc_srcdir) -P-jwebpage -P-nrb \

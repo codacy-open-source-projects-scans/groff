@@ -1572,15 +1572,6 @@ If called without arguments,
 .Sq Ar
 is output.
 .
-This places the ellipsis in italics,
-which is ugly and incorrect,
-and will be noticed on terminals that underline text instead of using an
-oblique typeface.
-.
-We recommend using
-.Ql ".Ar file \&No ..."
-instead.
-.
 .
 .Pp
 .Dl Usage: .Ar Oo Ao argument Ac Oc No ...
@@ -1590,8 +1581,6 @@ instead.
 .Bl -tag -width ".Li .Ar\ file1\ file2" -compact -offset 15n
 .It Li .Ar
 .Ar
-.It Li .Ar file \&No ...
-.Ar file No ...
 .It Li ".Ar file1"
 .Ar file1
 .It Li ".Ar file1 ."

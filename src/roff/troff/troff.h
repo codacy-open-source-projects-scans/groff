@@ -37,7 +37,7 @@ extern units scale(units n, units x, units y); // scale n by x/y
 
 extern units units_per_inch;
 
-extern int ascii_output_flag;
+extern bool want_abstract_output;
 extern int suppress_output_flag;
 extern int color_flag;
 extern int is_html;

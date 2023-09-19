@@ -679,10 +679,9 @@ complex documents.  A @dfn{macro} facility specifies how certain routine
 operations, such as starting paragraphs, or printing headers and
 footers, should be performed in terms of those low-level instructions.
 Macros can be specific to one document or collected together into a
-@dfn{macro package} for use by many.  Several macro packages available;
-the most widely used are provided with @code{groff}.  They are
-@file{man}, @file{mdoc}, @file{me}, @file{mm}, @file{mom}, and
-@file{ms}.
+@dfn{macro package} for use by many.  @code{groff} supplies versions of
+the widely used macro packages @file{man}, @file{mdoc}, @file{me},
+@file{mm}, @file{mom}, and @file{ms}.
 
 
 @c =====================================================================
@@ -730,13 +729,13 @@ mathematical constraint language.
 @cindex devices for output
 
 GNU @command{troff}'s output is in a device-independent page description
-language, which is then read by an @dfn{output driver} that translates
-this language into a file format or byte stream that a piece of
-(possibly emulated) hardware understands.  @code{groff} features output
-drivers for PostScript devices, terminal emulators (and other simple
-typewriter-like machines), X11 (for previewing), @TeX{} DVI, HP
-LaserJet@tie{}4/PCL5 and Canon LBP printers (which use @acronym{CaPSL}),
-@acronym{HTML}, @acronym{XHTML}, and @acronym{PDF}.
+language.  An @dfn{output driver} translates this language into a file
+format or byte stream that a piece of (possibly emulated) hardware
+understands.  @code{groff} features output drivers for PostScript
+devices, terminal emulators (and other simple typewriter-like machines),
+X11 (for previewing), @TeX{} DVI, HP LaserJet@tie{}4/PCL5 and Canon LBP
+printers (which use @acronym{CaPSL}), @acronym{HTML}, @acronym{XHTML},
+and @acronym{PDF}.
 
 
 @c =====================================================================
@@ -791,7 +790,7 @@ standard output and standard error streams @emph{because} of
 @uref{https://minnie.tuhs.org/pipermail/tuhs/2013-December/006113.html}.}
 
 @Example
-$ echo "Twelve o'clock and" | groff -Tascii | sed '/^$/d'
+$ echo "Twelve o'clock and" | groff -T ascii | sed '/^$/d'
     @result{} Twelve o'clock and
 $ echo '.tm all is well.' | groff > /dev/null
     @error{} all is well.
@@ -844,9 +843,9 @@ you make the most of this resource.
 We adapted portions of this manual from existing documents.  James
 Clark's man pages were an invaluable foundation; we have updated them in
 parallel with the development of this manual.  We based the tutorial for
-macro users on Eric Allman's introduction to his @file{me} macro package
-(which we also provide, little altered from 4.4BSD).  Larry Kollar
-contributed much of the material on the @file{ms} macro package.
+macro package users on Eric Allman's introduction to his @file{me} macro
+package (which we also provide, little altered from 4.4BSD).  Larry
+Kollar contributed much of the material on the @file{ms} macro package.
 
 
 @c =====================================================================
@@ -859,23 +858,21 @@ contributed much of the material on the @file{ms} macro package.
 
 This chapter focuses on how to invoke the @command{groff} front end,
 which constructs a pipeline connecting desired preprocessors,
-the formatter program @command{gtroff}, and a postprocessor.
+the GNU @command{troff} formatter program, and a postprocessor.
 
 A tradition has arisen that GNU programs' names bear a prefix @samp{g}
 where necessary to distinguish them from other implementations on the
 host system (@pxref{Environment}).  Thus, for example, @code{geqn} is
-GNU @code{eqn}.  On operating systems that don't contain proprietary
-versions of @code{troff} (like GNU/Linux and the Hurd), and on
-MS-DOS/MS-Windows, where @code{troff} and associated programs are not
-available at all, this prefix is omitted since GNU @command{troff} is
-the only incarnation of @code{troff} used.  Exception: @samp{groff} is
-never replaced by @samp{roff}.
+GNU @code{eqn}.  On operating systems that lack a @code{troff} of
+different provenance, this prefix is omitted; GNU @command{troff} is the
+only @code{troff} available.  Exceptionally, @samp{groff} always retains
+its leading @samp{g}.
 
 In this document, we consequently sometimes say @samp{gtroff} when
 talking about the GNU @command{troff} command.
 @c XXX: Not for much longer... -- GBR
-Most other implementations of @code{troff} are called @acronym{AT&T}
-@code{troff}, which is the common origin of almost all @code{troff}
+We call other @code{troff} systems @acronym{AT&T} @code{troff} because
+that is the common origin of almost all @code{troff}
 implementations@footnote{Besides @code{groff}, @code{neatroff} is an
 exception.} (with more or less compatible changes).  Similarly, we say
 @samp{gpic}, @samp{geqn}, and so on.
@@ -915,15 +912,14 @@ configuration).  It can optionally preprocess input with any of
 @code{gchem}, @code{grefer}, @code{gsoelim}, or @code{preconv}.
 
 This section documents only options to the @command{groff} front end.
-Many of the arguments to @command{groff} are passed on to
-@command{gtroff}; therefore, those are also included.  Arguments to
-preprocessors and output drivers can be found in the man pages
-@cite{gpic@r{(1)}}, @cite{geqn@r{(1)}}, @cite{gtbl@r{(1)}},
-@cite{ggrn@r{(1)}}, @cite{grefer@r{(1)}}, @cite{gchem@r{(1)}},
-@cite{gsoelim@r{(1)}}, @cite{preconv@r{(1)}}, @cite{grotty@r{(1)}},
-@cite{grops@r{(1)}}, @cite{gropdf@r{(1)}}, @cite{grohtml@r{(1)}},
-@cite{grodvi@r{(1)}}, @cite{grolj4@r{(1)}}, @cite{grolbp@r{(1)}}, and
-@cite{gxditview@r{(1)}}.
+Since it passes many of its arguments to @command{gtroff}, we describe
+many of the latter's options here.  Arguments to preprocessors and
+output drivers can be found in the man pages @cite{gpic@r{(1)}},
+@cite{geqn@r{(1)}}, @cite{gtbl@r{(1)}}, @cite{ggrn@r{(1)}},
+@cite{grefer@r{(1)}}, @cite{gchem@r{(1)}}, @cite{gsoelim@r{(1)}},
+@cite{preconv@r{(1)}}, @cite{grotty@r{(1)}}, @cite{grops@r{(1)}},
+@cite{gropdf@r{(1)}}, @cite{grohtml@r{(1)}}, @cite{grodvi@r{(1)}},
+@cite{grolj4@r{(1)}}, @cite{grolbp@r{(1)}}, and @cite{gxditview@r{(1)}}.
 
 A summary of @command{groff}'s usage is as follows.
 
@@ -959,7 +955,7 @@ gtroff [-abcCEiRUz] [-f @var{font-family}] [-F @var{font-directory}]
 @endExample
 
 Options that don't take arguments can be clustered after a
-single@tie{}@option{-}.  A @var{file} argument of @tie{}@file{-} denotes
+single@tie{}@option{-}.  A @var{file} operand of @tie{}@file{-} denotes
 the standard input stream.
 
 All @code{groff} commands accept a @option{--help} option, which
@@ -983,7 +979,7 @@ Page breaks are marked by a phrase in angle brackets; for example,
 @samp{<beginning of page>}.
 
 @item
-Lines are broken where they would be in the formatted output.
+Lines are broken where they would be in formatted output.
 
 @item
 Vertical motion, apart from that implied by a break, is not represented.
@@ -995,8 +991,8 @@ arising from the second argument to the @code{ss} request) are not
 represented.
 
 @item
-Special characters are rendered in angle brackets; for example, the
-hyphen character appears as @samp{<hy>}.
+A special character is rendered as its identifier between angle
+brackets; for example, a hyphen appears as @samp{<hy>}.
 @end itemize
 
 The above description should not be considered a specification; the
@@ -1019,17 +1015,17 @@ Enable AT&T @command{troff} compatibility mode; implies @option{-c}.
 @xref{Implementation Differences}, for the list of incompatibilities
 between @command{groff} and @acronym{AT&T} @command{troff}.
 
-@item -d@var{c}@var{text}
-@itemx -d@var{string}=@var{text}
+@item -d @var{c}@var{text}
+@itemx -d @var{string}=@var{text}
 Define @code{roff} string @var{c} or @var{string} as@tie{}@var{t} or
 @var{text}.  @var{c}@tie{}must be one character; @var{string} can be
-of arbitrary length.  Such string assignments happen before any macro
-file is loaded, including the startup file.  Due to
-@cite{getopt_long@r{(3)}} limitations, @var{c}@tie{}cannot be, and
-@var{string} cannot contain, an equals sign, even though that is a valid
-character in a @code{roff} identifier.
+of arbitrary length.  Such assignments happen before any macro file is
+loaded, including the startup file.  Due to @cite{getopt_long@r{(3)}}
+limitations, @var{c}@tie{}cannot be, and @var{string} cannot contain, an
+equals sign, even though that is a valid character in a @code{roff}
+identifier.  @xref{Strings}.
 
-@item -D@var{enc}
+@item -D @var{enc}
 Set fallback input encoding used by @command{preconv} to @var{enc};
 implies @option{-k}.
 
@@ -1041,14 +1037,13 @@ Inhibit @command{gtroff} error messages.  This option does @emph{not}
 suppress messages sent to the standard error stream by documents or
 macro packages using @code{tm} or related requests.
 
-@item -f@var{fam}
+@item -f @var{fam}
 Use @var{fam} as the default font family.  @xref{Font Families}.
 
-@item -F@var{dir}
+@item -F @var{dir}
 Search in directory @file{@var{dir}} for the selected output device's
-directory of device and font description files.  See the description of
-@env{GROFF_FONT_PATH} in @ref{Environment} below for the default search
-locations and ordering.
+directory of device and font description files.  @xref{Font
+Directories}.
 
 @item -g
 Run @command{ggrn} preprocessor.
@@ -1063,7 +1058,7 @@ Display a usage message and exit.
 Read the standard input stream after all the named input files have been
 processed.
 
-@item -I@var{dir}
+@item -I @var{dir}
 Search the directory @var{dir} for files named in several contexts;
 implies @option{-g} and @option{-s}.
 
@@ -1091,9 +1086,9 @@ current working directory is otherwise searched last.  @option{-I} works
 similarly to, and is named for, the ``include'' option of Unix C
 compilers.
 
-@option{-I} options are passed to @command{gsoelim}, @command{gtroff},
-and output drivers; with the flag letter changed to @option{-M}, they
-are also passed to @command{ggrn}.
+@command{groff} passes @option{-I} options and their arguments to
+@command{gsoelim}, @command{gtroff}, and output drivers; with the option
+changed to @option{-M}, the same arguments are passed to @command{ggrn}.
 
 @item -j
 Run @command{gchem} preprocessor.  Implies @option{-p}.
@@ -1103,7 +1098,7 @@ Run @command{preconv} preprocessor.  Refer to its man page for its
 behavior if neither of @command{groff}'s @option{-K} or @option{-D}
 options is also specified.
 
-@item -K@var{enc}
+@item -K @var{enc}
 Set input encoding used by @command{preconv} to @var{enc}; implies
 @option{-k}.
 
@@ -1122,34 +1117,32 @@ see @ref{Device and Font Description Files}.
 @c .\}
 See options @option{-L} and @option{-X}.
 
-@item -L@var{arg}
-Pass @var{arg} to the print spooler program.  If multiple @var{arg}s are
+@item -L @var{arg}
+Pass @var{arg} to the print spooler.  If multiple @var{arg}s are
 required, pass each with a separate @option{-L} option.  @command{groff}
 does not prefix an option dash to @var{arg} before passing it to the
-spooler program.
+spooler.
 
-@item -m@var{name}
-Process the file @file{@var{name}.tmac} prior to any input files.
-If not found, @file{tmac.@var{name}} is attempted.  @var{name}
-(in both arrangements) is presumed to be a macro file; see the
-description of @env{GROFF_TMAC_PATH} in @ref{Environment} below for the
-default search locations and ordering.  This option and its argument are
-also passed to @command{geqn}, @command{grap}, and @command{ggrn}.
+@item -m @var{mac}
+Search for the macro package @file{@var{mac}.tmac} and read it prior to
+any input files.  If not found, @file{tmac.@var{mac}} is attempted.
+@xref{Macro Directories}.  @command{groff} passes @option{-m} options
+and their arguments to to @command{geqn}, @command{grap}, and
+@command{ggrn}.
 
-@item -M@var{dir}
-Search directory @file{@var{dir}} for macro files;  see the description
-of @env{GROFF_TMAC_PATH} in @ref{Environment} below for the default
-search locations and ordering.  This option and its argument are also
-passed to @command{geqn}, @command{grap}, and @command{ggrn}.
+@item -M @var{dir}
+Search directory @file{@var{dir}} for macro files.  @xref{Macro
+Directories}.  @command{groff} passes @option{-M} options and their
+arguments to to @command{geqn}, @command{grap}, and @command{ggrn}.
 
-@item -n@var{num}
-Number the first page @var{num}.
+@item -n @var{num}
+Begin numbering pages at @var{num}.  The default is @samp{1}.
 
 @item -N
 Prohibit newlines between @code{eqn} delimiters:@: pass @option{-N} to
 @command{geqn}.
 
-@item -o@var{list}
+@item -o @var{list}
 @cindex print current page register (@code{.P})
 Output only pages in @var{list}, which is a comma-separated list of page
 ranges; @samp{@var{n}} means page@tie{}@var{n}, @samp{@var{m}-@var{n}}
@@ -1161,22 +1154,22 @@ formatting the last page enumerated in @var{list}.
 @item -p
 Run @command{gpic} preprocessor.
 
-@item -P@var{arg}
+@item -P @var{arg}
 Pass @var{arg} to the postprocessor.  If multiple @var{arg}s are
 required, pass each with a separate @option{-P} option.  @command{groff}
 does not prefix an option dash to @var{arg} before passing it to the
 postprocessor.
 
-@item -r@var{c}@var{numeric-expression}
-@itemx -r@var{register}=@var{expr}
-Set @code{roff} register@tie{}@var{c} or @var{register} to the value
+@item -r @var{c}@var{numeric-expression}
+@itemx -r @var{register}=@var{expr}
+Define @code{roff} register@tie{}@var{c} or @var{register} as
 @var{numeric-expression} (@pxref{Numeric Expressions}).
 @var{c}@tie{}must be one character; @var{register} can be of arbitrary
-length.  Such register assignments happen before any macro file is
-loaded, including the startup file.  Due to @cite{getopt_long@r{(3)}}
+length.  Such assignments happen before any macro file is loaded,
+including the startup file.  Due to @cite{getopt_long@r{(3)}}
 limitations, @var{c}@tie{}cannot be, and @var{register} cannot contain,
 an equals sign, even though that is a valid character in a @code{roff}
-identifier.
+identifier.  @xref{Registers}.
 
 @item -R
 Run @command{grefer} preprocessor.  No mechanism is provided for passing
@@ -1206,9 +1199,10 @@ security reasons, safer mode is enabled by default.
 @item -t
 Run @command{gtbl} preprocessor.
 
-@item -T@var{dev}
-Direct @command{gtroff} to format the input for the output device
-@var{dev}.  @command{groff} then calls an output driver to convert
+@item -T @var{dev}
+Prepare output for device @var{dev}.  @command{groff} passes the
+@option{-T} option and its argument to @command{gtroff}, then (unless
+the @option{-Z} option is used) calls an output driver to convert
 @command{gtroff}'s output to a form appropriate for @var{dev}.  The
 following output devices are available.
 
@@ -1310,8 +1304,8 @@ Operate in @dfn{unsafe mode}, which enables the @code{open},
 requests are disabled by default because they allow an untrusted input
 document to write to arbitrary file names and run arbitrary commands.
 This option also adds the current directory to the macro package search
-path; see the @option{-m} option above.  @option{-U} is passed to
-@command{gpic} and @command{gtroff}.
+path; see the @option{-m} option above.  @command{groff} passes
+@option{-U} to @command{gpic} and @command{gtroff}.
 
 @item -v
 Write version information for @command{groff} and all programs run by it
@@ -1320,25 +1314,21 @@ processed in the usual way, passing @option{-v} to the formatter and any
 pre- or postprocessors invoked.
 
 @item -V
-Output the pipeline that would be run by @command{groff}
-(as a wrapper program) to the standard output stream, but do not execute
-it.  If given more than once, the pipeline is both written to the
-standard error stream and run.
+Output the pipeline that @command{groff} would run to the standard
+output stream and exit.  If given more than once, @command{groff} both
+writes the pipeline to the standard error stream and runs it.
 
-@item -w@var{category}
-Enable warnings in @var{category}.  Categories are listed in
-@ref{Warnings}.
-
-@item -W@var{category}
-Inhibit warnings in @var{category}.  Categories are listed in
-@ref{Warnings}.
+@item -w @var{cat}
+@itemx -W @var{cat}
+Enable and inhibit, respectively, warnings in category @var{cat}.
+@xref{Warnings}.
 
 @item -X
 Use @command{gxditview} instead of the usual postprocessor to (pre)view
 a document on an X11 display.  Combining this option with
-@option{-Tps} uses the font metrics of the PostScript device, whereas
-the @option{-TX75} and @option{-TX100} options use the metrics of X11
-fonts.
+@option{-T ps} uses the font metrics of the PostScript device, whereas
+the @option{-T X75}, @option{-T X75-12}, @option{-T X100}, and
+@option{-T X100-12} options use the metrics of X11 fonts.
 
 @item -z
 Suppress formatted output from @command{gtroff}.
@@ -1357,93 +1347,91 @@ standard output stream (unless suppressed with @option{-z}); see
 @cindex environment variables
 @cindex variables in environment
 
-Several environment variables (of the operating system, unrelated to GNU
-@command{troff}'s @slanted{environments}) can modify the behavior of
-@command{groff}.
+Environment variables in the host system affect the behavior of programs
+supplied by @code{groff} as follows.  Normally, the path separator in
+environment variables ending with @samp{PATH} is the colon; this may
+vary depending on the operating system.  For example, Windows uses a
+semicolon instead.
 
 @table @code
 @item GROFF_BIN_PATH
 @tindex GROFF_BIN_PATH@r{, environment variable}
-This search path, followed by @code{PATH}, is used for commands executed
-by @command{groff}.
+Locate @code{groff} commands in these directories, followed by those in
+@env{PATH}.  If not set, the installation directory of GNU @code{roff}
+executables, documented in @cite{groff@r{(1)}}, is searched before
+@env{PATH}.
 
 @item GROFF_COMMAND_PREFIX
 @tindex GROFF_COMMAND_PREFIX@r{, environment variable}
 @cindex command prefix
 @cindex prefix, for commands
-If this is set to@tie{}@var{X}, then @command{groff} runs
-@command{@var{X}troff} instead of @command{gtroff}.  This also applies
-to @command{tbl}, @command{pic}, @command{eqn}, @command{grn},
-@command{chem}, @command{refer}, and @command{soelim}.  It does not
-apply to @command{grops}, @command{grodvi}, @command{grotty},
-@command{pre-grohtml}, @command{post-grohtml}, @command{preconv},
-@command{grolj4}, @command{gropdf}, and @command{gxditview}.
+Apply a prefix to certain GNU @code{roff} commands.
+@code{groff} can be configured at compile time to apply a prefix to
+the names of programs it provides that had counterparts in
+@acronym{AT&T} @code{troff}, so that name collisions are avoided at run
+time.  The default prefix is empty.
 
-The default command prefix is determined during the installation
-process.  If a non-GNU @code{troff} system is found, prefix @samp{g} is
-used, none otherwise.
+When used, this prefix is conventionally the letter @samp{g}.
+For example, GNU @command{troff} would be installed as @command{gtroff}.
+Besides @command{troff}, the prefix applies to the formatter wrapper
+@command{nroff}; the preprocessors @command{eqn}, @command{grn},
+@command{pic}, @command{refer}, @command{tbl}, and @command{soelim}; and
+the utilities @command{indxbib} and @command{lookbib}.
 
 @item GROFF_ENCODING
 @tindex GROFF_ENCODING@r{, environment variable}
-The value of this variable is passed to the @code{preconv}
-preprocessor's @option{-e} option to select the character encoding of
-input files.  This variable's existence implies the @command{groff}
-option @option{-k}.  If set but empty, @command{groff} calls
-@code{preconv} without an @option{-e} option.  @command{groff}'s
+Specify the assumed character encoding of input files.  @command{groff}
+passes its value as an argument to the @command{preconv} preprocessor's
+@option{-e} option.  This variable's existence implies the
+@command{groff} option @option{-k}.  If set but empty, @command{groff}
+calls @code{preconv} without an @option{-e} option.  @command{groff}'s
 @option{-K} option overrides @env{GROFF_ENCODING}.  See
 @cite{preconv@r{(7)}}.
 
 @item GROFF_FONT_PATH
 @tindex GROFF_FONT_PATH@r{, environment variable}
-A list of directories in which to seek the selected output device's
-directory of device and font description files.  GNU @command{troff}
-will search directories given as arguments to any specified @option{-F}
-options before these, and a built-in list of directories after them.
-@xref{Font Directories} and the @cite{troff@r{(1)}} or
-@cite{gtroff@r{(1)}} man pages.
+Seek the selected output device's directory of device and font
+description files in this list of directories.  @xref{Font Directories},
+@cite{gtroff@r{(1)}}, and @cite{groff_font@r{(5)}}.
 
 @item GROFF_TMAC_PATH
 @tindex GROFF_TMAC_PATH@r{, environment variable}
-A list of directories in which to seek macro files.  GNU @command{troff}
-will search directories given as arguments to any specified @option{-M}
-options before these, and a built-in list of directories after them.
-@xref{Macro Directories} and the @cite{troff@r{(1)}} or
-@cite{gtroff@r{(1)}} man pages.
+Seek macro packages in this list of directories.  @xref{Macro
+Directories}, @cite{gtroff@r{(1)}}, and @cite{groff_tmac@r{(5)}}.
 
 @item GROFF_TMPDIR
 @tindex GROFF_TMPDIR@r{, environment variable}
 @tindex TMPDIR@r{, environment variable}
-The directory in which @command{groff} creates temporary files.  If this
-is not set and @env{TMPDIR} is set, temporary files are created in that
-directory.  Otherwise temporary files are created in a system-dependent
-default directory (on Unix and GNU/Linux systems, this is usually
-@file{/tmp}).  @code{grops}, @code{grefer}, @code{pre-grohtml}, and
-@code{post-grohtml} can create temporary files in this directory.
+Create temporary files in this directory.  If not set, but @env{TMPDIR}
+is, the latter is used instead.  On Windows systems, if neither of the
+foregoing are set, the environment variables @env{TMP} and @env{TEMP}
+(in that order) are checked also.  Otherwise, temporary files are
+created in a system-dependent default directory (on Unix and GNU/Linux
+systems, usually @file{/tmp}).  The @command{grefer}, @command{grohtml},
+and @command{grops} commands use temporary files.
 
 @item GROFF_TYPESETTER
 @tindex GROFF_TYPESETTER@r{, environment variable}
-Sets the default output device.  If empty or not set, a build-time
-default (often @code{ps}) is used.  The @option{-T@var{dev}} option
-overrides @env{GROFF_TYPESETTER}.
+Set the default output device.  The @option{-T @var{dev}} option
+overrides it.  If empty or unset, a default configured at build time,
+and documented in @cite{groff@r{(1)}}, is used.
 
 @item SOURCE_DATE_EPOCH
 @tindex SOURCE_DATE_EPOCH@r{, environment variable}
-A timestamp (expressed as seconds since the Unix epoch) to use as the
-output creation timestamp in place of the current time.  The time is
-converted to human-readable form using @cite{gmtime@r{(3)}} and
+Declare a time stamp (expressed as seconds since the Unix epoch) to use
+as the output creation time stamp in place of the current time.  The
+time is converted to human-readable form using @cite{gmtime@r{(3)}} and
 @cite{asctime@r{(3)}} when the formatter starts up and stored in
 registers usable by documents and macro packages (@pxref{Built-in
 Registers}).
 
 @item TZ
 @tindex TZ@r{, environment variable}
-The time zone to use when converting the current time to human-readable
-form; see @cite{tzset@r{(3)}}.  If @env{SOURCE_DATE_EPOCH} is used, it
-is always converted to human-readable form using UTC.
+Declare the time zone to use when converting the current time to
+human-readable form; see @cite{tzset@r{(3)}}.  If
+@env{SOURCE_DATE_EPOCH} is used, it is always converted to
+human-readable form using UTC.
 @end table
-
-MS-DOS and MS-Windows ports of @code{groff} use semicolons, rather than
-colons, to separate the directories in the lists described above.
 
 
 @c =====================================================================
@@ -1457,7 +1445,7 @@ colons, to separate the directories in the lists described above.
 
 A macro file must have a name in the form @code{@var{name}.tmac} or
 @code{tmac.@var{name}} and be placed in a @dfn{tmac directory} to be
-found by the @option{-m@var{name}} command-line option.@footnote{The
+found by the @option{-m @var{mac}} command-line option.@footnote{The
 @code{mso} request does not have these limitations.  @xref{I/O}.}
 @cindex tmac, directory
 @cindex directory, for tmac files
@@ -1469,14 +1457,15 @@ found by the @option{-m@var{name}} command-line option.@footnote{The
 @cindex locating macro packages
 @cindex macro package search path
 @cindex package, macro, search path
-Together, these directories constitute the @dfn{tmac path}.  Each
-directory is searched in the following order until the desired macro
-file is found or the list is exhausted.
+Such naming and placement makes a macro file into a @slanted{macro
+package}; when requested, it is sought in several directories.
+Together, these locations constitute the @dfn{tmac path}.  Each
+directory is searched in the following order until the desired package
+is found or the list is exhausted.
 
 @itemize @bullet
 @item
-Directories specified with GNU @command{troff}'s or @command{groff}'s
-@option{-M} command-line option.
+Directories specified with the @option{-M} command-line option.
 
 @item
 @tindex GROFF_TMAC_PATH@r{, environment variable}
@@ -1503,10 +1492,10 @@ The user's home directory, found in the @env{HOME} environment variable.
 @cindex platform-specific directory
 @cindex directory, platform-specific
 A site-local platform-dependent directory, a site-local
-platform-independent directory, and the stock @slanted{tmac} directory.
-The locations corresponding to your installation are listed in section
-``Environment'' of @cite{gtroff@r{(1)}}.  If not otherwise configured,
-they are as follows.
+platform-independent directory, and a stock directory.  Locations
+corresponding to your installation are listed in section ``Environment''
+of @cite{gtroff@r{(1)}}.  If not otherwise configured, they are as
+follows.
 
 @Example
 /usr/local/lib/groff/site-tmac
@@ -1523,39 +1512,46 @@ be customized as part of the build-time configuration process.
 
 @c =====================================================================
 
+@need 1000
 @node Font Directories, Paper Format, Macro Directories, Invoking groff
 @section Font Directories
-@cindex font directories
-@cindex directories for fonts
-@cindex searching fonts
-@cindex fonts, searching
 
-@code{groff} enforces few restrictions on how font description files are
-named.  For its family/style mechanism to work, the names of fonts
-within a family should start with the family name, followed by the
-style.  For example, the Times family uses @samp{T} for the family name
-and @samp{R}, @samp{B}, @samp{I}, and @samp{BI} to indicate the styles
-`roman', `bold', `italic', and `bold italic', respectively.  Their
-resolved font names are thus @samp{TR}, @samp{TB}, @samp{TI}, and
-@samp{TBI}.  @xref{Using Fonts}.
+@cindex device description file, introduced
+@cindex description file, device, introduced
+@cindex file, device description, introduced
+@cindex font description file, introduced
+@cindex description file, font, introduced
+@cindex file, font description, introduced
+The GNU @command{troff} formatter and @code{groff}'s output drivers read
+@slanted{device} and @slanted{font description files} that detail the
+output device and the typefaces available to it, including their glyph
+repertoires and the @slanted{metrics} (dimensions) of each glyph.  This
+information permits the formatter to accurately place glyphs with
+respect to each other.  The device description file is always named
+@file{DESC}; fonts are typically described in files with short names
+like @file{TR}, @file{CR}, @file{HBI}, or @file{S}.
 
+@cindex font directory
+@cindex directory, device and font description
+@cindex search path, font
+@cindex fonts, searching for
 @cindex font path
 @cindex path, for font files
-Font description files are kept in @dfn{font directories}, which
-together constitute the @dfn{font path}.  The search procedure
+Device and font description files are kept in @dfn{font directories},
+which together constitute the @dfn{font path}.  The search procedure
 always appends the directory @code{dev}@var{name}, where @var{name} is
 the name of the output device.  Assuming @TeX{} DVI output, and
-@file{/foo/bar} as a font directory, the font description files for
-@command{grodvi} must be in @file{/foo/bar/devdvi}.
-Each directory in the font path is searched in the following order until
-the desired font description file is found or the list is exhausted.
+@file{/foo/bar} as a font directory, the description files for
+@command{grodvi} must be in @file{/foo/bar/devdvi}.  Each directory in
+the font path is searched in the following order until the desired
+description file is found or the list is exhausted.
 
 @itemize @bullet
 @item
-Directories specified with GNU @command{troff}'s or @command{groff}'s
-@option{-f} command-line option.  All output drivers (and some
-preprocessors) support this option as well, because they require
-information about the glyphs to be rendered in the document.
+Directories specified with the @option{-f} command-line option.  All
+output drivers (and some preprocessors) support this option as well,
+because they require information about glyphs to be rendered in the
+document.
 
 @item
 @tindex GROFF_FONT_PATH@r{, environment variable}
@@ -1564,10 +1560,9 @@ Directories listed in the @env{GROFF_FONT_PATH} environment variable.
 @item
 @cindex site-local directory
 @cindex directory, site-local
-A site-local directory and the main font description directory.
-The locations corresponding to your installation are listed in section
-``Environment'' of @cite{gtroff@r{(1)}}.  If not otherwise configured,
-they are as follows.
+A site-local directory and a stock directory.  Locations corresponding
+to your installation are listed in section ``Environment'' of
+@cite{gtroff@r{(1)}}.  If not otherwise configured, they are as follows.
 
 @Example
 /usr/local/share/groff/site-font
@@ -1601,7 +1596,7 @@ are used if present.  @code{groff}'s build process configures a default
 page format and writes it to typesetters' @file{DESC} files.  This
 installation's default is documented in @cite{gtroff@r{(1)}}.  If the
 @file{DESC} file lacks this information, the formatter and output driver
-use a page length of @code{11i} (inches) for compatibility with
+use a page length of @samp{11i} (eleven inches) for compatibility with
 @acronym{AT&T} @code{troff}.
 
 In the formatter, the @code{pl} request changes the page length, but
@@ -1626,8 +1621,7 @@ overriding its defaults.  The following command formats for PostScript
 on A4 paper in landscape orientation.
 
 @Example
-@c The next line is right at the 59n limit.
-$ groff -T ps -d paper=a4l -P -pa4 -P -l -ms foo.ms >foo.ps
+$ groff -T ps -d paper=a4l -P -pa4 -P -l -m s my.ms >my.ps
 @endExample
 @c END Keep parallel with groff(1), subsection "Paper format".
 
@@ -1641,32 +1635,31 @@ $ groff -T ps -d paper=a4l -P -pa4 -P -l -ms foo.ms >foo.ps
 @cindex examples of invocation
 
 @code{roff} systems are best known for formatting man pages.  A
-@command{man} librarian program, having located a page, may render it
+@command{man} librarian program, having located a page, might render it
 with a @command{groff} command.
 
 @Example
-groff -t -man -Tutf8 /usr/share/man/man1/groff.1
+$ groff -t -m an -T utf8 /usr/share/man/man1/groff.1
 @endExample
 
 The librarian will also pipe the output through a pager, which might not
-interpret the SGR terminal escape sequences @command{groff} emits for
-boldface, underlining, or italics; see the @cite{grotty@r{(1)}} man page
-for a discussion.
+interpret terminal escape sequences @command{groff} emits for boldface,
+underlining, italics, or hyperlining; see the @cite{grotty@r{(1)}} man
+page for a discussion.
 
 To process a @code{roff} input file using the preprocessors
 @command{gtbl} and @command{gpic} and the @file{me} macro package in the
-way to which AT&T @code{troff} users were accustomed, one would type (or
-script) a pipeline.
+way to which @acronym{AT&T} @code{troff} users were accustomed, one
+would type (or script) a pipeline.
 
 @Example
-gpic foo.me | gtbl | gtroff -me -Tutf8 | grotty
+$ gpic foo.me | gtbl | gtroff -m e -T utf8 | grotty
 @endExample
 
-Using @command{groff}, this pipe can be shortened to an equivalent
-command.
+Shorten this pipeline to an equivalent command using @command{groff}.
 
 @Example
-groff -p -t -me -T utf8 foo.me
+$ groff -p -t -m e -T utf8 foo.me
 @endExample
 
 An even easier way to do this is to use @command{grog} to guess the
@@ -1674,7 +1667,7 @@ preprocessor and macro options and execute the result by using the
 command substitution feature of the shell.
 
 @Example
-$(grog -Tutf8 foo.me)
+$ $(grog -T utf8 foo.me)
 @endExample
 
 Each command-line option to a postprocessor must be specified with any
@@ -1683,20 +1676,19 @@ required leading dashes @samp{-}
 @c --help or --version.
 @c or @samp{--}
 @c XXX: grolbp does.
-because @command{groff} passes the arguments as-is to the postprocessor;
-this permits arbitrary arguments to be transmitted.  For example, to
-pass a title to the @command{gxditview} postprocessor,
-the shell commands
+because @command{groff} passes the arguments as-is to the postprocessor,
+permitting transmission of arbitrary arguments.  For example, to pass a
+title to the @command{gxditview} postprocessor, the shell commands
 
 @Example
-groff -X -P -title -P 'trial run' mydoc.t
+$ groff -X -P -title -P 'trial run' mydoc.t
 @endExample
 
 @noindent
 and
 
 @Example
-groff -X -Z mydoc.t | gxditview -title 'trial run' -
+$ groff -X -Z mydoc.t | gxditview -title 'trial run' -
 @endExample
 
 @noindent
@@ -1737,9 +1729,12 @@ formatter, peruse @ref{GNU troff Reference} instead.
 @cindex basics of macro package usage
 @cindex macro package usage, basics of
 
+@c Texinfo's @cite command conceives only of citations of long-form
+@c works, like books, and forces italics.  Article citations are
+@c typically placed in quotation marks instead.
 Let us first survey some basic concepts necessary to use a macro package
 fruitfully.@footnote{The remainder of this chapter is based on
-@cite{Writing Papers with nroff using -me} by Eric@tie{}P.@: Allman,
+``Writing Papers with NROFF using -me'' by Eric@tie{}P.@: Allman,
 which is distributed with @code{groff} as @file{meintro.me}.}
 References are made throughout to more detailed information.
 
@@ -1756,8 +1751,8 @@ consists of text, or words to be printed, and embedded commands
 The primary function of GNU @command{troff} is to collect words from
 input lines, @slanted{fill} output lines with those words,
 @slanted{break} the line at the right-hand margin (possibly by
-hyphenating a word), @slanted{adjust} the line to that margin by
-widening spaces, and output the result.
+hyphenating a word), @slanted{adjust} the line to reach that margin (if
+necessary) by widening spaces between words, and output the result.
 
 @Example
 @c .ll 42n
@@ -1792,9 +1787,9 @@ A @slanted{macro} bundles text and/or control lines into a named
 collection that can be called like a request.  A macro can also be
 called by a @slanted{trap} that is set to ``go off'' automatically at
 certain places on the page.  Thus, while requests perform primitive
-operations, macro packages handle complex ones, like arranging the
-output into columns, collecting and writing out footnotes, or managing
-page headers and footers.
+operations, macros handle complex ones, like arranging the output into
+columns, collecting and writing out footnotes, or managing page headers
+and footers.
 
 Many requests and macros accept @slanted{arguments} that influence their
 behavior.  A ``plain'' @code{sp} request breaks and puts a blank line on
@@ -1853,7 +1848,7 @@ on the page, sometimes called the @slanted{layout} of the page.  Most
 macro packages don't supply macros for performing these (at least not
 without performing other actions besides), as they are such basic
 operations.  The macro packages for writing man pages, @file{man} and
-@file{mdoc}, don't encourage explicit use of these requests at all.
+@file{mdoc}, discourage explicit use of these requests altogether.
 
 @cindex spacing (introduction)
 Arguments to requests and macro calls can often be
@@ -1870,16 +1865,15 @@ outputs one and a half inches of vertical space, followed by the line
 ``My thoughts on the subject'', followed by a single blank line (more
 measurement units are available; see @ref{Measurements}).  Excess
 vertical space is normally discarded at page or column breaks.  If the
-above example appears one inch from the page bottom, the half inch
-of space ``left over'' does not appear at the top of the next.
+above example appears one inch from the bottom of the page, the half
+inch of space ``left over'' does not appear at the top of the next.
 
-If you seek precision in spacing, be advised when using a macro package
-that it might not honor @code{sp} requests as you expect; it can use a
-formatter feature called @slanted{no-space mode} to prevent excess space
-from accumulating.  Macro packages typically offer registers to control
-spacing between paragraphs, before section headings, and around displays
-(discussed below); use these facilities preferentially.
-@xref{Manipulating Spacing}.
+If you desire precise spacing control when using a macro package, be
+advised that it might not honor @code{sp} requests as you expect; it can
+use a formatter feature called @slanted{no-space mode} to prevent excess
+space from accumulating.  Use the facilities the package offers to
+control spacing between paragraphs, before section headings, and around
+displays (discussed below).  @xref{Manipulating Spacing}.
 
 @cindex centering lines (introduction)
 @cindex lines, centering (introduction)
@@ -1887,11 +1881,11 @@ Text lines can be centered by using the @code{ce} request.  The line
 after @code{ce} is centered (horizontally) on the page.  To center more
 than one line, use @w{@samp{.ce @var{N}}} (where @var{N} is the number
 of lines to center), followed by the @var{N}@tie{}lines.  To center many
-lines without counting them, type:
+lines without counting them, try the following technique.
 
 @Example
 .ce 1000
-lines to center
+@slanted{many lines of input}
 .ce 0
 @endExample
 
@@ -2057,10 +2051,9 @@ page number.  @xref{Page Layout}.
 
 Most macro packages let the user specify the size of the page margins.
 The top and bottom margins are typically handled differently than the
-left and right margins; the latter two are derived from the
-@slanted{page offset}, @slanted{indentation}, and @slanted{line length}.
-@xref{Line Layout}.  Commonly, packages support registers to tune these
-values.
+left and right margins; the latter are derived from the @slanted{page
+offset}, @slanted{indentation}, and @slanted{line length}.  @xref{Line
+Layout}.  Commonly, packages support registers to tune these values.
 
 @c ---------------------------------------------------------------------
 
@@ -2085,12 +2078,12 @@ man pages support example displays but not keeps.
 @cindex floating keep
 @slanted{Floating keeps} can move, or ``float'', relative to the text
 around them in the input.  They are useful for displays that are
-captioned and referred to by name, as with ``See figure@tie{}3''.
-Depending on the package, a floating keep appears at the bottom of the
-current page if it fits, and at the top of the next otherwise.
-Alternatively, floating keeps might be deferred to the end of a section.
-Using a floating keep can avoid the large vertical spaces that may
-precede a tall keep of the ordinary sort when it won't fit on the page.
+captioned and referred to by name, as with ``See figure@tie{}3''.  A
+floating keep might appear at the bottom of the current page if it fits,
+and at the top of the next otherwise.  Alternatively, it might be
+deferred to the end of a section.  Use of a floating keep can prevent
+a large vertical space from appearing before a tall keep of the ordinary
+sort when it won't fit on the page.
 
 @c ---------------------------------------------------------------------
 
@@ -2115,7 +2108,7 @@ automatically numbering either type of annotation.
 @cindex contents, table of
 
 A package may handle a @slanted{table of contents} by directing section
-heading macros to save section heading text and the page number where it
+heading macros to save the heading's text and the page number where it
 occurs for use in a later @slanted{entry} for a table of contents.  It
 writes the collected entries at the end of the document, once all are
 known, upon request.  A row of dots (a @slanted{leader}) bridges the
@@ -2138,7 +2131,7 @@ An index is similar to a table of contents, in that entry labels and
 locations must be collected, but poses a greater challenge because it
 needs to be sorted before it is output.  Here, processing the document
 in multiple passes is inescapable, and tools like the
-@cite{makeindex@r{(1)}} program are necessary.
+@cite{makeindex@r{(1)}} program become necessary.
 
 @c ---------------------------------------------------------------------
 
@@ -2185,10 +2178,12 @@ the date, or to perform operations like super- and subscripting.
 @subsection Preprocessor Support
 
 All macro packages provide support for various preprocessors and may
-extend their functionality by defining macros to caption them and/or set
-their contents in displays.  Examples include @code{TS} and @code{TE}
+extend their functionality by defining macros to caption their output
+and/or set it in a display.  Examples include @code{TS} and @code{TE}
 for @command{gtbl}, @code{EQ} and @code{EN} for @command{geqn}, and
-@code{PS} and @code{PE} for @command{gpic}.
+@code{PS} and @code{PE} for @command{gpic}.  Another preprocessor,
+@command{grefer}, facilitates the inclusion of bibliographic citations
+in a consistent format.
 
 @c ---------------------------------------------------------------------
 
@@ -2199,6 +2194,10 @@ Each package provides means of customizing details of its behavior.
 Often, this is achieved with register and string definitions.  Such
 parameters include the default type size and the appearance of section
 headings.
+
+@c TODO: Add a section here that (after waving off man page authors)
+@c discusses simple register, register format, macro, and string usage.
+@c Some existing material can be relocated here, e.g., from groff_mm(7).
 
 @codequotebacktick off
 @codequoteundirected off
@@ -3600,9 +3599,10 @@ instead of bold.  This is a Research Tenth Edition Unix extension.
 
 @Defmac {BX, [@Var{text}], ms}
 Typeset @var{text} and draw a box around it.  On terminals, reverse
-video is used instead.  If you want @var{text} to contain space, use
-unbreakable space or horizontal motion escape sequences (@code{\~},
-@code{\@key{SP}}, @code{\^}, @code{\|}, @code{\0} or @code{\h}).
+video or another means of highlighting is used instead.  If you want
+@var{text} to contain space, use unbreakable space or horizontal motion
+escape sequences (@code{\~}, @code{\@key{SP}}, @code{\^}, @code{\|},
+@code{\0} or @code{\h}).
 @endDefmac
 
 @Defmac {UL, [@Var{text} [@Var{post}]], ms}
@@ -3930,13 +3930,13 @@ A @dfn{boxed keep} has a frame drawn around it.
 boxed keep.
 @endDefmac
 
-Boxed keep macros cause breaks; if you need to box a word or phrase
-within a line, see the @code{BX} macro in @ref{Typeface and decoration}.
-Box lines are drawn as close as possible to the text they enclose so
-that they are usable within paragraphs.  If you wish to box one or more
-paragraphs, you may improve the appearance by calling @code{B1} after
-the first paragraphing macro, and by adding a small amount of vertical
-space before calling @code{B2}.
+Boxed keep macros cause breaks; to box words within a line, recall
+@code{BX} in @ref{Typeface and decoration}.  Box lines are drawn as
+close as possible to the text they enclose so that they are usable
+within paragraphs.  When boxing entire paragraphs thus, you may
+improve their appearance by calling @code{B1} after the first
+paragraphing macro, and invoking the @code{sp} request before calling
+@code{B2}.
 
 @c Wrap example at 58 columns.
 @CartoucheExample
@@ -3995,15 +3995,34 @@ extension.
 End any display.
 @endDefmac
 
-The distance stored in the @code{DD} register is inserted before and
-after each pair of display macros; this is a Berkeley extension.  In
-@code{groff} @file{ms}, this distance replaces any adjacent
-inter-paragraph distance or subsequent spacing prior to a section
-heading.  The @code{DI} register is a GNU extension; its value is an
-indentation applied to displays created with @samp{.DS} and @samp{.ID}
-without arguments, to @samp{.DS I} without an indentation argument, and
-to indented equations set with @samp{.EQ}.  Changes to either register
-take effect at the next display boundary.
+@code{groff} @file{ms} inserts the distance stored in the @code{DD}
+register before and after each pair of display macros; this is a
+Berkeley extension.  This distance replaces any adjacent inter-paragraph
+distance or subsequent spacing prior to a section heading.  The
+@code{DI} register is a GNU extension; its value is an indentation
+applied to displays created with @samp{.DS} and @samp{.ID} without
+arguments, to @samp{.DS I} without an indentation argument, and to
+indented equations set with @samp{.EQ}.  Changes to either register take
+effect at the next display boundary.
+
+The display distance applies even in footnotes (discussed below), which
+may cause a footnote with a display at its end to ``emptily'' spill to
+the next page.  Consider the following tactic to compensate.
+
+@c Wrap example at 58 columns.
+@CartoucheExample
+.FS
+Recall the ideal gas law.
+.nr DD-saved \n[DD] \" stash display distance
+@c We have to drag the comment below inboard for Texinfo.
+.nr DD 0       \" eliminate automatic space around display
+.sp \n[DD-saved]u   \" manually put space before it
+.EQ
+P V = n R T
+.EN
+.FE
+.nr DD \n[DD-saved] \" restore previous setting
+@endCartoucheExample
 
 @c ---------------------------------------------------------------------
 
@@ -4217,9 +4236,9 @@ footnote line length is required, recall that arithmetic expressions in
 @code{roff} input are evaluated strictly from left to right, with no
 operator precedence (parentheses are honored).
 
-@Example
+@CartoucheExample
 .ds FR 0+3i \" Set footnote line length to 3 inches.
-@endExample
+@endCartoucheExample
 
 @c ---------------------------------------------------------------------
 
@@ -4242,6 +4261,7 @@ desired localization macro package after @file{ms}; see
 $ groff -ms -mfr bienvenue.ms
 @endCartoucheExample
 
+@need 250
 The following strings are available.
 
 @Defmpstr {REFERENCES, ms}
@@ -4427,7 +4447,7 @@ to its desired location by physically rearranging the pages of a printed
 document, or as part of post-processing---with a @cite{sed@r{(1)}}
 script to reorder the pages in @command{troff}'s output, with
 @cite{pdfjam@r{(1)}}, or with @cite{gropdf@r{(1)}}'s
-@samp{.pdfswitchtopage} feature, for example.
+@code{pdfswitchtopage} macro, for example.
 
 Define an entry to appear in the table of contents by bracketing its
 text between calls to the @code{XS} and @code{XE} macros.  A typical
@@ -4446,6 +4466,7 @@ document, call @code{TC} or @code{PX} to emit the table of contents;
 @code{TC} resets the page number to @samp{i} (Roman numeral one), and
 then calls @code{PX}.  All of these macros are Berkeley extensions.
 
+@need 250
 @DefmacList {XS, [@Var{page-number}], ms}
 @DefmacItemx {XA, [@Var{page-number} [@Var{indentation}]], ms}
 @DefmacListEndx {XE, , ms}
@@ -4585,13 +4606,16 @@ of its own.
 
 @itemize @bullet
 @item
+@c Texinfo's @cite command conceives only of citations of long-form
+@c works, like books, and forces italics.  Article citations are
+@c typically placed in quotation marks instead.
 The internals of @code{groff} @file{ms} differ from the internals of
 @acronym{AT&T} @file{ms}.  Documents that depend upon implementation
 details of @acronym{AT&T} @file{ms} may not format properly with
 @code{groff} @file{ms}.  Such details include macros whose function was
 not documented in the @acronym{AT&T} @file{ms}
-manual.@footnote{@cite{Typing Documents on the UNIX System: Using the
--ms Macros with Troff and Nroff}, M.@tie{}E.@: Lesk, Bell Laboratories,
+manual.@footnote{``Typing Documents on the UNIX System: Using the
+-ms Macros with Troff and Nroff'', M.@tie{}E.@: Lesk, Bell Laboratories,
 1978}
 @c XXX: We support RT anyway; maybe we should stop?
 
@@ -5347,12 +5371,12 @@ leaders, respectively.
 @endExample
 
 Tabs and leaders lend themselves to table construction.@footnote{``Tab''
-is short for ``tabulation'', revealing the term's origin as a spacing
-mechanism for table arrangement.} The tab and leader glyphs can be
-configured, and further facilities for sophisticated table composition
-are available; see @ref{Tabs and Fields}.  There are many details to
-track when using such low-level features, so most users turn to the
-@cite{tbl@r{(1)}} preprocessor to lay out tables.
+abbreviates ``tabulation'', suggesting table arrangement mechanism.} The
+tab and leader glyphs can be configured, and further facilities for
+sophisticated table composition are available; see @ref{Tabs and
+Fields}.  There are many details to track when using such low-level
+features, so most users turn to the @cite{tbl@r{(1)}} preprocessor to
+lay out tables.
 
 @c ---------------------------------------------------------------------
 
@@ -5607,7 +5631,7 @@ Other encodings are supported by means of macro packages.
 @pindex koi8-r.tmac
 To use @w{KOI8-R}, an encoding for the Russian language, either place
 @w{@samp{.mso koi8-r.tmac}} at the very beginning of your document or
-supply @samp{-mkoi8-r} as a command-line argument to @code{groff}.  The
+supply @samp{-m koi8-r} as a command-line argument to @code{groff}.  The
 localization file @file{ru.tmac} takes care of this automatically; see
 @ref{Manipulating Hyphenation}.@footnote{KOI8-R code points in the range
 @code{0x80}--@code{0x9F} are not valid input on systems using ISO
@@ -5625,7 +5649,7 @@ obtained via special character escape sequences; see
 @pindex latin2.tmac
 To use ISO @w{Latin-2}, an encoding for Central and Eastern European
 languages, invoke @w{@samp{.mso latin2.tmac}} at the beginning of your
-document or supply @samp{-mlatin2} as a command-line argument to
+document or supply @samp{-m latin2} as a command-line argument to
 @code{groff}.
 
 @item latin5
@@ -5636,7 +5660,7 @@ document or supply @samp{-mlatin2} as a command-line argument to
 @pindex latin5.tmac
 To use ISO @w{Latin-5}, an encoding for the Turkish language, invoke
 @w{@samp{.mso latin5.tmac}} at the beginning of your document or
-supply @samp{-mlatin5} as a command-line argument to @code{groff}.
+supply @samp{-m latin5} as a command-line argument to @code{groff}.
 
 @item latin9
 @cindex encoding, input, @w{Latin-9} (ISO @w{8859-15})
@@ -5647,7 +5671,7 @@ supply @samp{-mlatin5} as a command-line argument to @code{groff}.
 ISO @w{Latin-9} succeeds @w{Latin-1}; it includes a Euro sign and better
 glyph coverage for French.  To use this encoding, invoke @w{@samp{.mso
 latin9.tmac}} at the beginning of your document or supply
-@samp{-mlatin9} as a command-line argument to @code{groff}.
+@samp{-m latin9} as a command-line argument to @code{groff}.
 @end table
 
 Some characters from an input encoding may not be available with a
@@ -5669,7 +5693,7 @@ devices as @code{groff} ships, while @w{Latin-2} is not.
 Unicode supports characters from all other input encodings; the
 @option{utf8} output driver for terminals therefore does as well.  The
 DVI output driver supports the @w{Latin-2} and @w{Latin-9} encodings if
-the command-line option @option{-mec} is used as well.  @footnote{The
+the command-line option @option{-m ec} is used as well.  @footnote{The
 DVI output device defaults to using the Computer Modern (CM) fonts;
 @file{ec.tmac} loads the EC fonts instead, which provide Euro
 @samp{\[Eu]} and per mille @samp{\[%0]} glyphs.}
@@ -7009,7 +7033,7 @@ a diagnostic of the @samp{escape} warning category, which is not enabled
 by default) and the following character is processed normally.
 
 @Example
-$ groff -Tps -ww
+$ groff -T ps -ww
 .nr N 12
 .ds co white
 .ds animal elephant
@@ -7286,7 +7310,7 @@ that result from interpolation. Typically, @code{'} works fine.
 @xref{Implementation Differences}.
 
 @Example
-$ groff -Tps
+$ groff -T ps
 .de Mw
 .  nr wd \w'\\$1'
 .  tm "\\$1" is \\n(wd units wide.
@@ -7474,8 +7498,8 @@ aaa bbb ccc ddd eee fff ggg hhh\h'0'\R':k \n[.k]'
     @result{} :k == 15000
 @endExample
 
-If you process this with the PostScript device (@code{-Tps}), there will
-be a line break eventually after @code{ggg} in both input lines.
+If you process this with the PostScript device (@code{-T ps}), there
+will be a line break eventually after @code{ggg} in both input lines.
 However, after processing the space after @code{ggg}, the partially
 collected line is not overfull yet, so GNU @code{troff} continues to
 collect input until it sees the space (or in this case, the newline)
@@ -8738,7 +8762,7 @@ remembered.
 @cindex patterns for hyphenation (@code{hpf})
 Read hyphenation patterns from @var{pattern-file}, which is sought
 in the same way that macro files are with the @code{mso} request or the
-@option{-m@var{name}} command-line option to @code{groff}.  The
+@option{-m @var{mac}} command-line option to @code{groff}.  The
 @var{pattern-file} should have the same format as (simple) @TeX{}
 pattern files.  More specifically, the following scanning rules are
 implemented.
@@ -10813,7 +10837,7 @@ predefined special character names, but the availability of any as a
 glyph is device- and font-dependent.  For example, say
 
 @Example
-man -Tdvi groff_char > groff_char.dvi
+man -T dvi groff_char > groff_char.dvi
 @endExample
 
 @noindent
@@ -10824,7 +10848,7 @@ alternative.}  If you want to use an additional macro package to change
 the fonts used, @code{groff} (or @command{gtroff}) must be run directly.
 
 @Example
-groff -Tdvi -mec -man groff_char.7 > groff_char.dvi
+groff -T dvi -m ec -m an groff_char.7 > groff_char.dvi
 @endExample
 
 @cindex composite glyph names
@@ -11404,7 +11428,7 @@ Default scaling unit is @samp{z}.
 The read-only register @code{.height} contains the font height as set by
 @code{\H}.
 
-Currently, only the @option{-Tps} and @option{-Tpdf} devices support
+Currently, only the @option{-T ps} and @option{-T pdf} devices support
 this feature.
 
 @code{\H} doesn't produce an input token in GNU @code{troff}.  As a
@@ -11441,7 +11465,7 @@ the right.  Only integer values are possible.
 The read-only register @code{.slant} contains the font slant as set by
 @code{\S}.
 
-Currently, only the @option{-Tps} and @option{-Tpdf} devices support
+Currently, only the @option{-T ps} and @option{-T pdf} devices support
 this feature.
 
 @code{\S} doesn't produce an input token in GNU @code{troff}.  As a
@@ -14951,11 +14975,11 @@ the end of the text line from causing a word break, which, like an
 ordinary space character, counts as written output.
 
 @Example
-$ groff -Tascii input-trap-example.groff
+$ groff -T ascii input-trap-example.groff
     @result{} foo bar TRAP SPRUNG baz
     @result{}
     @result{} qux TRAP SPRUNG      jat TRAP SPRUNG
-$ groff -Tascii -ra1 input-trap-example.groff
+$ groff -T ascii -r a1 input-trap-example.groff
     @result{} foo _____ TRAP SPRUNG bar baz
     @result{}
     @result{} qux TRAP SPRUNG      jat TRAP SPRUNG
@@ -15957,9 +15981,9 @@ for @code{pso} also.
 Identical to the @code{so} and @code{soquiet} requests, respectively,
 except that @command{gtroff} searches for the specified @var{file} in
 the same directories as macro files for the @option{-m} command-line
-option.  If the file name to be included has the form
-@file{@var{name}.tmac} and it isn't found, these requests try to include
-@file{tmac.@var{name}} and vice versa.
+option.  Unlike that option, @var{file} must be the file name as it
+appears in the file system; these requests do not add a @file{.tmac}
+suffix or @file{tmac.} prefix to locate @var{file}.
 @endDefreq
 
 @DefreqList {trf, file}
@@ -16551,9 +16575,6 @@ The search path for @var{file} can be controlled with the @option{-I}
 command-line option.
 @endDefreq
 
-@codequotebacktick off
-@codequoteundirected off
-
 
 @c =====================================================================
 
@@ -16695,9 +16716,6 @@ restore tokens are removed.
 
 
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @need 1000
 @c BEGIN Keep parallel with section "Debugging" of groff(7).
@@ -17380,9 +17398,9 @@ request); GNU @code{troff} has no such restriction.
 GNU @code{troff} predefines a string @code{.T} containing the argument
 given to the @option{-T} command-line option, namely the current output
 device (for example, @samp{pdf} or @samp{utf8}).  The existence of this
-string is a common feature of post-CSTR@tie{}#54
+string is a common feature of device-independent
 @code{troff}s@footnote{DWB@tie{}3.3, Solaris, Heirloom Doctools, and
-Plan@tie{}9 @code{troff} all support it.} but valid values are specific
+Plan@tie{}9 @code{troff}s all support it.} but valid values are specific
 to each implementation.
 
 @cindex removal of read-only registers, incompatibility with @acronym{AT&T} @code{troff}

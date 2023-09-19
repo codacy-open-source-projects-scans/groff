@@ -1,3 +1,199 @@
+2023-09-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi (I/O) <mso, msoquiet>: Fix error.  These
+	requests do _not_ alter the argument in an attempt to locate
+	a file corresponding to it.  (That is, one says "groff -m trace"
+	but ".mso trace.tmac".)
+
+2023-09-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (doc/webpage.ps, doc/webpage.html): Update and
+	parallelize target dependencies.  Resolve race by requiring
+	"grn" and "soelim" to be built first.  Also add dependency on
+	`$(TMAC_PACKAGE_MS)`.
+
+	Fixes <https://savannah.gnu.org/bugs/?64681>.  Thanks to
+	Alexander Kanavin for the report.
+
+2023-09-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (charinfo_to_node_list): Trivially
+	refactor.  Rename `old_escape_char` to `previous_escape_char`.
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `ascii_output_flag` to
+	`want_abstract_output`.
+
+	* src/roff/troff/input.cpp (main, init_registers):
+	* src/roff/troff/node.cpp (init_output):
+	* src/roff/troff/troff.h: Do it.
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	`unsafe_flag` to `want_unsafe_requests`.
+	(pipe_source, open_request, opena_request, pipe_output):
+	(system_request, main, init_input_requests): Do it.
+	(init_input_requests): Migrate from `readonly_register` to
+	`readonly_boolean_register`.
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add class for Boolean-valued read-only registers.
+	Their values have been stored variously in `readonly_register`,
+	which has full `int` range, and in normal string registers, as
+	with `.A`.
+
+	* src/roff/troff/reg.h (class readonly_boolean_register): Add.
+	* src/roff/troff/input.cpp
+	(readonly_boolean_register::readonly_boolean_register)
+	(readonly_boolean_register::get_string): Define.
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename some
+	functions and recast diagnostic messages.
+	(open_mac_file):
+	(process_macro_file): Rename these...
+	(open_macro_package):
+	(process_macro_package_argument): ...to these.
+
+	As our documentation now makes more clear, "macro packages" are
+	a subset of "macro files", and have additional rules regarding
+	their handling (where they are sought and how their names are
+	rewritten).
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	`begin_level` to `suppression_level`.
+	(do_suppress, init_input_requests): Do it.
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (input_stack::get, token::next)
+	(process_input_stack, do_width, do_suppress, do_if_request)
+	(charinfo_to_node_list, read_color_draw_node): Trivially
+	refactor.  Rename symbols and demote their types from `int` to
+	`bool`.
+	- `have_input` -> `have_formattable_input`
+	- `old_have_input` -> `old_have_formattable_input`
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `debug_state` symbol to
+	`want_html_debugging` and demote its type from `int` to `bool`.
+
+	* src/roff/troff/input.cpp:
+	* src/roff/troff/mtsm.cpp: Do it (declarations).
+
+	* src/roff/troff/input.cpp (input_stack::finish_get)
+	(input_stack::push, process_input_stack, main)
+	(charinfo::get_flags, charinfo::contains): Do it.
+
+	* src/roff/troff/node.cpp: Drop unused declaration.
+
+2023-09-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `break_flag` symbol to
+	`want_break` and demote its type from `int` to `bool`.
+
+	* src/roff/troff/env.h:
+	* src/roff/troff/input.cpp: Do it (declarations).
+
+	* src/roff/troff/div.cpp (begin_page, space_request)
+	(flush_output):
+	* src/roff/troff/env.cpp (fill, no_fill, center, right_justify)
+	(indent, temporary_indent, do_break_request):
+	* src/roff/troff/input.cpp (process_input_stack)
+	(macro_iterator::macro_iterator, copy_file, transparent_file):
+	Do it.
+
+2023-09-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (doc-str-Ar-default): Use unbreakable space
+	between "file" and ellipsis.
+
+2023-09-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/groff_me.7.man: Fix error in summary of "safe" groff
+	requests; `ce`, `rj`, and `ul` count (productive) _input_
+	lines, not output lines.
+
+2023-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Explicitly construct `default_color`.
+
+	Without explicit construction, link-time optimization feels free
+	to send this object into the twilight zone, subtly changing the
+	semantics of the current and previous stroke and fill colors,
+	making their registers interpolate "default" instead of empty
+	strings.
+
+	* src/libs/libgroff/color.cpp: Construct `default_color` with
+	empty string instead of leaving uninitalized.  Problem appears
+	to date back to commit ea5a42d080, 2002-01-24.
+
+	Fixes <https://savannah.gnu.org/bugs/?64421>.  Thanks to Günther
+	Noack for the report, a good reproducer, identification of
+	`-flto=auto` as the free variable in our experiments, and
+	artifact production beyond the call of duty; Peter Schaffter for
+	ruling out macro programming goofs; and Deri James for shrewd
+	pointers in the right direction (twice!).
+
+2023-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Regression-test Savannah #64421.
+
+	* src/roff/groff/tests/detect-evil-link-time-optimizer.sh: Do
+	it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2023-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/e.tmac (np, bu): Throw diagnostic if given arguments; we
+	document these as being "like" `ip`, but they aren't with
+	respect to argument handling.
+	(sk): Genericize existing diagnostic to use `\$0` to report its
+	own name.
+
+2023-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Doug McIlroy pointed out a hazard of the Berkeley DD
+	display distance feature when footnotes end with displays; offer
+	advice.
+
+	* doc/ms.ms: Document caveat with display usage in footnotes.
+
+	Fixes <https://savannah.gnu.org/bugs/?64531>.
+
+2023-09-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (doc-str-Ar-default, Ar): Stop setting ellipsis
+	in italics.
+	* tmac/groff_mdoc.7.man (Arguments): De-document apology for
+	former behavior.
+
+2023-09-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tests/osc8_works.sh: Port test to newer
+	conventions.
+
+2023-09-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grog]: Drop `--ligatures`, `-run` support.
+
+	Simulate the former (which was specific to the "pdf" output
+	device) with the option sequence "-P -U -P y", and the latter by
+	using the command substitution feature of your shell; see
+	section "Examples" of groff(1).
+
+	* src/utils/grog/grog.pl: Do it.
+	* src/utils/grog/grog.1.man: De-document them.
+
+	* NEWS: Add item.
+
 2023-09-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[tmac]: Drop AT&T troff font aliases/remappings.  Now that we
@@ -11,7 +207,7 @@
 	* tmac/html.tmac:
 	* tmac/lbp.tmac:
 	* tmac/lj4.tmac:
-	* tmac/ps.tmac:  Do it.
+	* tmac/ps.tmac: Do it.
 
 	* NEWS: Add item.
 
@@ -919,7 +1115,7 @@
 
 	* src/roff/troff/env.h (read_hyphen_file): Drop relic prototype
 	for undeclared function.  Should have been disposed of on
-	1992-09-21, per ChangeLog.115.
+	1992-09-21, per ChangeLog.old (né ChangeLog.115).
 
 2023-05-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -1115,12 +1311,12 @@
 	getters defined above in environment object since the relevant
 	fields are now private.
 	(assign_control_character): New function assumes the former
-	responsibilities of env.cpp:control_char and rejects the request
-	if the desired character is already the escape or no-break
-	control character.
+	responsibilities of `env.cpp::control_char()` and rejects the
+	request if the desired character is already the escape or
+	no-break control character.
 	(assign_no_break_control_character): New function assumes the
-	former responsibilities of env.cpp:no_break_control_char and
-	rejects the request if the desired character is already the
+	former responsibilities of `env.cpp::no_break_control_char()`
+	and rejects the request if the desired character is already the
 	escape or control character.
 	(process_input_stack): Reorder comparisons to avoid inadvertent
 	lvalue assignment.  Add parentheses to assignment with complex

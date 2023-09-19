@@ -165,7 +165,7 @@ producing a
 A document can
 .I translate,
 or remap,
-fonts with the
+font names with the
 .B ftr
 request.
 .
@@ -611,8 +611,8 @@ whereas strokes have a line thickness
 .\" tickets that point the way to radically simplifying its design,
 .\" eliminating its need to groff before you groff.
 .I groff
-introduces several new escape sequences
-and extends the syntax of a few AT&T
+introduces several new escape sequences,
+extends the syntax of a few AT&T
 .I troff \" AT&T
 escape sequences
 (namely,
@@ -5224,6 +5224,8 @@ requests,
 for more on compatibility mode.
 .
 .
+.br
+.ne 2v
 .P
 The register
 .B \[rs]n[.cp]

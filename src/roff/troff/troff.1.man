@@ -10,7 +10,7 @@ typesetter and document formatter
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2021 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -114,12 +114,13 @@ document formatting system.
 .
 If no
 .I file
-operands are given on the command line,
+operands are present,
 or if
 .I file
 is
 .RB \[lq] \- \[rq],
-the standard input stream is read.
+.I @g@troff
+reads the standard input stream.
 .
 .
 .P
@@ -152,7 +153,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP 8n \" "-f fam" + 2n
+.TP 9n \" "-m mac" + 2n + hand-tuned for PDF
 .B \-a
 Generate a plain text approximation of the typeset output.
 .
@@ -171,7 +172,7 @@ for example,
 .
 .
 .IP \[bu]
-Lines are broken where they would be in the formatted output.
+Lines are broken where they would be in formatted output.
 .
 .
 .IP \[bu]
@@ -193,9 +194,10 @@ are not represented.
 .
 .
 .IP \[bu]
-Special characters are rendered in angle brackets;
+A special character is rendered as its identifier between angle
+brackets;
 for example,
-the hyphen character appears as \[lq]<hy>\[rq].
+a hyphen appears as \[lq]<hy>\[rq].
 .RE
 .
 .
@@ -250,11 +252,11 @@ as
 .I text.
 .
 .IR c \~must
-be one character;
+be a one-character identifier;
 .I string
 can be of arbitrary length.
 .
-Such string assignments happen before any macro file is loaded,
+Such assignments happen before any macro file is loaded,
 including the startup file.
 .
 Due to
@@ -352,19 +354,16 @@ option of Unix C compilers.
 .
 .
 .TP
-.BI \-m\~ name
-Process the file
-.RI name .tmac
-prior to any input files.
+.BI \-m\~ mac
+Search for the macro package
+.RI mac .tmac
+and read it prior to any input files.
 .
 If not found,
-.IR tmac. name
+.IR tmac. mac
 is attempted.
 .
-.I name
-(in both arrangements)
-is presumed to be a macro file;
-see the description of
+See the description of
 .I GROFF_TMAC_PATH
 in section \[lq]Environment\[rq] below for the default search locations
 and ordering.
@@ -429,11 +428,11 @@ as
 .I numeric-expression.
 .
 .IR c \~must
-be a one-character name;
+be a one-character identifier;
 .I register
 can be of arbitrary length.
 .
-Such register assignments happen before any macro file is loaded,
+Such assignments happen before any macro file is loaded,
 including the startup file.
 .
 Due to
@@ -494,15 +493,13 @@ options above.
 .
 .
 .TP
-.BI \-w\~ name
+.BI \-w\~ cat
 .TQ
-.BI \-W\~ name
-Enable
-.RB ( \-w )
-or inhibit
-.RB ( \-W )
+.BI \-W\~ cat
+Enable and inhibit,
+respectively,
 warnings in category
-.I name.
+.I cat.
 .
 See section \[lq]Warnings\[rq] below.
 .

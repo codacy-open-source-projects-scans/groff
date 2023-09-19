@@ -146,7 +146,7 @@ option to
 .
 If no
 .I file
-operands are given on the command line,
+operands are present,
 or if
 .I file
 is

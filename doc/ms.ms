@@ -36,8 +36,8 @@
 .nr TC-MARGIN \w'00' \" expect 2-digit page numbers at most
 .ie t .nr PI 3.5n
 .el   .nr PI 4n
-.ND July 2023
-.EH '%''July 2023'
+.ND September 2023
+.EH '%''September 2023'
 .EF ''''
 .OH 'Using \f[I]groff\f[] with the \f[I]ms\f[] macros''%'
 .OF ''''
@@ -1659,8 +1659,7 @@ and draw a
 around it.
 .
 On terminals,
-reverse video is used instead
-(see the implementation note below).
+reverse video or another means of highlighting is used instead.
 .
 If you want
 .I text
@@ -1860,57 +1859,6 @@ _
 \[rs]*>	End subscripting.
 .TE
 .KE
-.
-.
-.nr PS -2
-.nr VS -2
-.LP
-.B1
-.hy 0
-.I "Implementation note:"
-In
-.CW nroff
-mode,
-the
-.CW BX
-macro \[lq]boxes\[rq] its argument by bracketing it with
-.I groff
-extension escape sequences to set the foreground color to black and the
-background to white and then reset them to their previous values;
-the terminal output driver,
-.I grotty (1),
-converts these to ISO\~6429 color escape sequences,
-which may be ignored or mishandled by some terminals,
-or may be disabled by
-.I grotty 's
-.CW \-c
-option.
-.
-Further,
-if the terminal is set up to use these colors in those roles already,
-.CW .BX
-will cause no visible effect in the output.
-.
-Surmounting these challenges would require adding features to
-.I grotty ,
-for instance to provide a mechanism to request ISO\~6429's
-\[lq]standout\[rq] mode \" That's "smso" and "rmso" in terminfo.
-(often supported on monochrome terminals),
-or to replace the presumed support of the terminal for ISO\~6429 escape
-sequences with the use of a library that can query the capabilities of
-the terminal and adapt the output sent to the device accordingly.
-.
-(Practically,
-this likely means adding a dependency on
-.CW libtinfo .)
-.
-Contact the
-.I groff
-development mailing list if you'd like to contribute.
-.sp \n[PD]/2
-.B2
-.nr PS +2
-.nr VS +2
 .
 .
 .NH 2
@@ -2326,19 +2274,21 @@ _
 .KS
 .LP
 Boxed keep macros cause breaks;
-if you need to box a word or phrase within a line,
-see the
-.CW BX
-macro in section \[lq]Typeface and decoration\[rq] above.
+to box words within a line,
+recall
+.CW .BX
+in section \[lq]Typeface and decoration\[rq] above.
 .
 Box lines are drawn as close as possible to the text they enclose so
 that they are usable within paragraphs.
 .
-If you wish to place one or more paragraphs in a boxed keep,
+When boxing entire paragraphs thus,
 you may improve their appearance by calling
 .CW .B1
 after the first paragraphing macro,
-and by adding a small amount of vertical space before calling
+and invoking the
+.CW sp
+request before calling
 .CW .B2 .
 .
 .
@@ -2420,14 +2370,13 @@ cf(CR) s | lx .
 .
 .
 .PP
-The distance stored in
+.I "groff ms"
+inserts the distance stored in
 .CW \[rs]n[DD]
-is inserted before and after each pair of display macros;
+before and after each pair of display macros;
 this is a Berkeley extension.
 .
-In
-.I "groff ms" ,
-this distance replaces any adjacent inter-paragraph distance
+This distance replaces any adjacent inter-paragraph distance
 or subsequent spacing prior to a section heading.
 .
 The
@@ -2445,6 +2394,31 @@ and to equations set with
 .CW .EQ\~I \[rq]. \[lq]
 .
 Changes to either register take effect at the next display boundary.
+.
+.
+.PP
+The display distance applies even in footnotes
+(discussed below),
+which may cause a footnote with a display at its end to
+\[lq]emptily\[rq] spill to the next page.
+.
+Consider the following tactic to compensate.
+.
+.
+.TS
+box center;
+lf(CR).
+\&.FS
+Recall the ideal gas law.
+\&.nr DD-saved \[rs]n[DD] \[rs]" stash display distance
+\&.nr DD 0            \[rs]" eliminate automatic space around display
+\&.sp \[rs]n[DD-saved]u   \[rs]" manually put space before it
+\&.EQ
+P V = n R T
+\&.EN
+\&.FE
+\&.nr DD \[rs]n[DD-saved] \[rs]" restore previous setting
+.TE
 .
 .
 .KS
@@ -3517,8 +3491,8 @@ with
 .I pdfjam (1),
 or with
 .I gropdf (1)'s
-.B .pdfswitchtopage
-feature,
+.CW pdfswitchtopage
+macro,
 for example.
 .
 .

@@ -103,7 +103,7 @@ document formatting system.
 .I @g@refer
 is a
 .MR @g@troff @MAN1EXT@
-preprocessor that prepares bibilographic citations by looking up
+preprocessor that prepares bibliographic citations by looking up
 keywords specified in a
 .MR roff @MAN7EXT@
 input document,
@@ -146,7 +146,7 @@ option to
 .
 If no
 .I file
-operands are given on the command line,
+operands are present,
 or if
 .I file
 is
@@ -155,7 +155,7 @@ is
 reads the standard input stream.
 .
 .
-.LP
+.P
 A citation identifies a work by reference to a
 .I "bibliographic record"
 detailing it.
@@ -211,12 +211,12 @@ multiple citations of the same reference produce a single formatted
 entry.
 .
 .
-.LP
+.P
 Interpretation of lines between
 .B .R1
 and
 .B .R2
-tokens as prepreocessor commands is a GNU
+tokens as preprocessor commands is a GNU
 .I \%refer \" GNU
 extension.
 .
@@ -309,6 +309,12 @@ and
 .B %E
 replace previous occurrences thereof.
 .
+The ordering of multiple
+.B %A
+and
+.B %E
+fields is significant.
+.
 .
 .TP
 .B %A
@@ -317,11 +323,6 @@ names an author.
 If the name contains a suffix such as \[lq]Jr.\&\[rq]
 or \[lq]III\[rq],
 it should be separated from the surname by a comma.
-.
-An entry may contain multiple
-.B %A
-fields;
-order is significant.
 .
 We recommend always supplying an
 .B %A
@@ -540,30 +541,36 @@ or
 .I field
 need be specified.
 .
-The set of
+If
 .I keywords
-searches the bibliographic database(s) for a reference containing
-all such terms.
+are present,
+.I @g@refer
+searches the bibliographic database(s) for a unique reference matching
+them.
 .
-If more than one reference matches,
-that is an error;
-specify further
+Multiple matches are an error;
+add more
 .I keywords
 to disambiguate the reference.
 .
-The
+In the absence of
+.I keywords,
 .I fields
-specify additional bibliographic data to replace or supplement those
-specified in the reference.
+constitute the bibliographic record.
+.
+Otherwise,
+.I fields
+specify additional data to replace or supplement those in the reference.
 .
 When references are accumulating and
 .I keywords
 are present,
+specify
 additional
 .I fields
-should be specified only on the first citation of a particular
+at most on the first citation of a particular
 reference;
-they will apply to all citations of that reference.
+they apply to all further citations thereof.
 .
 .
 .br
@@ -572,16 +579,19 @@ they will apply to all citations of that reference.
 .I opening-text
 and
 .I closing-text
-specify strings to be used to bracket the label instead of those in the
+are
+.I roff
+input used to bracket the label,
+overriding the
 .B \%bracket\-label
 command.
 .
 Leading and trailing spaces are significant.
 .
 If either of these is non-empty,
-the strings specified in the
+the corresponding arguments to the
 .B \%bracket\-label
-command will not be used;
+command are not used;
 alter this behavior with the
 .B [
 and
@@ -589,10 +599,12 @@ and
 .I flags.
 .
 .
+.br
+.ne 3v
 .P
 .I flags
 is a list of non-alphanumeric characters each of which modifies the
-treatment of this particular citation.
+treatment of the particular citation.
 .
 AT&T
 .I \%refer \" AT&T
@@ -600,34 +612,35 @@ treats these flags as
 .I keywords,
 but ignores them since they are non-alphanumeric.
 .
-The following flags direct
-.IR @g@refer .
+The following flags direct GNU
+.IR \%refer . \" GNU
 .
 .
 .TP
 .B #
 Use the label specified by the
 .B \%short\-label
-command instead of that specified by the
-.B \%label
-command.
+command,
+if any.
 .
-If no short label has been specified,
-the normal label will be used.
+.I @g@refer
+otherwise uses the normal label.
 .
 Typically,
-the short label is used with author-date labels and consists of only the
-date and possibly a disambiguating letter;
-the
+a short label implements author-date citation styles consisting of a
+name,
+a year,
+and a disambiguating letter if necessary.
+.
 .RB \[lq] # \[rq]
-is meant to suggest a (quasi-)numeric label.
+is meant to suggest such a (quasi-)numeric label.
 .
 .
 .TP
 .B [
 Precede
 .I opening-text
-with the first string specified in the
+with the first argument given to the
 .B \%bracket\-label
 command.
 .
@@ -636,53 +649,53 @@ command.
 .B ]
 Follow
 .I closing-text
-with the second string specified in the
+with the second argument given to the
 .B \%bracket\-label
 command.
 .
 .
-.LP
-One advantage of using the
+.P
+An advantage of the
 .B [
 and
 .B ]
-flags rather than including the brackets in
+flags over use of
 .I opening-text
 and
 .I closing-text
-is that you can change the style of bracket used in the document just by
-changing the
+is that you can update the document's bracketing style in one place
+using the
 .B \%bracket\-label
 command.
 .
-Another is that sorting and merging of citations will not necessarily be
+Another is that sorting and merging of citations is not necessarily
 inhibited if the flags are used.
 .
 .
-.LP
-If a label is to be inserted into the text,
-it will be attached to the line preceding the
+.P
+.I @g@refer
+appends any label resulting from a citation to the
+.I roff
+input line preceding the
 .B .[
-line.
+token.
 .
 If there is no such line,
-then an extra line will be inserted before the
-.B .[
-line and a warning will be given.
+.I @g@refer
+issues a warning diagnostic.
 .
 .
-.LP
-There is no special notation for making a citation to multiple
-references.
+.P
+There is no special notation for citing multiple references in series.
 .
 Use a sequence of citations,
 one for each reference,
 with nothing between them.
 .
 .I @g@refer
-will attach all of their labels to the line preceding the first.
+attaches all of their labels to the line preceding the first.
 .
-The labels may also be sorted or merged.
+These labels may be sorted or merged.
 .
 See the description of the
 .B <>
@@ -693,31 +706,32 @@ and
 .B \%abbreviate\-label\-ranges
 commands.
 .
-A label will not be merged if its citation has a non-empty
+A label is not merged if its citation has a non-empty
 .I opening-text
 or
 .IR closing-text .
 .
 However,
-the labels for a citation using the
+the labels for two adjacent citations,
+the former using the
 .B ]
 flag and without any
-.I closing-text
-immediately followed by a citation using the
+.I closing-text,
+and the latter using the
 .B [
 flag and without any
-.I opening-text
+.I opening-text,
 may be sorted and merged
-even though the first citation's
+even if the former's
 .I opening-text
-or the second citation's
+or the latter's
 .I closing-text
 is non-empty.
 .
-(To prevent this,
+(To prevent these operations,
 use the dummy character escape sequence
 .B \[rs]&
-as the first citation's
+as the former's
 .IR closing-text .)
 .
 .
@@ -730,13 +744,17 @@ Commands are contained between lines starting with
 and
 .BR .R2 .
 .
-Recognition of these lines can be prevented by the
+The
 .B \-R
-option.
+option prevents recognition of these lines.
 .
 When a
+.I @g@refer
+encounters a
 .B .R1
-line is recognized any accumulated references are flushed out.
+line,
+it
+flushes any accumulated references.
 .
 Neither
 .B .R1
@@ -774,7 +792,7 @@ Neither a number sign nor a semicolon is recognized inside double
 quotes.
 .
 A line can be continued by ending it with a backslash
-.RB \[lq] \[rs] \[rq];
+.RB \[lq]\^ \[rs] \[rq];
 this works everywhere except after a number sign.
 .
 .

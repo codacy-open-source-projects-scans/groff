@@ -1338,20 +1338,22 @@ End boxed keep.
 .
 .P
 Boxed keep macros cause breaks;
-if you need to box a word or phrase within a line,
-see the
-.B BX
-macro in section \[lq]Highlighting\[rq] above.
+to box words within a line,
+recall
+.B .BX
+in section \[lq]Highlighting\[rq] above.
 .
 Box lines are drawn as close as possible to the text they enclose so
 that they are usable within paragraphs.
 .
-If you wish to place one or more paragraphs in a boxed keep,
+When boxing entire paragraphs thus,
 you may improve their appearance by calling
 .B .B1
 after the first paragraphing macro,
-and by adding a small amount of vertical space before calling
-.BR .B2 .
+and invoking the
+.B sp
+request before calling
+.B .B2 .
 .
 .
 .P
@@ -1451,14 +1453,13 @@ End any display.
 .
 .
 .P
-The distance stored in
+.I "groff ms"
+inserts the distance stored in
 .B \[rs]n[DD]
-is inserted before and after each pair of display macros;
+before and after each pair of display macros;
 this is a Berkeley extension.
 .
-In
-.IR "groff ms" ,
-this distance replaces any adjacent inter-paragraph distance
+This distance replaces any adjacent inter-paragraph distance
 or subsequent spacing prior to a section heading.
 .
 The

@@ -147,7 +147,7 @@ must be used.
 .
 If no
 .I file
-operands are given on the command line,
+operands are present,
 or if
 .I file
 is
@@ -194,7 +194,7 @@ these may safely be ignored if you do not know \*[tx].
 .
 .
 .P
-Three points are worth special note. \" good, bad, and different
+Four points are worth special note.
 .
 .
 .IP \[bu] 3n
@@ -214,7 +214,7 @@ though it may suffice for simple inputs.
 .
 .IP \[bu]
 GNU
-.I eqn
+.I eqn \" GNU
 sets the input token
 .RB \[lq] .\|.\|.\& \[rq]
 as an ellipsis on the text baseline,
@@ -223,6 +223,15 @@ not the three centered dots of AT&T
 .
 Set an ellipsis on the math axis with the GNU extension macro
 .BR cdots .
+.
+.
+.IP \[bu]
+GNU
+.IR eqn 's\" GNU
+.B delim
+command does not treat an
+.RB \[lq] on \[rq]
+argument as a pair of equation delimiters.
 .
 .
 .\" ====================================================================
@@ -270,7 +279,8 @@ the output.
 .
 .
 .P
-The following input characters separate tokens along with other tasks.
+Beyond their primary functions,
+the following input characters separate tokens as well.
 .
 .
 .TP
@@ -595,12 +605,14 @@ and
 .SS "New primitives"
 .\" ====================================================================
 .
-The GNU extension primitives
+We describe the GNU extension primitives
 .RB \[lq] type \[rq]
 and
 .B \%chartype
-are discussed in subsection \[lq]Spacing and typeface\[rq] above;
+in subsection \[lq]Spacing and typeface\[rq] above;
 .RB \[lq] set \[rq]
+and
+.RB \[lq] reset \[rq]
 in subsection \[lq]Customization\[rq] below;
 and
 .BR gbfont ,
@@ -621,17 +633,19 @@ Set
 as an accent over
 .IR e1 .
 .
+.I @g@eqn
+assumes that
 .I e2
-is assumed to be at the appropriate height for a lowercase letter
-without an ascender;
-.I @g@ eqn
-vertically shifts it depending on
+is at the appropriate height for a lowercase letter without an ascender,
+and shifts it vertically based on
 .IR e1 's
 height.
 .
 For example,
+.I @g@eqn
+defines
 .B hat
-is defined as follows.
+as follows.
 .
 .
 .RS
@@ -1038,7 +1052,7 @@ right delimiters,
 respectively.
 .
 If yours does,
-consider swapping them,
+swap them,
 or select others.
 .
 .
@@ -1069,12 +1083,11 @@ or select others.
 The integer
 .RI value\~ n ,
 in hundredths of an em,
-increases the vertical spacing between rows,
-using
-.IR groff 's
+uses the formatter's
 .B \[rs]x
-escape sequence;
-the value has no effect in MathML mode.
+escape sequence to increase the vertical spacing between rows;
+.I @g@eqn
+ignores it when producing MathML.
 .
 Negative values are accepted but have no effect.
 .
@@ -1100,9 +1113,9 @@ They have no effect when generating MathML,
 which delegates typesetting to a MathML rendering engine.
 .
 Configure these parameters with the
-.B set
+.RB \[lq] set \[rq]
 and
-.B reset
+.RB \[lq] reset \[rq]
 primitives.
 .
 .
@@ -1903,9 +1916,9 @@ The default device is
 .I @MACRODIR@/\:\%eqnrc
 initializes the preprocessor.
 .
-Any
+Any valid
 .I @g@eqn
-valid input is accepted.
+input is accepted.
 .
 .
 .\" ====================================================================
@@ -1922,8 +1935,11 @@ does.
 .
 .
 .IP \[bu] 3n
-.I @g@eqn
-customization parameters have no effect on generated MathML.
+GNU
+.IR eqn 's\" GNU
+rendering parameters
+(see section \[lq]Customziation\[rq] above)
+have no effect on generated MathML.
 .
 .
 .IP \[bu]

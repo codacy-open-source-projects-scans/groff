@@ -1815,11 +1815,10 @@ alternately.
 _ifstyle()dnl
 .RS
 .IP
-.\" from tmac/groff_ms.7.man
+.\" from src/preproc/eqn/eqn.1.man
 .EX
-After
-\&.B .NH
-is called,
+Set an ellipsis on the math axis with the GNU extension macro
+\&.BR cdots .
 .EE
 .RE
 .

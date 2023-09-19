@@ -412,7 +412,7 @@ bool is_family_valid(const char *);
 
 extern double spread_limit;
 
-extern int break_flag;
+extern bool want_break;
 extern symbol default_family;
 extern int translate_space_to_dummy;
 

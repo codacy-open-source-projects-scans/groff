@@ -789,7 +789,7 @@
 .\" NS
 .\" NS width register 'Ar' set in doc-common
 .
-.ds doc-str-Ar-default "file\ .\|.\|.
+.ds doc-str-Ar-default file\~\f[].\|.\|.\"
 .
 .eo
 .de Ar
@@ -802,7 +802,7 @@
 .
 .    \" no argument
 .    if !\n[.$] \
-.      nop \)\*[doc-str-Ar-default]\&\f[]
+.      nop \)\*[doc-str-Ar-default]\&
 .  \}
 .
 .  if !\n[doc-arg-count] \

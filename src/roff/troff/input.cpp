@@ -78,7 +78,7 @@ void vjustify();
 void transparent_file();
 
 token tok;
-int break_flag = 0;
+bool want_break = false;
 int class_flag = 0;
 int color_flag = 1;		// colors are on by default
 static int backtrace_flag = 0;
@@ -99,17 +99,24 @@ static symbol blank_line_macro_name;
 static symbol leading_spaces_macro_name;
 static int compatible_flag = 0;
 static int do_old_compatible_flag = -1;	// for .do request
-int ascii_output_flag = 0;
+bool want_abstract_output = false;
 int suppress_output_flag = 0;
 int is_html = 0;
-int begin_level = 0;		// number of nested \O escapes
+int suppression_level = 0;	// depth of nested \O escapes
 
-int have_input = 0;		// whether \f, \F, \D'F...', \H, \m, \M,
-				// \O[345], \R, \s, or \S has been processed
-				// in token::next()
-int old_have_input = 0;		// value of have_input right before \n
+// Keep track of whether \f, \F, \D'F...', \H, \m, \M, \O[345], \R, \s,
+// or \S has been processed in token::next().
+bool have_formattable_input = false;
+// `have_formattable_input` is reset immediately upon reading a new
+// input line, but we need more state information because the input line
+// might have been continued/interrupted with `\c`.
+// Consider:
+//   \f[TB]\m[red]hello\c
+//   \f[]\m[]
+bool old_have_formattable_input = false;
+
 bool device_has_tcommand = false;	// 't' output command supported
-int unsafe_flag = 0;		// safer by default
+bool want_unsafe_requests = false;	// be safer by default
 
 bool have_multiple_params = false;	// e.g., \[e aa], \*[foo bar]
 
@@ -117,7 +124,7 @@ double spread_limit = -3.0 - 1.0;	// negative means deactivated
 
 double warn_scale;
 char warn_scaling_unit;
-int debug_state = 0;		// turns on debugging of the html troff state
+bool want_html_debugging = true;	// enable more diagnostics
 
 search_path *mac_path = &safer_macro_path;
 
@@ -586,8 +593,8 @@ inline int input_stack::get(node **np)
 {
   int res = (top->ptr < top->eptr) ? *top->ptr++ : finish_get(np);
   if (res == '\n') {
-    old_have_input = have_input;
-    have_input = 0;
+    old_have_formattable_input = have_formattable_input;
+    have_formattable_input = false;
   }
   return res;
 }
@@ -603,7 +610,7 @@ int input_stack::finish_get(node **np)
     input_iterator *tem = top;
     check_end_diversion(tem);
 #if defined(DEBUGGING)
-    if (debug_state)
+    if (want_html_debugging)
       if (tem->is_diversion)
 	fprintf(stderr,
 		"in diversion level = %d\n", input_stack::get_div_level());
@@ -692,14 +699,14 @@ void input_stack::push(input_iterator *in)
     in->diversion_state = diversion_state;
     diversion_state = curenv->construct_state(0);
 #if defined(DEBUGGING)
-    if (debug_state) {
+    if (want_html_debugging) {
       curenv->dump_troff_state();
       fflush(stderr);
     }
 #endif
   }
 #if defined(DEBUGGING)
-  if (debug_state)
+  if (want_html_debugging)
     if (top->is_diversion) {
       fprintf(stderr,
 	      "in diversion level = %d\n", input_stack::get_div_level());
@@ -1943,7 +1950,7 @@ void token::next()
 			      curenv->get_fill_color());
 	return;
       case ESCAPE_NEWLINE:
-	have_input = 0;
+	have_formattable_input = false;
 	break;
       case ESCAPE_LEFT_BRACE:
       ESCAPE_LEFT_BRACE:
@@ -2178,7 +2185,7 @@ void token::next()
 	  else
 	    (void) curenv->set_font(atoi(s.contents()));
 	  if (!compatible_flag)
-	    have_input = 1;
+	    have_formattable_input = true;
 	  break;
 	}
       case 'F':
@@ -2187,7 +2194,7 @@ void token::next()
 	  if (s.is_null())
 	    break;
 	  curenv->set_family(s);
-	  have_input = 1;
+	  have_formattable_input = true;
 	  break;
 	}
       case 'g':
@@ -2215,7 +2222,7 @@ void token::next()
 	    curenv->set_char_height(x);
 	}
 	if (!compatible_flag)
-	  have_input = 1;
+	  have_formattable_input = true;
 	break;
       case 'k':
 	nm = read_escape_parameter();
@@ -2242,12 +2249,12 @@ void token::next()
       case 'm':
 	do_glyph_color(read_escape_parameter(ALLOW_EMPTY));
 	if (!compatible_flag)
-	  have_input = 1;
+	  have_formattable_input = true;
 	break;
       case 'M':
 	do_fill_color(read_escape_parameter(ALLOW_EMPTY));
 	if (!compatible_flag)
-	  have_input = 1;
+	  have_formattable_input = true;
 	break;
       case 'n':
 	{
@@ -2286,19 +2293,19 @@ void token::next()
       case 'R':
 	do_register();
 	if (!compatible_flag)
-	  have_input = 1;
+	  have_formattable_input = true;
 	break;
       case 's':
 	if (read_size(&x))
 	  curenv->set_size(x);
 	if (!compatible_flag)
-	  have_input = 1;
+	  have_formattable_input = true;
 	break;
       case 'S':
 	if (get_delim_number(&x, 0))
 	  curenv->set_char_slant(x);
 	if (!compatible_flag)
-	  have_input = 1;
+	  have_formattable_input = true;
 	break;
       case 't':
 	type = TOKEN_NODE;
@@ -2950,17 +2957,17 @@ void process_input_stack()
     case token::TOKEN_CHAR:
       {
 	unsigned char ch = tok.c;
-	if (bol && !have_input
+	if (bol && !have_formattable_input
 	    && (curenv->get_control_character() == ch
 		|| curenv->get_no_break_control_character() == ch)) {
-	  break_flag = (curenv->get_control_character() == ch);
+	  want_break = (curenv->get_control_character() == ch);
 	  // skip tabs as well as spaces here
 	  do {
 	    tok.next();
 	  } while (tok.is_white_space());
 	  symbol nm = get_name();
 #if defined(DEBUGGING)
-	  if (debug_state) {
+	  if (want_html_debugging) {
 	    if (! nm.is_null()) {
 	      if (strcmp(nm.contents(), "test") == 0) {
 		fprintf(stderr, "found it!\n");
@@ -2980,7 +2987,7 @@ void process_input_stack()
 	  else {
 	    interpolate_macro(nm);
 #if defined(DEBUGGING)
-	    if (debug_state) {
+	    if (want_html_debugging) {
 	      fprintf(stderr, "finished interpreting [%s] and environment state is\n", nm.contents());
 	      curenv->dump_troff_state();
 	    }
@@ -2994,7 +3001,7 @@ void process_input_stack()
 	  else {
 	    for (;;) {
 #if defined(DEBUGGING)
-	      if (debug_state) {
+	      if (want_html_debugging) {
 		fprintf(stderr, "found [%c]\n", ch); fflush(stderr);
 	      }
 #endif
@@ -3035,7 +3042,7 @@ void process_input_stack()
       }
     case token::TOKEN_NEWLINE:
       {
-	if (bol && !old_have_input
+	if (bol && !old_have_formattable_input
 	    && !curenv->get_prev_line_interrupted())
 	  trapping_blank_line();
 	else {
@@ -3135,7 +3142,7 @@ void process_input_stack()
       {
 	trap_bol_stack.push(bol);
 	bol = 1;
-	have_input = 0;
+	have_formattable_input = false;
 	break;
       }
     case token::TOKEN_END_TRAP:
@@ -3144,7 +3151,7 @@ void process_input_stack()
 	  error("spurious end trap token detected!");
 	else
 	  bol = trap_bol_stack.pop();
-	have_input = 0;
+	have_formattable_input = false;
 
 	/* I'm not totally happy about this.  But I can't think of any other
 	  way to do it.  Doing an output_pending_lines() whenever a
@@ -4071,7 +4078,7 @@ int macro::empty()
 
 macro_iterator::macro_iterator(symbol s, macro &m, const char *how_called,
 			       int init_args)
-: string_iterator(m, how_called, s), args(0), argc(0), with_break(break_flag)
+: string_iterator(m, how_called, s), args(0), argc(0), with_break(want_break)
 {
   if (init_args) {
     arg_list *al = input_stack::get_arg_list();
@@ -4082,7 +4089,7 @@ macro_iterator::macro_iterator(symbol s, macro &m, const char *how_called,
   }
 }
 
-macro_iterator::macro_iterator() : args(0), argc(0), with_break(break_flag)
+macro_iterator::macro_iterator() : args(0), argc(0), with_break(want_break)
 {
 }
 
@@ -5409,7 +5416,7 @@ static void do_width()
   input_stack::push(make_temp_iterator(i_to_a(x)));
   env.width_registers();
   curenv = oldenv;
-  have_input = 0;
+  have_formattable_input = false;
 }
 
 charinfo *page_character;
@@ -5699,26 +5706,26 @@ static node *do_suppress(symbol nm)
   const char *s = nm.contents();
   switch (*s) {
   case '0':
-    if (begin_level == 0)
+    if (suppression_level == 0)
       // suppress generation of glyphs
       return new suppress_node(0, 0);
     break;
   case '1':
-    if (begin_level == 0)
+    if (suppression_level == 0)
       // enable generation of glyphs
       return new suppress_node(1, 0);
     break;
   case '2':
-    if (begin_level == 0)
+    if (suppression_level == 0)
       return new suppress_node(1, 1);
     break;
   case '3':
-    have_input = 1;
-    begin_level++;
+    have_formattable_input = true;
+    suppression_level++;
     break;
   case '4':
-    have_input = 1;
-    begin_level--;
+    have_formattable_input = true;
+    suppression_level--;
     break;
   case '5':
     {
@@ -5744,10 +5751,10 @@ static node *do_suppress(symbol nm)
 	return 0;
       }
       image_no++;
-      if (begin_level == 0)
+      if (suppression_level == 0)
 	return new suppress_node(symbol(s), position, image_no);
       else
-	have_input = 1;
+	have_formattable_input = true;
     }
     break;
   default:
@@ -5989,7 +5996,7 @@ int do_if_request()
     delete_node_list(n1);
     delete_node_list(n2);
     curenv = oldenv;
-    have_input = 0;
+    have_formattable_input = false;
     suppress_push = 0;
     tok.next();
   }
@@ -6165,7 +6172,7 @@ void source_quietly()
 
 void pipe_source()
 {
-  if (!unsafe_flag) {
+  if (!want_unsafe_requests) {
     error("'pso' request is not allowed in safer mode");
     skip_line();
   }
@@ -6920,7 +6927,7 @@ void do_open(int append)
 
 void open_request()
 {
-  if (!unsafe_flag) {
+  if (!want_unsafe_requests) {
     error("'open' request is not allowed in safer mode");
     skip_line();
   }
@@ -6930,7 +6937,7 @@ void open_request()
 
 void opena_request()
 {
-  if (!unsafe_flag) {
+  if (!want_unsafe_requests) {
     error("'opena' request is not allowed in safer mode");
     skip_line();
   }
@@ -7676,6 +7683,15 @@ const char *readonly_register::get_string()
   return i_to_a(*p);
 }
 
+readonly_boolean_register::readonly_boolean_register(bool *q): p(q)
+{
+}
+
+const char *readonly_boolean_register::get_string()
+{
+  return i_to_a(*p);
+}
+
 void abort_request()
 {
   int c;
@@ -7728,7 +7744,7 @@ char *read_string()
 
 void pipe_output()
 {
-  if (!unsafe_flag) {
+  if (!want_unsafe_requests) {
     error("'pi' request is not allowed in safer mode");
     skip_line();
   }
@@ -7760,7 +7776,7 @@ static int system_status;
 
 void system_request()
 {
-  if (!unsafe_flag) {
+  if (!want_unsafe_requests) {
     error("'sy' request is not allowed in safer mode");
     skip_line();
   }
@@ -7784,7 +7800,7 @@ void copy_file()
   symbol filename = get_long_name(true /* required */);
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   if (!filename.is_null())
     curdiv->copy_file(filename.contents());
@@ -7816,7 +7832,7 @@ void transparent_file()
   symbol filename = get_long_name(true /* required */);
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   if (!filename.is_null()) {
     errno = 0;
@@ -7916,32 +7932,32 @@ static void parse_output_page_list(char *p)
   }
 }
 
-static FILE *open_mac_file(const char *mac, char **path)
+static FILE *open_macro_package(const char *mac, char **path)
 {
   // Try `mac`.tmac first, then tmac.`mac`.  Expect ENOENT errors.
-  char *s1 = new char[strlen(mac)+strlen(MACRO_POSTFIX)+1];
+  char *s1 = new char[strlen(mac) + strlen(MACRO_POSTFIX) + 1];
   strcpy(s1, mac);
   strcat(s1, MACRO_POSTFIX);
   FILE *fp = mac_path->open_file(s1, path);
   if (!fp && ENOENT != errno)
-    error("can't open macro file '%1': %2", s1, strerror(errno));
+    error("unable to open macro file '%1': %2", s1, strerror(errno));
   delete[] s1;
   if (!fp) {
-    char *s2 = new char[strlen(mac)+strlen(MACRO_PREFIX)+1];
+    char *s2 = new char[strlen(mac) + strlen(MACRO_PREFIX) + 1];
     strcpy(s2, MACRO_PREFIX);
     strcat(s2, mac);
     fp = mac_path->open_file(s2, path);
-  if (!fp && ENOENT != errno)
-      error("can't open macro file '%1': %2", s2, strerror(errno));
+    if (!fp && ENOENT != errno)
+      error("unable to open macro file '%1': %2", s2, strerror(errno));
     delete[] s2;
   }
   return fp;
 }
 
-static void process_macro_file(const char *mac)
+static void process_macro_package_argument(const char *mac)
 {
   char *path;
-  FILE *fp = open_mac_file(mac, &path);
+  FILE *fp = open_macro_package(mac, &path);
   if (!fp)
     fatal("unable to open macro file for -m argument '%1'", mac);
   const char *s = symbol(path).contents();
@@ -8241,7 +8257,7 @@ int main(int argc, char **argv)
       backtrace_flag = 1;
       break;
     case 'a':
-      ascii_output_flag = 1;
+      want_abstract_output = true;
       break;
     case 'z':
       suppress_output_flag = 1;
@@ -8283,11 +8299,11 @@ int main(int argc, char **argv)
       // silently ignore these
       break;
     case 'U':
-      unsafe_flag = 1;	// unsafe behaviour
+      want_unsafe_requests = true;
       break;
 #if defined(DEBUGGING)
     case 'D':
-      debug_state = 1;
+      want_html_debugging = true;
       break;
 #endif
     case CHAR_MAX + 1: // --help
@@ -8301,7 +8317,7 @@ int main(int argc, char **argv)
     default:
       assert(0);
     }
-  if (unsafe_flag)
+  if (want_unsafe_requests)
     mac_path = &macro_path;
   set_string(".T", device);
   init_charset_table();
@@ -8371,7 +8387,7 @@ int main(int argc, char **argv)
   if (!no_rc)
     process_startup_file(INITIAL_STARTUP_FILE);
   while (macros) {
-    process_macro_file(macros->s);
+    process_macro_package_argument(macros->s);
     string_list *tem = macros;
     macros = macros->next;
     delete tem;
@@ -8414,7 +8430,7 @@ static void init_registers()
   set_register("yr", int(t->tm_year));
   set_register("$$", getpid());
   register_dictionary.define(".A",
-      new readonly_text_register(ascii_output_flag ? "1" : "0"));
+      new readonly_text_register(want_abstract_output ? "1" : "0"));
 }
 
 /*
@@ -8560,14 +8576,14 @@ void init_input_requests()
   register_dictionary.define(".br", new break_flag_reg);
   register_dictionary.define(".C", new readonly_register(&compatible_flag));
   register_dictionary.define(".cp", new readonly_register(&do_old_compatible_flag));
-  register_dictionary.define(".O", new variable_reg(&begin_level));
+  register_dictionary.define(".O", new variable_reg(&suppression_level));
   register_dictionary.define(".c", new lineno_reg);
   register_dictionary.define(".color", new readonly_register(&color_flag));
   register_dictionary.define(".F", new filename_reg);
   register_dictionary.define(".g", new readonly_text_register("1"));
   register_dictionary.define(".H", new readonly_register(&hresolution));
   register_dictionary.define(".R", new readonly_text_register("10000"));
-  register_dictionary.define(".U", new readonly_register(&unsafe_flag));
+  register_dictionary.define(".U", new readonly_boolean_register(&want_unsafe_requests));
   register_dictionary.define(".V", new readonly_register(&vresolution));
   register_dictionary.define(".warn", new readonly_register(&warning_mask));
   extern const char *major_version;
@@ -8620,7 +8636,7 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
   // Don't interpret character definitions in compatible mode.
   int old_compatible_flag = compatible_flag;
   compatible_flag = 0;
-  int old_escape_char = escape_char;
+  int previous_escape_char = escape_char;
   escape_char = '\\';
   macro *mac = ci->set_macro(0);
   assert(mac != 0);
@@ -8654,8 +8670,8 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
   tok = old_tok;
   curenv = oldenv;
   compatible_flag = old_compatible_flag;
-  escape_char = old_escape_char;
-  have_input = 0;
+  escape_char = previous_escape_char;
+  have_formattable_input = false;
   return n;
 }
 
@@ -8815,7 +8831,7 @@ static void read_color_draw_node(token &start)
     }
     tok.next();
   }
-  have_input = 1;
+  have_formattable_input = true;
 }
 
 static struct {
@@ -9147,7 +9163,7 @@ void charinfo::get_flags()
     assert(!s.is_null());
     if (ci->contains(get_unicode_code())) {
 #if defined(DEBUGGING)
-      if (debug_state)
+      if (want_html_debugging)
 	fprintf(stderr, "charinfo::get_flags %p %s %d\n",
 			(void *)ci, ci->nm.contents(), ci->flags);
 #endif
@@ -9213,7 +9229,7 @@ bool charinfo::contains(int c, bool already_called)
   while (ranges_iter != ranges.end()) {
     if (c >= ranges_iter->first && c <= ranges_iter->second) {
 #if defined(DEBUGGING)
-      if (debug_state)
+      if (want_html_debugging)
 	fprintf(stderr, "charinfo::contains(%d)\n", c);
 #endif
       return true;

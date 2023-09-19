@@ -1364,7 +1364,7 @@ void fill()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   curenv->fill = 1;
   tok.next();
@@ -1374,7 +1374,7 @@ void no_fill()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   curenv->fill = 0;
   curenv->suppress_next_eol = 1;
@@ -1390,7 +1390,7 @@ void center()
     n = 0;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   curenv->right_justify_lines = 0;
   curenv->center_lines = n;
@@ -1407,7 +1407,7 @@ void right_justify()
     n = 0;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   curenv->center_lines = 0;
   curenv->right_justify_lines = n;
@@ -1514,7 +1514,7 @@ void indent()
     temp = curenv->prev_indent;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   curenv->have_temporary_indent = 0;
   curenv->prev_indent = curenv->indent;
@@ -1531,7 +1531,7 @@ void temporary_indent()
     err = 1;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break();
   if (temp < H0) {
     warning(WARN_RANGE, "total indent cannot be negative");
@@ -2464,7 +2464,7 @@ void do_break_request(int spread)
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (break_flag)
+  if (want_break)
     curenv->do_break(spread);
   tok.next();
 }

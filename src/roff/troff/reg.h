@@ -29,10 +29,19 @@ public:
   virtual void set_value(units);
 };
 
+// TODO: Use template to parameterize class in the pointed-to data type?
+
 class readonly_register : public reg {
   int *p;
 public:
   readonly_register(int *);
+  const char *get_string();
+};
+
+class readonly_boolean_register : public reg {
+  bool *p;
+public:
+  readonly_boolean_register(bool *);
   const char *get_string();
 };
 

@@ -16,8 +16,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-extern int debug_state;
-
 #include "troff.h"
 
 #ifdef HAVE_UNISTD_H
@@ -6041,7 +6039,7 @@ static void translate_font()
     return;
   }
   symbol from = get_name(true /* required */);
-  assert(!from.is_null()); // has_arg() should ensure this
+  assert(!from.is_null()); // has_arg()+get_name() should ensure this
   if (is_nonnegative_integer(from.contents())) {
     error("cannot translate a font mounting position");
     skip_line();
@@ -6337,7 +6335,8 @@ static void zoom_font()
     return;
   }
   symbol font_name = get_name();
-  assert(font_name != 0 /* nullptr */); // has_arg() should ensure this
+  // has_arg()+get_name() should ensure the following
+  assert(font_name != 0 /* nullptr */);
   if (is_nonnegative_integer(font_name.contents())) {
     warning(WARN_FONT, "cannot set zoom factor of a font mounting"
 	    " position");
@@ -6649,7 +6648,7 @@ void init_output()
 {
   if (suppress_output_flag)
     the_output = new suppress_output_file;
-  else if (ascii_output_flag)
+  else if (want_abstract_output)
     the_output = new ascii_output_file;
   else
     the_output = new troff_output_file;
