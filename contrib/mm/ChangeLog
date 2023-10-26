@@ -31,6 +31,8 @@
 	non-loop.  Improve diagnostic message: identify who is speaking,
 	what operation failed, and end with newline.
 
+	Fixes <https://savannah.gnu.org/bugs/?64312>.
+
 2023-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Validate reference system state and user input.
@@ -135,7 +137,7 @@
 
 	* m.tmac (IND): Use `hd@mark-trimmed` instead of `hd*mark` in
 	index entries, just as is done with references; we don't want
-	trailing spaces in it.
+	trailing spaces in them.
 
 2023-05-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 

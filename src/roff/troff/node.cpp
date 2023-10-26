@@ -6204,7 +6204,7 @@ static bool has_font(font_lookup_info *finfo)
 {
   int n;
   tok.skip();
-  if (tok.usable_as_delimiter()) {
+  if (tok.is_usable_as_delimiter()) {
     symbol s = get_name(true /* required */);
     finfo->requested_name = (char *)s.contents();
     if (!s.is_null()) {
@@ -6490,7 +6490,7 @@ static void embolden_font()
   else {
     int n = finfo.position;
     if (has_arg()) {
-      if (tok.usable_as_delimiter()) {
+      if (tok.is_usable_as_delimiter()) {
 	font_lookup_info finfo2;
 	if (!has_font(&finfo2))
 	  font_lookup_error(finfo2, "for conditional emboldening");

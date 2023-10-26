@@ -108,7 +108,7 @@ document formatting system
 .RI [ file\~ .\|.\|.]
 .
 .SY groff
-.B \-\-version
+.B \%\-\-version
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
 .YS
@@ -483,7 +483,7 @@ and
 .TP
 .B \-v
 .TQ
-.B \-\-version
+.B \%\-\-version
 Write version information for
 .I groff
 and all programs run by it to the standard output stream;

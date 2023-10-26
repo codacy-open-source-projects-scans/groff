@@ -85,7 +85,7 @@ output in X11
 .B \-version
 .
 .SY gxditview
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -461,7 +461,7 @@ display a usage message,
 while
 .B \-version
 and
-.B \-\-version
+.B \%\-\-version
 show version information;
 all exit afterward.
 .

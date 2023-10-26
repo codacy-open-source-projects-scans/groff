@@ -1231,7 +1231,7 @@ void glyph_color_change()
 
 static symbol P_symbol("P");
 
-void font_change()
+static void select_font()
 {
   symbol s = get_name();
   bool is_number = true;
@@ -1250,9 +1250,12 @@ void font_change()
   // requested.  We must warn here if a bogus font name is selected.
   if (is_number)
     (void) curenv->set_font(atoi(s.contents()));
-  else
-    if (!curenv->set_font(s))
+  else {
+    if (s == "DESC")
+      error("'%1' is not a valid font name", s.contents());
+    else if (!curenv->set_font(s))
       warning(WARN_FONT, "cannot select font '%1'", s.contents());
+  }
   skip_line();
 }
 
@@ -1632,7 +1635,7 @@ void number_lines()
     curenv->numbering_nodes = nd;
     curenv->line_number_digit_width = env_digit_width(curenv);
     int n;
-    if (!tok.usable_as_delimiter()) {
+    if (!tok.is_usable_as_delimiter()) {
       if (get_integer(&n, next_line_number)) {
 	next_line_number = n;
 	if (next_line_number < 0) {
@@ -1645,7 +1648,7 @@ void number_lines()
       while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	tok.next();
     if (has_arg()) {
-      if (!tok.usable_as_delimiter()) {
+      if (!tok.is_usable_as_delimiter()) {
 	if (get_integer(&n)) {
 	  if (n <= 0) {
 	    warning(WARN_RANGE, "negative or zero line number multiple");
@@ -1658,14 +1661,15 @@ void number_lines()
 	while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	  tok.next();
       if (has_arg()) {
-	if (!tok.usable_as_delimiter()) {
+	if (!tok.is_usable_as_delimiter()) {
 	  if (get_integer(&n))
 	    curenv->number_text_separation = n;
 	}
 	else
 	  while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	    tok.next();
-	if (has_arg() && !tok.usable_as_delimiter() && get_integer(&n))
+	if (has_arg() && !tok.is_usable_as_delimiter()
+	    && get_integer(&n))
 	  curenv->line_number_indent = n;
       }
     }
@@ -3457,7 +3461,7 @@ void init_env_requests()
   init_request("fc", field_characters);
   init_request("fi", fill);
   init_request("fcolor", fill_color_change);
-  init_request("ft", font_change);
+  init_request("ft", select_font);
   init_request("gcolor", glyph_color_change);
   init_request("hc", hyphen_char);
   init_request("hlm", hyphen_line_max_request);

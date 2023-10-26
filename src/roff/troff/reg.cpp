@@ -325,9 +325,9 @@ void define_register()
 #if 0
 void inline_define_register()
 {
-  token start;
-  start.next();
-  if (!start.delimiter(true /* report error */))
+  token start_token;
+  start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
     return;
   tok.next();
   symbol nm = get_name(true /* required */);
@@ -344,10 +344,10 @@ void inline_define_register()
     prev_value = 0;
   if (get_number(&v, 'u', prev_value)) {
     r->set_value(v);
-    if (start != tok) {
+    if (start_token != tok) {
       if (get_number(&v, 'u')) {
 	r->set_increment(v);
-	if (start != tok)
+	if (start_token != tok)
 	  warning(WARN_DELIM, "closing delimiter does not match");
       }
     }

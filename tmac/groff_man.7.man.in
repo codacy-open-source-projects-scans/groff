@@ -221,6 +221,9 @@ Man pages should be encoded using Unicode basic Latin code points
 exclusively,
 and employ the Unix line-ending convention
 (U+000A only).
+Some basic Latin characters have special meaning to
+.I roff;
+see subsection \(lqPortability\(rq below.
 .\" What about rare English words that require diacritics, and
 .\" proper names that require more than basic Latin?
 .\"
@@ -610,14 +613,6 @@ and must contain only text of the form
 .I summary-description
 .RE \" Move left margin back to .IP indentation.
 for a man page to be properly indexed.
-.
-See
-_ifnotstyle()dnl
-.MR groff_man_style @MAN7EXT@
-for suggestions and
-_endif()dnl
-.MR man 7
-for the conventions prevailing on your system.
 .RE \" Move left margin back to standard position.
 .
 .
@@ -712,25 +707,36 @@ before the spaces.
 _endif()dnl
 .IP
 .\" Also see subsection "History" below...
-These macros are extensions introduced in Ninth Edition Unix.
+.B .EX
+and
+.B .EE
+are extensions introduced in Ninth Edition Unix.
 .
-Systems running that
-.IR troff , \" AT&T Research Unix
-or those from
 Documenter's Workbench,
 Heirloom Doctools,
-or Plan\~9
-.I troff
-support them.
+and
+Plan\~9
+.IR troff s, \" DWB, Heirloom, Plan 9
+and
+.I mandoc
+(since 1.12.2)
+also support them.
+.
+Solaris
+.I troff \" Solaris
+does not.
 .\" Solaris 10 troff does not support .EX/.EE.  Neatroff doesn't ship
 .\" (m)an macros.
 .
-To be certain your page will be portable to systems that do not,
-copy their definitions from the
-.I \%an\-ext.tmac
-file of a
-.I groff
-installation.
+See subsection \(lqUse of extensions\(rq
+_ifstyle()dnl
+below
+_endif()dnl
+_ifnotstyle()dnl
+in
+.MR groff_man_style @MAN7EXT@
+_endif()dnl
+for suggestions.
 .
 .
 .TP
@@ -760,11 +766,11 @@ calls is\~1.
 .
 .TP
 .BR .RE " ["\c
-.IR level ]
+.IR inset-level ]
 End a relative inset.
 .
-The inset amount corresponding to inset level
-.I level
+The inset amount corresponding to
+.I inset-level
 is restored.
 .
 If no argument is given,
@@ -780,10 +786,9 @@ An ordinary paragraph
 _ifstyle()dnl
 like this one
 _endif()dnl
-is set with all output lines indented the same amount.
+indents all output lines by the same amount.
 .
-In man pages and other technical literature,
-definition lists are frequently encountered;
+Definition lists frequently occur in man pages;
 these can be set as
 .I "tagged paragraphs,"
 which have one
@@ -852,17 +857,13 @@ is not.
 Set a paragraph with a leading tag,
 and the remainder of the paragraph indented.
 .
-A one-line input trap is planted;
-text on the next line,
-which can be formatted with a macro,
-becomes the tag,
-which is set without indentation.
-.
-The tag can be extended with the
+A one-line input trap that honors the
 .B \(rsc
-escape sequence.
+escape sequence is planted;
+text on the next line becomes the tag,
+set without indentation.
 .
-Subsequent text is indented by
+Text on subsequent lines is indented by
 .I indentation,
 if specified,
 and by the amount of the
@@ -870,7 +871,7 @@ and by the amount of the
 register otherwise.
 .
 If the tag,
-plus the required \(lqtag spacing\(rq stored in the
+plus the \(lqtag spacing\(rq stored in the
 .B TS
 register
 (see section \(lqOptions\(rq below)
@@ -903,15 +904,29 @@ An input trap is planted as with
 .
 .
 .IP
-This macro is a GNU extension not defined on systems running
-AT&T,
+.B .TQ
+is a GNU extension supported by
+Heirloom Doctools
+.I troff \" Heirloom
+and
+.I mandoc
+(since 1.14.5)
+but not by
+Documenter's Workbench,
 Plan\~9,
 or
 Solaris
-.IR troff ;
-see
-.I \%an\-ext.tmac
-in section \(lqFiles\(rq below.
+.IR troff s. \" DWB, Plan 9, Solaris
+.
+See subsection \(lqUse of extensions\(rq
+_ifstyle()dnl
+below
+_endif()dnl
+_ifnotstyle()dnl
+in
+.MR groff_man_style @MAN7EXT@
+_endif()dnl
+for suggestions.
 _ifstyle()dnl
 .
 .
@@ -1006,15 +1021,28 @@ These macros break the output line.
 .B .SY
 and
 .B .YS
-are GNU extensions not defined on systems running
-AT&T,
+are GNU extensions supported by
+Heirloom Doctools
+.I troff \" Heirloom
+and
+.I mandoc
+(since 1.14.5)
+but not by
+Documenter's Workbench,
 Plan\~9,
 or
 Solaris
-.IR troff ;
-see
-.I \%an\-ext.tmac
-in section \(lqFiles\(rq below.
+.IR troff s; \" DWB, Plan 9, Solaris
+.
+See subsection \(lqUse of extensions\(rq
+_ifstyle()dnl
+below
+_endif()dnl
+_ifnotstyle()dnl
+in
+.MR groff_man_style @MAN7EXT@
+_endif()dnl
+for suggestions.
 .
 .
 .TP
@@ -1080,14 +1108,14 @@ of synopsis syntax one is likely to encounter.
 .\" from src/roff/groff/groff.1.man
 .EX
 \&.SY groff
-\&.RB [ \e-abcCeEgGijklNpRsStUVXzZ ]
-\&.RB [ \e-d\e\(ti\ec
-\&.IR cs ]
-\&.RB [ \e-d\e\(ti\ec
-\&.IB name =\ec
-\&.IR string ]
-\&.RB [ \e-D\e\(ti\ec
-\&.IR enc ]
+\&.RB [ \e\-abcCeEgGijklNpRsStUVXzZ ]
+\&.RB [ \e\-d\e\(ti\ec
+\&.IR ctext ]
+\&.RB [ \e\-d\e\(ti\ec
+\&.IB string =\ec
+\&.IR text ]
+\&.RB [ \e\-D\e\(ti\ec
+\&.IR fallback\-encoding ]
 .EE
 .
 .I (and so on similarly)
@@ -1126,43 +1154,43 @@ produces the following output.
 .SY groff
 .RB [ \-abcCeEgGijklNpRsStUVXzZ ]
 .RB [ \-d\~\c
-.IR cs ]
+.IR ctext ]
 .RB [ \-d\~\c
-.IB name =\c
-.IR string ]
+.IB string =\c
+.IR text ]
 .RB [ \-D\~\c
-.IR enc ]
+.IR fallback-encoding ]
 .RB [ \-f\~\c
-.IR fam ]
+.IR font-family ]
 .RB [ \-F\~\c
-.IR dir ]
+.IR font-directory ]
 .RB [ \-I\~\c
-.IR dir ]
+.IR inclusion-directory ]
 .RB [ \-K\~\c
-.IR enc ]
+.IR input-encoding ]
 .RB [ \-L\~\c
-.IR arg ]
+.IR spooler-argument ]
 .RB [ \-m\~\c
-.IR name ]
+.IR macro-package ]
 .RB [ \-M\~\c
-.IR dir ]
+.IR macro-directory ]
 .RB [ \-n\~\c
-.IR num ]
+.IR page-number ]
 .RB [ \-o\~\c
-.IR list ]
+.IR page-list ]
 .RB [ \-P\~\c
-.IR arg ]
+.IR postprocessor-argument ]
 .RB [ \-r\~\c
-.IR cn ]
+.IR cnumeric-expression ]
 .RB [ \-r\~\c
-.IB reg =\c
-.IR expr ]
+.IB register =\c
+.IR numeric-expression ]
 .RB [ \-T\~\c
-.IR dev ]
+.IR output-device ]
 .RB [ \-w\~\c
-.IR name ]
+.IR warning-category ]
 .RB [ \-W\~\c
-.IR name ]
+.IR warning-category ]
 .RI [ file\~ .\|.\|.]
 .YS
 .
@@ -1181,7 +1209,7 @@ produces the following output.
 .RI [ file\~ .\|.\|.]
 .
 .SY groff
-.B \-\-version
+.B \%\-\-version
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
 .YS
@@ -1227,7 +1255,7 @@ to cue the user that they must be replaced with appropriate text.
 Symbols that are neither to be typed literally nor replaced at the
 user's discretion appear in the roman style;
 brackets surround optional arguments,
-and an ellipsis indicates that the previous syntactical element may be
+and an ellipsis indicates that the previous syntactic element may be
 repeated arbitrarily.
 .
 Where whitespace separates optional arguments,
@@ -1304,20 +1332,34 @@ URIs are rendered between angle brackets after the linked text.
 .BR .UR ,
 and
 .B .UE
-are GNU extensions not defined on systems running
-AT&T,
+are GNU extensions supported by
+Heirloom Doctools and
+.I mandoc
+.RB ( .UR / .UE
+since 1.12.3;
+.BR .MT / .ME
+since 1.14.2)
+but not by
+Documenter's Workbench,
 Plan\~9,
 or
 Solaris
-.IR troff ; \" Solaris
-see
-.I \%an\-ext.tmac
-in section \(lqFiles\(rq below.
+.IR troff s. \" DWB, Plan 9, Solaris
 .
 Plan\~9 from User Space's
 .I troff \" plan9port
 implements
 .BR .MR .
+.
+See subsection \(lqUse of extensions\(rq
+_ifstyle()dnl
+below
+_endif()dnl
+_ifnotstyle()dnl
+in
+.MR groff_man_style @MAN7EXT@
+_endif()dnl
+for suggestions.
 .
 .
 .P
@@ -2257,21 +2299,162 @@ and
 .B \(rs(tm \" Heirloom Doctools, mandoc, neatmkfn, Plan 9
 special character escape sequences directly.
 .
-Unless a man page author is aiming for a pathological level of
-portability,
-such as the composition of pages for consumption on simulators of 1980s
-Unix systems
+Unless you are aiming for a pathological level of portability\(emperhaps
+composing a man page for consumption on simulators of 1980s Unix systems
 (or Solaris
 .IR troff ,
 though even it supports
-.BR \(rs(rg ),
-the above strings should be avoided.
+.BR \(rs(rg )\(em\c
+avoid using the above strings.
+.
+.
+.\" ====================================================================
+.SS "Use of extensions"
+.\" ====================================================================
+.
+To ensure that your man page formats reliably on a wide variety of
+viewers,
+write it solely with the macros described in this page
+(except for the ones identified as deprecated,
+which you should avoid).
+.
+The macros we have described as extensions might not be supported by a
+formatter that is important to your audience.
+.
+Nevertheless,
+.IR groff 's
+extensions are present because they perform tasks that are otherwise
+difficult or tedious to achieve portably.
+.
+If you require an extension but also expect your man page to be rendered
+on a system that doesn't support it,
+consider writing a configuration test that measures a property of the
+system,
+and use
+.MR m4 1 ,
+.MR sed 1 ,
+or a similar tool to generate a
+.I .man
+file from a
+.I .man.in
+file,
+defining page-local versions of extension macros only where necessary.
+.
+You can copy extension macro definitions from
+.IR groff ;
+see
+.I \%an\-ext.tmac
+in section \(lqFiles\(rq below.
+.
+.
+.P
+For example,
+we might put a line
+.
+.RS
+.EX
+@DEFINE_MR@
+.EE
+.RE
+.
+in our
+.I man
+document at the end of the \(lqName\(rq section,
+test a system for the availability of the
+.I "groff man"
+.B .MR
+macro,
+remove the line if the macro is present,
+and \(lqinline\(rq a definition otherwise,
+as follows.
+.
+(This version is slightly simplified and does not attempt to disable
+hyphenation when setting arguments to
+.BR .MR .)
+.
+.RS
+.EX
+have_MR=$(echo .pm | troff \-man 2>&1 | grep MR)
+if [ \-n "$have_MR" ]
+then
+  sed \(aq/@DEFINE_MR@/d\(aq myprog.man.in > myprog.man
+else
+  sed \(aqs/@DEFINE_MR@/.de MR\e
+\&.  ie \e\e\e\en(.$=1 .I \e\e\e\e$1\e
+\&.  el .IR \e\e\e\e$1 (\e\e\e\e$2)\e\e\e\e$3\e
+\&../\(aq myprog.man.in > myprog.man
+fi
+.EE
+.RE
+.
+(The profusion of backslashes is due to its status as an escape
+character in both
+.I roff
+and
+.IR sed .)
+.
+.
+.\" XXX: too preachy?
+.P
+If the foregoing method is too much trouble,
+you could apply the radical technique of reading your man page using
+every formatter of interest,
+confirming satisfactory output from each.
+.
+Test documentation for syntactic validity and semantic correctness,
+just as you would test code.
 .
 .
 .\" ====================================================================
 .SS Portability
 .\" ====================================================================
 .
+The two major language features that control formatting in the
+.I roff
+language are requests and escape sequences.
+.
+Since the
+.I man
+macros are implemented in terms of these,
+one can,
+in principle,
+supplement the functionality of
+.I man
+with these lower-level elements where necessary.
+.
+.
+.P
+However,
+use of
+.I roff
+requests
+(apart from the empty request
+.RB \(lq . \(rq)\&
+risks poor rendering when your page is processed by tools other than
+.I roff
+formatters that attempt to interpret page sources.
+.
+(Historically,
+this was commonly attempted for HTML conversion.)
+.
+Requests might make assumptions about line length that do not hold in an
+HTML environment.
+.
+Many of these programs don't interpret the full
+.I roff
+language
+(let alone extensions):
+they may be incapable of handling numeric expressions,
+control structures,
+or register,
+string,
+and macro definitions.
+.
+Such limitations can lead to portions of a document being presented
+incomprehensibly or omitted altogether.
+.
+.
+.P
 It is wise to quote multi-word section and subsection headings;
 the
 .B .SH
@@ -2290,88 +2473,13 @@ and font style alternation macros.
 .
 .
 .P
-The two major syntactical categories for formatting control in the
-.I roff
-language are requests and escape sequences.
-.
-Since the
-.I man
-macros are implemented in terms of
-.I groff
-requests and escape sequences,
-one can,
-in principle,
-supplement the functionality of
-.I man
-with these lower-level elements where necessary.
-.
-.
-.br
-.ne 2v
-.P
-However,
-use of
-.I roff
-requests
-(apart from the empty request
-.RB \(lq . \(rq)\&
-risks poor rendering when your page is processed by tools other than
-.I roff
-formatters that attempt to interpret page sources.
-.
-(Historically,
-this was commonly attempted for HTML conversion.)
-.
-For instance,
-requests may make assumptions about line length that do not hold in an
-HTML environment.
-.
-Many of these programs don't interpret the full
-.I roff
-language
-(let alone
-.I groff
-extensions):
-they may be incapable of handling numeric expressions,
-control structures,
-or register,
-string,
-and macro definitions.
-.
-Such limitations can lead to portions of a document being presented
-incomprehensibly or omitted altogether.
-.
-.
-.P
-For portability to a wide variety of viewers,
-it is best to write your page solely with the macros described in this
-page
-(except for the ones identified as deprecated,
-which you should avoid).
-.
-Employ the macros we have described as extensions
-.RB ( .EX / .EE ,
-.BR .SY / .YS ,
-.BR .TQ ,
-.BR .UR / .UE ,
-.BR .MT / .ME ,
-and
-.BR .MR )
-with caution,
-as they may not be supported by a formatter that is important to your
-audience.
-.
-See
-.I \%an\-ext.tmac
-in section \(lqFiles\(rq below.
-.
-.
-.P
 Similar caveats apply to escape sequences.
 .
 Some escape sequences are however required for correct typesetting
 even in man pages and usually do not cause portability problems.
 .
+.
+.P
 Several of these render glyphs corresponding to punctuation code points
 in the Unicode basic Latin range
 (U+0000\(enU+007F)
@@ -2443,7 +2551,8 @@ Insert a non-printing break point.
 A word can break at such a point,
 but a hyphen glyph is not written to the output if it does.
 .
-This escape sequence is an input word boundary,
+.B \e:
+is an input word boundary,
 so the remainder of the word is subject to hyphenation as normal.
 .
 You can use
@@ -2457,12 +2566,12 @@ See subsection \[lq]Hyperlink macros\[rq] above for an example.
 .
 .
 .IP
-This escape sequence is a GNU extension also supported by Heirloom
-Doctools
+.B \e:
+is a GNU extension also supported by Heirloom Doctools
 .I troff \" Heirloom
 050915 (September 2005),
 .I mandoc
-1.14.5 (2019-03-10),
+1.13.1 (2014-08-10),
 and
 .I neatroff
 (commit 399a4936,
@@ -2502,7 +2611,7 @@ also supported by Heirloom Doctools
 .I troff \" Heirloom
 050915 (September 2005),
 .I mandoc
-1.9.5 (2009-09-21),
+1.9.14 (2009-11-16),
 .I neatroff
 (commit 1c6ab0f6e,
 2016-09-13),
@@ -2758,18 +2867,17 @@ but not Plan\~9 or Solaris
 .
 .TP
 .B \e\-
-Minus sign or basic Latin hyphen-minus.
+Minus sign.
 .
-This escape sequence produces the Unix command-line option dash in the
-output.
+.B \e\-
+produces the basic Latin hyphen-minus (U+002D) specifying Unix
+command-line options and frequently used in file names.
 .
 .RB \(lq \- \(rq
-is a hyphen in the
-.I roff
-language;
-some output devices replace it with U+2010
-(hyphen)
-or similar.
+is a hyphen in
+.IR roff ;
+some output devices format it as U+2010
+(hyphen).
 .
 .
 .TP
@@ -2865,8 +2973,7 @@ Basic Latin circumflex accent
 Some output devices format
 .RB \(lq \(ha \(rq
 as U+02C6
-(modifier letter circumflex accent)
-or similar.
+(modifier letter circumflex accent).
 .
 .
 .TP
@@ -2891,8 +2998,7 @@ Basic Latin tilde.
 Some output devices format
 .RB \(lq \(ti \(rq
 as U+02DC
-(small tilde)
-or similar.
+(small tilde).
 .
 .
 .P
@@ -3041,9 +3147,7 @@ instead.
 .IR indentation ]
 Set up a paragraph with a hanging left indentation.
 .
-The
-.I indentation
-argument,
+.I indentation,
 if present,
 is handled as with
 .BR .TP .
@@ -3486,12 +3590,12 @@ the page text is broken before writing the footer.
 .
 Ignored if continuous rendering is enabled.
 .
-The default is\~\-0.5i.
+The default is \(lq\-0.5i\~\-\~1v\(rq.
 .
 .
 .TP
 .BI \-dHF= heading-font
-Set the font used for section and subsection headings;
+Select the font used for section and subsection headings;
 the default is
 .RB \(lq B \(rq
 (bold style of the default family).
@@ -3522,11 +3626,12 @@ see section \[lq]Localization\[lq] of
 .BI \-rIN= standard-indentation
 Set the default indentation amount used by
 .BR .IP ,
-.BR .RS ,
 .BR .TP ,
 .\" .TQ inherits its indentation from the preceding .TP.
 and the deprecated
-.BR .HP .
+.BR .HP ,
+and the inset amount used by
+.BR .RS .
 .
 The default is 7n on terminals and 7.2n on typesetters.
 .
@@ -3560,7 +3665,7 @@ above).
 .
 .TP
 .BI \-dMF= man-page-topic-font
-Set the font used for man page topics named in
+Select the font used for man page topics named in
 .B .TH
 and
 .B .MR
@@ -3802,8 +3907,10 @@ _ifstyle()dnl
 .RS
 .P
 .EX
+.ne 2v
 \&.\e" Put only one space after the end of a sentence.
 \&.ss 12 0 \e" See groff(@MAN7EXT@).
+.ne 2v
 \&.\e" Keep pages narrow even on wide terminals.
 \&.if n .if \en[LL]>78n .nr LL 78n
 .EE
@@ -4244,6 +4351,8 @@ strings;
 .BR BP , \" 1.24
 .BR CS ,
 .BR CT ,
+.BR PO , \" 1.24
+.BR TS , \" 1.24
 and
 .B U
 registers;

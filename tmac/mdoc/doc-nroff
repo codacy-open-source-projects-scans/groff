@@ -50,7 +50,7 @@
 .ds doc-Cm-font \f[B]
 .ds doc-Em-font \f[I]
 .ds doc-Er-font \f[R]
-.ds doc-Ev-font \f[R]
+.ds doc-Ev-font \f[I]
 .ds doc-Fa-font \f[I]
 .ds doc-Fd-font \f[B]
 .ds doc-Fl-font \f[B]

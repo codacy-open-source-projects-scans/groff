@@ -72,7 +72,7 @@ preconv \- prepare files for typesetting with
 .B \-v
 .
 .SY preconv
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -507,7 +507,7 @@ display a usage message,
 while
 .B \-v
 and
-.B \-\-version
+.B \%\-\-version
 show version and configuration information;
 all exit afterward.
 .

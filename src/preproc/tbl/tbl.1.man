@@ -67,7 +67,7 @@ documents
 .B \-v
 .
 .SY @g@tbl
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -1538,7 +1538,7 @@ displays a usage message,
 while
 .B \-v
 and
-.B \-\-version
+.B \%\-\-version
 show version information;
 all exit afterward.
 .

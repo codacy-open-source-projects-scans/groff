@@ -60,20 +60,20 @@ or MathML
 .
 .SY @g@eqn
 .RB [ \-CNrR ]
-.RB [ \- d
+.RB [ \- d\~\c
 .IR xy ]
-.RB [ \-f
-.IR F ]
-.RB [ \-m
-.IR n ]
-.RB [ \-M
-.IR dir ]
-.RB [ \-p
-.IR n ]
-.RB [ \-s
-.IR n ]
-.RB [ \-T
-.IR dev ]
+.RB [ \-f\~\c
+.IR global-italic-font ]
+.RB [ \-m\~\c
+.IR minimum-type-size ]
+.RB [ \-M\~\c
+.IR eqnrc-directory ]
+.RB [ \-p\~\c
+.IR super/subscript-size-reduction ]
+.RB [ \-s\~\c
+.IR global-type-size ]
+.RB [ \-T\~\c
+.IR device ]
 .RI [ file\~ .\|.\|.]
 .YS
 .
@@ -87,7 +87,7 @@ or MathML
 .B \-v
 .
 .SY @g@eqn
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -192,9 +192,7 @@ There are some references to the differences between \*[tx] and GNU
 below;
 these may safely be ignored if you do not know \*[tx].
 .
-.
-.P
-Four points are worth special note.
+Four points are worth note.
 .
 .
 .IP \[bu] 3n
@@ -412,7 +410,7 @@ Lf(CR) Lf(CR) Lw(1i) Lf(CR) Lf(CR).
 .I Macros
 permit primitives,
 components,
-and other macros to be collected and referred to by a single token.
+and other macros to be collected and used together as a single token.
 .
 Predefined macros make convenient the preparation of
 .I eqn
@@ -1777,7 +1775,7 @@ displays a usage message,
 while
 .B \-v
 and
-.B \-\-version
+.B \%\-\-version
 show version information;
 all exit afterward.
 .

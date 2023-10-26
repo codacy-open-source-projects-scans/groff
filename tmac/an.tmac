@@ -354,7 +354,7 @@
 .  if !\\n[cR] \{\
 .    wh 0 an-header
 .    ie r FT .nr an*footer-location \\n[FT]
-.    el      .nr an*footer-location (-.5i)
+.    el      .nr an*footer-location (-.5i - 1v)
 .    wh \\n[an*footer-location]u an-footer
 .    wh (\\n[an*footer-location]u - .5i) an-break-body-text
 .    rr an*footer-location
@@ -417,7 +417,7 @@
 .if d PT .ig
 .de1 PT
 .  ie \\n[cR] .pl +1v
-.  el         .sp .5i
+.  el         .sp (.5i - .5m)
 .  if !\\n[an*was-TH-bookmark-emitted] \{\
 .    an*bookmark 1 \E*[an*page-ref-string]
 .    nr an*was-TH-bookmark-emitted 1
@@ -427,7 +427,7 @@
 .    pl +1v
 .    sp 1v
 .  \}
-.  el .sp |1i
+.  el .sp |(1i - 1m)
 ..
 .
 .\" Write the page footer; can be redefined by man.local.
@@ -1032,16 +1032,27 @@ contains unsupported escape sequence
 .  nr an*saved-paragraph-distance \\n[PD]
 .  nr PD 1v
 .  nf
+.  nr an*unmap-fonts 0
 .  \" If using the DVI output device, we have no constant-width fonts of
 .  \" bold weight and, relatedly, no constant-width family (because that
 .  \" requires all four styles).  Remap the bold styles to normal ones.
-.  ie '\*[.T]'dvi' \{\
+.        ie '\*[.T]'dvi' \{\
 .    ftr R CW
 .    ftr B CW
 .    ftr I CWI
 .    ftr BI CWI
+.    nr an*unmap-fonts 1
 .  \}
-.  el .fam \\*[an*example-family]
+.  \" The LBP output device lacks a Courier bold-italic face.
+.  el \{.ie '\*[.T]'lbp' \{\
+.    ftr R CR
+.    ftr B CB
+.    ftr I CI
+.    ftr BI CI
+.    nr an*unmap-fonts 1
+.  \}
+.  el                    .fam \\*[an*example-family]
+.  \}
 .  ft R
 .  nr an*is-in-example 1
 ..
@@ -1054,11 +1065,12 @@ contains unsupported escape sequence
 .    return
 .  \}
 .  \" Undo the remappings from `EX`.
-.  ie '\*[.T]'dvi' \{\
+.  ie \\n[an*unmap-fonts] \{\
 .    ftr R
 .    ftr B
 .    ftr I
 .    ftr BI
+.    rr an*unmap-fonts
 .  \}
 .  fam \\*[an*saved-family]
 .  ft \\n[an*saved-font]

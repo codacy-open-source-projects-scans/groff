@@ -79,7 +79,7 @@ public:
   bool is_tab();
   bool is_leader();
   bool is_backspace();
-  bool usable_as_delimiter(bool = false);
+  bool is_usable_as_delimiter(bool = false);
   bool is_dummy();
   bool is_transparent_dummy();
   bool is_transparent();

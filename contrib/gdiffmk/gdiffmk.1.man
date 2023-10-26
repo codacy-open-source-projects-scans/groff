@@ -79,7 +79,7 @@ files
 .
 .
 .SY gdiffmk
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -135,7 +135,7 @@ cannot be both an input and output operand.
 .B \-\-help
 displays a usage message
 and
-.B \-\-version
+.B \%\-\-version
 shows version information;
 both exit afterward.
 .

@@ -84,7 +84,7 @@ output driver for HTML
 .B \-v
 .
 .SY pre\-grohtml
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -113,7 +113,7 @@ output driver for HTML
 .B \-v
 .
 .SY post\-grohtml
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -319,7 +319,7 @@ displays a usage message,
 while
 .B \-v
 and
-.B \-\-version
+.B \%\-\-version
 show version information;
 all exit afterward.
 .

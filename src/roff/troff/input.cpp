@@ -149,12 +149,12 @@ static void interpolate_environment_variable(symbol);
 static symbol composite_glyph_name(symbol);
 static void interpolate_arg(symbol);
 static request_or_macro *lookup_request(symbol);
-static int get_delim_number(units *, unsigned char);
-static int get_delim_number(units *, unsigned char, units);
+static bool read_delimited_number(units *, unsigned char);
+static bool read_delimited_number(units *, unsigned char, units);
 static symbol do_get_long_name(bool, char);
 static int get_line_arg(units *res, unsigned char si, charinfo **cp);
 static bool read_size(int *);
-static symbol get_delim_name();
+static symbol get_delimited_name();
 static void init_registers();
 static void trapping_blank_line();
 
@@ -1541,8 +1541,8 @@ node *do_overstrike()
 {
   overstrike_node *on = new overstrike_node;
   int start_level = input_stack::get_level();
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   for (;;) {
     tok.next();
     if (tok.is_newline()) {
@@ -1556,7 +1556,7 @@ node *do_overstrike()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     if (tok.is_horizontal_space())
@@ -1583,8 +1583,8 @@ static node *do_bracket()
 {
   bracket_node *bn = new bracket_node;
   int start_level = input_stack::get_level();
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   for (;;) {
     tok.next();
     if (tok.is_newline()) {
@@ -1599,7 +1599,7 @@ static node *do_bracket()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     charinfo *ci = tok.get_char(true /* required */);
@@ -1615,14 +1615,14 @@ static node *do_bracket()
 static int do_name_test()
 {
   int start_level = input_stack::get_level();
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   bool got_bad_char = false;
   bool got_some_char = false;
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      if (tok != start)
+      if (tok != start_token)
 	warning(WARN_DELIM, "missing closing delimiter in identifier"
 		" validation escape sequence (got %1)",
 		tok.description());
@@ -1630,7 +1630,7 @@ static int do_name_test()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     if (!tok.ch())
@@ -1642,10 +1642,10 @@ static int do_name_test()
 
 static int do_expr_test()
 {
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   int start_level = input_stack::get_level();
-  if (!start.usable_as_delimiter(true /* report error */))
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
     return 0;
   tok.next();
   // disable all warning and error messages temporarily
@@ -1657,7 +1657,7 @@ static int do_expr_test()
   int result = get_number_rigidly(&dummy, 'u');
   warning_mask = saved_warning_mask;
   inhibit_errors = saved_inhibit_errors;
-  if (tok == start && input_stack::get_level() == start_level)
+  if (tok == start_token && input_stack::get_level() == start_level)
     return result;
   // ignore everything up to the delimiter in case we aren't right there
   for (;;) {
@@ -1669,7 +1669,7 @@ static int do_expr_test()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start && input_stack::get_level() == start_level)
+    if (tok == start_token && input_stack::get_level() == start_level)
       break;
   }
   return 0;
@@ -1678,8 +1678,8 @@ static int do_expr_test()
 #if 0
 static node *do_zero_width()
 {
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   int start_level = input_stack::get_level();
   environment env(curenv);
   environment *oldenv = curenv;
@@ -1690,7 +1690,7 @@ static node *do_zero_width()
       error("missing closing delimiter");
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     tok.process();
@@ -1716,12 +1716,12 @@ static node *do_zero_width()
 {
   node *rev = new dummy_node;
   int start_level = input_stack::get_level();
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      if (tok != start)
+      if (tok != start_token)
 	warning(WARN_DELIM, "missing closing delimiter in"
 		" zero-width escape sequence (got %1)",
 		tok.description());
@@ -1729,7 +1729,7 @@ static node *do_zero_width()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     if (!tok.add_to_zero_width_node_list(&rev))
@@ -2145,7 +2145,7 @@ void token::next()
       case 'c':
 	goto ESCAPE_c;
       case 'C':
-	nm = get_delim_name();
+	nm = get_delimited_name();
 	if (nm.is_null())
 	  break;
 	type = TOKEN_SPECIAL;
@@ -2178,7 +2178,9 @@ void token::next()
 	  // requested.  We must warn here if a bogus font name is
 	  // selected.
 	  if (*p != '\0' || s.is_empty()) {
-	    if (!curenv->set_font(s))
+	    if (s == "DESC")
+	      error("'%1' is not a valid font name", s.contents());
+	    else if (!curenv->set_font(s))
 	      warning(WARN_FONT, "cannot select font '%1'",
 		      s.contents());
 	  }
@@ -2205,7 +2207,7 @@ void token::next()
 	  break;
 	}
       case 'h':
-	if (!get_delim_number(&x, 'm'))
+	if (!read_delimited_number(&x, 'm'))
 	  break;
 	type = TOKEN_HORIZONTAL_SPACE;
 	nd = new hmotion_node(x, curenv->get_fill_color());
@@ -2214,11 +2216,12 @@ void token::next()
 	// don't take height increments relative to previous height if
 	// in compatibility mode
 	if (!compatible_flag && curenv->get_char_height()) {
-	  if (get_delim_number(&x, 'z', curenv->get_char_height()))
+	  if (read_delimited_number(&x, 'z', curenv->get_char_height()))
 	    curenv->set_char_height(x);
 	}
 	else {
-	  if (get_delim_number(&x, 'z', curenv->get_requested_point_size()))
+	  if (read_delimited_number(&x, 'z',
+	      curenv->get_requested_point_size()))
 	    curenv->set_char_height(x);
 	}
 	if (!compatible_flag)
@@ -2265,7 +2268,7 @@ void token::next()
 	  break;
 	}
       case 'N':
-	if (!get_delim_number(&val, 0))
+	if (!read_delimited_number(&val, 0))
 	  break;
 	if (val < 0) {
 	  warning(WARN_CHAR, "invalid numbered character %1", val);
@@ -2302,7 +2305,7 @@ void token::next()
 	  have_formattable_input = true;
 	break;
       case 'S':
-	if (get_delim_number(&x, 0))
+	if (read_delimited_number(&x, 0))
 	  curenv->set_char_slant(x);
 	if (!compatible_flag)
 	  have_formattable_input = true;
@@ -2317,7 +2320,7 @@ void token::next()
 			      curenv->get_fill_color());
 	return;
       case 'v':
-	if (!get_delim_number(&x, 'v'))
+	if (!read_delimited_number(&x, 'v'))
 	  break;
 	type = TOKEN_NODE;
 	nd = new vmotion_node(x, curenv->get_fill_color());
@@ -2333,7 +2336,7 @@ void token::next()
 	do_width();
 	break;
       case 'x':
-	if (!get_delim_number(&x, 'v'))
+	if (!read_delimited_number(&x, 'v'))
 	  break;
 	type = TOKEN_NODE;
 	nd = new extra_size_node(x);
@@ -2352,7 +2355,9 @@ void token::next()
 	  request_or_macro *p = lookup_request(s);
 	  macro *m = p->to_macro();
 	  if (!m) {
-	    error("can't transparently throughput a request");
+	    error("cannot interpolate '%1' to device-independent"
+		  " output; it is a request, not a macro",
+		  s.contents());
 	    break;
 	  }
 	  nd = new special_node(*m);
@@ -2423,7 +2428,7 @@ void token::next()
 	goto handle_ordinary_char;
       default:
 	if (cc != escape_char && cc != '.')
-	  warning(WARN_ESCAPE, "escape character ignored before %1",
+	  warning(WARN_ESCAPE, "ignoring escape character before %1",
 		  input_char_description(cc));
 	goto handle_ordinary_char;
       }
@@ -2454,7 +2459,7 @@ int token::operator!=(const token &t)
 
 // is token a suitable delimiter (like ')?
 
-bool token::usable_as_delimiter(bool report_error)
+bool token::is_usable_as_delimiter(bool report_error)
 {
   switch(type) {
   case TOKEN_CHAR:
@@ -5123,52 +5128,56 @@ static void interpolate_number_format(symbol nm)
     input_stack::push(make_temp_iterator(r->get_format()));
 }
 
-static int get_delim_number(units *n, unsigned char si, int prev_value)
+static bool read_delimited_number(units *n,
+				  unsigned char si,
+				  int prev_value)
 {
-  token start;
-  start.next();
-  if (start.usable_as_delimiter(true /* report error */)) {
+  token start_token;
+  start_token.next();
+  if (start_token.is_usable_as_delimiter(true /* report error */)) {
     tok.next();
     if (get_number(n, si, prev_value)) {
-      if (start != tok)
+      if (start_token != tok)
 	warning(WARN_DELIM, "closing delimiter does not match");
-      return 1;
+      return true;
     }
   }
-  return 0;
+  return false;
 }
 
-static int get_delim_number(units *n, unsigned char si)
+static bool read_delimited_number(units *n, unsigned char si)
 {
-  token start;
-  start.next();
-  if (start.usable_as_delimiter(true /* report error */)) {
+  token start_token;
+  start_token.next();
+  if (start_token.is_usable_as_delimiter(true /* report error */)) {
     tok.next();
     if (get_number(n, si)) {
-      if (start != tok)
+      if (start_token != tok)
 	warning(WARN_DELIM, "closing delimiter does not match");
-      return 1;
+      return true;
     }
   }
-  return 0;
+  return false;
 }
 
 static int get_line_arg(units *n, unsigned char si, charinfo **cp)
 {
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   int start_level = input_stack::get_level();
-  if (!start.usable_as_delimiter(true /* report error */))
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
     return 0;
   tok.next();
   if (get_number(n, si)) {
     if (tok.is_dummy() || tok.is_transparent_dummy())
       tok.next();
-    if (!(start == tok && input_stack::get_level() == start_level)) {
+    if (!(start_token == tok
+	  && input_stack::get_level() == start_level)) {
       *cp = tok.get_char(true /* required */);
       tok.next();
     }
-    if (!(start == tok && input_stack::get_level() == start_level))
+    if (!(start_token == tok
+	  && input_stack::get_level() == start_level))
       warning(WARN_DELIM, "closing delimiter does not match");
     return 1;
   }
@@ -5239,7 +5248,7 @@ static bool read_size(int *x)
     }
     val *= sizescale;
   }
-  else if (!tok.usable_as_delimiter(true /* report error */))
+  else if (!tok.is_usable_as_delimiter(true /* report error */))
     return false;
   else {
     token start(tok);
@@ -5296,15 +5305,15 @@ static bool read_size(int *x)
   }
 }
 
-static symbol get_delim_name()
+static symbol get_delimited_name()
 {
-  token start;
-  start.next();
-  if (start.is_eof()) {
+  token start_token;
+  start_token.next();
+  if (start_token.is_eof()) {
     error("end of input at start of delimited name");
     return NULL_SYMBOL;
   }
-  if (start.is_newline()) {
+  if (start_token.is_newline()) {
     error("can't delimit name with a newline");
     return NULL_SYMBOL;
   }
@@ -5329,7 +5338,7 @@ static symbol get_delim_name()
       }
     }
     tok.next();
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     if ((buf[i] = tok.ch()) == 0) {
@@ -5360,9 +5369,9 @@ static symbol get_delim_name()
 
 static void do_register()
 {
-  token start;
-  start.next();
-  if (!start.usable_as_delimiter(true /* report error */))
+  token start_token;
+  start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
     return;
   tok.next();
   symbol nm = get_long_name(true /* required */);
@@ -5377,7 +5386,7 @@ static void do_register()
   int val;
   if (!get_number(&val, 'u', prev_value))
     return;
-  if (start != tok)
+  if (start_token != tok)
     warning(WARN_DELIM, "closing delimiter does not match");
   if (r)
     r->set_value(val);
@@ -5390,15 +5399,15 @@ static void do_register()
 static void do_width()
 {
   int start_level = input_stack::get_level();
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   environment env(curenv);
   environment *oldenv = curenv;
   curenv = &env;
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      if (tok != start)
+      if (tok != start_token)
 	warning(WARN_DELIM, "missing closing delimiter in"
 		" width computation escape sequence (got %1)",
 		tok.description());
@@ -5406,7 +5415,7 @@ static void do_width()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     tok.process();
@@ -5605,8 +5614,8 @@ static void encode_char(macro *mac, char c)
 static node *do_special()
 {
   int start_level = input_stack::get_level();
-  token start;
-  start.next();
+  token start_token;
+  start_token.next();
   macro mac;
   for (;;) {
     tok.next();
@@ -5621,7 +5630,7 @@ static node *do_special()
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
-    if (tok == start
+    if (tok == start_token
 	&& (compatible_flag || input_stack::get_level() == start_level))
       break;
     unsigned char c;
@@ -5670,7 +5679,8 @@ void device_macro_request()
     if (m)
       curenv->add_node(new special_node(*m));
     else
-      error("can't transparently throughput a request");
+      error("cannot interpolate '%1' to device-independent output;"
+	    " it is a request, not a macro", s.contents());
   }
   skip_line();
 }
@@ -5965,7 +5975,7 @@ int do_if_request()
   }
   else if (tok.is_space())
     result = 0;
-  else if (tok.usable_as_delimiter()) {
+  else if (tok.is_usable_as_delimiter()) {
     token delim = tok;
     int delim_level = input_stack::get_level();
     environment env1(curenv);
@@ -6108,7 +6118,7 @@ void while_request()
 void while_break_request()
 {
   if (!while_depth) {
-    error("no while loop");
+    error("cannot 'break' when not in a 'while' loop");
     skip_line();
   }
   else {
@@ -6122,7 +6132,7 @@ void while_break_request()
 void while_continue_request()
 {
   if (!while_depth) {
-    error("no while loop");
+    error("cannot 'continue' when not in a 'while' loop");
     skip_line();
   }
   else {
@@ -8677,21 +8687,21 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
 
 static node *read_draw_node()
 {
-  token start;
-  start.next();
-  if (!start.usable_as_delimiter(true /* report error */)){
+  token start_token;
+  start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */)){
     do {
       tok.next();
-    } while (tok != start && !tok.is_newline() && !tok.is_eof());
+    } while (tok != start_token && !tok.is_newline() && !tok.is_eof());
   }
   else {
     tok.next();
-    if (tok == start)
+    if (tok == start_token)
       error("missing argument");
     else {
       unsigned char type = tok.ch();
       if (type == 'F') {
-	read_color_draw_node(start);
+	read_color_draw_node(start_token);
 	return 0;
       }
       tok.next();
@@ -8701,7 +8711,7 @@ static node *read_draw_node()
       int no_last_v = 0;
       bool err = false;
       int i;
-      for (i = 0; tok != start; i++) {
+      for (i = 0; tok != start_token; i++) {
 	if (i == maxpoints) {
 	  hvpair *oldpoint = point;
 	  point = new hvpair[maxpoints*2];
@@ -8724,7 +8734,7 @@ static node *read_draw_node()
 	++npoints;
 	tok.skip();
 	point[i].v = V0;
-	if (tok == start) {
+	if (tok == start_token) {
 	  no_last_v = 1;
 	  break;
 	}
@@ -8734,7 +8744,7 @@ static node *read_draw_node()
 	}
 	tok.skip();
       }
-      while (tok != start && !tok.is_newline() && !tok.is_eof())
+      while (tok != start_token && !tok.is_newline() && !tok.is_eof())
 	tok.next();
       if (!err) {
 	switch (type) {

@@ -262,7 +262,7 @@ an output device can select a scaling factor that subdivides a point
 into \[lq]scaled points\[rq].
 .
 A type size expressed in scaled points can thus represent a non-integral
-type size in points.
+size in points.
 .
 .
 .P

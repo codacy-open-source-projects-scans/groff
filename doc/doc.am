@@ -344,7 +344,7 @@ doc/meintro.ps doc/meintro_fr.ps doc/meref.ps: $(TMAC_PACKAGE_ME)
 
 # Use '-K utf8', not '-k', in case 'configure' didn't find uchardet.
 # The French translation uses tbl; its English counterpart does not.
-doc/meintro_fr.ps: doc/meintro_fr.me preconv
+doc/meintro_fr.ps: doc/meintro_fr.me preconv tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 	&& $(DOC_GROFF) -K utf8 -t -Tps -me -mfr $< >$@
 

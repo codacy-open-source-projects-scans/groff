@@ -93,7 +93,7 @@ typesetter and document formatter
 .B \-v
 .
 .SY @g@troff
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -148,7 +148,7 @@ display a usage message,
 while
 .B \-v
 and
-.B \-\-version
+.B \%\-\-version
 show version information;
 all exit afterward.
 .

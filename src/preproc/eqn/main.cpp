@@ -309,8 +309,10 @@ static char *delim_search(char *ptr, int delim)
 void usage(FILE *stream)
 {
   fprintf(stream,
-    "usage: %s [-CNrR] [-d xy] [-f font] [-m n] [-M dir] [-p n] [-s n]"
-    " [-T name] [file ...]\n"
+    "usage: %s [-CNrR] [-d xy] [-f global-italic-font]"
+    " [-m minimum-type-size] [-M eqnrc-directory]"
+    " [-p super/subscript-size-reduction] [-s global-type-size]"
+    " [-T device] [file ...]\n"
     "usage: %s {-v | --version}\n"
     "usage: %s --help\n",
     program_name, program_name, program_name);

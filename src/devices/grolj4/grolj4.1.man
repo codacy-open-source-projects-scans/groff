@@ -84,7 +84,7 @@ output driver for HP LaserJet 4 and compatible printers
 .B \-v
 .
 .SY grolj4
-.B \-\-version
+.B \%\-\-version
 .YS
 .
 .
@@ -761,7 +761,7 @@ displays a usage message,
 while
 .B \-v
 and
-.B \-\-version
+.B \%\-\-version
 show version information;
 all exit afterward.
 .

@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle Edition 1.23.0+Git
-@subtitle September 2023
+@subtitle October 2023
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -818,7 +818,8 @@ fit within the page margins of this manual.  We mention this so that you
 know why it is there before we discuss the @code{ll} request
 formally.@footnote{@xref{Line Layout}.}
 
-@cindex man pages (introduction)
+@cindex man pages
+@cindex manual pages (``man pages'')
 We refer occasionally to @slanted{man pages}, in which aspects of the
 @code{groff} system or of its operating environment are further
 documented.@footnote{@code{roff} is the language of historical Unix
@@ -1438,10 +1439,10 @@ human-readable form using UTC.
 
 @node Macro Directories, Font Directories, Environment, Invoking groff
 @section Macro Directories
-@cindex macro directories
-@cindex directories for macros
-@cindex searching macros
-@cindex macros, searching
+@cindex macro package directories
+@cindex directories for macro packages
+@cindex search procedure for macro packages
+@cindex macro packages, search procedure for
 
 A macro file must have a name in the form @code{@var{name}.tmac} or
 @code{tmac.@var{name}} and be placed in a @dfn{tmac directory} to be
@@ -1895,8 +1896,6 @@ more lines---in other words, to stop centering.
 
 @cindex right-aligning lines (introduction)
 @cindex lines, right-aligning (introduction)
-@cindex right-justifying lines (introduction)
-@cindex lines, right-justifying (introduction)
 GNU @command{troff} also offers the @code{rj} request for right-aligning
 text.  It works analogously to @code{ce} and is convenient for setting
 epigraphs.
@@ -2261,8 +2260,7 @@ localization, to inlining of raster images.  See
 
 @node man, mdoc, Major Macro Packages, Major Macro Packages
 @section @file{man}
-@cindex manual pages
-@cindex man pages
+@cindex @file{man} macro package
 @pindex an.tmac
 @pindex man.tmac
 
@@ -2279,6 +2277,7 @@ a vast majority of manual pages (``man pages'') are written in it.
 @c ---------------------------------------------------------------------
 
 @node Optional man extensions,  ,  , man
+@cindex customizing @file{man} package
 @subsection Optional @file{man} extensions
 
 @pindex man.local
@@ -2288,7 +2287,7 @@ for @code{TH}, to which one should, at most, append with the @code{am}
 family of requests).
 
 @unnumberedsubsubsec Custom headers and footers
-@cindex @code{man} macros, custom headers and footers
+@cindex @code{man} macros, customizing headers and footers of
 
 In @code{groff} versions 1.18.2 and later, you can specify custom
 headers and footers by redefining the following macros in
@@ -2436,11 +2435,12 @@ are printed in Helvetica bold.
 
 @node mdoc, me, man, Major Macro Packages
 @section @file{mdoc}
-@cindex @code{mdoc} macros
+@cindex @file{mdoc} macro package
 
 @code{groff}'s implementation of the BSD @file{doc} package for man
 pages is documented in @cite{groff_mdoc@r{(7)}}.
 
+@cindex customizing @file{mdoc} package
 Use the file @file{mdoc.local} to configure its rendering parameters on
 a persistent basis.  With care, its macros can be redefined there
 (except for @code{Dd}, to which one should, at most, append with the
@@ -2451,7 +2451,7 @@ a persistent basis.  With care, its macros can be redefined there
 
 @node me, mm, mdoc, Major Macro Packages
 @section @file{me}
-@cindex @code{me} macro package
+@cindex @file{me} macro package
 
 @code{groff}'s implementation of the BSD @file{me} macro package is
 documented using itself.  A tutorial, @file{meintro.me}, and reference,
@@ -2467,7 +2467,7 @@ A French translation of the tutorial is available as
 
 @node mm, mom, me, Major Macro Packages
 @section @file{mm}
-@cindex @code{mm} macro package
+@cindex @file{mm} macro package
 
 @code{groff}'s implementation of the @acronym{AT&T} memorandum macro
 package is documented in @cite{groff_mm@r{(7)}}.
@@ -2480,7 +2480,7 @@ A Swedish localization of @file{mm} is also available; see
 
 @node mom, ms, mm, Major Macro Packages
 @section @file{mom}
-@cindex @code{mom} macro package
+@cindex @file{mom} macro package
 
 The main documentation files for the @file{mom} macros are in
 @acronym{HTML} format.  Additional, useful documentation is in
@@ -2522,7 +2522,7 @@ documentation.
 
 @node ms,  , mom, Major Macro Packages
 @section @file{ms}
-@cindex @file{ms} macros
+@cindex @file{ms} macro package
 
 The @file{ms} (``manuscript'') package is suitable for the preparation
 of letters, memoranda, reports, and books.  These @code{groff}
@@ -5940,7 +5940,6 @@ one vee.
 @cindex indicator, scaling
 
 @cindex units of measurement
-@cindex measurement units
 The formatter sometimes requires the input of numeric parameters to
 specify measurements.  These are specified as integers or decimal
 fractions with an optional @dfn{scaling unit} suffixed.  A scaling unit
@@ -6071,6 +6070,10 @@ Half-quantum fractions round toward zero.
 @cindex motion quantum, horizontal, register (@code{.H})
 @cindex horizontal resolution register (@code{.H})
 @cindex resolution, horizontal, register (@code{.H})
+@cindex vertical motion quantum register (@code{.V})
+@cindex motion quantum, vertical, register (@code{.V})
+@cindex vertical resolution register (@code{.V})
+@cindex resolution, vertical, register (@code{.V})
 @DefregList {.H}
 @DefregListEndx {.V}
 These read-only registers interpolate the horizontal and vertical motion
@@ -6164,7 +6167,7 @@ man page for the @file{62bit.tmac} macro package.}
 @cindex subtraction
 @cindex multiplication
 @cindex division, truncating
-@cindex modulus
+@cindex modulus operator
 @opindex +
 @opindex -
 @opindex *
@@ -6636,9 +6639,13 @@ environment, or stream generally provokes an error diagnostic.
 @need 1000
 @cindex name space, common, of macros, diversions, and strings
 @cindex common name space of macros, diversions, and strings
-@cindex macros, shared name space with strings and diversions
-@cindex strings, shared name space with macros and diversions
-@cindex diversions, shared name space with macros and strings
+@cindex macro name space, shared with strings and diversions
+@cindex string name space, shared with macros and diversions
+@cindex diversion name space, shared with macros and strings
+@cindex name space, common, of special characters and character classes
+@cindex common name space of special characters and character classes
+@cindex character class name space, shared with special characters
+@cindex special character name space, shared with character classes
 Identifiers for requests, macros, strings, and diversions share one name
 space; special characters and character classes another.  No other
 object types do.
@@ -7039,7 +7046,7 @@ $ groff -T ps -ww
 .ds animal elephant
 I have \fI\nN \*(co \*[animal]s,\f[]
 said \P.\&\~Pseudo Pachyderm.
-    @error{} warning: escape character ignored before 'P'
+    @error{} warning: ignoring escape character before 'P'
     @result{} I have @slanted{12 white elephants,} said P. Pseudo Pachyderm.
 @endExample
 
@@ -7580,8 +7587,8 @@ otherwise alter its properties.
 
 @Defreq {aln, new old}
 @cindex alias, register, creating (@code{aln})
-@cindex creating alias for register (@code{aln})
-@cindex register, creating alias for (@code{aln})
+@cindex creating alias of register (@code{aln})
+@cindex register, creating alias of (@code{aln})
 Create an alias @var{new} for an existing register @var{old}, causing
 the names to refer to the same stored object.  If @var{old} is
 undefined, a warning in category @samp{reg} is produced and the request
@@ -7589,8 +7596,8 @@ is ignored.  @xref{Warnings}, for information about the enablement and
 suppression of warnings.
 
 @cindex alias, register, removing (@code{rr})
-@cindex removing alias for register (@code{rr})
-@cindex register, removing alias for (@code{rr})
+@cindex removing alias of register (@code{rr})
+@cindex register, removing alias of (@code{rr})
 To remove a register alias, invoke @code{rr} on its name.  A register's
 contents do not become inaccessible until it has no more names.
 @endDefreq
@@ -7707,7 +7714,7 @@ disable auto-incrementation of the register.
 @node Assigning Register Formats, Built-in Registers, Auto-increment, Registers
 @subsection Assigning Register Formats
 @cindex assign number format to register (@code{af})
-@cindex number formats, assigning to register (@code{af})
+@cindex number format, assigning to register (@code{af})
 @cindex register, assigning number format to (@code{af})
 
 A writable register's value can be interpolated in several number
@@ -7888,8 +7895,9 @@ Output page selection status (Boolean-valued); see @command{groff}
 @option{-o} option (@ref{Groff Options}).
 
 @item \n[.R]
-@cindex number of registers register (@code{.R})
-@cindex registers, number of, register (@code{.R})
+@cindex available registers, number of, register (@code{.R})
+@cindex number of available registers register (@code{.R})
+@cindex registers, available number of, register (@code{.R})
 @vindex .R
 Count of available unused registers; always 10,000 in GNU
 @code{troff}.@footnote{GNU @code{troff} dynamically allocates memory for
@@ -8122,10 +8130,10 @@ output line length.  The @code{nf} request disables filling; the
 
 @DefreqList {fi, }
 @DefregListEndx {.u}
-@cindex filling of output, enabling (@code{fi})
-@cindex output, filling, enablement of (@code{fi})
-@cindex fill mode (@code{fi}), enabling
-@cindex mode, fill (@code{fi}), enabling
+@cindex filling of output, enabling request (@code{fi})
+@cindex output, filling, enabling request (@code{fi})
+@cindex fill mode, enabling, request (@code{fi})
+@cindex mode, fill, enabling, request (@code{fi})
 Enable filling of output lines; a pending output line is broken.  The
 read-only register @code{.u} is set to@tie{}1.  The filling enablement
 status, sometimes called @dfn{fill mode}, is associated with the
@@ -8134,12 +8142,12 @@ interaction with the @code{\c} escape sequence.
 @endDefreq
 
 @Defreq {nf, }
-@cindex filling of output, disabling (@code{nf})
-@cindex output, filling, disablement of (@code{nf})
-@cindex no-fill mode
-@cindex mode, no-fill
-@cindex fill mode, disabling
-@cindex mode, fill, disabling
+@cindex filling of output, disabling request (@code{nf})
+@cindex output, filling, disabling request (@code{nf})
+@cindex no-fill mode request (@code{nf})
+@cindex mode, no-fill request (@code{nf})
+@cindex fill mode, disabling, request (@code{nf})
+@cindex mode, fill, disabling, request (@code{nf})
 Disable filling of output lines: the output line length (@pxref{Line
 Layout}) is ignored and output lines are broken where the input lines
 are.  A pending output line is broken and adjustment is suppressed.  The
@@ -8352,9 +8360,8 @@ argument.
 
 @DefreqList {rj, [@Var{n}]}
 @DefregListEndx {.rj}
-@cindex justifying text (@code{rj})
-@cindex text, justifying (@code{rj})
-@cindex right-justifying (@code{rj})
+@cindex right-aligning text (@code{rj})
+@cindex text, right-aligning (@code{rj})
 Break (unless the no-break control character is used), align the output
 of the next @var{n} productive input lines to the right margin without
 filling, then break again regardless of the control character.
@@ -8926,7 +8933,7 @@ read-only register @code{.hlc}.
 @DefreqList {hym, [@Var{length}]}
 @DefregListEndx {.hym}
 @cindex hyphenation margin (@code{hym})
-@cindex margin for hyphenation (@code{hym})
+@cindex margin, hyphenation (@code{hym})
 @cindex @code{ad} request, and hyphenation margin
 Set the (right) hyphenation margin to @var{length}.  If the adjustment
 mode is not @samp{b} or @samp{n}, the line is not hyphenated if it is
@@ -9116,8 +9123,8 @@ Without @code{\x}, the backslashes on the lines marked @samp{(2)} and
 @DefreqItemx {rs, }
 @DefregListEndx {.ns}
 @cindex @code{sp} request, and no-space mode
-@cindex no-space mode (@code{ns})
-@cindex mode, no-space (@code{ns})
+@cindex no-space mode, enabling, request (@code{ns})
+@cindex mode, no-space, enabling, request (@code{ns})
 @cindex blank lines, disabling
 @cindex lines, blank, disabling
 Enable @dfn{no-space mode}.  Vertical spacing, whether by @code{sp}
@@ -9876,10 +9883,10 @@ output line continuation.
 suppresses the effects of that newline in the input.  The next input
 line thus retains the classification of its predecessor as a control or
 text line.  @code{\@key{RET}} is useful for managing line lengths in the
-input during document maintenance; you can break an input line in the
-middle of a request invocation, macro call, or escape sequence.  Input
-line continuation is invisible to the formatter, with two exceptions:
-the @code{|} operator recognizes the new input line
+input during document maintenance; you can even break an input line in
+the middle of a request invocation, macro call, or escape sequence.
+Input line continuation is invisible to the formatter, with two
+exceptions: the @code{|} operator recognizes the new input line
 (@pxref{Numeric Expressions}), and the input line counter register
 @code{.c} is incremented.
 
@@ -9998,9 +10005,9 @@ The read-only register @samp{.p} interpolates the current page length.
 @DefreqItem {pn, @t{+}@Var{num}}
 @DefreqItem {pn, @t{-}@Var{num}}
 @DefregListEndx {.pn}
-@cindex page number, configuring next (@code{pn})
-@cindex next page number, configuring (@code{pn})
-@cindex number, page, next, configuring (@code{pn})
+@cindex page number, next, assignment request (@code{pn})
+@cindex next page number, assignment request (@code{pn})
+@cindex number, next page assignment request (@code{pn})
 Change (increase or decrease) the page number of the @emph{next} page
 per the numeric expression @var{num}.  If @var{num} is invalid, GNU
 @code{troff} emits a warning in category @samp{number} and ignores the
@@ -10008,6 +10015,7 @@ request.  Without an argument, @code{pn} is ignored.
 
 @cindex next page number register (@code{.pn})
 @cindex page number, next, register (@code{.pn})
+@cindex number, next page, register (@code{.pn})
 The read-only register @code{.pn} interpolates @var{num} if set by
 @code{pn} on the current page, or the current page number plus@tie{}1.
 @endDefreq
@@ -10100,8 +10108,8 @@ content.  A new page number takes effect during page ejection; see
 @DefreqItem {bp, @t{+}@Var{page-number}}
 @DefreqItem {bp, @t{-}@Var{page-number}}
 @DefregListEndx {%}
-@cindex new page (@code{bp})
-@cindex page, new (@code{bp})
+@cindex new page request (@code{bp})
+@cindex page, new request (@code{bp})
 Break the page and change (increase or decrease) the next page number
 per the numeric expression @var{page-number}.  If @var{page-number} is
 invalid, GNU @code{troff} emits a warning in category @samp{number} and
@@ -10133,6 +10141,7 @@ The register @code{%} interpolates the current page number.
 @cindex orphan lines, preventing with @code{ne}
 @cindex conditional page break (@code{ne})
 @cindex page break, conditional (@code{ne})
+@cindex need vertical space request (@code{ne})
 Force a page break if insufficient vertical space is available (assert
 ``needed'' space).  @code{ne} tests the distance to the next page
 location trap; see @ref{Page Location Traps}, and breaks the page if
@@ -10184,11 +10193,11 @@ parameters for widow and orphan management.
 @DefreqList {sv, [@Var{space}]}
 @DefreqListEndx {os, }
 @cindex @code{ne} request, comparison with @code{sv}
-Require vertical space as @code{ne} does, but also @slanted{save} it for
-later output by the @code{os} request.  If @var{space} is available
-before the next page location trap, it is output immediately.  Both
-requests ignore a partially collected line, taking effect at the next
-break.
+@code{sv} requires vertical space as @code{ne} does, but also
+@slanted{saves} it for later output by the @code{os} request.  If
+@var{space} is available before the next page location trap, it is
+output immediately.  Both requests ignore a partially collected line,
+taking effect at the next break.
 @cindex @code{sv} request, and no-space mode
 @cindex @code{os} request, and no-space mode
 @code{sv} and @code{os} ignore no-space mode (recall @ref{Manipulating
@@ -10308,7 +10317,8 @@ family, in GNU @code{troff} an output device can associate a style in
 the abstract sense with a mounting position.  Thus the default family
 can be combined with a style dynamically, producing a @dfn{resolved font
 name}.  A user-specified font name that combines family and style (or
-refers to a font that is not a member of a family) is also ``resolved''.
+refers to a font that is not a member of a family) is already
+``resolved''.
 
 Fonts often have trademarked names, and even Free Software fonts can
 require renaming upon modification.  @code{groff} maintains a
@@ -10473,14 +10483,14 @@ or repeat @var{f} as@tie{}@var{g} to untranslate @var{f}.  @var{f} and
 
 @DefreqList {fzoom, font [@Var{zoom}]}
 @DefregListEndx {.zoom}
-@cindex magnification of a font (@code{fzoom})
-@cindex font, magnification (@code{fzoom})
+@cindex magnification, font, request (@code{fzoom})
+@cindex font magnification request(@code{fzoom})
 @cindex zoom factor of a font (@code{fzoom})
 @cindex factor, zoom, of a font (@code{fzoom})
 @cindex font, zoom factor (@code{fzoom})
-@cindex optical size of a font
-@cindex font, optical size
-@cindex size, optical, of a font
+@cindex optical size of a font, setting the (@code{fzoom})
+@cindex font, optical size, setting (@code{fzoom})
+@cindex size, optical, of a font, setting (@code{fzoom})
 Set magnification of mounted @var{font} to factor @var{zoom}, a
 multiplier applied to the type size in thousandths.  @var{zoom} must be
 non-negative.  @code{fzoom} applies to glyphs when they are formatted,
@@ -11568,16 +11578,16 @@ command in font files or with the @code{fspecial} request).
 @endDefreq
 
 @Defreq {cs, font [@Var{width} [@Var{em-size}]]}
-@cindex constant glyph space mode (@code{cs})
-@cindex mode for constant glyph space (@code{cs})
-@cindex glyph, constant space
-@cindex @code{ps} request, and constant glyph space mode
-Switch to and from @dfn{constant glyph space mode}.  If activated, the
+@cindex constant glyph spacing mode (@code{cs})
+@cindex mode, constant glyph spacing (@code{cs})
+@cindex glyph mode, constant spacing (@code{cs})
+@cindex @code{ps} request, and constant glyph spacing mode
+Switch to and from @dfn{constant glyph spacing mode}.  If activated, the
 width of every glyph is @math{@var{width}/36} ems.  The em size is given
 absolutely by @var{em-size}; if this argument is missing, the em value
 is taken from the current font size (as set with the @code{ps} request)
 when the font is effectively in use.  Without second and third argument,
-constant glyph space mode is deactivated.
+constant glyph spacing mode is deactivated.
 
 Default scaling unit for @var{em-size} is @samp{z}; @var{width} is an
 integer.
@@ -12088,7 +12098,7 @@ Combined with integer arithmetic, this design choice made it impossible
 to support, for instance, ten and a half-point type.  In GNU
 @code{troff}, an output device can select a scaling factor that
 subdivides a point into ``scaled points''.  A type size expressed in
-scaled points can thus represent a non-integral type size.
+scaled points can thus represent a non-integral size in points.
 
 @cindex @code{s} scaling unit
 @cindex unit, scaling, @code{s}
@@ -12627,9 +12637,9 @@ been defined.
 @cindex creating alias, for string (@code{als})
 @cindex creating alias, for macro (@code{als})
 @cindex creating alias, for diversion (@code{als})
-@cindex string, creating alias for (@code{als})
-@cindex macro, creating alias for (@code{als})
-@cindex diversion, creating alias for (@code{als})
+@cindex string, creating alias of (@code{als})
+@cindex macro, creating alias of (@code{als})
+@cindex diversion, creating alias of (@code{als})
 Create an alias @var{new} for the existing request, string, macro, or
 diversion object named @var{old}, causing the names to refer to the same
 stored object.  If @var{old} is undefined, a warning in category
@@ -12675,9 +12685,9 @@ an error.  @xref{Writing Macros}.
 @cindex removing alias, for string (@code{rm})
 @cindex removing alias, for macro (@code{rm})
 @cindex removing alias, for diversion (@code{rm})
-@cindex string, removing alias for (@code{rm})
-@cindex macro, removing alias for (@code{rm})
-@cindex diversion, removing alias for (@code{rm})
+@cindex string, removing alias of (@code{rm})
+@cindex macro, removing alias of (@code{rm})
+@cindex diversion, removing alias of (@code{rm})
 To remove an alias, call @code{rm} on its name.  The object itself is
 not destroyed until it has no more names.
 
@@ -15903,9 +15913,9 @@ the next image.
 @endDefesc
 
 @Defreg {.O}
-@cindex suppression nesting level register
-@cindex nesting level, suppression, register
-@cindex level, suppression nesting, register
+@cindex suppression nesting level register (@code{.O})
+@cindex nesting level, suppression, register (@code{.O})
+@cindex level, suppression nesting, register (@code{.O})
 Output suppression nesting level applied by @code{\O3} and @code{\O4}
 escape sequences.
 @endDefreg
@@ -16036,18 +16046,18 @@ from becoming part of the diversion (@pxref{Diversions}).
 @endDefreq
 
 @Defreq {nx, [@Var{file}]}
-@cindex processing next file (@code{nx})
-@cindex file, processing next (@code{nx})
-@cindex next file, processing (@code{nx})
+@cindex read next file request (@code{nx})
+@cindex file, next, read, request (@code{nx})
+@cindex next file, read, request (@code{nx})
 Force @command{gtroff} to continue processing of the file specified as
 an argument.  If no argument is given, immediately jump to the end of
 file.
 @endDefreq
 
 @Defreq {rd, [@Var{prompt} [@Var{arg1} @Var{arg2} @dots{}]]}
-@cindex reading from standard input (@code{rd})
-@cindex standard input, reading from (@code{rd})
-@cindex input, standard, reading from (@code{rd})
+@cindex read from standard input request (@code{rd})
+@cindex standard input, read from, request (@code{rd})
+@cindex input, standard, read from, request (@code{rd})
 Read from standard input, and include what is read as though it were
 part of the input file.  Text is read until a blank line is encountered.
 
@@ -16491,8 +16501,8 @@ both the @code{.nm} and @code{.nn} registers.
 @endExample
 
 @Defreq {mc, [@Var{margin-character} [@Var{distance}]}
-@cindex margin glyph (@code{mc})
-@cindex glyph, for margins (@code{mc})
+@cindex margin character (@code{mc})
+@cindex character, margins (@code{mc})
 Begin (or, with no arguments, cease) writing a @dfn{margin-character} to
 the right of each output line.  The @var{distance} argument separates
 @var{margin-character} from the right margin.  If absent, the most
@@ -16756,9 +16766,9 @@ stream.
 @pindex soelim
 @cindex multi-file documents
 @cindex documents, multi-file
-@cindex setting input line number (@code{lf})
-@cindex input line number, setting (@code{lf})
-@cindex number, input line, setting (@code{lf})
+@cindex assign input line number request (@code{lf})
+@cindex input line number, assignment, request (@code{lf})
+@cindex number, input line, assignment request (@code{lf})
 Set the input line number (and, optionally, the file name) GNU
 @code{troff} shall use for error and warning messages.  @var{line} is
 the input line number of the @emph{next} line.  Without an argument, the
@@ -16797,12 +16807,12 @@ with a failure status.
 @Defreq {ex, }
 @cindex @code{ex} request, use in debugging
 @cindex exiting (@code{ex})
-Exit GNU @code{troff}; that is, stop processing and terminate with a
-successful status.  To stop processing only the current file, use the
+Exit GNU @code{troff}; that is, stop processing and terminate
+successfully.  To stop processing only the current file, use the
 @code{nx} request; see @ref{I/O}.
 @endDefreq
 
-When doing something involved, it is useful to leave the debugging
+When doing something complicated, it is useful to leave the debugging
 statements in the code and have them turned on by a command-line flag.
 
 @Example
@@ -16817,9 +16827,9 @@ register.
 groff -rDB=1 @slanted{file}
 @endExample
 
-If it is known in advance that there are many errors and no useful
-output, GNU @code{troff} can be forced to suppress formatted output with
-the @option{-z} option.
+If you know in advance that there are many errors and no useful output,
+or are interested @emph{only} in diagnostic output, you can suppress GNU
+@code{troff}'s formatted output with its @option{-z} option.
 
 @Defreq {pev, }
 @cindex dumping environments (@code{pev})

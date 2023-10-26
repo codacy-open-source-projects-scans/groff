@@ -1751,7 +1751,6 @@ flushing pending footnotes.
 A document should then end
 or call
 .b .bp .
-.br
 .\" dead-tree pagination
 .br
 .ne 6v

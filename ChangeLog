@@ -1,3 +1,202 @@
+2023-10-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (TH):
+	* tmac/mdoc/doc-common (doc-set-up-titles): Update default
+	footer trap location to leave a half-inch margin below the
+	footer, not 1/2 inch minus one vee.
+	* tmac/an.tmac (PT):
+	* tmac/mdoc/doc-common (doc-header): Adjust vertical spacing at
+	page top to leave a half-inch above the header, and 1 inch
+	distance from the page top to the top of the running text (in
+	practice, the "Name" section heading).
+
+	* tmac/groff_man.7.man.in (Options) <-rFT>:
+	* tmac/groff_mdoc.7.man (Options) <-rFT>: Document new default.
+
+	* tmac/tests/an_P-register-works.sh:
+	* tmac/tests/andoc_P-register-works.sh:
+	* tmac/tests/doc_P-register-works.sh: Update test expectations.
+
+	* NEWS: Add item.
+
+2023-10-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/refer.tmac (ref*add-J, ref*add-D, ref*add-E, ref*add-G)
+	(ref*add-B, ref*add-O, ref*add-A, ref*add-V, ref*add-N)
+	(ref*add-dflt): Fix thinko in `ie` predicates.  The true
+	branches of the conditionals were never taken because the
+	condition was consistently misspelled, testing for the existence
+	of, for example, a register named "ef*spec!J:\\$1" (where `\\$1`
+	_would_ be interpolated, but not improve chances of success).
+	Fix by using the `d` conditional operator as obviously intended.
+	This enables some refer(1) formatting customization that was
+	unfortunately inoperative.  Problem appears to date back to
+	commit 3bab8e6fe5, 2011-01-28.
+
+	Fixes <https://savannah.gnu.org/bugs/?64779>.  Thanks to an
+	anonymous bug submitter for the report and the patch.
+
+2023-10-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-ditroff (doc-Ev-font):
+	* tmac/mdoc/doc-nroff (doc-Ev-font): Change typeface for
+	environment variable identifiers from (Courier) roman to italic,
+	for consistency with man(7).
+
+2023-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devps/generate/Makefile (zapfdr.afm): Fix typo in
+	dependency name.  Problem introduced by me in commit 2566b64e0b,
+	13 March 2022, which claimed "[s]hould not cause regressions
+	because the Make targets invoked are never called during a build
+	{they are isolates that you have to manually name on the command
+	line}."  Thus was fortune's hostage claimed.  Apparently
+	OpenSUSE uses this Makefile as part of its "ghostscript-fonts-
+	grops" package build.  (Fair enough--we _do_ ship it.)
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (while_break_request)
+	(while_continue_request): Clarify diagnostic messages.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename and boolify some file-local
+	functions.
+
+	* src/roff/troff/input.cpp (get_delim_number): Rename this...
+	(read_delimited_number): ...to this, and boolify it.  The idea
+	behind "read" instead of "get" is that the latter more strongly
+	implies (to me) that the value being "got" is returned by the
+	function.  But for `read_delimited_number`, the number is stored
+	{after possible unit conversion} in one of the function
+	parameters.
+	(get_delim_name): Rename this...
+	(get_delimited_name): ...to this.
+	(token::next): Update call sites.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename local `start` variables to
+	`start_token` for better code readability.
+
+	* src/roff/troff/input.cpp (do_overstrike, do_bracket)
+	(do_name_test, do_expr_test, do_zero_width, get_delim_number)
+	(get_line_arg, get_delim_name, do_register, do_width)
+	(do_special, read_draw_node):
+	* src/roff/troff/reg.cpp (inline_define_register): Do it.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename Boolean-valued member
+	function to read like a logical predicate.
+
+	* src/roff/troff/token.h (token::usable_as_delimiter): Rename...
+	(token::is_usable_as_delimiter): ...declaration to this.
+	* src/roff/troff/input.cpp (token::usable_as_delimiter):
+	(token::is_usable_as_delimiter): ...same for implementation.
+
+	* src/roff/troff/env.cpp (number_lines):
+	* src/roff/troff/input.cpp (do_expr_test, get_delim_number)
+	(get_line_arg, read_size, do_register, do_if_request)
+	(read_draw_node):
+	* src/roff/troff/node.cpp (has_font, embolden_font): Update call
+	sites.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next, device_macro_request):
+	Recast language of one of groff's more notorious diagnostics,
+	eliminating the much-abused word "transparently".  Also name the
+	offending token.  It is difficult to overstate how unhelpful
+	diagnostic messages are when they know precisely what is wrong
+	but refuse to tell the user.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next): Tweak language of
+	diagnostic message when encountering unsupported escape
+	sequence.
+	* doc/groff.texi (Using Escape Sequences): Update example
+	accordingly.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (font_change): Trivially refactor,
+	renaming this function...
+	(select_font): ...to this.  Doing so aligns with other use of
+	the term "select" in groff font documentation.  Further, when
+	formatting for typesetters, fonts can be "changed" in a
+	different sense by altering height, slant, (constancy of)
+	spacing, and magnification.  Also mark function as "static"; it
+	needs no visibility outside this translation unit.
+
+2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Throw error diagnostic on attempt to select a font
+	named "DESC".  That will never work.
+
+	* src/roff/troff/env.cpp (font_change):
+	* src/roff/troff/input.cpp (token::next): Do it.
+
+2023-09-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Add bespoke handling of `lbp` device.
+
+	* tmac/an.tmac (EX): Refactor, using new register
+	`an*unmap-fonts` to keep track of whether we're remapping fonts
+	instead of switching families.  Like TeX DVI, the LBP output
+	device lacks a (complete) monospaced font family.  In EX/EE
+	examples on that device, remap the bold-italic face to italics.
+	(EE): Revert remappings and remove `an*unmap-fonts` register.
+
+	Prompted by discussion with pandoc developers at
+	<https://github.com/jgm/pandoc/issues/9020>.
+
+2023-09-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[eqn]: Make synopsis, usage message more helpful.
+
+	* src/preproc/eqn/eqn.1.man (Synopsis): Use descriptive phrases
+	as metasyntactic variables.
+	* src/preproc/eqn/main.cpp (usage): Sync with the foregoing.
+
+2023-09-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/pic/troff.cpp (strsame): Add utility function for
+	comparing two C strings for identical content, handling null
+	pointer arguments as `strcmp()` does not.
+	(troff_output::set_location): Refactor; write the two-argument
+	form of the `lf` request if the current and last seen file names
+	_don't_ match.  Problem introduced by me in commit 705be31107,
+	29 July.  Also fix heap memory leak when repeatedly updating
+	`troff_output::last_filename` member variable.
+
+	Fixes <https://savannah.gnu.org/bugs/?64628>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-09-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pic]: Save and restore stroke and fill colors when entering and
+	leaving, respectively, preprocessed regions.
+
+	* src/preproc/pic/troff.cpp: Define C/C++ preprocessor macros to
+	house names of *roff strings storing this information.
+	(troff_output::start_picture): Save stroke and fill colors.
+	(troff_output::finish_picture): Restore stroke and fill colors.
+
+	Fixes <https://savannah.gnu.org/bugs/?64624>.  Thanks to Dave
+	Kemper for the report and testing this code change.
+
+2023-09-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (doc/meintro_fr.ps): Depend on tbl, resolving race
+	in sufficiently parallelized builds.  Overlooked in commit
+	92349ae223, 2022-05-30.
+
+	Fixes <https://savannah.gnu.org/bugs/?64695>.  Thanks to
+	Alexander Kanavin for the report.
+
 2023-09-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* doc/groff.texi (I/O) <mso, msoquiet>: Fix error.  These
