@@ -767,7 +767,7 @@ Call it repeatedly to specify multiple authors.
 T}
 _
 \&.AI	T{
-Specify the preceding author's institution.
+Specify the preceding author's institutional affiliation.
 .
 An
 .CW .AU
@@ -1336,7 +1336,10 @@ and
 .CW SN\-NO\-DOT
 (with the terminating period omitted).
 .
-These are GNU extensions.
+These,
+and
+.CW SN\-STYLE ,
+are GNU extensions.
 .
 .
 .PP
@@ -1499,10 +1502,10 @@ Machairodontinae
 .
 .
 .LP
-causes \[lq]1. Carnivora\[rq] to be printed in 13-point text,
-followed by \[lq]1.1. Felinae\[rq] in 11.5-point text,
+causes \[lq]1. Carnivora\[rq] to be printed in 13-point type,
+followed by \[lq]1.1. Felinae\[rq] in 11.5-point type,
 while \[lq]1.1.1. Felis catus\[rq] and all more deeply nested headings
-remain in the 10-point text specified by the
+remain in the 10-point type specified by the
 .CW PS
 register.
 .

@@ -2358,32 +2358,30 @@ is searched but before those declared with the
 request.
 .
 .TP
-.BI .fspecial\~ "f s1 s2\~"\c
-\&.\|.\|.
+.BI .fspecial\~ f\~\c
+.RI [ s\~ .\|.\|.]
 When
 .RI font\~ f
 is selected,
-fonts
-.IR s1 ,
-.IR s2 ,
-\&.\|.\|.\&
-are treated as special;
+treat each font
+.I s
+as special;
 that is,
-they are searched for glyphs not found in
+search it for any glyph not found in
 .IR f .
 .
-Any fonts specified in the
+Fonts specified by the
 .RB \%\[lq] special \[rq]
-request are searched after
-.IR s1 ,
-.IR s2 ,
-and so on.
+request are searched after those
+listed in the
+.B fspecial
+request.
 .
 Without
 .I s
 arguments,
 .B \%fspecial
-clears the list of fonts treated as special when
+empties the list of fonts treated as special when
 .I f
 is selected.
 .
@@ -2476,7 +2474,7 @@ The request is ignored if given no arguments.
 .
 .
 .IP
-For hyphenation to work,
+For automatic hyphenation to work,
 hyphenation codes must be set up.
 .
 At startup,
@@ -3029,6 +3027,27 @@ other environments to the standard error stream.
 .
 .
 .TP
+.B .phw
+Report,
+to the standard error stream,
+the list of hyphenation exceptions.
+.
+Each hyphenation point is marked with
+.RB \[lq] \- \[rq].
+.
+Words that will not be hyphenated at all are prefixed with
+.RB \[lq] \- \[rq].
+.
+Those to which the hyphenation mode applies
+(meaning those defined in a hyphenation pattern file rather than with
+the
+.B hw
+request)
+are suffixed with a tab and asterisk
+.RB ( * ).
+.
+.
+.TP
 .B .pnr
 Write the names and values of all currently defined registers to the
 standard error stream.
@@ -3287,15 +3306,16 @@ does not exist.
 .
 .
 .TP
-.BI .special\~ f\~\c
-\&.\|.\|.
+.BR .special\~ [\c
+.IR s\~ .\|.\|.]
 Declare each font
-.I f
+.I s
 as special,
 searching it for glyphs not found in the selected font.
 .
 Without arguments,
-this list of special fonts is made empty.
+.RB \[lq] \%special \[dq]
+empties this list of special fonts.
 .
 .
 .TP
@@ -3716,6 +3736,8 @@ is being written to;
 this behavior is so anomalous that it must be considered a bug.
 .
 .
+.br
+.ne 6v
 .TP
 .BI .de\~ name\~\c
 .RI [ end-name ]
@@ -3887,7 +3909,7 @@ Interpolate skew of last glyph added to the environment.
 The
 .I skew
 of a glyph is how far to the right of the center of a glyph the center
-of an accent over that glyph should be placed.
+of an accent over that glyph is to be placed.
 .
 .
 .TP
@@ -4309,8 +4331,9 @@ as doing.
 .
 .TP
 .B \[rs]n[ssc]
-The amount of horizontal space (possibly negative) that should be
-added to the last glyph before a subscript.
+The amount of
+(possibly negative)
+horizontal space to add to the last glyph before a subscript.
 .
 .
 .TP
@@ -4318,8 +4341,7 @@ added to the last glyph before a subscript.
 How far to right of the center of the last glyph in the
 .B \[rs]w
 argument,
-the center of an accent from a roman font should be placed
-over that glyph.
+to place the center of an accent from a roman font over that glyph.
 .
 .
 .P

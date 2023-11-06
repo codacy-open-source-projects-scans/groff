@@ -3559,7 +3559,7 @@ struct trie_node;
 
 class trie {
   trie_node *tp;
-  virtual void do_match(int len, void *val) = 0;
+  virtual void do_match(int, void *) = 0;
   virtual void do_delete(void *) = 0;
   void delete_trie_node(trie_node *);
 public:
@@ -3567,7 +3567,7 @@ public:
   virtual ~trie();		// virtual to shut up g++
   void insert(const char *, int, void *);
   // find calls do_match for each match it finds
-  void find(const char *pat, int patlen);
+  void find(const char *, int);
   void clear();
 };
 
@@ -3575,14 +3575,14 @@ class hyphen_trie : private trie {
   int *h;
   void do_match(int i, void *v);
   void do_delete(void *v);
-  void insert_pattern(const char *pat, int patlen, int *num);
-  void insert_hyphenation(dictionary *ex, const char *pat, int patlen);
+  void insert_pattern(const char *, int, int *);
+  void insert_hyphenation(dictionary *, const char *, int);
   int hpf_getc(FILE *f);
 public:
   hyphen_trie() {}
   ~hyphen_trie() {}
-  void hyphenate(const char *word, int len, int *hyphens);
-  void read_patterns_file(const char *name, int append, dictionary *ex);
+  void hyphenate(const char *, int, int *);
+  void read_patterns_file(const char *, int, dictionary *);
 };
 
 struct hyphenation_language {
@@ -3596,9 +3596,14 @@ struct hyphenation_language {
 dictionary language_dictionary(5);
 hyphenation_language *current_language = 0;
 
-static void set_hyphenation_language()
+static void select_hyphenation_language()
 {
-  symbol nm = get_name(true /* required */);
+  if (!has_arg()) {
+    error("hyphenation language selection request requires argument");
+    skip_line();
+    return;
+  }
+  symbol nm = get_name();
   if (!nm.is_null()) {
     current_language = (hyphenation_language *)language_dictionary.lookup(nm);
     if (!current_language) {
@@ -3612,10 +3617,11 @@ static void set_hyphenation_language()
 const int WORD_MAX = 256;	// we use unsigned char for offsets in
 				// hyphenation exceptions
 
-static void hyphen_word()
+static void add_hyphenation_exceptions()
 {
   if (!current_language) {
-    error("no current hyphenation language");
+    error("cannot add hyphenation exceptions when no hyphenation"
+	  " language is set");
     skip_line();
     return;
   }
@@ -3656,6 +3662,42 @@ static void hyphen_word()
       if (tem)
 	delete[] tem;
     }
+  }
+  skip_line();
+}
+
+static void print_hyphenation_exceptions()
+{
+  dictionary_iterator iter(current_language->exceptions);
+  symbol entry;
+  unsigned char *hypoint;
+  // Pathologically, we could have a hyphenation point after every
+  // character in a word except the last.  The word may have a trailing
+  // space; see `hyphen_trie::read_patterns_file()`.
+  const size_t bufsz = WORD_MAX * 2;
+  char wordbuf[bufsz];
+  while(iter.get(&entry, reinterpret_cast<void **>(&hypoint))) {
+    assert(!entry.is_null());
+    assert(hypoint != 0 /* nullptr */);
+    string word = entry.contents();
+    (void) memset(wordbuf, '\0', bufsz);
+    size_t i = 0, j = 0, len = word.length();
+    bool is_mode_dependent = false;
+    while (i < len) {
+      if ((hypoint != 0 /* nullptr */) && (*hypoint == i)) {
+	wordbuf[j++] = '-';
+	hypoint++;
+      }
+      if (word[i] == ' ') {
+	assert(i == (len - 1));
+	is_mode_dependent = true;
+      }
+      wordbuf[j++] = word[i++];
+    }
+    errprint("%1", wordbuf);
+    if (is_mode_dependent)
+      errprint("\t*");
+    errprint("\n");
   }
   skip_line();
 }
@@ -4152,8 +4194,9 @@ const char *hyphenation_language_reg::get_string()
 
 void init_hyphen_requests()
 {
-  init_request("hw", hyphen_word);
-  init_request("hla", set_hyphenation_language);
+  init_request("hw", add_hyphenation_exceptions);
+  init_request("phw", print_hyphenation_exceptions);
+  init_request("hla", select_hyphenation_language);
   init_request("hpf", hyphenation_patterns_file);
   init_request("hpfa", hyphenation_patterns_file_append);
   register_dictionary.define(".hla", new hyphenation_language_reg);

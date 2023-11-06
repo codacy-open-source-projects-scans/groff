@@ -347,15 +347,8 @@ name.
 Every character in the font file must exist in the PostScript font, and
 the widths given in the font file must match the widths used
 in the PostScript font.
-.
-.
-.LP
-Note that
-.I gropdf
-is currently only able to display the first 256 glyphs in any font.
-This restriction will be lifted in a later version.
-.
-.
+.\" .
+.\" .
 .\" .LP
 .\" Note that
 .\" .B grops

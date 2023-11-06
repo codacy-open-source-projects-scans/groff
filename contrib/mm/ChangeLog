@@ -1849,13 +1849,14 @@ Sun Jan 1 00:00:00 1991 Joergen Haegg (jh at efd.lth.se)
 
 ________________________________________________________________________
 
-Copyright 1991-2020 Free Software Foundation, Inc.
+Copyright 1991-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.
 
 Local Variables:
+coding: latin-1
 fill-column: 72
 mode: change-log
 version-control: never

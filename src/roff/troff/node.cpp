@@ -6311,6 +6311,11 @@ static void read_special_fonts(special_font_list **sp)
 
 static void set_font_specific_special_fonts()
 {
+  if (!has_arg()) {
+    error("fspecial request requires at least one font argument");
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!has_font(&finfo))
     font_lookup_error(finfo, "to mark other fonts as special"
@@ -6322,6 +6327,11 @@ static void set_font_specific_special_fonts()
 
 static void set_special_fonts()
 {
+  if (!has_arg()) {
+    error("special request requires at least one font argument");
+    skip_line();
+    return;
+  }
   read_special_fonts(&global_special_fonts);
   skip_line();
 }

@@ -733,8 +733,10 @@ automatically loads a macro file defining many color names at startup.
 By the same mechanism,
 the devices supported by
 .MR grotty @MAN1EXT@
-recognize the eight standard ISO\~6429/ECMA-48 color names
-(also known vulgarly as \[lq]ANSI colors\[rq]).
+recognize the eight standard ISO\~6429/ECMA-48 color names.
+(These are known vulgarly as \[lq]ANSI\[rq] colors,
+after its X3.64 standard,
+now withdrawn.)
 .\" END Keep (roughly) parallel with groff.texi node "Colors".
 .
 .
@@ -2423,6 +2425,11 @@ macro,
 or diversion
 .IR old .
 .
+If
+.I new
+already exists,
+its contents are lost unless already aliased.
+.
 .TPx
 .REQ .am "macro"
 Append to
@@ -3796,6 +3803,26 @@ Report the state of the current environment followed by that of all
 other environments to the standard error stream.
 .
 .TPx
+.REQ .phw
+Report,
+to the standard error stream,
+the list of hyphenation exceptions.
+.
+Each hyphenation point is marked with
+.RB \[lq] \- \[rq].
+.
+Words that will not be hyphenated at all are prefixed with
+.RB \[lq] \- \[rq].
+.
+Those to which the hyphenation mode applies
+(meaning those defined in a hyphenation pattern file rather than with
+the
+.B hw
+request)
+are suffixed with a tab and asterisk
+.RB ( * ).
+.
+.TPx
 .REQ .pi "program"
 Pipe output to
 .I program
@@ -3961,8 +3988,11 @@ If
 stop right-aligning.
 .
 .TPx
-.REQ .rm "name"
-Remove request, macro, diversion, or string
+.REQ .rm "name \f[R].\|.\|."
+Remove each request,
+macro,
+diversion,
+or string
 .IR name .
 .
 .TPx
@@ -3981,9 +4011,9 @@ to
 .
 .
 .TPx
-.REQ .rr ident
-Remove register
-.IR ident .
+.REQ .rr "reg \f[R].\|.\|."
+Remove each register
+.IR reg .
 .
 .
 .TPx
@@ -4272,11 +4302,11 @@ and
 .RB \[lq] R \[rq]
 for right-aligned.
 .
-.br
-.ne 4v \" XXX: should need only 2v
 .TPx
 .REQ .tag
-.TQ
+Reserved for internal use.
+.
+.TPx
 .REQ .taga
 Reserved for internal use.
 .
@@ -5661,9 +5691,6 @@ if a closing bracket
 occurs in a string argument,
 that argument must be enclosed in double quotes.
 .
-.B \[rs]*
-is interpreted even in copy mode.
-.
 When defining strings,
 argument interpolations must be escaped if they are to reference
 parameters from the calling context;
@@ -5671,9 +5698,9 @@ see section \[lq]Parameters\[rq] below.
 .
 .
 .P
-An initial neutral double quote
+The formatter removes an initial neutral double quote
 .B \[dq]
-in the string contents is stripped to allow embedding of leading spaces.
+in the string contents to permit the embedding of leading spaces.
 .
 Any other
 .B \[dq]
@@ -5738,9 +5765,11 @@ string is later interpolated.
 .
 .P
 .B Caution:
-Unlike other requests,
-the second argument to these requests consumes the remainder of the
-input line,
+The
+.B ds
+request,
+unlike others,
+treats the remainder of the input line as its second argument,
 including trailing spaces.
 .
 Ending string definitions

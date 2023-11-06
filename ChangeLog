@@ -1,3 +1,131 @@
+2023-11-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (set_font_specific_special_fonts):
+	Declare automatic variable closer to its first point of use.
+
+2023-11-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor dictionary implementation.
+
+	* src/roff/troff/dictionary.h (class dictionary_iterator):
+	(class object_dictionary_iterator):
+	(object_dictionary_iterator::get): Demote return type of `get()`
+	from `int` to `bool`.
+	(class object_dictionary): Demote return type of `alias()` from
+	`int` to `bool`.
+	(class object): Rename member variable `rcount` to `refcount`.
+	* src/roff/troff/dictionary.cpp (is_good_size):
+	(dictionary_iterator::get):
+	(object_dictionary::alias): Demote return type from `int` to
+	`bool`.  Update return value literals.
+	(object::object):
+	(object::add_reference):
+	(object::remove_reference): Rename member variable `rcount` to
+	`refcount`.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Implement new `phw` request.
+
+	* src/roff/troff/env.cpp (print_hyphenation_exceptions): Add.
+	(init_hyphen_requests): Wire up `phw` request name to
+	`print_hyphenation_exceptions()`.
+
+	* doc/groff.texi (Manipulating Hyphenation, Debugging):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Document it.
+
+	Inspired by a debugging process (that ultimately involved
+	input character encoding confusion) on the groff mailing list,
+	raised by Walter Alejandro Iglesias.  See
+	<https://lists.gnu.org/archive/html/groff/2023-09/\
+	msg00032.html> and
+	<https://lists.gnu.org/archive/html/groff/2023-10/\
+	msg00008.html> and follow-ups.  It my opinion it should have
+	been easier to ask the formatter where it thought a hyphenation
+	exception's hyphenation points were.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (alter_format): Slightly refactor.
+	Push more diagnostic work to `tok.description()`, since it is
+	capable of describing any token.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi (Setting Registers, Strings):
+	* man/groff.7.man (Request short reference): Fix errors; the
+	`rm` and `rr` requests take an arbitrary number of arguments.
+	Ossanna nroff and DWB nroff both behave this way.  Nor did CSTR
+	#54, in its 1976 or 1992 revisions, document this.  Problem
+	appears to date back "forever", to the oldest revisions of these
+	files in our Git repository.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Drop parameter names from prototypes,
+	in keeping with the Stroustrup-style C++ used in most of groff.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Clarify diagnostic and trivially
+	refactor.
+	(hyphen_word): Rename this...
+	(add_hyphenation_exceptions): ...to this.
+	(init_hyphen_requests): Update call site.
+
+	(add_hyphenation_exceptions): Make error diagnostic more
+	helpful.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Add diagnostic and trivially refactor.
+	(set_hyphenation_language): Rename this...
+	(select_hyphenation_language): ...to this.
+	(init_hyphen_requests): Update call site.
+
+	(select_hyphenation_language): Throw more helpful diagnostic
+	when not given an argument; promote "missing identifier" warning
+	to a context-rich error.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi (Line Continuation): Drop concept index entry
+	regarding use of `\R` escape sequence after `\c` on an input
+	line.  There is no longer anything special to say; `\R` works as
+	otherwise documented.  Formerly (pre-1.23.0), our Texinfo manual
+	suggested that nothing on an input line after `\c` was
+	interpreted, which was false.  Nothing after it is _formatted_.
+
+	Fixes <https://savannah.gnu.org/bugs/?64844>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-11-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (set_font_specific_special_fonts)
+	(set_special_fonts): Throw error when invoked with insufficient
+	arguments.
+
+2023-11-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi: Add numerous @anchor commands to aid
+	resolution of hyperlinks into this manual based on the node
+	names used in groff 1.22.4 (and for several years previous, as
+	the document saw little change for a while).  Some node names, I
+	did not add anchors for; they correspond either to material that
+	we've dropped altogether from our Texinfo manual (mainly a
+	history that can now be found [much updated] in roff(7), and a
+	somewhat stale duplicate of groff_man(7), which no GNU Info
+	partisan would read anyway) or were empty stubs anyway.  An HTTP
+	404 response is therefore honest in such cases.  Thanks to Gavin
+	Smith and Thérèse Godefroy for this and other useful
+	suggestions.
+
+	Fixes <https://savannah.gnu.org/bugs/?64758>.  Thanks to Ingo
+	Schwarze for the report and Gavin Smith for proposing a
+	resolution technique.
+
 2023-10-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an.tmac (TH):
@@ -7,8 +135,7 @@
 	* tmac/an.tmac (PT):
 	* tmac/mdoc/doc-common (doc-header): Adjust vertical spacing at
 	page top to leave a half-inch above the header, and 1 inch
-	distance from the page top to the top of the running text (in
-	practice, the "Name" section heading).
+	distance from the page top to the top of the running text.
 
 	* tmac/groff_man.7.man.in (Options) <-rFT>:
 	* tmac/groff_mdoc.7.man (Options) <-rFT>: Document new default.
@@ -50,9 +177,9 @@
 	13 March 2022, which claimed "[s]hould not cause regressions
 	because the Make targets invoked are never called during a build
 	{they are isolates that you have to manually name on the command
-	line}."  Thus was fortune's hostage claimed.  Apparently
+	line}."  Thus was fortune's hostage seized.  Apparently
 	OpenSUSE uses this Makefile as part of its "ghostscript-fonts-
-	grops" package build.  (Fair enough--we _do_ ship it.)
+	grops" package build.  (Fair enough--we _do_ install it.)
 
 2023-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -747,9 +874,9 @@
 	[troff]: Trivially refactor (`define_color`).
 
 	* src/roff/troff/input.cpp (define_color): Throw more helpful
-	diagnostics when arguments from this 3-5-argument-taking request
-	is not given enough of them.  Rename internal variable `style`
-	to `color_space` to make it less opaque.
+	diagnostics when this 3-5-argument-taking request is not given
+	enough of them.  Rename internal variable `style` to
+	`color_space` to make it less opaque.
 
 2023-08-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 

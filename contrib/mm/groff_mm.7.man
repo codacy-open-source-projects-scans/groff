@@ -1771,9 +1771,9 @@ is unnecessary.
 .
 .
 .IP
+The optional
 .I title
-specifies an optional title;
-it must be double-quoted if it contains spaces.
+must be double-quoted if it contains spaces.
 .
 .I mm
 appends
@@ -1915,9 +1915,9 @@ macros to enable further customization of headings.
 .
 (DWB
 .I mm
-called these \[lq]exits\[rq].)
+termed them \[lq]exits\[rq].)
 .
-They can be used to change the heading's
+Hooks can change the heading's
 .I mark
 (the numbered portion before any heading title),
 its vertical spacing,
@@ -2038,16 +2038,12 @@ It could be used to change the page header to include a section heading.
 .
 .
 .TP
-.BI HC\  \fR[\fPhyphenation-character\fR]\fP
+.BI HC\~ \fR[\fPhyphenation-character\fR]\fP
 Set hyphenation character.
 .
-Default value is \[lq]\[rs]%\[rq].
+The default is \[lq]\[rs]%\[rq].
 .
 Resets to the default if called without argument.
-.
-Hyphenation can be turned off by setting register
-.B Hy
-to\~0 at the beginning of the file.
 .
 .
 .TP

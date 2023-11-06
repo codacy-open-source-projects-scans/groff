@@ -61,7 +61,7 @@ _endif()dnl
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1999-2018, 2020-2021 Free Software Foundation, Inc.
+.\" Copyright (C) 1999-2023 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -123,7 +123,7 @@ macro package is part of the
 .I groff
 document formatting system.
 .
-It is used to produce manual pages
+It is used to compose manual pages
 .\" We use an unbreakable space \~ here to keep the phrase intact for
 .\" its introduction; in subsequent discussion, that is not important.
 (\(lqman\~pages\(rq)
@@ -137,7 +137,7 @@ with cross references to appropriate subsections below.
 .
 _ifnotstyle()dnl
 .P
-Man page authors and maintainers who are not already experienced
+Readers who are not already experienced
 .I groff
 users should consult
 .MR groff_man_style @MAN7EXT@ ,
@@ -213,33 +213,19 @@ and irrespective of the macro package selected for its composition.
 _ifstyle()dnl
 .
 .
-.\" ====================================================================
-.\" .SS "Input file format"
-.\" ====================================================================
 .P
-Man pages should be encoded using Unicode basic Latin code points
-exclusively,
-and employ the Unix line-ending convention
+A man page employs the Unix line-ending convention
 (U+000A only).
+.
 Some basic Latin characters have special meaning to
 .I roff;
 see subsection \(lqPortability\(rq below.
-.\" What about rare English words that require diacritics, and
-.\" proper names that require more than basic Latin?
-.\"
-.\" sentence (including end-of-sentence detection)
-.\" The above distinction works well with filling.
-.\" Don't fill your input text yourself; let groff do the work.
-.\" Also good for diffs.
-.\" escape sequences--pretty much just "see Portability"
+.
 .
 .\" ====================================================================
 .SS "Fundamental concepts"
 .\" ====================================================================
-.\" font (family, style [elsewhere known as face])
-.\" type size
-.\" typesetter (troff device, PostScript, PDF)
-.\" terminal (nroff device, emulator, typewriter, TTY)
+.
 .I groff
 is a programming system for typesetting:
 we thus often use the verb \(lqto set\(rq in the sense
@@ -276,7 +262,7 @@ An output line may be supplemented with
 .I inter-sentence space,
 and then optionally
 .I adjusted
-with more space to a consistent line length
+with more space to a consistent length
 (see the
 .B \-dAD
 option).
@@ -432,10 +418,10 @@ to inset a region within a (sub)section.
 .
 .
 .TP
-.BI .TH " topic section"\c
-.RI " [" footer-middle ]\c
-.RI " [" footer-inside ]\c
-.RI " [" header-middle ]
+.BI .TH " topic section"\~\c
+.RI [ footer-middle \~\c
+.RI [ footer-inside \~\c
+.RI [ header-middle ]]]
 Determine the contents of the page header and footer.
 _ifstyle()dnl
 .
@@ -1248,7 +1234,7 @@ or text file.
 Option arguments and command operands are presented in
 .I italics
 (but see subsection \(lqFont style macros\(rq below regarding terminals)
-to cue the user that they must be replaced with appropriate text.
+to cue the user that they must be replaced with appropriate input.
 .
 .
 .IP \(bu
@@ -1310,7 +1296,7 @@ Text may be hyperlinked to email addresses with
 or other URIs with
 .BR .UR / .UE .
 .
-Hyperlinked text is not supported on all output devices;
+Not all output devices support hyperlinking of text;
 terminals and pager programs must support ECMA-48 OSC\~8 escape
 sequences
 (see
@@ -1806,7 +1792,7 @@ Unlike the above font style macros,
 the font style alternation macros below set no input traps;
 they must be given arguments to have effect.
 .
-Italic corrections are applied as appropriate.
+They apply italic corrections as appropriate.
 .
 _ifstyle()dnl
 If a space is required within an argument,
@@ -1919,13 +1905,13 @@ alternately.
 _ifstyle()dnl
 .RS
 .IP
-.\" from src/preproc/pic/pic.1.man
+.\" from src/roff/groff/groff.1.man
 .EX
-if
 \&.I file
 is
-\&.RB \[rs][lq] \[rs]\- \[rs][rq],
-the standard input stream is read.
+\&.RB \[rs][lq] \- \[rs][rq],
+\&.I groff
+reads the standard input stream.
 .RE
 .EE
 .
@@ -1980,7 +1966,7 @@ register.
 .P
 Ordinary paragraphs not within an
 .BR .RS / .RE
-inset region are indented by the amount stored in the
+inset region are inset by the amount stored in the
 .B BP
 register;
 see section \[lq]Options\[rq] below.
@@ -2084,8 +2070,7 @@ Now we have created a relative inset with
 and started another ordinary paragraph with
 .BR .P .
 .
-If the paragraph is lengthy,
-we can tell that every line of it is inset;
+We observe that all of its lines are inset and indented the same;
 contrast with a first-line indentation.
 .
 .
@@ -2409,7 +2394,20 @@ just as you would test code.
 .SS Portability
 .\" ====================================================================
 .
-The two major language features that control formatting in the
+An installed man page should contain Unicode basic Latin code points
+exclusively.
+.
+One can
+.I maintain
+it in a more convenient encoding,
+using
+.MR preconv 1
+to produce a basic Latin version that employs special character escape
+sequences to access code points necessary in non-English text.
+.
+.
+.P
+The two major features that control formatting in the
 .I roff
 language are requests and escape sequences.
 .
@@ -2465,7 +2463,7 @@ macros of
 implementations descended from Seventh Edition Unix supported six
 arguments at most.
 .
-A similar restriction applied to the
+This restriction also applied to the
 .BR .B ,
 .BR .I ,
 .BR .SM ,
@@ -2473,7 +2471,7 @@ and font style alternation macros.
 .
 .
 .P
-Similar caveats apply to escape sequences.
+Exercise restraint with escape sequences as with requests.
 .
 Some escape sequences are however required for correct typesetting
 even in man pages and usually do not cause portability problems.
@@ -2488,11 +2486,11 @@ that are handled specially in
 input;
 the escape sequences below must be used to render them correctly and
 portably when documenting material that uses them
-syntactically\(emnamely,
+as literals\(emnamely,
 any of the set
 .B \(aq \- \(rs \(ha \(ga \(ti
 (apostrophe,
-dash or minus,
+dash or hyphen-minus,
 backslash,
 caret,
 grave accent,
@@ -2941,14 +2939,14 @@ Use these for paired directional double quotes,
 .
 .TP
 .B \e(em
-Em-dash.
+Em dash.
 .
 Use for an interruption\(emsuch as this one\(emin a sentence.
 .
 .
 .TP
 .B \e(en
-En-dash.
+En dash.
 .
 Use to separate the ends of a range,
 particularly between numbers;
@@ -3509,8 +3507,8 @@ for less-common choices.
 .
 .
 .TP
-.BI \-rBP= base-paragraph-indentation
-Set the indentation amount for ordinary paragraphs not within an
+.BI \-rBP= base-paragraph-inset
+Set the inset amount for ordinary paragraphs not within an
 .BR .RS / .RE
 inset.
 .
@@ -4146,13 +4144,13 @@ to end the indented region before starting the next tagged paragraph
 .RB \(bu " .RE" " doesn't move the inset back to the expected level."
 The
 .B .RS
-macro takes an
-.I indentation amount
+macro takes an inset
+.I amount
 as an argument;
 the
 .B .RE
-macro's argument is a specific
-.I inset level.
+macro's argument is an inset
+.I level.
 .
 .B .RE\~1
 goes to the level before any
@@ -4422,8 +4420,7 @@ _ifnotstyle()dnl
 .MR groff_man_style @MAN7EXT@ ,
 _endif()dnl
 .MR groff @MAN7EXT@ ,
-.MR groff_char @MAN7EXT@ ,
-.MR man 7
+.MR groff_char @MAN7EXT@
 .
 .
 .\" Restore compatibility mode (for, e.g., Solaris 10/11).

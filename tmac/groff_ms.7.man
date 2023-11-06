@@ -542,7 +542,7 @@ Call it repeatedly to specify multiple authors.
 .
 .TP
 .B .AI
-Specify the preceding author's institution.
+Specify the preceding author's institutional affiliation.
 .
 An
 .B .AU
@@ -906,7 +906,10 @@ and
 .B SN\-NO\-DOT
 (with the terminating period omitted).
 .
-These are GNU extensions.
+These,
+and
+.BR SN\-STYLE ,
+are GNU extensions.
 .
 .
 .P
