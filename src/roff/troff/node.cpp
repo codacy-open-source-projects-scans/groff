@@ -6491,6 +6491,10 @@ hunits env_narrow_space_width(environment *env)
 
 static void embolden_font()
 {
+  if (in_nroff_mode) {
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!(has_arg()))
     warning(WARN_MISSING, "font name or position expected in"

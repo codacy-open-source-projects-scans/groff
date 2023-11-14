@@ -1,6 +1,6 @@
 .TH @g@lookbib @MAN1EXT@ "@MDATE@" "groff @VERSION@"
 .SH Name
-@g@lookbib \- search bibliographic databases
+@g@lookbib \- search bibliographic databases interactively
 .
 .
 .\" ====================================================================

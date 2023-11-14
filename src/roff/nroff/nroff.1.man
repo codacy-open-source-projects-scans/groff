@@ -194,8 +194,8 @@ options
 .BR \-q ,
 and
 .B \-s
-(which are not implemented in
-.IR groff ).
+(which are not implemented in GNU
+.IR nroff ). \" GNU
 .
 The options
 .BR \-k ,

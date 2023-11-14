@@ -161,7 +161,7 @@ A citation identifies a work by reference to a
 detailing it.
 .
 Select a work from a database of records by listing keywords that
-uniquely identify it.
+uniquely identify its entry.
 .
 Alternatively,
 a document can specify a record for the work at the point its citation

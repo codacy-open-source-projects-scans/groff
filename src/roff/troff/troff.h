@@ -41,6 +41,7 @@ extern bool want_abstract_output;
 extern int suppress_output_flag;
 extern int color_flag;
 extern int is_html;
+extern bool in_nroff_mode;
 
 extern bool device_has_tcommand;
 extern int vresolution;

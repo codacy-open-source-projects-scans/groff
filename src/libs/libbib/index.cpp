@@ -163,7 +163,7 @@ const char *index_search_item::check_header(index_header *file_header,
 	       + file_header->lists_size * sizeof(int)
 	       + file_header->table_size * sizeof(int)
 	       + file_header->strings_size
-	       + sizeof(file_header));
+	       + sizeof *file_header);
   if (sz != file_size)
     return("size mismatch between header and data");
   unsigned size_remaining = file_size;

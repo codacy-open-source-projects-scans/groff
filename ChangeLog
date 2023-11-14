@@ -1,3 +1,57 @@
+2023-11-09  Paul Eggert  <eggert@cs.ucla.edu>
+
+	[libbib]: Fix bogus size diagnostic.
+
+	* src/libs/libbib/index.cpp (index_search_item::check_header):
+	Fix size calculation typo that generated bogus diagnostic
+	"lookbib: error: corrupt header in index file".
+
+	{Fixes <https://savannah.gnu.org/bugs/?64879>.  Problem
+	introduced by me in commit 4fad0459bb, 2022-01-05.
+	-- GBR, 2023-11-10}
+
+2023-11-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (device_request, output_request):
+	Throw warning diagnostic if no arguments given.
+
+2023-11-06  Pim <pimh@kth.se>
+
+	* src/preproc/eqn/lex.cpp: Update internal macro definitions
+	used to construct tilde and under-tilde ("utilde") accents to
+	set them in the roman face, like other accent marks in eqn.
+	* src/preproc/eqn/eqn.1.man (New primitives): Update example.
+
+	Fixes <https://savannah.gnu.org/bugs/?64860>.  Thanks to Damian
+	McGuckin for reporting this problem on the groff mailing list.
+	<https://lists.gnu.org/archive/html/groff/2023-06/msg00143.html>
+
+2023-11-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (embolden_font): Do nothing if in
+	nroff mode.
+
+	Fixes <https://savannah.gnu.org/bugs/?64866>.
+
+2023-11-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Mark `suppression_level`,
+	`have_formattable_input`, `old_have_formattable_input`, and
+	`want_unsafe_requests` as `static` to give them internal
+	visibility only.
+
+2023-11-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Make `in_nroff_mode` visible to other translation
+	units, in preparation for Savannah #64866 fix.  Boolify it and
+	rename it from `nroff_mode`.  Relocate definition alongside
+	other externally visible symbols.
+
+	* src/roff/troff/troff.h: Declare it.
+	* src/roff/troff/input.cpp: Do it.
+	(nroff_request, troff_request, do_if_request, do_error): Update
+	references.
+
 2023-11-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/node.cpp (set_font_specific_special_fonts):

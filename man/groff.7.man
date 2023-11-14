@@ -2241,16 +2241,11 @@ A few denotations may require introduction.
 .RS
 .
 .TPx
-.I c
-denotes a single input character.
-.
-.TPx
-.I font
-a font either specified as a font name or a numeric mounting position.
-.
-.TPx
 .I anything
-all characters up to the end of the line,
+includes all characters up to the end of the input line
+(which may be continued with
+.BI \[rs] newline\c
+),
 to the ending delimiter for the escape sequence,
 or within
 .esc {
@@ -2258,8 +2253,42 @@ and
 .esc } .
 .
 Escape sequences may generally be used freely in
-.IR anything ,
+.I anything,
 except when it is read in copy mode.
+.
+Comments are ignored;
+trailing whitespace generally is not.
+.
+.TPx
+.I c
+denotes a single input character,
+ordinary or special.
+.
+.TPx
+.I div
+is a diversion.
+.
+.TPx
+.I env
+is an environment.
+.
+.TPx
+.I font
+is a typeface specified as a font name,
+an abstract style,
+or a mounting position.
+.
+.TPx
+.I ident
+is a valid
+.I groff
+identifier;
+its use often indicates that the operation creates an object of a type
+subsequently referred to as
+.I mac,
+.I reg,
+.I str,
+and so forth.
 .
 .TPx
 .I message
@@ -2272,6 +2301,18 @@ interpreted.
 .TPx
 .I n
 is a numeric expression that evaluates to a non-negative integer.
+.
+.TPx
+.I \[+-]N
+is a numeric expression with a meaning dependent on its sign;
+see below.
+.
+.TPx
+.I name
+is a macro,
+string,
+request,
+or diversion.
 .
 .TPx
 .I npl
@@ -2291,8 +2332,16 @@ Macro calls are not themselves productive,
 but their interpolated contents can be.
 .
 .TPx
-.I \[+-]N
-is a numeric expression with a meaning dependent on its sign.
+.I reg
+is a register.
+.
+.TPx
+.I str
+is a string.
+.
+.TPx
+.I stream
+is an output stream.
 .RE
 .LE
 .
@@ -2362,12 +2411,10 @@ write
 .I message
 to the standard error stream and exit with failure status.
 .
-.
 .TPx
 .REQ .ad
 Enable output line alignment and adjustment using the mode stored in
 .BR \[rs]n[.j] .
-.
 .
 .TPx
 .REQ .ad c
@@ -2379,13 +2426,12 @@ Enable output line alignment and adjustment in mode
 Sets
 .BR \[rs]n[.j] .
 .
-.
 .TPx
-.REQ .af "register c"
+.REQ .af "reg c"
 Assign format
 .I c
-to
-.IR register ,
+to register
+.I reg,
 where
 .I c
 is
@@ -2431,93 +2477,113 @@ already exists,
 its contents are lost unless already aliased.
 .
 .TPx
-.REQ .am "macro"
-Append to
-.I macro
+.REQ .am mac
+Append to macro
+.I mac
+until encountering
+.RB \[lq] .\|.\& \[rq].
+.
+.TPx
+.REQ .am "mac end-mac"
+Append to macro
+.I mac
 until
-.B ..\&
-is encountered.
+.I end-mac
+is called at the start of a control line in the current conditional
+block.
+.
+.I end-mac
+can be a request.
 .
 .TPx
-.REQ .am "macro end"
-Append to
-.I macro
-until
-.BI . end
-is called.
+.REQ .am1 mac
+As
+.request .am ,
+with compatibility mode disabled when the appendment to macro
+.I mac
+is interpreted.
 .
 .TPx
-.REQ .am1 "macro"
-Same as
-.request .am
-but with compatibility mode switched off during macro expansion.
+.REQ .am1 "mac end-mac"
+As
+.RB \[lq] .am
+.IR mac \[rq],
+with compatibility mode disabled when the appendment to macro
+.I mac
+is interpreted.
 .
 .TPx
-.REQ .am1 "macro end"
-Same as
-.request .am
-but with compatibility mode switched off during macro expansion.
+.REQ .ami str
+Append to a macro indirectly\[em]its name is in string
+.IR str \[em]until
+encountering
+.RB \[lq] .\|.\& \[rq].
 .
 .TPx
-.REQ .ami "macro"
-Append to a macro whose name is contained in the string
-.I macro
-until
-.B ..\&
-is encountered.
-.
-.TPx
-.REQ .ami "macro end"
+.REQ .ami "str end-mac-str"
 Append to a macro indirectly.
-.I macro
+.
+As
+.request .am ,
+but
+.I str
 and
-.I end
-are strings whose contents are interpolated for the macro name and the
-end macro,
+.I end-mac-str
+contain the names of the macro to be appended to,
+and that whose call ends the appendment,
 respectively.
 .
 .TPx
-.REQ .ami1 "macro"
-Same as
-.request .ami
-but with compatibility mode switched off during macro expansion.
+.REQ .ami1 str
+As
+.request .ami ,
+with compatibility mode disabled when the appendment is interpreted.
 .
 .TPx
-.REQ .ami1 "macro end"
-Same as
-.request .ami
-but with compatibility mode switched off during macro expansion.
+.REQ .ami1 "str end-mac-str"
+As
+.request .ami ,
+with compatibility mode disabled when the appendment is interpreted.
 .
+.\" a degenerate case
 .TPx
-.REQ .as name
+.REQ .as ident
 Create string
-.I name
+.I ident
 with empty contents;
 no operation if
-.I name
+.I ident
 already exists.
 .
 .TPx
-.REQ .as "name contents"
+.REQ .as "str anything"
 Append
-.I contents
+.I anything
 to string
-.IR name .
+.IR str .
+.
+.\" a doubly degenerate case
+.TPx
+.REQ .as1 ident
+As
+.RB \[lq] .as
+.IR ident \[rq].
 .
 .TPx
-.REQ .as1 string
-.TQ
-.REQ .as1 "string contents"
+.REQ .as1 "str anything"
 As
 .request .as ,
-but with compatibility mode disabled when
-.I contents
-interpolated.
+with compatibility mode disabled when the appendment to string
+.I str
+is interpreted.
 .
 .TPx
-.REQ .asciify "diversion"
-Unformat ASCII characters, spaces, and some escape sequences in
-.IR diversion .
+.REQ .asciify div
+Unformat ordinary characters,
+spaces,
+and some escape sequences \" XXX: vague
+in diversion
+.IR div .
 .
 .TPx
 .REQ .backtrace
@@ -2572,45 +2638,39 @@ Unset blank line macro (trap).
 .
 Restore default handling of blank lines.
 .
-.
 .TPx
-.REQ .blm name
+.REQ .blm mac
 Set blank line macro (trap) to
-.IR name .
-.
+.IR mac .
 .
 .TPx
 .REQ .box
 Stop directing output to current diversion;
 any pending output line is discarded.
 .
-.
 .TPx
-.REQ .box name
+.REQ .box ident
 Direct output to diversion
-.IR name ,
+.IR ident ,
 omitting a partially collected line.
-.
 .
 .TPx
 .REQ .boxa
 Stop appending output to current diversion;
 any pending output line is discarded.
 .
-.
 .TPx
-.REQ .boxa name
+.REQ .boxa div
 Append output to diversion
-.IR name ,
+.IR div ,
 omitting a partially collected line.
-.
 .
 .TPx
 .REQ .bp
 Break page and start a new one.
 .
 .TPx
-.REQ .bp "\[+-]N"
+.REQ .bp \[+-]N
 Break page,
 starting a new one numbered
 .IR \[+-]N .
@@ -2634,7 +2694,7 @@ Reset no-break control character to
 .dquoted_char \[aq] .
 .
 .TPx
-.REQ .c2 "o"
+.REQ .c2 o
 Recognize ordinary character
 .I o
 as no-break control character.
@@ -2645,7 +2705,7 @@ Reset control character to
 .squoted_char . .
 .
 .TPx
-.REQ .cc "o"
+.REQ .cc o
 Recognize ordinary character
 .I o
 as the control character.
@@ -2684,59 +2744,56 @@ to characters
 .IR c2 ,
 and so on.
 .
-.
 .TPx
-.REQ .ch name
+.REQ .ch mac
 Unplant page location trap
-.IR name .
-.
+.IR mac .
 .
 .TPx
-.REQ .ch "name vpos"
+.REQ .ch "mac vertical-position"
 Change page location trap
-.I name
+.I mac
 planted by
 .request .wh
 by moving its location to
-.I vpos
+.I vertical-position
 (default scaling unit\~\c
 .scaleindicator v ).
 .
-.
 .TPx
-.REQ .char "c contents"
+.REQ .char "c anything"
 Define ordinary or special character
 .I c
 as
-.IR contents .
+.I anything.
 .
 .TPx
-.REQ .chop object
+.REQ .chop name
 Remove the last character from the macro,
 string,
 or diversion
-named
-.IR object .
+.I name.
 .
 .TPx
-.REQ .class "name c1 c2 \fR\&.\|.\|.\&\fP"
+.REQ .class "ident c1 c2 \fR\&.\|.\|.\&\fP"
 Define a (character) class
-.I name
+.I ident
 comprising the characters or range expressions
 .IR c1 ,
 .IR c2 ,
 and so on.
 .
 .TPx
-.REQ .close "stream"
-Close the
-.IR stream .
-.
+.REQ .close stream
+Close
+.IR stream ,
+making it unavailable for
+.request .write
+requests.
 .
 .TPx
 .REQ .color
 Enable output of color-related device-independent output commands.
-.
 .
 .TPx
 .REQ .color n
@@ -2747,7 +2804,6 @@ disable output of color-related device-independent output commands;
 otherwise,
 enable them.
 .\" XXX: Should probably interpret negative values as false.
-.
 .
 .TPx
 .REQ .composite "from to"
@@ -2783,11 +2839,9 @@ ems with em
 .IR m .
 .\" XXX: m parameter needs more explanation.
 .
-.
 .TPx
 .REQ .cu
 Continuously underline the output of the next productive input line.
-.
 .
 .TPx
 .REQ .cu npl
@@ -2799,50 +2853,51 @@ If
 .IR npl =0,
 stop continuously underlining.
 .
-.
 .TPx
 .REQ .da
 Stop appending output to current diversion.
 .
-.
 .TPx
-.REQ .da name
+.REQ .da div
 Append output to diversion
-.IR name .
-.
+.IR div .
 .
 .TPx
-.REQ .de macro
-Define or redefine
-.I macro
+.REQ .de ident
+Define macro
+.I ident
 until
-.RB \[lq] ..\& \[rq]
+.RB \[lq] .\|.\& \[rq]
 occurs at the start of a control line in the current conditional block.
 .
-.
 .TPx
-.REQ .de "macro end"
-Define or redefine
-.I macro
+.REQ .de "ident end-mac"
+Define macro
+.I ident
 until
-.I end
-is invoked or called at the start of a control line in the current
-conditional block.
+.I end-mac
+is called at the start of a control line in the current conditional
+block.
 .
+.I end-mac
+can be a request.
 .
 .TPx
-.REQ .de1 "macro"
+.REQ .de1 ident
 As
 .request .de ,
-but disable compatibility mode during macro expansion.
+with compatibility mode disabled when
+.I mac
+is interpreted.
 .
 .TPx
-.REQ .de1 "macro end"
+.REQ .de1 "ident end-mac"
 As
 .RB \[lq] .de
-.IR "macro end" \[rq],
-but disable compatibility mode during macro expansion.
-.
+.IR "ident end-mac" \[rq],
+with compatibility mode disabled when
+.I mac
+is interpreted.
 .
 .TPx
 .REQ .defcolor "ident scheme color-component \f[R].\|.\|."
@@ -2885,46 +2940,44 @@ interpreted using a default scaling unit
 which multiplies its value by 65,536
 (but clamps it at 65,535).
 .
-.
 .TPx
-.REQ .dei "macro"
+.REQ .dei str
 Define macro indirectly.
 .
 As
 .request .de ,
-but use interpolation of string
-.I macro
-as the name of the defined macro.
-.
+but interpolate string
+.I str
+to obtain the macro's name.
 .
 .TPx
-.REQ .dei "macro end"
+.REQ .dei "str end-mac-str"
 Define macro indirectly.
 .
 As
 .request .de ,
-but use interpolations of strings
-.I macro
+but
+.I str
 and
-.I end
-as the names of the defined and end macros.
-.
+.I end-mac-str
+contain the names of the macro to be defined,
+and that whose call ends the definition,
+respectively.
 .
 .TPx
-.REQ .dei1 "macro"
+.REQ .dei1 str
 As
 .request .dei ,
-but disable compatibility mode during macro expansion.
-.
+with compatibility mode disabled when the macro is interpreted.
 .
 .TPx
-.REQ .dei1 "macro end"
+.REQ .dei1 "str end-mac-str"
 As
-.request ".dei\~\f[I]macro\~end\f[]" ,
-but disable compatibility mode during macro expansion.
+.request .dei ,
+with compatibility mode disabled when the macro is interpreted.
 .
 .TPx
-.REQ .device "anything"
+.REQ .device anything
 Write
 .IR anything ,
 read in copy mode,
@@ -2936,7 +2989,7 @@ An initial neutral double quote is stripped to allow embedding of
 leading spaces.
 .
 .TPx
-.REQ .devicem "name"
+.REQ .devicem name
 Write contents of macro or string
 .I name
 to
@@ -2947,11 +3000,10 @@ output as a device control command.
 .REQ .di
 Stop directing output to current diversion.
 .
-.
 .TPx
-.REQ .di name
+.REQ .di ident
 Direct output to diversion
-.IR name .
+.IR ident .
 .
 .TPx
 .REQ .do "name \fR\&.\|.\|.\&\fP"
@@ -2972,41 +3024,37 @@ of
 is interpreted.
 .
 .TPx
-.REQ .ds name
-Create empty string
-.IR name .
+.REQ .ds ident
+Create empty string named
+.IR ident .
 .
 .TPx
-.REQ .ds "name contents"
-Create a string
-.I name
+.REQ .ds "ident anything"
+Create a string named
+.I ident
 containing
-.IR contents .
+.IR anything .
 .
 .TPx
-.REQ .ds1 name
+.REQ .ds1 ident
 .TQ
-.REQ .ds1 "name contents"
+.REQ .ds1 "ident anything"
 As
 .request .ds ,
-but with compatibility mode disabled when
-.I contents
-interpolated.
+with compatibility mode disabled when the string is interpreted.
 .
 .TPx
 .REQ .dt
 Clear diversion trap.
 .
-.
 .TPx
-.REQ .dt "vertical-position name"
+.REQ .dt "vertical-position mac"
 Set the diversion trap to macro
-.I name
+.I mac
 at
 .I vertical-position
 (default scaling unit\~\c
 .scaleindicator v ).
-.
 .
 .TPx
 .REQ .ec
@@ -3014,27 +3062,23 @@ Recognize
 .B \[rs]
 as the escape character.
 .
-.
 .TPx
-.REQ .ec "o"
+.REQ .ec o
 Recognize ordinary character
 .I o
 as the escape character.
-.
 .
 .TPx
 .REQ .ecr
 Restore escape character saved with
 .request .ecs .
 .
-.
 .TPx
 .REQ .ecs
 Save the escape character.
 .
-.
 .TPx
-.REQ .el "anything"
+.REQ .el anything
 Interpret
 .I anything
 as if it were an input line if the conditional expression of the
@@ -3042,49 +3086,43 @@ corresponding
 .request .ie
 request was false.
 .
-.
 .TPx
-.REQ .em name
+.REQ .em mac
 Call macro
-.I name
+.I mac
 after the end of input.
-.
 .
 .TPx
 .REQ .eo
 Disable the escape mechanism in interpretation mode.
-.
 .
 .TPx
 .REQ .ev
 Pop environment stack,
 returning to previous one.
 .
-.
 .TPx
-.REQ .ev "env"
+.REQ .ev env
 Push current environment onto stack and switch to
-.IR env .
-.
+.IR env ,
+creating it if necessary.
 .
 .TPx
-.REQ .evc "env"
+.REQ .evc env
 Copy environment
 .I env
 to the current one.
 .
-.
 .TPx
 .REQ .ex
 Exit with successful status.
-.
 .
 .TPx
 .REQ .fam
 Set default font family to previous value.
 .
 .TPx
-.REQ .fam "name"
+.REQ .fam name
 Set default font family to
 .IR name .
 .
@@ -3093,36 +3131,35 @@ Set default font family to
 Disable field mechanism.
 .
 .TPx
-.REQ .fc "a"
+.REQ .fc c
 Set field delimiter to\~\c
-.I a
+.I c
 and pad glyph to space.
 .
 .TPx
-.REQ .fc "a b"
+.REQ .fc "c1 c2"
 Set field delimiter to\~\c
-.I a
+.I c1
 and pad glyph to\~\c
-.IR b .
+.IR c2 .
 .
 .TPx
-.REQ .fchar "c contents"
-Define fallback character (or glyph)
+.REQ .fchar "c anything"
+Define fallback character
+(or glyph)
 .I c
 as
-.IR contents .
-.
+.IR anything .
 .
 .TPx
 .REQ .fcolor
 Restore previous fill color.
 .
-.
 .TPx
-.REQ .fcolor "c"
-Set fill color to
-.IR c .
-.
+.REQ .fcolor color
+Select
+.I color
+as the fill color.
 .
 .TPx
 .REQ .fi
@@ -3132,7 +3169,6 @@ a pending output line is broken.
 Sets
 .BR \[rs]n[.u] .
 .
-.
 .TPx
 .REQ .fl
 Flush output buffer.
@@ -3141,8 +3177,8 @@ Flush output buffer.
 .REQ .fp "pos id"
 Mount font with font description file name
 .I id
-at non-negative
-.RI position\~ n .
+at non-negative position
+.IR pos .
 .
 .TPx
 .REQ .fp "pos id font-description-file-name"
@@ -3150,8 +3186,8 @@ Mount font with
 .I font-description-file-name
 as name
 .I id
-at non-negative
-.RI position\~ n .
+at non-negative position
+.IR pos .
 .
 .TPx
 .REQ .fschar "f c anything"
@@ -3163,20 +3199,21 @@ as string
 .IR anything .
 .
 .TPx
-.REQ .fspecial "font"
-Reset list of special fonts for
+.REQ .fspecial font
+Empty the list of fonts treated as special when
 .I font
-to be empty.
+is selected.
 .
 .TPx
 .REQ .fspecial "font s1 s2 \fR\&.\|.\|.\&\fP"
-When the current font is
-.IR font ,
-then the fonts
+When
+.I font
+is selected,
+treat the fonts
 .IR s1 ,
 .IR s2 ,
 \&.\|.\|.\&
-are special.
+as special.
 .
 .TPx
 .REQ .ft
@@ -3190,11 +3227,10 @@ or
 .esc fP .
 .
 .TPx
-.REQ .ft "font"
+.REQ .ft font
 Select typeface
 .I font,
-which can be a
-mounting position,
+a mounting position,
 abstract style,
 or font name;
 same as
@@ -3238,12 +3274,11 @@ a multiplier of the current type size in thousandths
 .REQ .gcolor
 Restore previous stroke color.
 .
-.
 .TPx
-.REQ .gcolor "c"
-Set stroke color to
-.IR c .
-.
+.REQ .gcolor color
+Select
+.I color
+as the stroke color.
 .
 .TPx
 .REQ .hc
@@ -3252,9 +3287,9 @@ Reset the hyphenation character
 (the default).
 .
 .TPx
-.REQ .hc char
+.REQ .hc c
 Change the hyphenation character
-.RI to\~ char .
+.RI to\~ c .
 .
 .TPx
 .REQ .hcode "c1 code1 \fR[\fPc2 code2\fR] .\|.\|.\fP"
@@ -3269,9 +3304,9 @@ to
 and so on.
 .
 .TPx
-.REQ .hla lang
+.REQ .hla ident
 Set the hyphenation language to
-.IR lang .
+.IR ident .
 .
 .TPx
 .REQ .hlm n
@@ -3304,12 +3339,10 @@ a hyphen
 .RB \[lq] \- \[rq]
 indicates a hyphenation point.
 .
-.
 .TPx
 .REQ .hy
 Set automatic hyphenation mode to
 .BR 1 .
-.
 .
 .TPx
 .REQ .hy\~0
@@ -3317,13 +3350,11 @@ Disable automatic hyphenation;
 same as
 .BR .nh .
 .
-.
 .TPx
 .REQ .hy mode
 Set automatic hyphenation mode to
 .IR mode ;
 see section \[lq]Hyphenation\[rq] below.
-.
 .
 .TPx
 .REQ .hym
@@ -3356,7 +3387,6 @@ to each inter-word space
 (default scaling unit\~\c
 .scaleindicator m ).
 .
-.
 .TPx
 .REQ .ie "cond-expr anything"
 If
@@ -3369,7 +3399,6 @@ otherwise skip to a corresponding
 .request .el
 request.
 .
-.
 .TPx
 .REQ .if "cond-expr anything"
 If
@@ -3379,7 +3408,6 @@ then interpret
 .I anything
 as if it were an input line.
 .
-.
 .TPx
 .REQ .ig
 Ignore input
@@ -3387,27 +3415,29 @@ Ignore input
 .B \[rs]R
 on auto-incrementing registers)
 until
-.RB \[lq] ..\& \[rq]
+.RB \[lq] .\|.\& \[rq]
 occurs at the start of a control line in the current conditional block.
 .
-.
 .TPx
-.REQ .ig "end"
+.REQ .ig end-mac
 Ignore input
 (except for side effects of
 .B \[rs]R
 on auto-incrementing registers)
 until
-.BI . end
+.I end-mac
 is called at the start of a control line in the current conditional
 block.
+.
+.I end-mac
+can be a request.
 .
 .TPx
 .REQ .in
 Set indentation amount to previous value.
 .
 .TPx
-.REQ .in "\[+-]N"
+.REQ .in \[+-]N
 Set indentation to
 .I \[+-]N
 (default scaling unit\~\c
@@ -3418,12 +3448,12 @@ Set indentation to
 Cancel any pending input line trap.
 .
 .TPx
-.REQ .it "npl name"
+.REQ .it "npl mac"
 Set
 (or replace)
 an input line trap in the environment,
-calling macro
-.IR name ,
+calling
+.I mac
 after the next
 .I npl
 productive input lines have been read.
@@ -3437,7 +3467,7 @@ escape sequence are counted separately.
 Cancel any pending input line trap.
 .
 .TPx
-.REQ .itc "npl name"
+.REQ .itc "npl mac"
 As
 .request .it ,
 except that input lines interrupted with the
@@ -3461,7 +3491,7 @@ otherwise enable it.
 Unset leader repetition character.
 .
 .TPx
-.REQ .lc "c"
+.REQ .lc c
 Set leader repetition character
 .RI to\~ c
 (default:
@@ -3475,17 +3505,14 @@ and store the count
 in the register
 .IR reg .
 .
-.
 .TPx
 .REQ .linetabs
 Enable line-tabs mode
 (calculate tab positions relative to beginning of output line).
 .
-.
 .TPx
 .REQ .linetabs\~0
 Disable line-tabs mode.
-.
 .
 .TPx
 .REQ .lf n
@@ -3519,7 +3546,7 @@ Set line length to previous value.
 Does not affect a pending output line.
 .
 .TPx
-.REQ .ll "\[+-]N"
+.REQ .ll \[+-]N
 Set line length to
 .I \[+-]N
 (default length
@@ -3536,9 +3563,9 @@ Unset the leading space macro (trap).
 Restore default handling of lines with leading spaces.
 .
 .TPx
-.REQ .lsm name
+.REQ .lsm mac
 Set the leading space macro (trap) to
-.IR name .
+.IR mac .
 .
 .TPx
 .REQ .ls
@@ -3558,7 +3585,7 @@ blank lines are inserted after each text output line.
 Set length of title lines to previous value.
 .
 .TPx
-.REQ .lt "\[+-]N"
+.REQ .lt \[+-]N
 Set length of title lines
 (default length
 .scalednumber 6.5 i ,
@@ -3594,12 +3621,12 @@ see
 .BR .rt .
 .
 .TPx
-.REQ .mk register
-Mark vertical drawing position in
-.IR register .
+.REQ .mk reg
+Mark vertical drawing position in register
+.IR reg .
 .
 .TPx
-.REQ .mso "file"
+.REQ .mso file
 As
 .request .so ,
 except that
@@ -3608,20 +3635,17 @@ is sought in the
 .I tmac
 directories.
 .
-.
 .TPx
-.REQ .msoquiet "file"
+.REQ .msoquiet file
 As
 .request .mso ,
 but no warning is emitted if
 .I file
 does not exist.
 .
-.
 .TPx
 .REQ .na
 Disable output line adjustment.
-.
 .
 .TPx
 .REQ .ne
@@ -3634,7 +3658,6 @@ Break page if distance to next page location trap is less than distance
 (default scaling unit\~\c
 .scaleindicator v ).
 .
-.
 .TPx
 .REQ .nf
 Disable filling of output lines;
@@ -3642,7 +3665,6 @@ a pending output line is broken.
 .
 Clears
 .BR \[rs]n[.u] .
-.
 .
 .TPx
 .REQ .nh
@@ -3696,9 +3718,8 @@ If
 cancel suppression.
 .\" XXX: negative values accepted; check AT&T troff
 .
-.
 .TPx
-.REQ .nop "anything"
+.REQ .nop anything
 Interpret
 .I anything
 as if it were an input line.
@@ -3750,18 +3771,21 @@ Stop formatting current file and begin reading
 .I file.
 .
 .TPx
-.REQ .open "stream file"
+.REQ .open "ident file"
 Open
 .I file
-for writing and associate the stream named
-.I stream
-with it.
+for writing and associate a stream named
+.I ident
+with it,
+making it available for
+.request .write
+requests.
 .
 Unsafe request;
 disabled by default.
 .
 .TPx
-.REQ .opena "stream file"
+.REQ .opena "ident file"
 As
 .request .open ,
 but append to
@@ -3777,9 +3801,9 @@ Output vertical distance that was saved by the
 request.
 .
 .TPx
-.REQ .output contents
+.REQ .output anything
 Emit
-.I contents
+.I anything
 directly to intermediate output,
 allowing leading whitespace if
 .I string
@@ -3793,9 +3817,9 @@ Reset page number character to\~\c
 .squoted_char % .
 .
 .TPx
-.REQ .pc "c"
-Page number character.
-.
+.REQ .pc c
+Change the page number character used in titles
+.RI to\~ c .
 .
 .TPx
 .REQ .pev
@@ -3823,7 +3847,7 @@ are suffixed with a tab and asterisk
 .RB ( * ).
 .
 .TPx
-.REQ .pi "program"
+.REQ .pi program
 Pipe output to
 .I program
 .RI ( nroff
@@ -3840,7 +3864,7 @@ The current page length is stored in register
 .BR .p .
 .
 .TPx
-.REQ .pl "\[+-]N"
+.REQ .pl \[+-]N
 Change page length to
 .I \[+-]N
 (default scaling unit\~\c
@@ -3858,9 +3882,8 @@ and
 diversions.
 .
 .TPx
-.REQ .pn "\[+-]N"
-Next page number
-.IR N .
+.REQ .pn \[+-]N
+Set next page number.
 .
 .TPx
 .REQ .pnr
@@ -3875,18 +3898,17 @@ The current page offset is available in register
 .BR .o .
 .
 .TPx
-.REQ .po "\[+-]N"
-Page offset
-.IR N .
-.
+.REQ .po \[+-]N
+Alter page offset
+(default scaling unit\~\c
+.scaleindicator m ).
 .
 .TPx
 .REQ .ps
-Return to previous type size.
+Restore previous type size.
 .TPx
 .
-.
-.REQ .ps "\[+-]N"
+.REQ .ps \[+-]N
 Set/increase/decrease the type size to/by
 .I N
 scaled points
@@ -3907,7 +3929,7 @@ See registers
 .BR ury .
 .
 .TPx
-.REQ .pso "command-line"
+.REQ .pso command-line
 Execute
 .I command-line
 with
@@ -3922,13 +3944,12 @@ disabled by default.
 Report names and positions of all page location traps to the standard
 error stream.
 .
-.
 .TPx
 .REQ .pvs
 Change to previous post-vertical line spacing.
 .
 .TPx
-.REQ .pvs "\[+-]N"
+.REQ .pvs \[+-]N
 Change post-vertical line spacing according to
 .I \[+-]N
 (default scaling unit\~\c
@@ -3947,17 +3968,20 @@ or
 request.
 .
 .TPx
-.REQ .rd "prompt"
+.REQ .rd prompt
 Read insertion.
 .
 .TPx
 .REQ .return
-Return from a macro.
+Stop interpreting an interpolated macro,
+skipping the remainder of its definition.
 .
 .TPx
-.REQ .return "anything"
-Return twice, namely from the macro at the current level and from the
-macro one level higher.
+.REQ .return anything
+As
+.BR return ,
+but perform the skip twice\[em]once within the macro being interpreted
+and once in an enclosing macro.
 .
 .TPx
 .REQ .rfschar "f c1 c2 \fR\&.\|.\|.\&\fP"
@@ -3968,7 +3992,7 @@ Remove the font-specific definitions of glyphs
 .RI font\~ f .
 .
 .TPx
-.REQ .rj npl
+.REQ .rj
 Break,
 right-align the output of the next productive input line without
 filling,
@@ -3997,7 +4021,10 @@ or string
 .
 .TPx
 .REQ .rn "old new"
-Rename request, macro, diversion, or string
+Rename request,
+macro,
+diversion,
+or string
 .I old
 to
 .IR new .
@@ -4009,12 +4036,10 @@ Rename register
 to
 .IR reg2 .
 .
-.
 .TPx
 .REQ .rr "reg \f[R].\|.\|."
 Remove each register
 .IR reg .
-.
 .
 .TPx
 .REQ .rs
@@ -4044,24 +4069,21 @@ unit\~\c
 .\" XXX: negative values accepted; check AT&T troff
 .
 .TPx
-.REQ .schar "c contents"
+.REQ .schar "c anything"
 Define global fallback character (or glyph)\~\c
 .I c
 as
-.IR contents .
-.
+.IR anything .
 .
 .TPx
 .REQ .shc
 Reset the soft hyphen character to
 .esc [hy] .
 .
-.
 .TPx
 .REQ .shc c
 Set the soft hyphen character
 .RI to\~ c .
-.
 .
 .TPx
 .REQ .shift n
@@ -4083,13 +4105,11 @@ Each
 is interpreted in units of scaled points (\c
 .scaleindicator z ).
 .
-.
 .TPx
 .REQ .so file
 Replace the request's control line with the contents of
 .IR file ,
 \[lq]sourcing\[rq] it.
-.
 .
 .TPx
 .REQ .soquiet file
@@ -4099,12 +4119,10 @@ but no warning is emitted if
 .I file
 does not exist.
 .
-.
 .TPx
 .REQ .sp
 Break and move the next text baseline down by one vee,
 or until springing a page location trap.
-.
 .
 .TPx
 .REQ .sp dist
@@ -4134,10 +4152,9 @@ one line height (vee) is added
 .I dist
 is ignored inside a diversion.
 .
-.
 .TPx
 .REQ .special
-Reset global list of special fonts to be empty.
+Reset global list of fallback special fonts to be empty.
 .
 .TPx
 .REQ .special "s1 s2 \fR\&.\|.\|.\&\fR"
@@ -4251,7 +4268,7 @@ request
 .\" XXX: negative values accepted; check AT&T troff
 .
 .TPx
-.REQ .sy "command-line"
+.REQ .sy command-line
 Execute
 .I command-line
 with
@@ -4315,13 +4332,13 @@ Reserved for internal use.
 Unset tab repetition character.
 .
 .TPx
-.REQ .tc "c"
+.REQ .tc c
 Set tab repetition character
 .RI to\~ c
 (default: none).
 .
 .TPx
-.REQ .ti "\[+-]N"
+.REQ .ti \[+-]N
 Temporarily indent next output line
 (default scaling unit\~\c
 .scaleindicator m ).
@@ -4332,8 +4349,8 @@ Enable track kerning for
 .IR font .
 .
 .TPx
-.REQ .tl "\f[CB]\[aq]\f[]left\f[CB]\[aq]\f[]center\f[CB]\[aq]\f[]right\
-\f[CB]\[aq]\f[]"
+.REQ .tl \f[CB]\[aq]\f[]left\f[CB]\[aq]\f[]center\f[CB]\[aq]\f[]right\
+\f[CB]\[aq]\f[]
 Format three-part title.
 .
 .TPx
@@ -4359,7 +4376,7 @@ As
 without emitting a newline.
 .
 .TPx
-.REQ .tr "abcd\fR\&.\|.\|.\&\fP"
+.REQ .tr abcd\fR\&.\|.\|.\&\fP
 Translate ordinary or special characters
 .I a
 to
@@ -4381,7 +4398,7 @@ invalid input characters in
 are rejected.
 .
 .TPx
-.REQ .trin "abcd\fR\&.\|.\|.\&\fP"
+.REQ .trin abcd\fR\&.\|.\|.\&\fP
 As
 .request .tr ,
 except that
@@ -4389,7 +4406,7 @@ except that
 ignores the translation when a diversion is interpolated.
 .
 .TPx
-.REQ .trnt "abcd\fR\&.\|.\|.\&\fP"
+.REQ .trnt abcd\fR\&.\|.\|.\&\fP
 As
 .request .tr ,
 except that translations are suppressed in the argument to
@@ -4410,7 +4427,6 @@ Set underline font used by
 to
 .I font.
 .
-.
 .TPx
 .REQ .ul
 Underline
@@ -4418,7 +4434,6 @@ Underline
 .I troff
 mode)
 the output of the next productive input line.
-.
 .
 .TPx
 .REQ .ul npl
@@ -4434,45 +4449,39 @@ If
 .IR npl =0,
 stop underlining.
 .
-.
 .TPx
-.REQ .unformat "diversion"
-Unformat space characters and tabs in
-.IR diversion ,
+.REQ .unformat div
+Unformat space characters and tabs in diversion
+.IR div ,
 preserving font information.
-.
+.\" XXX: too vague
 .
 .TPx
 .REQ .vpt
 Enable vertical position traps.
 .
-.
 .TPx
 .REQ .vpt\~0
 Disable vertical position traps.
-.
 .
 .TPx
 .REQ .vs
 Change to previous vertical spacing.
 .
 .TPx
-.REQ .vs "\[+-]N"
+.REQ .vs \[+-]N
 Set vertical spacing to
 .I \[+-]N
 (default scaling unit\~\c
 .scaleindicator p ).
 .
-.
 .TPx
 .REQ .warn
 Enable all warning categories.
 .
-.
 .TPx
 .REQ .warn\~0
 Disable all warning categories.
-.
 .
 .TPx
 .REQ .warn n
@@ -4482,12 +4491,9 @@ Enable warnings in categories whose codes sum
 see
 .MR @g@troff @MAN1EXT@ .
 .
-.
 .TPx
-.REQ .warnscale "su"
-Set scaling unit used in certain warnings \" `output_warning()`
-to
-.I su
+.REQ .warnscale scaling-unit
+Select scaling unit used in certain warnings \" `output_warning()`
 (one of
 .BR u ,
 .BR i ,
@@ -4502,25 +4508,22 @@ Ignored in
 .B nroff
 mode.
 .
-.
 .TPx
-.REQ .wh vpos
+.REQ .wh vertical-position
 Remove visible page location trap at
-.I vpos
+.I vertical-position
 (default scaling unit\~\c
 .scaleindicator v ).
 .
-.
 .TPx
-.REQ .wh "vpos name"
+.REQ .wh "vertical-position mac"
 Plant macro
-.I name
+.I mac
 as page location trap at
-.I vpos
+.I vertical-position
 (default scaling unit\~\c
 .scaleindicator v ),
 removing any visible trap already there.
-.
 .
 .TPx
 .REQ .while "cond-expr anything"
@@ -4530,12 +4533,11 @@ unless and until
 .I cond-expr
 evaluates false.
 .
-.
 .TPx
 .REQ .write "stream anything"
 Write
 .I anything
-to the stream named
+to
 .IR stream .
 .
 .TPx
@@ -4545,10 +4547,10 @@ Similar to
 without emitting a final newline.
 .
 .TPx
-.REQ .writem "stream xx"
+.REQ .writem "stream name"
 Write contents of macro or string
-.I xx
-to the stream named
+.I name
+to
 .IR stream .
 .
 .LE
@@ -7032,7 +7034,7 @@ storing subsequent input lines as the definition.
 .
 If the optional second argument is not specified,
 the definition ends with the control line
-.RB \[lq] .. \[rq]\&
+.RB \[lq] .\|. \[rq]\&
 (two dots).
 .
 Tabs and spaces are permitted between the dots.
@@ -7282,7 +7284,7 @@ is not a true escape sequence,
 we can't use
 .B \[rs]E
 to keep
-.RB \[lq] ..\& \[rq]
+.RB \[lq] .\|.\& \[rq]
 from ending a macro definition prematurely.
 .
 If the multiplicity of backslashes complicates maintenance,

@@ -102,23 +102,25 @@ static int do_old_compatible_flag = -1;	// for .do request
 bool want_abstract_output = false;
 int suppress_output_flag = 0;
 int is_html = 0;
-int suppression_level = 0;	// depth of nested \O escapes
+static int suppression_level = 0;	// depth of nested \O escapes
+
+bool in_nroff_mode = false;
 
 // Keep track of whether \f, \F, \D'F...', \H, \m, \M, \O[345], \R, \s,
 // or \S has been processed in token::next().
-bool have_formattable_input = false;
+static bool have_formattable_input = false;
 // `have_formattable_input` is reset immediately upon reading a new
 // input line, but we need more state information because the input line
 // might have been continued/interrupted with `\c`.
 // Consider:
 //   \f[TB]\m[red]hello\c
 //   \f[]\m[]
-bool old_have_formattable_input = false;
+static bool old_have_formattable_input = false;
 
 bool device_has_tcommand = false;	// 't' output command supported
-bool want_unsafe_requests = false;	// be safer by default
+static bool want_unsafe_requests = false;	// be safer by default
 
-bool have_multiple_params = false;	// e.g., \[e aa], \*[foo bar]
+static bool have_multiple_params = false;	// \[e aa], \*[foo bar]
 
 double spread_limit = -3.0 - 1.0;	// negative means deactivated
 
@@ -5651,6 +5653,11 @@ static node *do_special()
 
 void device_request()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "device control request expects arguments");
+    skip_line();
+    return;
+  }
   if (!tok.is_newline() && !tok.is_eof()) {
     int c;
     macro mac;
@@ -5687,6 +5694,11 @@ void device_macro_request()
 
 void output_request()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "output request expects arguments");
+    skip_line();
+    return;
+  }
   if (!tok.is_newline() && !tok.is_eof()) {
     int c;
     for (;;) {
@@ -5807,17 +5819,15 @@ void line_file()
   skip_line();
 }
 
-static int nroff_mode = 0;
-
 static void nroff_request()
 {
-  nroff_mode = 1;
+  in_nroff_mode = true;
   skip_line();
 }
 
 static void troff_request()
 {
-  nroff_mode = 0;
+  in_nroff_mode = false;
   skip_line();
 }
 
@@ -5905,11 +5915,11 @@ int do_if_request()
     }
   if (c == 't') {
     tok.next();
-    result = !nroff_mode;
+    result = !in_nroff_mode;
   }
   else if (c == 'n') {
     tok.next();
-    result = nroff_mode;
+    result = in_nroff_mode;
   }
   else if (c == 'v') {
     tok.next();
@@ -8956,7 +8966,7 @@ static void do_error(error_type type,
     fputs("debug: ", stderr);
     break;
   case OUTPUT_WARNING:
-    if (nroff_mode) {
+    if (in_nroff_mode) {
       int fromtop = topdiv->get_vertical_position().to_units()
 		    / vresolution;
       fprintf(stderr, "warning [page %d, line %d",

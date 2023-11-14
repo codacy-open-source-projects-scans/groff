@@ -45,6 +45,15 @@ special character and glyph repertoire
 .\}
 .rr do-fallback
 .
+.\" It is important for this page not to tell lies beloved of
+.\" indifferent man page authors.  See, for example,
+.\" <https://lwn.net/Articles/947941/>.
+.do char ' '
+.do char - -
+.do char ^ ^
+.do char ` `
+.do char ~ ~
+.
 .
 .\" ====================================================================
 .SH Description

@@ -649,7 +649,7 @@ as follows.
 .RS
 .IP
 .EX
-accent { "\[ha]" }
+accent { roman "\[ha]" }
 .EE
 .RE
 .

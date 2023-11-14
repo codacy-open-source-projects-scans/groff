@@ -5405,8 +5405,8 @@ leaders, respectively.
 @endExample
 
 Tabs and leaders lend themselves to table construction.@footnote{``Tab''
-abbreviates ``tabulation'', suggesting table arrangement mechanism.} The
-tab and leader glyphs can be configured, and further facilities for
+abbreviates ``tabulation'', suggesting a table arrangement mechanism.}
+The tab and leader glyphs can be configured, and further facilities for
 sophisticated table composition are available; see @ref{Tabs and
 Fields}.  There are many details to track when using such low-level
 features, so most users turn to the @cite{tbl@r{(1)}} preprocessor to
@@ -5462,7 +5462,7 @@ macros is more flexible but also more complex.  @xref{Calling Macros}.}
 
 @anchor{Macros} @c 1.22.4
 @cindex macro
-@cindex calling a macro
+@cindex calling macros (introduction)
 @cindex interpolation
 A @dfn{macro} can be thought of as an abbreviation you can define for a
 collection of control and text lines.  When the macro is @dfn{called} by
@@ -7645,8 +7645,8 @@ otherwise alter its properties.
 Create an alias @var{new} for an existing register @var{old}, causing
 the names to refer to the same stored object.  If @var{old} is
 undefined, a warning in category @samp{reg} is produced and the request
-is ignored.  @xref{Warnings}, for information about the enablement and
-suppression of warnings.
+is ignored.  @xref{Warnings}, regarding the enablement and suppression
+of warnings.
 
 @cindex alias, register, removing (@code{rr})
 @cindex removing alias of register (@code{rr})
@@ -7676,8 +7676,7 @@ Interpolate register with name @var{ident} (one-character
 name@tie{}@var{i}, two-character name @var{id}).  If the register is
 undefined, it is created and assigned a value of@tie{}@samp{0}, that
 value is interpolated, and a warning in category @samp{reg} is emitted.
-@xref{Warnings}, for information about the enablement and suppression of
-warnings.
+@xref{Warnings}, regarding the enablement and suppression of warnings.
 @cindex @code{\n}, interpretation in copy mode
 @code{\n} is interpreted even in copy mode (@pxref{Copy Mode}).
 
@@ -7808,8 +7807,8 @@ Lowercase letters: 0, a, b, c, @dots{},@tie{}z, aa, ab,@tie{}@enddots{}
 @end table
 
 Omitting @var{fmt} causes a warning in category @samp{missing}.
-@xref{Warnings}, for information about the enablement and suppression of
-warnings.  Specifying an unrecognized format is an error.
+@xref{Warnings}, regarding the enablement and suppression of warnings.
+Specifying an unrecognized format is an error.
 
 Zero values are interpolated as @samp{0} in non-Arabic formats.
 Negative quantities are prefixed with @samp{-} irrespective of format.
@@ -9232,7 +9231,7 @@ Change tab stop positions.  This request takes a series of tab
 specifiers as arguments (optionally divided into two groups with the
 letter @samp{T}) that indicate where each tab stop is to be, overriding
 any previous settings.  The default scaling unit is @samp{m}.  Invoking
-@code{ta} without an argument removes all tab stops.
+@code{ta} without arguments removes all tab stops.
 @cindex default tab stops
 @cindex tab stops, default
 GNU @code{troff}'s startup value is @w{@samp{T 0.5i}}.
@@ -9269,10 +9268,8 @@ Now we are ready to interpret the full syntax given above.  The
 @var{nn}, then at @var{nn}+@var{r1}, @var{nn}+@var{r2}, @dots{},
 @var{nn}+@var{rn}, then at @var{nn}+@var{rn}+@var{r1},
 @var{nn}+@var{rn}+@var{r2}, @dots{}, @var{nn}+@var{rn}+@var{rn}, and so
-on.
-
-For example, @samp{4c +6c T 3c 5c 2c} is equivalent to @samp{4c 10c 13c
-18c 20c 23c 28c 30c @dots{}}.
+on.  For example, @samp{4c +6c T 3c 5c 2c} is equivalent to @samp{4c 10c
+13c 18c 20c 23c 28c 30c @dots{}}.
 
 Text between two tab stops may be aligned to the right or left, or
 centered.  This alignment is determined by appending @samp{R}, @samp{L},
@@ -9292,8 +9289,8 @@ cannot be adjusted.
 
 @Example
 .ll 2i
-.ds foo a\tb\tc
 .ta T 1i
+a@arrow{}b@arrow{}c
 \*[foo]
     @error{} warning: cannot break line
     @result{} a         b         c
@@ -9301,15 +9298,12 @@ cannot be adjusted.
 
 @noindent
 The above creates a single output line that is a bit longer than two
-inches.@footnote{We define a string and use the copy-mode tab escape
-sequence to make the input tab locations visible; see @ref{Strings} and
-@ref{Copy Mode}.}  Now consider the following.
+inches.  Now consider the following.
 
 @Example
 .ll 2i
-.ds bar a\tb c\td
 .ta T 1i
-\*[bar]
+a@arrow{}b c@arrow{}d
     @error{} warning: cannot adjust line
     @result{} a         b
     @result{} c       d
@@ -9325,17 +9319,13 @@ stop---are ignored except for the first, which delimits the characters
 belonging to the last tab stop for right-alignment or centering.
 
 @Example
-.ds 1Z foo\tbar
-.ds 2Z foo\tbar\tbaz
-.ds 3Z foo\tbar\tbazqux
-.ds 4Z foo\tbar\tbaz\tqux
 .nf
-\l'4i\&-'
 .ta 2i 4iR
-\*[1Z]
-\*[2Z]
-\*[3Z]
-\*[4Z]
+\l'4i\&-'
+foo@arrow{}bar
+foo@arrow{}bar@arrow{}baz
+foo@arrow{}bar@arrow{}bazqux
+foo@arrow{}bar@arrow{}baz@arrow{}qux
     @result{} ----------------------------------------
     @result{} foo                 bar
     @result{} foo                 bar              baz
@@ -9354,8 +9344,8 @@ tab stop.
 Tab stops are associated with the environment (@pxref{Environments}).
 
 @cindex tab stop settings register (@code{.tabs})
-@cindex @code{.S} register, Plan@tie{}9 alias for @code{.tabs}
-@cindex @code{.tabs} register, Plan@tie{}9 alias (@code{.S})
+@cindex @code{.S} register, Plan@tie{}9 name for @code{.tabs}
+@cindex @code{.tabs} register, Plan@tie{}9 name for (@code{.S})
 The read-only register @code{.tabs} contains a string
 representation of the current tab settings suitable for use as an
 argument to the @code{ta} request.@footnote{Plan@tie{}9 @code{troff}
@@ -10630,9 +10620,9 @@ line.
 Set the default font family, used in combination with abstract styles to
 construct a resolved font name, to @var{family} (one-character
 name@tie{}@var{f}, two-character name @var{fm}).  If no argument is
-given, GNU @code{troff} selects the previous font family; if there none,
-it falls back to the device's default@footnote{@xref{DESC File Format}.}
-or its own (@samp{T}).
+given, GNU @code{troff} selects the previous font family; if there are
+none, it falls back to the device's default@footnote{@xref{DESC File
+Format}.} or its own (@samp{T}).
 
 The @code{\F} escape sequence works similarly.  In disanalogy to
 @code{\f}, @samp{\FP} makes @samp{P} the default family.  Use
@@ -12482,7 +12472,8 @@ handled as macro arguments are; recall @ref{Calling Macros}.  In
 contrast to macro calls, however, if a closing bracket @samp{]} occurs
 in a string argument, that argument must be enclosed in double quotes.
 When defining strings, argument interpolations must be escaped if they
-are to reference parameters from the calling context; @xref{Parameters}.
+are to reference parameters from the calling context; see
+@ref{Parameters}.
 
 @Example
 .ds cite (\\$1, \\$2)
@@ -12741,8 +12732,7 @@ diversion object named @var{old}, causing the names to refer to the same
 stored object.  If @var{new} already exists, its contents are lost
 unless already aliased.  If @var{old} is undefined, a warning in
 category @samp{mac} is produced, and the request is ignored.
-@xref{Warnings}, for information about the enablement and suppression of
-warnings.
+@xref{Warnings}, regarding the enablement and suppression of warnings.
 
 To understand how the @code{als} request works, consider two different
 storage pools:@: one for objects (macros, strings, etc.), and another
@@ -13507,10 +13497,11 @@ description of the @code{als} request}, for pitfalls when redefining a
 macro that is aliased.
 
 @Defreq {return, [@Var{anything}]}
-Exit a macro, immediately returning to the caller.  If called with an
-argument @var{anything}, exit twice---the current macro and the macro
-one level higher.  This is used to define a wrapper macro for
-@code{return} in @file{trace.tmac}.
+Stop interpreting a macro, skipping to the end of its definition.  Do
+not confuse @code{return} with @code{rt}.  If called with an argument
+@var{anything}, the skip is performed twice---once within the macro
+being interpreted and once in an enclosing macro.  @file{trace.tmac}
+uses this feature to define a wrapper macro for @code{return}.
 @endDefreq
 
 @menu
@@ -14240,8 +14231,15 @@ draw the line.  The default is the baseline rule special character,
 
 @cindex dummy character (@code{\&}), effect on @code{\l} escape sequence
 @cindex character, dummy (@code{\&}), effect on @code{\l} escape sequence
-If @var{c} is a valid scaling unit, put @code{\&} after @var{l} to
-disambiguate the input.
+If @var{c} is a numerical expression operator or valid scaling unit, put
+@code{\&} after @var{l} to disambiguate the input.
+
+@Example
+\l'4i\&-'
+    @result{} ----------------------------------------
+@endExample
+
+Let us see how to draw a box around a word using a macro.
 
 @Example
 .de textbox
@@ -14255,9 +14253,9 @@ argument(s), and another box rule.  We employ the boundary-relative
 motion operator @samp{|}.  Finally, the line-drawing escape sequences
 draw a radical extender (a form of overline) and an underline from the
 drawing position to the position coresponding to beginning of the
-@emph{input} line.  The drawing position returns to just after the
-right-hand box rule because the lengths of the drawn lines are negative,
-as noted above.
+@emph{input} line.  The formatter leaves the drawing position at the
+right-hand box rule even though the line lengths are negative, as noted
+above.
 @endDefesc
 
 @DefescList {\\L, @code{'}, l, @code{'}}
@@ -14476,7 +14474,7 @@ default.
 
 In a hazy penumbra between text rendering and drawing commands we locate
 the bracket-building escape sequence, @code{\b}.  It can assemble
-apparently large glyphs by vertically stacking ordinary ones.
+glyphs that appear large by vertically stacking ordinary ones.
 
 @Defesc {\\b, @code{'}, contents, @code{'}}
 @cindex pile, glyph (@code{\b})
@@ -15316,11 +15314,11 @@ output is being ``diverted'' immediately to the output device).
 
 Dereferencing an undefined diversion will create an empty one of that
 name and cause a warning in category @samp{mac} to be emitted.
-@xref{Warnings}, for information about the enablement and suppression of
-warnings.  A diversion does not exist for the purpose of testing with
-the @code{d} conditional operator until its initial definition ends
-(@pxref{Operators in Conditionals}).  The following requests are used to
-create and alter diversions.
+@xref{Warnings}, regarding the enablement and suppression of warnings.
+A diversion does not exist for the purpose of testing with the @code{d}
+conditional operator until its initial definition ends (@pxref{Operators
+in Conditionals}).  The following requests are used to create and alter
+diversions.
 @c END Keep (roughly) parallel with subsection "Diversions" of groff(7).
 
 @DefreqList {di, [@Var{name}]}
@@ -15344,8 +15342,7 @@ Invoking @code{di} or @code{da} without an argument stops diverting
 output to the diversion named by the most recent corresponding request.
 If @code{di} or @code{da} is called without an argument when there is no
 current diversion, a warning in category @samp{di} is produced.
-@xref{Warnings}, for information about the enablement and suppression
-of warnings.
+@xref{Warnings}, regarding the enablement and suppression of warnings.
 
 @Example
 Before the diversion.
@@ -18915,8 +18912,6 @@ of fields separated by spaces or tabs and organized as follows.
 [@code{--} @var{comment}]
 @end quotation
 
-@cindex 8-bit input
-@cindex input, 8-bit
 @cindex accessing unnamed glyphs with @code{\N}
 @cindex unnamed glyphs, accessing with @code{\N}
 @cindex characters, unnamed, accessing with @code{\N}
