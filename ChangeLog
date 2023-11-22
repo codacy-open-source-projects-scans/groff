@@ -1,3 +1,65 @@
+2023-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[build]: In source files that #include <assert.h>, ensure that
+	we #include <config.h> first (with a `HAVE_CONFIG_H` inclusion
+	guard).  This should prevent build failures on AIX a.k.a. z/OS.
+
+	* src/devices/grodvi/dvi.cpp:
+	* src/devices/grolbp/lbp.cpp:
+	* src/devices/grolj4/lj4.cpp:
+	* src/include/itable.h:
+	* src/include/ptable.h:
+	* src/include/stringclass.h:
+	* src/libs/libbib/linear.cpp:
+	* src/libs/libbib/search.cpp:
+	* src/libs/libdriver/printer.cpp:
+	* src/libs/libgroff/color.cpp:
+	* src/libs/libgroff/font.cpp:
+	* src/libs/libgroff/fontfile.cpp:
+	* src/libs/libgroff/nametoindex.cpp:
+	* src/libs/libgroff/relocate.cpp:
+	* src/libs/libgroff/searchpath.cpp:
+	* src/preproc/eqn/box.cpp:
+	* src/preproc/eqn/delim.cpp:
+	* src/preproc/eqn/pile.cpp:
+	* src/preproc/eqn/script.cpp:
+	* src/preproc/html/pre-html.cpp:
+	* src/preproc/pic/pic.h:
+	* src/preproc/preconv/preconv.cpp:
+	* src/preproc/soelim/soelim.cpp:
+	* src/roff/groff/groff.cpp:
+	* src/roff/troff/troff.h:
+	* src/utils/hpftodit/hpftodit.cpp:
+	* src/utils/indxbib/indxbib.cpp:
+	* src/utils/lkbib/lkbib.cpp:
+	* src/utils/lookbib/lookbib.cpp:
+	* src/utils/tfmtodit/tfmtodit.cpp: Do it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64910>.  Also see
+	<https://savannah.gnu.org/bugs/?61315>.  Thanks to Mike Fulton
+	for the report.
+
+2023-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Rename some enumeration constants.
+	- `BAD` -> `INVALID`
+	- `ABSOLUTE` -> `ASSIGN`
+
+2023-11-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify numeric expression-reading functions.
+
+	* src/roff/troff/hvunits.h (get_vunits, get_hunits):
+	* src/roff/troff/token.h (get_number_rigidly, get_number)
+	(get_integer):
+	* src/roff/troff/number.cpp (get_vunits, get_hunits)
+	(get_number_rigidly, get_number, get_integer): Do it.
+
+2023-11-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_expression): Boolify and
+	rename local variable from `overflow` to `had_overflow`.
+
 2023-11-09  Paul Eggert  <eggert@cs.ucla.edu>
 
 	[libbib]: Fix bogus size diagnostic.
@@ -169,16 +231,14 @@
 	the document saw little change for a while).  Some node names, I
 	did not add anchors for; they correspond either to material that
 	we've dropped altogether from our Texinfo manual (mainly a
-	history that can now be found [much updated] in roff(7), and a
 	somewhat stale duplicate of groff_man(7), which no GNU Info
 	partisan would read anyway) or were empty stubs anyway.  An HTTP
-	404 response is therefore honest in such cases.  Thanks to Gavin
-	Smith and Thérèse Godefroy for this and other useful
-	suggestions.
+	404 response is therefore honest in such cases.
 
 	Fixes <https://savannah.gnu.org/bugs/?64758>.  Thanks to Ingo
-	Schwarze for the report and Gavin Smith for proposing a
-	resolution technique.
+	Schwarze for the report, Gavin Smith for proposing a
+	resolution technique, and Thérèse Godefroy for assistance
+	cleaning up our Texinfo manual's hyperlinks on the GNU web site.
 
 2023-10-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 

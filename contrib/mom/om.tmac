@@ -20,8 +20,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-Version 2.6
------------
+Version 2.6_a
+-------------
 Antoine de St-Exupéry asserted that elegance in engineering is
 achieved not when there is nothing left to add, but when there is
 nothing left to take away.
@@ -53,7 +53,7 @@ extensions, and float management).
 .if (\n[.x]\n[.y] < 118) \
 .   ab [mom]: You need GNU troff version 1.18 or higher to run this version of mom.
 \# Mom version
-.ds version 2.6
+.ds version 2.6_a
 .if dVERSION \{\
 .   ab [mom]: Version \*[version]
 .\}
@@ -4799,6 +4799,12 @@ y\R'#DESCENDER \\n[.cdp]'
 .    \}
 .END
 \#
+\# Keep TITLE out of pdf outline
+\#
+.MAC SKIP_PDF_OUTLINE END
+.    nr #SKIP_PDF_OUTLINE 1
+.END
+\#
 .MAC SUBTITLE END \"Document sub-title
 .    ie \\n[#NUM_ARGS]=0 \{\
 .       if \\n[#DOC_COVER_SUBTITLE_NUM] \
@@ -8043,7 +8049,9 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .    \}
 .    if !\\n[#TOC] \{\
 .       if !'\\*[$TOC_TITLE_ITEM]'' \{\
-.          PDF_BOOKMARK 1 \\*[$TOC_TITLE_ITEM]
+.          if !\\n[#SKIP_PDF_OUTLINE] \
+.             PDF_BOOKMARK 1 \\*[$TOC_TITLE_ITEM]
+.          if r #SKIP_PDF_OUTLINE .rr #SKIP_PDF_OUTLINE
 .          if !r #NO_TOC_ENTRY .TITLE_TO_TOC
 .          if r #NO_TOC_ENTRY  .rr #NO_TOC_ENTRY
 .       \}
@@ -10634,12 +10642,12 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .                el \
 .                   nr #Q_OFFSET \\n[#L_MARGIN]+\\*[$Q_OFFSET_VALUE]
 .                if \\n[#COLUMNS] \{\
-.                   ie \\n[#Q_OFFSET_VALUE] .nr #Q_OFFSET \
-\\n[#COL_\\n[#COL_NUM]_L_MARGIN]+(\\n[#PP_INDENT]*\\n[#Q_OFFSET_VALUE])
-.                   el .nr #Q_OFFSET \
-\\n[#COL_\\n[#COL_NUM]_L_MARGIN]+\\*[$Q_OFFSET_VALUE]
+.                   ie \\n[#\\*[BQ]_OFFSET_VALUE] .nr #\\*[BQ]_OFFSET \
+\\n[#COL_\\n[#COL_NUM]_L_MARGIN]+(\\n[#PP_INDENT]*\\n[#\\*[BQ]_OFFSET_VALUE])
+.                   el .nr #\\*[BQ]_OFFSET \
+\\n[#COL_\\n[#COL_NUM]_L_MARGIN]+\\*[$\\*[BQ]_OFFSET_VALUE]
 .                \}
-.                po \\n[#Q_OFFSET]u
+.                po \\n[#\\*[BQ]_OFFSET]u
 .             \}
 .          \}
 .          if \\n[#EPIGRAPH] \{\
@@ -12700,7 +12708,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .       nr #\\*[BQ]_OFFSET \
 \\n[#L_MARGIN]+(\\n[#PP_INDENT]*\\n[#\\*[BQ]_OFFSET_VALUE])
 .    if \\n[#COLUMNS] \{\
-.       ie r#\\*[BQ]_OFFSET_VALUE \
+.       ie \\n[#\\*[BQ]_OFFSET_VALUE] \
 .          nr #\\*[BQ]_OFFSET \
 \\n[#COL_\\n[#COL_NUM]_L_MARGIN]+(\\n[#PP_INDENT]*\\n[#\\*[BQ]_OFFSET_VALUE])
 .       el .nr #\\*[BQ]_OFFSET \
@@ -23649,8 +23657,9 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 \#   <image file> <width> <height> are required.
 \#
 .MAC PDF_IMAGE END
-.    ie \\n[#PP]=0 .PP
-.    el .br
+.    if \\n[#DOCS]=1 \
+.       ie \\n[#PP]=0 .PP
+.       el .br
 .    if !'\\n[.z]'FLOAT*DIV' \{\
 .       nr pdf-img:float 1
 .       FLOAT

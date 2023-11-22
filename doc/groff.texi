@@ -735,9 +735,9 @@ language.  An @dfn{output driver} translates this language into a file
 format or byte stream that a piece of (possibly emulated) hardware
 understands.  @code{groff} features output drivers for PostScript
 devices, terminal emulators (and other simple typewriter-like machines),
-X11 (for previewing), @TeX{} DVI, HP LaserJet@tie{}4/PCL5 and Canon LBP
-printers (which use @acronym{CaPSL}), @acronym{HTML}, @acronym{XHTML},
-and @acronym{PDF}.
+X11 (for previewing), @TeX{} DVI, HP LaserJet@tie{}4/PCL5 printers,
+Canon LBP (@acronym{CaPSL}-using printers), @acronym{HTML},
+@acronym{XHTML}, and @acronym{PDF}.
 
 
 @c =====================================================================
@@ -763,12 +763,31 @@ system, and the command of that name.  In the first sense, @code{groff}
 is an extended dialect of the @code{roff} language, for which many
 similar implementations exist.
 
+A tradition has arisen that GNU programs' names bear a prefix @samp{g}
+where necessary to distinguish them from other implementations on the
+host system (@pxref{Environment}).  Thus, for example, @code{geqn} is
+GNU @code{eqn}.  On operating systems that lack a @code{troff} of
+different provenance, this prefix is omitted; GNU @command{troff} is the
+only @code{troff} available.  Exceptionally, @samp{groff} always retains
+its leading @samp{g}.
+
+In this document, we consequently sometimes say @samp{gtroff} when
+talking about the GNU @command{troff} command.
+@c XXX: Not for much longer... -- GBR
+We call other @code{troff} systems @acronym{AT&T} @code{troff} because
+that is the common origin of almost all @code{troff}
+implementations@footnote{Besides @code{groff}, @code{neatroff} is an
+exception.} (with more or less compatible changes).  Similarly, we say
+@samp{gpic}, @samp{geqn}, and so on.
+
+@cindex @key{RET} (keycap notation)
+@cindex @key{SPC} (keycap notation)
 This manual employs Emacs names for non-graphic keycap engravings on the
 alphabetic section of the keyboard.  ``@key{RET}'' is Return or Enter,
 and ``@key{SPC}'' is the space bar.
 
 The @code{roff} language features several major syntactical categories
-for which many items are predefined.  Presentations of these items
+within which many items are predefined.  Presentations of these items
 feature the form in which the item is most commonly used on the left,
 and, aligned to the right margin, the name of the category in brackets.
 
@@ -867,23 +886,6 @@ This chapter focuses on how to invoke the @command{groff} front end,
 which constructs a pipeline connecting desired preprocessors,
 the GNU @command{troff} formatter program, and a postprocessor.
 
-A tradition has arisen that GNU programs' names bear a prefix @samp{g}
-where necessary to distinguish them from other implementations on the
-host system (@pxref{Environment}).  Thus, for example, @code{geqn} is
-GNU @code{eqn}.  On operating systems that lack a @code{troff} of
-different provenance, this prefix is omitted; GNU @command{troff} is the
-only @code{troff} available.  Exceptionally, @samp{groff} always retains
-its leading @samp{g}.
-
-In this document, we consequently sometimes say @samp{gtroff} when
-talking about the GNU @command{troff} command.
-@c XXX: Not for much longer... -- GBR
-We call other @code{troff} systems @acronym{AT&T} @code{troff} because
-that is the common origin of almost all @code{troff}
-implementations@footnote{Besides @code{groff}, @code{neatroff} is an
-exception.} (with more or less compatible changes).  Similarly, we say
-@samp{gpic}, @samp{geqn}, and so on.
-
 @menu
 * Groff Options::
 * Environment::
@@ -911,18 +913,18 @@ exception.} (with more or less compatible changes).  Similarly, we say
 @pindex grefer
 @pindex gsoelim
 @pindex preconv
-@command{groff} normally runs the @command{gtroff} program and a
-postprocessor appropriate for the selected device.  The default device
-is @samp{ps} (but it can be changed at @code{groff}'s build-time
-configuration).  It can optionally preprocess input with any of
-@code{gpic}, @code{geqn}, @code{gtbl}, @code{ggrn}, @code{grap},
-@code{gchem}, @code{grefer}, @code{gsoelim}, or @code{preconv}.
+@command{groff} runs the GNU @command{troff} program and, normally, a
+postprocessor appropriate to the selected device.  The default device is
+@samp{ps}, unless changed at @code{groff}'s build-time configuration).
+@command{groff} can preprocess input with any of @code{gpic},
+@code{geqn}, @code{gtbl}, @code{ggrn}, @code{grap}, @code{gchem},
+@code{grefer}, @code{gsoelim}, or @code{preconv}.
 
 @anchor{Output Devices} @c 1.22.4
 This section documents only options to the @command{groff} front end.
-Since it passes many of its arguments to @command{gtroff}, we describe
-many of the latter's options here.  Arguments to preprocessors and
-output drivers can be found in the man pages @cite{gpic@r{(1)}},
+Since it passes many of its arguments to GNU @command{troff}, we
+describe many of the latter's options here.  Arguments to preprocessors
+and output drivers can be found in the man pages @cite{gpic@r{(1)}},
 @cite{geqn@r{(1)}}, @cite{gtbl@r{(1)}}, @cite{ggrn@r{(1)}},
 @cite{grefer@r{(1)}}, @cite{gchem@r{(1)}}, @cite{gsoelim@r{(1)}},
 @cite{preconv@r{(1)}}, @cite{grotty@r{(1)}}, @cite{grops@r{(1)}},
@@ -9291,7 +9293,6 @@ cannot be adjusted.
 .ll 2i
 .ta T 1i
 a@arrow{}b@arrow{}c
-\*[foo]
     @error{} warning: cannot break line
     @result{} a         b         c
 @endExample
@@ -9381,21 +9382,19 @@ Only a single character of @var{c} is recognized; any excess is ignored.
 If @var{n} is missing or non-zero, activate @dfn{line-tabs}; deactivate
 it otherwise (the default).  Active line-tabs cause GNU @code{troff}
 to compute tab distances relative to the start of the output line
-instead of the input line.
+rather than relative to the horizontal drawing position corresponding to
+the start of the input line.
 
 @Example
-.de Tabs
-.  ds x a\t\c
-.  ds y b\t\c
-.  ds z c
-.  ta 1i 3i
-\\*x
-\\*y
-\\*z
-..
-.Tabs
+.ta 1i 3i
+a@arrow{}\c
+b@arrow{}\c
+c
 .br
 .linetabs
+a@arrow{}\c
+b@arrow{}\c
+c
 .Tabs
     @result{} a         b         c
     @result{} a         b                   c
@@ -9680,11 +9679,11 @@ Historically, @code{nroff} and @code{troff} were two separate programs;
 the former for terminal output, the latter for typesetters.  GNU
 @code{troff} merges both functions into one executable@footnote{A
 GNU @command{nroff} program is available for convenience; it calls GNU
-@code{troff} to perform the formatting.} that sends its output to a
-device driver (@code{grotty} for terminal devices, @code{grops} for
-PostScript, and so on) that interprets its output.  When discussing
-@acronym{AT&T} @code{troff}, it makes sense to talk about
-@dfn{@code{nroff} mode} and @dfn{@code{troff} mode} since the
+@code{troff} to perform the formatting; see @cite{gnroff@r{(1)}}.} that
+sends its output to a device driver (@code{grotty} for terminal devices,
+@code{grops} for PostScript, and so on) that interprets its output.
+When discussing @acronym{AT&T} @code{troff}, it makes sense to talk
+about @dfn{@code{nroff} mode} and @dfn{@code{troff} mode} since the
 differences are hard-coded.  GNU @code{troff} takes information from
 device and font description files without handling requests specially if
 a terminal output device is used, so such a strong distinction is
@@ -10953,7 +10952,8 @@ are not allowed either.
 A glyph representing more than a single input character is named
 
 @display
-@samp{u} @var{component1} @samp{_} @var{component2} @samp{_} @var{component3} @dots{}
+@samp{u} @var{component1} @samp{_} @var{component2} @samp{_}@
+@var{component3} @dots{}
 @end display
 
 @noindent
@@ -11265,10 +11265,13 @@ on the right doesn't get examined.
 @DefreqItemx {fschar, f c [@Var{contents}]}
 @DefreqListEndx {schar, c [@Var{contents}]}
 @cindex defining character (@code{char})
-@cindex defining fallback character (@code{fchar}, @code{fschar}, @code{schar})
+@cindex defining fallback character (@code{fchar}, @code{fschar},@
+@code{schar})
 @cindex character, defining (@code{char})
-@cindex character, defining fallback (@code{fchar}, @code{fschar}, @code{schar})
-@cindex fallback character, defining (@code{fchar}, @code{fschar}, @code{schar})
+@cindex character, defining fallback (@code{fchar}, @code{fschar},@
+@code{schar})
+@cindex fallback character, defining (@code{fchar}, @code{fschar},@
+@code{schar})
 @cindex creating new characters (@code{char})
 @cindex defining symbol (@code{char})
 @cindex symbol, defining (@code{char})
@@ -15907,13 +15910,16 @@ the count of consecutive hyphenated lines (set to zero).
 @DefregItemx {.cht}
 @DefregItemx {.cdp}
 @DefregListEndx {.csk}
-@cindex environment, dimensions of last glyph (@code{.w}, @code{.cht}, @code{.cdp}, @code{.csk})
+@cindex environment, dimensions of last glyph (@code{.w}, @code{.cht},@
+@code{.cdp}, @code{.csk})
 @cindex width, of last glyph (@code{.w})
 @cindex height, of last glyph (@code{.cht})
 @cindex depth, of last glyph (@code{.cdp})
 @cindex skew, of last glyph (@code{.csk})
-@cindex last glyph, dimensions (@code{.w}, @code{.cht}, @code{.cdp}, @code{.csk})
-@cindex glyph, last, dimensions (@code{.w}, @code{.cht}, @code{.cdp}, @code{.csk})
+@cindex last glyph, dimensions (@code{.w}, @code{.cht}, @code{.cdp},@
+@code{.csk})
+@cindex glyph, last, dimensions (@code{.w}, @code{.cht}, @code{.cdp},@
+@code{.csk})
 The @code{\n[.w]} register contains the width of the last glyph
 formatted in the environment.
 
@@ -16147,18 +16153,18 @@ from becoming part of the diversion (@pxref{Diversions}).
 @endDefreq
 
 @Defreq {nx, [@Var{file}]}
-@cindex read next file request (@code{nx})
-@cindex file, next, read, request (@code{nx})
-@cindex next file, read, request (@code{nx})
+@cindex read next file (@code{nx})
+@cindex file, next, read (@code{nx})
+@cindex next file, read (@code{nx})
 Force @command{gtroff} to continue processing of the file specified as
 an argument.  If no argument is given, immediately jump to the end of
 file.
 @endDefreq
 
 @Defreq {rd, [@Var{prompt} [@Var{arg1} @Var{arg2} @dots{}]]}
-@cindex read from standard input request (@code{rd})
-@cindex standard input, read from, request (@code{rd})
-@cindex input, standard, read from, request (@code{rd})
+@cindex read (interpolate) from standard input stream (@code{rd})
+@cindex standard input stream, interpolate from (@code{rd})
+@cindex input stream, standard, interpolate from (@code{rd})
 Read from standard input, and include what is read as though it were
 part of the input file.  Text is read until a blank line is encountered.
 
@@ -16336,8 +16342,8 @@ enable unsafe mode.
 @cindex copy mode, and @code{writec} request
 @cindex @code{writec} request, and copy mode
 @cindex mode, copy, and @code{writec} request
-@cindex writing to file (@code{write}, @code{writec})
-@cindex file, writing to (@code{write}, @code{writec})
+@cindex write to file stream (@code{write}, @code{writec})
+@cindex file stream, write to (@code{write}, @code{writec})
 Write to the file associated with the specified @var{stream}.  The
 stream must previously have been the subject of an open request.  The
 remainder of the line is interpreted as the @code{ds} request reads its
@@ -16886,8 +16892,12 @@ document.
 @DefreqList {tm, message}
 @DefreqItemx {tm1, message}
 @DefreqListEndx {tmc, message}
-@cindex printing to stderr (@code{tm}, @code{tm1}, @code{tmc})
-@cindex stderr, printing to (@code{tm}, @code{tm1}, @code{tmc})
+@cindex print to the standard error stream (@code{tm}, @code{tm1},@
+@code{tmc})
+@cindex standard error stream, write to (@code{tm}, @code{tm1},@
+@code{tmc})
+@cindex stream, standard error, write to (@code{tm}, @code{tm1},@
+@code{tmc})
 Send @var{message}, which consumes the remainder of the input line and
 cannot contain special characters, to the standard error stream,
 followed by a newline.  Leading spaces in @var{message} are ignored.
@@ -16900,7 +16910,7 @@ spaces.
 @endDefreq
 
 @Defreq {ab, [@Var{message}]}
-@cindex aborting (@code{ab})
+@cindex abort (@code{ab})
 Write any @var{message} to the standard error stream (like @code{tm})
 and then abort GNU @code{troff}; that is, stop processing and terminate
 with a failure status.
@@ -17527,9 +17537,12 @@ string is a common feature of device-independent
 Plan@tie{}9 @code{troff}s all support it.} but valid values are specific
 to each implementation.
 
-@cindex removal of read-only registers, incompatibility with @acronym{AT&T} @code{troff}
-@cindex register, read-only, removal, incompatibility with @acronym{AT&T} @code{troff}
-@cindex read-only register removal, incompatibility with @acronym{AT&T} @code{troff}
+@cindex removal of read-only registers, incompatibility with@
+@acronym{AT&T} @code{troff}
+@cindex register, read-only, removal, incompatibility with@
+@acronym{AT&T} @code{troff}
+@cindex read-only register removal, incompatibility with@
+@acronym{AT&T} @code{troff}
 @acronym{AT&T} @code{troff} ignored attempts to remove read-only
 registers; GNU @code{troff} honors such requests.  @xref{Built-in
 Registers}.
@@ -17557,43 +17570,56 @@ may exist, using any valid identifiers for their names
 @cindex point sizes, fractional
 @cindex type sizes, fractional
 @cindex sizes, fractional
-@cindex @code{ps} request, incompatibilities with @acronym{AT&T} @code{troff}
+@cindex @code{ps} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
 Fractional type sizes cause one noteworthy incompatibility.  In
 @acronym{AT&T} @code{troff} the @code{ps} request ignores scaling units
 and thus @samp{.ps 10u} sets the type size to 10@tie{}points, whereas in
 GNU @code{troff} it sets the type size to 10@tie{}@emph{scaled} points.
 @xref{Using Fractional Type Sizes}.
 
-@cindex @code{ab} request, incompatibilities with @acronym{AT&T} @code{troff}
-The @code{ab} request differs from @acronym{AT&T} @code{troff}:
-GNU @code{troff} writes no message to the standard error stream if no
+@cindex @code{ab} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+The @code{ab} request differs from @acronym{AT&T} @code{troff}: GNU
+@code{troff} writes no message to the standard error stream if no
 arguments are given, and it exits with a failure status instead of a
 successful one.
 
-@cindex @code{bp} request, incompatibilities with @acronym{AT&T} @code{troff}
-The @code{bp} request differs from @acronym{AT&T} @code{troff}:
-GNU @code{troff} does not accept a scaling unit on the argument, a page
+@cindex @code{bp} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+The @code{bp} request differs from @acronym{AT&T} @code{troff}: GNU
+@code{troff} does not accept a scaling unit on the argument, a page
 number; the former (somewhat uselessly) does.
 
-@cindex @code{pm} request, incompatibilities with @acronym{AT&T} @code{troff}
-The @code{pm} request differs from @acronym{AT&T} @code{troff}:
-GNU @code{troff} reports the sizes of macros, strings, and diversions in
+@cindex @code{pm} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+The @code{pm} request differs from @acronym{AT&T} @code{troff}: GNU
+@code{troff} reports the sizes of macros, strings, and diversions in
 bytes and ignores an argument to report only the sum of the sizes.
 
-@cindex @code{ss} request, incompatibilities with @acronym{AT&T} @code{troff}
+@cindex @code{ss} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
 Unlike @acronym{AT&T} @code{troff}, GNU @code{troff} does not ignore the
 @code{ss} request if the output is a terminal device; instead, the
 values of minimal inter-word and additional inter-sentence space are
 each rounded down to the nearest multiple of@tie{}12.
 
-@cindex @code{bd} request, incompatibilities with @acronym{AT&T} @code{troff}
-@cindex @code{cs} request, incompatibilities with @acronym{AT&T} @code{troff}
-@cindex @code{tr} request, incompatibilities with @acronym{AT&T} @code{troff}
-@cindex @code{fp} request, incompatibilities with @acronym{AT&T} @code{troff}
-@cindex input characters and output glyphs, compatibility with @acronym{AT&T} @code{troff}
-@cindex output glyphs, and input characters, compatibility with @acronym{AT&T} @code{troff}
-@cindex characters, input, and output glyphs, compatibility with @acronym{AT&T} @code{troff}
-@cindex glyphs, output, and input characters, compatibility with @acronym{AT&T} @code{troff}
+@cindex @code{bd} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+@cindex @code{cs} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+@cindex @code{tr} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+@cindex @code{fp} request, incompatibilities with @acronym{AT&T}@
+@code{troff}
+@cindex input characters and output glyphs, compatibility with@
+@acronym{AT&T} @code{troff}
+@cindex output glyphs, and input characters, compatibility with@
+@acronym{AT&T} @code{troff}
+@cindex characters, input, and output glyphs, compatibility with@
+@acronym{AT&T} @code{troff}
+@cindex glyphs, output, and input characters, compatibility with@
+@acronym{AT&T} @code{troff}
 In GNU @code{troff} there is a fundamental difference between
 (unformatted) characters and (formatted) glyphs.  Everything that
 affects how a glyph is output is stored with the glyph node; once a
@@ -18083,7 +18109,8 @@ In the following command reference, the syntax element @angles{line
 break} means a syntactical line break as defined above.
 
 @table @code
-@item D~ @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn} @var{vn}@angles{line break}
+@item D~ @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn}@
+@var{vn}@angles{line break}
 Draw B-spline from current position to offset (@var{h1},@var{v1}), then
 to offset (@var{h2},@var{v2}), if given, etc., up to
 (@var{hn},@var{vn}).  This command takes a variable number of argument
@@ -18123,7 +18150,8 @@ a vertical diameter of@tie{}@var{v} (both integers in basic units
 @samp{u}) with the leftmost point at current position; then move to the
 rightmost point of the ellipse.
 
-@item DF @var{color-scheme} @r{[}@var{component} @dots{}@r{]}@angles{line break}
+@item DF @var{color-scheme} @r{[}@var{component}@
+@dots{}@r{]}@angles{line break}
 Set fill color for solid drawing objects using different color schemes;
 the analogous command for setting the color of text, line graphics, and
 the outline of graphic objects is @samp{m}.  The color components are
@@ -18192,7 +18220,8 @@ Draw line from current position to offset (@var{h},@var{v}) (integers in
 basic units @samp{u}); then set current position to the end of the drawn
 line.
 
-@item Dp @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn} @var{vn}@angles{line break}
+@item Dp @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn}@
+@var{vn}@angles{line break}
 Draw a polygon line from current position to offset (@var{h1},@var{v1}),
 from there to offset (@var{h2},@var{v2}), etc., up to offset
 (@var{hn},@var{vn}), and from there back to the starting position.  For
@@ -18206,7 +18235,8 @@ the position doesn't change.
 @end ignore
 This command is a @command{gtroff} extension.
 
-@item DP @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn} @var{vn}@angles{line break}
+@item DP @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn}@
+@var{vn}@angles{line break}
 Draw a solid polygon in the current fill color rather than an outlined
 polygon, using the same arguments and positioning as the corresponding
 @samp{Dp} command.

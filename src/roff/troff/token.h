@@ -123,13 +123,13 @@ extern void do_define_character(char_mode, const char * = 0);
 class hunits;
 extern void read_title_parts(node **part, hunits *part_width);
 
-extern int get_number_rigidly(units *result, unsigned char si);
+extern bool get_number_rigidly(units *result, unsigned char si);
 
-extern int get_number(units *result, unsigned char si);
-extern int get_integer(int *result);
+extern bool get_number(units *result, unsigned char si);
+extern bool get_integer(int *result);
 
-extern int get_number(units *result, unsigned char si, units prev_value);
-extern int get_integer(int *result, int prev_value);
+extern bool get_number(units *result, unsigned char si, units prev_value);
+extern bool get_integer(int *result, int prev_value);
 
 extern void interpolate_register(symbol, int);
 

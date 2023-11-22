@@ -21,6 +21,14 @@ the Subject line or you risk my spam filters nuking your message.
 
 ====================================================================
 
+Version 2.6
+===========
+QUOTE and BLOCKQUOTE offsets misaligned across columns.
+---Fixed---
+
+PDF_IMAGE starting one line too low during bare metal typesetting.
+---Fixed---
+
 Version 2.5_d
 =============
 PDF_IMAGE: captions not being attached to labels when MLA enabled.
