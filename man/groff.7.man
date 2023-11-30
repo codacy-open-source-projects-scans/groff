@@ -2266,11 +2266,11 @@ ordinary or special.
 .
 .TPx
 .I div
-is a diversion.
+is a diversion identifier.
 .
 .TPx
 .I env
-is an environment.
+is an environment identifier.
 .
 .TPx
 .I font
@@ -2311,8 +2311,8 @@ see below.
 .I name
 is a macro,
 string,
-request,
-or diversion.
+or diversion identifier,
+or the name of a request.
 .
 .TPx
 .I npl
@@ -2333,15 +2333,15 @@ but their interpolated contents can be.
 .
 .TPx
 .I reg
-is a register.
+is a register identifier.
 .
 .TPx
 .I str
-is a string.
+is a string identifier.
 .
 .TPx
 .I stream
-is an output stream.
+is an output stream identifier.
 .RE
 .LE
 .
@@ -2686,7 +2686,9 @@ adjust if applicable.
 .
 .TPx
 .REQ .break
-Break out of a while loop.
+Break out of a
+.request .while
+loop.
 .
 .TPx
 .REQ .c2
@@ -2815,7 +2817,9 @@ while constructing a composite glyph name.
 .
 .TPx
 .REQ .continue
-Finish the current iteration of a while loop.
+Finish the current iteration of a
+.request .while
+loop.
 .
 .TPx
 .REQ .cp

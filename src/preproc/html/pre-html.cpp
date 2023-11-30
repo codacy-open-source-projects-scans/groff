@@ -1713,20 +1713,19 @@ static void makeTempFiles(void)
   FILE *f;
 
   // psPageName contains a single page of PostScript.
-  f = xtmpfile(&psPageName, PS_TEMPLATE_LONG, PS_TEMPLATE_SHORT, true);
+  f = xtmpfile(&psPageName, PS_TEMPLATE_LONG, PS_TEMPLATE_SHORT);
   if (0 /* nullptr */ == f)
     sys_fatal("xtmpfile");
   fclose(f);
 
   // imagePageName contains a bitmap image of a single PostScript page.
-  f = xtmpfile(&imagePageName, PAGE_TEMPLATE_LONG, PAGE_TEMPLATE_SHORT,
-	       true);
+  f = xtmpfile(&imagePageName, PAGE_TEMPLATE_LONG, PAGE_TEMPLATE_SHORT);
   if (0 /* nullptr */ == f)
     sys_fatal("xtmpfile");
   fclose(f);
 
   // psFileName contains a PostScript file of the complete document.
-  f = xtmpfile(&psFileName, PS_TEMPLATE_LONG, PS_TEMPLATE_SHORT, true);
+  f = xtmpfile(&psFileName, PS_TEMPLATE_LONG, PS_TEMPLATE_SHORT);
   if (0 /* nullptr */ == f)
     sys_fatal("xtmpfile");
   fclose(f);
@@ -1734,7 +1733,7 @@ static void makeTempFiles(void)
   // regionFileName contains a list of the images and their boxed
   // coordinates.
   f = xtmpfile(&regionFileName,
-	       REGION_TEMPLATE_LONG, REGION_TEMPLATE_SHORT, true);
+	       REGION_TEMPLATE_LONG, REGION_TEMPLATE_SHORT);
   if (0 /* nullptr */ == f)
     sys_fatal("xtmpfile");
   fclose(f);

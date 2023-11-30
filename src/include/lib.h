@@ -85,10 +85,10 @@ int mkstemp(char *tmpl);
 int mksdir(char *tmpl);
 
 #ifdef __cplusplus
-  FILE *xtmpfile(char **namep = 0,
-		 const char *postfix_long = 0,
-		 const char *postfix_short = 0,
-		 int do_unlink = 1);
+  FILE *xtmpfile(char **namep = 0 /* nullptr */,
+		 const char *postfix_long = 0 /* nullptr */,
+		 const char *postfix_short = 0 /* nullptr */,
+		 bool want_unlink = true);
   char *xtmptemplate(const char *postfix_long,
 		     const char *postfix_short);
 #endif

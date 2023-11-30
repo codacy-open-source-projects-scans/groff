@@ -16620,10 +16620,10 @@ exceeds the line length, the margin character is appended to it.
 No margin character is written on lines produced by the @code{tl}
 request.
 
-The margin character is a property of the output line; the margin
-character last configured when the line is output controls.  If the
-margin character is disabled before an output line breaks, none is
-output (but see below).
+The margin character is a property of the output line.  Only one margin
+character is in effect at one time; the most recent @code{mc} call
+determines its value.  If the margin character is disabled before an
+output line breaks, none is output (but see below).
 
 The margin character is associated with the environment
 (@pxref{Environments}).

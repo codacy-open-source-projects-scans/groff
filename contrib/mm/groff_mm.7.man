@@ -102,7 +102,7 @@ Change the style of the typeface with
 .BR I ,
 and
 .BR R ;
-you can alternate styles with
+you can alternate styles within a word with
 .BR BI ,
 .BR BR ,
 .BR IB ,

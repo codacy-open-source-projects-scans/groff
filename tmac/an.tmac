@@ -632,7 +632,8 @@ contains unsupported escape sequence
 .  ne (2v + 1u)
 .  \" Does the tag fit within the paragraph indentation?
 .  nr an-tag-fits \
-     (\\n[dl] + \\n[TS] <= \\n[an-prevailing-indent])
+     (\\n[dl] + (\\n[TS]*\\n[an*enforce-tag-separation]) \
+        <= \\n[an-prevailing-indent])
 .  if \\n[an-tag-fits] .DEVTAG-COL 1
 .  an-div
 .  if \\n[an-tag-fits] .sp -1v
@@ -804,6 +805,7 @@ contains unsupported escape sequence
 .\" Set an indented paragraph.
 .\" .IP [marker[ indentation-amount]]
 .de1 IP
+.  nr an*enforce-tag-separation 0
 .  an-break-paragraph
 .  ie !\\n[.$] \{\
 .    ne (1v + 1u)
@@ -814,6 +816,7 @@ contains unsupported escape sequence
 .    el               .TP
 .    nop \&\\$1
 .  \}
+.  nr an*enforce-tag-separation 1
 ..
 .
 .\" Set a paragraph with a hanging indentation.
@@ -1309,6 +1312,8 @@ contains unsupported escape sequence
 .mso devtag.tmac
 .nr an-devtag-needs-end-of-heading 0
 .nr an-devtag-needs-second-column 0
+.
+.nr an*enforce-tag-separation 1
 .
 .\" Track whether the strings that set header and footer text need to be
 .\" reconfigured.  This happens when batch-rendering and starting a new
