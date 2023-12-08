@@ -1,3 +1,94 @@
+2023-12-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #64957 (`device`, `output` broken).
+
+	The GNU troff(1) internal function `has_arg()` has a side effect
+	of advancing the token pointer (a sort of cursor into the input
+	stream).  So when I changed `device_request()` and
+	`output_request()` to use `has_arg()` in commit 429723c3ec (10
+	November), the first character of the argument got stripped,
+	making it unintelligible to the output driver.
+
+	* src/roff/troff/input.cpp (device_request, output_request):
+	Drop call of `has_arg()` in favor of `input_stack::peek()`.
+	Manually discard space characters until reaching something else;
+	if that is a newline or EOF, bail out of request processing.
+	Otherwise, proceed with warning diagnostic as before.
+
+2023-12-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi: Fix typos.
+
+	Fixes <https://savannah.gnu.org/bugs/?64954>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-11-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Improve font-related diagnostics.
+
+	* src/roff/troff/node.cpp (mount_font_at_position)
+	(associate_style_with_font_position, select_underline_font)
+	(define_font_specific_character, remove_font_specific_character)
+	(configure_track_kerning, (constantly_space_font): Throw warning
+	in category `missing` if given no arguments.
+
+	(set_font_specific_special_fonts, set_special_fonts): Demote
+	diagnostic when given no arguments to warning in category
+	`missing`.
+
+	(mount_font_at_position, associate_style_with_font_position):
+	Report invalid font mounting position in error diagostic.
+
+	(associate_style_with_font_position): Throw warning in category
+	`missing` if given only one argument.
+
+2023-11-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Improve `hcode` request validation.
+
+	* src/roff/troff/input.cpp (set_hyphenation_codes): Throw
+	warning diagnostic if no arguments supplied.  Throw error
+	diagnostic if there are an odd number of arguments.  Check
+	second arguments of pairs for nonsense.
+
+2023-11-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (hyphenation_code): Rename to...
+	(set_hyphenation_codes): ...this.
+	(init_input_requests): Update call site.
+
+	(set_hyphenation_codes): Declare as `static`; this function
+	doesn't need external visibility.
+
+2023-11-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (composite_request): Rename to...
+	(map_composite_character): ...this.
+	(init_input_requests): Update call site.
+
+	(map_composite_character): Declare as `static`; this function
+	doesn't need external visibility.
+
+2023-11-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (composite_request): Throw warning
+	diagnostic if either argument is absent; stop relying upon
+	`get_name()` to do so, which is a slight abuse since we
+	don't regard the arguments to this request as "identifiers"
+	{how they're described in its diagnostic messages}.  Instead
+	test retrieved symbol for nullity and throw a more contextful
+	message.
+
+2023-11-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (char_flags): Rename to...
+	(set_character_flags): ...this.
+	(init_input_requests): Update call site.
+
+	(set_character_flags): Declare as `static`; this function
+	doesn't need external visibility.  Throw warning diagnositc when
+	no character arguments are present.
+
 2023-11-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* doc/groff.texi (Miscellaneous): Clarify behavior of `mc`.

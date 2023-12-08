@@ -394,8 +394,8 @@ groff \-st \-ms 1.roff
 .\" ====================================================================
 .
 .I grog
-exits with error status
-.B 1
+exits with
+.RB status\~ 1
 if a macro package appears to be in use by the input document,
 but
 .I grog

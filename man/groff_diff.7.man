@@ -375,23 +375,6 @@ scaling units.
 .P
 Output devices may be limited in the type sizes they can employ.
 .
-The
-.B .s
-and
-.B .ps
-registers represent the type size as selected by the output driver as it
-understands a device's capability.
-.
-The last
-.I requested
-type size is interpolated in scaled points by the read-only register
-.B .psr
-and in points as a decimal fraction by the read-only string-valued
-register
-.BR .sr .
-.
-Both are associated with the environment.
-.
 For example,
 if a type size of 10.95\~points is requested,
 and the nearest size permitted by a
@@ -406,6 +389,23 @@ directives in the device's
 file)
 is 11\~points,
 the output driver uses the latter value.
+.
+The
+.B .s
+and
+.B .ps
+registers represent the type size selected by the output driver as it
+understands a device's capability.
+.
+The last
+.I requested
+type size is interpolated in scaled points by the read-only register
+.B .psr
+and in points as a decimal fraction by the read-only string-valued
+register
+.BR .sr .
+.
+Both are associated with the environment.
 .\" END Keep (roughly) parallel with groff.texi node "Using Fractional
 .\" Type Sizes".
 .
@@ -1355,7 +1355,7 @@ If
 .I old
 is undefined,
 a warning in category
-.RB \[lq] reg \[rq]
+.B reg
 is generated and the request is ignored.
 .
 To remove a register alias,
@@ -1382,7 +1382,7 @@ If
 .I old
 is undefined,
 a warning in category
-.RB \[lq] mac \[rq]
+.B mac
 is produced,
 and the request is ignored.
 .
@@ -1515,13 +1515,6 @@ Doing so can be useful in conjunction with the
 .B writem
 request.
 .
-.B asciify
-can be also used for gross hacks;
-for example,
-the following sets
-.RB register\~ n
-to\~1.
-.
 .
 .IP
 .B asciify
@@ -1558,7 +1551,7 @@ Set a blank line macro (trap).
 If a blank line macro is thus defined,
 .I groff
 executes
-.I macro
+.I name
 when a blank line is encountered in the input file,
 instead of the usual behavior.
 .
@@ -1882,7 +1875,7 @@ and
 .B trin
 requests take precedence if
 .B char
-both apply
+also applies
 .RI to\~ c .
 .
 A character definition can be removed with the
@@ -1891,17 +1884,17 @@ request.
 .
 .
 .TP
-.BI .chop\~ object
+.BI .chop\~ name
 Remove the last character from the macro,
 string,
 or diversion
-.IR object .
+.IR name .
 .
 This is useful for removing the newline from the end of a diversion that
 is to be interpolated as a string.
 .
 This request can be used repeatedly on the same
-.IR object ;
+.IR name ;
 see section \[lq]gtroff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
@@ -1912,15 +1905,13 @@ for discussion of nodes inserted by
 .
 .
 .TP
-.BI .class\~ "name c1 c2\~"\c
+.BI .class\~ ident\~c\~\c
 \&.\|.\|.
 Define a character class
 (or simply \[lq]class\[rq])
-.I name
+.I ident
 comprising the characters or range expressions
-.IR c1 ,
-.IR c2 ,
-and so on.
+.I c.
 .
 .
 .IP
@@ -1936,7 +1927,7 @@ request can handle references to character classes.
 .IP
 In the request's simplest form,
 each
-.I cn
+.I c
 is a character
 (or special character).
 .
@@ -2011,7 +2002,7 @@ request.
 .
 .TP
 .BI .close\~ stream
-Close the stream named
+Close the named
 .IR stream ,
 invalidating it as an argument to the
 .B write
@@ -2051,7 +2042,8 @@ See
 .
 .
 .TP
-.BI .color\~ n
+.BR .color\~ [\c
+.IR n ]
 If
 .I n
 is non-zero or missing,
@@ -2061,7 +2053,8 @@ otherwise disable them.
 .
 .
 .TP
-.BI .cp\~ n
+.BR .cp\~ [\c
+.IR n ]
 If
 .I n
 is non-zero or missing,
@@ -2124,15 +2117,18 @@ A device's default stroke and fill colors are not necessarily the same.
 .
 .
 .TP
-.BI .de1\~ name\~\c
+.BI .de1\~ ident\~\c
 .RI [ end-name ]
-Define a macro to be interpreted with compatibility mode disabled.
+As
+.RB \[lq] de \[rq],
+but compatibility mode is disabled while the macro
+.I ident
+is interpreted:
+a \[lq]compatibility save\[rq] token is inserted at its beginning,
+and a \[lq]compatibility restore\[rq] token at its end.
 .
-When
-.I name
-is called,
-compatibility mode enablement status is saved;
-it is restored when the call completes.
+See
+.BR .am1 .
 .
 .
 .TP
@@ -2332,12 +2328,14 @@ This test happens before special fonts are searched.
 .
 .
 .TP
-.BI .fcolor\~ color
+.BR .fcolor\~ [\c
+.IR color ]
 Set the fill color to
-.IR color .
-.
-Without an argument,
-the previous fill color is selected.
+.IR color ,
+or,
+without an argument,
+restore the previous stroke color,
+or the default if there is none.
 .
 .
 .TP
@@ -2387,7 +2385,8 @@ is selected.
 .
 .
 .TP
-.BI .ftr\~ f\~g
+.BI .ftr\~ f\~\c
+.RI [ g ]
 Translate
 .RI font\~ f
 .RI to\~ g .
@@ -2426,31 +2425,35 @@ is not translated.
 .
 .
 .TP
-.BI .fzoom\~ f\~zoom
+.BI .fzoom\~ f\~\c
+.RI [ zoom ]
 Set zoom factor
 .I zoom
 for font\~\c
 .IR f .
 .I zoom
-must a non-negative integer multiple of 1/1000th.
-.
-If it is missing or is equal to zero,
-it means the same as 1000,
-namely no magnification.
+must a non-negative integer;
+it scales the magnification by thousandths with 1000 as a basis.
+If
+.I zoom
+is missing or equal to zero or 1000,
+.RI font\~ f
+is not magnified.
 .
 .IR f \~\c
 must be a resolved font name,
-not an abstract style.
-.\" XXX: What about a mounting position?  It's not rejected...
+not an abstract style or mounting position.
 .
 .
 .TP
-.BI .gcolor\~ color
+.BR .gcolor\~ [\c
+.IR color ]
 Set the stroke color to
-.IR color .
-.
-Without an argument,
-the previous stroke color is selected.
+.IR color ,
+or,
+without an argument,
+restore the previous stroke color,
+or the default if there is none.
 .
 .
 .TP
@@ -2469,8 +2472,6 @@ and so on.
 A hyphenation code must be an ordinary character
 (not a special character escape sequence)
 other than a digit.
-.
-The request is ignored if given no arguments.
 .
 .
 .IP
@@ -3386,11 +3387,11 @@ use substrings and/or catenation.
 .
 .
 .TP
-.BI .sty\~ n\~s
+.BI .sty\~ "pos style"
 Associate abstract
-.RI style\~ s
-with font mounting
-.RI position\~ n .
+.I style
+with non-negative font mounting
+.RI position\~ pos .
 .
 .
 .TP

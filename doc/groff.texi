@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle Edition 1.23.0+Git
-@subtitle November 2023
+@subtitle December 2023
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -1541,7 +1541,8 @@ repertoires and the @slanted{metrics} (dimensions) of each glyph.  This
 information permits the formatter to accurately place glyphs with
 respect to each other.  The device description file is always named
 @file{DESC}; fonts are typically described in files with short names
-like @file{TR}, @file{CR}, @file{HBI}, or @file{S}.
+like @file{TR}, @file{CR}, @file{HBI}, or
+@file{S}.@footnote{@xref{Device and Font Description Files}.}
 
 @cindex font directory
 @cindex directory, device and font description
@@ -1603,11 +1604,9 @@ be customized as part of the build-time configuration process.
 @cindex page orientation, landscape
 
 @c BEGIN Keep parallel with groff(1), subsection "Paper format".
-GNU @command{troff} reads the device description file
-@file{DESC}@footnote{@xref{Device and Font Description Files}.} for the
-selected output device when it starts; page dimensions declared there
-are used if present.  @code{groff}'s build process configures a default
-page format and writes it to typesetters' @file{DESC} files.  This
+A device's page dimensions in the aforementioned @file{DESC} are used if
+declared there.  @code{groff}'s build process configures a default page
+format and writes it to typesetters' @file{DESC} files.  This
 installation's default is documented in @cite{gtroff@r{(1)}}.  If the
 @file{DESC} file lacks this information, the formatter and output driver
 use a page length of @samp{11i} (eleven inches) for compatibility with
@@ -1764,10 +1763,10 @@ consists of text, or words to be printed, and embedded commands
 @cindex filling (introduction)
 @cindex adjustment (introduction)
 The primary function of GNU @command{troff} is to collect words from
-input lines, @slanted{fill} output lines with those words,
-@slanted{break} the line at the right-hand margin (possibly by
-hyphenating a word), @slanted{adjust} the line to reach that margin (if
-necessary) by widening spaces between words, and output the result.
+its input, @slanted{fill} output lines with those words, @slanted{break}
+the line at the right-hand margin (possibly by hyphenating a word),
+@slanted{adjust} the line to reach that margin (if necessary) by
+widening spaces between words, and output the result.
 
 @Example
 @c .ll 42n
@@ -7396,7 +7395,7 @@ comment.@footnote{This claim may be more aspirational than descriptive.}
 @Defesc {\\", , , }
 Start a comment.  Everything up to the next newline is ignored.
 @cindex @code{\"}, interpretation in copy mode
-@code{\"} is interpreted even in copy mode, to disard the comment
+@code{\"} is interpreted even in copy mode, to discard the comment
 (@pxref{Copy Mode}).
 
 This may sound simple, but it can be tricky to keep the comments from
@@ -7445,7 +7444,7 @@ Start a comment; everything up to and including the next newline is
 ignored.  This @code{groff} extension was introduced to avoid the
 problems described above.
 @cindex @code{\#}, interpretation in copy mode
-@code{\#} is interpreted even in copy mode, to disard the comment
+@code{\#} is interpreted even in copy mode, to discard the comment
 (@pxref{Copy Mode}).
 
 @Example
@@ -10447,7 +10446,7 @@ default family.
 @pindex DESC
 @cindex selecting the previous font (@code{ft})
 @cindex previous font, selecting (@code{ft})
-@cindex font, previous, slecting (@code{ft})
+@cindex font, previous, selecting (@code{ft})
 The @code{ft} request selects the typeface @var{font}.  If the argument
 is absent or @samp{P}, it selects the previously used typeface; if there
 is none, it ignores the request.  If @var{font} is a non-negative
@@ -10656,7 +10655,7 @@ a single character as an argument) to change the font family on the fly.
 @endExample
 @endDefreq
 
-@DefreqList {sty, n style}
+@DefreqList {sty, pos style}
 @DefregListEndx {.sty}
 @cindex setting up an abstract font style (@code{sty})
 @cindex abstract font style, setting up (@code{sty})
@@ -10668,7 +10667,7 @@ a single character as an argument) to change the font family on the fly.
 @cindex @code{uf} request, and font styles
 @cindex @code{fspecial} request, and font styles
 Associate an abstract style @var{style} with mounting
-position@tie{}@var{n}, which must be a non-negative integer.  If the
+position@tie{}@var{pos}, which must be a non-negative integer.  If the
 requests @code{cs}, @code{bd}, @code{tkf}, @code{uf}, or @code{fspecial}
 are applied to an abstract style, they are instead applied to the member
 of the default family corresponding to that style.
@@ -11679,7 +11678,7 @@ include `ft' and `ct' ligatures; they are archaic and GNU @code{troff}
 does not (yet) support them.
 
 The formatter checks only the current font for ligatures and kerning
-adjustments; neither glyphs from special fonts nor special charcters
+adjustments; neither glyphs from special fonts nor special characters
 defined with the @code{char} request (and its siblings) are considered
 for these processes.
 
@@ -14255,7 +14254,7 @@ The foregoing outputs a box rule (a vertical line), the text
 argument(s), and another box rule.  We employ the boundary-relative
 motion operator @samp{|}.  Finally, the line-drawing escape sequences
 draw a radical extender (a form of overline) and an underline from the
-drawing position to the position coresponding to beginning of the
+drawing position to the position corresponding to beginning of the
 @emph{input} line.  The formatter leaves the drawing position at the
 right-hand box rule even though the line lengths are negative, as noted
 above.
@@ -14443,7 +14442,7 @@ As @samp{\D'P @r{@dots{}}'}, but the polygon is filled.
 
 The following macro is like the @samp{\D'l'} example, but shades the
 box.  We draw the box before writing the text because colors in GNU
-@code{troff} have no transparency; in othe opposite order, the filled
+@code{troff} have no transparency; in other opposite order, the filled
 polygon would occlude the text.
 
 @Example
@@ -18540,7 +18539,7 @@ Due to the obsolete jump-and-write command, the text clusters in the
 The intermediate output language of @acronym{AT&T} @code{troff} was
 first documented in @cite{A Typesetter-independent TROFF}, by Brian
 Kernighan, and by 1992 the @acronym{AT&T} @code{troff} manual was
-updated to incorprate a description of it.
+updated to incoroprate a description of it.
 
 The GNU @code{troff} intermediate output format is compatible with this
 specification except for the following features.

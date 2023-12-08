@@ -4230,11 +4230,11 @@ Replace each byte in the string named
 with its uppercase version.
 .
 .TPx
-.REQ .sty "n style"
+.REQ .sty "pos style"
 Associate abstract
 .I style
-with font position
-.IR n .
+with non-negative font position
+.IR pos .
 .
 .TPx
 .REQ .substring "str start \fR[\fPend\fR]\fP"

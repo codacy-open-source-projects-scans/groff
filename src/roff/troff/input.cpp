@@ -4111,44 +4111,51 @@ macro_iterator::~macro_iterator()
 
 dictionary composite_dictionary(17);
 
-void composite_request()
+static void map_composite_character()
 {
-  symbol from = get_name(true /* required */);
-  if (!from.is_null()) {
-    const char *from_gn = glyph_name_to_unicode(from.contents());
+  symbol from = get_name();
+  if (from.is_null()) {
+    warning(WARN_MISSING, "composite character request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
+  const char *from_gn = glyph_name_to_unicode(from.contents());
+  if (!from_gn) {
+    from_gn = check_unicode_name(from.contents());
     if (!from_gn) {
-      from_gn = check_unicode_name(from.contents());
-      if (!from_gn) {
-	error("invalid composite glyph name '%1'", from.contents());
-	skip_line();
-	return;
-      }
-    }
-    const char *from_decomposed = decompose_unicode(from_gn);
-    if (from_decomposed)
-      from_gn = &from_decomposed[1];
-    symbol to = get_name(true /* required */);
-    if (to.is_null())
-      composite_dictionary.remove(symbol(from_gn));
-    else {
-      const char *to_gn = glyph_name_to_unicode(to.contents());
-      if (!to_gn) {
-	to_gn = check_unicode_name(to.contents());
-	if (!to_gn) {
-	  error("invalid composite glyph name '%1'", to.contents());
-	  skip_line();
-	  return;
-	}
-      }
-      const char *to_decomposed = decompose_unicode(to_gn);
-      if (to_decomposed)
-	to_gn = &to_decomposed[1];
-      if (strcmp(from_gn, to_gn) == 0)
-	composite_dictionary.remove(symbol(from_gn));
-      else
-	(void)composite_dictionary.lookup(symbol(from_gn), (void *)to_gn);
+      error("invalid composite glyph name '%1'", from.contents());
+      skip_line();
+      return;
     }
   }
+  const char *from_decomposed = decompose_unicode(from_gn);
+  if (from_decomposed)
+    from_gn = &from_decomposed[1];
+  symbol to = get_name();
+  if (to.is_null()) {
+    composite_dictionary.remove(symbol(from_gn));
+    warning(WARN_MISSING, "composite character request expects two"
+	    " arguments");
+    skip_line();
+    return;
+  }
+  const char *to_gn = glyph_name_to_unicode(to.contents());
+  if (!to_gn) {
+    to_gn = check_unicode_name(to.contents());
+    if (!to_gn) {
+      error("invalid composite glyph name '%1'", to.contents());
+      skip_line();
+      return;
+    }
+  }
+  const char *to_decomposed = decompose_unicode(to_gn);
+  if (to_decomposed)
+    to_gn = &to_decomposed[1];
+  if (strcmp(from_gn, to_gn) == 0)
+    composite_dictionary.remove(symbol(from_gn));
+  else
+    (void)composite_dictionary.lookup(symbol(from_gn), (void *)to_gn);
   skip_line();
 }
 
@@ -5653,27 +5660,33 @@ static node *do_special()
 
 void device_request()
 {
-  if (!has_arg()) {
+  // We can't use `has_arg()` here because we want to read in copy mode.
+  int c;
+  for (;;) {
+    c = input_stack::peek();
+    if (' ' == c)
+      (void) get_copy(0 /* nullptr */);
+    else
+      break;
+  }
+  if (('\n' == c) || (EOF == c)) {
     warning(WARN_MISSING, "device control request expects arguments");
     skip_line();
     return;
   }
-  if (!tok.is_newline() && !tok.is_eof()) {
-    int c;
-    macro mac;
-    for (;;) {
-      c = get_copy(0);
-      if (c == '"') {
-	c = get_copy(0);
-	break;
-      }
-      if (c != ' ' && c != '\t')
-	break;
+  macro mac;
+  for (;;) {
+    c = get_copy(0 /* nullptr */);
+    if ('"' == c) {
+      c = get_copy(0 /* nullptr */);
+      break;
     }
-    for (; c != '\n' && c != EOF; c = get_copy(0))
-      mac.append(c);
-    curenv->add_node(new special_node(mac));
+    if (c != ' ' && c != '\t')
+      break;
   }
+  for (; c != '\n' && c != EOF; c = get_copy(0 /* nullptr */))
+    mac.append(c);
+  curenv->add_node(new special_node(mac));
   tok.next();
 }
 
@@ -5694,26 +5707,32 @@ void device_macro_request()
 
 void output_request()
 {
-  if (!has_arg()) {
+  // We can't use `has_arg()` here because we want to read in copy mode.
+  int c;
+  for (;;) {
+    c = input_stack::peek();
+    if (' ' == c)
+      (void) get_copy(0 /* nullptr */);
+    else
+      break;
+  }
+  if (('\n' == c) || (EOF == c)) {
     warning(WARN_MISSING, "output request expects arguments");
     skip_line();
     return;
   }
-  if (!tok.is_newline() && !tok.is_eof()) {
-    int c;
-    for (;;) {
-      c = get_copy(0);
-      if (c == '"') {
-	c = get_copy(0);
-	break;
-      }
-      if (c != ' ' && c != '\t')
-	break;
+  for (;;) {
+    c = get_copy(0 /* nullptr */);
+    if ('"' == c) {
+      c = get_copy(0 /* nullptr */);
+      break;
     }
-    for (; c != '\n' && c != EOF; c = get_copy(0))
-      topdiv->transparent_output(c);
-    topdiv->transparent_output('\n');
+    if (c != ' ' && c != '\t')
+      break;
   }
+  for (; c != '\n' && c != EOF; c = get_copy(0 /* nullptr */))
+    topdiv->transparent_output(c);
+  topdiv->transparent_output('\n');
   tok.next();
 }
 
@@ -7197,10 +7216,16 @@ void translate_input()
   do_translate(1, 1);
 }
 
-void char_flags()
+static void set_character_flags()
 {
   int flags;
-  if (get_integer(&flags))
+  if (get_integer(&flags)) {
+    if (tok.is_newline() || tok.is_eof()) {
+      warning(WARN_MISSING, "character flags configuration request"
+	      " expects one or more characters to configure");
+      skip_line();
+      return;
+    }
     while (has_arg()) {
       charinfo *ci = tok.get_char(true /* required */);
       if (ci) {
@@ -7211,23 +7236,37 @@ void char_flags()
       }
       tok.next();
     }
+  }
   skip_line();
 }
 
-void hyphenation_code()
+static void set_hyphenation_codes()
 {
   tok.skip();
+  if (tok.is_newline() || tok.is_eof()) {
+    warning(WARN_MISSING, "hyphenation code configuration request"
+	    " expects arguments");
+    skip_line();
+    return;
+  }
   while (!tok.is_newline() && !tok.is_eof()) {
     charinfo *ci = tok.get_char(true /* required */);
-    if (ci == 0)
+    // If we got back some nonsense like a non-character escape
+    // sequence, get_char() will have diagnosed it.
+    if (0 /* nullptr */ == ci)
       break;
     tok.next();
     tok.skip();
     unsigned char c = tok.ch();
-    if (c == 0) {
-      error("hyphenation code must be ordinary character");
+    if (tok.is_newline() || tok.is_eof()) {
+      error("hyphenation codes must be specified in pairs");
       break;
     }
+    charinfo *ci2 = tok.get_char(true /* required */);
+    // nonsense redux
+    if (0 /* nullptr */ == ci2)
+      break;
+    // TODO: What if you want to unset a hyphenation code?  Accept 0?
     if (csdigit(c)) {
       error("hyphenation code cannot be digit");
       break;
@@ -8507,13 +8546,13 @@ void init_input_requests()
   init_request("cc", assign_control_character);
   init_request("c2", assign_no_break_control_character);
   init_request("cf", copy_file);
-  init_request("cflags", char_flags);
+  init_request("cflags", set_character_flags);
   init_request("char", define_character);
   init_request("chop", chop_macro);
   init_request("class", define_class);
   init_request("close", close_request);
   init_request("color", activate_color);
-  init_request("composite", composite_request);
+  init_request("composite", map_composite_character);
   init_request("continue", while_continue_request);
   init_request("cp", compatible);
   init_request("de", define_macro);
@@ -8537,7 +8576,7 @@ void init_input_requests()
 #ifdef WIDOW_CONTROL
   init_request("fpl", flush_pending_lines);
 #endif /* WIDOW_CONTROL */
-  init_request("hcode", hyphenation_code);
+  init_request("hcode", set_hyphenation_codes);
   init_request("hpfcode", hyphenation_patterns_file_code);
   init_request("ie", if_else_request);
   init_request("if", if_request);

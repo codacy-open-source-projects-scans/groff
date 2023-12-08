@@ -6061,11 +6061,17 @@ static void translate_font()
 
 static void mount_font_at_position()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "font mounting request expects arguments");
+    skip_line();
+    return;
+  }
   int n;
   if (get_integer(&n)) {
     if (n < 0)
-      error("negative font position");
+      error("font mounting position %1 is negative", n);
     else {
+      // TODO: Make argument optional to clear the mounting position?
       symbol internal_name = get_name(true /* required */);
       if (!internal_name.is_null()) {
 	symbol external_name = get_long_name();
@@ -6173,14 +6179,26 @@ void font_family::invalidate_fontno(int n)
 
 static void associate_style_with_font_position()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "abstract style configuration request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
   int n;
   if (get_integer(&n)) {
     if (n < 0)
-      error("negative font position");
+      error("font mounting position %1 is negative", n);
     else {
-      symbol internal_name = get_name(true /* required */);
-      if (!internal_name.is_null())
-	(void) mount_style(n, internal_name);
+      // TODO: Make argument optional to clear the mounting position?
+      if (!has_arg())
+	warning(WARN_MISSING, "abstract style configuration request"
+		" expects a second argument");
+      else {
+	symbol internal_name = get_name(true /* required */);
+	if (!internal_name.is_null())
+	  (void) mount_style(n, internal_name);
+      }
     }
   }
   skip_line();
@@ -6229,6 +6247,12 @@ static int underline_fontno = 2;
 
 static void select_underline_font()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "underline font selection request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!has_font(&finfo))
     font_lookup_error(finfo, "to make it the underline font");
@@ -6244,6 +6268,12 @@ int get_underline_fontno()
 
 static void define_font_specific_character()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "font-specific fallback character definition"
+	    " request expects arguments");
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!has_font(&finfo)) {
     font_lookup_error(finfo, "to define font-specific fallback glyph");
@@ -6260,6 +6290,12 @@ static void define_font_specific_character()
 
 static void remove_font_specific_character()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "font-specific fallback character removal"
+	    " request expects arguments");
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!has_font(&finfo))
     font_lookup_error(finfo, "to remove font-specific fallback glyph");
@@ -6312,7 +6348,8 @@ static void read_special_fonts(special_font_list **sp)
 static void set_font_specific_special_fonts()
 {
   if (!has_arg()) {
-    error("fspecial request requires at least one font argument");
+    warning(WARN_MISSING, "font-specific special font configuration"
+	    " request expects one or more arguments");
     skip_line();
     return;
   }
@@ -6328,7 +6365,8 @@ static void set_font_specific_special_fonts()
 static void set_special_fonts()
 {
   if (!has_arg()) {
-    error("special request requires at least one font argument");
+    warning(WARN_MISSING, "global special font configuration request"
+	    " expects one or more arguments");
     skip_line();
     return;
   }
@@ -6586,6 +6624,11 @@ hunits track_kerning_function::compute(int size)
 
 static void configure_track_kerning()
 {
+  if (!(has_arg())) {
+    warning(WARN_MISSING, "track kerning request expects arguments");
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!has_font(&finfo))
     font_lookup_error(finfo, "for track kerning");
@@ -6610,6 +6653,11 @@ static void configure_track_kerning()
 
 static void constantly_space_font()
 {
+  if (!(has_arg())) {
+    warning(WARN_MISSING, "constant spacing request expects arguments");
+    skip_line();
+    return;
+  }
   font_lookup_info finfo;
   if (!has_font(&finfo))
     font_lookup_error(finfo, "for constant spacing");

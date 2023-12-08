@@ -234,7 +234,7 @@ all exit afterward.
 .\" ====================================================================
 .
 .I @g@nroff
-exits with error
+exits with
 .RB status\~ 2
 if there was a problem parsing its arguments,
 with

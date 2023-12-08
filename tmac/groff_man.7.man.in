@@ -3072,8 +3072,8 @@ This macro exists only to render man pages from historical systems.
 .
 .
 .IP
-.I system
-can be any of the following.
+The inside footer is populated per the value of
+.I system.
 .
 .
 .RS \" Invisibly move left margin to current .IP indentation.
@@ -3125,8 +3125,8 @@ information or distinctions that you use tab stops to express are likely
 to be lost.
 .
 If you feel tempted to change the tab stops such that calling this macro
-later is desirable to restore them,
-you should probably be composing a table using
+later to restore them is desirable,
+consider composing a table using
 .MR @g@tbl @MAN1EXT@
 instead.
 .
@@ -3198,7 +3198,8 @@ which afford greater flexibility.
 .TP
 .BR .PD " ["\c
 .IR vertical-space ]
-Define the vertical space between paragraphs or (sub)sections.
+Configure the amount of vertical space between paragraphs or
+(sub)sections.
 .
 The optional argument
 .I vertical-space
@@ -3285,8 +3286,8 @@ This macro exists only to render man pages from historical systems.
 .
 .
 .IP
-.I version
-can be any of the following.
+The inside footer is populated per the value of
+.I version.
 .
 .
 .RS \" Invisibly move left margin to current .IP indentation.
