@@ -3313,9 +3313,17 @@ Set the hyphenation language to
 .IR ident .
 .
 .TPx
+.REQ .hlm
+Set the consecutive automatically hyphenated line limit to
+.BR \-1 ,
+meaning \[lq]no limit\[rq].
+.
+.TPx
 .REQ .hlm n
-Set the maximum quantity of consecutive hyphenated lines to
-.IR n .
+Set the consecutive automatically hyphenated line limit to
+.RI to\~ n.
+.
+A negative value means \[lq]no limit\[rq].
 .
 .TPx
 .REQ .hpf pattern-file
@@ -8024,6 +8032,8 @@ defined names\[em]macros,
 strings,
 and
 .RB diversions\[em]( .pm );
+hyphenation exceptions
+.RB ( .phw ),
 environments
 .RB ( .pev ),
 registers

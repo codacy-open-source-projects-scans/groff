@@ -196,3 +196,9 @@ inline string &string::operator+=(char c)
 void put_string(const string &, FILE *);
 
 string as_string(int);
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

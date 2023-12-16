@@ -124,3 +124,9 @@ extern int driver_extension_flag;
 extern int compatible_flag;
 extern int safer_flag;
 extern char *graphname;
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

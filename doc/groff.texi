@@ -14442,7 +14442,7 @@ As @samp{\D'P @r{@dots{}}'}, but the polygon is filled.
 
 The following macro is like the @samp{\D'l'} example, but shades the
 box.  We draw the box before writing the text because colors in GNU
-@code{troff} have no transparency; in other opposite order, the filled
+@code{troff} have no transparency; in the opposite order, the filled
 polygon would occlude the text.
 
 @Example
@@ -16865,8 +16865,8 @@ or for instrumentation while troubleshooting.  The @code{ex} and
 exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
-environments, registers, and page location traps to the standard error
-stream.
+environments, hyphenation exceptions, registers, and page location traps
+to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}

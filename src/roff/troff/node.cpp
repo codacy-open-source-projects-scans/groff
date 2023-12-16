@@ -6071,7 +6071,6 @@ static void mount_font_at_position()
     if (n < 0)
       error("font mounting position %1 is negative", n);
     else {
-      // TODO: Make argument optional to clear the mounting position?
       symbol internal_name = get_name(true /* required */);
       if (!internal_name.is_null()) {
 	symbol external_name = get_long_name();
@@ -6190,7 +6189,6 @@ static void associate_style_with_font_position()
     if (n < 0)
       error("font mounting position %1 is negative", n);
     else {
-      // TODO: Make argument optional to clear the mounting position?
       if (!has_arg())
 	warning(WARN_MISSING, "abstract style configuration request"
 		" expects a second argument");
@@ -6248,8 +6246,8 @@ static int underline_fontno = 2;
 static void select_underline_font()
 {
   if (!has_arg()) {
-    warning(WARN_MISSING, "underline font selection request expects"
-	    " arguments");
+    warning(WARN_MISSING, "underline font selection request expects an"
+	    " argument");
     skip_line();
     return;
   }
@@ -6349,7 +6347,7 @@ static void set_font_specific_special_fonts()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "font-specific special font configuration"
-	    " request expects one or more arguments");
+	    " request expects at least one argument");
     skip_line();
     return;
   }
@@ -6364,12 +6362,6 @@ static void set_font_specific_special_fonts()
 
 static void set_special_fonts()
 {
-  if (!has_arg()) {
-    warning(WARN_MISSING, "global special font configuration request"
-	    " expects one or more arguments");
-    skip_line();
-    return;
-  }
   read_special_fonts(&global_special_fonts);
   skip_line();
 }

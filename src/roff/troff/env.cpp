@@ -31,7 +31,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "charinfo.h"
 #include "macropath.h"
 #include "input.h"
-#include <math.h>
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <math.h> // ceil()
 
 symbol default_family("T");
 
@@ -3599,7 +3604,8 @@ hyphenation_language *current_language = 0;
 static void select_hyphenation_language()
 {
   if (!has_arg()) {
-    error("hyphenation language selection request requires argument");
+    warning(WARN_MISSING, "hyphenation language selection request"
+	    " expects argument");
     skip_line();
     return;
   }
@@ -3619,6 +3625,12 @@ const int WORD_MAX = 256;	// we use unsigned char for offsets in
 
 static void add_hyphenation_exceptions()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "hyphenation exception request expects one or"
+	    " more arguments");
+    skip_line();
+    return;
+  }
   if (!current_language) {
     error("cannot add hyphenation exceptions when no hyphenation"
 	  " language is set");
@@ -4158,8 +4170,9 @@ void hyphenate(hyphen_list *h, unsigned flags)
   }
 }
 
-static void do_hyphenation_patterns_file(bool append)
+static void read_hyphenation_patterns_from_file(bool append)
 {
+  // TODO: Read a file name, not a groff identifier.
   symbol name = get_long_name(true /* required */);
   if (!name.is_null()) {
     if (!current_language)
@@ -4172,14 +4185,26 @@ static void do_hyphenation_patterns_file(bool append)
   skip_line();
 }
 
-static void hyphenation_patterns_file()
+static void load_hyphenation_patterns_from_file()
 {
-  do_hyphenation_patterns_file(false /* append */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "hyphenation pattern load request expects"
+	    " argument");
+    skip_line();
+    return;
+  }
+  read_hyphenation_patterns_from_file(false /* append */);
 }
 
-static void hyphenation_patterns_file_append()
+static void append_hyphenation_patterns_from_file()
 {
-  do_hyphenation_patterns_file(true /* append */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "hyphenation pattern appendment request"
+	    " expects argument");
+    skip_line();
+    return;
+  }
+  read_hyphenation_patterns_from_file(true /* append */);
 }
 
 class hyphenation_language_reg : public reg {
@@ -4197,8 +4222,8 @@ void init_hyphen_requests()
   init_request("hw", add_hyphenation_exceptions);
   init_request("phw", print_hyphenation_exceptions);
   init_request("hla", select_hyphenation_language);
-  init_request("hpf", hyphenation_patterns_file);
-  init_request("hpfa", hyphenation_patterns_file_append);
+  init_request("hpf", load_hyphenation_patterns_from_file);
+  init_request("hpfa", append_hyphenation_patterns_from_file);
   register_dictionary.define(".hla", new hyphenation_language_reg);
 }
 

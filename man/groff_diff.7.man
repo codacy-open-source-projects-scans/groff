@@ -2533,17 +2533,15 @@ The hyphenation language is associated with the environment.
 .TP
 .BR .hlm\~ [\c
 .IR n ]
-Set the maximum number of consecutive hyphenated lines
-.RI to\~ n .
+Set the consecutive automatically hyphenated line limit to
+.I n.
 .
-If
-.I n
-is negative,
-there is no maximum.
+A negative value means \[lq]no limit\[rq].
 .
-If omitted,
+Omitting
 .I n
-is\~\-1.
+implies a limit of
+.BR \-1 .
 .
 This value is associated with the environment.
 .
@@ -5130,10 +5128,12 @@ and
 .
 More aspects of formatter state can be examined with requests that write
 lists of
-defined registers
-.RB ( pnr ),
 environments
 .RB ( pev ),
+hyphenation exceptions
+.RB ( phw ),
+defined registers
+.RB ( pnr ),
 and page location traps
 .RB ( ptr )
 to the standard error stream.

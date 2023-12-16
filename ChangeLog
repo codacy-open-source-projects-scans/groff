@@ -1,3 +1,98 @@
+2023-12-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (nop_request, do_if_request)
+	(if_else_request, if_request, else_request, while_request)
+	(while_break_request, while_continue_request): Define functions
+	as `static`; they require no visibility outside this translation
+	unit.
+
+2023-12-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (if_else_request, if_request): Throw
+	warning in category `missing` if given no arguments.
+
+2023-12-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Manage config.h more consistently.
+
+	* src/roff/troff/env.cpp: Ensure that we include config.h (if
+	necessary) _before_ C standard library header math.h.
+
+	* src/devices/xditview/Dvi.c:
+	* src/devices/xditview/draw.c:
+	* src/devices/xditview/font.c:
+	* src/devices/xditview/lex.c:
+	* src/devices/xditview/page.c:
+	* src/devices/xditview/parse.c:
+	* src/libs/libbib/map.c:
+	* src/libs/libgroff/change_lf.cpp:
+	* src/libs/libgroff/cmap.cpp:
+	* src/libs/libgroff/cset.cpp:
+	* src/libs/libgroff/fmod.c:
+	* src/libs/libgroff/geometry.cpp:
+	* src/libs/libgroff/getcwd.c:
+	* src/libs/libgroff/localcharset.c:
+	* src/libs/libgroff/prime.cpp:
+	* src/libs/libgroff/ptable.cpp:
+	* src/libs/libgroff/quotearg.c:
+	* src/libs/libgroff/spawnvp.c:
+	* src/libs/libxutil/DviChar.c:
+	* src/libs/libxutil/XFontName.c:
+	* src/libs/libxutil/xmalloc.c:
+	* src/preproc/eqn/eqn.ypp:
+	* src/preproc/grn/hdb.cpp:
+	* src/preproc/grn/hpoint.cpp:
+	* src/roff/troff/env.cpp:
+	* src/utils/indxbib/signal.c: Bracket inclusion of config.h with
+	preprocessor test of `HAVE_CONFIG_H` where absent.  Use
+	angle bracket rather than double-quote notation for the
+	preprocessor file inclusion.  See
+	<https://savannah.gnu.org/bugs/?60035>.
+
+2023-12-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (do_hyphenation_patterns_file):
+	Rename...
+	(read_hyphenation_patterns_from_file): ...to this.
+	(hyphenation_patterns_file, hyphenation_patterns_file_append):
+	Update call sites.
+	(hyphenation_patterns_file): Rename...
+	(load_hyphenation_patterns_from_file): ...to this.
+	(hyphenation_patterns_file_append): ...and this...
+	(append_hyphenation_patterns_from_file): ... to this.
+	(init_hyphen_requests): Update call sites.
+
+2023-12-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (select_hyphenation_language): Demote
+	missing argument diagnostic from error to warning.
+	(add_hyphenation_exceptions, hyphenation_patterns_file)
+	(hyphenation_patterns_file_append): Throw warning in category
+	`missing` if given no arguments.
+
+2023-12-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Drop unused function parameter.
+
+	* src/include/lib.h: Drop `want_unlink` parameter from
+	`xtmpfile` declaration.
+	* src/libs/libgroff/tmpfile.cpp (xtmpfile): Drop same from
+	definition, along with useless (always true) conditional test.
+
+2023-12-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (select_underline_font)
+	(set_font_specific_special_fonts): Tweak diagnostic messages.
+
+2023-12-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (set_special_fonts): Revert part of
+	commit 44db6efc01, 3 November.  Stop throwing diagnostic and
+	ignoring request if given no arguments; that's how you clear the
+	global list of fonts designated as special by request (contrast
+	with those that declare themselves as special in their
+	description files).
+
 2023-12-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Fix Savannah #64957 (`device`, `output` broken).
@@ -12,8 +107,8 @@
 	* src/roff/troff/input.cpp (device_request, output_request):
 	Drop call of `has_arg()` in favor of `input_stack::peek()`.
 	Manually discard space characters until reaching something else;
-	if that is a newline or EOF, bail out of request processing.
-	Otherwise, proceed with warning diagnostic as before.
+	if that is a newline or EOF, throw warning diagnostic as before.
+	Otherwise, proceed with request processing.
 
 2023-12-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -29,7 +124,7 @@
 	* src/roff/troff/node.cpp (mount_font_at_position)
 	(associate_style_with_font_position, select_underline_font)
 	(define_font_specific_character, remove_font_specific_character)
-	(configure_track_kerning, (constantly_space_font): Throw warning
+	(configure_track_kerning, constantly_space_font): Throw warning
 	in category `missing` if given no arguments.
 
 	(set_font_specific_special_fonts, set_special_fonts): Demote

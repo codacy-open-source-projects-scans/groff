@@ -165,8 +165,7 @@ static void add_tmp_file(const char *name)
 // Open a temporary file; any failure is fatal.
 
 FILE *xtmpfile(char **namep,
-	       const char *postfix_long, const char *postfix_short,
-	       bool want_unlink)
+	       const char *postfix_long, const char *postfix_short)
 {
   // `xtmptemplate()` allocates storage for `templ` with `new`.
   char *templ = xtmptemplate(postfix_long, postfix_short);
@@ -179,8 +178,7 @@ FILE *xtmpfile(char **namep,
   FILE *fp = fdopen(fd, FOPEN_RWB);
   if (!fp)
     fatal("cannot open temporary file: %1", strerror(errno));
-  if (want_unlink)
-    add_tmp_file(templ);
+  add_tmp_file(templ);
   if (namep != 0 /* nullptr */)
     *namep = templ;
   else
