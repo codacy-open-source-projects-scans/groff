@@ -2410,7 +2410,7 @@ void environment::construct_new_line_state(node *n)
 
 extern int global_diverted_space;
 
-void environment::do_break(int do_spread)
+void environment::do_break(bool want_adjustment)
 {
   int was_centered = 0;
   if (curdiv == topdiv && topdiv->before_first_page) {
@@ -2425,7 +2425,7 @@ void environment::do_break(int do_spread)
       line = new space_node(H0, get_fill_color(), line);
       space_total++;
     }
-    possibly_break_line(0, do_spread);
+    possibly_break_line(0, want_adjustment);
   }
   while (line != 0 && line->discardable()) {
     width_total -= line->width();
@@ -2469,23 +2469,23 @@ int environment::is_empty()
   return !current_tab && line == 0 && pending_lines == 0;
 }
 
-void do_break_request(int spread)
+void do_break_request(bool want_adjustment)
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
   if (want_break)
-    curenv->do_break(spread);
+    curenv->do_break(want_adjustment);
   tok.next();
 }
 
-void break_request()
+static void break_without_adjustment()
 {
-  do_break_request(0);
+  do_break_request(false);
 }
 
-void break_spread_request()
+static void break_with_adjustment()
 {
-  do_break_request(1);
+  do_break_request(true);
 }
 
 void title()
@@ -3456,8 +3456,8 @@ void print_env()
 void init_env_requests()
 {
   init_request("ad", adjust);
-  init_request("br", break_request);
-  init_request("brp", break_spread_request);
+  init_request("br", break_without_adjustment);
+  init_request("brp", break_with_adjustment);
   init_request("ce", center);
   init_request("cu", continuous_underline);
   init_request("ev", environment_switch);
@@ -3599,13 +3599,12 @@ struct hyphenation_language {
 };
 
 dictionary language_dictionary(5);
-hyphenation_language *current_language = 0;
+hyphenation_language *current_language = 0 /* nullptr */;
 
 static void select_hyphenation_language()
 {
   if (!has_arg()) {
-    warning(WARN_MISSING, "hyphenation language selection request"
-	    " expects argument");
+    current_language = 0 /* nullptr */;
     skip_line();
     return;
   }

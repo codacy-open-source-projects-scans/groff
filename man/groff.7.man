@@ -3175,7 +3175,7 @@ Sets
 .
 .TPx
 .REQ .fl
-Flush output buffer.
+Flush any pending output line.
 .
 .TPx
 .REQ .fp "pos id"
@@ -3306,6 +3306,11 @@ that of
 to
 .IR code2 ,
 and so on.
+.
+.TPx
+.REQ .hla
+Clear hyphenation language
+(disabling automatic hyphenation).
 .
 .TPx
 .REQ .hla ident

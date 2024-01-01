@@ -6951,7 +6951,7 @@ void terminal_continue()
 
 dictionary stream_dictionary(20);
 
-void do_open(int append)
+static void do_open(bool append)
 {
   symbol stream = get_name(true /* required */);
   if (!stream.is_null()) {
@@ -6960,7 +6960,7 @@ void do_open(int append)
       errno = 0;
       FILE *fp = fopen(filename.contents(), append ? "a" : "w");
       if (!fp) {
-	error("can't open '%1' for %2: %3",
+	error("unable to open file '%1' for %2: %3",
 	      filename.contents(),
 	      append ? "appending" : "writing",
 	      strerror(errno));
@@ -6975,35 +6975,39 @@ void do_open(int append)
   skip_line();
 }
 
-void open_request()
+static void open_request()
 {
   if (!want_unsafe_requests) {
     error("'open' request is not allowed in safer mode");
     skip_line();
   }
   else
-    do_open(0);
+    do_open(false /* don't append */);
 }
 
-void opena_request()
+static void opena_request()
 {
   if (!want_unsafe_requests) {
     error("'opena' request is not allowed in safer mode");
     skip_line();
   }
   else
-    do_open(1);
+    do_open(true /* append */);
 }
 
-void close_request()
+static void close_request()
 {
   symbol stream = get_name(true /* required */);
   if (!stream.is_null()) {
     FILE *fp = (FILE *)stream_dictionary.remove(stream);
     if (!fp)
-      error("no stream named '%1'", stream.contents());
-    else
-      fclose(fp);
+      error("cannot close nonexistent stream '%1'", stream.contents());
+    else {
+      int status = fclose(fp);
+	if (status != 0)
+	  error("unable to close stream '%1': %2", stream.contents(),
+		strerror(errno));
+    }
   }
   skip_line();
 }
@@ -9289,9 +9293,8 @@ int charinfo::get_number()
 bool charinfo::contains(int c, bool already_called)
 {
   if (already_called) {
-    warning(WARN_SYNTAX,
-	    "cyclic nested class detected while processing character code %1",
-	    c);
+    warning(WARN_SYNTAX, "cyclic nested class detected while processing"
+	    " character code %1", c);
     return false;
   }
   std::vector<std::pair<int, int> >::const_iterator ranges_iter;
@@ -9338,7 +9341,8 @@ bool charinfo::contains(symbol s, bool already_called)
 
 bool charinfo::contains(charinfo *, bool)
 {
-  // TODO
+  // Werner Lemberg marked this as "TODO" in 2010.
+  assert(0 == "unimplemented member function");
   return false;
 }
 

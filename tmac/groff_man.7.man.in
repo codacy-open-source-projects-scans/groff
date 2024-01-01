@@ -598,7 +598,7 @@ and must contain only text of the form
 .RB "].\|.\|.\& \e\- "\c
 .I summary-description
 .RE \" Move left margin back to .IP indentation.
-for a man page to be properly indexed.
+for a man page in English to be properly indexed.
 .RE \" Move left margin back to standard position.
 .
 .

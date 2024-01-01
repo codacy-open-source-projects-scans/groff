@@ -3586,7 +3586,7 @@ The @file{ms} macros provide a variety of ways to style text.
 Attend closely to the ordering of arguments labeled @var{pre} and
 @var{post}, which is not intuitive.  Support for @var{pre}
 arguments is a GNU extension.@footnote{This idiosyncrasy arose through
-feature accretion; for example, the @code{B} macro in Version@tie{}6
+feature accretion; for example, the @code{B} macro in Sixth Edition
 Unix @file{ms} (1975) accepted only one argument, the text to be set in
 boldface.  By Version@tie{}7 (1979) it recognized a second argument; in
 1990, @code{groff} @file{ms} added a ``pre'' argument, placing it third
@@ -5357,9 +5357,10 @@ Macros}.}
 
 What if the file ends before enough words have been collected to fill an
 output line?  Or the output line is exactly full but not yet broken, and
-there is no more input?  GNU @code{troff} interprets the end of input as
-a break.  Certain requests also cause breaks, implicitly or explicitly.
-This is discussed in @ref{Manipulating Filling and Adjustment}.
+there is no more input?  GNU @code{troff} flushes the pending output
+line upon encountering the end of input.  Certain requests cause breaks,
+implicitly or explicitly.  This is discussed in @ref{Manipulating
+Filling and Adjustment}.
 
 @c ---------------------------------------------------------------------
 
@@ -8949,24 +8950,26 @@ the hyphenation `kin-der'.  The other two hyphenation points
 (`kin-der-gär-ten') are missed.
 @endDefreq
 
-@DefreqList {hla, lang}
+@DefreqList {hla, [@Var{lang}]}
 @DefregListEndx {.hla}
 @cindex @code{hpf} request, and hyphenation language
 @cindex @code{hw} request, and hyphenation language
 @pindex troffrc
 @pindex troffrc-end
-Set the hyphenation language to @var{lang}.  Hyphenation exceptions
-specified with the @code{hw} request and hyphenation patterns and
-exceptions specified with the @code{hpf} and @code{hpfa} requests are
-associated with the hyphenation language.  The @code{hla} request is
-usually invoked by a localization file, which is turn loaded by the
-@file{troffrc} or @file{troffrc-end} file; see the @code{hpf} request
-above.
+Set the hyphenation language to @var{lang}, or clear it if there is no
+argument.  Hyphenation exceptions specified with the @code{hw} request
+and hyphenation patterns and exceptions specified with the @code{hpf}
+and @code{hpfa} requests are associated with the hyphenation language.
+The @code{hla} request is usually invoked by a localization file, which
+is turn loaded by the @file{troffrc} or @file{troffrc-end} file; see the
+@code{hpf} request above.
 
 @cindex hyphenation language register (@code{.hla})
 The hyphenation language is available in the read-only string-valued
 register @samp{.hla}; it is associated with the environment
 (@pxref{Environments}).
+
+If no hyphenation language is set, automatic hyphenation will not occur.
 @endDefreq
 
 @DefreqList {hlm, [@Var{n}]}
@@ -16113,16 +16116,16 @@ suffix or @file{tmac.} prefix to locate @var{file}.
 @cindex copy mode, and @code{trf} request
 @cindex mode, copy, and @code{trf} request
 Transparently output the contents of @var{file}.  Each line is output as
-if it were preceded by @code{\!}; however, the lines are @emph{not}
-subject to copy mode interpretation.  If the file does not end with a
-newline, @code{trf} adds one.  Both requests cause a break.
+if preceded by @code{\!}, but is not read in copy mode.  If @var{file}
+does not end with a newline, @code{trf} appends one.  Both requests
+break the line before reading @var{file}, unless invoked with the
+no-break control character.
 
 When used in a diversion, these requests embed a node (@pxref{Gtroff
 Internals}) in it that, when interpolated, causes the contents of
-@var{file} to be transparently copied to the output.  In @acronym{AT&T}
-@code{troff}, the contents of @var{file} are immediately copied to the
-output regardless of whether there is a current diversion; this
-behaviour is so anomalous that it must be considered a bug.
+@var{file} to be copied to the output.  In @acronym{AT&T} @code{troff},
+@code{cf} does so even if a diversion is in use; this behavior is so
+anomalous that it must be considered a bug.
 
 @cindex @code{trf} request, and invalid characters
 @cindex characters, invalid for @code{trf} request
@@ -16992,17 +16995,22 @@ planted but subsequently (re)moved, are printed as well.
 @endDefreq
 
 @Defreq {fl, }
-@cindex flush output (@code{fl})
-@cindex output, flush (@code{fl})
-@cindex interactive use of @command{gtroff}
-@cindex @command{gtroff}, interactive use
-Instruct @command{gtroff} to flush its output immediately.  The intent
-is for interactive use, but this behaviour is currently not implemented
-in @command{gtroff}.  Contrary to Unix @code{troff}, TTY output is sent
-to a device driver also (@code{grotty}), making it non-trivial to
-communicate interactively.
+@cindex flush pending output line (@code{fl})
+@cindex output line, flush pending (@code{fl})
+@cindex pending output line, flush (@code{fl})
+@cindex interactive use of GNU @command{troff}
+@cindex @command{gtroff}, interactive use of
+@cindex @command{troff}, GNU, interactive use of
+Break the line and flush any pending output line immediately.  The
+effect is the same as the @code{br} request unless the no-break control
+character is used; @samp{'br} does nothing, whereas @samp{'fl} writes
+the pending output line without further updating the drawing position.
 
-This request causes a line break.
+Historically, @code{fl} was used with @code{rd} to produce interactive
+@command{nroff} documents.  GNU @command{troff} does not easily support
+this mode of operation, because its output for terminals is first
+prepared in device-independent format, which @command{grotty} renders a
+page at a time.
 @endDefreq
 
 @Defreq {backtrace, }

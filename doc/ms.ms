@@ -1573,7 +1573,7 @@ This idiosyncrasy arose through feature accretion;
 for example,
 the
 .CW B
-macro in Version\~6 Unix
+macro in Sixth Edition Unix
 .I ms
 (1975) accepted only one argument,
 the text to be set in boldface.

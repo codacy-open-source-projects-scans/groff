@@ -337,7 +337,7 @@ public:
   void interrupt();
   void spread() { spread_flag = 1; }
   void possibly_break_line(int start_here = 0, int forced = 0);
-  void do_break(int spread = 0);	// .br
+  void do_break(bool /* want_adjustment */ = false);	// .br, .brp
   void final_break();
   node *make_tag(const char *name, int i);
   void newline();

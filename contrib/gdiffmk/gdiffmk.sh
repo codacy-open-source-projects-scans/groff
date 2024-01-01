@@ -22,46 +22,36 @@
 
 CMD=`basename $0`
 
+Diagnose () {
+	echo >&2 "${CMD}: $@"
+}
+
 Usage () {
+	status=0
 	if test $# -gt 0
 	then
-		echo >&2 "${CMD}:  $@"
+		Diagnose "usage error: $@"
+		exec 2>&1
+		status=2
 	fi
-	echo >&2 "\
+	cat >&2 <<EOF
+usage: ${CMD} [-a add-mark] [-c change-mark] [-d delete-mark] \
+[-x diff-command] [-D [-B] [-M mark1 mark2]] [--] file1 file2 \
+[output-file]
+usage: ${CMD} --version
+usage: ${CMD} --help
+EOF
+	if [ -n "$want_help" ]
+	then
+		cat >&2 <<EOF
 
-Usage:  ${CMD} [ OPTIONS ] FILE1 FILE2 [ OUTPUT ]
-Place difference marks into the new version of a groff/nroff/troff document.
-FILE1 and FILE2 are compared, using 'diff', and FILE2 is output with
-groff '.mc' requests added to indicate how it is different from FILE1.
-
-  FILE1   Previous version of the groff file.  '-' means standard input.
-  FILE2   Current version of the groff file.   '-' means standard input.
-          Either FILE1 or FILE2 can be standard input, but not both.
-  OUTPUT  Copy of FILE2 with '.mc' commands added.
-          '-' means standard output (the default).
-          If the shell's 'test' does not support option -ef, OUTPUT
-          can only be the standard output.
-
-OPTIONS:
-  -a ADDMARK     Mark for added groff source lines.    Default: '+'.
-  -c CHANGEMARK  Mark for changed groff source lines.  Default: '|'.
-  -d DELETEMARK  Mark for deleted groff source lines.  Default: '*'.
-
-  -D             Show the deleted portions from changed and deleted text.
-                  Default delimiting marks:  '[[' .... ']]'.
-  -B             By default, the deleted texts marked by the '-D' option end
-                  with an added troff '.br' command.  This option prevents
-                  the added '.br'.
-  -M MARK1 MARK2 Change the delimiting marks for the '-D' option.
-
-  -x DIFFCMD     Use a different diff(1) command;
-                  one that accepts the '-Dname' option, such as GNU diff.
-  -s SEDCMD      Use a different sed(1) command;
-                  such as GNU sed.
-  --version      Print version information on the standard output and exit.
-  --help         Print this message on the standard error.
-"
-	exit 255
+Compare roff(7) documents file1 and file2, and write a roff document
+to the standard output stream (or output-file) consisting of file2 with
+added margin character ('mc') requests indicating output lines that
+differ from file1.  See the gdiffmk(1) manual page.
+EOF
+	fi
+	exit $status
 }
 
 
@@ -70,7 +60,7 @@ Exit () {
 	shift
 	for arg
 	do
-		echo >&2 "${CMD}:  $1"
+		echo >&2 "${CMD}: $1"
 		shift
 	done
 	exit ${exitcode}
@@ -89,11 +79,11 @@ FileRead () {
 
 	if test ! -f "$2"
 	then
-		Exit $1 "File '$2' not found."
+		Exit $1 "input file \"$2\" does not exist or is not a file"
 	fi
 	if test ! -r "$2"
 	then
-		Exit $1 "File '$2' not readable."
+		Exit $1 "input file \"$2\" is not readable"
 	fi
 }
 
@@ -129,7 +119,8 @@ WouldClobber () {
 	esac
 
 	# BASH_PROG is set to /bin/sh if bash was not found
-	if test "$HAVE_TEST_EF_OPTION" = "no" -a "$BASH_PROG" = "/bin/sh"
+	if test "$HAVE_TEST_EF_OPTION" = "no" \
+		&& test "$BASH_PROG" = "/bin/sh"
 	then
 		Exit 3 \
 		"Your shell does support test -ef, [OUTPUT] can only be the" \
@@ -137,7 +128,7 @@ WouldClobber () {
 	else
 		if test "$1" -ef "$3"
 		then
-			Exit 3 \
+			Exit 4 \
 			"The $2 and OUTPUT arguments both point to the same file," \
 			"'$1', and it would be overwritten."
 		fi
@@ -150,23 +141,27 @@ DELETEMARK='*'
 MARK1='[['
 MARK2=']]'
 
+# Given an option with an expected argument, echo the option argument.
+# Return 0 if caller should further shift its argument list; 1 if not.
 RequiresArgument () {
-	#	Process flags that take either concatenated or
-	#	separated values.
 	case "$1" in
 	-??*)
-		expr "$1" : '-.\(.*\)'
+		optarg=${1#-?}
+		option=${option%${optarg}}
+
+		if test -z "${optarg}"
+		then
+			Exit 2 "option '${option}' requires an argument"
+		fi
+
+		echo "${optarg}"
 		return 1
 		;;
+	*)
+		echo "$2"
+		return 0
+		;;
 	esac
-
-	if test $# -lt 2
-	then
-		Exit 255 "Option '$1' requires a value."
-	fi
-
-	echo "$2"
-	return 0
 }
 
 HAVE_TEST_EF_OPTION=@HAVE_TEST_EF_OPTION@
@@ -176,6 +171,7 @@ DIFFCMD=@DIFF_PROG@
 SEDCMD=sed
 D_option=
 br=.br
+want_help=
 while [ $# -gt 0 ]
 do
 	OPTION="$1"
@@ -221,6 +217,7 @@ do
 		exit 0
 		;;
 	--help)
+		want_help=yes
 		Usage
 		;;
 	--)
@@ -232,7 +229,7 @@ do
 		break
 		;;
 	-*)
-		BADOPTION="${CMD}:  invalid option '$1'"
+		BADOPTION="invalid option '$1'"
 		;;
 	*)
 		break
@@ -241,25 +238,27 @@ do
 	shift
 done
 
-${DIFFCMD} -Dx /dev/null /dev/null >/dev/null 2>&1  ||
-	Usage "The '${DIFFCMD}' program does not accept"	\
-		"the required '-Dname' option.
+if ! ${DIFFCMD} -Dx /dev/null /dev/null >/dev/null 2>&1
+then
+	Exit 3 "The '${DIFFCMD}' program does not accept"	\
+"the required '-Dname' option.
 Use GNU diff instead.  See the '-x DIFFCMD' option.  You can also
-install GNU diff as gdiff on your system"
+install GNU diff as 'gdiff' on your system."
+fi
 
 if test -n "${BADOPTION}"
 then
 	Usage "${BADOPTION}"
 fi
 
-if test $# -lt 2  -o  $# -gt 3
+if test $# -lt 2 || test $# -gt 3
 then
-	Usage "Incorrect number of arguments."
+	Usage "expected 2 or 3 operands, got $#"
 fi
 
-if test "1$1" = "1-"  -a  "2$2" = "2-"
+if test "1$1" = "1-" && test "2$2" = "2-"
 then
-	Usage "Both FILE1 and FILE2 are '-'."
+	Usage "attempting to compare standard input to itself"
 fi
 
 FILE1="$1"

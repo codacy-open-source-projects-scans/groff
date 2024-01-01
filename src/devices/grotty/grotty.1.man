@@ -9,7 +9,7 @@ output driver for typewriter-like (terminal) devices
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2021 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -695,6 +695,73 @@ The
 requests and escape sequences that set the stroke and fill colors
 instead set the foreground and background character cell colors,
 respectively.
+.
+.
+.P
+The
+.B \[rs]l
+and
+.B \[rs]L
+escape sequences on one hand,
+and the
+.B \[rs]D\[aq]l\[aq]
+line-drawing escape sequences on the other,
+make different compromises due to the first two factors.
+.
+Specifically,
+(1)
+.B \[rs]l
+draws horizontal lines with underscore characters;
+.B \[rs]D\[aq]l\[aq]
+uses ACS or Unicode line-drawing characters if possible,
+and hyphen-minus signs if not.
+.
+(2)
+.B \[rs]D\[aq]l\[aq]
+draws vertical lines an extra character cell high,
+and horizontal lines an extra cell to the right.
+.
+.I grotty
+does this to detect intersecting lines so that it can replace them with
+glyphs of appropriate appearance
+(like \[lq]+\[rq]).
+.
+Observe the difference below.
+.
+.
+.P
+The input
+.
+.
+.P
+.RS
+.EX
+Hello,\[rs]L\[aq]1v\[aq]
+world.\[rs]l\[aq]1n\[aq]
+\&.sp 2v
+Hello,\[rs]D\[aq]l 0 1v\[aq]
+world.\[rs]D\[aq]l 1n 0\[aq]
+\&.pl \[rs]n(nlu \[rs]" truncate page for convenience
+.EE
+.RE
+.
+.
+.P
+rendered with
+.RB \[lq] "nroff \-T ascii" \[rq]
+produces the following output.
+.
+.
+.P
+.RS
+.EX
+Hello,
+      | world._
+\&
+Hello,|
+      |world.\-\-
+.EE
+.RE
 .
 .
 .\" ====================================================================

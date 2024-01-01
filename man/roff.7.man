@@ -326,7 +326,8 @@ Trailing spaces on
 (see below)
 are discarded.
 .
-The end of input causes a break.
+The formatter flushes any pending output line upon encountering the end
+of input.
 .
 .
 .P

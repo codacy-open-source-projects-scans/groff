@@ -1,3 +1,203 @@
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Fix Savannah #62471 (hrules in nroff mode).
+
+	This fixes the last problem I know of that keeps man pages from
+	freely using the full width of the terminal.  (You can still
+	cause lines to overrun manually, of course.)
+
+	* src/preproc/tbl/table.h (class table): Define new enumeration
+	constant, `HAS_DATA_HRULE`, to keep track of whether a table
+	uses a horizontal rule as a data row.
+	* src/preproc/tbl/main.cpp (process_data): Set it when
+	encountering appropriate input.
+	* src/preproc/tbl/table.cpp (table::compute_overall_width):
+	Check for it if the table is not already boxed, and emit output
+	to reduce the line length by one in nroff mode.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Regression-test Savannah #62471.
+
+	* src/preproc/tbl/tests/horizontal-rules-not-drawn-too-long.sh:
+	Do it.
+	* src/preproc/tbl/tbl.am (tbl_TESTS): Run test.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::compute_overall_width):
+	Document the nroff-mode workarounds we do in *roff comments in
+	the generated output.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an-end): Horizontal rules in nroff mode _always_
+	overdraw by one character cell; this is how grotty detects
+	intersections with vertical rules at boundaries (see Savannah
+	#62471).  Unfortunately it has unhappy consequences when drawing
+	a rule that extends to the right margin.  Compensate by drawing
+	the rule between consecutively rendered man pages nominally one
+	en shorter than the line length, which turns out to be exactly
+	the line length.
+
+2023-12-29  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Fix Savannah #65092 (rounded corners in hdtbl's
+	"color_boxes.roff" example).
+
+	The \X'ps: exec ...' for setlinejoin and setlinecap (which
+	hdtbl.tmac emits as one command) is documented as separate
+	commands in gropdf(1).
+
+	* src/devices/gropdf/gropdf.pl (do_x): Allow both setlinecap and
+	setlinejoin to be combined in one command.
+
+	Fixes <https://savannah.gnu.org/bugs/?64958>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2023-12-10  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Fix arc drawing when `-l` option used.
+
+	* src/devices/gropdf/gropdf.pl (PlotArcSegement): When landscape
+	flag `-l` is given, coordinates for arcs need rotation.
+
+2023-11-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Fix processing of catenated dit files (-Z).
+
+	Normally it is safe to pass concatenated dit files to gropdf,
+	typically this would be a separate source file which produces a
+	custom cover and a different source for the body (different
+	macro set?). Problem occurs if one of the dits uses the same
+	fontno for a different font. Normally troff allocates TR to #5,
+	but if one of the dits has been run with the flag "U-T" then
+	U-TR is allocated to #5.
+
+	* src/devices/gropdf/gropdf.pl (LoadFont): Check if "x font #
+	name" has the same number AND name as a previously registered
+	font, otherwise reload the font.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp (tty_printer::end_page): Add
+	`assert()` to check invariant.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/tests/check-horizontal-line-length.sh: Tweak
+	shell style and have test issue groff output to the standard
+	output stream.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (charinfo::contains): Add
+	sure-to-fail `assert()` to member function taking a `charinfo`
+	pointer and a `bool`.  It has been marked "TODO" and
+	unconditionally returning false for 13 years.  We should find
+	out if it blows up in real-world use.
+
+2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Recast
+	diagnostic when user attempts to put a text block in a table
+	cell classified as numeric, and demote it from error to warning
+	since the program falls back to left alignment.
+
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add another explicit mechanism for disabling
+	hyphenation; accept an `hla` request without arguments for this
+	purpose.
+
+	* src/roff/troff/env.cpp (select_hyphenation_language): Do it.
+
+	* doc/groff.texi (Manipulating Hyphenation):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Document it.
+
+	* src/roff/groff/tests/hla-request-works.sh: Test it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	Fixes https://savannah.gnu.org/bugs/?64958>.
+
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/dot-trap_register_works.sh: Fix thinko.
+	The test was spuriously always passing.  Fortunately, the test
+	continues to pass when corrected.  Problem introduced by me with
+	new `.trap` register feature in commit 4c2cd5e076, 26 July.
+
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix code style nits.
+
+	* src/roff/troff/input.cpp (do_open, open_request)
+	(opena_request, close_request): Demote `int` arguments to
+	`bool`.  Declare functions `static` since they do not require
+	external linkage.
+
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Revise diagnostics when opening and closing streams.
+
+	* src/roff/troff/input.cpp (do_open, close_request): Do it.
+	Recast.  Check `fclose()` for failure and report the system's
+	error description upon failure.
+
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[docs]: Revise explanation of `fl` request.
+
+	This has been an annoying lacuna of groff documentation forever.
+
+	* doc/groff.texi (Debugging):
+	* man/groff.7.man (Request short reference): Do it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64602>.
+
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Support pic(1) pictures when formatting HTML and using
+	"fallback" pic macros.
+
+	* tmac/pic.tmac (PS): Call `HTML-IMAGE` at end of macro
+	definition.
+	* tmac/pic.tmac (PF): Call `HTML-IMAGE-END` at end of macro
+	definition.  (`PE` and `PY` call `PF`, and so are also handled.)
+
+	Fixes https://savannah.gnu.org/bugs/?65047> (2/2).  Thanks to
+	Hans Bezemer and Dave Kemper for the report.
+
+2023-12-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (EE): Fix latent logic error; use `if` for
+	conditional without an "else".  Since there was no subsequent
+	`el` request, but the formatter was "primed" to expect one,
+	this could conceal an `el` usage error in a man page document or
+	otherwise behave strangely.
+
+2023-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/env.cpp (environment::do_break)
+	(do_break_request): Boolify parameter and rename it to
+	`want_adjustment`.  In the future, adjustment might not only
+	"spread", but "squeeze" as well.
+	(break_request): Rename this...
+	(break_without_adjustment): ...to this, and declare it `static`.
+	Pass Boolean literal to `do_break_request`.
+	(break_spread_request): Rename this...
+	(break_with_adjustment): ...to this, and declare it `static`.
+	Pass Boolean literal to `do_break_request`.
+	(init_env_requests): Update "call" sites of renamed functions.
+	* src/roff/troff/env.cpp (class environment): Demote
+	`do_break`'s parameter from `int` to `bool`, and drop parameter
+	names from prototype, in keeping with the Stroustrup-style C++
+	used in most of groff.
+
 2023-12-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (nop_request, do_if_request)
@@ -109,6 +309,8 @@
 	Manually discard space characters until reaching something else;
 	if that is a newline or EOF, throw warning diagnostic as before.
 	Otherwise, proceed with request processing.
+
+	Fixes <https://savannah.gnu.org/bugs/?64957>.
 
 2023-12-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 

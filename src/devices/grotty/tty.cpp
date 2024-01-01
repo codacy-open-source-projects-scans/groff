@@ -779,6 +779,9 @@ void tty_printer::end_page(int page_length)
 	continue;
       }
       if (nextp && p->hpos == nextp->hpos) {
+	// We expect HDRAW_MODE glyphs to always precede VDRAW_MODEs.
+	assert (!(p->draw_mode() == VDRAW_MODE
+		  && nextp->draw_mode() == HDRAW_MODE));
 	if (p->draw_mode() == HDRAW_MODE &&
 	    nextp->draw_mode() == VDRAW_MODE) {
 	  if (font::is_unicode)
@@ -789,7 +792,8 @@ void tty_printer::end_page(int page_length)
 	    nextp->code = '+';
 	  continue;
 	}
-	if (p->draw_mode() != 0 && p->draw_mode() == nextp->draw_mode()) {
+	if (p->draw_mode() != 0 && p->draw_mode() == nextp->draw_mode())
+	{
 	  nextp->code = p->code;
 	  continue;
 	}

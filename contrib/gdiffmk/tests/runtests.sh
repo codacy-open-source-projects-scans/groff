@@ -27,6 +27,12 @@
 
 gdiffmk=${abs_top_out_dir:-.}/gdiffmk
 
+if ! diff -Dx /dev/null /dev/null >/dev/null 2>&1
+then
+    echo "$0: diff command does not support -D option" >&2
+    exit 77 # skip
+fi
+
 # Locate directory containing our test artifacts.
 in_dir=
 

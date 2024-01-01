@@ -242,6 +242,67 @@ registers exercise color support.
 .
 .
 .\" ====================================================================
+.SS Hyphenation
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with relevant material from groff.texi
+.\" nodes "Hyphenation" and "Manipulating Hyphenation".
+GNU
+.I troff \" GNU
+uses a hyphenation algorithm and language-specific pattern files
+(based on those used in \*[tx])
+to decide which words can be hyphenated and where.
+.
+AT&T
+.IR troff 's \" AT&T
+hyphenation system (\[lq]suftab\[rq]) was specific to English.
+.
+.
+.P
+New requests permit finer control over hyphenation breaking;
+hyphenation of a word might be suppressed due to a limit on consecutive
+hyphenated lines
+.RB ( hlm ),
+a minimum line length threshold
+.RB ( hym ),
+or because the line can instead be adjusted with additional inter-word
+space
+.RB ( hys ).
+.
+A hyphenation language is selected with the
+.B hla
+request and hyphenation patterns loaded
+(or appended)
+with
+.B hpf
+(or
+.BR hpfa ).
+.
+If no hyphenation language is set or no patterns are loaded,
+GNU
+.I troff \" GNU
+will not perform automatic hyphenation.
+.
+The
+.B hcode
+request assigns values to character codes such that they can be handled
+consistently by the hyphenation patterns,
+for instance by treating accented letters the same as their unaccented
+counterparts.
+.
+.
+.P
+GNU
+.IR troff 's \" GNU
+.B \[rs]:
+escape sequence is analogous to the
+.B \[rs]%
+sequence but produces no hyphen if the word breaks at that location.
+.\" END Keep (roughly) parallel with relevant material from groff.texi
+.\" nodes "Hyphenation" and "Manipulating Hyphenation".
+.
+.
+.\" ====================================================================
 .SS "Fractional type sizes and new scaling units"
 .\" ====================================================================
 .
@@ -2503,9 +2564,11 @@ corresponding hyphenation patterns contain them.
 .
 .
 .TP
-.BI .hla\~ lang
+.BR .hla\~ [\c
+.IR lang ]
 Set the hyphenation language to
-.IR lang .
+.IR lang ,
+or clear it if there is no argument.
 .
 Hyphenation exceptions specified with the
 .B hw
@@ -3462,23 +3525,31 @@ but does not append a newline.
 .
 .TP
 .BI .trf\~ file
-Transparently output the contents of file
+Transparently output the contents of
 .IR file .
 .
 Each line is output as if preceded by
-.BR \[rs]! ;
-however,
-the lines are not subject to copy-mode interpretation.
+.BR \[rs]! ,
+but is not read in copy mode.
 .
-If the file does not end with a newline,
-then a newline is added.
-.
-Unlike
-.BR cf ,
+If
 .I file
-cannot contain characters
+does not end with a newline,
+.B trf
+appends one.
+.
+Like
+.BR cf ,
+.B trf
+breaks the line unless invoked with the no-break control character.
+.
+Characters in
+.I file
 that are invalid as input to GNU
-.IR troff . \" GNU
+.I troff \" GNU
+are discarded;
+contrast with
+.BR cf .
 .
 .
 .TP

@@ -1,3 +1,14 @@
+2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Support pic(1) pictures when formatting HTML.
+
+	* m.tmac (PS): Call `HTML-IMAGE` at end of macro definition.
+	* m.tmac (PY): Call `HTML-IMAGE-END` at end of macro definition.
+	{`PE` calls `PY`, and so is also handled.}
+
+	Fixes https://savannah.gnu.org/bugs/?65047> (1/2).  Thanks to
+	Hans Bezemer and Dave Kemper for the report.
+
 2023-08-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Rename test scripts for consistency.

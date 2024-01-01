@@ -31,34 +31,6 @@ General Problems
 ================
 
 
-[groff 1.23.0]
-
-* gdiffmk doesn't work / its automated test fails.
-
-Some portability issues are known to affect groff's gdiffmk utility.
-
-- A defect in GNU diffutils 3.9 (January 2023) causes gdiffmk to
-  malfunction and its automated test to fail.  See
-  <https://debbugs.gnu.org/db/61/61193.html>.
-
-- gdiffmk does not work with BusyBox diff (which does not implement GNU
-  diff's "-D" option).
-
-- gdiffmk does not work on FreeBSD due to specifics of that platform's
-  expr(1) implementation.
-
-  gdiffmk uses the expr(1) command to parse its arguments.  FreeBSD has
-  extended the syntax of its expr command in a non-backward compatible
-  way that it claims better conforms with POSIX's utility syntax
-  guidelines with respect to option processing: however, POSIX mandates
-  no options for expr.  Other implementations of expr do not support
-  traditional Unix-style options ('-a', '-b', ...), and perhaps as a
-  consequence do not follow FreeBSD's interpretation of the guidelines.
-  You way want to set $EXPR_COMPAT in your shell environment.  We hope
-  to have a workaround for this behavior in a future release.
-
-----------------------------------------------------------------------
-
 [groff 1.19.2]
 
 * When viewing man pages, some characters on my UTF-8 terminal emulator

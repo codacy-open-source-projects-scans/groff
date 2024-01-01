@@ -911,13 +911,13 @@ sub do_x
 		$stream.="Q\n";
 		$InPicRotate=0;
 	    }
-	    elsif ($par=~m/exec (\d) setlinejoin/)
+	    elsif ($par=~m/exec.*? (\d) setlinejoin/)
 	    {
 		IsGraphic();
 		$linejoin=$1;
 		$stream.="$linejoin j\n";
 	    }
-	    elsif ($par=~m/exec (\d) setlinecap/)
+	    if ($par=~m/exec.*? (\d) setlinecap/)
 	    {
 		IsGraphic();
 		$linecap=$1;
@@ -2447,7 +2447,7 @@ sub LoadFont
     my $fontnm=shift;
     my $ofontnm=$fontnm;
 
-    return $fontlst{$fontno}->{OBJ} if (exists($fontlst{$fontno}));
+    return $fontlst{$fontno}->{OBJ} if (exists($fontlst{$fontno}) and $fontnm eq $fontlst{$fontno}->{FNT}->{name}) ;
 
     my $f;
     OpenFile(\$f,$fontdir,"$fontnm");
@@ -3390,7 +3390,14 @@ sub PlotArcSegment
     my @mat=($cos,$sin,-$sin,$cos,0,0);
     my $lw=$lwidth/$r;
 
-    $stream.="q $r 0 0 $r $transx $transy cm ".join(' ',@mat)." cm $lw w $x0 $y0 m $x1 $y1 $x2 $y2 $x3 $y3 c S Q\n";
+    if ($frot)
+    {
+       $stream.="q $r 0 0 $r $transy $transx cm ".join(' ',@mat)." cm $lw w $y0 $x0 m $y1 $x1 $y2 $x2 $y3 $x3 c S Q\n";
+    }
+    else
+    {
+       $stream.="q $r 0 0 $r $transx $transy cm ".join(' ',@mat)." cm $lw w $x0 $y0 m $x1 $y1 $x2 $y2 $x3 $y3 c S Q\n";
+    }
 }
 
 sub DrawCircle

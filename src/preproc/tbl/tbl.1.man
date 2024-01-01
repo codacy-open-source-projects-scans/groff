@@ -248,7 +248,7 @@ region options makes a table \[lq]boxed\[rq] for the purpose of later
 discussion.
 .
 .
-.TP 16n \" "decimalpoint(c)" + 2n + hand-tuned for PDF
+.TP 17n \" "decimalpoint(c)" + 2n
 .B allbox
 Enclose each table entry in a box;
 implies
@@ -333,7 +333,7 @@ its entries and its column separations
 (whether specified or default).
 .
 When
-.B expand
+.B \%expand
 applies to a table that exceeds the available horizontal space,
 column separation is reduced as far as necessary
 (even to zero).
@@ -451,9 +451,7 @@ make separation necessary.
 .
 .
 .P
-Each column descriptor begins with a mandatory
-.I classifier,
-a character that selects from one of several arrangements.
+The classifier selects from one of several arrangements.
 .
 Some determine the positioning of table entries within a rectangular
 cell:

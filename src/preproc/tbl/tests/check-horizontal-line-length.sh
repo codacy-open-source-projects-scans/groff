@@ -37,11 +37,11 @@ L.
 _
 1234567890
 .TE
-.pl \n(nlu
-'
+.pl \n(nlu'
 
 echo "checking length of plain horizontal rule" >&2
-output=$(printf "%s" "$input" | "$groff" -Tascii -t)
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -t)
+echo "$output"
 echo "$output" | grep -Eqx -- '-{11}' || wail
 
 input='.ll 12n
@@ -51,11 +51,11 @@ _
 1234567890
 _
 .TE
-.pl \n(nlu
-'
+.pl \n(nlu'
 
 echo "checking intersection of vertical and horizontal rules" >&2
-output=$(printf "%s" "$input" | "$groff" -Tascii -t)
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -t)
+echo "$output"
 echo "$output" | sed -n '1p' | grep -Eqx '\+-{12}\+' || wail
 echo "$output" | sed -n '3p' | grep -Eqx '\+-{12}\+' || wail
 
@@ -65,11 +65,11 @@ box;
 L.
 1234567890
 .TE
-.pl \n(nlu
-'
+.pl \n(nlu'
 
 echo "checking width of boxed table" >&2
-output=$(printf "%s" "$input" | "$groff" -Tascii -t)
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -t)
+echo "$output"
 echo "$output" | sed -n '1p' | grep -Eqx '\+-{12}\+' || wail
 echo "$output" | sed -n '3p' | grep -Eqx '\+-{12}\+' || wail
 

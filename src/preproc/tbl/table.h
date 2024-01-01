@@ -56,12 +56,12 @@ struct entry_modifier {
 };
 
 enum format_type {
-  FORMAT_LEFT, 
-  FORMAT_CENTER, 
-  FORMAT_RIGHT, 
+  FORMAT_LEFT,
+  FORMAT_CENTER,
+  FORMAT_RIGHT,
   FORMAT_NUMERIC,
   FORMAT_ALPHABETIC,
-  FORMAT_SPAN, 
+  FORMAT_SPAN,
   FORMAT_VSPAN,
   FORMAT_HRULE,
   FORMAT_DOUBLE_HRULE
@@ -132,19 +132,20 @@ class table {
 public:
   unsigned flags;
   enum {
-    CENTER        = 0x00000001,
-    EXPAND        = 0x00000002,
-    BOX           = 0x00000004,
-    ALLBOX        = 0x00000008,
-    DOUBLEBOX     = 0x00000010,
-    NOKEEP        = 0x00000020,
-    NOSPACES      = 0x00000040,
-    NOWARN        = 0x00000080,
+    CENTER         = 0x00000001,
+    EXPAND         = 0x00000002,
+    BOX            = 0x00000004,
+    ALLBOX         = 0x00000008,
+    DOUBLEBOX      = 0x00000010,
+    NOKEEP         = 0x00000020,
+    NOSPACES       = 0x00000040,
+    NOWARN         = 0x00000080,
     // The next few properties help manage nroff mode output.
-    HAS_TOP_VRULE = 0x00000100,
-    HAS_TOP_HRULE = 0x00000200,
-    GAP_EXPAND    = 0x00000400,
-    EXPERIMENTAL  = 0x80000000 // undocumented
+    HAS_TOP_VRULE  = 0x00000100,
+    HAS_TOP_HRULE  = 0x00000200,
+    HAS_DATA_HRULE = 0x00000400,
+    GAP_EXPAND     = 0x00000800,
+    EXPERIMENTAL   = 0x80000000 // undocumented
     };
   char *expand;
   table(int nc, unsigned flags, int linesize, char decimal_point_char);

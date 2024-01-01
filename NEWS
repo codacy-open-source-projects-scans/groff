@@ -29,6 +29,9 @@ o A new read-only, string-valued register, `.trap`, interpolates the
 o A new request, `phw`, reports to the standard error stream the current
   list of hyphenation exceptions.
 
+o The `hla` request, when invoked with no arguments, now clears the
+  hyphenation language, disabling automatic hyphenation.
+
 eqn
 ---
 

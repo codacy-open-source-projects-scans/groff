@@ -1337,6 +1337,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	  type = DOUBLE_HRULE;
 	if (0 == current_row)
 	  tbl->flags |= table::HAS_TOP_HRULE;
+	tbl->flags |= table::HAS_DATA_HRULE;
       }
       else {
 	in.unget(d);

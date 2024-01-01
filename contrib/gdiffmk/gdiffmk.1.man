@@ -69,7 +69,7 @@ files
 .RB [ \-\- ]
 .I file1
 .I file2
-.RI [ output ]
+.RI [ output-file ]
 .YS
 .
 .
@@ -94,9 +94,12 @@ documents,
 .I file1
 and
 .IR file2 ,
-and creates a
+and writes a
 .I roff
-document consisting of
+to the standard output stream
+(or
+.IR output-file )
+consisting of
 .I file2
 with added margin character
 .RB ( .mc )
@@ -235,6 +238,35 @@ Treat all subsequent arguments as file names,
 even if they begin with
 .RB \[lq] \- \[rq].
 .
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I gdiffmk
+exits with
+.RB status\~ 0
+if the input files are the same;
+.B 1
+if they differ;
+.B 2
+upon a usage error;
+.B 3
+if the system's
+.MR diff 1
+or
+.MR sh 1
+commands do not support features
+.I gdiffmk
+requires;
+and
+.B 4
+if the
+.I output
+argument is a duplicate of
+.I file1
+or
+.IR file2 .
 .
 .\" ====================================================================
 .SH Bugs

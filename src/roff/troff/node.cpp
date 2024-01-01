@@ -229,7 +229,7 @@ inline int env_definite_font(environment *env)
 
 /* font_info functions */
 
-static font_info **font_table = 0;
+static font_info **font_table = 0 /* nullptr */;
 static int font_table_size = 0;
 
 font_info::font_info(symbol nm, int n, symbol enm, font *f)
@@ -4907,7 +4907,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
   int fontno = env_definite_font(env);
   if (fontno < 0) {
     error("cannot format glyph: no current font");
-    return 0;
+    return 0 /* nullptr */;
   }
   assert(fontno < font_table_size && font_table[fontno] != 0);
   int fn = fontno;
@@ -4920,7 +4920,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
       if (want_warnings)
 	warning(WARN_CHAR, "character code %1 not defined in current"
 		" font", s->get_number());
-      return 0;
+      return 0 /* nullptr */;
     }
     special_font_list *sf = font_table[fontno]->sf;
     while (sf != 0 && !found) {
@@ -4978,7 +4978,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
 		  backslash, nm);
 	}
       }
-      return 0;
+      return 0 /* nullptr */;
     }
   }
   font_size fs = env->get_font_size();

@@ -1621,7 +1621,9 @@ void table::add_entry(int r, int c, const string &str,
     case FORMAT_NUMERIC:
       if (!str.empty()) {
 	if (is_block) {
-	  error_with_file_and_line(fn, ln, "can't have numeric text block");
+	  warning_with_file_and_line(fn, ln, "treating text block in"
+				     " table entry with numeric format"
+				     " as left-aligned");
 	  e = new left_block_entry(this, f, s);
 	}
 	else {
@@ -2203,10 +2205,14 @@ void table::compute_overall_width()
   prints(".\\\" compute overall width\n");
   if (!(flags & GAP_EXPAND)) {
     if (left_separation)
-      printfs(".if n .ll -%1n\n", as_string(left_separation));
+      printfs(".if n .ll -%1n \\\" left separation\n",
+	      as_string(left_separation));
     if (right_separation)
-      printfs(".if n .ll -%1n\n", as_string(right_separation));
+      printfs(".if n .ll -%1n \\\" right separation\n",
+	      as_string(right_separation));
   }
+  if (!(flags & (ALLBOX | BOX | DOUBLEBOX)) && (flags & HAS_DATA_HRULE))
+    prints(".if n .ll -1n \\\" horizontal rule compensation\n");
   // Compute the amount of horizontal space available for expansion,
   // measuring every column _including_ those eligible for expansion.
   // This is the minimum required to set the table without compression.

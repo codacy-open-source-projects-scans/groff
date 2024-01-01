@@ -133,18 +133,6 @@ sha256sum < groff-1.yy.0.tar.gz | cut -f1 -d\  | xxd -r -p | base64
 Caveats
 =======
 
-o Some portability issues are known to affect groff's gdiffmk utility.
-
-  A defect in GNU diffutils 3.9 (January 2023) causes gdiffmk to
-  malfunction and its automated test to fail.  See
-  <https://debbugs.gnu.org/db/61/61193.html>.
-
-  gdiffmk does not work with BusyBox diff (which does not implement GNU
-  diff's "-D" option).
-
-  gdiffmk does not work on FreeBSD due to specifics of that platform's
-  expr(1) implementation.
-
 o GNU tools, or otherwise POSIX-conforming ones, are generally required
   to build on Solaris 10 or 11.  See the "PROBLEMS" file in the
   distribution archive.
@@ -181,6 +169,7 @@ Doug McIlroy
 Eloi Montañés
 Frederic Chartier
 Gavin Smith
+Hans Bezemer
 Heinz-Jürgen Oertel
 Ingo Schwarze
 Lennart Jablonka

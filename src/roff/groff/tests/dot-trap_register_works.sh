@@ -68,4 +68,4 @@ echo "$error" | grep -Fqx 'A: .trap=XX' || wail
 echo "checking operation of .trap in diversion, after trap"
 echo "$error" | grep -Fqx 'B: .trap=' || wail
 
-test -z "$FAIL"
+test -z "$fail"
