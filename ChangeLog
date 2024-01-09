@@ -1,3 +1,491 @@
+2024-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/Foundry.in: More BMI, BMR mapping swap; swap the
+	file name pairs "URWBookmanL-LighItal" and "URWBookmanL-Ligh";
+	and "b018032l.pfb" and "018012l.pfb" as well.
+
+2024-01-07  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.pl: Comment out line causing
+	incorrect table of contents relocation.
+
+	Thanks to Peter Schaffter for the report.
+
+2024-01-07  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Fix inclusion of PDF v1.7 files.
+
+	PDF 1.5 introduced the object type ObjStm, which can contain a
+	bunch of objects in its own compressed stream, but there is a
+	restriction that an object with its own stream cannot be
+	included into the ObjStm (i.e., no streams within streams).
+	Gropdf has supported this for some years, but it has come to
+	light that some PDFs have a "skeleton" object that contains the
+	stream, while the rest of the object is held in an ObjStm.
+
+	* src/devices/gropdf/gropdf.pl: If a skeleton object exists at
+	the top level and in an ObjStm stream, merge the two objects.
+
+2024-01-07  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.pl (subs_call): Fix bad fix for
+	Savannah #65112.
+
+	{Problem introduced by me in commit 6e45bb0bc6, 4 January, when
+	I manually merged Deri's patch that wouldn't merge
+	automatically, and I misread the magic constant "16" as "6".  My
+	fault, but this is also one reason symbolic constants with
+	human-readable names are usually preferred to numeric literals.
+	-- GBR}
+
+2024-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #64592 (default color name).
+
+	* src/libs/libgroff/color.cpp: Explicitly name the default color
+	"default", instead of permitting it to have a null name.
+
+	* doc/groff.texi (Colors):
+	* man/groff.7.man (Read-only regsiters):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64592>.  Thanks to Deri
+	James, Dave Kemper, and Peter Schaffter for the discussion.
+
+2024-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Implement new `pcolor` request.
+
+	* src/roff/troff/input.cpp (report_color): Add.
+	(init_input_requests): Wire up `pcolor` request name to
+	`report_color()`.
+
+	* doc/groff.texi (Colors, Debugging):
+	* man/groff.7.man (Request short reference, Debugging):
+	* man/groff_diff.7.man (New requests, Debugging):
+	* NEWS: Document it.
+
+2024-01-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/input.cpp
+	(class non_interpreted_char_node)
+	(class token_node)
+	(class non_interpreted_node):
+	Rename `same()` member function to `is_same_as()`.  Demote
+	`is_same_as()` and `is_tag()` member function from `int` to
+	`bool`.
+
+	(non_interpreted_char_node::same):
+	(token_node::same):
+	(non_interpreted_node::same): Rename these...
+	(non_interpreted_char_node::is_same_as):
+	(token_node::is_same_as):
+	(non_interpreted_node::is_same_as): ...to these.  Demote return
+	type from `int` to `bool`.
+
+	(non_interpreted_char_node::is_tag):
+	(operator==):
+	Demote return type from `int` to `bool`.
+
+	(operator==):
+	Return Boolean instead of integer literal.  Rename local
+	variable `are_same` to `same` for brevity and demote it from
+	`int` to `bool`.
+
+	* src/roff/troff/node.cpp
+	(class glyph_node)
+	(class ligature_node)
+	(class kern_pair_node)
+	(class dbreak_node)
+	(class hyphen_inhibitor_node):
+	(class italic_corrected_node):
+	(class break_char_node):
+	(class composite_node):
+	Rename `same()` member function to `is_same_as()`.  Demote
+	`is_same_as()` and `is_tag()` member function from `int` to
+	`bool`.
+
+	(hyphen_inhibitor_node::same):
+	(special_node::same):
+	(suppress_node::same):
+	(tag_node::same):
+	(draw_node::same):
+	(extra_size_node::same):
+	(vertical_size_node::same):
+	(hmotion_node::same):
+	(space_char_hmotion_node::same):
+	(vmotion_node::same):
+	(hline_node::same):
+	(vline_node::same):
+	(dummy_node::same):
+	(transparent_dummy_node::same):
+	(zero_width_node::same):
+	(italic_corrected_node::same):
+	(left_italic_corrected_node::same):
+	(overstrike_node::same):
+	(bracket_node::same):
+	(composite_node::same):
+	(glyph_node::same):
+	(ligature_node::same):
+	(kern_pair_node::same):
+	(dbreak_node::same):
+	(break_char_node::same):
+	(line_start_node::same):
+	(space_node::same):
+	(word_space_node::same):
+	(unbreakable_space_node::same):
+	(diverted_space_node::same):
+	(diverted_copy_file_node::same):
+	Rename these...
+	(hyphen_inhibitor_node::is_same_as):
+	(special_node::is_same_as):
+	(suppress_node::is_same_as):
+	(tag_node::is_same_as):
+	(draw_node::is_same_as):
+	(extra_size_node::is_same_as):
+	(vertical_size_node::is_same_as):
+	(hmotion_node::is_same_as):
+	(space_char_hmotion_node::is_same_as):
+	(vmotion_node::is_same_as):
+	(hline_node::is_same_as):
+	(vline_node::is_same_as):
+	(dummy_node::is_same_as):
+	(transparent_dummy_node::is_same_as):
+	(zero_width_node::is_same_as):
+	(italic_corrected_node::is_same_as):
+	(left_italic_corrected_node::is_same_as):
+	(overstrike_node::is_same_as):
+	(bracket_node::is_same_as):
+	(composite_node::is_same_as):
+	(glyph_node::is_same_as):
+	(ligature_node::is_same_as):
+	(kern_pair_node::is_same_as):
+	(dbreak_node::is_same_as):
+	(break_char_node::is_same_as):
+	(line_start_node::is_same_as):
+	(space_node::is_same_as):
+	(word_space_node::is_same_as):
+	(unbreakable_space_node::is_same_as):
+	(diverted_space_node::is_same_as):
+	(diverted_copy_file_node::is_same_as):
+	...to these.  Demote return type from `int` to `bool`.
+
+	(hyphen_inhibitor_node::is_tag):
+	(node::is_tag):
+	(space_node::is_tag):
+	(special_node::is_tag):
+	(tag_node::is_tag):
+	(suppress_node::is_tag):
+	(unbreakable_space_node::is_tag):
+	(draw_node::is_tag):
+	(extra_size_node::is_tag):
+	(hmotion_node::is_tag):
+	(space_char_hmotion_node::is_tag):
+	(vmotion_node::is_tag):
+	(hline_node::is_tag):
+	(vline_node::is_tag):
+	(dummy_node::is_tag):
+	(transparent_dummy_node::is_tag):
+	(zero_width_node::is_tag):
+	(italic_corrected_node::is_tag):
+	(left_italic_corrected_node::is_tag):
+	(overstrike_node::is_tag):
+	(bracket_node::is_tag):
+	(glyph_node::is_tag):
+	(ligature_node::is_tag):
+	(kern_pair_node::is_tag):
+	(dbreak_node::is_tag):
+	(break_char_node::is_tag):
+	(line_start_node::is_tag):
+	(word_space_node::is_tag):
+	(diverted_space_node::is_tag):
+	(diverted_copy_file_node::is_tag):
+	Demote return type from `int` to `bool`.
+
+	(hyphen_inhibitor_node::is_tag):
+	(node::is_tag):
+	(space_node::is_tag):
+	(special_node::is_tag):
+	(tag_node::is_tag):
+	(unbreakable_space_node::is_tag):
+	(draw_node::is_tag):
+	(vertical_size_node::is_tag):
+	(hmotion_node::is_tag):
+	(space_char_hmotion_node::is_tag):
+	(vmotion_node::is_tag):
+	(hline_node::is_tag):
+	(vline_node::is_tag):
+	(dummy_node::is_same_as):
+	(dummy_node::is_tag):
+	(transparent_dummy_node::is_same_as):
+	(zero_width_node::is_tag):
+	(italic_corrected_node::is_tag):
+	(left_italic_corrected_node::is_tag):
+	(overstrike_node::is_tag):
+	(bracket_node::is_tag):
+	(glyph_node::is_tag):
+	(ligature_node::is_tag):
+	(kern_pair_node::is_tag):
+	(dbreak_node::is_tag):
+	(break_char_node::is_tag):
+	(line_start_node::is_same_as):
+	(line_start_node::is_tag):
+	(word_space_node::is_tag):
+	(diverted_space_node::is_tag):
+	(diverted_copy_file_node::is_tag):
+	(same_node, same_node_list):
+	Return Boolean instead of integer literal.
+
+	(make_glyph_node, same_node): Make explicit comparisons of
+	pointer types to null pointer literals.
+
+	* src/roff/troff/node.h (struct node): Demote member variable
+	`is_special` from `int` to `bool`.  Demote pure virtual member
+	function `is_tag`'s return type from `int` to `bool`.  Rename
+	pure virtual member function from `same` to `is_same_as` and
+	demote its return type from `int` to `bool`.
+	(node::node): Use Boolean instead of integer literal in
+	overloaded `is_special` initializers.
+	(class line_start_node):
+	(class space_node):
+	(class word_space_node):
+	(class unbreakable_space_node):
+	(class diverted_space_node):
+	(class diverted_copy_file_node):
+	(class extra_size_node):
+	(class vertical_size_node):
+	(class hmotion_node):
+	(class space_char_hmotion_node):
+	(class vmotion_node):
+	(class hline_node):
+	(class vline_node):
+	(class dummy_node):
+	(class transparent_dummy_node):
+	(class zero_width_node):
+	(class left_italic_corrected_node):
+	(class overstrike_node):
+	(class bracket_node):
+	(class special_node):
+	(class suppress_node):
+	(class tag_node):
+	(class draw_node):
+	Rename member function `same` to
+	`is_same_as`.  Demote member functions `is_same_as` and `is_tag`
+	from `int` to `bool`.
+
+	* src/roff/troff/request.h (class macro): Demote friend function
+	`operator==` from `int` to `bool`.
+
+2024-01-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (make_glyph_node): Trivially refactor;
+	Boolify local variable.
+
+2024-01-04  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	font/devpdf/Foundry.in: Fix Savannah #65115.
+
+	* font/devpdf/Foundry.in: Fix BMI, BMR mapping swap.
+
+	Fixes <https://savannah.gnu.org/bugs/?65115>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-01-04  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Fix Savannah #65112.
+
+	* src/devices/gropdf/gropdf.pl (subs_call): Type 1 fonts have a
+	section of numbered subroutines which can be called from the
+	actual glyph definition; I have seen over 1000 in some large
+	fonts.  So, when you are subsetting you need to subset (and
+	renumber) any relevant subroutines used by the glyph you are
+	subsetting.
+
+	Fixes <https://savannah.gnu.org/bugs/?65112>.
+
+2024-01-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl: Trivially refactor; simplify code.
+
+2024-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/glyphuni.cpp: Slightly refactor.
+	(glyph_to_unicode_init::glyph_to_unicode_init): Use
+	`array_length()` (our std::size for C++98) and `size_t` as type
+	for loop index.
+
+2024-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/glyphuni.cpp: Trivially refactor.
+	(struct glyph_to_unicode): Rename this...
+	(struct glyph_to_unicode_map): ...to this.  We already have a
+	_function_ called `glyph_to_unicode` in the code base and
+	apparently it's not a name space conflict (despite groff making
+	little use of any but the default name space), but it's
+	definitely confusing when searching the code.
+
+2024-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff, troff]: Refactor.
+
+	* src/include/unicode.h: Rename function `check_unicode_name` to
+	`valid_unicode_code_sequence` and update comments to better
+	explain what it actually does.  The validity of "u1234_5678" in
+	addition to "u1234" was undocumented and not even implied.
+	* src/libs/libgroff/unicode.cpp (check_unicode_name): Rename
+	this...
+	(valid_unicode_code_sequence): ...to this.
+
+	* src/libs/libgroff/font.cpp (glyph_to_unicode)
+	* src/roff/troff/input.cpp (token::next)
+	(map_composite_character, composite_glyph_name): Update call
+	sites.  Make comparisons to null pointers explicit.
+
+2024-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[gropdf]: Fix Savannah #65111.  Add "notice" diagnostic level
+	for debugging.
+
+	* src/devices/gropdf/gropdf.pl (Notice): Add new subroutine.  It
+	emits a diagnostic message only if debugging ("gropdf -d").
+	(Warn): Prefix diagnostic with severity level here...
+	(Msg): ...instead of here.
+	(LoadFont): Demote diagnostic about fonts lacking space glyphs
+	from warning to notice.
+
+	Fixes <https://savannah.gnu.org/bugs/?65111>.
+
+2024-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/gropdf/gropdf.pl: Report only "basename" of
+	program name in diagnostic messages.
+
+	Fixes <https://savannah.gnu.org/bugs/?65110>.  Thanks to Dave
+	Kemper for the code review.
+
+2024-01-03  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Add `pdfpagenumbering` macro.
+
+	* tmac/pdf.tmac: Do it.
+	* src/devices/gropdf/gropdf.1.man: Document it.
+
+2024-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Increment Perl dependency from 5.6.1.  gropdf requires 5.8.
+
+	* m4/groff.m4 (GROFF_PERL): Do it.
+	* INSTALL.extra:
+	* doc/webpage.ms: Document it.
+
+2024-01-03  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Add font subsetting and Type 1 font parser.
+
+	* src/devices/gropdf/gropdf.pl: There are two main areas of
+	change.  The first is rectifying my design mistake in the
+	original gropdf. It used the "t" command from groff as the
+	primary command as a series of input characters which would be
+	converted to postscript glyphs, all other text commands (for
+	example "c") were converted back to their input character and
+	treated as a single character "t" command.  I was focussed on
+	the groff font rather than the postscript font.
+
+	While thinking about font subsetting it became clear it made
+	more sense to convert all input to postscript glyph names
+	immediately, and use them as the "common currency" rather than
+	focus on words.  This particularly makes sense when dealing with
+	non-latin input which has been processed with preconv.  It is
+	also makes it much more natural when dealing with font
+	subsetting.  Previously this was not necessary because the whole
+	font was embedded by gropdf.
+
+	The second major change is the addition of a type 1 font parser
+	and code to generate a font which only contains the glyphs
+	required by the document being processed.  This is the area
+	which needs the most testing.  I have tested with dozens of
+	fonts that this parser is robust enough, but there are thousands
+	of fonts out there.  It seems to be happy with fonts produced by
+	fontforge, which is promising.
+
+2024-01-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/tbl.1.man (roff interface): Fix incorrect
+	claim regarding `#T` register.
+
+2024-01-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man,mdoc]: Increase default line length to 80n on terminals.
+	The resolution of tbl(1) bugs such as Savannah #63749, #63640,
+	and #62471 enables us to discard a decades-old convention of
+	using 78n for the default line length when formatting for
+	terminals; this was because tbl(1) would sometimes overset
+	lines, with ugly consequences.  (I _assume_ this was the reason;
+	no one ever seems to have gone on record about it--it was
+	seemingly yet another case of Unix folklore that "everybody
+	knew".)  Overset lines are still possible; tbl(1) will warn if
+	so.  They can also overset if the document disables filling; the
+	author is expected to know what they are doing in that case.
+
+	* tmac/an.tmac:
+	* tmac/doc-old.tmac:
+	* tmac/mdoc/doc-nroff: Do it.
+
+	* tmac/groff_man.7.man.in:
+	* tmac/groff_mdoc.7.man: Update documentation and annotations.
+
+	* tmac/tests/an-ext_SY-and-YS-work.sh:
+	* tmac/tests/an_HY-register-works.sh:
+	* tmac/tests/an_LL-init-sanely.sh:
+	* tmac/tests/an_UE-breaks-before-long-URIs.sh:
+	* tmac/tests/an_adjust-link-text-correctly.sh:
+	* tmac/tests/an_do-not-abbreviate-escape-using-TH-arguments.sh:
+	* tmac/tests/an_title-abbreviation-works.sh:
+	* tmac/tests/andoc_flush-between-packages.sh:
+	* tmac/tests/doc_indents-correctly.sh:
+	* tmac/tests/doc_smoke-test.sh: Update test output expectations.
+
+	* NEWS: Document it.
+
+2024-01-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-nroff (doc-setup-page-layout): Port nroff-mode
+	horizontal rule width compensation from "an.tmac" (29 December)
+	to mdoc.
+
+2024-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tmac]: Update tests to more recent script conventions, and to
+	share more information.
+
+	* tmac/tests/an_LL-init-sanely.sh: Rename variable from
+	`EXAMPLE` to `input`.  Write the test output to the standard
+	output stream.  Report the horizontal motion quantum (`.H`
+	register) and the line length in ens (character cells) as well
+	for comprehensibility by *roff non-experts.
+
+	* tmac/tests/an_do-not-abbreviate-escape-using-TH-arguments.sh:
+	Write the test output to the standard output stream.
+
+	* tmac/tests/an_title-abbreviation-works.sh: Rename variables to
+	use lowercase instead of uppercase.  Define and use `wail()`
+	function instead of repeating logic in failure cases.  Write the
+	test output to the standard output stream.  Report test progress
+	and outcomes to standard error stream.
+
+	* tmac/tests/andoc_flush-between-packages.sh: Rename variable
+	from `FAIL` to `fail`.  Define and use `wail()` function instead
+	of repeating logic in failure cases.
+
+	* tmac/tests/doc_indents-correctly.sh: Define and use `wail()`
+	function instead of repeating logic in failure cases.  Report
+	test progress to standard error stream.  Drop redundant `exit`.
+
+	* tmac/tests/doc_smoke-test.sh: Drop redundant variable
+	initialization.
+
 2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[tbl]: Fix Savannah #62471 (hrules in nroff mode).
@@ -14,6 +502,8 @@
 	* src/preproc/tbl/table.cpp (table::compute_overall_width):
 	Check for it if the table is not already boxed, and emit output
 	to reduce the line length by one in nroff mode.
+
+	Fixes <https://savannah.gnu.org/bugs/?62471>.
 
 2023-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -106,7 +596,7 @@
 
 2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Add another explicit mechanism for disabling
+	[troff]: Add another explicit mechanism for disabling automatic
 	hyphenation; accept an `hla` request without arguments for this
 	purpose.
 
@@ -2983,7 +3473,7 @@ ________________________________________________________________________
 
 ##### License
 
-Copyright 2023 Free Software Foundation, Inc.
+Copyright 2023-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

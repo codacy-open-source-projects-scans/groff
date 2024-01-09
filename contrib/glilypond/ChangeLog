@@ -1,3 +1,7 @@
+2024-01-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* glilypond.pl (BEGIN): Trivially refactor; simplify code.
+
 2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* glilypond.pl: Stop endorsing shebang line space myth.  See

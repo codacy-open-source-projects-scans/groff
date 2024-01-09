@@ -26,11 +26,20 @@ o The device-independent output now reports unbreakable spaces (those
 o A new read-only, string-valued register, `.trap`, interpolates the
   name of the next vertical position trap that will be sprung.
 
+o A new request, `pcolor`, reports to the standard error stream the
+  current list of defined colors.  (A device's default stroke and/or
+  fill colors, "default", are not listed since they are immutable and
+  their details unknown to the formatter.)
+
 o A new request, `phw`, reports to the standard error stream the current
   list of hyphenation exceptions.
 
 o The `hla` request, when invoked with no arguments, now clears the
   hyphenation language, disabling automatic hyphenation.
+
+o The read-only registers `.m` and `.M` now interpolate "default" when
+  the default color is selected as the stroke or fill color,
+  respectively, rather than interpolating nothing.
 
 eqn
 ---
@@ -77,6 +86,15 @@ o Hyperlink support is now enabled by default on non-HTML devices that
   support it (PDF and terminal devices) for an (man) documents.
   Instructions and commented code for disabling it remain in the
   "man.local" file.
+
+o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
+  changed the default line length when formatting on terminals from 78n
+  to 80n.  The latter is a vastly more common configuration, but that
+  line length had been avoided for decades (perhaps as long as as groff
+  has existed), for an undocumented reason.  That reason appears to have
+  been bugs in GNU tbl(1) and its interaction with an aspect of
+  grotty(1)'s design.  Those bugs have been resolved.  A man(1) program
+  can still instruct groff to format for any desired line length.
 
 o The an (man) and doc (mdoc) macro packages now support a `BP` register
   to configure the ("base") paragraph inset amount; that is the amount
@@ -397,9 +415,9 @@ o The an (man) macro package supports a new macro, `MR`, intended for
   optional).  Because the macro semantically identifies a man page, it
   can create a clickable hyperlink ("man:ls(1)" for the above example)
   on supporting devices.  Furthermore, a new string, `MF`, defines the
-  font to be used for setting the man page topic (the first argument to
-  `MR` and `TH`), permitting configuration by distributions, sites, and
-  users.
+  font to be used for setting the man page identifier (the first
+  argument to the `MR` and `TH` macros), permitting configuration by
+  distributions, sites, and users.
 
   Inclusion of the `MR` macro was prompted by its introduction to
   Plan 9 from User Space's troff in August 2020.  Its purpose is to

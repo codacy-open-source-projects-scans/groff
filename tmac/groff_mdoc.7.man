@@ -4834,7 +4834,7 @@ for a full discussion of these special character escape sequences.
 .\" 2nd and 3rd columns; we had to steal a character cell from each (the
 .\" default is 3) because in the UCS column, the word "infinity" gets
 .\" written out in full, which in turn pushes the >= and Ge rows past
-.\" the 78n norm.  Update with caution.  See Savannah #59424.
+.\" the historical 78n norm.  Update with caution.  See Savannah #59424.
 .TS
 Cb Lb2 Lb2 Lb Lb Lb
 Lf(CR) L2 L2 L Lf(CR) L.
@@ -5099,7 +5099,7 @@ respectively:
 .Dl groff \-Tutf8 \-rLL=100n \-rLT=100n \-mdoc foo.man | less \-R
 .
 If not set,
-both registers default to 78n for terminal devices and 6.5i otherwise.
+both registers default to 80n for terminal devices and 6.5i otherwise.
 .
 .
 .Pp

@@ -52,11 +52,7 @@ my %preprocessor_for_macro = (
   'pinyin',   'gpinyin',
 );
 
-my $program_name = $0;
-{
-  my ($v, $d, $f) = File::Spec->splitpath($program_name);
-  $program_name = $f;
-}
+(undef, undef, my $program_name) = File::Spec->splitpath($0);
 
 my %user_macro;
 my %score = ();

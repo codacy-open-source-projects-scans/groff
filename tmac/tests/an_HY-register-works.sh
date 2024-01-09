@@ -41,7 +41,7 @@ output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou)
 echo "$output"
 
 echo "checking hyphenation when HY is default" >&2
-echo "$output" | grep -q "antidisestablish-$" || wail
+echo "$output" | grep -q "antidisestablishmen-$" || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -rHY=0 -man -Tascii -P-cbou)
 echo "$output"
@@ -65,7 +65,7 @@ output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou)
 echo "$output"
 
 echo "checking hyphenation when HY is default and .SY nested" >&2
-echo "$output" | grep -q "antidisestablish-$" || wail
+echo "$output" | grep -q "antidisestablishmen-$" || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -rHY=0 -man -Tascii -P-cbou)
 echo "$output"

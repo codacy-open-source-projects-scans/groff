@@ -178,7 +178,7 @@ following tools to build `groff' directly from its source:
 
 .in 2m
 .nf
-perl \[>=] v5.6.1 (see macro GROFF_PERL in file `m4/groff.m4')
+perl \[>=] v5.8 (see macro GROFF_PERL in file `m4/groff.m4')
 ghostscript
 the psutils package
 the netpbm package

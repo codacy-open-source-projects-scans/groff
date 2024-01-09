@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle Edition 1.23.0+Git
-@subtitle December 2023
+@subtitle January 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -1655,7 +1655,7 @@ with a @command{groff} command.
 $ groff -t -m an -T utf8 /usr/share/man/man1/groff.1
 @endExample
 
-The librarian will also pipe the output through a pager, which might not
+The librarian may also pipe the output through a pager, which might not
 interpret terminal escape sequences @command{groff} emits for boldface,
 underlining, italics, or hyperlinking; see the @cite{grotty@r{(1)}} man
 page for a discussion.
@@ -2154,11 +2154,12 @@ in multiple passes is inescapable, and tools like the
 @subsection Document Formats
 @cindex document formats
 
-Some macro packages supply stock configurations of certain documents,
-like business letters and memoranda.  These often also have provision
-for a @slanted{cover sheet}, which may be rigid in its format.  With
-these features, it is even more important to use the package's macros in
-preference to the formatter requests presented earlier, where possible.
+Some macro packages supply stock configurations of certain types of
+documents, like business letters and memoranda.  These often also have
+provision for a @slanted{cover sheet}, which may be rigid in its format.
+With these features, it is even more important to use the package's
+macros in preference to the formatter requests presented earlier, where
+possible.
 
 @c ---------------------------------------------------------------------
 
@@ -8008,8 +8009,8 @@ operating environment.
 
 Date- and time-related registers are set per the local time as
 determined by @cite{localtime@r{(3)}} when the formatter launches.  This
-initialization can be overridden by @env{SOURCE_DATE_EPOCH} and
-@env{TZ}; see @ref{Environment}.
+initialization can be influenced by the environment variable @env{TZ} or
+overridden by @env{SOURCE_DATE_EPOCH}; see @ref{Environment}.
 
 @table @code
 @item \n[seconds]
@@ -9696,7 +9697,9 @@ Nevertheless, it is sometimes necessary to make a distinction between
 terminal and non-terminal devices: GNU @code{troff} provides two
 built-in conditions @samp{n} and @samp{t} for the @code{if}, @code{ie},
 and @code{while} requests to decide whether GNU @code{troff} shall
-behave like @code{nroff} or like @code{troff}.
+behave like @code{nroff} or like
+@code{troff}.@footnote{@xref{Conditionals and Loops}, for more on
+built-in conditions.}
 
 @Defreq {troff, }
 @pindex troffrc
@@ -9720,8 +9723,6 @@ file @file{tty.tmac}, which is loaded by the startup file
 @code{troffrc}.
 @endDefreq
 
-@xref{Conditionals and Loops}, for more details on built-in conditions.
-
 
 @c =====================================================================
 
@@ -9732,9 +9733,9 @@ file @file{tty.tmac}, which is loaded by the startup file
 
 @cindex dimensions, line
 @cindex line dimensions
-The following drawing shows the dimensions that @command{gtroff} uses
-for placing a line of output onto the page.  They are labeled with the
-request that manipulates each dimension.
+The following drawing shows the dimensions that GNU @command{troff} uses
+to arrange a line of output on the page.  Each dimension is labeled with
+the name of the request that configures it.
 
 @Example
      -->| in |<--
@@ -9747,36 +9748,36 @@ request that manipulates each dimension.
 @endExample
 
 @noindent
-These dimensions are:
+The dimensions are defined as follows.
 
-@ftable @code
-@item po
-@cindex left margin (@code{po})
-@cindex margin, left (@code{po})
+@multitable @columnfractions 0.05 0.95
+@item @code{po}
 @cindex page offset (@code{po})
 @cindex offset, page (@code{po})
-@dfn{Page offset}---this is the leftmost position of text on the final
-output, defining the @dfn{left margin}.
+@tab
+The @dfn{page offset} is the leftmost position of running text.
 
-@item in
+@item @code{in}
 @cindex indentation (@code{in})
 @cindex line indentation (@code{in})
-@dfn{Indentation}---this is the distance from the left margin where
-text is printed.
+@tab
+@dfn{Indentation} is the distance from the page offset at which text is
+set.
 
-@item ll
+@item @code{ll}
 @cindex line length (@code{ll})
 @cindex length of line (@code{ll})
-@dfn{Line length}---this is the distance from the left margin to right
-margin.
-@end ftable
+@tab
+@dfn{Line length} is the maximum extent of unindented running text.
+@end multitable
 
+@cindex left margin (@code{po})
+@cindex margin, left (@code{po})
 @cindex margin, right
 @cindex right margin
-The right margin is not explicitly configured; the combination of page
-offset and line length provides the information necessary to derive it.
-
-A simple demonstration:
+The page offset can be thought of as the ``left margin''.  The right
+margin is not explicitly configured; the combination of page offset and
+line length provides the information necessary to derive it.
 
 @Example
 .ll 3i
@@ -9803,20 +9804,22 @@ the previous values.
     @result{} ous values.
 @endExample
 
+Requests exist to place line numbers and margin characters beyond the
+page margins; @ref{Miscellaneous}.
+
 @DefreqList {po, [@Var{offset}]}
 @DefreqItem {po, @t{+}@Var{offset}}
 @DefreqItem {po, @t{-}@Var{offset}}
 @DefregListEndx {.o}
 @pindex tty.tmac
-Set page offset to @var{offset} (or increment or decrement its current
-value by @var{offset}).  If invoked without an argument, the page offset
-is restored to the value before the previous @code{po} request.
-This request does not cause a break; the page offset in effect when an
-output line is broken prevails (@pxref{Manipulating Filling and
-Adjustment}).  The initial value is 1@dmn{i} and the default scaling
-unit is @samp{m}.  On terminal devices, the page offset is set to zero
-by a driver-specific macro file, @file{tty.tmac}.  The current page
-offset can be found in the read-only register @samp{.o}.
+Set page offset to @var{offset}; if @var{offset} is signed, adjust the
+page offset by its value.  The default scaling unit is @samp{m}.
+The default offset is 1@dmn{i} on typesetters and zero on terminals.
+
+If @var{offset} is omitted, the page offset is reset to that before the
+previous invocation of @code{po}.
+
+The page offset can be found in the read-only register @samp{.o}.
 @cindex CSTR@tie{}#54 errata
 @cindex CSTR@tie{}#54 erratum, @code{po} request
 This request is incorrectly documented in the @acronym{AT&T}
@@ -9839,54 +9842,43 @@ This request is incorrectly documented in the @acronym{AT&T}
 @DefreqItem {in, @t{+}@Var{indent}}
 @DefreqItem {in, @t{-}@Var{indent}}
 @DefregListEndx {.i}
-Set indentation to @var{indent} (or increment or decrement the current
-value by @var{indent}).  This request causes a break.  Initially, there
-is no indentation.
+Set indentation to @var{indent}; if @var{indent} is signed, adjust the
+indentation by its value.  The default scaling unit is @samp{m}.
+Initially, there is no indentation.  This request causes a break.
 
-If @code{in} is called without an argument, the indentation is reset to
-the previous value before the last call to @code{in}.  The default
-scaling unit is @samp{m}.
-
-If a negative indentation value is specified (which is not allowed),
-@command{gtroff} emits a warning in category @samp{range} and sets the
-indentation to zero.
+If @var{indent} is omitted, the indentation is reset to that before the
+previous invocation of @code{in}, and zero if there is none.  If
+@var{indent} is negative, GNU @command{troff} emits a warning in
+category @samp{range} and sets the indentation to zero; a temporary
+indentation (see below) is reset to zero as well.
 
 The effect of @code{in} is delayed until a partially collected line (if
-it exists) is output.  A temporary indentation value is reset to zero
-also.
+it exists) is output.  In other words, it does not change a pending
+output line's indentation.
 
-The current indentation (as set by @code{in}) can be found in the
-read-only register @samp{.i}.  The indentation is associated with the
-environment (@pxref{Environments}).
+The indentation (as set by @code{in}) can be found in the read-only
+register @samp{.i}; it ignores temporary indentation (see below).  The
+indentation is associated with the environment (@pxref{Environments}).
 @endDefreq
 
 @DefreqList {ti, offset}
 @DefreqItem {ti, @t{+}@Var{offset}}
 @DefreqItem {ti, @t{-}@Var{offset}}
 @DefregListEndx {.in}
-Temporarily indent the next output line by @var{offset}.  If an
-increment or decrement value is specified, adjust the temporary
-indentation relative to the value set by the @code{in} request.
+Temporarily indent the next output line by @var{offset}; if @var{offset}
+is signed, adjust the temporary indentation relative to the value set by
+the @code{in} request.  The default scaling unit is @samp{m}.  This
+request causes a break.
 
-This request causes a break; its value is associated with the
-environment (@pxref{Environments}).  The default scaling unit is
-@samp{m}.  A call of @code{ti} without an argument is ignored.
-
-If the total indentation value is negative (which is not allowed),
-@command{gtroff} emits a warning in category @samp{range} and sets the
-temporary indentation to zero.  `Total indentation' is either
-@var{offset} if specified as an absolute value, or the temporary plus
-normal indentation, if @var{offset} is given as a relative value.
+Omitting @var{offset} causes a warning in category @samp{missing}.
 
 The effect of @code{ti} is delayed until a partially collected line (if
-it exists) is output.
+it exists) is output.  In other words, it does not change a pending
+output line's indentation.
 
-The read-only register @code{.in} is the indentation that applies to the
-current output line.
-
-The difference between @code{.i} and @code{.in} is that the latter takes
-into account whether a partially collected line still uses the old
-indentation value or a temporary indentation value is active.
+The read-only register @code{.in} reports the indentation that applies
+to the pending output line.  The temporary indentation is associated
+with the environment (@pxref{Environments}).
 @endDefreq
 
 @DefreqList {ll, [@Var{length}]}
@@ -9894,27 +9886,32 @@ indentation value or a temporary indentation value is active.
 @DefreqItem {ll, @t{-}@Var{length}}
 @DefregItemx {.l}
 @DefregListEndx {.ll}
-Set the line length to @var{length} (or increment or decrement the
-current value by @var{length}).  Initially, the line length is set to
-6.5@dmn{i}.  The effect of @code{ll} is delayed until a partially
-collected line (if it exists) is output.  The default scaling unit is
-@samp{m}.
+Set the line length to @var{length}; if @var{length} is signed, adjust
+the line length by its value.  The default scaling unit is @samp{m}.  If
+not otherwise configured (see @pxref{Paper Format}), the default line
+length is 6.5@dmn{i}.
 
-If @code{ll} is called without an argument, the line length is reset to
-the previous value before the last call to @code{ll}.  If a negative
-line length is specified (which is not allowed), @command{gtroff} emits
-a warning in category @samp{range} and sets the line length to zero.
-The line length is associated with the environment
-(@pxref{Environments}).
+If @var{length} is omitted, the line length is reset to that before the
+previous invocation of @code{ll}.  If @var{length} is negative, GNU
+@command{troff} emits a warning in category @samp{range} and sets the
+line length to the device's horizontal motion quantum; recall
+@ref{Motion Quanta}.
+
+The effect of @code{ll} is delayed until a partially collected line (if
+it exists) is output.  In other words, it does not change a pending
+output line's length.
 
 @cindex line length register (@code{.l})
-The current line length (as set by @code{ll}) can be found in the
+The line length as set by @code{ll} can be found in the
 read-only register @samp{.l}.  The read-only register @code{.ll} is the
-line length that applies to the current output line.
+line length that applies to the pending output line.
 
-Similar to @code{.i} and @code{.in}, the difference between @code{.l}
+Similarly to @code{.i} and @code{.in}, the difference between @code{.l}
 and @code{.ll} is that the latter takes into account whether a partially
-collected line still uses the old line length value.
+collected line still uses the previous length.
+
+The line length is associated with the environment
+(@pxref{Environments}).
 @endDefreq
 
 
@@ -11301,13 +11298,14 @@ character is set to@tie{}@code{\} while @var{contents} is processed.
 Any emboldening, constant spacing, or track kerning is applied to this
 object rather than to individual glyphs in @var{contents}.
 
-An object defined by these requests can be used just like a normal glyph
+An object defined by these requests can be used just like a glyph
 provided by the output device.  In particular, other characters can be
 translated to it with the @code{tr} or @code{trin} requests; it can be
-made the leader character with the @code{lc} request; repeated patterns
-can be drawn with it using the @code{\l} and @code{\L} escape sequences;
-and words containing@tie{}@var{c} can be hyphenated correctly if the
-@code{hcode} request is used to give the object a hyphenation code.
+made the tab or leader fill character with the @code{tc} and @code{lc}
+requests, respectively; repeated patterns can be drawn with it using the
+@code{\l} and @code{\L} escape sequences; and words
+containing@tie{}@var{c} can be hyphenated correctly if the @code{hcode}
+request is used to give the object a hyphenation code.
 
 There is a special anti-recursion feature: use of the object within its
 own definition is handled like a normal character (not
@@ -12339,6 +12337,9 @@ clamps it at 65,535).
 .defcolor gray50 rgb 0.5 0.5 0.5
 .defcolor darkgreen rgb 0.1f 0.5f 0.2f
 @endExample
+
+You can obtain a report of colors defined by @code{defcolor} on the
+standard error stream with the @code{pcolor} request.  @xref{Debugging}.
 @endDefreq
 
 @cindex default color
@@ -12376,8 +12377,8 @@ does a @code{gcolor} request without an argument.
 @cindex color name, stroke, register (@code{.m})
 The name of the current stroke color is available in the read-only
 string-valued register @samp{.m}; it is associated with the environment
-(@pxref{Environments}).  It interpolates nothing when the stroke color
-is the default.
+(@pxref{Environments}).  The default stroke color is named
+@samp{default}.
 
 @code{\m} doesn't produce an input token in GNU @code{troff}
 (@pxref{Gtroff Internals}).  It therefore can be used in requests like
@@ -12406,9 +12407,8 @@ color, as does an @code{fcolor} request without an argument.
 @cindex color name, fill, register (@code{.M})
 The name of the current fill color is available in the read-only
 string-valued register @samp{.M}; it is associated with the environment
-(@pxref{Environments}).  It interpolates nothing when the fill color
-is the default.  @code{\M} doesn't produce an input token in GNU
-@code{troff}.
+(@pxref{Environments}).  The default fill color is named @samp{default}.
+@code{\M} doesn't produce an input token in GNU @code{troff}.
 
 Create an ellipse with a red interior as follows.
 
@@ -14131,6 +14131,7 @@ over that glyph.
 @end table
 @endDefesc
 
+@need 500
 @DefescList {\\k, , p, }
 @DefescItem {\\k, (, ps, }
 @DefescListEnd {\\k, [, position, ]}
@@ -14139,10 +14140,11 @@ over that glyph.
 @cindex input line position, horizontal, saving (@code{\k})
 @cindex position, horizontal input line, saving (@code{\k})
 @cindex line, input, horizontal position, saving (@code{\k})
-Store the current horizontal position in the @emph{input} line in a
-register with the name @var{position} (one-character name@tie{}@var{p},
-two-character name @var{ps}).  Use this, for example, to return to the
-beginning of a string for highlighting or other decoration.
+Store the horizontal drawing position relative to that corresponding to
+the beginning of the input line in a register with the name
+@var{position} (one-character name@tie{}@var{p}, two-character name
+@var{ps}).  Use this, for example, to move to the beginning of a word
+for highlighting or other decoration.
 @endDefesc
 
 @Defreg {hp}
@@ -15681,8 +15683,8 @@ is
 The latter calling syntax doesn't change the value of @code{\$0}, which
 is then inherited from the calling macro (@pxref{Parameters}).
 
-Diversions can be also called with string syntax.  It is sometimes
-convenient to copy one-line diversions to a string.
+It is sometimes convenient to copy a single-line diversion to a string,
+which can then be interpolated with @code{\*}.
 
 @Example
 .di xx
@@ -15698,10 +15700,9 @@ interpolation system
 @endExample
 
 @noindent
-As the previous example shows, it is possible to store formatted output
-in strings.  The @code{\c} escape sequence prevents the subsequent
-newline from being interpreted as a break (again,
-@pxref{Line Continuation}).
+In the foregoing, we see that formatted output can thus be stored in a
+string.  The @code{\c} escape sequence prevents the subsequent newline
+from being interpreted as a break (again, @pxref{Line Continuation}).
 
 Copying multi-output line diversions produces unexpected results.
 
@@ -16062,21 +16063,22 @@ with @code{so} are not preprocessed; to overcome this limitation, see
 the @cite{gsoelim@r{(1)}} man page.
 
 Since GNU @code{troff} replaces the entire control line with the
-contents of a file, it matters whether @code{file} is terminated with a
-newline or not.  Assume that file @file{xxx} contains only the word
+contents of a file, it matters whether @var{file} is terminated with a
+newline or not.  Consider a file @file{xxx} containing only the word
 @samp{foo} without a trailing newline.
 
 @Example
 $ printf 'foo' > xxx
-
+$ groff <<EOF
 The situation is
 .so xxx
 bar.
+EOF
     @result{} The situation is foobar.
 @endExample
 
-@code{soquiet} works the same way, except that no warning diagnostic is
-issued if @var{file} does not exist.
+@code{soquiet} works the same way, except that GNU @command{troff}
+issues no warning diagnostic if @var{file} does not exist.
 @endDefreq
 
 @Defreq {pso, command}
@@ -16610,7 +16612,7 @@ both the @code{.nm} and @code{.nn} registers.
     @result{} This line ISN@quoteright{}T numbered.
 @endExample
 
-@Defreq {mc, [@Var{margin-character} [@Var{distance}]}
+@Defreq {mc, [@Var{margin-character} [@Var{distance}]]}
 @cindex margin character (@code{mc})
 @cindex character, margins (@code{mc})
 Begin (or, with no arguments, cease) writing a @dfn{margin-character} to
@@ -16868,8 +16870,8 @@ or for instrumentation while troubleshooting.  The @code{ex} and
 exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
-environments, hyphenation exceptions, registers, and page location traps
-to the standard error stream.
+defined colors, environments, hyphenation exceptions, registers, and
+page location traps to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
@@ -16944,6 +16946,16 @@ groff -rDB=1 @slanted{file}
 If you know in advance that there are many errors and no useful output,
 or are interested @emph{only} in diagnostic output, you can suppress GNU
 @code{troff}'s formatted output with its @option{-z} option.
+
+@Defreq {pcolor, }
+@cindex dumping defined colors (@code{pcolor})
+@cindex defined colors, dumping (@code{pcolor})
+@cindex colors, defined, dumping (@code{pcolor})
+Report, to the standard error stream, the list of defined color names.
+A device's default stroke and/or fill colors, ``default'', are not
+listed since they are immutable and their details unknown to the
+formatter.
+@endDefreq
 
 @Defreq {pev, }
 @cindex dumping environments (@code{pev})

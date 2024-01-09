@@ -9,7 +9,7 @@ groff_mm \- memorandum macros for GNU
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -648,13 +648,17 @@ See
 .\" In DWB mm, the mnemonic for `AF` was "alternate first-page format",
 .\" and was described in the context of the `A` and `E` registers and
 .\" `}Z` and `]S` strings, none of which we support.
+.\"
+.\" The "mm Reference" in _XENIX 286 Text Formatting Guide_ (1984) used
+.\" "affiliation", which makes sense to GBR.
 .TP
 .BR AF \~[\c
-.IR firm-name ]
-Specify firm associated with the document.
+.IR org-name ]
+Specify a memorandum's organizational affiliation.
 .
 At most one can be declared;
-the firm name is used by memorandum types and available to cover sheets.
+.I org-name
+is used by memorandum types and available to cover sheets.
 .
 .B AF
 terminates a document title started with
@@ -5184,6 +5188,8 @@ A scaling unit should be appended;
 is typical.
 .
 The default vertical spacing is 120% of the type size.
+.
+This register is a GNU extension.
 .
 .
 .TP

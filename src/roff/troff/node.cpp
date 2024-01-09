@@ -1894,10 +1894,10 @@ public:
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
   int character_type();
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
   void debug_node();
 };
 
@@ -1919,10 +1919,10 @@ public:
   hyphen_list *get_hyphen_list(hyphen_list *, int *);
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
 };
 
 class kern_pair_node : public node {
@@ -1946,10 +1946,10 @@ public:
   int ends_sentence();
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
   void vertical_extent(vunits *, vunits *);
 };
 
@@ -1976,10 +1976,10 @@ public:
   hyphenation_type get_hyphenation_type();
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
 };
 
 void *ligature_node::operator new(size_t n)
@@ -2408,10 +2408,10 @@ class hyphen_inhibitor_node : public node {
 public:
   hyphen_inhibitor_node(node * = 0);
   node *copy();
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
   hyphenation_type get_hyphenation_type();
 };
 
@@ -2424,9 +2424,9 @@ node *hyphen_inhibitor_node::copy()
   return new hyphen_inhibitor_node;
 }
 
-int hyphen_inhibitor_node::same(node *)
+bool hyphen_inhibitor_node::is_same_as(node *)
 {
-  return 1;
+  return true;
 }
 
 const char *hyphen_inhibitor_node::type()
@@ -2439,9 +2439,9 @@ int hyphen_inhibitor_node::force_tprint()
   return 0;
 }
 
-int hyphen_inhibitor_node::is_tag()
+bool hyphen_inhibitor_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 hyphenation_type hyphen_inhibitor_node::get_hyphenation_type()
@@ -2518,9 +2518,9 @@ int node::force_tprint()
   return 0;
 }
 
-int node::is_tag()
+bool node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 int node::get_break_code()
@@ -2617,7 +2617,7 @@ public:
   int ends_sentence();
   int overlaps_horizontally();
   int overlaps_vertically();
-  int same(node *);
+  bool is_same_as(node *);
   hyphenation_type get_hyphenation_type();
   tfont *get_tfont();
   hyphen_list *get_hyphen_list(hyphen_list *, int *);
@@ -2628,7 +2628,7 @@ public:
   node *add_self(node *, hyphen_list **);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
 };
 
 node *node::add_italic_correction(hunits *wd)
@@ -2769,10 +2769,10 @@ public:
   int overlaps_horizontally();
   units size();
   tfont *get_tfont();
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
   int get_break_code();
 };
 
@@ -3206,9 +3206,9 @@ int space_node::force_tprint()
   return 0;
 }
 
-int space_node::is_tag()
+bool space_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 int space_node::nspaces()
@@ -3865,7 +3865,7 @@ special_node::special_node(const macro &m, tfont *t,
   is_special = 1;
 }
 
-int special_node::same(node *n)
+bool special_node::is_same_as(node *n)
 {
   return mac == ((special_node *)n)->mac
 	 && tf == ((special_node *)n)->tf
@@ -3889,9 +3889,9 @@ int special_node::force_tprint()
   return 0;
 }
 
-int special_node::is_tag()
+bool special_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 node *special_node::copy()
@@ -3942,7 +3942,7 @@ suppress_node::suppress_node(int issue_limits, int on_or_off,
 {
 }
 
-int suppress_node::same(node *n)
+bool suppress_node::is_same_as(node *n)
 {
   return ((is_on == ((suppress_node *)n)->is_on)
 	  && (emit_limits == ((suppress_node *)n)->emit_limits)
@@ -3995,7 +3995,7 @@ void tag_node::tprint(troff_output_file *out)
     out->state.add_tag(out->fp, tag_string);
 }
 
-int tag_node::same(node *nd)
+bool tag_node::is_same_as(node *nd)
 {
   return tag_string == ((tag_node *)nd)->tag_string
 	 && delayed == ((tag_node *)nd)->delayed;
@@ -4011,7 +4011,7 @@ int tag_node::force_tprint()
   return !delayed;
 }
 
-int tag_node::is_tag()
+bool tag_node::is_tag()
 {
   return !delayed;
 }
@@ -4210,7 +4210,7 @@ int suppress_node::force_tprint()
   return is_on;
 }
 
-int suppress_node::is_tag()
+bool suppress_node::is_tag()
 {
   return is_on;
 }
@@ -4226,7 +4226,8 @@ class composite_node : public charinfo_node {
   node *n;
   tfont *tf;
 public:
-  composite_node(node *, charinfo *, tfont *, statem *, int, node * = 0);
+  composite_node(node *, charinfo *, tfont *, statem *, int,
+		 node * = 0 /* nullptr */);
   ~composite_node();
   node *copy();
   hunits width();
@@ -4239,10 +4240,10 @@ public:
   hyphen_list *get_hyphen_list(hyphen_list *, int *);
   node *add_self(node *, hyphen_list **);
   tfont *get_tfont();
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
   void vertical_extent(vunits *, vunits *);
   vunits vertical_width();
 };
@@ -4460,9 +4461,9 @@ int unbreakable_space_node::force_tprint()
   return 0;
 }
 
-int unbreakable_space_node::is_tag()
+bool unbreakable_space_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 breakpoint *unbreakable_space_node::get_breakpoints(hunits, int,
@@ -4508,7 +4509,7 @@ draw_node::draw_node(char c, hvpair *p, int np, font_size s,
     point[i] = p[i];
 }
 
-int draw_node::same(node *n)
+bool draw_node::is_same_as(node *n)
 {
   draw_node *nd = (draw_node *)n;
   if (code != nd->code || npoints != nd->npoints || sz != nd->sz
@@ -4530,9 +4531,9 @@ int draw_node::force_tprint()
   return 0;
 }
 
-int draw_node::is_tag()
+bool draw_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 draw_node::~draw_node()
@@ -4911,10 +4912,10 @@ static node *make_glyph_node(charinfo *s, environment *env,
   }
   assert(fontno < font_table_size && font_table[fontno] != 0);
   int fn = fontno;
-  int found = font_table[fontno]->contains(s);
+  bool found = font_table[fontno]->contains(s);
   if (!found) {
     macro *mac = s->get_macro();
-    if (mac && s->is_fallback())
+    if ((mac != 0 /* nullptr */) && s->is_fallback())
       return make_composite_node(s, env);
     if (s->numbered()) {
       if (want_warnings)
@@ -4923,7 +4924,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
       return 0 /* nullptr */;
     }
     special_font_list *sf = font_table[fontno]->sf;
-    while (sf != 0 && !found) {
+    while ((sf != 0 /* nullptr */) && !found) {
       fn = sf->n;
       if (font_table[fn])
 	found = font_table[fn]->contains(s);
@@ -4941,7 +4942,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
     }
     if (!found) {
       sf = global_special_fonts;
-      while (sf != 0 && !found) {
+      while ((sf != 0 /* nullptr */) && !found) {
 	fn = sf->n;
 	if (font_table[fn])
 	  found = font_table[fn]->contains(s);
@@ -5121,11 +5122,11 @@ inline
 #endif
 int same_node(node *n1, node *n2)
 {
-  if (n1 != 0) {
-    if (n2 != 0)
-      return n1->type() == n2->type() && n1->same(n2);
+  if (n1 != 0 /* nullptr */) {
+    if (n2 != 0 /* nullptr */)
+      return n1->type() == n2->type() && n1->is_same_as(n2);
     else
-      return 0;
+      return false;
   }
   else
     return n2 == 0;
@@ -5133,8 +5134,8 @@ int same_node(node *n1, node *n2)
 
 int same_node_list(node *n1, node *n2)
 {
-  while (n1 && n2) {
-    if (n1->type() != n2->type() || !n1->same(n2))
+  while ((n1 != 0 /* nullptr */) && (n2 != 0 /* nullptr */)) {
+    if (n1->type() != n2->type() || !n1->is_same_as(n2))
       return 0;
     n1 = n1->next;
     n2 = n2->next;
@@ -5142,7 +5143,7 @@ int same_node_list(node *n1, node *n2)
   return !n1 && !n2;
 }
 
-int extra_size_node::same(node *nd)
+bool extra_size_node::is_same_as(node *nd)
 {
   return n == ((extra_size_node *)nd)->n;
 }
@@ -5157,12 +5158,12 @@ int extra_size_node::force_tprint()
   return 0;
 }
 
-int extra_size_node::is_tag()
+bool extra_size_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int vertical_size_node::same(node *nd)
+bool vertical_size_node::is_same_as(node *nd)
 {
   return n == ((vertical_size_node *)nd)->n;
 }
@@ -5182,12 +5183,12 @@ int vertical_size_node::force_tprint()
   return 0;
 }
 
-int vertical_size_node::is_tag()
+bool vertical_size_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int hmotion_node::same(node *nd)
+bool hmotion_node::is_same_as(node *nd)
 {
   return n == ((hmotion_node *)nd)->n
 	 && col == ((hmotion_node *)nd)->col;
@@ -5209,9 +5210,9 @@ int hmotion_node::force_tprint()
   return 0;
 }
 
-int hmotion_node::is_tag()
+bool hmotion_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 node *hmotion_node::add_self(node *nd, hyphen_list **p)
@@ -5228,7 +5229,7 @@ hyphen_list *hmotion_node::get_hyphen_list(hyphen_list *tail, int *)
   return new hyphen_list(0, tail);
 }
 
-int space_char_hmotion_node::same(node *nd)
+bool space_char_hmotion_node::is_same_as(node *nd)
 {
   return n == ((space_char_hmotion_node *)nd)->n
 	 && col == ((space_char_hmotion_node *)nd)->col;
@@ -5244,9 +5245,9 @@ int space_char_hmotion_node::force_tprint()
   return 0;
 }
 
-int space_char_hmotion_node::is_tag()
+bool space_char_hmotion_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 node *space_char_hmotion_node::add_self(node *nd, hyphen_list **p)
@@ -5264,7 +5265,7 @@ hyphen_list *space_char_hmotion_node::get_hyphen_list(hyphen_list *tail,
   return new hyphen_list(0, tail);
 }
 
-int vmotion_node::same(node *nd)
+bool vmotion_node::is_same_as(node *nd)
 {
   return n == ((vmotion_node *)nd)->n
 	 && col == ((vmotion_node *)nd)->col;
@@ -5280,14 +5281,15 @@ int vmotion_node::force_tprint()
   return 0;
 }
 
-int vmotion_node::is_tag()
+bool vmotion_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int hline_node::same(node *nd)
+bool hline_node::is_same_as(node *nd)
 {
-  return x == ((hline_node *)nd)->x && same_node(n, ((hline_node *)nd)->n);
+  return x == ((hline_node *)nd)->x
+	       && same_node(n, ((hline_node *)nd)->n);
 }
 
 const char *hline_node::type()
@@ -5300,14 +5302,15 @@ int hline_node::force_tprint()
   return 0;
 }
 
-int hline_node::is_tag()
+bool hline_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int vline_node::same(node *nd)
+bool vline_node::is_same_as(node *nd)
 {
-  return x == ((vline_node *)nd)->x && same_node(n, ((vline_node *)nd)->n);
+  return x == ((vline_node *)nd)->x
+	       && same_node(n, ((vline_node *)nd)->n);
 }
 
 const char *vline_node::type()
@@ -5320,14 +5323,14 @@ int vline_node::force_tprint()
   return 0;
 }
 
-int vline_node::is_tag()
+bool vline_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int dummy_node::same(node * /*nd*/)
+bool dummy_node::is_same_as(node *)
 {
-  return 1;
+  return true;
 }
 
 const char *dummy_node::type()
@@ -5340,14 +5343,14 @@ int dummy_node::force_tprint()
   return 0;
 }
 
-int dummy_node::is_tag()
+bool dummy_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int transparent_dummy_node::same(node * /*nd*/)
+bool transparent_dummy_node::is_same_as(node *)
 {
-  return 1;
+  return true;
 }
 
 const char *transparent_dummy_node::type()
@@ -5360,9 +5363,9 @@ int transparent_dummy_node::force_tprint()
   return 0;
 }
 
-int transparent_dummy_node::is_tag()
+bool transparent_dummy_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 int transparent_dummy_node::ends_sentence()
@@ -5370,7 +5373,7 @@ int transparent_dummy_node::ends_sentence()
   return 2;
 }
 
-int zero_width_node::same(node *nd)
+bool zero_width_node::is_same_as(node *nd)
 {
   return same_node_list(n, ((zero_width_node *)nd)->n);
 }
@@ -5385,12 +5388,12 @@ int zero_width_node::force_tprint()
   return 0;
 }
 
-int zero_width_node::is_tag()
+bool zero_width_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int italic_corrected_node::same(node *nd)
+bool italic_corrected_node::is_same_as(node *nd)
 {
   return (x == ((italic_corrected_node *)nd)->x
 	  && same_node(n, ((italic_corrected_node *)nd)->n));
@@ -5406,9 +5409,9 @@ int italic_corrected_node::force_tprint()
   return 0;
 }
 
-int italic_corrected_node::is_tag()
+bool italic_corrected_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 left_italic_corrected_node::left_italic_corrected_node(node *xx)
@@ -5477,12 +5480,12 @@ int left_italic_corrected_node::force_tprint()
   return 0;
 }
 
-int left_italic_corrected_node::is_tag()
+bool left_italic_corrected_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int left_italic_corrected_node::same(node *nd)
+bool left_italic_corrected_node::is_same_as(node *nd)
 {
   return (x == ((left_italic_corrected_node *)nd)->x
 	  && same_node(n, ((left_italic_corrected_node *)nd)->n));
@@ -5582,7 +5585,7 @@ int left_italic_corrected_node::character_type()
   return n ? n->character_type() : 0;
 }
 
-int overstrike_node::same(node *nd)
+bool overstrike_node::is_same_as(node *nd)
 {
   return same_node_list(list, ((overstrike_node *)nd)->list);
 }
@@ -5597,9 +5600,9 @@ int overstrike_node::force_tprint()
   return 0;
 }
 
-int overstrike_node::is_tag()
+bool overstrike_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 node *overstrike_node::add_self(node *n, hyphen_list **p)
@@ -5616,7 +5619,7 @@ hyphen_list *overstrike_node::get_hyphen_list(hyphen_list *tail, int *)
   return new hyphen_list(0, tail);
 }
 
-int bracket_node::same(node *nd)
+bool bracket_node::is_same_as(node *nd)
 {
   return same_node_list(list, ((bracket_node *)nd)->list);
 }
@@ -5631,12 +5634,12 @@ int bracket_node::force_tprint()
   return 0;
 }
 
-int bracket_node::is_tag()
+bool bracket_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int composite_node::same(node *nd)
+bool composite_node::is_same_as(node *nd)
 {
   return ci == ((composite_node *)nd)->ci
     && same_node_list(n, ((composite_node *)nd)->n);
@@ -5652,12 +5655,12 @@ int composite_node::force_tprint()
   return 0;
 }
 
-int composite_node::is_tag()
+bool composite_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int glyph_node::same(node *nd)
+bool glyph_node::is_same_as(node *nd)
 {
   return ci == ((glyph_node *)nd)->ci
 	 && tf == ((glyph_node *)nd)->tf
@@ -5675,16 +5678,16 @@ int glyph_node::force_tprint()
   return 0;
 }
 
-int glyph_node::is_tag()
+bool glyph_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int ligature_node::same(node *nd)
+bool ligature_node::is_same_as(node *nd)
 {
   return (same_node(n1, ((ligature_node *)nd)->n1)
 	  && same_node(n2, ((ligature_node *)nd)->n2)
-	  && glyph_node::same(nd));
+	  && glyph_node::is_same_as(nd));
 }
 
 const char *ligature_node::type()
@@ -5697,12 +5700,12 @@ int ligature_node::force_tprint()
   return 0;
 }
 
-int ligature_node::is_tag()
+bool ligature_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int kern_pair_node::same(node *nd)
+bool kern_pair_node::is_same_as(node *nd)
 {
   return (amount == ((kern_pair_node *)nd)->amount
 	  && same_node(n1, ((kern_pair_node *)nd)->n1)
@@ -5719,12 +5722,12 @@ int kern_pair_node::force_tprint()
   return 0;
 }
 
-int kern_pair_node::is_tag()
+bool kern_pair_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int dbreak_node::same(node *nd)
+bool dbreak_node::is_same_as(node *nd)
 {
   return (same_node_list(none, ((dbreak_node *)nd)->none)
 	  && same_node_list(pre, ((dbreak_node *)nd)->pre)
@@ -5741,12 +5744,12 @@ int dbreak_node::force_tprint()
   return 0;
 }
 
-int dbreak_node::is_tag()
+bool dbreak_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int break_char_node::same(node *nd)
+bool break_char_node::is_same_as(node *nd)
 {
   return break_code == ((break_char_node *)nd)->break_code
 	 && col == ((break_char_node *)nd)->col
@@ -5763,9 +5766,9 @@ int break_char_node::force_tprint()
   return 0;
 }
 
-int break_char_node::is_tag()
+bool break_char_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 int break_char_node::get_break_code()
@@ -5773,9 +5776,9 @@ int break_char_node::get_break_code()
   return break_code;
 }
 
-int line_start_node::same(node * /*nd*/)
+bool line_start_node::is_same_as(node *)
 {
-  return 1;
+  return true;
 }
 
 const char *line_start_node::type()
@@ -5788,12 +5791,12 @@ int line_start_node::force_tprint()
   return 0;
 }
 
-int line_start_node::is_tag()
+bool line_start_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int space_node::same(node *nd)
+bool space_node::is_same_as(node *nd)
 {
   return n == ((space_node *)nd)->n
 	      && set == ((space_node *)nd)->set
@@ -5805,7 +5808,7 @@ const char *space_node::type()
   return "space_node";
 }
 
-int word_space_node::same(node *nd)
+bool word_space_node::is_same_as(node *nd)
 {
   return n == ((word_space_node *)nd)->n
 	 && set == ((word_space_node *)nd)->set
@@ -5822,9 +5825,9 @@ int word_space_node::force_tprint()
   return 0;
 }
 
-int word_space_node::is_tag()
+bool word_space_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 void unbreakable_space_node::tprint(troff_output_file *out)
@@ -5842,7 +5845,7 @@ void unbreakable_space_node::tprint(troff_output_file *out)
   out->right(n);
 }
 
-int unbreakable_space_node::same(node *nd)
+bool unbreakable_space_node::is_same_as(node *nd)
 {
   return n == ((unbreakable_space_node *)nd)->n
 	 && set == ((unbreakable_space_node *)nd)->set
@@ -5868,7 +5871,7 @@ hyphen_list *unbreakable_space_node::get_hyphen_list(hyphen_list *tail, int *)
   return new hyphen_list(0, tail);
 }
 
-int diverted_space_node::same(node *nd)
+bool diverted_space_node::is_same_as(node *nd)
 {
   return n == ((diverted_space_node *)nd)->n;
 }
@@ -5883,12 +5886,12 @@ int diverted_space_node::force_tprint()
   return 0;
 }
 
-int diverted_space_node::is_tag()
+bool diverted_space_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
-int diverted_copy_file_node::same(node *nd)
+bool diverted_copy_file_node::is_same_as(node *nd)
 {
   return filename == ((diverted_copy_file_node *)nd)->filename;
 }
@@ -5903,9 +5906,9 @@ int diverted_copy_file_node::force_tprint()
   return 0;
 }
 
-int diverted_copy_file_node::is_tag()
+bool diverted_copy_file_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 // Grow the font_table so that its size is > n.

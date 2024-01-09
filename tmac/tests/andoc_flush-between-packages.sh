@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -19,6 +19,13 @@
 #
 
 groff="${abs_top_builddir:-.}/test-groff"
+
+fail=
+
+wail () {
+    echo "...FAILED" >&2
+    fail=YES
+}
 
 # Regression-test Savannah #59016.
 #
@@ -52,27 +59,21 @@ partially-collected output line.'
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mandoc)
 echo "$output"
 
-FAIL=
-
 # Strip blank lines from the output first; all we care about for this
 # test is the presence, adjacency, and ordering of non-blank lines.
 
-if [ -z "$(echo "$output" \
+echo "checking man to mdoc transition" >&2
+test -z "$(echo "$output" \
     | sed '/^$/d' \
-    | sed -n '/lected output line/{N;/test page 1/p;}')" ]
-then
-    FAIL=yes
-    echo "man to mdoc transition failed" >&2
-fi
+    | sed -n '/lected output line/{N;/test page 1/p;}')" \
+    && wail
 
-if [ -z "$(echo "$output" \
+echo "checking mdoc to man transition" >&2
+test -z "$(echo "$output" \
     | sed '/^$/d' \
-    | sed -n '/partially-collected/{N;/test page 2/p;}')" ]
-then
-    FAIL=yes
-    echo "mdoc to man transition failed" >&2
-fi
+    | sed -n '/tially-collected/{N;/test page 2/p;}')" \
+    && wail
 
-test -z "$FAIL"
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

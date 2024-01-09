@@ -37,12 +37,13 @@ input='.TH f\-b 1 2022-04-08 "Bletcherous Glorfinking Dungr'\
 
 # The u with dieresis will not be output on the 'ascii' device.
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man)
+echo "$output"
 
 echo "checking that title with escaped hyphen-minus is preserved" >&2
 echo "$output" | grep -q '^f-b(1)' || wail
 
-pattern='Bletcherous Glorfinking Dungrndel 2022-04-08 Greebstank 2.21'
-pattern="$pattern            f-b(1)" # 12 spaces
+pattern='Bletcherous Glorfinking Dungrndel H2022-04-08Greebstank 2.21'
+pattern="$pattern              f-b(1)" # 14 spaces
 echo "checking for insanely long 4th TH argument" >&2
 echo "$output" | grep -Fqx "$pattern" || wail
 

@@ -78,10 +78,10 @@ AC_DEFUN([GROFF_PROG_YACC], [
   fi
 ])
 
-# We need Perl 5.6.1 or newer.
+# We need Perl 5.8 or newer.
 
 AC_DEFUN([GROFF_PERL], [
-  PERLVERSION=v5.6.1
+  PERLVERSION=v5.8
   AC_PATH_PROG([PERL], [perl], [no])
   if test "$PERL" = no
   then

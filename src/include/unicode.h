@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
 This file is part of groff.
@@ -17,8 +16,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-// Convert a groff glyph name to a string containing an underscore-separated
-// list of Unicode code points.  For example,
+// Convert a groff glyph name to a C string containing an
+// underscore-separated list of Unicode code points.  For example,
 //
 //   '-'   ->  '2010'
 //   ',c'  ->  '00E7'
@@ -27,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 // Return NULL if there is no equivalent.
 const char *glyph_name_to_unicode(const char *);
 
-// Convert a string containing an underscore-separated list of Unicode code
-// points to a groff glyph name.  For example,
+// Convert a C string containing an underscore-separated list of Unicode
+// code points to a groff glyph name.  For example,
 //
 //   '2010'       ->  'hy'
 //   '0066_006C'  ->  'fl'
@@ -36,10 +35,10 @@ const char *glyph_name_to_unicode(const char *);
 // Return NULL if there is no equivalent.
 const char *unicode_to_glyph_name(const char *);
 
-// Convert a string containing a precomposed Unicode character to a string
-// containing an underscore-separated list of Unicode code points,
-// representing its canonical decomposition.  Also perform compatibility
-// equivalent replacement.  For example,
+// Convert a C string containing a precomposed Unicode character to a
+// string containing an underscore-separated list of Unicode code
+// points, representing its canonical decomposition.  Also perform
+// compatibility equivalent replacement.  For example,
 //
 //   '1F3A' -> '0399_0313_0300'
 //   'FA6A' -> '983B'
@@ -47,17 +46,29 @@ const char *unicode_to_glyph_name(const char *);
 // Return NULL if there is no equivalent.
 const char *decompose_unicode(const char *);
 
-// Test whether the given string denotes a Unicode character.  It must
-// be of the form 'uNNNN', obeying the following rules.
+// Validate the given C string as representing a Unicode grapheme
+// cluster to troff or an output driver.  The string must match the
+// extended regular expression 'u1*[0-9]{4,5}(_1*[0-9]{4,5})*' and obey
+// the following rules.
 //
-//   - 'NNNN' must consist of at least 4 hexadecimal digits in upper case.
-//   - If there are more than 4 hexadecimal digits, the leading one must not
-//     be zero,
+//   - 'NNNN' must consist of at least 4 hexadecimal digits in upper
+//     case.
+//   - If there are more than 4 hexadecimal digits, the leading one must
+//     not be zero.
 //   - 'NNNN' must denote a valid Unicode code point (U+0000..U+10FFFF,
 //     excluding surrogate code points.
+//   - The string may represent a sequence of Unicode code points
+//     separated by '_' characters.  Each must satisfy the criteria
+//     above.  It is up to the caller to ensure that the first is a base
+//     character and that subsequent ones are valid combining characters
+//     (in troff, these are set up with the `composite` request).
 //
-// Return a pointer to 'NNNN' (skipping the leading 'u' character) in case
-// of success, NULL otherwise.
-const char *check_unicode_name(const char *);
+// Return a pointer to the second character in the string (skipping the
+// leading 'u') if successful, and a null pointer otherwise.
+const char *valid_unicode_code_sequence(const char *);
 
-// end of unicode.h
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

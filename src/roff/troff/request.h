@@ -73,7 +73,7 @@ public:
   friend class string_iterator;
   friend void chop_macro();
   friend void substring_request();
-  friend int operator==(const macro &, const macro &);
+  friend bool operator==(const macro &, const macro &);
 };
 
 extern void init_input_requests();

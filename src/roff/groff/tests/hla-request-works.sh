@@ -40,15 +40,6 @@ every noble enterprise.
 .tm after=@n[.hla]
 .Madison'
 
-     1  Religious bondage shackles and
-     2  debilitates  the  mind and un-
-     3  fits it for every noble enter-
-     4  prise.
-     5  Religious bondage shackles and
-     6  debilitates   the   mind   and
-     7  unfits   it  for  every  noble
-     8  enterprise.
-
 error=$(printf "%s\n" "$input" | "$groff" -T ascii 2>&1 > /dev/null)
 echo "$error"
 

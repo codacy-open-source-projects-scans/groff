@@ -104,7 +104,7 @@
 .  ie r LL \
 .    ll \n[LL]u
 .  el \
-.    ll 78n
+.    ll 80n
 .
 .  ie r LT \
 .    lt \n[LT]u
@@ -112,7 +112,7 @@
 .    lt \n[.l]u
 .
 .  nr doc-display-vertical 1v
-.  nr doc-line-length \n[.l]
+.  nr doc-line-length (\n[.l] - 1n)
 ..
 .ec
 .

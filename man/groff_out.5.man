@@ -986,6 +986,8 @@ This command is a
 extension.
 .
 .
+.br
+.ne 4v
 .TP
 .D-command e "h v"
 Draw an outlined ellipse with a horizontal diameter of\~\c
@@ -1853,6 +1855,8 @@ manual.
 You can browse it interactively with \[lq]info groff\[rq].
 .
 .
+.br
+.ne 4v
 .P
 \[lq]Troff User's Manual\[rq]
 by Joseph F.\& Ossanna,

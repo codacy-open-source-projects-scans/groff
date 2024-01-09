@@ -88,8 +88,8 @@ AI|N|i|text.map|text.enc|URWGothic-BookOblique.t1!URWGothic-BookOblique!URWGothi
 AR|N|r|text.map|text.enc|URWGothic-Book.t1!URWGothic-Book!URWGothicL-Book!a010013l.pfb
 BMB|N|r|text.map|text.enc|URWBookman-Demi.t1!URWBookman-Demi!URWBookmanL-DemiBold!b018015l.pfb
 BMBI|N|i|text.map|text.enc|URWBookman-DemiItalic.t1!URWBookman-DemiItalic!URWBookmanL-DemiBoldItal!b018035l.pfb
-BMI|N|i|text.map|text.enc|URWBookman-Light.t1!URWBookman-Light!URWBookmanL-LighItal!b018032l.pfb
-BMR|N|r|text.map|text.enc|URWBookman-LightItalic.t1!URWBookman-LightItalic!URWBookmanL-Ligh!b018012l.pfb
+BMI|N|r|text.map|text.enc|URWBookman-LightItalic.t1!URWBookman-LightItalic!URWBookmanL-LighItal!b018032l.pfb
+BMR|N|i|text.map|text.enc|URWBookman-Light.t1!URWBookman-Light!URWBookmanL-Ligh!b018012l.pfb
 CB|N|nr|text.map|text.enc|NimbusMonoPS-Bold.t1!NimbusMonoPS-Bold!NimbusMonL-Bold!n022004l.pfb
 CBI|N|ni|text.map|text.enc|NimbusMonoPS-BoldItalic.t1!NimbusMonoPS-BoldItalic!NimbusMonL-BoldObli!n022024l.pfb
 CI|N|ni|text.map|text.enc|NimbusMonoPS-Italic.t1!NimbusMonoPS-Italic!NimbusMonL-ReguObli!n022023l.pfb

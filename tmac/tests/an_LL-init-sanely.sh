@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -32,17 +32,19 @@ groff="${abs_top_builddir:-.}/test-groff"
 # In this test we _expect_ the .ll request to be ignored and overridden.
 # We choose a value that is not nroff's default nor man's default.
 
-EXAMPLE='
-.ll 70n
+input='.ll 70n
 .TH ll\-hell 1 2020-08-22 "groff test suite"
 .SH Name
 ll\-hell \- see how long the lines are
 .SH Description
-LL=\n[LL]u
+.nr cells (\n[LL]u / \n[.H]u)
+LL=\n[LL]u, .H=\n[.H]u, length=\n[cells]n
 .PP
-\&.l=\n[.l]u'
+.nr cells (\n[.l]u / \n[.H]u)
+\&.l=\n[.l]u, .H=\n[.H]u, length=\n[cells]n'
 
-printf "%s\n" "$EXAMPLE" | "$groff" -Tascii -P-cbou -man \
-    | grep -q 'LL=1872u'
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man)
+echo "$output"
+echo "$output" | grep -q 'LL=1920u'
 
 # vim:set ai et sw=4 ts=4 tw=72:

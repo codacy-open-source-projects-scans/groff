@@ -96,12 +96,9 @@ BEGIN {
      'prog' => EMPTYSTRING,
     };
 
-  {
-    ( my $volume, my $directory, $Globals->{'prog'} ) =
-      File::Spec->splitpath($0);
-    # $Globals->{'prog'} is 'glilypond' when installed,
-    # 'glilypond.pl' when not
-  }
+  ( undef, undef, $Globals->{'prog'} ) = File::Spec->splitpath($0);
+  # $Globals->{'prog'} is 'glilypond' when installed,
+  # 'glilypond.pl' when not
 
 
   $\ = "\n";	# adds newline at each print

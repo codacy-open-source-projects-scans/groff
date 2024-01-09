@@ -399,7 +399,7 @@ char *color::print_color()
   return s;
 }
 
-color default_color("");
+color default_color("default");
 
 // Local Variables:
 // fill-column: 72

@@ -1337,9 +1337,15 @@ can make use of it.
 is a Boolean-valued register indicating whether the bottom of the table
 is being processed.
 .
-The
+A
 .B #T
-register marks the top of the table.
+register
+is used internally.
+.\" marks the top of the table.
+.\" XXX: That claim, from Lesk 1979, is not true of DWB tbl/nroff nor
+.\" Heirloom Doctools tbl/nroff.  GNU tbl appears to use it to mark the
+.\" top of a diverted table row when it's too tall to fit before the
+.\" next vertical trap.
 .
 Avoid using these names for any other purpose.
 .

@@ -1253,13 +1253,13 @@ public:
   non_interpreted_char_node(unsigned char);
   node *copy();
   int interpret(macro *);
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
 };
 
-int non_interpreted_char_node::same(node *nd)
+bool non_interpreted_char_node::is_same_as(node *nd)
 {
   return c == ((non_interpreted_char_node *)nd)->c;
 }
@@ -1274,9 +1274,9 @@ int non_interpreted_char_node::force_tprint()
   return 0;
 }
 
-int non_interpreted_char_node::is_tag()
+bool non_interpreted_char_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 non_interpreted_char_node::non_interpreted_char_node(unsigned char n) : c(n)
@@ -1539,6 +1539,22 @@ static void define_color()
   skip_line();
 }
 
+static void report_color()
+{
+  // TODO: Accept an argument to look up a color by name and dump its
+  // info (name, color space, channel values).
+  dictionary_iterator iter(color_dictionary);
+  symbol entry;
+  color *color_entry;
+  while(iter.get(&entry, reinterpret_cast<void **>(&color_entry))) {
+    assert(!entry.is_null());
+    assert(color_entry != 0 /* nullptr */);
+    const char *color_name = entry.contents();
+    errprint("%1\n", color_name);
+  }
+  skip_line();
+}
+
 node *do_overstrike()
 {
   overstrike_node *on = new overstrike_node;
@@ -1760,10 +1776,10 @@ public:
   token_node(const token &t);
   node *copy();
   token_node *get_token_node();
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
 };
 
 token_node::token_node(const token &t) : tk(t)
@@ -1780,7 +1796,7 @@ token_node *token_node::get_token_node()
   return this;
 }
 
-int token_node::same(node *nd)
+bool token_node::is_same_as(node *nd)
 {
   return tk == ((token_node *)nd)->tk;
 }
@@ -1795,9 +1811,9 @@ int token_node::force_tprint()
   return 0;
 }
 
-int token_node::is_tag()
+bool token_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 token::token() : nd(0), type(TOKEN_EMPTY)
@@ -2405,8 +2421,8 @@ void token::next()
 	    nm = composite_glyph_name(s);
 	  }
 	  else {
-	    const char *gn = check_unicode_name(s.contents());
-	    if (gn) {
+	    const char *gn = valid_unicode_code_sequence(s.contents());
+	    if (gn != 0 /* nullptr */) {
 	      const char *gn_decomposed = decompose_unicode(gn);
 	      if (gn_decomposed)
 		gn = &gn_decomposed[1];
@@ -3890,10 +3906,10 @@ void macro_iterator::shift(int n)
 
 // This gets used by, e.g., .if '\?xxx\?''.
 
-int operator==(const macro &m1, const macro &m2)
+bool operator==(const macro &m1, const macro &m2)
 {
   if (m1.len != m2.len)
-    return 0;
+    return false;
   string_iterator iter1(m1);
   string_iterator iter2(m2);
   int n = m1.len;
@@ -3909,19 +3925,18 @@ int operator==(const macro &m1, const macro &m2)
 	delete nd1;
       else if (c2 == 0)
 	delete nd2;
-      return 0;
+      return false;
     }
     if (c1 == 0) {
       assert(nd1 != 0);
       assert(nd2 != 0);
-      int are_same = nd1->type() == nd2->type() && nd1->same(nd2);
+      bool same = nd1->type() == nd2->type() && nd1->is_same_as(nd2);
       delete nd1;
       delete nd2;
-      if (!are_same)
-	return 0;
+      return same;
     }
   }
-  return 1;
+  return true;
 }
 
 static void interpolate_macro(symbol nm, bool do_not_want_next_token)
@@ -4122,8 +4137,8 @@ static void map_composite_character()
   }
   const char *from_gn = glyph_name_to_unicode(from.contents());
   if (!from_gn) {
-    from_gn = check_unicode_name(from.contents());
-    if (!from_gn) {
+    from_gn = valid_unicode_code_sequence(from.contents());
+    if (0 /* nullptr */ == from_gn) {
       error("invalid composite glyph name '%1'", from.contents());
       skip_line();
       return;
@@ -4142,8 +4157,8 @@ static void map_composite_character()
   }
   const char *to_gn = glyph_name_to_unicode(to.contents());
   if (!to_gn) {
-    to_gn = check_unicode_name(to.contents());
-    if (!to_gn) {
+    to_gn = valid_unicode_code_sequence(to.contents());
+    if (0 /* nullptr */ == to_gn) {
       error("invalid composite glyph name '%1'", to.contents());
       skip_line();
       return;
@@ -4166,8 +4181,8 @@ static symbol composite_glyph_name(symbol nm)
   input_stack::push(mi);
   const char *gn = glyph_name_to_unicode(nm.contents());
   if (!gn) {
-    gn = check_unicode_name(nm.contents());
-    if (!gn) {
+    gn = valid_unicode_code_sequence(nm.contents());
+    if (0 /* nullptr */ == gn) {
       error("invalid base glyph '%1' in composite glyph name", nm.contents());
       return EMPTY_SYMBOL;
     }
@@ -4187,8 +4202,8 @@ static symbol composite_glyph_name(symbol nm)
     gl += '\0';
     const char *u = glyph_name_to_unicode(gl.contents());
     if (!u) {
-      u = check_unicode_name(gl.contents());
-      if (!u) {
+      u = valid_unicode_code_sequence(gl.contents());
+      if (0 /* nullptr */ == u) {
 	error("invalid component '%1' in composite glyph name",
 	      gl.contents());
 	return EMPTY_SYMBOL;
@@ -5483,10 +5498,10 @@ public:
   int interpret(macro *);
   node *copy();
   int ends_sentence();
-  int same(node *);
+  bool is_same_as(node *);
   const char *type();
   int force_tprint();
-  int is_tag();
+  bool is_tag();
 };
 
 non_interpreted_node::non_interpreted_node(const macro &m) : mac(m)
@@ -5498,7 +5513,7 @@ int non_interpreted_node::ends_sentence()
   return 2;
 }
 
-int non_interpreted_node::same(node *nd)
+bool non_interpreted_node::is_same_as(node *nd)
 {
   return mac == ((non_interpreted_node *)nd)->mac;
 }
@@ -5513,9 +5528,9 @@ int non_interpreted_node::force_tprint()
   return 0;
 }
 
-int non_interpreted_node::is_tag()
+bool non_interpreted_node::is_tag()
 {
-  return 0;
+  return false;
 }
 
 node *non_interpreted_node::copy()
@@ -8608,6 +8623,7 @@ void init_input_requests()
   init_request("opena", opena_request);
   init_request("output", output_request);
   init_request("pc", set_page_character);
+  init_request("pcolor", report_color);
   init_request("pi", pipe_output);
   init_request("pm", print_macros);
   init_request("psbb", ps_bbox_request);

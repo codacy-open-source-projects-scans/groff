@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 2002-2020 Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
@@ -23,10 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "unicode.h"
 
-const char *check_unicode_name(const char *u)
+const char *valid_unicode_code_sequence(const char *u)
 {
   if (*u != 'u')
-    return 0;
+    return 0 /* nullptr */;
   const char *p = ++u;
   for (;;) {
     int val = 0;
@@ -34,32 +33,38 @@ const char *check_unicode_name(const char *u)
     for (;;) {
       // only uppercase hex digits allowed
       if (!csxdigit(*p))
-	return 0;
+	return 0 /* nullptr */;
       if (csdigit(*p))
 	val = val*0x10 + (*p-'0');
       else if (csupper(*p))
 	val = val*0x10 + (*p-'A'+10);
       else
-	return 0;
+	return 0 /* nullptr */;
       // biggest Unicode value is U+10FFFF
       if (val > 0x10FFFF)
-	return 0;
+	return 0 /* nullptr */;
       p++;
       if (*p == '\0' || *p == '_')
 	break;
     }
     // surrogates not allowed
     if ((val >= 0xD800 && val <= 0xDBFF) || (val >= 0xDC00 && val <= 0xDFFF))
-      return 0;
+      return 0 /* nullptr */;
     if (val > 0xFFFF) {
       if (*start == '0')	// no leading zeros allowed if > 0xFFFF
-	return 0;
+	return 0 /* nullptr */;
     }
     else if (p - start != 4)	// otherwise, check for exactly 4 hex digits
-      return 0;
+      return 0 /* nullptr */;
     if (*p == '\0')
       break;
     p++;
   }
   return u;
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

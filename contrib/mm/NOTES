@@ -66,7 +66,7 @@ cov*at!x!y		S	Author(s) title given to .AT
 				y is the argument-index [1-9].
 				Look at the table with indexes.
 
-cov*firm		I	Author(s) firm.
+cov*firm		I	Organizational affiliation.
 
 cov*abs-arg		I	Argument to abstract.
 

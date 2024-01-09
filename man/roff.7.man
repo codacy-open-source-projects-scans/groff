@@ -1279,7 +1279,7 @@ and basic
 usage,
 updating it as the package accrued features.
 .
-Sixth Edition additionally saw the debut of the
+Sixth Edition (1975) additionally saw the debut of the
 .I tbl \" AT&T
 preprocessor for formatting tables,
 also by Lesk.
@@ -1824,11 +1824,12 @@ itself;
 this trait combined with their domain-specific nature can make them easy
 to acquire and master.
 .
-The macro definitions of a package are typically kept in a file called
-.IB name .tmac
+The implementation of a package
+.I name
+is typically kept in a file called
+.RI \[lq]name .tmac \[rq]
 (historically,
-.BI tmac. name\/\c\" Italic correction comes before \c !
-).
+.RI \[lq] tmac. name\[rq]).
 .
 Find details on the naming and placement of macro packages in
 .MR groff_tmac @MAN5EXT@ .

@@ -57,8 +57,8 @@ echo "testing that no diagnostic messages are produced" >&2
 test -z "$error" || wail
 echo "testing that lines break where expected" >&2
 break1=$(echo "$output" | grep -x "  *Commerce  *<https.*actionscript/")
-break2=$(echo "$output" | grep -x "  *articles/.* transaction .* plun-")
-break3=$(echo "$output" | grep -x "  *<https.*61234")
+break2=$(echo "$output" | grep -x "  *articles/.* which A  * plunders")
+break3=$(echo "$output" | grep -x "  *<https.*23456")
 test -n "$break1" || wail "first break"
 test -n "$break2" || wail "second break"
 test -n "$break3" || wail "third break"

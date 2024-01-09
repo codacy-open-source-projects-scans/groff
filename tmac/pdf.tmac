@@ -824,6 +824,13 @@ am solely responsible for any bugs I may have introduced into this file.
 .device pdf: background \\$*
 ..
 .
+.de pdfpagenumbering
+.\" 1=type of [D=decimal,R=Roman,r=roman,A=Uppercase,a=lowercase]
+.\" 2=prefix label
+.\" 3=start number
+.device pdf: pagenumbering \\$*
+..
+.
 .cp \n[*groff_pdf_tmac_C]
 .do rr *groff_pdf_tmac_C
 .

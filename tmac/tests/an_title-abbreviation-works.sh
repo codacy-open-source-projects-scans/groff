@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -25,37 +25,38 @@ groff="${abs_top_builddir:-.}/test-groff"
 # Excessively long man page titles can overrun other parts of the titles
 # (headers and footers).  Verify abbreviation of ones that would.
 
-FAIL=
+fail=
 
-INPUT='.TH foo 1 2021-05-31 "groff test suite"
+wail () {
+    echo "...FAILED" >&2
+    fail=YES
+}
+
+input='.TH foo 1 2021-05-31 "groff test suite"
 .SH Name
 foo \- a command with a very short name'
 
-OUTPUT=$(echo "$INPUT" | "$groff" -Tascii -P-cbou -man)
+output=$(echo "$input" | "$groff" -Tascii -P-cbou -man)
+echo "$output"
 
-if ! echo "$OUTPUT" \
-    | grep -Eq 'foo\(1\) +General Commands Manual +foo\(1\)'
-then
-    FAIL=yes
-    echo "short page title test failed" >&2
-fi
+echo "checking that short man page title is set acceptably" >&2
+echo "$output" \
+    | grep -Eq 'foo\(1\) +General Commands Manual +foo\(1\)' || wail
 
-INPUT='.TH CosNotifyChannelAdmin_StructuredProxyPushSupplier 3erl \
+input='.TH CosNotifyChannelAdmin_StructuredProxyPushSupplier 3erl \
 2021-05-31 "groff test suite" "Erlang Module Definition"
 .SH Name
 CosNotifyChannelAdmin_StructuredProxyPushSupplier \- OMFG'
 
-OUTPUT=$(echo "$INPUT" | "$groff" -Tascii -P-cbou -man)
+output=$(echo "$input" | "$groff" -Tascii -P-cbou -man)
+echo "$output"
 
-TITLE_ABBV="CosNotif...hSupplier(3erl)"
-PATTERN="$TITLE_ABBV Erlang Module Definition $TITLE_ABBV"
+echo "checking that ultra-long man page title is abbreviated" >&2
+title_abbv="CosNotif...hSupplier(3erl)"
+# 2 spaces each before "Erlang" and after "Definition"
+pattern="$title_abbv  Erlang Module Definition  $title_abbv"
+echo "$output" | grep -Fq "$pattern" || wail
 
-if ! echo "$OUTPUT" | grep -Fq "$PATTERN"
-then
-    FAIL=yes
-    echo "long page title test failed" >&2
-fi
-
-test -z "$FAIL"
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

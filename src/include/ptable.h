@@ -23,6 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <assert.h>
 #include <string.h>
 
+// This groffism can be replaced with
+// std::unordered_map<const char *, T> if/when we migrate to C++11.
+
 // 'class PTABLE(T)' is the type of a hash table mapping a string
 // (const char *) to an object of type T.
 //

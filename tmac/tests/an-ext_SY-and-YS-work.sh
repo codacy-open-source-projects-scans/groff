@@ -70,7 +70,7 @@ echo "$output" \
 echo 'checking for correct indentation of broken synopsis lines' >&2
 echo "$output" \
     | sed -n -e '/foo operand1/{' \
-        -e 'n;/         operand7.*/p' \
+        -e 'n;/         operand8.*/p' \
         -e '}' \
     | grep -q . || wail
 

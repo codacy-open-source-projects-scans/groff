@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <assert.h>
 
+// This groffism can be replaced with std::unordered_map<int, T> if/when
+// we migrate to C++11.
+
 // 'class ITABLE(T)' is the type of a hash table mapping an integer (int >= 0)
 // to an object of type T.
 //

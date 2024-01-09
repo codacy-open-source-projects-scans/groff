@@ -9,7 +9,7 @@ output driver for Portable Document Format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2011-2022 Free Software Foundation, Inc.
+.\" Copyright (C) 2011-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -388,8 +388,11 @@ is the foundry name or blank for the default foundry.
 is the PostScript name of the font,
 and
 .I filename
-is the name of the file containing the font;
-lines beginning with
+is the name of the file containing the font.
+.
+It can also contain a pathname to the font.
+.
+Any lines beginning with
 .B #
 and blank lines are ignored;
 fields must be separated by tabs
@@ -400,7 +403,8 @@ allowed);
 is searched for using the same mechanism that is used
 for
 .I groff
-font metric files.
+font metric files,
+unless a path is also present.
 .
 The
 .I download
@@ -1380,6 +1384,92 @@ An
 macro file is also available;
 see
 .MR groff_tmac @MAN5EXT@ .
+.RE
+.
+.
+.TP
+.BI "\[rs]X\[aq]pdf: pagenumbering\~" "type prefix start" \[aq]
+.RS
+Control the page numbering shown in a PDF reader's outline
+(which also contains bookmarks).
+.
+Normally,
+the page number associated with each bookmark is its sequence number in
+the file,
+but this might not match the desired numbering scheme.
+.
+A document may bear a cover sheet
+(which has no page number);
+front matter
+(possibly including a table of contents)
+that uses lowercase roman numerals;
+the main matter,
+which uses arabic numerals;
+and back matter,
+which may include appendices that are each prefixed with a letter and
+independently numbered.
+.
+Place this command prior to breaking the page to which the new numbering
+scheme is to apply.
+.
+It then persists until changed again.
+.
+.
+.P
+.TP 8n \" "prefix" + 2n
+.I type
+specifies the numbering system to use. It
+should be one of
+.RB \[lq] Decimal \[rq],
+.RB \[lq] Roman \[rq],
+.RB \[lq] roman \[rq],
+.RB \[lq] Alpha \[rq],
+or
+.RB \[lq] alpha \[rq].
+.
+This parameter may be abbreviated to the first letter,
+whose lettercase determines that used for the numbers where applicable.
+.
+The ordering used by the alphabetic numbering systems is
+A-Z \&.\|.\|.\& AA-AZ \&.\|.\|.\& ZA-ZZ.
+.
+.I type
+can also be
+.RB \[lq] .\& \[rq],
+which selects no numbering system;
+you may still provide a
+.I prefix.
+.
+.
+.TP
+.I prefix
+specifies text to precede the page number.
+.
+For example,
+to number the pages of an appendix
+\[lq]A-1\[rq],
+\[lq]A-2\[rq],
+and so forth,
+use a
+.I prefix
+of
+.RB \[lq] A- \[rq]
+and a
+.I type
+of
+.RB \[lq] Decimal \[rq].
+.
+.
+.TP
+.I start
+determines the page number.
+.
+It defaults to 1.
+.
+.
+.P
+The convenience macro for this escape sequence is
+.BR \%.pdfpagenumbering .
 .RE
 .
 .

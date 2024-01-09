@@ -10,7 +10,7 @@ language reference
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2000-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 2000-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -695,7 +695,7 @@ which can be used to paint the interior of a closed geometric figure.
 .
 The
 .BR color ,
-.BR defcolor ,
+.BR \%defcolor ,
 .BR gcolor ,
 and
 .B fcolor
@@ -3839,6 +3839,17 @@ Change the page number character used in titles
 .RI to\~ c .
 .
 .TPx
+.REQ .pcolor
+Report,
+to the standard error stream,
+the list of defined color names.
+.
+A device's default stroke and/or fill colors,
+\[lq]default\[rq],
+are not listed since they are immutable and their details unknown to the
+formatter.
+.
+.TPx
 .REQ .pev
 Report the state of the current environment followed by that of all
 other environments to the standard error stream.
@@ -6168,7 +6179,8 @@ see
 and
 .esc m .
 .
-Empty if the stroke color is the default.
+The default stroke color is named
+.RB \[lq] default \[rq].
 .
 .TP
 .REG .M
@@ -6178,7 +6190,8 @@ see
 and
 .esc M .
 .
-Empty if the fill color is the default.
+The default fill color is named
+.RB \[lq] default \[rq].
 .
 .TP
 .REG .n
@@ -8037,12 +8050,14 @@ defined names\[em]macros,
 strings,
 and
 .RB diversions\[em]( .pm );
+defined colors
+.RB ( .pcolor );
 hyphenation exceptions
-.RB ( .phw ),
+.RB ( .phw );
 environments
-.RB ( .pev ),
+.RB ( .pev );
 registers
-.RB ( .pnr ),
+.RB ( .pnr );
 and page location traps
 .RB ( .ptr )
 to the standard error stream.

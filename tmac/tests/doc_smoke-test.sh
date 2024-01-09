@@ -43,7 +43,6 @@ things are probably working.'
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mdoc)
 echo "$output"
-fail=
 
 echo "checking header for correct content" >&2
 echo "$output" | grep -qE '^mdoc-test\(7\) +Miscellaneous' || wail
@@ -55,7 +54,7 @@ echo "checking for section heading \"Description\"" >&2
 echo "$output" | grep -qE '^Description$' || wail
 
 echo "checking paragraph body for correct content" >&2
-echo "$output" | grep -qE 'you can read this' || wail
+echo "$output" | grep -qE 'you +can +read +this' || wail
 
 echo "checking footer for correct content" >&2
 echo "$output" | grep -qE '^GNU +August 25, 2020 +mdoc-test\(7\)' \

@@ -183,7 +183,7 @@ int glyph_to_unicode(glyph *g)
       }
     }
     // Unicode character?
-    if (check_unicode_name(nm)) {
+    if (valid_unicode_code_sequence(nm)) {
       char *ignore;
       return (int)strtol(nm + 1, &ignore, 16);
     }

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -20,9 +20,16 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
+fail=
+
+wail () {
+    echo "...FAILED" >&2
+    fail=YES
+}
+
 # Regression-test Debian #1022179.
 #
-# Ensure that subsection headings are indent correctly even if they
+# Ensure that subsection headings are indented correctly even if they
 # break across output lines.
 
 input='.Dd 2022-10-28
@@ -39,53 +46,32 @@ Further discussion should be indented as ordinary paragraph.'
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mdoc)
 echo "$output"
 
-fail=
-
 # Verify that default `Sh` indentation is zero.
-if ! echo "$output" | grep -Eq '^A +long +section +heading'
-then
-    fail=yes
-    echo "default 'Sh' indentation check failed on 1st line" >&2
-fi
+echo "checking default 'Sh' indentation on 1st line" >&2
+echo "$output" | grep -Eq '^A +long +section +heading' || wail
 
-if ! echo "$output" | grep -Eq '^of said title is consistent'
-then
-    fail=yes
-    echo "default 'Sh' indentation check failed on 2nd line" >&2
-fi
+echo "cehcking default 'Sh' indentation on 2nd line" >&2
+echo "$output" | grep -Eq '^said title is consistent' || wail
 
 # Verify that paragraph indentation after section heading is correct.
+echo "checking 'Pp' indentation after 'Sh'" >&2
 # 5 spaces in string literal.
-if ! echo "$output" | grep -Eq '^     Discussion should be indented'
-then
-    fail=yes
-    echo "'Pp' indentation after 'Sh' check failed" >&2
-fi
+echo "$output" | grep -Eq '^     Discussion should be indented' || wail
 
 # Verify that default `Ss` indentation is three ens.
+echo "checking default 'Ss' indentation on 1st line" >&2
 # 3 spaces in string literal.
-if ! echo "$output" | grep -Eq '^   A +long +subsection +heading'
-then
-    fail=yes
-    echo "default 'Ss' indentation check failed on 1st line" >&2
-fi
+echo "$output" | grep -Eq '^   A +long +subsection +heading' || wail
 
+echo "checking default 'Ss' indentation on 2nd line" >&2
 # 3 spaces in string literal.
-if ! echo "$output" | grep -Eq '^   indentation of said title is'
-then
-    fail=yes
-    echo "default 'Ss' indentation check failed on 2nd line" >&2
-fi
+echo "$output" | grep -Eq '^   indentation of said title is' || wail
 
 # Verify that paragraph indentation after subsection heading is correct.
+echo "checking 'Pp' indentation after 'Ss'" >&2
 # 5 spaces in string literal.
-if ! echo "$output" | grep -Eq '^     Further discussion should be'
-then
-    fail=yes
-    echo "'Pp' indentation after 'Ss' check failed" >&2
-fi
+echo "$output" | grep -Eq '^     Further discussion should be' || wail
 
 test -z "$fail"
-exit
 
 # vim:set ai et sw=4 ts=4 tw=72:

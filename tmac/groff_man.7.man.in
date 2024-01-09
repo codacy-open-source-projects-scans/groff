@@ -3632,7 +3632,7 @@ indentation.
 .TP
 .BI \-rLL= line-length
 Set line length;
-the default is 78n on terminals
+the default is 80n on terminals
 and 6.5i on typesetters.
 .
 .
@@ -3900,7 +3900,7 @@ _ifstyle()dnl
 \&.ss 12 0 \e" See groff(@MAN7EXT@).
 .ne 2v
 \&.\e" Keep pages narrow even on wide terminals.
-\&.if n .if \en[LL]>78n .nr LL 78n
+\&.if n .if \en[LL]>80n .nr LL 80n
 .EE
 .RE
 .RE

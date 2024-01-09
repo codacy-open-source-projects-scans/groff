@@ -472,7 +472,7 @@ directive to the font description file.
 .BI \-w\~ space-width
 Use
 .I space-width
-as the with of inter-word spaces.
+as the width of inter-word spaces.
 .
 .
 .TP

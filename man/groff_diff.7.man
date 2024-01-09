@@ -11,7 +11,7 @@ and AT&T
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -628,6 +628,8 @@ a translator that would convert the C/A/T output from early-vintage AT&T
 to a form suitable for Versatec and Benson-Varian plotters.)
 .
 .
+.br
+.ne 6v
 .\" ====================================================================
 .SS "Drawing commands"
 .\" ====================================================================
@@ -1100,6 +1102,8 @@ character translations and definitions are ignored.
 Other escape sequences are not supported.
 .
 .
+.br
+.ne 3v
 .TP
 .BI \[rs]Y m
 .TQ
@@ -3088,6 +3092,18 @@ other environments to the standard error stream.
 .
 .
 .TP
+.B .pcolor
+Report,
+to the standard error stream,
+the list of defined color names.
+.
+A device's default stroke and/or fill colors,
+\[lq]default\[rq],
+are not listed since they are immutable and their details unknown to the
+formatter.
+.
+.
+.TP
 .B .phw
 Report,
 to the standard error stream,
@@ -3208,7 +3224,7 @@ arguments.
 .
 .
 .TP
-.BR .return\~ [
+.BR .return\~ [\c
 .IR anything ]
 .\" XXX: useless request warning?
 Stop interpreting a macro,
@@ -5199,6 +5215,8 @@ and
 .
 More aspects of formatter state can be examined with requests that write
 lists of
+defined colors
+.RB ( pcolor ),
 environments
 .RB ( pev ),
 hyphenation exceptions
@@ -5780,10 +5798,9 @@ will not.
 .\" ====================================================================
 .
 Its extensions notwithstanding,
-the
-.I groff
-intermediate output format has some incompatibilities
-with that of AT&T
+GNU
+.IR troff 's \" GNU
+output format has some incompatibilities with that of AT&T
 .IR troff , \" AT&T
 but better compatibility is sought;
 problem reports and patches are welcome.
