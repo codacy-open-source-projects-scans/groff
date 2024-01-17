@@ -2018,7 +2018,7 @@ The default is
 .I mm
 calls
 .B HY
-after determing the heading typeface and size.
+after determining the heading typeface and size.
 .
 It could be used to change indentation.
 .
@@ -2515,7 +2515,7 @@ put contents of string
 .B LetRN
 and
 .I value
-after the confidental notation
+after the confidential notation
 (if any)
 and the date,
 aligned with the latter.
@@ -2527,7 +2527,7 @@ put
 or contents of string
 .BR LetSA ,
 left-aligned after the inside address
-and the confidental notation
+and the confidential notation
 (if any).
 T}
 SJ@T{

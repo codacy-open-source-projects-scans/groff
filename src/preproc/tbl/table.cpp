@@ -3066,8 +3066,11 @@ void table::do_top()
   // horizontal rule on the first row.  This is necessary for grotty's
   // rule intersection detection.  We must make room for it so that the
   // vertical rule is not drawn above the top of the page.
-  else if ((flags & HAS_TOP_VRULE) && !(flags & HAS_TOP_HRULE))
-    prints(".if n .sp\n");
+  else if ((flags & HAS_TOP_VRULE) && !(flags & HAS_TOP_HRULE)) {
+    prints(".if n \\{\\\n");
+    prints(".  \\\" Compensate for vertical rule at top of table.\n");
+    prints(".  rs\n.  sp\n.\\}\n");
+  }
   prints(".nr " STARTING_PAGE_REG " \\n%\n");
   //printfs(".mk %1\n", row_top_reg(0));
 }

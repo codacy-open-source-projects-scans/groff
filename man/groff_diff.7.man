@@ -2232,6 +2232,18 @@ is stripped to allow the embedding of
 leading spaces.
 .
 .
+.P
+A device control command issued with the
+.B device
+request will not be reflected in the output unless a partially collected
+line exists in the top-level diversion at least once.
+.
+When experimenting with such device controls in minimal documents,
+a
+.B br
+request will ensure this to be the case.
+.
+.
 .TP
 .BI .devicem\~ name
 Write contents of macro or string

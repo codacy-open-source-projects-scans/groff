@@ -137,7 +137,7 @@ public:
   int get_page_number() { return page_number; }
   int get_next_page_number();
   void set_page_number(int n) { page_number = n; }
-  int begin_page(vunits = V0);
+  bool begin_page(vunits = V0);
   void set_next_page_number(int);
   void set_page_length(vunits);
   void copy_file(const char *filename);

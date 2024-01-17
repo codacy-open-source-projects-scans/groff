@@ -9,7 +9,7 @@
 
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename groff.info
-@settitle The GNU Troff Manual
+@settitle The GNU troff Manual
 @setchapternewpage odd
 @footnotestyle separate
 @c %**end of header (This is for running Texinfo on a region.)
@@ -24,9 +24,9 @@
 
 
 @copying
-This manual documents GNU @code{troff} version 1.23.0+Git.
+This manual documents GNU @command{troff} version 1.23.0+Git.
 
-Copyright @copyright{} 1994--2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1994--2024 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -13661,15 +13661,19 @@ Applying string interpolation to a macro does not change this name.
 @cindex mode, copy
 @cindex mode, copy
 
-When GNU @code{troff} processes certain requests, most importantly those
-which define or append to a macro or string, it does so in @dfn{copy
-mode}: it copies the characters of the definition into a dedicated
-storage region, interpolating the escape sequences @code{\n}, @code{\g},
-@code{\$}, @code{\*}, @code{\V}, and @code{\?} normally; interpreting
-@code{\@key{RET}} immediately; discarding comments @code{\"} and
-@code{\#}; interpolating the current leader, escape, or tab character
-with @code{\a}, @code{\e}, and @code{\t}, respectively; and storing all
-other escape sequences in an encoded form.
+GNU @code{troff} processes certain requests in @dfn{copy mode}: it
+interpolates the escape sequences @code{\n}, @code{\g}, @code{\$},
+@code{\*}, @code{\V}, and @code{\?} normally; interprets
+@code{\@key{RET}} immediately; discards comments @code{\"} and
+@code{\#}; interpolates the current leader, escape, or tab character
+with @code{\a}, @code{\e}, and @code{\t}, respectively; and represents
+all other escape sequences in an encoded form.  The term ``copy mode''
+reflects its most visible application in requests that populate macros
+and strings, but other requests also use it when interpreting arguments
+that can't meaningfully represent typesetting operations.  For example,
+a font selection escape sequence has no meaning in a hyphenation pattern
+file name (@code{hpf}) or a diagnostic message written to the terminal
+(@code{tm}).
 
 @cindex interpretation mode
 @cindex mode, interpretation
@@ -16410,42 +16414,42 @@ returned by the function @cite{getenv@r{(3)}}.
 
 @c =====================================================================
 
+@c BEGIN Keep (roughly) parallel with section "Postprocessor access" of
+@c groff(7).
 @node Postprocessor Access, Miscellaneous, I/O, GNU troff Reference
 @section Postprocessor Access
 @cindex postprocessor access
 @cindex access to postprocessor
 
 Two escape sequences and two requests enable documents to pass
-information directly to a postprocessor.  These are useful for
-exercising device-specific capabilities that the @code{groff} language
-does not abstract or generalize; examples include the embedding of
-hyperlinks and image files.  Device-specific functions are documented in
-each output driver's man page, such as @cite{gropdf@r{(1)}},
-@cite{grops@r{(1)}}, or @cite{grotty@r{(1)}}.
+information directly to an output driver or other postprocessor.  These
+are useful for exercising device-specific capabilities that the
+@code{groff} language does not abstract or generalize; examples include
+the embedding of hyperlinks and image files.  Device-specific functions
+are documented in each output driver's man page, such as
+@cite{gropdf@r{(1)}}, @cite{grops@r{(1)}}, or @cite{grotty@r{(1)}}.
 
 @DefreqList {device, xxx @r{@dots{}}}
 @DefescListEndx {\\X, @code{'}, xxx @r{@dots{}}, @code{'}}
-Embed all @var{xxx} arguments into GNU @code{troff} output as parameters
-to a device control command @w{@samp{x X}}.  The meaning and
-interpretation of such parameters is determined by the output driver or
-other postprocessor.
+Embed all @var{xxx} arguments into GNU @command{troff} output as
+parameters to an @w{@samp{x X}} device control
+command.@footnote{@xref{gtroff Output}.}  The meaning and interpretation
+of such parameters is determined by the output driver or other
+postprocessor.
 
-@cindex @code{device} request, and copy mode
-@cindex copy mode, and @code{device} request
-@cindex mode, copy, and @code{device} request
-The @code{device} request processes its arguments in copy mode
-(@pxref{Copy Mode}).  An initial neutral double quote in @var{contents}
-is stripped to allow embedding of leading spaces.
-@cindex @code{\&}, in @code{\X}
-@cindex @code{\)}, in @code{\X}
-@cindex @code{\%}, in @code{\X}
+The @code{device} request strips an initial neutral double quote from
+@var{contents} to allow embedding of leading spaces.
+
+@cindex @code{\&}, in device control commands
+@cindex @code{\)}, in device control commands
+@cindex @code{\%}, in device control commands
 @ifnotinfo
-@cindex @code{\:}, in @code{\X}
+@cindex @code{\:}, in device control commands
 @end ifnotinfo
 @ifinfo
-@cindex @code{\@r{<colon>}}, in @code{\X}
+@cindex @code{\@r{<colon>}}, in device control commands
 @end ifinfo
-By contrast, within @code{\X} arguments, the escape sequences @code{\&},
+Within a device control command, the escape sequences @code{\&},
 @code{\)}, @code{\%}, and @code{\:} are ignored; @code{\@key{SPC}} and
 @code{\~} are converted to single space characters; and @code{\\} has
 its escape character stripped.  So that the basic Latin subset of the
@@ -16453,13 +16457,21 @@ Unicode character set@footnote{that is, ISO@tie{}646:1991-IRV or,
 popularly, ``US-ASCII''} can be reliably encoded in device control
 commands, seven special character escape sequences (@samp{\-},
 @samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]}, @samp{\[ha]}, @samp{\[rs]},
-and @samp{\[ti]},) are mapped to basic Latin characters; see the
+and @samp{\[ti]}) are mapped to basic Latin characters; see the
 @cite{groff_char@r{(7)}} man page.  For this transformation, character
 translations and special character definitions are
 ignored.@footnote{They are bypassed because these parameters are not
 rendered as glyphs in the output; instead, they remain abstract
-characters---in a PDF bookmark or a URL, for example.} The use of any
-other escape sequence in @code{\X} parameters is normally an error.
+characters---in a PDF bookmark or a URL, for example.}
+
+Escape sequences other than the foregoing in device control command
+may be ignored, or produce an error.
+
+A device control command issued with the @code{device} request will not
+be reflected in the output unless a partially collected line exists at
+least once in the top-level diversion (recall @ref{Diversions}).  When
+experimenting with such device controls in minimal documents, a
+@code{br} request will ensure this to be the case.
 
 @kindex use_charnames_in_special
 @cindex @file{DESC} file, and @code{use_charnames_in_special} keyword
@@ -16472,6 +16484,9 @@ discussed above).  @code{use_charnames_in_special} is currently employed
 only by @code{grohtml}.
 @endDefesc
 
+GNU @command{troff} also permits the interpolatation of macro contents
+as a device control command.
+
 @DefreqList {devicem, name}
 @DefescItemx {\\Y, , n, }
 @DefescItem {\\Y, (, nm, }
@@ -16479,18 +16494,20 @@ only by @code{grohtml}.
 This is approximately equivalent to @samp{\X'\*[@var{name}]'}
 (one-character name@tie{}@var{n}, two-character name @var{nm}).
 However, the contents of the string or macro @var{name} are not
-interpreted; also it is permitted for @var{name} to have been defined as
-a macro and thus contain newlines (it is not permitted for the argument
-to @code{\X} to contain newlines).  The inclusion of newlines requires
-an extension to the @acronym{AT&T} @code{troff} output format, and
-confuses drivers that do not know about this extension (@pxref{Device
-Control Commands}).
+interpreted; it is also permitted for @var{name} to have been defined as
+a macro and thus contain newlines.  (There is no way to embed a newline
+in the arguments to @code{device} or @code{\X}.)  The inclusion of
+newlines requires an extension to the @acronym{AT&T} @command{troff}
+output format; their presence confuses drivers that do not know about it
+(@pxref{Device Control Commands}).
 @endDefesc
 
 @DefreqList {tag, name}
 @DefreqListEndx {taga, name}
 Reserved for internal use.
 @endDefreq
+@c END Keep (roughly) parallel with section "Postprocessor access" of
+@c groff(7).
 
 
 @c =====================================================================
@@ -17498,7 +17515,8 @@ implementations will likely be ignored by them; escape sequences that
 are @code{groff} extensions are liable to be interpreted as if the
 escape character were not present.
 @cindex @code{\~}, incompatibilities with @acronym{AT&T} @code{troff}
-For example, the adjustable, non-breaking escape sequence @code{\~}
+For example, the adjustable, non-breaking space escape sequence
+@code{\~}
 @c BEGIN Keep in sync with groff_diff(7) and groff_man_style(7).
 is also supported by Heirloom Doctools @code{troff} 050915 (September
 2005), @code{mandoc} 1.9.5 (2009-09-21), @code{neatroff} (commit

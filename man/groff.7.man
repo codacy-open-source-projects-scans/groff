@@ -2983,8 +2983,7 @@ with compatibility mode disabled when the macro is interpreted.
 .TPx
 .REQ .device anything
 Write
-.IR anything ,
-read in copy mode,
+.I anything
 to
 .I @g@troff
 output as a device control command.
@@ -3247,7 +3246,7 @@ cannot be
 .
 .TPx
 .REQ .ftr f
-Remove transalation of font named
+Remove translation of font named
 .IR f .
 .
 .TPx
@@ -4756,6 +4755,8 @@ Transparently embed
 read in copy mode,
 in a diversion,
 or unformatted as an output comparand in a conditional expression.
+.
+Ignored in the top-level diversion.
 .
 .
 .\" ========= spaces and fixed-width horizontal motions =========
@@ -7156,15 +7157,10 @@ Applying string interpolation to a macro does not change this name.
 .SS "Copy mode"
 .\" ====================================================================
 .
-When
 .I @g@troff
-processes certain requests,
-most importantly those which define or append to a macro or string,
-it does so in
-.IR "copy mode" :
-it copies the characters of the definition into a dedicated storage
-region,
-interpolating the escape sequences
+processes certain requests in
+.I "copy mode:"
+it interpolates the escape sequences
 .BR \[rs]n ,
 .BR \[rs]g ,
 .BR \[rs]$ ,
@@ -7173,14 +7169,14 @@ interpolating the escape sequences
 and
 .B \[rs]?\&
 normally;
-interpreting
+interprets
 .BI \[rs] newline
 immediately;
-discarding comments
+discards comments
 .B \[rs]"
 and
 .BR \[rs]# ;
-interpolating the current leader,
+interpolates the current leader,
 escape,
 or tab character with
 .BR \[rs]a ,
@@ -7188,7 +7184,17 @@ or tab character with
 and
 .BR \[rs]t ,
 respectively;
-and storing all other escape sequences in an encoded form.
+and represents all other escape sequences in an encoded form.
+The term \[lq]copy mode\[rq] reflects its most visible application in
+requests that populate macros and strings,
+but other requests also use it when interpreting arguments that can't
+meaningfully represent typesetting operations.
+For example,
+a font selection escape sequence has no meaning in a hyphenation pattern
+file name
+.RB ( hpf )
+or a diagnostic message written to the terminal
+.RB ( tm ).
 .
 The complement of copy mode\[em]a
 .I roff
@@ -7780,6 +7786,180 @@ while
 .B evc
 copies a named environment's contents to the current one.
 .\" END Keep (roughly) parallel with groff.texi node "Environments".
+.
+.
+.\" ====================================================================
+.SH "Postprocessor access"
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Postprocessor
+.\" Access".
+Two escape sequences and two requests enable documents to pass
+information directly to an output driver or other postprocessor.
+.
+These are useful for exercising device-specific capabilities that the
+.I groff
+language does not abstract or generalize;
+examples include the embedding of hyperlinks and image files.
+.
+Device-specific functions are documented in each output driver's man
+page,
+such as
+.MR gropdf @MAN1EXT@ ,
+.MR grops @MAN1EXT@ ,
+or
+.MR grotty @MAN1EXT@ .
+.
+.
+.P
+The
+.RB \[lq] device \[rq]
+request and
+.B \[rs]X
+escape sequence embed their arguments into GNU
+.I troff \" GNU
+output as parameters to an
+.RB \[lq] "x X" \[rq]
+device control command
+(see
+.MR groff_out @MAN5EXT@ ).
+.
+The meaning and interpretation of such parameters is determined by the
+output driver or other postprocessor.
+.
+.
+.P
+Within a device control command,
+the escape sequences
+.BR \[rs]& ,
+.BR \[rs]) ,
+.BR \[rs]% ,
+and
+.B \[rs]:
+are ignored;
+.BI \[rs] space
+and
+.B \[rs]\[ti]
+are converted to single space characters;
+and @code{\\} has
+.B \[rs]\[rs]
+its escape character stripped.
+.
+So that the basic Latin subset of the Unicode character set
+(that is,
+ISO\~646:1991-IRV or,
+popularly,
+\[lq]US-ASCII\[rq])
+can be reliably encoded in device control commands,
+seven special character escape sequences
+.RB (\[lq] \[rs]\- \[rq],
+.RB \[lq] \[rs][aq] \[rq],
+.RB \[lq] \[rs][dq] \[rq],
+.RB \[lq] \[rs][ga] \[rq],
+.RB \[lq] \[rs][ha] \[rq],
+.RB \[lq] \[rs][rs] \[rq],
+and
+.RB \[lq] \[rs][ti] \[rq])
+are mapped to basic Latin characters;
+see
+.MR groff_char @MAN7EXT@ .
+.
+For this transformation,
+character translations and special character definitions are
+ignored.
+.
+(They are bypassed because these parameters are not rendered as glyphs
+in the output;
+instead,
+they remain abstract characters\[em]in a PDF bookmark or a URL,
+for example.)
+.
+.
+.P
+Escape sequences other than the foregoing in device control command
+may be ignored,
+or produce an error.
+.
+.
+.P
+A device control command issued with the
+.RB \[lq] device \[rq]
+request will not be reflected in the output unless a partially collected
+line exists at least once in the top-level diversion
+(recall section \[lq]Diversions\[rq] above).
+.
+When experimenting with such device controls in minimal documents,
+a
+.B br
+request
+will ensure this to be the case.
+.
+.
+.P
+If the
+.B use_charnames_in_special
+directive appears in the output device's
+.I DESC
+file,
+the use of special character escape sequences is
+.I not
+an error;
+they are simply output verbatim
+(with the exception of the seven mapped to Unicode basic Latin
+characters,
+discussed above).
+.
+.B use_charnames_in_special
+is currently employed only by
+.MR grohtml @MAN1EXT@ .
+.
+.
+.P
+GNU
+.I troff \" GNU
+also permits the interpolatation of macro contents as a device control
+command.
+.
+The
+.B devicem
+request
+and
+.B \[rs]Y
+escape sequence are approximately equivalent to
+.RB \[lq] \[rs]X\[aq]\c
+.IB name \[aq]\c
+\[rq].
+.
+However,
+the contents of the string or macro
+.I name
+are not interpreted;
+it is also permitted for
+.I name
+to have been defined as a macro and thus contain newlines.
+.
+(There is no way to embed a newline
+in the arguments to
+.RB \[lq] device \[rq]
+or
+.BR \[rs]X .)
+.
+The inclusion of newlines requires an extension to the AT&T
+.I troff \" AT&T
+output format;
+their presence confuses drivers that do not know about it
+(see subsection \[lq]Device control commands\[rq] of
+.MR groff_out @MAN5EXT@ ).
+.
+.
+.P
+The
+.B tag
+and
+.B taga
+requests are reserved for internal use.
+.\" END Keep (roughly) parallel with groff.texi node "Postprocessor
+.\" Access".
 .
 .
 .\" ====================================================================

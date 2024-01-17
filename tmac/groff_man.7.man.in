@@ -3252,7 +3252,7 @@ followed immediately by
 .IR text \(rq,
 produces the same output more portably.
 .
-The macros' order is interchangable;
+The macros' order is interchangeable;
 put
 .I text
 with the latter.

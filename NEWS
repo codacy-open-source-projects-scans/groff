@@ -1,4 +1,4 @@
-    Copyright (C) 1992-2023 Free Software Foundation, Inc.
+    Copyright (C) 1992-2024 Free Software Foundation, Inc.
 
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
@@ -40,6 +40,15 @@ o The `hla` request, when invoked with no arguments, now clears the
 o The read-only registers `.m` and `.M` now interpolate "default" when
   the default color is selected as the stroke or fill color,
   respectively, rather than interpolating nothing.
+
+o The `device` request no longer reads its arguments in copy mode; this
+  change makes it more consistent with the `\X` device control command
+  escape sequence.  This request also no longer emits a self-quoted
+  *roff escape character as itself, but instead as a backslash.
+  (troff's input and output languges are not the same thing.)  These
+  changes are to enable postprocessors to reliably interpret device
+  control commands that wish to express arbitrary byte sequences.  For
+  example, PDF bookmarks need to be expressed in UTF-16LE.
 
 eqn
 ---
@@ -171,6 +180,9 @@ o grog(1) no longer supports the `--ligatures` and `--run` options.
   with the option sequence "-P -U -P y", and the latter by using the
   command substitution feature of your shell; see section "Examples" of
   groff(1).
+
+o The minimum version of Perl required to build groff is now 5.8 (18
+  July 2002), incremented from 5.6.1.
 
 o The groff_diff(7) man page no longer contains examples.  They remain
   in groff's Texinfo manual.

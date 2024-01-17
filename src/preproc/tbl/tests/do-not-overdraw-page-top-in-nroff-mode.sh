@@ -220,6 +220,26 @@ echo "$error" | grep -q 'grotty:' && wail
 echo "checking that table data begin on first output line"
 echo "$output" | sed -n '1p' | grep -q 'foo' || wail
 
+# Case 11: No horizontal rules; vertical rule between columns, and the
+# document has no-space mode on.
+input='.ns
+.TS
+tab(@);
+L | L.
+foo@bar
+.TE'
+
+tmp=$(printf "%s\n" "$input" | "$groff" -t -Z -Tascii -P-cbou)
+output=$(printf "%s" "$tmp" | "$grotty" -F ./font 2>/dev/null)
+error=$(printf "%s" "$tmp" | "$grotty" -F ./font 2>&1 >/dev/null)
+echo "$output"
+
+echo "checking for vertical rule at top of page (11)"
+echo "$output" | sed 1p | grep -q '  *|$' || wail
+
+echo "checking that no diagnostic messages are produced by grotty (11)"
+echo "$error" | grep -q 'grotty:' && wail
+
 test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

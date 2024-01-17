@@ -2002,6 +2002,7 @@ sub Clean
 sub utf16
 {
     my $p=Clean(shift);
+    my $label=shift;
 
     $p=~s/\\\[(.*?)\]/FindChr($1,0)/eg;
     $p=~s/\\C($parcln)/FindChr($1,1)/eg;
@@ -2013,6 +2014,8 @@ sub utf16
 	$p = join '', map sprintf("\\%o", $_),
 	     unpack "C*", encode('utf16', $p);
     }
+
+    return($p) if $label;
 
     $p=~s/(?<!\\)\(/\\\(/g;
     $p=~s/(?<!\\)\)/\\\)/g;
@@ -2059,14 +2062,19 @@ sub UTFName
     my $r='';
 
     $s=substr($s,1);
-    return '/'.join '', map { MakeLabel($_) } unpack('C*',$s);
+    my $s1=$s;
+    $s1=~s/([[:xdigit:]]{2})/chr(hex($1))/eg;
+    my $s2=utf16($s1,1);
+#    return "/".MakeLabel((substr($s2,0,1) eq '/')?$s:$s2);
+    my $s3='/'.join '', map { MakeLabel($_) } unpack('C*',(substr($s2,0,1) eq '\\')?$s:$s2);
+    return $s3;
 
 }
 
 sub MakeLabel
 {
     my $c=chr(shift);
-    return($c) if $c=~m/[\w:]/;
+    return($c) if ($c=~m/[\w\d:]/);
     return(sprintf("#%02x",ord($c)));
 }
 

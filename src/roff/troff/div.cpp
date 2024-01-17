@@ -391,14 +391,18 @@ const char *top_level_diversion::get_next_trap_name()
     return next_trap->nm.contents();
 }
 
+// This is used by more than just top-level diversions.
 void top_level_diversion::output(node *nd, int retain_size,
-				 vunits vs, vunits post_vs, hunits width)
+				 vunits vs, vunits post_vs,
+				 hunits width)
 {
   no_space_mode = 0;
   vunits next_trap_pos;
   trap *next_trap = find_next_trap(&next_trap_pos);
   if (before_first_page && begin_page())
-    fatal("sorry, I didn't manage to begin the first page in time: use an explicit .br request");
+    fatal("attempting diversion output before first page has started,"
+	  " when a top-of-page trap is defined; invoke break or flush"
+	  " request beforehand");
   vertical_size v(vs, post_vs);
   for (node *tem = nd; tem != 0; tem = tem->next)
     tem->set_vertical_size(&v);
@@ -440,11 +444,15 @@ void top_level_diversion::output(node *nd, int retain_size,
     nl_reg_contents = vertical_position.to_units();
 }
 
+// The next two member functions implement the internals of `.output`
+// and `\!`.
+
 void top_level_diversion::transparent_output(unsigned char c)
 {
   if (before_first_page && begin_page())
-    // This can only happen with the .output request.
-    fatal("sorry, I didn't manage to begin the first page in time: use an explicit .br request");
+    fatal("attempting transparent output from top-level diversion"
+	  " before first page has started, when a top-of-page trap is"
+	  " defined; invoke break or flush request beforehand");
   const char *s = asciify(c);
   while (*s)
     the_output->transparent_char(*s++);
@@ -452,14 +460,19 @@ void top_level_diversion::transparent_output(unsigned char c)
 
 void top_level_diversion::transparent_output(node * /*n*/)
 {
+  // TODO: Restore this diagnostic when Savannah #65371 is fixed;
+  // perhaps suggest use of \[uXXXX] notation.
   if (getenv("GROFF_ENABLE_TRANSPARENCY_WARNINGS") != 0 /* nullptr */)
     error("can't transparently output node at top level");
 }
 
+// Implement the internals of `.cf`.
 void top_level_diversion::copy_file(const char *filename)
 {
   if (before_first_page && begin_page())
-    fatal("sorry, I didn't manage to begin the first page in time: use an explicit .br request");
+    fatal("attempting transparent copy of file to top-level diversion"
+	  " before first page has started, when a top-of-page trap is"
+	  " defined; invoke break or flush request beforehand");
   the_output->copy_file(page_offset, vertical_position, filename);
 }
 
@@ -589,9 +602,9 @@ void cleanup_and_exit(int exit_code)
   exit(exit_code);
 }
 
-// Returns non-zero if it sprung a top-of-page trap.
+// Returns `true` if beginning the page sprung a top-of-page trap.
 // The optional parameter is for the .trunc register.
-int top_level_diversion::begin_page(vunits n)
+bool top_level_diversion::begin_page(vunits n)
 {
   if (is_exit_underway) {
     if (page_count == last_page_count
@@ -622,19 +635,20 @@ int top_level_diversion::begin_page(vunits n)
   vertical_position = V0;
   high_water_mark = V0;
   ejecting_page = 0;
-  // If before_first_page was 2, then the top of page transition was undone
-  // using eg .nr nl 0-1.  See nl_reg::set_value.
+  // If before_first_page was 2, then the top of page transition was
+  // undone using eg .nr nl 0-1.  See nl_reg::set_value.
   if (before_first_page != 2)
     the_output->begin_page(page_number, page_length);
   before_first_page = 0;
   nl_reg_contents = vertical_position.to_units();
-  if (vertical_position_traps_flag && next_trap != 0 && next_trap_pos == V0) {
+  if ((vertical_position_traps_flag && next_trap != 0 /* nullptr */)
+      && next_trap_pos == V0) {
     truncated_space = n;
     spring_trap(next_trap->nm);
-    return 1;
+    return true;
   }
   else
-    return 0;
+    return false;
 }
 
 void continue_page_eject()

@@ -705,7 +705,7 @@ and
 escape sequences on one hand,
 and the
 .B \[rs]D\[aq]l\[aq]
-line-drawing escape sequences on the other,
+line-drawing escape sequence on the other,
 make different compromises due to the first two factors.
 .
 Specifically,

@@ -657,7 +657,8 @@ if data are found there,
 .I @g@tbl
 issues a diagnostic message.
 .
-If the entire row definition consists of these classifiers,
+If the entire row definition consists of these classifiers
+(only one is necessary),
 it is treated as a
 .RB \[lq] _ \[rq]
 occupying a row of table entries,

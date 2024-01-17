@@ -1,3 +1,190 @@
+2024-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Re-fix Savannah #62471 (vrules in nroff and no-space
+	modes).
+
+	* src/preproc/tbl/table.cpp (do_top): Compensate harder for
+	non-intersected vertical rules occurring at the top of a table
+	in nroff mode.  The previous strategy would fail if no-space
+	mode was on and the drawing position was at the top of a page,
+	provoking an error from grotty ("output above first line
+	discarded").  Restore spacing before issuing `sp` request.
+
+	Continues fixing Savannah #62471, and commit 6ccdab9d64, 29
+	December.
+
+2024-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Add another test case.
+
+	* src/preproc/tbl/tests/\
+	do-not-overdraw-page-top-in-nroff-mode.sh: Add an eleventh test
+	case, prompted by ascii(7) from Linux man-pages, where a table
+	with a vertical rule got coincidentally rendered at the very top
+	of a page (which can only happen in continuous rendering mode,
+	where the page boundaries are invisible) while no-space mode was
+	on (due to the table immediately following a paragraphing
+	macro).
+
+2024-01-14  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Retain plain ASCII labels when possible.
+
+	* src/devices/gropdf/gropdf.pl: Do not use hexed label unless
+	necessary.  Restores the ability for some PDF viewers to accept
+	"#label" as suffix to the file name.
+
+2024-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #64484.
+
+	* src/roff/troff/input.cpp (encode_char_for_troff_output):
+	Annotate the function's purpose.  Initially assume the character
+	to be encoded as valid.  If the current token is a plain space,
+	write a space (U+0020) to the output.  (This is necessary
+	because the `device` request no longer reads its arguments in
+	copy mode; see below.)  Move the `sc` local variable to a higher
+	scope.  Update the new `is_char_valid` Boolean instead of
+	issuing an error diagnostic at each point of validation failure.
+	When done processing the character, test `is_char_valid` and
+	emit different diagnostics depending on whether the input was a
+	special character escape sequence we can't handle, or something
+	else.  Emit a self-quoted escape character _as a backslash_, not
+	as the current *roff escape character.
+	(device_request): Rewrite to operate in interpretation mode, not
+	copy mode.
+
+	* doc/groff.texi (Postprocessor Access):
+	* man/groff.7.man (Request short reference):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64484>.
+
+2024-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/\
+	device-control-special-character-handling.sh: Add unit test for
+	this feature.  We want to be able to consistently pass (some)
+	special character escape sequences to device control commands,
+	and we want the `device` request and `\X` escape sequences to
+	behave consistently with each other.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2024-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (encode_char_for_troff_output):
+	Qualify `c` argument as `const`.  Reorder comparisons to avoid
+	inadvertent lvalue assignment.  (Yes--suspenders _and_ a belt.)
+
+2024-01-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix code style nits.
+
+	* src/roff/troff/input.cpp (device_request)
+	(device_macro_request, output_request): Declare functions
+	`static` since they do not require external linkage.
+
+2024-01-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add unit test for `\X` (device control) escape
+	sequence.
+
+	* src/roff/groff/tests/backslash-X-works.sh: Add test.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add unit test for `device` request.
+
+	* src/roff/groff/tests/device-request-works.sh: Add test.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	Fixes <https://savannah.gnu.org/bugs/?64959>.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi (Postprocessor Access):
+	* man/groff_diff.7.man (New requests): Clarify a point of
+	`device` request behavior; a partially collected line in the
+	top-level diversion must exist at least once.
+
+	Fixes <https://savannah.gnu.org/bugs/?65138>.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (top_level_diversion::output)
+	(top_level_diversion::transparent_output)
+	(top_level_diversion::copy_file): Clarify diagnostic messages.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/div.cpp (top_level_diversion::begin_page):
+	Demote return type from `int` to `bool`.  Return Boolean instead
+	of integer literals.
+
+	* src/roff/troff/div.h (class top_level_diversion): Update
+	declaration.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Enhance new tests.
+
+	* src/roff/groff/tests/\
+	backslash-exclamation-early-does-not-fail.sh:
+	* src/roff/groff/tests/output-request-early-does-not-fail.sh:
+	Check that escape/request parameters don't get emitted before
+	the output leader, and that they do show up in the output.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add tests of early usage of formatter features that
+	throw fatal errors when called "too early", but for which this
+	error handling appears to be dead code.  Further test the
+	`output` request in furtherance of Savannah #64959.
+
+	* src/roff/groff/tests/\
+	backslash-exclamation-early-does-not-fail.sh:
+	* src/roff/groff/tests/cf-request-early-does-not-fail.sh:
+	* src/roff/groff/tests/output-request-works.sh: Add tests.
+
+	* src/roff/groff/groff.am (groff_TESTS): Run tests.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Revise diagnostics.
+
+	* src/roff/troff/div.cpp (top_level_diversion::output)
+	(top_level_diversion::transparent_output)
+	(top_level_diversion::copy_file): Recast diagnostic messages to
+	be distinguishable and provide more information about what the
+	problem is.  Make the proffered advice agnostic with respect to
+	choice of control character and request renaming.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/input.cpp (encode_char): Rename this...
+	(encode_char_for_troff_output): ...to this.
+
+	(do_special): Update call site.
+
+2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Restore diagnostic from groff 1.22.4.
+
+	* src/roff/troff/input.cpp (encode_char): Add `else` to `if`
+	statement checking the output device for the
+	"use_charnames_in_special" directive (used only by grohtml(1)).
+	This way we once again throw a diagnostic upon the following
+	input, invalid with any other output device.
+
+		printf '\\X@pdf: \\[u1234]@\n' | groff
+
+	Problem introduced by me in commit eb695ab2b5, 30 October 2021.
+
 2024-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* font/devpdf/Foundry.in: More BMI, BMR mapping swap; swap the
@@ -6,7 +193,7 @@
 
 2024-01-07  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
-	* src/devices/gropdf/gropdf.pl: Comment out line causing
+	* src/devices/gropdf/gropdf.pl (do_x): Comment out line causing
 	incorrect table of contents relocation.
 
 	Thanks to Peter Schaffter for the report.
@@ -23,8 +210,9 @@
 	light that some PDFs have a "skeleton" object that contains the
 	stream, while the rest of the object is held in an ObjStm.
 
-	* src/devices/gropdf/gropdf.pl: If a skeleton object exists at
-	the top level and in an ObjStm stream, merge the two objects.
+	* src/devices/gropdf/gropdf.pl (LoadPDF, ObjMerge): If a
+	skeleton object exists at the top level and in an ObjStm stream,
+	merge the two objects.
 
 2024-01-07  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
@@ -46,7 +234,7 @@
 	"default", instead of permitting it to have a null name.
 
 	* doc/groff.texi (Colors):
-	* man/groff.7.man (Read-only regsiters):
+	* man/groff.7.man (Read-only registers):
 	* NEWS: Document it.
 
 	Fixes <https://savannah.gnu.org/bugs/?64592>.  Thanks to Deri
