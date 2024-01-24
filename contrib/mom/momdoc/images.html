@@ -2957,8 +2957,6 @@ Arguments:
 <br/>
 &nbsp;&nbsp;TITLE_QUAD LEFT | CENTER | RIGHT \
 <br/>
-&nbsp;&nbsp;TOC_HEADER_UNDERSCORE default = none
-<br/>
 &nbsp;&nbsp;TITLE_COLOR &lt;color&gt; \
 <br/>
 &nbsp;&nbsp;PN_FAMILY &lt;family&gt; \
@@ -3226,7 +3224,7 @@ require that the box be started beforehand.  Boxed pre-processor
 material must be fully enclosed by BOX&nbsp;/&nbsp;BOX&nbsp;OFF, as
 in this recipe for a one-off boxed pic diagram:
 <span class="pre-in-pp">
-.BOX
+.BOX PIC
 .PS
 &lt;pic commands&gt;
 .PE
@@ -3269,7 +3267,7 @@ The colour may be
       or
       <a href="color.html#xcolor">XCOLOR</a>
   </li>
-  <li>an RGB hexadecimal string beginning with (e.g. #FF0000)</li>
+  <li>an RGB hexadecimal string beginning with <kbd>#</kbd> (e.g. #FF0000)</li>
 </ul>
 
 <p>

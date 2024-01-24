@@ -127,12 +127,12 @@ rectangular page.
 In the following discussion,
 the term
 .I command
-refers to this intermediate output language,
+refers to this device-independent output language,
 never to the
 .MR groff @MAN7EXT@
 language intended for use by document authors.
 .
-Intermediate output commands comprise several categories:
+Device-independent output commands comprise several categories:
 glyph output;
 font,
 color,

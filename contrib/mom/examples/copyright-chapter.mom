@@ -59,7 +59,9 @@ the first chapter.
 .                   \" get printed because docheader is disabled.
 .NO_TOC_ENTRY       \" So copyright page is not included in the TOC
 .
-.START              \" Begin example copyright page
+.START \" Begin copyright page
+.PDF_OUTLINE_PN SUSPEND  \" So copyright page has no pagenumber in the pdf outline
+.                        \" Outline page numbering resumes after the next START
 All rights reserved.  No part of this publication may be reproduced,
 distributed, or transmitted in any form or by any means, including
 photocopying, recording, or other electronic or mechanical methods,

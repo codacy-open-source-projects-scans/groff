@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -1544,14 +1544,14 @@ static void report_color()
   // TODO: Accept an argument to look up a color by name and dump its
   // info (name, color space, channel values).
   dictionary_iterator iter(color_dictionary);
-  symbol entry;
-  color *color_entry;
-  while(iter.get(&entry, reinterpret_cast<void **>(&color_entry))) {
-    assert(!entry.is_null());
-    assert(color_entry != 0 /* nullptr */);
-    const char *color_name = entry.contents();
-    errprint("%1\n", color_name);
+  symbol key;
+  color *value;
+  while(iter.get(&key, reinterpret_cast<void **>(&value))) {
+    assert(!key.is_null());
+    assert(value != 0 /* nullptr */);
+    errprint("%1\n", key.contents());
   }
+  fflush(stderr);
   skip_line();
 }
 
@@ -4150,8 +4150,6 @@ static void map_composite_character()
   symbol to = get_name();
   if (to.is_null()) {
     composite_dictionary.remove(symbol(from_gn));
-    warning(WARN_MISSING, "composite character request expects two"
-	    " arguments");
     skip_line();
     return;
   }
@@ -4225,6 +4223,53 @@ static symbol composite_glyph_name(symbol nm)
   gl += 'u';
   gl += glyph_name;
   return symbol(gl.contents());
+}
+
+// Does the hexadecimal four-character sequence `n` represent a code
+// point with a composite mapping?  Either the key or value component
+// of an entry in the composite dictionary qualifies.
+//
+// This is an O(n) search, but by default groff only defines 22
+// composite character mappings ("tmac/composite.tmac").  If this
+// becomes a performance problem, we will need another dictionary
+// mapping the unique values of `composite_dictionary` (which is not
+// one-to-one) to a Boolean.
+bool is_codepoint_composite(const char *n)
+{
+  bool result = false;
+  dictionary_iterator iter(composite_dictionary);
+  symbol key;
+  char *value;
+  while(iter.get(&key, reinterpret_cast<void **>(&value))) {
+    assert(!key.is_null());
+    assert(value != 0 /* nullptr */);
+    const char *k = key.contents();
+    if (strcmp(k, n) == 0) {
+      result = true;
+      break;
+    }
+    const char *v = reinterpret_cast<char *>(value);
+    if (strcmp(v, n) == 0) {
+      result = true;
+      break;
+    }
+  }
+  return result;
+}
+
+static void report_composite_characters()
+{
+  dictionary_iterator iter(composite_dictionary);
+  symbol key;
+  char *value;
+  while(iter.get(&key, reinterpret_cast<void **>(&value))) {
+    assert(!key.is_null());
+    assert(value != 0 /* nullptr */);
+    const char *k = key.contents();
+    errprint("%1\t%2\n", k, value);
+  }
+  fflush(stderr);
+  skip_line();
 }
 
 int trap_sprung_flag = 0;
@@ -5623,10 +5668,12 @@ static void encode_char_for_troff_output(macro *mac, const char c)
 	  is_char_valid = false;
       }
     }
-    else if (!(tok.is_hyphen_indicator()
+    else if (tok.is_hyphen_indicator()
 	       || tok.is_dummy()
 	       || tok.is_transparent_dummy()
-	       || tok.is_zero_width_break()))
+	       || tok.is_zero_width_break())
+      /* silently ignore */;
+    else
       is_char_valid = false;
     if (!is_char_valid) {
       if (sc != 0 /* nullptr */)
@@ -8629,6 +8676,7 @@ void init_input_requests()
   init_request("output", output_request);
   init_request("pc", set_page_character);
   init_request("pcolor", report_color);
+  init_request("pcomposite", report_composite_characters);
   init_request("pi", pipe_output);
   init_request("pm", print_macros);
   init_request("psbb", ps_bbox_request);

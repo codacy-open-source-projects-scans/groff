@@ -5,6 +5,12 @@
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved.
 
+Release 2.6_b
+-------------
+PDF outline panel page numbers now map to printed page numbers.
+Macro PDF_OUTLINE_PN has been added; allows for controlling of PDF
+outline page numbering.
+
 Release 2.6
 -----------
 Refinements to Table of Contents to allow for multi-line heading

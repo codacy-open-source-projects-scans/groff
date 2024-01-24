@@ -124,6 +124,7 @@
 \#
 .AUTO_RELOCATE_TOC \" Move table of contents to the top of the doc
 .SPACE_TOC_ITEMS   \" Prettify TOC spacing
+.TOC_PADDING 1     \" Only one placeholder for page numbers
 \#
 \# Begin the document
 \#
@@ -298,6 +299,7 @@ nonumy eirmod tempor invidunt ut labore et do\%lo\%re magna.
 .CHAPTER_TITLE_SIZE +5
 .CHAPTER_TITLE_SPACE +3p
 .START
+.SP -1
 .EPIGRAPH BLOCK
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
 nonumy eirmod tempor invidunt ut labore et do\%lo\%re magna ali\%quyam erat,
@@ -311,6 +313,7 @@ sed diam voluptua.
 \#
 \*[ROM]\[em]Joseph E. Blough
 .EPIGRAPH OFF
+.SP -1
 .PP
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
 nonumy eirmod tempor invidunt ut labore et do\%lo\%re magna ali\%quyam erat,
@@ -474,7 +477,7 @@ Impact of Serial vs. Aleatoric Music\*[RLD1]"
 \#
 .COLUMNS 2 1P+6p \" Set in two columns
 \#
-\# Being the document
+\# Begin the document
 \#
 .START
 .PP

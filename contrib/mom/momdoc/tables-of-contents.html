@@ -386,6 +386,7 @@ themselves (overall family, headers/footers, pagination, etc).
 <ol style="margin-top: .5em; padding-bottom: .5em;">
   <li><a href="#toc-general">General table of contents style control</a>
   <ul style="margin-left: -.5em;">
+    <li><a href="#toc-margins">TOC_MARGINS</a> &ndash; left and right margins for tables of contents</li>
     <li><a href="#toc-family">TOC_FAMILY</a> &ndash; base family for tables of contents</li>
     <li><a href="#toc-pt-size">TOC_PT_SIZE</a> &ndash; base point size for tables of contents</li>
     <li><a href="#toc-lead">TOC_LEAD</a> &ndash; leading of tables of contents</li>
@@ -428,6 +429,24 @@ themselves (overall family, headers/footers, pagination, etc).
 </div>
 
 <h4 id="toc-general" class="docs" style="margin-top: -1.5em; margin-bottom: .5em;">1. General tables of contents style control</h4>
+
+<!-- -TOC_MARGINS- -->
+
+<div id="toc-margins" class="box-macro-args">
+Macro: <b>TOC_MARGINS</b> <kbd class="macro-args">&lt;toc left margin&gt; &lt;toc right margin&gt;</kbd>
+</div>
+<p class="requires">
+&bull;&nbsp;Requires a <a href="definitions.html#unitofmeasure">unit of measure</a>
+</p>
+
+<p>
+By default, mom applies the left and right margins active at the
+first instance of
+<a href="docprocessing.html#start">START</a>
+to the table of contents.  In cases where this is not desirable,
+TOC_MARGINS allows you to set the table of contents' margins
+explicitly.  Values must be given for both arguments.
+</p>
 
 <!-- -TOC_FAMILY- -->
 

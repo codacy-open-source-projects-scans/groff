@@ -7,7 +7,7 @@
 \# notice and this notice are preserved.
 \#
 .ig
-***Template for created a copyright page, DOCTYPE DEFAULT***
+***Template for creating a copyright page, DOCTYPE DEFAULT***
 
 Mom documents comprised of titled sections using DOCTYPE DEFAULT
 (e.g. a collection of articles or a book of short stories by
@@ -55,10 +55,11 @@ the first (titled) section of the document.
 .
 .TITLE "Copyright" \" Required for PDF viewer outline; does not
 .                  \" get printed because docheader is disabled.
-.
 .NO_TOC_ENTRY      \" So copyright page is not included in the TOC
 .
-.START             \" Begin copyright page
+.START \" Begin copyright page
+.PDF_OUTLINE_PN SUSPEND  \" So copyright page has no pagenumber in the pdf outline
+.                        \" Outline page numbering resumes after the next START
 All rights reserved.  No part of this publication may be reproduced,
 distributed, or transmitted in any form or by any means, including
 photocopying, recording, or other electronic or mechanical methods,

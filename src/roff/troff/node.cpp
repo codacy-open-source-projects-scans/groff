@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "charinfo.h"
 #include "input.h"
 #include "geometry.h"
+#include "unicode.h" // valid_unicode_code_sequence()
 
 #include "nonposix.h"
 
@@ -4909,6 +4910,27 @@ static node *make_glyph_node(charinfo *s, environment *env,
   if (fontno < 0) {
     error("cannot format glyph: no current font");
     return 0 /* nullptr */;
+  }
+  const char *seq = valid_unicode_code_sequence(s->nm.contents());
+  if (seq != 0 /* nullptr */) {
+    // If it is a multi-character sequence like u1234_5678, every code
+    // point after the first must have (or be) a composite mapping.
+    char codepoint[5] = { 0, 0, 0, 0, 0};
+    bool is_composite_glyph_valid = true;
+    while ((seq = strchr(seq, '_')) != 0 /* nullptr */) {
+      seq++;
+      (void) strncpy(codepoint, seq, 4);
+      if (!is_codepoint_composite(codepoint)) {
+	is_composite_glyph_valid = false;
+	break;
+      }
+      seq += 4;
+    }
+    if (!is_composite_glyph_valid) {
+      error("cannot format glyph: '%1' is not a valid composite"
+	    " character", s->nm.contents());
+      return 0 /* nullptr */;
+    }
   }
   assert(fontno < font_table_size && font_table[fontno] != 0);
   int fn = fontno;

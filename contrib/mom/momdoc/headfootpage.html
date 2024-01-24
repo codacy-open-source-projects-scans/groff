@@ -102,6 +102,7 @@ FDL in the main directory of the groff source package.
 <ul class="toc-docproc" style="margin-top: .5em;">
   <li><a href="#index-pagination">Pagination macros</a></li>
   <li><a href="#index-paginate-control">Pagination control macros and defaults</a></li>
+  <li><a href="#pdf-outline-numbering">PDF outline page numbering</a></li>
 </ul>
 <h3 class="toc toc-docproc-header"><a class="header-link" href="#blank-pages">Inserting blank pages into a document</a></h3>
 
@@ -1996,11 +1997,11 @@ L "^\E*[$AUTHOR]#\*[PAGE#]^"
 <h2 id="pagination-intro" class="macro-group">Pagination</h2>
 
 <p>
-By default, mom paginates documents.  Page numbers
-appear in the bottom margin of the page, centred between two hyphens.
-As with all elements of mom&#8217;s document processing,
-most aspects of pagination style can be altered to suit your taste
-with control macros.
+By default, mom paginates documents.  Page numbers appear in the
+bottom margin of the page, centred between two hyphens.  As with
+all elements of mom&#8217;s document processing, most aspects of
+pagination style can be altered to suit your taste with control
+macros.
 </p>
 
 
@@ -2014,6 +2015,7 @@ with control macros.
   <li><a href="#draft-with-pagenumber">DRAFT_WITH_PAGENUMBER</a> &ndash; attach draft/revision information to page numbers</li>
   <li><a href="#pagenumber-string">PAGENUMBER_STRING</a> &ndash; user-defined page number string</li>
   <li><a href="#index-paginate-control">Pagination control macros and defaults</a></li>
+  <li><a href="#pdf-outline-pagenumber">PDF outline page numbering</a></li>
 </ul>
 </div>
 
@@ -2267,6 +2269,84 @@ with any argument (<kbd>OFF</kbd>, <kbd>QUIT</kbd>, <kbd>END</kbd>,
 </span>
 If, for some reason, you want to turn page number hyphens back
 on, invoke the macro without an argument.
+</p>
+
+<h2 id="pdf-outline-numbering" class="macro-group">PDF outline page numbering</h2>
+
+<p>
+Prior to mom 2.6_b, the document outline panel of PDF viewers
+displayed the physical page numbers of mom documents, not the
+printed page number.  As of 2.6_b, entries in the outline panel show
+the printed page number.  Furthermore, null pages (e.g. cover and
+title pages) are no longer given a page number in the outline.
+</p>
+
+<p>
+Though rare, you may at times want to control the PDF outline page
+numbering, which is accomplished with the
+<a href="#pdf-outline-pn">PDF_OUTLINE_PN</a>
+macro.
+</p>
+
+<div id="pdf-outline-pn-note" class="box-tip">
+<p class="tip-top" style="padding-bottom: .5em">
+<span class="note">Note:</span>
+You must be running a version of groff &gt; 1.23 or have recently
+built groff from sources in order for the outline page numbers
+to reflect the printed page numbers, as described above, and for
+PDF_OUTLINE_PN to work.
+</p>
+</div>
+
+<div class="macro-id-overline">
+<h3 id="pdf-outline-pagenumber" class="macro-id">PDF_OUTLINE_PN</h3>
+</div>
+
+<div class="box-macro-args">
+Macro: <b>PDF_OUTLINE_PN</b> <kbd class="macro-args">SUSPEND | RESUME</kbd>
+<br/>
+Macro: <b>PDF_OUTLINE_PN</b> <kbd class="macro-args">[FORMAT &lt;format&gt;]&nbsp;[PREFIX &lt;prefix&gt;]&nbsp;[PAGE &lt;pagenumber&gt;]</kbd>
+</div>
+
+<p>
+PDF outline page numbering may be suspended or resumed by calling
+PDF_OUTLINE_PN with the appropriate argument.
+</p>
+
+<p>
+If you wish to change the numbering format, add a prefix to the page
+number, or hard set an outline page number, supply one or more of
+the additional keywords with arguments.
+</p>
+
+<h3 class="docs">FORMAT</h3>
+
+<p>
+<kbd>FORMAT</kbd> may be one of
+</p>
+
+<ul style="list-style-type:none; margin-top: -1em">
+<li><kbd>D</kbd> (digit)</li>
+<li><kbd>R</kbd> (roman numeral, caps)</li>
+<li><kbd>r</kbd> (roman numeral, lower case)</li>
+<li><kbd>A</kbd> (alphabetic, caps)</li>
+<li><kbd>a</kbd> (alphabetic, lower case)</li>
+</ul>
+
+<h3 class="docs">PREFIX</h3>
+
+<p>
+<kbd>PREFIX</kbd> may be anything you like, for example
+&#8220;<kbd>A-</kbd>&#8221; to add a prefix to the outline page
+numbering of an Appendix. <kbd>PREFIX</kbd> must not contain
+spaces.
+</p>
+
+<h3 class="docs">PAGE</h3>
+
+<p>
+<kbd>PAGE</kbd> is the page number you want to appear in the
+outline.
 </p>
 
 <!-- -BLANK_PAGE- -->

@@ -21,6 +21,12 @@ the Subject line or you risk my spam filters nuking your message.
 
 ====================================================================
 
+Version 2.6_a
+=============
+Document line lengths other than the default not being respected
+during toc formatting.
+---Fixed---
+
 Version 2.6
 ===========
 QUOTE and BLOCKQUOTE offsets misaligned across columns.

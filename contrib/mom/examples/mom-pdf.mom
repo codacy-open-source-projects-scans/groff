@@ -140,7 +140,7 @@ If not, see:
 .\"
 .NO_SHIM \" Use flex spacing
 .START
-.\"
+.
 .SP .5c
 .HEADING 1 NAMED intro "Introduction"
 .PP
@@ -405,7 +405,7 @@ can remove the window title by issuing
 .COD ".PDF_TITLE \[dq]\[dq] \e\[dq] ie. with a blank argument
 .IBQ
 .FLOAT off
-\#.SP .5v
+.SP .5v
 .HEADING 1 NAMED toc "Tables of Contents"
 .RLD .5v
 .HEADING 2 NAMED toc:gen "Generating a Table of Contents 

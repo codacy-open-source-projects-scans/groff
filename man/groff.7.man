@@ -442,7 +442,7 @@ In the
 and
 .request .as1
 requests,
-an initial neutral double quote in the second argument is stripped off
+a leading neutral double quote in the second argument is stripped off
 to allow embedding of leading spaces.
 .
 To include a double quote inside a quoted argument,
@@ -2763,11 +2763,22 @@ by moving its location to
 .scaleindicator v ).
 .
 .TPx
-.REQ .char "c anything"
+.REQ .char c
+Remove definition of ordinary or special
+.RI character\~ c.
+.
+.TPx
+.REQ .char "c contents"
 Define ordinary or special character
 .I c
 as
 .I anything.
+.
+A leading neutral double quote in the second argument is stripped from
+it,
+allowing embedded leading spaces in
+.I contents,
+which is read in copy mode and continues to the end of the input line.
 .
 .TPx
 .REQ .chop name
@@ -2981,14 +2992,14 @@ As
 with compatibility mode disabled when the macro is interpreted.
 .
 .TPx
-.REQ .device anything
+.REQ .device contents
 Write
-.I anything
+.I contents
 to
 .I @g@troff
 output as a device control command.
 .
-An initial neutral double quote is stripped to allow embedding of
+A leading neutral double quote is stripped to allow embedding of
 leading spaces.
 .
 .TPx
@@ -3032,16 +3043,22 @@ Create empty string named
 .IR ident .
 .
 .TPx
-.REQ .ds "ident anything"
+.REQ .ds "ident contents"
 Create a string named
 .I ident
 containing
-.IR anything .
+.I contents.
+.
+A leading neutral double quote in the second argument is stripped from
+it,
+allowing embedded leading spaces in
+.I contents,
+which is read in copy mode and continues to the end of the input line.
 .
 .TPx
 .REQ .ds1 ident
 .TQ
-.REQ .ds1 "ident anything"
+.REQ .ds1 "ident contents"
 As
 .request .ds ,
 with compatibility mode disabled when the string is interpreted.
@@ -3147,12 +3164,25 @@ and pad glyph to\~\c
 .IR c2 .
 .
 .TPx
-.REQ .fchar "c anything"
-Define fallback character
-(or glyph)
-.I c
+.REQ .fchar c
+Remove definition of fallback
+.RI character\~ c.
+.
+.TPx
+.REQ .fchar "c contents"
+Define fallback
+.RI character\~ c
 as
-.IR anything .
+.IR contents .
+.
+As
+.request .char ,
+but while that request hides a glyph with the same name in the selected
+font,
+.B fchar
+definitions are used only if the font
+lacks a glyph for
+.IR c .
 .
 .TPx
 .REQ .fcolor
@@ -3193,13 +3223,30 @@ at non-negative position
 .IR pos .
 .
 .TPx
-.REQ .fschar "f c anything"
-Define fallback character (or glyph)
-.I c
-for font
-.I f
-as string
-.IR anything .
+.REQ .fschar "f c"
+Remove definition of fallback
+.RI character\~ c
+specific to
+.RI font\~ f.
+.
+.TPx
+.REQ .fschar "f c contents"
+Define fallback
+.RI character\~ c
+specific to
+.RI font\~ f
+as
+.IR contents .
+.
+As
+.request char ,
+but a character defined by
+.B fschar
+is located after the list of fonts declared with
+.B \%fspecial
+is searched and before those declared with the
+.RB \%\[lq] special \[rq]
+request.
 .
 .TPx
 .REQ .fspecial font
@@ -3817,15 +3864,17 @@ Output vertical distance that was saved by the
 request.
 .
 .TPx
-.REQ .output anything
+.REQ .output contents
 Emit
-.I anything
-directly to intermediate output,
-allowing leading whitespace if
-.I string
-starts with
-\&\f[CB]\[dq]\f[]
-(which is stripped off).
+.I contents
+directly to
+.IR @g@troff 's
+output.
+.
+A leading neutral double quote in the argument is stripped,
+allowing embedded leading spaces in
+.IR contents ,
+which is read in copy mode and continues to the end of the input line.
 .
 .TPx
 .REQ .pc
@@ -3847,6 +3896,15 @@ A device's default stroke and/or fill colors,
 \[lq]default\[rq],
 are not listed since they are immutable and their details unknown to the
 formatter.
+.
+.TPx
+.REQ .pcomposite
+Report,
+to the standard error stream,
+the list of defined composite characters.
+.
+The \[lq]from\[rq] code point is listed first,
+followed by its \[lq]to\[rq] mapping.
 .
 .TPx
 .REQ .pev
@@ -4096,11 +4154,24 @@ unit\~\c
 .\" XXX: negative values accepted; check AT&T troff
 .
 .TPx
-.REQ .schar "c anything"
-Define global fallback character (or glyph)\~\c
+.REQ .schar c
+Remove definition of global fallback
+.RI character\~ c.
+.
+.TPx
+.REQ .schar "c contents"
+Define global fallback character
 .I c
 as
-.IR anything .
+.IR contents .
+.
+As
+.request char ,
+but a character defined with
+.B schar
+is located after the list of fonts declared with the
+.request \%.special
+request and before any mounted special fonts.
 .
 .TPx
 .REQ .shc
@@ -4391,10 +4462,9 @@ to the standard error stream.
 .REQ .tm1 message
 As
 .request .tm ,
-but an initial neutral double quote in
-.I message
-is removed,
-allowing it to contain leading spaces.
+but recognizes and strips a leading neutral double quote,
+allowing embedded spaces in
+.IR message .
 .
 .TPx
 .REQ .tmc message
@@ -4561,17 +4631,27 @@ unless and until
 evaluates false.
 .
 .TPx
-.REQ .write "stream anything"
+.REQ .write "stream contents"
 Write
-.I anything
+.I contents
 to
-.IR stream .
+.IR stream ,
+which must previously have been the subject of an
+.request .open
+request,
+followed by a newline.
+.
+A leading neutral double quote in the second argument is stripped,
+allowing embedded leading spaces in
+.IR contents ,
+which is read in copy mode until the end of the line.
 .
 .TPx
-.REQ .writec "stream anything"
-Similar to
-.request .write
-without emitting a final newline.
+.REQ .writec "stream contents"
+As
+.request .write ,
+but does not append a newline to
+.IR contents .
 .
 .TPx
 .REQ .writem "stream name"
@@ -5375,9 +5455,9 @@ negative before,
 positive after).
 .
 .TP
-.ESCq X anything
+.ESCq X contents
 Write
-.I anything
+.I contents
 to
 .I @g@troff
 output as a device control command.
@@ -5624,32 +5704,6 @@ this is the default.
 .
 .
 .\" ====================================================================
-.SS "Device control commands"
-.\" ====================================================================
-.
-The
-.B .device
-and
-.B .devicem
-requests,
-and
-.B \[rs]X
-and
-.B \[rs]Y
-escape sequences,
-enable documents to pass information directly to a postprocessor.
-.
-These are useful for
-exercising device-specific capabilities that the
-.I groff
-language does not abstract or generalize;
-such functions include the embedding of hyperlinks and image files.
-.
-Device-specific functions are documented in
-each output driver's man page.
-.
-.
-.\" ====================================================================
 .SH Strings
 .\" ====================================================================
 .
@@ -5729,7 +5783,7 @@ see section \[lq]Parameters\[rq] below.
 .
 .
 .P
-The formatter removes an initial neutral double quote
+The formatter removes a leading neutral double quote
 .B \[dq]
 in the string contents to permit the embedding of leading spaces.
 .
@@ -7824,8 +7878,8 @@ device control command
 (see
 .MR groff_out @MAN5EXT@ ).
 .
-The meaning and interpretation of such parameters is determined by the
-output driver or other postprocessor.
+The interpretation of such parameters is determined by the output driver
+or other postprocessor.
 .
 .
 .P
@@ -7841,9 +7895,8 @@ are ignored;
 and
 .B \[rs]\[ti]
 are converted to single space characters;
-and @code{\\} has
-.B \[rs]\[rs]
-its escape character stripped.
+and a self-escaped escape character is output as a backslash
+.BR \[rs] .
 .
 So that the basic Latin subset of the Unicode character set
 (that is,
@@ -7925,18 +7978,18 @@ The
 request
 and
 .B \[rs]Y
-escape sequence are approximately equivalent to
+escape sequence are each approximately equivalent to
 .RB \[lq] \[rs]X\[aq]\c
 .IB name \[aq]\c
 \[rq].
 .
-However,
-the contents of the string or macro
+They differ from that construction in that the contents of the string or
+macro
 .I name
 are not interpreted;
-it is also permitted for
+futher,
 .I name
-to have been defined as a macro and thus contain newlines.
+may be a macro and thus contain newlines.
 .
 (There is no way to embed a newline
 in the arguments to
@@ -8232,10 +8285,12 @@ and
 .RB diversions\[em]( .pm );
 defined colors
 .RB ( .pcolor );
-hyphenation exceptions
-.RB ( .phw );
+composite characters
+.RB ( .pcomposite );
 environments
 .RB ( .pev );
+hyphenation exceptions
+.RB ( .phw );
 registers
 .RB ( .pnr );
 and page location traps

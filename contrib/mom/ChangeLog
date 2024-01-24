@@ -1,3 +1,8 @@
+2024-01-22
+
+	* om.tmac (2.6_b): Add macro PDF_OUTLINE_PN (control pdf outline page
+	numbering).  Add macro TOC_MARGINS (set toc margins explicitly).
+
 2023-11-15
 
 	* om.tmac: Fix QUOTE and BLOCKQUOTE offsets being misaligned

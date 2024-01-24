@@ -1056,10 +1056,9 @@ is interpreted even in copy mode.
 .
 .
 .TP
-.BI \[rs]X\[aq] anything \[aq]
+.BI \[rs]X\[aq] contents \[aq]
 Within
-.B \[rs]X
-arguments,
+.I contents,
 the escape sequences
 .BR \[rs]& ,
 .BR \[rs]) ,
@@ -1071,9 +1070,7 @@ are ignored;
 and
 .B \[rs]\[ti]
 are converted to single space characters;
-and
-.B \[rs]\[rs]
-is reduced to
+and a self-escaped escape character is output as a backslash
 .BR \[rs] .
 .
 So that the basic Latin subset of the Unicode character set
@@ -1082,7 +1079,7 @@ ISO\~646:1991-IRV or,
 popularly,
 \[lq]US-ASCII\[rq])
 can be reliably encoded in
-.I anything,
+.I contents,
 the special character escape sequences
 .BR \[rs]\- ,
 .BR \[rs][aq] ,
@@ -1867,27 +1864,52 @@ character on the right doesn't get examined.
 .
 .
 .TP
-.BI .char\~ "c contents"
-Define the ordinary or special
+.BI .char\~ c\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
+Define an ordinary or special
 .RI character\~ c
 as
-.IR contents ,
-which can be empty.
+.I contents.
 .
-More precisely,
-.B char
-defines a
-.I groff
-object
-(or redefines an existing one)
-that is accessed with the
-.RI name\~ c
-on input,
+If
+.I contents
+is absent,
+an existing character definition made with the same request is deleted.
+.
+.
+.IP
+Defining
+(or redefining)
+a
+.RI character\~ c
+creates an object in the formatter that is recognized like any other
+ordinary special character on input,
 and produces
 .I contents
 on output.
 .
-Compatibility mode is disabled and the escape character set
+Every time
+.I c
+is to be output,
+.I contents
+is processed in a temporary environment and the result encapsulated in a
+node.
+.
+(See section \[lq]Gtroff Internals\[rq] in
+.IR "Groff: The GNU Implementation of troff" ,
+the
+.I groff
+Texinfo manual.)
+.
+A leading neutral double quote in the second argument is stripped from
+it,
+allowing embedded leading spaces in
+.I contents,
+which is read in copy mode and continues to the end of the input line.
+.
+Further,
+compatibility mode is disabled and the escape character set
 .RB to\~ \[rs]
 while
 .I contents
@@ -1901,7 +1923,7 @@ not to each character in
 .
 .
 .IP
-An object defined by this request can be used just like a glyph
+A character defined by this request can be used just like a glyph
 provided by the output device.
 .
 In particular,
@@ -1960,7 +1982,7 @@ is to be interpolated as a string.
 .
 This request can be used repeatedly on the same
 .IR name ;
-see section \[lq]gtroff Internals\[rq] in
+see section \[lq]Gtroff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
@@ -2218,15 +2240,15 @@ is interpreted.
 .
 .
 .TP
-.BI .device\~ anything
+.BI .device\~ contents
 Write
-.IR anything ,
+.IR contents ,
 read in copy mode,
 to
 .I @g@troff
 output as a device control command.
 .
-An initial neutral double quote in
+A leading neutral double quote in
 .I anything
 is stripped to allow the embedding of
 leading spaces.
@@ -2289,7 +2311,9 @@ requests.
 .
 .
 .TP
-.BI .ds1\~ "name contents"
+.BI .ds1\~ name\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
 As
 .BR ds ,
 but compatibility mode is disabled while
@@ -2387,15 +2411,18 @@ See
 .
 .
 .TP
-.BI .fchar\~ c\~contents
+.BI .fchar\~ c\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
 Define fallback
 .RI character\~ c
 as
 .IR contents .
 .
-While
-.B char
-hides a glyph with the same name in the selected font,
+As
+.BR char ,
+but while that request hides a glyph with the same name in the selected
+font,
 .B fchar
 definitions are used only if the font
 lacks a glyph for
@@ -2416,7 +2443,9 @@ or the default if there is none.
 .
 .
 .TP
-.BI .fschar\~ f\~c\~contents
+.BI .fschar\~ f\~c\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
 Define fallback special
 .RI character\~ c
 for font\~\c
@@ -2424,11 +2453,13 @@ for font\~\c
 as
 .IR contents .
 .
-A character defined by
+As
+.BR char ,
+but a character defined by
 .B fschar
 is located after the list of fonts declared with
 .B \%fspecial
-is searched but before those declared with the
+is searched and before those declared with the
 .RB \%\[lq] special \[rq]
 request.
 .
@@ -3085,16 +3116,31 @@ append to it instead of truncating it.
 .TP
 .BI .output\~ contents
 Emit
-.IR contents ,
-which are read in copy mode,
-to the formatter output;
-this is similar to
-.B \[rs]!\&
-used in the top-level diversion.
-.
-An initial neutral double quote in
 .I contents
-is stripped to allow the embedding of leading spaces.
+directly to
+.IR @g@troff 's
+output;
+this usage is similar to that of
+.B \[rs]!\&
+in the top-level diversion.
+.
+A leading neutral double quote in the argument is stripped,
+allowing embedded leading spaces in
+.IR contents ,
+which is read in copy mode and continues to the end of the input line.
+.
+This request can't be used before the first page has started\[em]if an
+error is reported,
+or
+.I contents
+fails to appear in
+.IR @g@troff 's
+output,
+simply insert a
+.B .br
+line before the
+.B output
+request.
 .
 .
 .TP
@@ -3113,6 +3159,16 @@ A device's default stroke and/or fill colors,
 \[lq]default\[rq],
 are not listed since they are immutable and their details unknown to the
 formatter.
+.
+.
+.TP
+.B .pcomposite
+Report,
+to the standard error stream,
+the list of defined composite characters.
+.
+The \[lq]from\[rq] code point is listed first,
+followed by its \[lq]to\[rq] mapping.
 .
 .
 .TP
@@ -3306,19 +3362,21 @@ the request is ignored.
 .
 .
 .TP
-.BI .schar\~ c\~contents
+.BI .schar\~ c\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
 Define global fallback character
 .I c
 as
 .IR contents .
 .
-See
-.BR char ;
-the distinction is that a character defined with
+As
+.BR char ,
+but a character defined with
 .B schar
 is located after the list of fonts declared with the
 .B \%special
-request but before any mounted special fonts.
+request and before any mounted special fonts.
 .
 .
 .TP
@@ -3534,13 +3592,14 @@ the increase in width is a linear function of the type size.
 .
 .
 .TP
-.BI .tm1\~ message
+.BR .tm1\~ [\c
+.RI [ \[dq] ]\c
+.IR contents ]
 As
-.B tm
-request,
-but strips a leading neutral double quote from
-.I message
-to allow the embedding of leading spaces.
+.BR tm ,
+but recognizes and strips a leading neutral double quote,
+allowing embedded spaces in
+.IR message .
 .
 .
 .TP
@@ -3778,9 +3837,11 @@ loop's flow of control.
 .
 .
 .TP
-.BI .write\~ stream\~anything
+.BI .write\~ stream\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
 Write
-.I anything
+.I contents
 to
 .IR stream ,
 which must previously have been the subject of an
@@ -3788,19 +3849,20 @@ which must previously have been the subject of an
 request,
 followed by a newline.
 .
-.I anything
-is read in copy mode.
-.
-An initial neutral double quote in
-.I anything
-is stripped to allow the embedding of leading spaces.
+A leading neutral double quote in the second argument is stripped,
+allowing embedded leading spaces in
+.IR contents ,
+which is read in copy mode until the end of the line.
 .
 .
 .TP
-.BI .writec\~ stream\~anything
+.BI .writec\~ stream\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
 As
 .BR write ,
-but without a trailing newline.
+but does not append a newline to
+.IR contents .
 .
 .
 .TP
@@ -3852,10 +3914,12 @@ this behavior is so anomalous that it must be considered a bug.
 .RI [ end-name ]
 .TQ
 .BI .ds\~ name\~\c
-.RI [ contents ]
+.RB [[ \[dq] ]\c
+.IR contents ]
 .TQ
 .BI .as\~ name\~\c
-.RI [ contents ]
+.RB [[ \[dq] ]\c
+.IR contents ]
 In compatibility mode,
 these requests behave similarly to
 .BR de1 ,
@@ -5229,6 +5293,8 @@ More aspects of formatter state can be examined with requests that write
 lists of
 defined colors
 .RB ( pcolor ),
+composite characters
+.RB ( pcomposite ),
 environments
 .RB ( pev ),
 hyphenation exceptions
@@ -5786,7 +5852,7 @@ the new
 escape sequence.
 .
 See subsection \[lq]Escape sequences\[rq] above and sections
-\[lq]Diversions\[rq] and \[lq]gtroff Internals\[rq] in
+\[lq]Diversions\[rq] and \[lq]Gtroff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
@@ -5799,7 +5865,11 @@ partially collected line and a partially collected line at the top-level
 diversion has never existed,
 AT&T
 .I troff
-will output the partially collected line at the end of input;
+will output a partially collected but otherwise empty line
+(as if
+.RB \[lq] \[rs]c \[rq]
+were in the top-level diversion)
+at the end of input;
 GNU
 .I troff \" GNU
 will not.

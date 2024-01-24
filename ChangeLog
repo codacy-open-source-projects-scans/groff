@@ -1,3 +1,66 @@
+2024-01-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Diagnose bogus composite character escape sequences.
+	That is, when a composite character escape sequence like \[a ~]
+	has a bogus modifier (as opposed to base) character, meaning one
+	that has not been defined as the source _or_ destination of a
+	`composite` request, warn about it.  For instance, \[a $] is
+	nonsense, barring a request like `.composite $ \[uFF00]`, which
+	would map `$`, when used as a modifier character in a composite
+	special character escape sequence, to U+FF00, which would be a
+	modifier form of the dollar sign in an alternate universe.
+
+	* src/roff/troff/input.cpp (is_codepoint_composite): New
+	function searches `composite_dictionary` for the presence of the
+	given four-digit hexadecimal string as a key _or_ value.
+
+	* src/roff/troff/input.h: Expose foregoing function to other
+	translation units.
+
+	* src/roff/troff/node.cpp (make_glyph_node): Check input
+	`charinfo` for a Unicode code point sequence, and if it contains
+	one, call `valid_unicode_code_sequence()` to check it for
+	validity.  Then, iterate through each code point after the first
+	{the base character}, and call `is_codepoint_composite()` on it.
+	Diagnose invalid composite character and return null pointer if
+	validation fails.
+
+2024-01-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (map_composite_character): Stop
+	throwing diagnostic message when `composite` request invoked
+	with only one argument.  This has long worked just fine to
+	delete a composite character mapping.  That is something a
+	{rare} user might conceivably want to do.
+
+	Fixes <https://savannah.gnu.org/bugs/?64937>.
+
+2024-01-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Implement new `pcomposite` request.
+
+	* src/roff/troff/input.cpp (report_composite_characters): Add.
+	(init_input_requests): Wire up `pcomposite` request name to
+	`report_composite_characters()`.
+
+	* doc/groff.texi (Colors, Debugging):
+	* man/groff.7.man (Request short reference, Debugging):
+	* man/groff_diff.7.man (New requests, Debugging):
+	* NEWS: Document it.
+
+2024-01-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (report_color): Flush standard error
+	stream after dumping defined colors.  Trivially refactor to
+	generalize and eliminate use of pointless temporary.  Continues
+	commit e080a78c91, 5 January.
+
+2024-01-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (encode_char_for_troff_output):
+	Trivially refactor to make clearer what gets silently discarded
+	from (and not encoded for) device control commands.
+
 2024-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[tbl]: Re-fix Savannah #62471 (vrules in nroff and no-space

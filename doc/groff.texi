@@ -7523,7 +7523,7 @@ the @code{\R} escape sequence.
 Set register @var{ident} to @var{value}.  If @var{ident} doesn't exist,
 GNU @code{troff} creates it.  In the @code{\R} escape sequence, the
 delimiter need not be a neutral apostrophe; see @ref{Delimiters}.  It
-also does not produce an input token in GNU @code{troff}.  @xref{Gtroff
+also does not produce a token in GNU @code{troff}.  @xref{Gtroff
 Internals}.
 
 @Example
@@ -9531,8 +9531,8 @@ environment (@pxref{Environments}).
 A @dfn{translation} is a mapping of an input character to an output
 glyph.  The mapping occurs at output time, i.e., the input character
 gets assigned the metric information of the mapped output character
-right before input tokens are converted to nodes (@pxref{Gtroff
-Internals}, for more on this process).
+right before tokens are converted to nodes (@pxref{Gtroff Internals},
+for more on this process).
 
 @DefreqList {tr, @Var{a}@Var{b}@Var{c}@Var{d}@dots{}}
 @DefreqListEndx {trin, @Var{a}@Var{b}@Var{c}@Var{d}@dots{}}
@@ -10508,9 +10508,10 @@ for later use.
 .ft \*[saved-font]
 @endExample
 
-@code{\f} doesn't produce an input token in GNU @code{troff}; it thus
-can be used in requests that expect a single-character argument.  We can
-assign a font to a margin character as follows (@pxref{Miscellaneous}).
+@code{\f} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can assign a font to a margin
+character as follows (@pxref{Miscellaneous}).
 
 @Example
 .mc \f[I]x\f[]
@@ -10646,9 +10647,10 @@ baked beans,
 and spam.
 @endExample
 
-@code{\F} doesn't produce an input token in GNU @code{troff}.  As a
-consequence, it can be used in requests like @code{mc} (which expects
-a single character as an argument) to change the font family on the fly.
+@code{\F} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can thus alter the font family
+when writing a margin character as follows (@pxref{Miscellaneous}).
 
 @Example
 .mc \F[P]x\F[]
@@ -11073,6 +11075,10 @@ This is a strict rewriting of the special character name; no check is
 performed for the existence of a glyph for either.  A set of default
 mappings for many accents can be found in the file
 @file{composite.tmac}, loaded by the default @file{troffrc} at startup.
+
+You can obtain a report of colors defined by @code{composite} on the
+standard error stream with the @code{pcomposite} request.
+@xref{Debugging}.
 @endDefreq
 
 @Defesc {\\N, @code{'}, n, @code{'}}
@@ -11259,10 +11265,10 @@ after the character can't be suppressed since the neighboring character
 on the right doesn't get examined.
 @endDefreq
 
-@DefreqList {char, c [@Var{contents}]}
-@DefreqItemx {fchar, c [@Var{contents}]}
-@DefreqItemx {fschar, f c [@Var{contents}]}
-@DefreqListEndx {schar, c [@Var{contents}]}
+@DefreqList {char, c [@code{"}][@Var{contents}]}
+@DefreqItemx {fchar, c [@code{"}][@Var{contents}]}
+@DefreqItemx {fschar, f c [@code{"}][@Var{contents}]}
+@DefreqListEndx {schar, c [@code{"}][@Var{contents}]}
 @cindex defining character (@code{char})
 @cindex defining fallback character (@code{fchar}, @code{fschar},@
 @code{schar})
@@ -11287,18 +11293,24 @@ on the right doesn't get examined.
 @cindex @code{\&}, and glyph definitions
 @cindex @code{\e}, and glyph definitions
 @cindex @code{hcode} request, and glyph definitions
-Define a new character or glyph@tie{}@var{c} to be @var{contents}, which
-can be empty.  More precisely, @code{char} defines a @code{groff} object
-(or redefines an existing one) that is accessed with the
-name@tie{}@var{c} on input, and produces @var{contents} on output.
-Every time glyph@tie{}@var{c} needs to be printed, @var{contents} is
-processed in a temporary environment and the result is wrapped up into a
-single object.  Compatibility mode is turned off and the escape
-character is set to@tie{}@code{\} while @var{contents} is processed.
-Any emboldening, constant spacing, or track kerning is applied to this
-object rather than to individual glyphs in @var{contents}.
+Define an ordinary or special character@tie{}@var{c} as @var{contents}.
+If @var{contents} is absent, an existing character definition made with
+the same request is deleted.
 
-An object defined by these requests can be used just like a glyph
+Defining (or redefining) a character@var{c} creates an object in the
+formatter that is recognized like any other ordinary special character
+on input, and produces @var{contents} on output.  Every time @var{c} is
+to be output, @var{contents} is processed in a temporary environment and
+the result encapsulated in a node.@footnote{@xref{Gtroff Internals}.}
+A leading neutral double quote in the final argument is stripped from
+it, allowing embedded leading spaces in @var{contents}, which is read in
+copy mode and continues to the end of the input line.  Further,
+compatibility mode is disabled and the escape character set to @code{\}
+while @var{contents} is interpreted.  Any emboldening, constant spacing,
+or track kerning is applied to this object rather than to individual
+glyphs in @var{contents}.
+
+A character defined by these requests can be used just like a glyph
 provided by the output device.  In particular, other characters can be
 translated to it with the @code{tr} or @code{trin} requests; it can be
 made the tab or leader fill character with the @code{tc} and @code{lc}
@@ -11506,9 +11518,10 @@ The read-only register @code{.height} contains the font height as set by
 Currently, only the @option{-T ps} and @option{-T pdf} devices support
 this feature.
 
-@code{\H} doesn't produce an input token in GNU @code{troff}.  As a
-consequence, it can be used in requests like @code{mc} (which expects
-a single character as an argument) to change the font on the fly:
+@code{\H} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can thus alter the font height
+when writing a margin character as follows (@pxref{Miscellaneous}).
 
 @Example
 .mc \H'+5z'x\H'0'
@@ -11543,9 +11556,10 @@ The read-only register @code{.slant} contains the font slant as set by
 Currently, only the @option{-T ps} and @option{-T pdf} devices support
 this feature.
 
-@code{\S} doesn't produce an input token in GNU @code{troff}.  As a
-consequence, it can be used in requests like @code{mc} (which expects
-a single character as an argument) to change the font on the fly:
+@code{\S} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can thus alter the font slant
+when writing a margin character as follows (@pxref{Miscellaneous}).
 
 @Example
 .mc \S'20'x\S'0'
@@ -12057,10 +12071,10 @@ wink, wink, \s+2nudge, nudge,\s+8 say no more!
 @endExample
 @endDefreq
 
-The @code{\s} escape sequence affects the environment immediately and
-doesn't produce an input token.  Consequently, it can be used in
-requests like @code{mc}, which expects a single character as an
-argument, to change the type size on the fly.
+@code{\s} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can thus alter the type size
+when writing a margin character as follows (@pxref{Miscellaneous}).
 
 @Example
 .mc \s[20]x\s[0]
@@ -12301,7 +12315,7 @@ of a closed geometric figure.
 If @var{n} is missing or non-zero, enable the output of color-related
 device-independent output commands (this is the default); otherwise,
 disable them.  This request sets a global flag; it does not produce an
-input token (@pxref{Gtroff Internals}).
+token (@pxref{Gtroff Internals}).
 
 The read-only register @code{.color} is@tie{}1 if colors are enabled,
 0@tie{}otherwise.
@@ -12380,10 +12394,10 @@ string-valued register @samp{.m}; it is associated with the environment
 (@pxref{Environments}).  The default stroke color is named
 @samp{default}.
 
-@code{\m} doesn't produce an input token in GNU @code{troff}
-(@pxref{Gtroff Internals}).  It therefore can be used in requests like
-@code{mc} (which expects a single character as an argument) to change
-the color on the fly:
+@code{\m} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can thus alter the stroke color
+when writing a margin character as follows (@pxref{Miscellaneous}).
 
 @Example
 .mc \m[red]x\m[]
@@ -12399,6 +12413,17 @@ Set the fill color for objects drawn with @code{\D'@dots{}'} escape
 sequences.  The escape sequence @code{\M[]} restores the previous fill
 color, as does an @code{fcolor} request without an argument.
 
+@code{\M} is not tokenized when GNU @code{troff} reads its input; it
+instead updates the environment.  It thus can be used in requests that
+expect a single-character argument.  We can thus alter the fill color
+when writing a margin character as follows (@pxref{Miscellaneous});
+@command{grotty} interprets the fill color as a character cell
+background color.
+
+@Example
+.mc \m[black]\M[green]x\M[]\m[]
+@endExample
+
 @cindex background color name register (@code{.M})
 @cindex name, background color, register (@code{.M})
 @cindex color name, background, register (@code{.M})
@@ -12408,7 +12433,6 @@ color, as does an @code{fcolor} request without an argument.
 The name of the current fill color is available in the read-only
 string-valued register @samp{.M}; it is associated with the environment
 (@pxref{Environments}).  The default fill color is named @samp{default}.
-@code{\M} doesn't produce an input token in GNU @code{troff}.
 
 Create an ellipse with a red interior as follows.
 
@@ -12446,8 +12470,8 @@ sequence does not exist, it is defined as empty, nothing is
 interpolated, and a warning in category @samp{mac} is emitted.
 @xref{Warnings}, regarding the enablement and suppression of warnings.
 
-@DefreqList {ds, name [@Var{contents}]}
-@DefreqItemx {ds1, name [@Var{contents}]}
+@DefreqList {ds, name [@code{"}][@Var{contents}]}
+@DefreqItemx {ds1, name [@code{"}][@Var{contents}]}
 @DefescItemx {\\*, , n, }
 @DefescItem {\\*, (, nm, }
 @c XXX: Can't mark the parameters with @Var because @Var gets called
@@ -12533,7 +12557,7 @@ document maintenance.
 @cindex leading spaces with @code{ds}
 @cindex spaces with @code{ds}
 @cindex @code{ds} request, and leading spaces
-The formatter removes an initial neutral double quote @code{"} in
+The formatter removes a leading neutral double quote @code{"} in
 @var{contents} to permit the embedding of leading spaces.  Any other
 @code{"} is interpreted literally, but it is wise to use the special
 character escape sequence @code{\[dq]} instead if the string might be
@@ -12573,8 +12597,8 @@ suppress AT&T @code{troff} compatibility mode when used; see
 @ref{Writing Macros} and @ref{Compatibility Mode}.  The @code{ds1}
 request defines a string such that compatibility mode is off when the
 string is later interpolated.  To be more precise, a @dfn{compatibility
-save} input token is inserted at the beginning of @var{contents}, and a
-@dfn{compatibility restore} input token at the end.
+save} token is inserted at the beginning of @var{contents}, and a
+@dfn{compatibility restore} token at the end.
 
 @Example
 .nr xxx 12345
@@ -12591,8 +12615,8 @@ save} input token is inserted at the beginning of @var{contents}, and a
 @endExample
 @endDefreq
 
-@DefreqList {as, name [@Var{contents}]}
-@DefreqListEndx {as1, name [@Var{contents}]}
+@DefreqList {as, name [@code{"}][@Var{contents}]}
+@DefreqListEndx {as1, name [@code{"}][@Var{contents}]}
 @cindex appending to a string (@code{as})
 @cindex string, appending (@code{as})
 The @code{as} request is similar to @code{ds} but appends @var{contents}
@@ -12920,7 +12944,7 @@ to the output.@footnote{Because formatting of the comparands takes place
 in a dummy environment, vertical motions within them cannot spring
 traps.}  On the other hand, @samp{.if "\d"\v'0.5m'"} is true, because
 @code{\d} is defined as a downward motion of one-half em.@footnote{All
-of this is to say that the lists of output nodes created by formatting
+of this is to say that the lists of nodes created by formatting
 @var{xxx} and @var{yyy} must be identical.  @xref{Gtroff Internals}.}
 
 @cindex string comparison
@@ -15150,7 +15174,7 @@ set.  When it is, the leading spaces are removed from the input line,
 and no motion is produced before calling @var{name}.
 
 @c XXX The following discussion does not seem to be correct; leading
-@c space traps don't "see" _any_ input tokens.  Nothing on the line is
+@c space traps don't "see" _any_ tokens.  Nothing on the line is
 @c passed to it as arguments, and tokens after leading spaces are
 @c processed normally after the designated macro is interpolated. XXX
 @c
@@ -15545,9 +15569,9 @@ Both escape sequences read the data in copy mode.
 @cindex top-level diversion, and @code{\!}
 @cindex diversion, top-level, and @code{\!}
 If @code{\!} is used in the top-level diversion, its argument is
-directly embedded into GNU @code{troff}'s intermediate output.  This can
-be used, for example, to control a postprocessor that processes the data
-before it is sent to an output driver.
+embedded into GNU @code{troff}'s device-independent output.  This can be
+used, for example, to control a postprocessor that transforms the data
+that are subsequently read by an output driver.
 
 @cindex @code{\?}, in top-level diversion
 @cindex top-level diversion, and @code{\?}
@@ -15561,14 +15585,15 @@ at all; its argument is simply ignored.
 @cindex @code{output} request, and copy mode
 @cindex copy mode, and @code{output} request
 @cindex mode, copy, and @code{output} request
-@Defreq {output, contents}
-Emit @var{contents} directly to GNU @code{troff}'s intermediate output
-(subject to copy mode interpretation); this is similar to @code{\!} used
-at the top level.  An initial neutral double quote in @var{contents} is
-stripped to allow embedding of leading spaces.
-
-This request can't be used before the first page has started---if you
-get an error, simply insert @code{.br} before the @code{output} request.
+@Defreq {output, [@code{"}]@Var{contents}}
+Emit @var{contents} directly to GNU @code{troff}'s output; this usage is
+similar to that of @code{\!} in the top-level diversion.  An initial
+neutral double quote in the argument is stripped, allowing embedded
+leading spaces in @var{contents}, which is read in copy mode and
+continues to the end of the input line.  This request can't be used
+before the first page has started---if an error is reported, or
+@var{contents} fails to appear in GNU @command{troff}'s output, simply
+insert a @code{.br} line before the @code{output} request.
 
 Use with caution!  It is normally only needed for mark-up used by a
 postprocessor that does something with the output before sending it to
@@ -15610,9 +15635,9 @@ and size are not preserved; use @code{unformat} to achieve that.
 Like @code{asciify}, unformat the diversion @var{div}.  However,
 @code{unformat} handles only tabs and spaces between words, the latter
 usually arising from spaces or newlines in the input.  Tabs are treated
-as input tokens, and spaces become adjustable again.  The vertical sizes
-of lines are not preserved, but glyph information (font, type size,
-space width, and so on) is retained.
+as tokens, and spaces become adjustable again.  The vertical sizes of
+lines are not preserved, but glyph information (font, type size, space
+width, and so on) is retained.
 @endDefreq
 
 
@@ -16239,17 +16264,30 @@ Dear Mr. Adollar,
 @endExample
 
 @Defreq {pi, pipe}
-Pipe the output of @command{gtroff} to the shell command(s) specified by
-@var{pipe}.  This request must occur before @command{gtroff} has a
-chance to print anything.
+Use GNU @command{troff}'s device-independent output as the input to the
+commands specified in @var{pipe} and emit their output to the standard
+output stream instead of GNU @command{troff}'s usual output.
+@cindex @code{groff}, and @code{pi} request
+@cindex @code{pi} request, and @code{groff}
+Since that output is in a page description
+language,@footnote{@xref{gtroff Output}.} using this request without
+specifying the @option{-Z} option to @command{groff} is likely to
+provoke fatal errors from an output driver.
+
+@code{pi} must be invoked before GNU @command{troff} writes any nodes
+to its output.@footnote{@xref{Gtroff Internals}.}  The formatter reports
+an error and ignores the request if @code{pi} is invoked ``too late''.
+Roughly, this means you should set up your @code{pi} pipeline early in a
+document, before anything but register, string, and macro definitions
+(and/or sourcing of files that comprise these exclusively).
 
 @cindex safer mode
 @cindex mode, safer
 @cindex unsafe mode
 @cindex mode, unsafe
-It is an error to use this request in safer mode, which is the
-default.  Invoke GNU @code{troff} or a front end with the @option{-U}
-option to enable unsafe mode.
+Use of this request in safer mode (GNU @command{troff}'s default) is
+erroneous.  Invoke GNU @command{troff} or a front end with the
+@option{-U} option to enable unsafe mode.
 
 Multiple calls to @code{pi} are allowed, acting as a chain.  For
 example,
@@ -16257,16 +16295,10 @@ example,
 @Example
 .pi foo
 .pi bar
-...
+@r{@dots{}}
 @endExample
 
 is the same as @w{@samp{.pi foo | bar}}.
-
-@cindex @code{groff}, and @code{pi} request
-@cindex @code{pi} request, and @code{groff}
-The intermediate output format of GNU @code{troff} is piped to the
-specified commands.  Consequently, calling @code{groff} without the
-@option{-Z} option normally causes a fatal error.
 @endDefreq
 
 @cindex system commands, running
@@ -16342,8 +16374,8 @@ Give GNU @code{troff} or a front end program the @option{-U} option to
 enable unsafe mode.
 @endDefreq
 
-@DefreqList {write, stream data}
-@DefreqListEndx {writec, stream data}
+@DefreqList {write, stream [@code{"}]@Var{contents}}
+@DefreqListEndx {writec, stream [@code{"}]@Var{contents}}
 @cindex copy mode, and @code{write} request
 @cindex @code{write} request, and copy mode
 @cindex mode, copy, and @code{write} request
@@ -16352,15 +16384,13 @@ enable unsafe mode.
 @cindex mode, copy, and @code{writec} request
 @cindex write to file stream (@code{write}, @code{writec})
 @cindex file stream, write to (@code{write}, @code{writec})
-Write to the file associated with the specified @var{stream}.  The
-stream must previously have been the subject of an open request.  The
-remainder of the line is interpreted as the @code{ds} request reads its
-second argument: an initial neutral double quote in @var{contents} is
-stripped to allow embedding of leading spaces, and it is read in copy
-mode.
+Write @var{contents} to @var{stream}, which must previously have been
+the subject of an @code{open} request.  A leading neutral double quote
+in the second argument is stripped, allowing embedded leading spaces in
+@var{contents}, which is read in copy mode until the end of the line.
 
 The @code{writec} request is like @code{write}, but only @code{write}
-appends a newline to the data.
+appends a newline to @var{contents}.
 @endDefreq
 
 @Defreq {writem, stream xx}
@@ -16429,15 +16459,17 @@ the embedding of hyperlinks and image files.  Device-specific functions
 are documented in each output driver's man page, such as
 @cite{gropdf@r{(1)}}, @cite{grops@r{(1)}}, or @cite{grotty@r{(1)}}.
 
-@DefreqList {device, xxx @r{@dots{}}}
-@DefescListEndx {\\X, @code{'}, xxx @r{@dots{}}, @code{'}}
-Embed all @var{xxx} arguments into GNU @command{troff} output as
-parameters to an @w{@samp{x X}} device control
-command.@footnote{@xref{gtroff Output}.}  The meaning and interpretation
-of such parameters is determined by the output driver or other
-postprocessor.
+@DefreqList {device, [@code{"}]@Var{contents}}
+@c XXX: Can't mark the parameters with @Var because @Var gets called
+@c recursively if we do.
+@c @DefescListEndx {\\X, @code{'}, @Var{contents}, @code{'}}
+@DefescListEndx {\\X, @code{'}, contents, @code{'}}
+Embed @var{contents} into GNU @command{troff} output as parameters to an
+@w{@samp{x X}} device control command.@footnote{@xref{gtroff Output}.}
+The interpretation of such parameters is determined by the output driver
+or other postprocessor.
 
-The @code{device} request strips an initial neutral double quote from
+The @code{device} request strips a leading neutral double quote from
 @var{contents} to allow embedding of leading spaces.
 
 @cindex @code{\&}, in device control commands
@@ -16451,16 +16483,16 @@ The @code{device} request strips an initial neutral double quote from
 @end ifinfo
 Within a device control command, the escape sequences @code{\&},
 @code{\)}, @code{\%}, and @code{\:} are ignored; @code{\@key{SPC}} and
-@code{\~} are converted to single space characters; and @code{\\} has
-its escape character stripped.  So that the basic Latin subset of the
-Unicode character set@footnote{that is, ISO@tie{}646:1991-IRV or,
-popularly, ``US-ASCII''} can be reliably encoded in device control
-commands, seven special character escape sequences (@samp{\-},
-@samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]}, @samp{\[ha]}, @samp{\[rs]},
-and @samp{\[ti]}) are mapped to basic Latin characters; see the
-@cite{groff_char@r{(7)}} man page.  For this transformation, character
-translations and special character definitions are
-ignored.@footnote{They are bypassed because these parameters are not
+@code{\~} are converted to single space characters; and a self-escaped
+escape character is output as a backslash @code{\}.  So that the basic
+Latin subset of the Unicode character set@footnote{that is,
+ISO@tie{}646:1991-IRV or, popularly, ``US-ASCII''} can be reliably
+encoded in device control commands, seven special character escape
+sequences (@samp{\-}, @samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]},
+@samp{\[ha]}, @samp{\[rs]}, and @samp{\[ti]}) are mapped to basic Latin
+characters; see the @cite{groff_char@r{(7)}} man page.  For this
+transformation, character translations and special character definitions
+are ignored.@footnote{They are bypassed because these parameters are not
 rendered as glyphs in the output; instead, they remain abstract
 characters---in a PDF bookmark or a URL, for example.}
 
@@ -16491,15 +16523,16 @@ as a device control command.
 @DefescItemx {\\Y, , n, }
 @DefescItem {\\Y, (, nm, }
 @DefescListEnd {\\Y, [, name, ]}
-This is approximately equivalent to @samp{\X'\*[@var{name}]'}
-(one-character name@tie{}@var{n}, two-character name @var{nm}).
-However, the contents of the string or macro @var{name} are not
-interpreted; it is also permitted for @var{name} to have been defined as
-a macro and thus contain newlines.  (There is no way to embed a newline
-in the arguments to @code{device} or @code{\X}.)  The inclusion of
-newlines requires an extension to the @acronym{AT&T} @command{troff}
-output format; their presence confuses drivers that do not know about it
-(@pxref{Device Control Commands}).
+The @code{devicem} request and @code{\Y} escape sequence are each
+approximately equivalent to @samp{\X'\*[@var{name}]'} (one-character
+name@tie{}@var{n}, two-character name @var{nm}).  They differ from that
+construction in that the contents of the string or macro @var{name} are
+not interpreted; further, @var{name} may be a macro and thus contain
+newlines.  (There is no way to embed a newline in the arguments to
+@code{device} or @code{\X}.)  The inclusion of newlines requires an
+extension to the @acronym{AT&T} @command{troff} output format; their
+presence confuses drivers that do not know about it (@pxref{Device
+Control Commands}).
 @endDefesc
 
 @DefreqList {tag, name}
@@ -16721,16 +16754,19 @@ command-line option.
 @section @command{gtroff} Internals
 
 @cindex input token
-@cindex token, input
+@cindex token
 @cindex output node
-@cindex node, output
-@command{gtroff} processes input in three steps.  One or more input
-characters are converted to an @dfn{input token}.@footnote{Except the
+@cindex node
+GNU @command{troff} processes input in three steps.  One or more input
+characters are gathered into a @dfn{token},@footnote{Except the
 escape sequences @code{\f}, @code{\F}, @code{\H}, @code{\m}, @code{\M},
-@code{\R}, @code{\s}, and @code{\S}, which are processed immediately if
-not in copy mode.}  Then, one or more input tokens are converted to
-an @dfn{output node}.  Finally, output nodes are converted to the
-intermediate output language understood by all output devices.
+@code{\R}, @code{\s}, and @code{\S}, which are processed immediately,
+updating the environment, if not in copy mode.} the smallest meaningful
+unit of @command{troff} input.  Then, one or more tokens are converted
+to a @dfn{node}, a data structure representing any object that may
+ultimately appear in the output, like a glyph or motion on the page.
+Finally, nodes are converted to the device-independent output language
+understood by all output drivers.
 
 Actually, before step one happens, @command{gtroff} converts certain
 escape sequences into reserved input characters (not accessible by the
@@ -16741,17 +16777,17 @@ also -- this is the very reason why not all characters are valid input.
 For example, the input string @samp{fi\[:u]} is converted into a
 character token @samp{f}, a character token @samp{i}, and a special
 token @samp{:u} (representing u@tie{}umlaut).  Later on, the character
-tokens @samp{f} and @samp{i} are merged to a single output node
-representing the ligature glyph @samp{fi} (provided the current font has
-a glyph for this ligature); the same happens with @samp{:u}.  All output
-glyph nodes are `processed', which means that they are invariably
-associated with a given font, font size, advance width, etc.  During the
-formatting process, @command{gtroff} itself adds various nodes to
-control the data flow.
+tokens @samp{f} and @samp{i} are merged into a single node representing
+the ligature glyph @samp{fi} (provided the current font has a glyph for
+this ligature); the same happens with @samp{:u}.  All output glyph nodes
+are `processed', which means that they are invariably associated with a
+given font, font size, advance width, etc.  During the formatting
+process, @command{gtroff} itself adds various nodes to control the data
+flow.
 
 Macros, diversions, and strings collect elements in two chained lists: a
-list of input tokens that have been passed unprocessed, and a list of
-output nodes.  Consider the following diversion.
+list of tokens that have been passed unprocessed, and a list of nodes.
+Consider the following diversion.
 
 @Example
 .di xxx
@@ -16784,10 +16820,10 @@ It contains these elements.
 Elements 1, 7, and@tie{}8 are inserted by @command{gtroff}; the latter
 two (which are always present) specify the vertical extent of the last
 line, possibly modified by @code{\x}.  The @code{br} request finishes
-the pending output line, inserting a newline input token, which is
+the pending output line, inserting a newline token, which is
 subsequently converted to a space when the diversion is interpolated.
 Note that the word space node has a fixed width that isn't adjustable
-anymore.  To convert horizontal space nodes back to input tokens, use
+anymore.  To convert horizontal space nodes back into tokens, use
 the @code{unformat} request.
 
 Macros only contain elements in the token list (and the node list is
@@ -16795,8 +16831,8 @@ empty); diversions and strings can contain elements in both lists.
 
 The @code{chop} request simply reduces the number of elements in a
 macro, string, or diversion by one.  Exceptions are @dfn{compatibility
-save} and @dfn{compatibility ignore} input tokens, which are ignored.
-The @code{substring} request also ignores those input tokens.
+save} and @dfn{compatibility ignore} tokens, which are ignored.  The
+@code{substring} request also ignores those tokens.
 
 Some requests like @code{tr} or @code{cflags} work on glyph identifiers
 only; this means that the associated glyph can be changed without
@@ -16887,8 +16923,9 @@ or for instrumentation while troubleshooting.  The @code{ex} and
 exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
-defined colors, environments, hyphenation exceptions, registers, and
-page location traps to the standard error stream.
+defined colors, composite characters, environments, hyphenation
+exceptions, registers, and page location traps to the standard error
+stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
@@ -16911,8 +16948,8 @@ document.
 @endDefreq
 
 @DefreqList {tm, message}
-@DefreqItemx {tm1, message}
-@DefreqListEndx {tmc, message}
+@DefreqItemx {tm1, [@code{"}]message}
+@DefreqListEndx {tmc, [@code{"}]message}
 @cindex print to the standard error stream (@code{tm}, @code{tm1},@
 @code{tmc})
 @cindex standard error stream, write to (@code{tm}, @code{tm1},@
@@ -16924,8 +16961,7 @@ cannot contain special characters, to the standard error stream,
 followed by a newline.  Leading spaces in @var{message} are ignored.
 
 @code{tm1} is similar, but recognizes and strips a leading neutral
-double quote from @var{message} to allow the embedding of leading
-spaces.
+double quote, allowing embedded spaces in @var{message}.
 
 @code{tmc} works as @code{tm1}, but does not append a newline.
 @endDefreq
@@ -16972,6 +17008,16 @@ Report, to the standard error stream, the list of defined color names.
 A device's default stroke and/or fill colors, ``default'', are not
 listed since they are immutable and their details unknown to the
 formatter.
+@endDefreq
+
+@Defreq {pcomposite, }
+@cindex dumping defined composite characters (@code{pcomposite})
+@cindex defined composite characters, dumping (@code{pcomposite})
+@cindex composite characters, defined, dumping (@code{pcomposite})
+@cindex characters, composite, dumping defined (@code{pcomposite})
+Report, to the standard error stream, the list of defined composite
+characters.  The ``from'' code point is listed first, followed by its
+``to'' mapping.
 @endDefreq
 
 @Defreq {pev, }
@@ -17722,8 +17768,9 @@ Internals}.
 
 In the somewhat pathological case where a diversion exists containing a
 partially collected line and a partially collected line at the top-level
-diversion has never existed, @acronym{AT&T} @code{troff} will output the
-partially collected line at the end of input; GNU @code{troff} will not.
+diversion has never existed, @acronym{AT&T} @code{troff} will output a
+partially collected but otherwise empty line (as if @samp{\c} were in
+the top-level diversion) at the end of input; GNU @code{troff} will not.
 
 @codequotebacktick off
 @codequoteundirected off
@@ -17810,20 +17857,22 @@ used any longer by @command{gtroff}.
 @node Language Concepts, Command Reference, gtroff Output, gtroff Output
 @subsection Language Concepts
 
+@c BEGIN Keep parallel with introductory paragraph of groff_out(5).
 The fundamental operation of the GNU @code{troff} formatter is the
 translation of the @code{groff} input language into a device-independent
 form primarily concerned with what has to be written or drawn at
 specific positions on the output device.  This language is simple and
 imperative.  In the following discussion, the term @dfn{command} always
-refers to this intermediate output language, and never to the
+refers to this device-independent output language, and never to the
 @code{groff} language intended for direct use by document authors.
-Intermediate output commands comprise several categories: glyph output;
-font, color, and text size selection; motion of the printing position;
-page advancement; drawing of geometric objects; and device control
-commands, a catch-all for operations not easily classified as any of the
-foregoing, such as directives to start and stop output, identify the
-intended output device, or place URL hyperlinks in supported output
-formats.
+Device-independent output commands comprise several categories: glyph
+output; font, color, and text size selection; motion of the printing
+position; page advancement; drawing of geometric objects; and device
+control commands, a catch-all for operations not easily classified as
+any of the foregoing, such as directives to start and stop output,
+identify the intended output device, or place URL hyperlinks in
+supported output formats.
+@c END Keep parallel with introductory paragraph of groff_out(5).
 
 @menu
 * Separation::
@@ -19173,7 +19222,7 @@ no-break control character.  @xref{Invoking Requests}.
 
 The escape character, @code{\} by default, is always followed by at
 least one more input character, making an escape @emph{sequence}.  Any
-input token @code{\@var{X}} with @var{X} not in the list below emits a
+token @code{\@var{X}} with @var{X} not in the list below emits a
 warning and interpolates character @var{X}.  Note the entries for
 @code{\.}, which may be obscured by the leader dots, and for
 @code{\@key{RET}} and @code{\@key{SPC}}, which are sorted

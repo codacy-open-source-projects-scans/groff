@@ -20,7 +20,7 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-Version 2.6_a
+Version 2.6_b
 -------------
 Antoine de St-Exupéry asserted that elegance in engineering is
 achieved not when there is nothing left to add, but when there is
@@ -53,7 +53,7 @@ extensions, and float management).
 .if (\n[.x]\n[.y] < 118) \
 .   ab [mom]: You need GNU troff version 1.18 or higher to run this version of mom.
 \# Mom version
-.ds version 2.6_a
+.ds version 2.6_b
 .if dVERSION \{\
 .   ab [mom]: Version \*[version]
 .\}
@@ -5916,8 +5916,8 @@ SMALLCAPS takes precedence.
 .       B_MARGIN \\n[#FOOTER_MARGIN]u+\\n[#FOOTER_GAP]u
 .    if !\\n[#HEADER_RULE_GAP] .HEADER_RULE_GAP 4p
 .    if !\\n[#FOOTER_RULE_GAP] .FOOTER_RULE_GAP 4p
-.    if !r #HDRFTR_RULE     .HDRFTR_RULE
-.    if !r #PAGE_NUM_SET    .PAGENUMBER 1
+.    if !r #HDRFTR_RULE  .HDRFTR_RULE
+.    if !r #PAGE_NUM_SET .PAGENUMBER 1
 .\" Read in number registers and strings for type parameters
 .    nr #DOC_L_MARGIN \\n[#L_MARGIN]
 .    nr #DOC_L_LENGTH \\n[#L_LENGTH]
@@ -6093,6 +6093,12 @@ SMALLCAPS takes precedence.
 .      \}
 .      rm label-type
 .      rm spec-type
+.   \}
+.\" Default TOC margins
+.   if !\\n[#TOC_MARGINS_SET] \{\
+.      nr #TOC_MARGINS_SET 1
+.      nr #TOC_L_MARGIN \\n[#L_MARGIN]
+.      nr #TOC_L_LENGTH \\n[#L_LENGTH]
 .   \}
 .\" String defaults for both PRINTSTYLEs
 .    ie \\n[#DOC_TYPE]=1 \{\
@@ -7206,10 +7212,7 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .       evc 0
 \!.     if \\\\n[#\\*[DOC_]COVERTEXT_ONLY] \
 .          sp |\\\\n[#T_MARGIN]u-\\\\n[#DOC_LEAD]u
-\!.     ie !\\n[#\\*[DOC_]COVERTEXT_START_POS] \{\
-\!.        sp |\\n[.p]u/3u-1v
-\!.     \}
-\!.     el \{\
+\!.     if \\n[#\\*[DOC_]COVERTEXT_START_POS] \{\
 \!.        vs 0
 \!.        sp |0i
 \!.        vs \\\\n[#DOC_LEAD]u+\\\\*[$\\*[DOC_]COVER_LEAD_ADJ]
@@ -7440,6 +7443,7 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .       rr #COLUMNS
 .    \}
 .    ds PDF_BM
+.    if '\\*[.T]'pdf' .pdfpagenumbering
 .    ie '\\$0'DO_DOC_COVER' \{\
 .       ds  DOC_  DOC_
 .       nr #DOC_COVER_DONE 1
@@ -7461,11 +7465,11 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .    if \\n[.ns] .rs
 .    if '\\$0'DO_COVER' \{\
 .       if \\n[TOC.RELOCATE]==5 \
-.          if !rTOC_BH .TOC_BEFORE_HERE
+.          if !\\n[TOC_BH] .TOC_BEFORE_HERE
 .    \}
 .    if '\\$0'DO_DOC_COVER' \{\
 .       if \\n[TOC.RELOCATE]==3 \
-.          if !rTOC_BH .TOC_BEFORE_HERE
+.          if !\\n[TOC_BH] .TOC_BEFORE_HERE
 .    \}
 .    RV_HARD_SET_MARGINS
 .\" Cover image
@@ -7829,17 +7833,17 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .       rm MISC_DIV
 .       rr #MISC_DEPTH
 .    \}
-.    if \\n[TOC.RELOCATE]==1 \{\
+.    if \\n[TOC.RELOCATE]=1 \{\
 .       if !\\n[#COVER_BLANKPAGE] \
-.          if !rTOC_BH .TOC_AFTER_HERE
+.          if !\\n[TOC_BH] .TOC_AFTER_HERE
 .    \}
 .    if '\\$0'DO_COVER' \{\
-.       if \\n[TOC.RELOCATE]==6 \
-.          if !rTOC_BH .TOC_AFTER_HERE
+.       if \\n[TOC.RELOCATE]=6 \
+.          if !\\n[TOC_BH] .TOC_AFTER_HERE
 .    \}
 .    if '\\$0'DO_DOC_COVER' \{\
-.       if \\n[TOC.RELOCATE]==4 \
-.          if !rTOC_BH .TOC_AFTER_HERE
+.       if \\n[TOC.RELOCATE]=4 \
+.          if !\\n[TOC_BH] .TOC_AFTER_HERE
 .    \}
 .    END_COVER
 .END
@@ -7872,7 +7876,7 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .    if \\n[#PAGINATION_WAS_ON]=1 .nr % +1
 .    ie \\n[#\\*[DOC_]COVER_BLANKPAGE]=1 \{\
 .       if \\n[TOC.RELOCATE] \
-.          if !\\n[#TOC_BH] .TOC_AFTER_HERE
+.          if !\\n[TOC_BH] .TOC_AFTER_HERE
 .\" Without the empty PDF_BOOKMARK, (doc)cover BLANKPAGE causes
 .\" the PDF outline to place the first doc or chapter before the TOC,
 .\" even though PDF output is correct.
@@ -8241,6 +8245,13 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .          PRINT_FOOTER
 .       sp |\\n[#T_MARGIN]u-\\n[#DOC_LEAD]u
 .       vpt
+.    \}
+.    if '\\*[.T]'pdf' \{\
+.       nr #PDF_PN \\n%+\\n[#PAGE_NUM_ADJ]
+.       ds $PDF_PN_FORMAT \\*[$PAGENUM_STYLE]
+.       substring $PDF_PN_FORMAT  0 0
+.       if !\\n[#ADVANCE_FROM_TOP] .sp -1
+.       pdfpagenumbering \\*[$PDF_PN_FORMAT] . \\n[#PDF_PN]
 .    \}
 .END
 \#
@@ -10718,7 +10729,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .MAC DO_FOOTER END
 .\" Kill pdfbackground if BoxStop causes a page break
 .    if r pdfbxstop \{\
-.       pdfbackground off
+.       if '\\*[.T]'pdf' .pdfbackground off
 .       rr pdfbx-running
 .    \}
 .\" Part of workaround for refer spitting out a blank page if the
@@ -15593,11 +15604,16 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \# Enter leaders and page numbers
 \#
 .MAC TOC_PN END
-.    ps \\n[#TOC_PS]u
 .    length #PN_STRING_LEN \\n[#TOC_ENTRY_PN]
 .    nr #PAD \\n[#TOC_PN_PADDING]-\\n[#PN_STRING_LEN]
-.    nop \h'-.33m'\\a\h'\w'\0'u*\\n[#PAD]u'\
+.    if \\n[#PRINT_STYLE]=1 \{\
+.       nop \\a\h'\w'\0'u*\\n[#PAD]u'\\$1
+.    \}
+.    if \\n[#PRINT_STYLE]=2 \{\
+.       ps \\n[#TOC_PS]u
+.       nop \h'-.33m'\\a\h'\w'\0'u*\\n[#PAD]u'\
 \f[\\*[$TOC_PN_FAM]\\*[$TOC_PN_FT]]\s+[\\*[$TOC_PN_SIZE_CHANGE]]\h'.33m'\\$1
+.    \}
 .    br
 .    di
 .    ll
@@ -15609,7 +15625,10 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \# TOC collector
 \#
 .MAC TO_TOC END
-.    if !'\\n[.ev]'TOC_EV' .ev TOC_EV
+.    if !'\\n[.ev]'TOC_EV' \{\
+.       ev TOC_EV
+.       evc 0
+.    \}
 .    nr #TOC_CH_NUM_INDENT \w'\\*[$TOC_CH_NUM]'
 .    da TOC_ENTRIES
 .    vs \\*[$TOC_LEAD]
@@ -15617,15 +15636,15 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .       rr #SKIP_ENTRY
 \!.  \}
 \!.  el \{\
-\!.     po \\n[#L_MARGIN]u
-\!.     ll \\n[#DOC_L_LENGTH]u
-.       ie \\n[#PRINT_STYLE]=1 \{\
+.       po \\n[#TOC_L_MARGIN]u
+.       ll \\n[#TOC_L_LENGTH]u
+.       if \\n[#PRINT_STYLE]=1 \{\
 .          fam \\*[$TYPEWRITER_FAM]
 .          ft  R
 .          ps \\*[$TYPEWRITER_PS]
 .          ds _TYPEWRITE _TYPEWRITE
 .       \}
-.       el \{\
+.       if \\n[#PRINT_STYLE]=2 \{\
 .          ie '\\$0'HD_TO_TOC' \
 .             ps \\n[#TOC_PS]u\\*[$TOC_HEAD_\\n[#LEVEL]_SIZE]
 .          el \{\
@@ -15633,8 +15652,6 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .             ft  \\*[$TOC_TITLE_FT]
 .             ps  \\n[#TOC_PS]u\\*[$TOC_TITLE_SIZE]
 .          \}
-.       \}
-.       if \\n[#PRINT_STYLE]=2 \{\
 .          rm _TYPEWRITE
 .          if \\n[#SPACE_TOC_ITEMS] \{\
 .             if \\n[#POST_TOP]=1 \{\
@@ -15746,6 +15763,23 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \#
 \# Control macros for toc
 \# ----------------------
+\#
+\# TOC_MARGINS
+\# -----------
+\# *Arguments:
+\#   <toc left margin> <toc right margin>
+\# *Function:
+\#   Sets page margins for the Table of Contents.
+\# *Notes:
+\#   If not invoked by user, mom sets these to match the document
+\#   left margin and document line length at the first invocation of
+\#   START.
+\#
+.MAC TOC_MARGINS END
+.    nr #TOC_MARGINS_SET 1
+.    nr #TOC_L_MARGIN \\$1
+.    nr #TOC_L_LENGTH \\n[#PAGE_WIDTH]u-\\n[#TOC_L_MARGIN]u-\\$2
+.END
 \#
 \# TOC TITLE STYLE
 \# ---------------
@@ -16141,8 +16175,8 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    if !r #TOC_START_PAGENUM .nr #TOC_START_PAGENUM 1
 .    PAGENUMBER \\n[#TOC_START_PAGENUM]
 .    if \\n[#LINENUMBERS]=2 .nr #LINENUMBERS 3
-.    L_MARGIN \\n[#DOC_L_MARGIN]u
-.    LL       \\n[#DOC_L_LENGTH]u
+.    L_MARGIN \\n[#TOC_L_MARGIN]u
+.    LL       \\n[#TOC_L_LENGTH]u
 .    HEADER_CENTER "\\*[$TOC_HEADER_STRING]
 .    if \\n[#SLANT_ON] .nop \\*[SLANTX]
 .    PAGENUM_STYLE \\*[$TOC_PN_STYLE]
@@ -16153,9 +16187,11 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .       TRAPS
 .    \}
 .    el .DOC_LEAD \\*[$TOC_LEAD]
+.    if '\\*[.T]'ps'  .nr #SPACE_CORRECTION 1
+.    if '\\*[.T]'pdf' .nr #SPACE_CORRECTION 2
 .    ie \\n[#TOC_HEADER_V_POS] \
-.      DOCHEADER OFF \\n[#TOC_HEADER_V_POS]u-\\n[#DOC_LEAD]u
-.    el .DOCHEADER OFF \\n[#T_MARGIN]u-\\n[#DOC_LEAD]u
+.       DOCHEADER OFF \\n[#TOC_HEADER_V_POS]u-\\n[#DOC_LEAD]u
+.    el .DOCHEADER OFF \\n[#T_MARGIN]u-(\\n[#DOC_LEAD]u*\\n[#SPACE_CORRECTION]u)
 .    if (\\n[#PRINT_STYLE]=1)&(\\n[#SINGLE_SPACE]=1) \
 .       DOCHEADER OFF \\n[#T_MARGIN]u-(\\n[#DOC_LEAD]u*2u)
 .    START
@@ -16186,7 +16222,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    CAPS OFF
 .    if \\n[#TOC_HEADER_COLOR]=1 .gcolor default
 .    br
-.    sp
+.    if \\n[#PRINT_STYLE]=2 .sp
 .    SHIM_1
 .    nf
 .    TOC_ENTRIES
@@ -17118,6 +17154,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \#   N.B.--the START macro must be used after every COLLATE
 \#
 .MAC COLLATE END
+.    if \\n[#COLLATED_DOC] .rr #SKIP_ENTRY
 .    if dPDF.EXPORT .tm .ds pre-collate-\\n% \\n%@\\n[#COL_NUM]
 .    if \\n[defer] \{\
 .       nr #BLANKPAGE_AFTER_DEFER 1
@@ -24401,7 +24438,8 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 . mk
 . sp \\*[wt]/2u
 .
-. pdfbackground \\*[type] \\n[l]z \\n[t]z \\n[r]z \\n[b]z \\*[wt]
+. if '\\*[.T]'pdf' \
+.   pdfbackground \\*[type] \\n[l]z \\n[t]z \\n[r]z \\n[b]z \\*[wt]
 .
 .\" Always start at wt+gap
 . ie \\n[#IL_ACTIVE]:\\n[#IBL_ACTIVE] \
@@ -24474,7 +24512,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 . if \\n[img*pdfbx]=2 \
 .   sp -.5
 .
-. pdfbackground off
+. if '\\*[.T]'pdf' .pdfbackground off
 .
 . EOL
 . if \\n[.t]<1v \{\
@@ -24507,7 +24545,8 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .   sp -.5
 . if \\n[#QUOTE] .sp -.5+(\\*[wt\\n[stack]]/2u)
 . nr pdfbx-end \\n[nl]
-. it 2 rr-pdfbx-end
+. ie '\\n[.z]'' .it 2 rr-pdfbx-end
+. el \!.it 2 rr-pdfbx-end
 . rr pdfbxstop-consec
 . ie '\\n[.z]'' .rr pdfbx-running
 . el \{\
@@ -24589,6 +24628,56 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .   \}
 . \}
 ..
+\#
+\# PDF outline page numbering
+\#
+\# PDF_OUTLINE_PN
+\# --------------
+\# *Arguments:
+\#   SUSPEND / RESUME
+\#    or
+\#   [FORMAT <format>] [PREFIX <prefix>] [PAGE <page number>]
+\# *Function:
+\#   Suspend, resume, or set parameters for pagenumbering that
+\#   appears in the pdf outline.
+\#
+.MAC PDF_OUTLINE_PN END
+.    if '\\*[.T]'pdf' \{\
+.       if '\\$1'SUSPEND' \{\
+.          pdfpagenumbering
+.          return
+.       \}
+.       if '\\$1'RESUME' \{\
+.          if '\\*[$PDF_PN_FORMAT]'' .ds $PDF_PN_FORMAT D
+.          if '\\*[$PDF_PN_PRFX]''   .ds $PDF_PN_PRFX .
+.          if !\\n[#PDF_PN]          .nr #PDF_PN \\n%+\\n[#PAGE_NUM_ADJ]
+.          pdfpagenumbering \
+              \\*[$PDF_PN_FORMAT] \\*[$PDF_PN_PRFX] \\n[#PDF_PN]
+.          return
+.       \}
+.       rm $PDF_PN_FORMAT
+.       rm $PDF_PN_PRFX
+.       rr #PDF_PN
+.       while \\n[.$]>0 \{\
+.         if '\\$1'FORMAT' \{\
+.           ds $PDF_PN_FORMAT \\$2
+.           shift 2
+.         \}
+.         if '\\$1'PREFIX'  \{\
+.           ds $PDF_PN_PRFX \\$2
+.           shift 2
+.         \}
+.         if '\\$1'PAGE'  \{\
+.           nr #PDF_PN \\$2
+.           shift 2
+.         \}
+.       \}
+.       if '\\*[$PDF_PN_FORMAT]'' .ds $PDF_PN_FORMAT D
+.       if '\\*[$PDF_PN_PRFX]''   .ds $PDF_PN_PRFX .
+.       if !\\n[#PDF_PN]    .nr #PDF_PN \\n%+\\n[#PAGE_NUM_ADJ]
+.       pdfpagenumbering \\*[$PDF_PN_FORMAT] \\*[$PDF_PN_PRFX] \\n[#PDF_PN]
+.   \}
+.END
 \#
 \# Local Variables:
 \# mode: nroff
