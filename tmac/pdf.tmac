@@ -383,7 +383,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" blue components of the colour specification in the RGB colour
 .\" domain, which is shared by "groff" and the PDF readers.
 .\"
-.ds PDFHREF.COLOUR   0.35 0.00 0.60
+.ds PDFHREF.COLOUR   0.00 0.35 0.60
 .defcolor pdf:href.colour rgb \*[PDFHREF.COLOUR]
 .\"
 .\" "PDFHREF.TEXT.COLOUR", on the other hand, is simply defined
@@ -680,6 +680,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" And now, we have no further use for "pdf*href.link".
 .\"
 .rm pdf*href.link
+.nr pdf:href.pipe 0
 .\"
 .\" If the user specified any "link prefix" text, (using the "-P text"
 .\" option), then emit it BEFORE processing the "link text" itself.
@@ -713,10 +714,12 @@ am solely responsible for any bugs I may have introduced into this file.
 .   \" text positions.
 .   \"
 \#.   if dPDFHREF.COLOUR .defcolor pdf:href.colour rgb \\*[PDFHREF.COLOUR]
+.   ds pdf:curcol \\n[.m]
 .   nr pdf:bm.width \\w'\\*[PDFHREF.DESC]'
+.   if '\\*[PDFHREF.DESC]'|' .nr pdf:href.pipe 1
 .   nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
 .   device pdf: markstart \\n[rst] \\n[rsb] \\n[PDFHREF.LEADING] \\*[pdf:href.link]
-.   nop \&\\*[PDFHREF.DESC]\X'pdf: markend'\m[]\c
+.   if !\\n[pdf:href.pipe] .nop \&\\*[PDFHREF.DESC]\X'pdf: markend'\m[\\*[pdf:curcol]]\c
 .   \"
 .   \" Clean up the temporary registers and strings, used to
 .   \" compute the "hot-spot" bounds, and format the reference,
@@ -733,7 +736,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" And then, if the user specified any affixed text, (using the
 .\" "-A text" option), we tack it on at the end.
 .\"
-.nop \&\\*[pdf:href-A]
+.if !\\n[pdf:href.pipe] .nop \&\\*[pdf:href-A]
 ..
 .\" Macro "pdf*href-I" is used for one time initialisation of special
 .\" "pdfhref" features; (currently, only the above page trap hook is

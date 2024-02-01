@@ -112,9 +112,10 @@ o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   to 80n.  The latter is a vastly more common configuration, but that
   line length had been avoided for decades (perhaps as long as as groff
   has existed), for an undocumented reason.  That reason appears to have
-  been bugs in GNU tbl(1) and its interaction with an aspect of
+  been the interaction of bugs in GNU tbl(1) with an aspect of
   grotty(1)'s design.  Those bugs have been resolved.  A man(1) program
-  can still instruct groff to format for any desired line length.
+  can still instruct groff to format for any desired line length by
+  setting the `LL` register on {g,n,t}roff's command line.
 
 o The an (man) and doc (mdoc) macro packages now support a `BP` register
   to configure the ("base") paragraph inset amount; that is the amount
@@ -135,6 +136,12 @@ o The an (man) macro package now supports a `TS` register to configure
   exceeds the paragraph indentation, the line is broken after the tag.)
   This parameter, formerly hard-coded as `1n`, now defaults to `2n`.
 
+o The an (man) macro package's `IP` macro no longer honors the formerly
+  hard-coded 1n tag separation noted in the previous item.  This means
+  that the first argument to the `IP` macro can abut the text of the
+  paragraph with no intervening space.  If you use a word instead of
+  punctuation for `IP`'s first argument, consider migrating to `TP`.
+
 o The an (man) and doc (mdoc) macro packages now use slightly different
   vertical margins when formatting for typesetters, to align more
   closely with the traditional implementations of these packages.  Per
@@ -142,6 +149,11 @@ o The an (man) and doc (mdoc) macro packages now use slightly different
   was 6.5 by 10 inches.  When formatting for terminals with continuous
   rendering disabled (by default, it is enabled), the page footer now
   sets 1 line higher than before.
+
+o The doc (mdoc) macro package's `Mt` macro now sets its argument in
+  roman, not italics (or whatever the string `doc-Pa-font` was
+  configured to use).  A new string, `doc-Mt-font`, for use in
+  "mdoc.local" files and similar, supports configuration of this face.
 
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
@@ -624,7 +636,10 @@ o The s (ms) macro package now enables the formatter's "no-space mode"
   of the package more predictable; you can fine-tune such spacing by
   setting the `DD` register in desired places.  It has also helped us to
   improve groff ms's rendering of historical ms(7) documents such as
-  Kernighan & Cherry's "Typesetting Mathematics".
+  Kernighan & Cherry's "Typesetting Mathematics".  This change also
+  suppresses the `bp` page break request; you may wish to define a macro
+  (the name `BP` is not in use by the package) to restore spacing with
+  the `rs` request and break the page with `bp`.
 
 o The s (ms) macro package supports a new string, `FR`, which defines
   the ratio of the footnote line length to the current line length.  The

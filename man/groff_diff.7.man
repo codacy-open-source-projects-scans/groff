@@ -1884,7 +1884,7 @@ Defining
 a
 .RI character\~ c
 creates an object in the formatter that is recognized like any other
-ordinary special character on input,
+ordinary or special character on input,
 and produces
 .I contents
 on output.
@@ -5746,16 +5746,15 @@ ignores any arguments and reports the sizes in bytes.
 .
 .
 .P
-Unlike AT&T
-.IR troff , \" AT&T
-GNU
-.I troff \" GNU
-does not ignore the
+AT&T
+.I troff \" AT&T
+ignores the
 .B ss
 request if the output is a terminal device;
-instead,
-the values of minimum inter-word and additional inter-sentence space are
-each rounded down to the nearest multiple of\~12.
+GNU
+.I troff \" GNU
+rounds down the values of minimum inter-word and additional
+inter-sentence space each to the nearest multiple of\~12.
 .
 .
 .P

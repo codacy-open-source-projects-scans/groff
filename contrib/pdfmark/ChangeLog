@@ -1,3 +1,8 @@
+2024-01-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* pdfmark.am (pdfmark.pdf): Register dependency on
+	"tmac/pspic.tmac".
+
 2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* pdfroff.sh: Stop endorsing shebang line space myth.  See

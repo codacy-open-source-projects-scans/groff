@@ -164,9 +164,10 @@ sub process_arguments {
 
     # Treat anything else as (possibly clustered) groff options that
     # take no arguments.
+    my $cluster = '[abcCeEgGijklNpRsStUVXzZ]*';
 
     # Our do_line() needs to know if it should do compatibility parsing.
-    $use_compatibility_mode = 1 if ($arg =~ /C/);
+    $use_compatibility_mode = 1 if ($arg =~ /^-${cluster}C${cluster}/);
 
     push @command, $arg;
   }

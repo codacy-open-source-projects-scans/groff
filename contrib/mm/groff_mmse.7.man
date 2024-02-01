@@ -150,7 +150,11 @@ Där lägger man lämpligen in postadress och annat som brevfot.
 .SH "Skrivet av"
 .\" ====================================================================
 .
-Jörgen Hägg, Lund, Sweden <Jorgen.Hagg@axis.se>
+.MT Jorgen.Hagg@axis.se
+Jörgen Hägg
+.ME ,
+Lund,
+Sweden
 .
 .
 .\" ====================================================================

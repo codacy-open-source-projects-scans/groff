@@ -1,3 +1,309 @@
+2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/GMPfront.t: Save and restore the type size.  The effective
+	base paragraph indentation was too large.  Since it is in ens,
+	it turns out it was being calculated (as of the first man page
+	rendered) based on the type size this cover sheet left it at,
+	which was 16 points--a bit too big.
+
+2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am ($(DOC_GNU_EPS)): Create "doc" destination
+	directory before trying to create a file in it.  This bug has
+	been latent (for out-of-tree builds) for ages, but has seemingly
+	seldom or never arisen.  It seems that even in parallel builds,
+	one of the many other "doc" targets that _did_ use the `MKDIR_P`
+	make(1) macro nearly always won the race.  (In my experience, in
+	builds from Git, the generated forms of our Texinfo manual could
+	be relied upon to do this because they were near the root of the
+	dependency tree; other groff targets tend not to depend on
+	them.)  Anyway, fixed now.
+
+2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (DOCFILES_INST): Ship "GMPfront.t" in the
+	distribution archive.
+
+2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an*begin-hyperlink): Stop shutting off hyperlink
+	support permanently if we hit one unsupported instance of `MT`
+	or `UR` nested inside `TP`.
+
+	Fixes <https://savannah.gnu.org/bugs/?65233>.
+
+2024-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/GMPfront.t: Support non-internal man page cross
+	references.  Port over contemporary implementation of `MR` from
+	"an.tmac" to its local replacement in this file.  Also remove
+	conditionals on the `.T` string matching "pdf".  Instead test
+	this register once at the beginning of the file and skip it with
+	the `nx` request if it doesn't match.  This lowers the
+	complexity and average indentation level of the file.
+
+	Fixes <https://savannah.gnu.org/bugs/?65231>.
+
+2024-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/GMPfront.t: Bikeshed the collected man pages.  Retitle to
+	"groff Collected Reference Pages".  Spell "groff" in full
+	lowercase.  Favor requests over escape sequences.  Simplify
+	means of setting page number.
+
+2024-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (doc/groff-man-pages.pdf): Register dependency on
+	"doc/GMPfront.t".
+
+2024-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (MR): Support hyperlinked man page cross
+	references in PDF.
+
+	Fixes <https://savannah.gnu.org/bugs/?62933>.
+
+2024-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Recast recently
+	added diagnostic message.
+
+2024-01-26  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Changes to satisfy Savannah #65231.
+
+	Alter build of groff-man-pages.pdf to use the new pdfmom,
+	so that all forward references (i.e. reference to groff_font(5)
+	in addftinfo(1) page) are handled properly. Also pass bookmark
+	names as text strings.
+
+	* doc/doc.am: Use pdfmom.
+	* tmac/an.tmac: Pass parameters to .pdfbookmark as a string.
+
+	New pdfmom, can now be used with all macros.
+
+	Previously only useful for producing documents with
+	mom.
+
+	* src/devices/gropdf/pdfmom.pl: New --roff flag allows
+	other macros (e.g. -ms) to be given on the command line.
+
+	* src/devices/gropdf/pdfmom.1.man: Document the new facility.
+
+	Front Cover for groff-man-pages.pdf
+
+	Feel free to alter "artwork" at will (perhaps add maintainer
+	information.
+
+	* doc/GMPfront.t: Only used during build, not required as part
+	of installation.
+
+	Remove artifacts from using stringhex.
+
+	Introduced in commit #e62b188aacb, betraying its origin
+	from my deri-gropdf-ng branch which uses .stringhex.
+
+	* src/devices/gropdf/gropdf.pl: minor fixes
+
+2024-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grog]: Fix Savannah #65227.
+
+	* src/utils/grog/grog.pl (process_arguments): Match a 'C' only
+	in a groff option cluster when deciding to enable compatibility
+	mode, not any 'C' anywhere in any option.
+
+	Fixes <https://savannah.gnu.org/bugs/?65227>.
+
+2024-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Fix Savannah #65225.
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Fix regression
+	in repeated glyph tbl(1) feature (`\R`), rendering it
+	inoperative.  Problem introduced by me in commit 4f4b79b8aa, 26
+	April 2022.  Restore logic to handle this table entry type.
+	Also throw new error diagnostic if the repeated glyph token
+	appears with no argument.  Also improve code style by reusing
+	variable with already-computed entry string length instead of
+	calculating it again.
+
+	Fixes <https://savannah.gnu.org/bugs/?65225>.  Thanks to the
+	anonymous submitter for a reproducing case and a correct
+	suggestion of the offending commit.
+
+2024-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tbl]: Regression-test Savannah #65225.
+
+	* src/preproc/tbl/tests/repeated-character-entry-works.sh: Do
+	it.
+	* src/preproc/tbl/tbl.am (tbl_TESTS): Run test.
+
+2024-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Refactor diversion management.
+
+	* tmac/an.tmac (TH, an-write-paragraph-tag, an-input-trap, TP):
+	Rename `an-is-in-diversion` register to
+	`an*is-in-paragraph-tag-diversion`.
+	(an-write-paragraph-tag, TP): Rename `an-div` diversion to
+	`an*paragraph-tag`.
+	(an*begin-hyperlink, an*end-hyperlink): Rename
+	`an*link-text-div` to `an*link-text`.
+	(an-write-paragraph-tag, an*end-hyperlink): Delete diversions
+	after using them.
+	(an*end-hyperlink): Revise emission of link text diversion.
+	(TP): Throw warning if macro is nested with itself or `TQ`.
+	(an*begin-hyperlink): Throw warning if hyperlink already inside
+	diversion.
+	(TH): Initialize `an*is-in-link-text-diversion` register.
+	(an*begin-hyperlink): Set `an*is-in-link-text-diversion`
+	register.  Use the register for its intended purpose.  If a
+	nested diversion is attempted, clear `an*do-hyperlink` register.
+	(an*end-hyperlink): Clear `an*is-in-link-text-diversion`
+	register rather than deleting it.
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (MT, ME, UR, UE): Throw warnings on bad nesting.
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an*begin-hyperlink): Repair damage I introduced
+	in commit 6f12a82806, 27 January.
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Mt): Give macro a real implementation instead
+	of wrapping `Pa`.  Among other benefits, this means that it
+	recognizes a `doc-Mt-font` string for styling of the argument,
+	instead of using the styling applied to `Pa`.
+
+	* tmac/mdoc/doc-ditroff (doc-Mt-font):
+	* tmac/mdoc/doc-nroff (doc-Mt-font): Define new strings.  Set
+	email addresses in roman by default.
+
+	* NEWS: Report change in font styling.
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac:
+	* tmac/doc.tmac: Slightly refactor.  Make the
+	`an*is-output-html` and `doc-is-output-html` registers the
+	{nearly} sole determinant (within each package) of behavior
+	tailored for HTML output.  Annotate why we use each instead of
+	testing `.T` string.
+
+	* tmac/an.tmac (an*end-hyperlink, MR): Apply exceptions to the
+	above rule when explicitly issuing device control escape
+	sequences to embed HTML elements; only grohtml(1) can interpret
+	these, not grops(1) when executed by pre-grohtml(1).
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/doc_Lk-works.sh: Add unit test.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Mt, Lk): Validate arguments.
+
+2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/doc_Mt-works.sh: Test "direct" `Mt` call.
+
+2024-01-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Specialize `an*bookmark` macro by output device.
+	(an*bookmark): Move former operation, conditional on 'pdf'
+	output device, from here...
+	(an*bookmark*pdf): ...to here.
+	(an*bookmark): Make into a wrapper calling the device-specific
+	macro.
+	(an*bookmark*ascii, an*bookmark*cp1047, an*bookmark*dvi)
+	(an*bookmark*html, an*bookmark*latin1, an*bookmark*lbp)
+	(an*bookmark*lj4, an*bookmark*ps, an*bookmark*utf8): Define as
+	empty strings.
+
+2024-01-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Trivially refactor.
+	(an*bookmark, an*header, an*footer, an*begin-hyperlink)
+	(an*end-hyperlink, (initialization)): Retire `an*is-output-pdf`
+	register (and interpolation-time checks of its value) in favor
+	of (load-time) use of output comparison operator to check
+	built-in `.T` string against value "pdf".
+
+2024-01-26  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Our documentation groff_man.7 documents that these requests are
+	for hyperlinks. The .pdfhref W command expects the hotspot text
+	to be passed as a parameter, but these pairs of requests enclose
+	the required text. To solve this conundrum if the given
+	hyperlink text to the .pdfhref request is the single pipe
+	character "|" then mark all following text sent for output as
+	the hotspot, terminate the hotspot on receipt of \X'pdf:
+	markend' escape. This new facility is only available using -T
+	pdf, not using -T ps and the pdfmark macros. Note the advice in
+	the gropdf man page to use \X'pdf: marksuspend' and \X'pdf:
+	markrestart' to protect any headers and footers becoming part of
+	the hotspot in case the hyperlinked text crosses a page
+	boundary.
+
+	* tmac/an.tmac: add code to use .pdfhref W for these hyperlinks
+	and protect against crossing page boundaries.
+
+	* tmac/pdf.tmac: if the given text for a hyperlink consists of
+	a single pipe character "|", start the hotspot and only
+	terminate when \X'pdf: markend' is received.  Update hyperlink
+	text color from RGB 0.35/0/0.6 to 0/0.35/0.6 (magenta-ish to
+	cyan-ish).
+
+	Fixes <https://savannah.gnu.org/bugs/?65215>.
+
+2024-01-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor (trap Booleans).
+
+	* src/roff/troff/div.h:
+	* src/roff/troff/input.cpp: Rename trap-related flags and
+	boolify them.  Assign to them using Boolean literals.
+	- `trap_sprung_flag` -> `was_trap_sprung`
+	- `postpone_traps_flag` -> `are_traps_postponed`
+
+	* src/roff/troff/div.cpp (space_request):
+	* src/roff/troff/env.cpp (pending_output_line::output)
+	(environment::output)
+	(environment::output_title)
+	* src/roff/troff/input.cpp (process_input_stack, spring_trap)
+	(postpone_traps, unpostpone_traps):
+	Update variable access sites.
+
+	* src/roff/troff/div.h:
+	* src/roff/troff/input.cpp: Demote return type of
+	`unpostpone_traps()` from `int` to `bool`.
+	(unpostpone_traps): Return Boolean, not integer, literals.
+
+2024-01-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi: Resolve warnings thrown by Texinfo 7.1.
+
+	Fixes <https://savannah.gnu.org/bugs/?64889>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-01-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Fix underspecified `getenv()` prototype.
+
+	* src/libs/libgroff/getopt.c: Do it.  Seen when building groff
+	  on a non-glibc-based system (clang 17 complains).
+
+2024-01-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (doc/webpage.ms): Register dependency on
+	"tmac/pspic.tmac".
+
 2024-01-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Diagnose bogus composite character escape sequences.

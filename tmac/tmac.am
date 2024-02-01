@@ -201,6 +201,7 @@ tmac_TESTS = \
   tmac/tests/doc_CT-works.sh \
   tmac/tests/doc_D-places-page-numbers-correctly.sh \
   tmac/tests/doc_Lk-respect-sentence-ending-punctuation.sh \
+  tmac/tests/doc_Lk-works.sh \
   tmac/tests/doc_Mt-works.sh \
   tmac/tests/doc_Nm-works.sh \
   tmac/tests/doc_P-register-works.sh \

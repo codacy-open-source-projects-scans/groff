@@ -2063,10 +2063,9 @@ sub UTFName
 
     $s=substr($s,1);
     my $s1=$s;
-    $s1=~s/([[:xdigit:]]{2})/chr(hex($1))/eg;
     my $s2=utf16($s1,1);
 #    return "/".MakeLabel((substr($s2,0,1) eq '/')?$s:$s2);
-    my $s3='/'.join '', map { MakeLabel($_) } unpack('C*',(substr($s2,0,1) eq '\\')?$s:$s2);
+    my $s3='/'.join '', map { MakeLabel($_) } unpack('C*',$s2);
     return $s3;
 
 }
@@ -2854,7 +2853,7 @@ sub ParsePDFValue
 	return(ParsePDFArray($pdfwds));
     }
 
-    if ($wd=~m/(.*?)(\(.*)$/)
+    if ($wd=~m/(.*?)(\(.*)$/ and substr($wd,0,1) ne '/')
     {
 	if (defined($1) and length($1))
 	{

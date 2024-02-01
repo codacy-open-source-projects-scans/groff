@@ -2509,18 +2509,15 @@ The main documentation files for the @file{mom} macros are in
 @itemize @bullet
 @item
 @file{toc.html}
-@noindent
 Entry point to the full mom manual.
 
 @item
 @file{macrolist.html}
-@noindent
 Hyperlinked index of macros with brief descriptions, arranged by
 category.
 
 @item
 @file{mom-pdf.pdf}
-@noindent
 @acronym{PDF} features and usage.
 @end itemize
 
@@ -4848,7 +4845,7 @@ Apply tilde accent to subsequent glyph.
 Apply caron to subsequent glyph.
 @endDefmpstr
 
-@Defmpstr {\,, ms}
+@Defmpstr {@comma{}, ms}
 Apply cedilla to subsequent glyph.
 @endDefmpstr
 
@@ -4883,7 +4880,7 @@ Apply circumflex accent to preceding glyph.
 Apply tilde accent to preceding glyph.
 @endDefmpstr
 
-@Defmpstr {\,, ms}
+@Defmpstr {@comma{}, ms}
 Apply cedilla to preceding glyph.
 @endDefmpstr
 
@@ -5256,9 +5253,8 @@ characters shown here are ``dagger'', ``double dagger'', ``right
 been shocking to the rich.\[rq]
 (Bertrand Russell, 1935)
 @c XXX: @iftex puts a blank line on the output.  This seems like a bug.
-@c @newline works around it.  But we need a weird inverse indent.
-@iftex @
-  @result{} @quotedblleft{}The idea that the poor should have
+@iftex
+    @result{} @quotedblleft{}The idea that the poor should have
     @result{} leisure has always been shocking to
     @result{} the rich.@quotedblright{}  (Bertrand Russell, 1935)
 @end iftex
@@ -7522,9 +7518,7 @@ the @code{\R} escape sequence.
 @DefescListEndx {\\R, @code{'}, ident value, @code{'}}
 Set register @var{ident} to @var{value}.  If @var{ident} doesn't exist,
 GNU @code{troff} creates it.  In the @code{\R} escape sequence, the
-delimiter need not be a neutral apostrophe; see @ref{Delimiters}.  It
-also does not produce a token in GNU @code{troff}.  @xref{Gtroff
-Internals}.
+delimiter need not be a neutral apostrophe; see @ref{Delimiters}.
 
 @Example
 .nr a (((17 + (3 * 4))) % 4)
@@ -7538,9 +7532,15 @@ Internals}.
 can change a register's value after it is dereferenced but before it is
 interpolated.  @xref{Auto-increment}.)
 
-The complete transparency of @code{\R} can cause surprising effects if
-you use registers like @code{.k}, which get evaluated at the time they
-are accessed.
+@cindex @code{\R} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\R}
+@code{\R} is not tokenized when GNU @code{troff} reads its input; it
+updates only the formatter's internal state and does not contribute
+(directly) to output.  @xref{Gtroff Internals}.
+
+Further surprise can occur if you use registers like
+@code{.k},@footnote{@xref{Page Motions}.}  whose values are not
+determined until they are interpolated.
 
 @Example
 .ll 1.6i
@@ -10508,6 +10508,8 @@ for later use.
 .ft \*[saved-font]
 @endExample
 
+@cindex @code{\f} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\f}
 @code{\f} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can assign a font to a margin
@@ -10647,6 +10649,8 @@ baked beans,
 and spam.
 @endExample
 
+@cindex @code{\F} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\F}
 @code{\F} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can thus alter the font family
@@ -11298,17 +11302,17 @@ If @var{contents} is absent, an existing character definition made with
 the same request is deleted.
 
 Defining (or redefining) a character@var{c} creates an object in the
-formatter that is recognized like any other ordinary special character
-on input, and produces @var{contents} on output.  Every time @var{c} is
-to be output, @var{contents} is processed in a temporary environment and
-the result encapsulated in a node.@footnote{@xref{Gtroff Internals}.}
-A leading neutral double quote in the final argument is stripped from
-it, allowing embedded leading spaces in @var{contents}, which is read in
-copy mode and continues to the end of the input line.  Further,
-compatibility mode is disabled and the escape character set to @code{\}
-while @var{contents} is interpreted.  Any emboldening, constant spacing,
-or track kerning is applied to this object rather than to individual
-glyphs in @var{contents}.
+formatter that is recognized like any other ordinary or special
+character on input, and produces @var{contents} on output.  Every time
+@var{c} is to be output, @var{contents} is processed in a temporary
+environment and the result encapsulated in a node.@footnote{@xref{Gtroff
+Internals}.} A leading neutral double quote in the final argument is
+stripped from it, allowing embedded leading spaces in @var{contents},
+which is read in copy mode and continues to the end of the input line.
+Further, compatibility mode is disabled and the escape character set to
+@code{\} while @var{contents} is interpreted.  Any emboldening, constant
+spacing, or track kerning is applied to this object rather than to
+individual glyphs in @var{contents}.
 
 A character defined by these requests can be used just like a glyph
 provided by the output device.  In particular, other characters can be
@@ -11518,6 +11522,8 @@ The read-only register @code{.height} contains the font height as set by
 Currently, only the @option{-T ps} and @option{-T pdf} devices support
 this feature.
 
+@cindex @code{\H} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\H}
 @code{\H} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can thus alter the font height
@@ -11556,6 +11562,8 @@ The read-only register @code{.slant} contains the font slant as set by
 Currently, only the @option{-T ps} and @option{-T pdf} devices support
 this feature.
 
+@cindex @code{\S} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\S}
 @code{\S} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can thus alter the font slant
@@ -11792,7 +11800,7 @@ is ugly.  Use this escape sequence whenever an oblique glyph is
 immediately followed by an upright glyph without any intervening space.
 @endDefesc
 
-@Defesc {\\\,, , , }
+@Defesc {\\@comma{}, , , }
 @cindex left italic correction (@code{\,})
 @cindex correction, left italic (@code{\,})
 @cindex correction between upright and oblique glyph (@code{\/}, @code{\,})
@@ -12071,6 +12079,8 @@ wink, wink, \s+2nudge, nudge,\s+8 say no more!
 @endExample
 @endDefreq
 
+@cindex @code{\s} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\s}
 @code{\s} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can thus alter the type size
@@ -12394,6 +12404,8 @@ string-valued register @samp{.m}; it is associated with the environment
 (@pxref{Environments}).  The default stroke color is named
 @samp{default}.
 
+@cindex @code{\m} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\m}
 @code{\m} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can thus alter the stroke color
@@ -12413,6 +12425,8 @@ Set the fill color for objects drawn with @code{\D'@dots{}'} escape
 sequences.  The escape sequence @code{\M[]} restores the previous fill
 color, as does an @code{fcolor} request without an argument.
 
+@cindex @code{\M} escape sequence, untokenized on input
+@cindex untokenized escape sequence, @code{\M}
 @code{\M} is not tokenized when GNU @code{troff} reads its input; it
 instead updates the environment.  It thus can be used in requests that
 expect a single-character argument.  We can thus alter the fill color
@@ -14939,7 +14953,7 @@ commit atrocities. \[em] Voltaire
 
 @cindex diversions, and traps
 @cindex traps, and diversions
-When designing macros, keep in mind that diversions and traps do
+When designing macros, keep in mind that diversions and traps do not
 normally interact.  For example, if a trap calls a header macro (while
 outputting a diversion) that tries to change the font on the current
 page, the effect is not visible before the diversion has completely been
@@ -15686,11 +15700,10 @@ Truly.
 @endExample
 
 @noindent
-By ending each text line of the macros with an escaped
-@code{\@key{RET}}, we get the desired effect (@pxref{Line
-Continuation}).@footnote{The backslash is doubled.  @xref{Copy Mode}.}
-What would have happened if we had used only one backslash at a time
-instead?
+By ending each text line of the macros with an escaped @key{RET}, we get
+the desired effect (recall @pxref{Line Continuation}).@footnote{We must
+double the backslash.  @xref{Copy Mode}.}  What would have happened if
+we had used only one backslash in each case?
 
 Interpolating a string does not hide existing macro arguments.  We can
 also place the escaped newline outside the string interpolation instead
@@ -17178,7 +17191,7 @@ codes of enabled warning categories.
 
 @c BEGIN Keep parallel with section "Warnings" of troff(1).
 @c Caveat: the man page sorts them by name, not number.
-@node Warnings,  , Debugging, Debugging
+@node Warnings, Implementation Differences, Debugging, Debugging
 @subsection Warnings
 @cindex warnings
 
@@ -17390,7 +17403,7 @@ extension requests, @code{open}, @code{opena}, and @code{pso}.
 
 @c ---------------------------------------------------------------------
 
-@node Compatibility Mode, Safer Mode, Other Differences, Implementation Differences
+@node Compatibility Mode, Other Differences, Safer Mode, Implementation Differences
 @subsection Compatibility Mode
 @cindex compatibility mode
 @cindex mode, compatibility
@@ -17747,8 +17760,8 @@ use the @code{\e} escape sequence; this always prints a single instance
 of the current escape character,@footnote{Naturally, if you've changed
 the escape character, you need to prefix the @code{e} with whatever it
 is---and you'll likely get something other than a backslash in the
-output.} regardless of whether or not it is used in a diversion; it
-also works in both GNU @code{troff} and @acronym{AT&T} @code{troff}.
+output.} regardless of whether it is used in a diversion; it also works
+in both GNU @code{troff} and @acronym{AT&T} @code{troff}.
 
 The other correct way, appropriate in contexts independent of the
 backslash's common use as a @code{troff} escape character---perhaps in
@@ -17762,8 +17775,9 @@ the latter's 060716 release (July 2006).}
 
 To store an escape sequence in a diversion that is interpreted when the
 diversion is interpolated, either use the traditional @code{\!}
-transparent output facility, or, if this is unsuitable, the new
-@code{\?} escape sequence.  @xref{Diversions} and @ref{Gtroff
+transparent output facility, or, if this is unsuitable,
+@c XXX: Why would it be unsuitable?  Line breaking behavior?
+the new @code{\?} escape sequence.  @xref{Diversions} and @ref{Gtroff
 Internals}.
 
 In the somewhat pathological case where a diversion exists containing a
@@ -17771,9 +17785,6 @@ partially collected line and a partially collected line at the top-level
 diversion has never existed, @acronym{AT&T} @code{troff} will output a
 partially collected but otherwise empty line (as if @samp{\c} were in
 the top-level diversion) at the end of input; GNU @code{troff} will not.
-
-@codequotebacktick off
-@codequoteundirected off
 
 
 
@@ -17796,9 +17807,6 @@ following two sections describe their format.
 
 
 @c =====================================================================
-
-@codequotebacktick on
-@codequoteundirected on
 
 @c BEGIN TODO: Make parallel with groff_out(5).
 @node gtroff Output, Device and Font Description Files, File Formats, File Formats

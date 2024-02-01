@@ -171,7 +171,7 @@ obtain simple definitions with the
 .I groff
 option
 .BR \-mpic ;
-these will center each picture.
+these horizontally center each picture.
 .
 .
 .P
@@ -207,7 +207,7 @@ show version information;
 all exit afterward.
 .
 .
-.TP 8n \" "-T dev" + 2n
+.TP
 .B \-c
 Be more compatible with
 .IR tpic ;
@@ -310,7 +310,7 @@ The following options supported by other versions of
 are ignored.
 .
 .
-.TP
+.TP 8n \" "-T dev" + 2n
 .B \-D
 Draw all lines using the \[rs]D escape sequence.
 GNU
@@ -1446,7 +1446,10 @@ which interprets 0 as black and 1 as white.
 .TP
 .I @DOCDIR@/\:pic\:.ps
 \[lq]Making Pictures with GNU pic\[rq],
-by Eric S.\& Raymond.
+by
+.MT esr@\:thyrsus\:.com
+Eric S.\& Raymond
+.ME .
 .
 This file,
 together with its source,

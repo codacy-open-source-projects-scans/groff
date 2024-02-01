@@ -1102,9 +1102,9 @@ preprocessor is not yet available in
 .
 .P
 .TS
-box, center, tab (^);
-c | c | c
-CfCR | CfCR | CfCR.
+box center tab(^);
+C   | C      | C
+CfI | Cf(CR) | Cf(CR).
 preprocessor^starting token^ending token
 =
 @g@chem^.cstart^.cend
@@ -1375,7 +1375,7 @@ the default output device is
 An output device may be any of the following.
 .
 .
-.TP 9n \" to fit "X100\-12" even on troff devices
+.TP 10n \" "X100\-12" + 2n + hand-tuned for PDF
 .B ascii
 for terminals using the ISO 646 1991:IRV character set and encoding,
 also known as US-ASCII.

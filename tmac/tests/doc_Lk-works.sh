@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021-2024 Free Software Foundation, Inc.
+# Copyright (C) 2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -26,38 +26,33 @@ wail() {
     fail=yes
 }
 
-# Regression-test Savannah #60025.
-#
-# Ensure .Mt renders correctly.
+# Ensure .Lk renders correctly.
 
-input='.Dd 2021-02-10
+input='.Dd 2024-01-28
 .Dt foo 1
 .Os groff test suite
 .Sh Name
 .Nm foo
 .Nd frobnicate a bar
-.Sh Authors
-.An -nosplit
-The
-.Nm mandoc
-utility was written by
-.An Kristaps Dzonsons Aq Mt kristaps@bsd.lv
-and is maintained by
-.An Ingo Schwarze Aq Mt schwarze@openbsd.org .
-Certainly
-.Mt bogus@example.com
-had nothing to do with it.'
+.Sh Description
+Sometimes you
+.Em click Lk http://example.com one link
+and you get
+.Lk http://another.example.com .'
+
+     Sometimes   you   click   one   link:   http://example.com   and   you  get
+     http://another.example.com.
 
 output=$(echo "$input" | "$groff" -Tascii -P-cbou -mdoc)
 echo "$output"
 
-echo "checking that conventional Mt macro call works" >&2
+echo "checking that conventional Lk macro call works" >&2
 echo "$output" \
-    | grep -Eq '^ +bogus@example\.com' || wail
+    | grep -Eq '^ +http://another\.example\.com' || wail
 
-echo "checking that inline Mt macro call works" >&2
+echo "checking that inline Lk macro call works" >&2
 echo "$output" \
-    | grep -Fq 'written by Kristaps Dzonsons <kristaps@bsd.lv>' || wail
+    | grep -Eq 'one +link: +http://example\.com' || wail
 
 test -z "$fail"
 

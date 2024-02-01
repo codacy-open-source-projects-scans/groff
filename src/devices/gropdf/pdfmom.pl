@@ -1,6 +1,6 @@
 #!@PERL@
 #
-#	pdfmom		: Frontend to run groff -mom to produce PDFs
+#	pdfmom		: Frontend to run groff to produce PDFs
 #	Deri James	: Friday 16 Mar 2012
 #
 
@@ -29,6 +29,20 @@ my @cmd;
 my $dev='pdf';
 my $preconv='';
 my $readstdin=1;
+my $mom='-mom';
+my $zflg='';
+if ($0=~m/pdf(\w+)$/)
+{
+    my $m=$1;
+    if ($m=~m/^(mom|mm|ms|me|man|mandoc)$/)
+    {
+        $mom="-".$m;
+    }
+    else
+    {
+        $mom='';
+    }
+}
 my $RT_SEP='@RT_SEP@';
 
 $ENV{PATH}=$ENV{GROFF_BIN_PATH}.$RT_SEP.$ENV{PATH} if exists($ENV{GROFF_BIN_PATH});
@@ -68,10 +82,29 @@ while (my $c=shift)
 	$preconv=$c;
 	next;
     }
-    elsif ($c eq '-z' or $c eq '-Z')
+    elsif ($c eq '-Z')
     {
-	$dev=$c;
+	$zflg=$c;
 	next;
+    }
+    elsif ($c eq '-z')
+    {
+	$zflg="$c -dPDF.EXPORT=1";
+	next;
+    }
+    elsif ($c eq '--roff')
+    {
+        $mom='';
+    }
+    elsif ($c eq '--help')
+    {
+	print "usage: pdfmom [--roff] [-Tpdf] [groff-option ...] [file ...]\n";
+	print "usage: pdfmom [--roff] -Tps [pdfroff-option ...] [groff-option ...] [file ...]\n";
+	print "usage: pdfmom {-v | --version}\n";
+	print "usage: pdfmom --help\n";
+	print "\nHandle forward references in PDF documents.\n" .
+	      "See the pdfmom(1) manual page.\n";
+	exit;
     }
     elsif ($c eq '-v' or $c eq '--version')
     {
@@ -123,19 +156,22 @@ if ($readstdin)
 
 if ($dev eq 'pdf')
 {
-    system("groff -Tpdf -dLABEL.REFS=1 -mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf -dPDF.EXPORT=1 -dLABEL.REFS=1 -mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf -mom $preconv - $cmdstring");
+    if ($mom)
+    {
+        system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $mom $preconv - $cmdstring $zflg");
+    }
+    else
+    {
+        system("groff -Tpdf -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv - $cmdstring $zflg");
+    }
 }
 elsif ($dev eq 'ps')
 {
-    system("groff -Tpdf -dLABEL.REFS=1 -mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark -mom --no-toc - $preconv $cmdstring");
+    system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
 }
 elsif ($dev eq '-z') # pseudo dev - just compile for warnings
 {
-    system("groff -Tpdf -mom -z $cmdstring");
-}
-elsif ($dev eq '-Z') # pseudo dev - produce troff output
-{
-    system("groff -Tpdf -mom -Z $cmdstring");
+    system("groff -Tpdf $mom -z $cmdstring");
 }
 else
 {

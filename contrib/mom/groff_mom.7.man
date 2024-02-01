@@ -3362,18 +3362,21 @@ after NEWPAGE, like this:
 .SH Authors
 .\" ====================================================================
 .
-.I mom
-was written by
 .MT peter@\:schaffter\:.ca
 Peter Schaffter
-.ME .
+.ME
+wrote
+.IR mom .
 .
-PDF support was provided by
 .MT deri@\:chuzzlewit\:.myzen\:.co\:.uk
 Deri James
-.ME .
+.ME
+added PDF support.
 .
-This manual page was written by Bernd Warken.
+.MT groff\-bernd\:.warken\-72@\:web\:.de
+Bernd Warken
+.ME
+contributed this man page.
 .
 .
 .\" ====================================================================
@@ -3382,21 +3385,24 @@ This manual page was written by Bernd Warken.
 .
 .TP
 .I @HTMLDOCDIR@/\:mom/\:toc\:.html
-entry point to the HTML documentation
-.
-.
-.TP
-.UR http://\:www\:.schaffter\:.ca/\:mom/\:momdoc/\:toc\:.html
-.UE
-HTML documentation online
-.
-.
-.TP
-.UR http://\:www\:.schaffter\:.ca/\:mom/
-.UE
-the
 .I mom
-macros homepage
+manual
+(installed version)
+.
+.
+.P \" Should be `TP`; see Savannah #61434
+.UR http://\:www\:.schaffter\:.ca/\:mom/\:momdoc/\:toc\:.html
+.I mom
+manual
+.UE
+(latest version)
+.
+.
+.P \" Should be `TP`; see Savannah #61434
+.UR http://\:www\:.schaffter\:.ca/\:mom/
+.I mom
+homepage
+.UE
 .
 .
 .P

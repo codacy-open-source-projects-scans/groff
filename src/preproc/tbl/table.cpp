@@ -1581,6 +1581,16 @@ void table::add_entry(int r, int c, const string &str,
     else
       do_vspan(r, c);
   }
+  else if (strncmp(s, "\\R", 2) == 0) {
+    if (len < 3) {
+      error("an ordinary or special character must follow '\\R'");
+      e = new empty_entry(this, f);
+    }
+    else {
+      char *glyph = str.substring(2, len - 2).extract();
+      e = new repeated_char_entry(this, f, glyph);
+    }
+  }
   else {
     int is_block = str.search('\n') >= 0;
     switch (f->type) {

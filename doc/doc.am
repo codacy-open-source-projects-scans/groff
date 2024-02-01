@@ -38,6 +38,11 @@ DOC_GROFF = \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
   $(GROFFBIN) -M $(doc_srcdir) $(MFLAG) $(FFLAG) -ww -b
 
+DOC_PDFMOM = \
+  GROFF_COMMAND_PREFIX= \
+  GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
+  $(GROFF_BIN_PATH)/pdfmom -M $(doc_srcdir) $(MFLAG) $(FFLAG) -ww -b --roff
+
 # This image file is used by several documents in the groff source tree.
 DOC_GNU_EPS = doc/gnu.eps
 
@@ -48,6 +53,7 @@ DOCFILES_INST = \
   doc/ms.ms \
   doc/pic.ms
 DOCFILES_NOINST = \
+  doc/GMPfront.t \
   doc/meintro.me.in \
   doc/meintro_fr.me.in \
   doc/meref.me.in
@@ -261,10 +267,13 @@ man-clean:
 # We embed the fonts (-P-e) to (1) honor the current PDF standard, (2)
 # ensure consistent rendering of the document, and (3) exercise this
 # feature of gropdf.
-doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) eqn pic tbl \
+doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
+  $(top_srcdir)/doc/GMPfront.t \
+  eqn pic tbl \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC) font/devps/freeeuro.pfa
-	$(GROFF_V)$(DOC_GROFF) -pet -mandoc -dHF=HB -rC1 \
+	$(GROFF_V)$(DOC_PDFMOM) -pet -mandoc -dHF=HB -rC1 \
 	  -rCHECKSTYLE=3 -Tpdf -P-e \
+	  $(top_srcdir)/doc/GMPfront.t \
 	  $(GROFF_MAN_PAGES1) \
 	  $(tmac_srcdir)/sv.tmac $(GROFF_MAN_PAGES2) \
 	  $(tmac_srcdir)/en.tmac $(GROFF_MAN_PAGES3) > $@
@@ -359,7 +368,7 @@ doc/pic.ps: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS) eqn pic tbl
 # groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
 # soelim even though the document doesn't require them.
 doc/webpage.ps: grn soelim
-doc/webpage.ps: $(DOC_GNU_EPS) tmac/www.tmac tbl
+doc/webpage.ps: $(DOC_GNU_EPS) tmac/pspic.tmac tmac/www.tmac tbl
 doc/webpage.ps: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 	&& $(DOC_GROFF) -I $(doc_srcdir) -I $(doc_builddir) -t -Tps \
@@ -727,7 +736,8 @@ uninstall-txt:
 # available if xpmtoppm is (see macro "GROFF_PROG_XPMTOPPM").
 EXTRA_DIST += $(DOC_GNU_EPS) doc/gnu.xpm
 $(DOC_GNU_EPS): doc/gnu.xpm
-	$(AM_V_GEN)if test "$(XPMTOPPM)" != found; then \
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
+	&& if test "$(XPMTOPPM)" != found; then \
 	  echo "program 'xpmtoppm' is missing; can't generate $@" >&2; \
 	  exit 1; \
 	fi; \

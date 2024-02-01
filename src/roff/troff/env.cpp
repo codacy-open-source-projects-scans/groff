@@ -119,12 +119,12 @@ pending_output_line::~pending_output_line()
 
 int pending_output_line::output()
 {
-  if (trap_sprung_flag)
+  if (was_trap_sprung)
     return 0;
 #ifdef WIDOW_CONTROL
   if (next && next->last_line && !no_fill) {
     curdiv->need(vs + post_vs + vunits(vresolution));
-    if (trap_sprung_flag) {
+    if (was_trap_sprung) {
       next->last_line = 0;	// Try to avoid infinite loops.
       return 0;
     }
@@ -153,7 +153,7 @@ void environment::output(node *nd, int no_fill_flag,
 #else /* WIDOW_CONTROL */
   output_pending_lines();
 #endif /* WIDOW_CONTROL */
-  if (!trap_sprung_flag && !pending_lines
+  if (!was_trap_sprung && !pending_lines
 #ifdef WIDOW_CONTROL
       && (!widow_control || no_fill_flag)
 #endif /* WIDOW_CONTROL */
@@ -175,7 +175,7 @@ void environment::output_title(node *nd, int no_fill_flag,
 			       vunits vs, vunits post_vs,
 			       hunits width)
 {
-  if (!trap_sprung_flag)
+  if (!was_trap_sprung)
     curdiv->output(nd, no_fill_flag, vs, post_vs, width);
   else
     pending_lines = new pending_output_line(nd, no_fill_flag, vs, post_vs,

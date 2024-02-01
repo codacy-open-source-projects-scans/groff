@@ -1448,7 +1448,7 @@ This implementation
 was made portable to modern POSIX systems.
 .
 Gunnar Ritter and later Carsten Kunze then enhanced it to produce
-.UR https://github.com/n-t-roff/heirloom-doctools
+.UR https://github.com/n\-t\-roff/heirloom\-doctools
 Heirloom Doctools
 .I troff
 .UE .

@@ -4915,7 +4915,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
   if (seq != 0 /* nullptr */) {
     // If it is a multi-character sequence like u1234_5678, every code
     // point after the first must have (or be) a composite mapping.
-    char codepoint[5] = { 0, 0, 0, 0, 0};
+    char codepoint[5] = { 0, 0, 0, 0, 0 };
     bool is_composite_glyph_valid = true;
     while ((seq = strchr(seq, '_')) != 0 /* nullptr */) {
       seq++;

@@ -3209,7 +3209,7 @@ void process_input_stack()
     }
     if (!suppress_next)
       tok.next();
-    trap_sprung_flag = 0;
+    was_trap_sprung = false;
   }
 }
 
@@ -4229,7 +4229,7 @@ static symbol composite_glyph_name(symbol nm)
 // point with a composite mapping?  Either the key or value component
 // of an entry in the composite dictionary qualifies.
 //
-// This is an O(n) search, but by default groff only defines 22
+// This is an O(n) search, but by default groff defines only 22
 // composite character mappings ("tmac/composite.tmac").  If this
 // becomes a performance problem, we will need another dictionary
 // mapping the unique values of `composite_dictionary` (which is not
@@ -4272,15 +4272,15 @@ static void report_composite_characters()
   skip_line();
 }
 
-int trap_sprung_flag = 0;
-int postpone_traps_flag = 0;
+bool was_trap_sprung = false;
+static bool are_traps_postponed = false;
 symbol postponed_trap;
 
 void spring_trap(symbol nm)
 {
   assert(!nm.is_null());
-  trap_sprung_flag = 1;
-  if (postpone_traps_flag) {
+  was_trap_sprung = true;
+  if (are_traps_postponed) {
     postponed_trap = nm;
     return;
   }
@@ -4301,19 +4301,19 @@ void spring_trap(symbol nm)
 
 void postpone_traps()
 {
-  postpone_traps_flag = 1;
+  are_traps_postponed = true;
 }
 
-int unpostpone_traps()
+bool unpostpone_traps()
 {
-  postpone_traps_flag = 0;
+  are_traps_postponed = false;
   if (!postponed_trap.is_null()) {
     spring_trap(postponed_trap);
     postponed_trap = NULL_SYMBOL;
-    return 1;
+    return true;
   }
   else
-    return 0;
+    return false;
 }
 
 void read_request()
@@ -4398,7 +4398,7 @@ void do_define_string(define_mode mode, comp_mode comp)
     c = get_copy(&n);
   macro mac;
   request_or_macro *rm = (request_or_macro *)request_dictionary.lookup(nm);
-  macro *mm = rm ? rm->to_macro() : 0;
+  macro *mm = rm ? rm->to_macro() : 0 /* nullptr */;
   if (mode == DEFINE_APPEND && mm)
     mac = *mm;
   if (comp == COMP_DISABLE)

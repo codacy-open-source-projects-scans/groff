@@ -63,8 +63,13 @@
 .
 .\" Handle most rendering options.
 .
+.\" We don't have to worry about "xhtml" (it's mapped to "html"), but we
+.\" do need to account for pre-grohtml(1)'s use of "groff -Tps".
 .nr doc-is-output-html 0
-.if '\*[.T]'html' .nr doc-is-output-html 1
+.if '\*[.T]'html' \
+.  nr doc-is-output-html 1
+.if r ps4html \
+.  nr doc-is-output-html 1
 .
 .\" Use -dAD to set the adjustment mode for ordinary body text.
 .if !d AD \
@@ -74,8 +79,7 @@
 .\"
 .\" We must use consecutive page numbers when using PostScript to
 .\" generate HTML images; we must not reset the page number at the
-.\" beginning of each document (the 'ps4html' register is automatically
-.\" added to the command line by the pre-HTML preprocessor).
+.\" beginning of each document.
 .ie !r C \
 .  nr C 0
 .el \
@@ -85,8 +89,6 @@
 .       nr C 1
 .    \}
 .if \n[doc-is-output-html] \
-.  nr C 1
-.if r ps4html \
 .  nr C 1
 .
 .\" Use -rCS=1 to force capitalization of section headings.
@@ -217,7 +219,7 @@
 .\" and whose state is shared with man (and andoc.tmac, if necessary).
 .\"
 .\" Also, we can't use the `P` register with grohtml at all.
-.ie r ps4html \{\
+.ie \n[doc-is-output-html] \{\
 .  if r P \{\
 .     tm mdoc: ignoring starting page number in HTML output
 .     rr P
@@ -238,7 +240,7 @@
 .\" page number after which to apply letter suffixes
 .\"
 .\" Unlike most of these parameters, we do not set a default for X; only
-.\" the macro an-footer uses it.  Page numbers are not rendered at all
+.\" the macro doc-footer uses it.  Page numbers are not rendered at all
 .\" in continuous rendering mode.
 .if r X \{\
 .  af doc-page-letter a
@@ -6806,11 +6808,52 @@
 .
 .\" NS Mt user macro
 .\" NS   mailto (for conversion to HTML)
+.\" NS
+.\" NS modifies:
+.\" NS   doc-arg-ptr
+.\" NS   doc-curr-font
+.\" NS   doc-macro-name
+.\" NS
+.\" NS local variables:
+.\" NS   doc-target-Mt
 .
 .eo
 .de Mt
-.  \" XXX: error handling missing
-.  Pa \$@
+.  if !\n[doc-arg-count] \{\
+.    ie \n[.$] \{\
+.      ds doc-macro-name Mt
+.      doc-parse-args \$@
+.    \}
+.    el \
+.      tm Usage: .Mt email_address ... (#\n[.c])
+.  \}
+.
+.  if !\n[doc-arg-count] \
+.    return
+.
+.  if (\n[doc-arg-count] <= \n[doc-arg-ptr]) \{\
+.    tm Usage: .Mt email_address ... (#\n[.c])
+.    doc-reset-args
+.    return
+.  \}
+.
+.  \" The argument is the email address.
+.  nr doc-arg-ptr +1
+.  ds doc-target-Mt "\*[doc-arg\n[doc-arg-ptr]]
+.  nr doc-arg-ptr +1
+.
+.  \" Format the link target.
+.  nr doc-curr-font \n[.f]
+.  nop \*[doc-Mt-font]\*[doc-target-Mt]\c
+.  nop \f[\n[doc-curr-font]]\c
+.
+.  \" Format trailing arguments, like punctuation, if any.
+.  ie (\n[doc-arg-ptr] <= \n[doc-arg-count]) \
+.    doc-print-recursive
+.  el \{\
+.    nop \&
+.    doc-reset-args
+.  \}
 ..
 .ec
 .
@@ -6830,12 +6873,22 @@
 .eo
 .de Lk
 .  if !\n[doc-arg-count] \{\
-.    ds doc-macro-name Lk
-.    doc-parse-args \$@
+.    ie \n[.$] \{\
+.      ds doc-macro-name Lk
+.      doc-parse-args \$@
+.    \}
+.    el \
+.      tm Usage: .Lk uri [link_text ...] (#\n[.c])
 .  \}
 .
 .  if !\n[doc-arg-count] \
 .    return
+.
+.  if (\n[doc-arg-count] <= \n[doc-arg-ptr]) \{\
+.    tm Usage: .Lk uri [link_text ...] (#\n[.c])
+.    doc-reset-args
+.    return
+.  \}
 .
 .  \" The first argument is the target URI.
 .  nr doc-arg-ptr +1

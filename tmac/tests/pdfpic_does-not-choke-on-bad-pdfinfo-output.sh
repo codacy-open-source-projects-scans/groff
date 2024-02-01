@@ -29,7 +29,7 @@ for cmd in gs pdfinfo
 do
     if ! command -v $cmd >/dev/null
     then
-        echo "cannot locate '$cmd' command" >&2
+        echo "cannot locate '$cmd' command; skipping test" >&2
         exit 77 # skip
     fi
 done

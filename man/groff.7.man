@@ -2252,9 +2252,10 @@ or within
 and
 .esc } .
 .
-Escape sequences may generally be used freely in
-.I anything,
-except when it is read in copy mode.
+Escape sequences in
+.I anything
+are interpreted normally except where otherwise stated,
+as when read in copy mode.
 .
 Comments are ignored;
 trailing whitespace generally is not.
@@ -4682,6 +4683,30 @@ The escape sequences
 and
 .escarg \& newline
 are interpreted even in copy mode.
+.
+.
+.P
+The escape sequences
+.esc f ,
+.esc F ,
+.esc H ,
+.esc m ,
+.esc M ,
+.esc R ,
+.esc s ,
+and
+.esc S
+are not tokenized when
+.I groff
+reads its input;
+.esc R
+updates only the formatter's internal state,
+and the rest only the environment.
+.
+They do not contribute (directly) to output;
+see the \[lq]Gtroff Internals\[rq] section of the
+.I groff
+Texinfo manual.
 .
 .
 .P
@@ -8146,7 +8171,7 @@ after
 .
 .
 .\" ====================================================================
-.SS "Underlining by overstriking with \e(ul"
+.SS "Underlining by overstriking with \[rs](ul"
 .\" ====================================================================
 .
 The
@@ -8305,7 +8330,9 @@ to the standard error stream.
 .
 This document was written by
 by Trent A.\& Fisher,
-Werner Lemberg,
+.MT wl@\:gnu\:.org
+Werner Lemberg
+.ME ,
 and
 .MT g.branden\:.robinson@\:gmail\:.com
 G.\& Branden Robinson

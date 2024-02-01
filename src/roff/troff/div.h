@@ -159,9 +159,9 @@ extern bool seen_last_page_ejector;
 extern int last_page_number;
 
 void spring_trap(symbol);	// implemented by input.c
-extern int trap_sprung_flag;
+extern bool was_trap_sprung;
 void postpone_traps();
-int unpostpone_traps();
+bool unpostpone_traps();
 
 void push_page_ejector();
 void continue_page_eject();

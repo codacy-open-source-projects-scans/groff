@@ -68,6 +68,7 @@
 .ds doc-Li-font \f[CR]
 .ds doc-Lk-font \f[R]\"
 .ds doc-Me-font \f[B]
+.ds doc-Mt-font \f[R]
 .ds doc-Nm-font \f[CB]
 .ds doc-No-font \f[R]
 .ds doc-Pa-font \f[I]

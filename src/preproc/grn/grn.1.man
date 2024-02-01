@@ -955,7 +955,11 @@ describes the output device
 David Slattengren and Barry Roitblat wrote the original Berkeley
 .IR grn .
 .
-Daniel Senderowicz and Werner Lemberg modified it for
+Daniel Senderowicz and
+.MT wl@\:gnu\:.org
+Werner Lemberg
+.ME
+modified it for
 .IR groff .
 .
 .

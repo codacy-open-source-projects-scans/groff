@@ -530,7 +530,7 @@ respectively.
 .
 These
 .IR map-file s
-are used to produce the font description files provided with
+produce the font description files provided with
 .I groff
 for the
 .I \%grops
@@ -568,10 +568,10 @@ For example,
 if
 .I x
 is
-.BR *D ,
+.BR \%Delta ,
 .I y
 is
-.BR \%Delta ,
+.BR *D ,
 and
 .I XXXX
 is

@@ -1905,7 +1905,7 @@ command instead of in the normal way.
 .SH Environment
 .\" ====================================================================
 .
-.TP
+.TP 9n \" "REFER" + 2n + hand-tuned for PDF
 .I REFER
 Assign this variable a file name to override the default database.
 .

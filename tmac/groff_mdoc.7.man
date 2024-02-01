@@ -4726,6 +4726,11 @@ It is neither callable nor parsed.
 .It Li .Lk
 Embed hyperlink.
 .
+This is a GNU extension introduced in
+.Em groff
+1.17
+(April 2001).
+.
 .
 .Pp
 .D1 Usage: Pf . Ic \&Lk Ar uri Op Ar link-text
@@ -4750,6 +4755,11 @@ Its default width is 6n.
 .
 .It Li .Mt
 Embed email address.
+.
+This is a GNU extension introduced in
+.Em groff
+1.17
+(April 2001).
 .
 .
 .Pp

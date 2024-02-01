@@ -896,7 +896,7 @@ was written by
 Keith Marshall
 .ME ,
 who maintains it at
-.UR https://\:osdn\:.net/\:users/\:keith/\:pf/\:\%groff-pdfmark/\
+.UR https://\:osdn\:.net/\:users/\:keith/\:pf/\:\%groff\-pdfmark/\
 \:wiki/\:\%FrontPage
 his
 .I groff-pdfmark

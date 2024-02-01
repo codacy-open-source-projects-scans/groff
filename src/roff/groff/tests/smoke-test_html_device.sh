@@ -68,7 +68,11 @@ echo "$output" | grep -q '<img src="grohtml-[0-9]\+-2.png"' || wail
 cleanup
 
 # We can't run remaining tests if the environment doesn't support UTF-8.
-test "$(locale charmap)" = UTF-8 || exit 77 # skip
+if [ "$(locale charmap)" != UTF-8 ]
+then
+    echo "environment does not support UTF-8; skipping test" >&2
+    exit 77 # skip
+fi
 
 # Check two forms of character transformation.
 #

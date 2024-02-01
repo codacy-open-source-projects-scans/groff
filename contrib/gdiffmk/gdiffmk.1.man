@@ -272,12 +272,12 @@ or
 .SH Bugs
 .\" ====================================================================
 .
-The output is not necessarily compatible with all macro packages
-and all preprocessors.
+The output is not necessarily compatible with all macro packages or
+preprocessors.
 .
-A workaround that often overcomes preprocessor problems is to run
+A reliable workaround is to run
 .I gdiffmk
-on the output of all the preprocessors instead of the input source.
+on the output of the final preprocessor instead of the input source.
 .
 .
 .LP

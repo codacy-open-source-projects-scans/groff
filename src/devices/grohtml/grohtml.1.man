@@ -140,7 +140,7 @@ via the
 command with the
 .B \-Thtml
 or
-.B \-Txhtml
+.B \%\-Txhtml
 options.
 .
 (In this installation,
@@ -385,7 +385,7 @@ it is synthesized by
 depending on whether it was given the
 .B \-Thtml
 or
-.B \-Txhtml
+.B \%\-Txhtml
 option.
 .
 .
@@ -578,7 +578,7 @@ it is synthesized by
 depending on whether it was given the
 .B \-Thtml
 or
-.B \-Txhtml
+.B \%\-Txhtml
 option.
 .
 .

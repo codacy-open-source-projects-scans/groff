@@ -1025,7 +1025,8 @@ L Lf(CR) L Lx.
 .
 Historically,
 .B \[rs][ss]
-could be considered a ligature of \[lq]sz\[rq].
+developed from a ligature of \[lq]sz\[rq].
+.\" ...though the s was a "long s" and the z was a "Blackletter z".
 .
 An uppercase form is available as
 .BR \[rs][u1E9E] ,
@@ -1238,7 +1239,7 @@ L Lf(CR) L Lx.
 .\" ====================================================================
 .
 The neutral double quote,
-often useful when documenting programming languages,
+useful in documenting programming languages,
 is also available as a special character for convenient embedding in
 macro arguments;
 see subsection \[lq]Fundamental character set\[rq] above.
@@ -1503,9 +1504,9 @@ The Unicode-derived names of these three glyphs are approximations.
 .
 .
 .P
-The input character
+The ordinary character
 .B _
-always accesses the underscore glyph in a font;
+accesses the underscore glyph in a font;
 .\" unless one isn't available, but this seems to be only a theoretical
 .\" concern--what font doesn't support every ASCII codepoint these days?
 .BR \[rs][ul] ,

@@ -1749,13 +1749,12 @@ as the bold font.
 .RI Select\~ f
 as the italic font.
 .
-For
-AT&T
-.I eqn \" AT&T
-compatibility,
+GNU
+.I eqn \" GNU
+recognizes
 .B gfont
-is recognized as a synonym for
-.BR gifont .
+as a synonym for
+AT&T compatibility.
 .
 .
 .TP
@@ -1835,9 +1834,8 @@ before those listed in section \[lq]Description\[rq] above.
 .
 .TP
 .B \-N
-Prohibit newlines within delimiters.
-.
-This option allows
+Prohibit newlines within delimiters,
+allowing
 .I @g@eqn
 to recover better from missing closing delimiters.
 .
@@ -1857,8 +1855,8 @@ surrounding text.
 .
 .TP
 .B \-r
-Reduce the type size of subscripts at most once relative to the base
-type size for the equation.
+Reduce the type size of super- and subscripts at most once relative to
+the base type size.
 .
 .
 .TP
@@ -1912,7 +1910,9 @@ The default device is
 .
 .TP
 .I @MACRODIR@/\:\%eqnrc
-initializes the preprocessor.
+initializes the preprocessor for
+.I @g@troff
+output.
 .
 Any valid
 .I @g@eqn

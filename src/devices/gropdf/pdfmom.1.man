@@ -10,7 +10,7 @@ macro package for
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2012-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 2012-2023 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -53,6 +53,7 @@ macro package for
 .\" ====================================================================
 .
 .SY pdfmom
+.RB [ \-\-roff ]
 .RB [ \-Tpdf ]
 .RI [ groff-options ]
 .RI [ file\~ .\|.\|.]
@@ -60,6 +61,7 @@ macro package for
 .
 .
 .SY pdfmom
+.RB [ \-\-roff ]
 .B \-Tps
 .RI [ pdfroff-options ]
 .RI [ groff-options ]
@@ -86,6 +88,25 @@ that facilitates the production of PDF documents from files
 formatted with the
 .I mom
 macros.
+.
+.
+.P
+If the
+.B \-\-roff
+option is used,
+the wrapper can be used with macro packages other than
+.MR groff_mom @MAN7EXT@ .
+.
+This is also true if the wrapper is renamed or linked as a
+pseudonym;
+for example,
+creating a
+.I pdfms
+link pointing to the
+.I pdfmom
+executable makes a wrapper for producing PDFs with the
+.I ms
+package.
 .
 .
 .P
@@ -172,6 +193,10 @@ or
 options,
 .I pdfmom
 displays its version information and exits.
+.
+Using the
+.B \-\-help
+option displays a usage message and exits.
 .
 .
 .\" ====================================================================

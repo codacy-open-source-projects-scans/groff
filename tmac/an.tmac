@@ -207,8 +207,23 @@
 .
 .\" Write a bookmark/anchor/link target $2 at hierarchical depth $1.
 .de an*bookmark
-.  if \\n[an*is-output-pdf] .pdfbookmark \\$1 \\$2
+.  an*bookmark*\*[.T] \\$@
 ..
+.
+.ds an*bookmark*ascii \" empty
+.ds an*bookmark*cp1047 \" empty
+.ds an*bookmark*dvi \" empty
+.ds an*bookmark*html \" empty
+.ds an*bookmark*latin1 \" empty
+.ds an*bookmark*lbp \" empty
+.ds an*bookmark*lj4 \" empty
+.ds an*bookmark*ps \" empty
+.ds an*bookmark*utf8 \" empty
+.
+.de an*bookmark*pdf
+.  pdfbookmark \\$1 \\$2
+..
+.
 .
 .\" Begin man page.
 .\" .TH topic section[ extra1[ extra2[ extra3]]]
@@ -283,8 +298,9 @@
 .
 .  nr an-need-no-space-mode 0
 .  nr an-need-break 0
-.  nr an-is-in-diversion 0
+.  nr an*is-in-paragraph-tag-diversion 0
 .  nr an*is-in-example 0
+.  nr an*is-in-link-text-diversion 0
 .
 .  ds an*topic "\\$1\"
 .  if \\n[CT] .stringup an*topic
@@ -421,7 +437,7 @@
 .  ie \\n[cR] .pl +1v
 .  el         .sp (.5i - .5m)
 .  if !\\n[an*was-TH-bookmark-emitted] \{\
-.    an*bookmark 1 \E*[an*page-ref-string]
+.    an*bookmark 1 "\\*[an*page-ref-string]"
 .    nr an*was-TH-bookmark-emitted 1
 .  \}
 .  tl '\\*[an-pageref]'\\*[an-extra3]'\\*[an-pageref]'
@@ -587,6 +603,7 @@ contains unsupported escape sequence
 .  PT
 .  ev
 .  ns
+.  if '\*[.T]'pdf' .pdfmarkrestart
 ..
 .
 .\" Schedule a page break when the next output line is written (not
@@ -598,6 +615,7 @@ contains unsupported escape sequence
 .\" Prepare the footer for a page of the document.
 .de1 an-footer
 .  if \\n[an-suppress-header-and-footer] .return
+.  if '\*[.T]'pdf' .pdfmarksuspend
 .  ev an*env-header-and-footer
 .  ie \\n[cR] \
 .    ds an*ofoot "\\*[an-pageref]\"
@@ -621,7 +639,7 @@ contains unsupported escape sequence
 .  br
 .  di
 .  ad \\*[AD]
-.  nr an-is-in-diversion 0
+.  nr an*is-in-paragraph-tag-diversion 0
 .  ll
 .  \" We must emit the diversion in a separate environment to ensure
 .  \" that a possible margin character is printed correctly.
@@ -637,7 +655,8 @@ contains unsupported escape sequence
      (\\n[dl] + (\\n[TS]*\\n[an*enforce-tag-separation]) \
         <= \\n[an-prevailing-indent])
 .  if \\n[an-tag-fits] .DEVTAG-COL 1
-.  an-div
+.  an*paragraph-tag
+.  rm an*paragraph-tag
 .  if \\n[an-tag-fits] .sp -1v
 .  ev
 .  in (\\n[an-margin]u + \\n[an-prevailing-indent]u)
@@ -664,7 +683,7 @@ contains unsupported escape sequence
 .    ns
 .    nr an-need-no-space-mode 0
 .  \}
-.  if \\n[an-is-in-diversion] .an-write-paragraph-tag
+.  if \\n[an*is-in-paragraph-tag-diversion] .an-write-paragraph-tag
 ..
 .
 .\" Break a paragraph.  Restore defaults, except for indentation.
@@ -697,7 +716,7 @@ contains unsupported escape sequence
 .  if \\n[.$] \{\
 .    ds an-section-heading \\$*\"
 .    if \\n[CS] .stringup an-section-heading
-.    an*bookmark 2 \E*[an-section-heading]
+.    an*bookmark 2 "\\*[an-section-heading]"
 .    nop \&\\*[an-section-heading]
 .  \}
 .  if \\n[an-remap-I-style-in-headings] .ftr I I
@@ -723,7 +742,7 @@ contains unsupported escape sequence
 .  if \\n[an-remap-I-style-in-headings] .ftr I \\*[an-heading-family]BI
 .  if \\n[.$] \{\
 .    ds an*subsection-heading \\$*\"
-.    an*bookmark 3 \E*[an*subsection-heading]
+.    an*bookmark 3 "\\*[an*subsection-heading]"
 .    nop \&\\$*
 .  \}
 .  if \\n[an-remap-I-style-in-headings] .ftr I I
@@ -795,13 +814,15 @@ contains unsupported escape sequence
 .  an-break-paragraph
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
 .  itc 1 an-input-trap
-.  in 0
-.  if !\\n[an-is-in-diversion] \{\
-.    ll -\\n[an-margin]u
-.    di an-div
-.    na
+.  if \\n[an*is-in-paragraph-tag-diversion] \{\
+.    an-warn cannot nest .\\$0 or .TQ inside .\\$0; supply a tag
+.    return
 .  \}
-.  nr an-is-in-diversion 1
+.  in 0
+.  ll -\\n[an-margin]u
+.  nr an*is-in-paragraph-tag-diversion 1
+.  di an*paragraph-tag
+.  na
 ..
 .
 .\" Set an indented paragraph.
@@ -1101,12 +1122,15 @@ contains unsupported escape sequence
 .  \" We can only hyperlink if we're not in a diversion.
 .  \" XXX: There's no fundamental reason for that, just a simple matter
 .  \" of macro programming.
-.  nr an*is-in-link-text-diversion 0
-.  if '\\n(.z'' .nr an*is-in-link-text-diversion 1
-.  if (\\n[an*is-in-link-text-diversion] & \\n[an*do-hyperlink]) \{\
+.  ie !'\\n[.z]'' \
+.    an-warn cannot nest .MT or .UR inside .TP; ending paragraph tag
+.  el .if \\n[an*do-hyperlink] \{\
+.    nr an*is-in-link-text-diversion 1
 .    \" Start diversion in a new environment.
+.    nr an*is-in-link-text-diversion 1
 .    ev an*link-text-env
-.    di an*link-text-div
+.    if '\*[.T]'pdf' \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
+.    di an*link-text
 .    ll (\\n[an*saved-line-length]u - \\n[an*saved-indentation]u)
 .  \}
 .  rr an*saved-indentation
@@ -1124,32 +1148,35 @@ contains unsupported escape sequence
 .    br
 .    di
 .    ev
-.
+.    nr an*is-in-link-text-diversion 0
 .    \" Was any link text present?
 .    ie \\n[dn] \{\
-.      if \\n[an*is-output-html] \
+.      if '\*[.T]'html' \
 .        nop \X^html:<a href="\\*[an*prefix]\\*[an*hyperlink]">^\c
-.      if \\n[an*is-output-pdf] \
-.        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- \
-\\*[an*hyperlink]\c
+.      if '\*[.T]'pdf' \{\
+.        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- "|"
+.      \}
 .      if \\n[an*is-output-terminal] \
 .        nop \X^tty: link \\*[an*prefix]\\*[an*hyperlink]^\c
-.      \" Strip off the final newline of the diversion and emit it.
-.      chop an*link-text-div
-.      an*link-text-div
-\c\" XXX: If we .nop this, HTML output is corrupted (Savannah #63470).
-.      if \\n[an*is-output-html] \
+.      \" Replace the final newline of the diversion.
+.      chop an*link-text
+.      as an*link-text \&\c
+.      an*link-text
+.      nop \"
+.      if '\*[.T]'html' \
 .        nop \X^html:</a>^\c
 .      if \\n[an*is-output-terminal] \
 .        nop \X^tty: link^\c
+.      if '\*[.T]'pdf' \
+.        nop \X'pdf: markend'\m[\\*[pdf:curcol]]\c
 .    \}
 .    \" If there was no link text, format URI as its own link text.  We
 .    \" don't add angle brackets here.
 .    el \{\
-.      if \\n[an*is-output-html] \
+.      if '\*[.T]'html' \
 .        nop \X^html:<a href="\\*[an*prefix]\\*[an*hyperlink]">\
 \\*[an*hyperlink]</a>^\c
-.      if \\n[an*is-output-pdf] \
+.      if '\*[.T]'pdf' \
 .        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- \
 \\*[an*hyperlink]\c
 .      if \\n[an*is-output-terminal] \
@@ -1165,16 +1192,19 @@ contains unsupported escape sequence
 .    nop \\[la]\\*[an*hyperlink]\\[ra]\\$1
 .    hy \\n[an*hyphenation-mode]
 .  \}
-.
-.  rr an*is-in-link-text-diversion
+.  rm an*link-text
 ..
 .
 .\" Begin email hyperlink.  Input until the next `ME` call is stored in
 .\" a diversion; it becomes the link text for the hyperlinked address.
 .\" .MT nobody@example.com
 .de1 MT
+.  if d an*prefix \{\
+.    an-warn cannot nest .\\$0 inside .MT or .UR
+.    return
+.  \}
 .  if !(\\n[.$] = 1) \
-.    an-style-warn .\\$0 expects 1 argument, got \\n[.$]
+.    an-warn .\\$0 expects 1 argument, got \\n[.$]
 .  ds an*prefix mailto:
 .  an*begin-hyperlink \\$1
 ..
@@ -1183,6 +1213,10 @@ contains unsupported escape sequence
 .\" punctuation (or, rarely, other text) after link text.
 .\" .ME [trailing-text]
 .de1 ME
+.  if !d an*prefix \{\
+.    an-warn .\\$0 requires a preceding .MT
+.    return
+.  \}
 .  an*end-hyperlink \\$1
 .  rm an*prefix
 ..
@@ -1191,8 +1225,12 @@ contains unsupported escape sequence
 .\" a diversion; it becomes the link text for the hyperlinked address.
 .\" .UR nobody@example.com
 .de1 UR
+.  if d an*prefix \{\
+.    an-warn cannot nest .\\$0 inside .MT or .UR
+.    return
+.  \}
 .  if !(\\n[.$] = 1) \
-.    an-style-warn .\\$0 expects 1 argument, got \\n[.$]
+.    an-warn .\\$0 expects 1 argument, got \\n[.$]
 .  ds an*prefix \" empty
 .  an*begin-hyperlink \\$1
 ..
@@ -1201,6 +1239,10 @@ contains unsupported escape sequence
 .\" punctuation (or, rarely, other text) after link text.
 .\" .UE [trailing-text]
 .de1 UE
+.  if !d an*prefix \{\
+.    an-warn .\\$0 requires a preceding .UR
+.    return
+.  \}
 .  an*end-hyperlink \\$1
 .  rm an*prefix
 ..
@@ -1224,15 +1266,24 @@ contains unsupported escape sequence
 .    ds an*url x-man-doc://\\$2/\\$1\" ManOpen (Mac OS X pre-2005)
 .  nh
 .  if \\n[an*do-hyperlink] \{\
-.    if \\n[an*is-output-html] \
+.    if '\*[.T]'html' \
 .      nop \X^html:<a href="\\*[an*url]">^\c
+.    if '\*[.T]'pdf' \{\
+.      ds an*saved-stroke-color \\n[.m]\"
+.      nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
+.      pdfhref W -D \\*[an*url] -- "|"
+.    \}
 .    if \\n[an*is-output-terminal] \
 .      nop \X^tty: link \\*[an*url]^\c
 .  \}
-.      nop \&\\*[an-lic]\f[\\*[MF]]\\$1\\*[an-ic]\f[R](\\$2)\c
+.  nop \&\\*[an-lic]\f[\\*[MF]]\\$1\\*[an-ic]\f[R](\\$2)\c
 .  if \\n[an*do-hyperlink] \{\
-.    if \\n[an*is-output-html] \
+.    if '\*[.T]'html' \
 .      nop \X^html:</a>^\c
+.    if '\*[.T]'pdf' \{\
+.      nop \X'pdf: markend'\m[\\*[an*saved-stroke-color]]\c
+.      rm an*saved-stroke-color
+.    \}
 .    if \\n[an*is-output-terminal] \
 .      nop \X^tty: link^\c
 .  \}
@@ -1324,10 +1375,13 @@ contains unsupported escape sequence
 .\" page.
 .nr an*need-titles-reset 0
 .
+.\" We don't have to worry about "xhtml" (it's mapped to "html"), but we
+.\" do need to account for pre-grohtml(1)'s use of "groff -Tps".
 .nr an*is-output-html 0
 .if '\*[.T]'html' .nr an*is-output-html 1
-.nr an*is-output-pdf 0
-.if '\*[.T]'pdf' .nr an*is-output-pdf 1
+.if r ps4html     .nr an*is-output-html 1
+.
+.\" For most purposes, we treat the nroff devices equivalently.
 .nr an*is-output-terminal 0
 .if '\*(.T'ascii'  .nr an*is-output-terminal 1
 .if '\*(.T'cp1047' .nr an*is-output-terminal 1
@@ -1337,6 +1391,9 @@ contains unsupported escape sequence
 .nr an*can-hyperlink 0
 .if (  \n[an*is-output-html] \
      : \n[an*is-output-terminal]) \
+.  nr an*can-hyperlink 1
+.
+.if '\*[.T]'pdf' \
 .  nr an*can-hyperlink 1
 .
 .ds an*body-family \n[.fam]
@@ -1363,7 +1420,7 @@ contains unsupported escape sequence
 .\" Set each rendering parameter only if its -[dr] option or man.local
 .\" did not.
 .
-.if \n[an*is-output-pdf] \{\
+.if '\*[.T]'pdf' \{\
 .  \" FIXME: The following registers are documented only in pdf.tmac.
 .  if !r PDFOUTLINE.FOLDLEVEL .nr PDFOUTLINE.FOLDLEVEL 1
 .  if !r PDFHREF.VIEW.LEADING .nr PDFHREF.VIEW.LEADING 10p
@@ -1383,8 +1440,7 @@ contains unsupported escape sequence
 .\"
 .\" We must use consecutive page numbers when using PostScript to
 .\" generate HTML images; we must not reset the page number at the
-.\" beginning of each document (the 'ps4html' register is automatically
-.\" added to the command line by the pre-HTML preprocessor).
+.\" beginning of each document.
 .ie !r C \
 .  nr C 0
 .el \
@@ -1394,8 +1450,6 @@ contains unsupported escape sequence
 .       nr C 1
 .    \}
 .if \n[an*is-output-html] \
-.  nr C 1
-.if r ps4html \
 .  nr C 1
 .
 .\" diagnostics desired for man page style problems
@@ -1515,7 +1569,7 @@ contains unsupported escape sequence
 .\" and whose state is shared with mdoc (and andoc.tmac, if necessary).
 .\"
 .\" Also, we can't use the `P` register with grohtml at all.
-.ie r ps4html \{\
+.ie \n[an*is-output-html] \{\
 .  if r P \{\
 .     tm \*[an]: ignoring starting page number in HTML output
 .     rr P
@@ -1619,7 +1673,6 @@ contains unsupported escape sequence
 .\" If rendering HTML, suppress headers and footers.
 .nr an-suppress-header-and-footer 0
 .if \n[an*is-output-html] .nr an-suppress-header-and-footer 1
-.if r ps4html             .nr an-suppress-header-and-footer 1
 .
 .cp \n[*groff_an_tmac_C]
 .do rr *groff_an_tmac_C

@@ -128,6 +128,8 @@ do
             then
                 exit 1 # fail
             else
+                echo "environment does not support UTF-8;" \
+                  "skipping test" >&2
                 exit 77 # skip
             fi
         fi

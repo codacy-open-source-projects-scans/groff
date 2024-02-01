@@ -133,7 +133,7 @@ Output is written to the standard output stream.
 .
 .PP
 If the name of a
-.I macro-file
+.I included-file
 contains a backslash,
 use
 .B \[rs]\[rs]
@@ -147,7 +147,7 @@ write
 (backslash followed by a space).
 .
 Any other escape sequence in
-.IR macro-file ,
+.IR included-file ,
 including
 .RB \[lq] \[rs][rs] \[rq],
 prevents
@@ -174,7 +174,7 @@ requests.
 There must also be at least one space between
 .RB \[lq] so \[rq]
 and its
-.I macro-file
+.I included-file
 argument.
 .
 The
