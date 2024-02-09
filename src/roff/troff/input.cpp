@@ -399,7 +399,7 @@ file_iterator::file_iterator(FILE *f, const char *fn, int po)
 : fp(f), lineno(1), filename(fn), popened(po),
   newline_flag(0), seen_escape(0)
 {
-  if ((font::use_charnames_in_special) && (fn != 0)) {
+  if ((font::use_charnames_in_special) && (fn != 0 /* nullptr */)) {
     if (!the_output)
       init_output();
     the_output->put_filename(fn, po);
@@ -1279,9 +1279,9 @@ bool non_interpreted_char_node::is_tag()
   return false;
 }
 
-non_interpreted_char_node::non_interpreted_char_node(unsigned char n) : c(n)
+non_interpreted_char_node::non_interpreted_char_node(unsigned char cc) : c(cc)
 {
-  assert(n != 0);
+  assert(cc != 0);
 }
 
 node *non_interpreted_char_node::copy()
@@ -1879,7 +1879,7 @@ void token::next()
   }
   units x;
   for (;;) {
-    node *n = 0;
+    node *n = 0 /* nullptr */;
     int cc = input_stack::get(&n);
     if (cc != escape_char || escape_char == 0) {
     handle_ordinary_char:
@@ -2039,7 +2039,7 @@ void token::next()
 	return;
       case 0:
 	{
-	  assert(n != 0);
+	  assert(n != 0 /* nullptr */);
 	  token_node *tn = n->get_token_node();
 	  if (tn) {
 	    *this = tn->tk;
@@ -2533,7 +2533,7 @@ bool token::is_usable_as_delimiter(bool report_error)
 
 const char *token::description()
 {
-  const size_t bufsz = strlen("character 'x'") + 1;
+  const size_t bufsz = sizeof "character 'x'" + 1;
   static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   switch (type) {
@@ -3362,33 +3362,33 @@ public:
 
 void node_list::append(node *n)
 {
-  if (head == 0) {
-    n->next = 0;
+  if (head == 0 /* nullptr */) {
+    n->next = 0 /* nullptr */;
     head = tail = n;
   }
   else {
-    n->next = 0;
+    n->next = 0 /* nullptr */;
     tail = tail->next = n;
   }
 }
 
 int node_list::length()
 {
-  int total = 0;
-  for (node *n = head; n != 0; n = n->next)
+  int total = 0 /* nullptr */;
+  for (node *n = head; n != 0 /* nullptr */; n = n->next)
     ++total;
   return total;
 }
 
 node_list::node_list()
 {
-  head = tail = 0;
+  head = tail = 0 /* nullptr */;
 }
 
 node *node_list::extract()
 {
   node *temp = head;
-  head = tail = 0;
+  head = tail = 0 /* nullptr */;
   return temp;
 }
 
@@ -3408,7 +3408,7 @@ public:
 
 macro::~macro()
 {
-  if (p != 0 && --(p->count) <= 0)
+  if (p != 0 /* nullptr */ && --(p->count) <= 0)
     delete p;
 }
 
@@ -3416,12 +3416,12 @@ macro::macro()
 : is_a_diversion(0), is_a_string(1)
 {
   if (!input_stack::get_location(1, &filename, &lineno)) {
-    filename = 0;
-    lineno = 0;
+    filename = 0 /* nullptr */;
+    lineno = 0 /* nullptr */;
   }
   len = 0;
   empty_macro = 1;
-  p = 0;
+  p = 0; /* nullptr */
 }
 
 macro::macro(const macro &m)
@@ -3429,7 +3429,7 @@ macro::macro(const macro &m)
   empty_macro(m.empty_macro), is_a_diversion(m.is_a_diversion),
   is_a_string(m.is_a_string), p(m.p)
 {
-  if (p != 0)
+  if (p != 0 /* nullptr */)
     p->count++;
 }
 
@@ -3437,13 +3437,13 @@ macro::macro(int is_div)
 : is_a_diversion(is_div)
 {
   if (!input_stack::get_location(1, &filename, &lineno)) {
-    filename = 0;
-    lineno = 0;
+    filename = 0 /* nullptr */;
+    lineno = 0 /* nullptr */;
   }
   len = 0;
   empty_macro = 1;
   is_a_string = 1;
-  p = 0;
+  p = 0 /* nullptr */;
 }
 
 int macro::is_diversion()
@@ -3464,9 +3464,9 @@ void macro::clear_string_flag()
 macro &macro::operator=(const macro &m)
 {
   // don't assign object
-  if (m.p != 0)
+  if (m.p != 0 /* nullptr */)
     m.p->count++;
-  if (p != 0 && --(p->count) <= 0)
+  if (p != 0 /* nullptr */ && --(p->count) <= 0)
     delete p;
   p = m.p;
   filename = m.filename;
@@ -3481,7 +3481,7 @@ macro &macro::operator=(const macro &m)
 void macro::append(unsigned char c)
 {
   assert(c != 0);
-  if (p == 0)
+  if (p == 0 /* nullptr */)
     p = new macro_header;
   if (p->cl.length() != len) {
     macro_header *tem = p->copy(len);
@@ -3497,14 +3497,14 @@ void macro::append(unsigned char c)
 
 void macro::set(unsigned char c, int offset)
 {
-  assert(p != 0);
+  assert(p != 0 /* nullptr */);
   assert(c != 0);
   p->cl.set(c, offset);
 }
 
 unsigned char macro::get(int offset)
 {
-  assert(p != 0);
+  assert(p != 0 /* nullptr */);
   return p->cl.get(offset);
 }
 
@@ -3527,8 +3527,8 @@ void macro::append_str(const char *s)
 
 void macro::append(node *n)
 {
-  assert(n != 0);
-  if (p == 0)
+  assert(n != 0 /* nullptr */);
+  if (p == 0 /* nullptr */)
     p = new macro_header;
   if (p->cl.length() != len) {
     macro_header *tem = p->copy(len);

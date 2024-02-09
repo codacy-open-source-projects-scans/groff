@@ -1316,27 +1316,18 @@ so the remainder of the word is subject to hyphenation as normal.
 .TP
 .BI \[rs]? anything \[rs]?
 When used in a diversion,
-transparently embed
-.I anything
-in it.
+this escape sequence transparently embeds input,
+read in copy mode,
+until its own next occurrence on the input line.
 .
-.I anything
-is read in copy mode.
-.
-When the diversion is interpolated,
-.I anything
-is interpreted.
-.I anything
-may not contain newlines;
-use
+Use
 .B \[rs]!\&
 if you want to embed newlines in a diversion.
 .
-The escape sequence
+Unlike
+.BR \[rs]! ,
 .B \[rs]?\&
-is also recognized in copy mode and becomes an internal code;
-it is this code that terminates
-.IR anything .
+is interpreted even in copy mode.
 .
 .
 .TP
@@ -1532,7 +1523,8 @@ appendment.
 .
 .TP
 .BI .as1\~ name\~\c
-.RI [ contents ]
+.RB [[ \[dq] ]\c
+.IR contents ]
 As
 .RB \[lq] as \[rq],
 but compatibility mode is disabled while the appendment to
@@ -2101,9 +2093,9 @@ See
 .
 .TP
 .BI .composite\~ c1\~c2
-Map character name
+Map ordinary or special character
 .I c1
-to character name
+to
 .I c2
 when
 .I c1
@@ -2130,23 +2122,28 @@ See
 .
 .TP
 .BR .color\~ [\c
-.IR n ]
+.IR b ]
 If
-.I n
+.I b
 is non-zero or missing,
-enable colors
-(the default),
+enable output of color-related device-independent output commands,
 otherwise disable them.
+.
+It is enabled by default.
 .
 .
 .TP
 .BR .cp\~ [\c
-.IR n ]
+.IR b ]
 If
-.I n
+.I b
 is non-zero or missing,
-enable compatibility mode,
+enable AT&T
+.I troff \" AT&T
+compatibility mode,
 otherwise disable it.
+.
+It is disabled by default.
 .
 In compatibility mode,
 long names are not recognized,
@@ -2972,20 +2969,20 @@ is read in copy mode.
 .
 .
 .TP
-.BI .linetabs\~ n
+.BR .linetabs\~ [\c
+.IR b ]
 If
-.I n
+.I b
 is non-zero or missing,
-enable line-tabs mode,
-otherwise disable it
-(the default).
+activate line-tabs in the environment,
+otherwise disable it.
 .
-In this mode,
-tab stops are computed relative to the start of the pending output line,
+They are inactive by default.
+.
+When line-tabs are active,
+tab stops are computed relative to the start of the pending output line
 instead of the drawing position corresponding to the start of the input
 line.
-.
-Line-tabs mode is a property of the environment.
 .
 .
 .TP
@@ -3697,20 +3694,26 @@ is retained.
 .
 .
 .TP
-.BI .vpt\~ n
+.BR .vpt\~ [\c
+.IR b ]
 If
-.I n
+.I b
 is non-zero or missing,
-enable vertical position traps
-(the default),
+enable vertical position traps,
 otherwise disable them.
 .
+They are enabled by default.
+.
+.
+.IP
 Vertical position traps are those set by the
 .BR ch ,
 .BR wh ,
 and
 .B dt
 requests.
+.
+Vertical position trap enablement is global.
 .
 .
 .TP
@@ -5299,7 +5302,7 @@ environments
 .RB ( pev ),
 hyphenation exceptions
 .RB ( phw ),
-defined registers
+registers
 .RB ( pnr ),
 and page location traps
 .RB ( ptr )
@@ -5307,7 +5310,7 @@ to the standard error stream.
 .
 .
 .\" ====================================================================
-.SH "Implementation differences"
+.SH "Other differences"
 .\" ====================================================================
 .
 .\" TODO: Resync with the node of this name in our Texinfo manual.
@@ -5320,6 +5323,22 @@ assuming old implementations of
 Some GNU extensions to
 .I troff \" generic
 are supported by other implementations.
+.
+.
+.P
+AT&T
+.I troff \" AT&T
+discards trailing spaces from input lines,
+like GNU
+.IR troff , \" GNU
+but if it does so,
+AT&T
+.I troff \" AT&T
+also cancels end-of-sentence detection.
+.
+Use of the dummy character escape sequence
+.B \[rs]&
+is more portable.
 .
 .
 .P
@@ -5359,8 +5378,23 @@ GNU
 has no such restriction.
 .
 .
+.\" ====================================================================
+.SH "Compatibility mode"
+.\" ====================================================================
+.
+Some implementation differences between GNU and AT&T
+.IR troff s \" generic
+are thought too important to neglect;
+.I groff
+therefore makes available a
+.I "compatibility mode"
+in an effort to keep documents prepared for AT&T
+.I troff \" AT&T
+rendering well.
+.
+.
 .P
-Long names may be GNU
+Identifier names of arbitrary length may be GNU
 .IR troff 's \" GNU
 most obvious innovation.
 .
@@ -5549,7 +5583,7 @@ See section \[lq]Miscellaneous\[rq] above.
 .
 .
 .P
-In compatibility mode,
+Further,
 the escape sequences
 .BR \[rs]f ,
 .BR \[rs]H ,
@@ -5559,13 +5593,8 @@ the escape sequences
 .BR \[rs]s ,
 and
 .B \[rs]S
-are transparent at the beginning of an input line for the purpose of
-recognizing a control character,
-because they modify formatter state
-.RB ( \[rs]R )
-or properties of the environment
-(the rest)
-and therefore do not create output nodes.
+are transparent at the beginning of an input line only in compatibility
+mode.
 .
 .
 .P

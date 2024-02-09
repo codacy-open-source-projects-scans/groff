@@ -1557,16 +1557,15 @@ _endif()dnl
 .
 .
 .P
-The hyperlinking of
+If a
 .B .TP
-paragraph tags with
+call is followed immediately by hyperlinking macros
 .BR .UR / .UE
-and
-.BR .MT / .ME
-is not yet supported;
-if attempted,
-the hyperlink will be typeset at the beginning of the indented paragraph
-even on hyperlink-supporting devices.
+or
+.BR .MT / .ME ,
+and the device doesn't support hyperlinking,
+the hyperlink is set at the beginning of the indented paragraph,
+not as part of the tag.
 .
 .
 .\" ====================================================================

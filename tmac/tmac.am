@@ -170,6 +170,7 @@ tmac_TESTS = \
   tmac/tests/an_P-register-works.sh \
   tmac/tests/an_TH-repairs-ad-damage.sh \
   tmac/tests/an_TH-repairs-hy-damage.sh \
+  tmac/tests/an_TP-works.sh \
   tmac/tests/an_TS-adds-no-vertical-space.sh \
   tmac/tests/an_TS-do-not-keep-tables-when-cR-set.sh \
   tmac/tests/an_UE-breaks-before-long-URIs.sh \

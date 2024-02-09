@@ -87,8 +87,13 @@ groff
 .ft BMB
 Collected Reference Pages
 .ft
+.sp 12p
+.ps 10
+.ft BMI
+documenting version @VERSION@
+.ft
 .ps \n[GMP*saved-type-size]u
-.sp .2i
+.sp .1i
 .Hl
 .bp 1
 .pdfpagenumbering D . 1

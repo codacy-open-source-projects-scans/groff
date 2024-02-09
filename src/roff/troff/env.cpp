@@ -692,7 +692,7 @@ environment::environment(symbol nm)
   underline_lines(0),
   underline_spaces(0),
   input_trap_count(0),
-  continued_input_trap(0),
+  continued_input_trap(false),
   line(0),
   prev_text_length(0),
   width_total(0),
@@ -785,7 +785,7 @@ environment::environment(const environment *e)
   underline_lines(0),
   underline_spaces(0),
   input_trap_count(0),
-  continued_input_trap(0),
+  continued_input_trap(false),
   line(0),
   prev_text_length(e->prev_text_length),
   width_total(0),
@@ -866,7 +866,7 @@ void environment::copy(const environment *e)
   underline_lines = 0;
   underline_spaces = 0;
   input_trap_count = 0;
-  continued_input_trap = 0;
+  continued_input_trap = false;
   prev_text_length = e->prev_text_length;
   width_total = 0;
   space_total = 0;
@@ -1847,7 +1847,7 @@ void environment::output_line(node *n, hunits width, int was_centered)
     width += tem->width();
   }
   node *nn = 0;
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     node *tem = n->next;
     n->next = nn;
     nn = n;
@@ -1947,7 +1947,7 @@ breakpoint *environment::choose_breakpoint()
   node *n = line;
   breakpoint *best_bp = 0;	// the best breakpoint so far
   int best_bp_fits = 0;
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     x -= n->width();
     s -= n->nspaces();
     breakpoint *bp = n->get_breakpoints(x, s);
@@ -2365,7 +2365,7 @@ void environment::construct_format_state(node *n, int was_centered,
 {
   if (is_html) {
     // find first glyph node which has a state.
-    while (n != 0 && n->state == 0)
+    while (n != 0 /* nullptr */ && n->state == 0)
       n = n->next;
     if (n == 0 || (n->state == 0))
       return;
@@ -2381,7 +2381,7 @@ void environment::construct_format_state(node *n, int was_centered,
       n->state->add_tag_if_unknown(MTSM_CE, 0);
     n->state->add_tag_if_unknown(MTSM_FI, filling);
     n = n->next;
-    while (n != 0) {
+    while (n != 0 /* nullptr */) {
       if (n->state != 0) {
 	n->state->sub_tag_ce();
 	n->state->add_tag_if_unknown(MTSM_FI, filling);
@@ -2395,7 +2395,7 @@ void environment::construct_new_line_state(node *n)
 {
   if (is_html) {
     // find first glyph node which has a state.
-    while (n != 0 && n->state == 0)
+    while (n != 0 /* nullptr */ && n->state == 0)
       n = n->next;
     if (n == 0 || n->state == 0)
       return;
@@ -2587,13 +2587,13 @@ void no_adjust()
   skip_line();
 }
 
-void do_input_trap(int continued)
+void do_input_trap(bool respect_continuation)
 {
   curenv->input_trap_count = 0;
-  if (continued)
-    curenv->continued_input_trap = 1;
+  if (respect_continuation)
+    curenv->continued_input_trap = true;
   else
-    curenv->continued_input_trap = 0;
+    curenv->continued_input_trap = false;
   int n;
   if (has_arg() && get_integer(&n)) {
     if (n <= 0)
@@ -2612,12 +2612,12 @@ void do_input_trap(int continued)
 
 void input_trap()
 {
-  do_input_trap(0);
+  do_input_trap(false);
 }
 
 void input_trap_continued()
 {
-  do_input_trap(1);
+  do_input_trap(true);
 }
 
 /* tabs */
@@ -3710,6 +3710,7 @@ static void print_hyphenation_exceptions()
       errprint("\t*");
     errprint("\n");
   }
+  fflush(stderr);
   skip_line();
 }
 

@@ -1,3 +1,240 @@
+2024-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Put version number on cover page of our Texinfo manual.
+
+	* doc/groff.texi: Rename this...
+	* doc/groff.texi.in: ...to this.
+	* doc/doc.am (EXTRA_DIST): Add "doc/groff.texi.in".
+	(MAINTAINERCLEANFILES): Add "doc/groff.texi".
+	(doc/groff.texi): Add rule for constructing "groff.texi" from
+	"groff.texi.in", using `DOC_SED` macro of course.
+	(doc/groff.info): Update dependency and construction to use the
+	now-generated "groff.texi" (so look for it in the build
+	directory).
+	(maintainer-clean-local): Delete "doc/groff.texi".
+
+	* doc/groff.texi.in: Replace "1.23.0+Git" with "@VERSION@".
+
+2024-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Put version number on cover page of collected man pages.
+
+	* doc/GMPfront.t: Rename this...
+	* doc/GMPfront.t.in: ...to this.
+	* doc/GMPfront.t.in: Add `@VERSION@` token.  Set it in 10-point
+	italics.  Reduce subsequent vertical spacing.  This looks better
+	to my eye with the added material, but Deri's eye is better.
+	* doc/doc.am (DOCFILES_NOINST): Update to reflect rename.
+	(DOC_GMP_COVER_PAGE): Add new macro to house the generated
+	file's name, "doc/GMPfront.t".
+	($(DOC_GMP_COVER_PAGE)): New target creates this file from its
+	*.in.  Use existing `DOC_SEC` make(1) macro to perform version
+	substitution.
+	(doc/groff-man-pages.pdf): Migrate dependency and construction
+	to now-generated `$(DOC_GMP_COVER_PAGE)` file.
+	(MOSTLYCLEANFILES): Add `$(DOC_GMP_COVER_PAGE)`.
+
+2024-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (doc/groff-man-pages.pdf): Add dependency on
+	"pdfmom".
+
+2024-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp
+	(non_interpreted_char_node::non_interpreted_char_node): Rename
+	parameter from `n` to `cc`; it is of `unsigned char` type, and
+	GNU troff's code uses `n` as a pointer to `node` type
+	ubiquitously.  It also uses `c` for an `unsigned char` type
+	pretty reliably, but that is already a private member variable
+	for this class.
+
+2024-02-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (TH): Set up end macro unconditionally here...
+	(an-set-up-continuous-rendering): ...instead of here.
+
+	* tmac/tests/an_TP-works.sh: Add test case for the specimen of
+	ill-formed input that the foregoing remedies (ending input with
+	a pending input line trap and continuous rendering disabled).
+
+2024-02-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (print_hyphenation_exceptions): Flush
+	the standard error stream once the list is written.
+
+2024-02-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Back away from color management concerns.
+
+	Hyperlink colors in PDF were showing a tendency to get "stuck
+	on" when they shouldn't, and the extra difficulty of managing
+	nested traps (`TP` followed by `UR`, for example) is proving
+	tricky to sort out.  On top of that, the man(7) package
+	historically has no cognizance of color issues and it doesn't
+	seem like a good time to start, particularly if we only do it
+	for the 'pdf' output device.
+
+	* tmac/an.tmac (an-input-trap): Set stroke color to default
+	after springing `TP`'s supporting trap.
+	(an*begin-hyperlink, MR): Stop saving the stroke color.
+	(an*end-hyperlink, MR): Stop restoring the saved stroke color.
+	Set it to the default instead after formatting the link text.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Fix Savannah #61434.
+
+	* tmac/an.tmac: Support `UR`/`UE` and `MT`/`ME` hyperlinks as
+	paragraph tags.
+	(an*begin-hyperlink): Kick away the guard that prevented
+	attempts to do so, now that support has been refactored in
+	underneath it.
+
+	* tmac/groff_man.7.man.in (Hyperlink macros): De-document lack
+	of support for this.  Retain caveat that if the output device
+	lacks hyperlink support, the hyperlink is typeset as part of the
+	paragraph body rather than the tag.  I could not see any way to
+	achieve the alternative given the way this package uses traps
+	and diversions.  We might make a virtue of necessity by noting
+	that paragraph tags could be lengthy, and URLs often will be,
+	and it will be hella ugly to have the tag break.  Furthermore,
+	if we implement automated generation of link anchors based on
+	`TP` paragraph tags, not having their destination URLs in the
+	tag text means we don't have to scrape them out later.
+
+	* tmac/tests/an_link-macros-work-in-paragraph-tags.sh: Update
+	test expectations.
+
+	* NEWS: Add item.
+
+	Fixes <https://savannah.gnu.org/bugs/?61434>.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Refactor.  Give `TP` its own trap.
+	(an*TP-trap): New macro takes over some of the former functions
+	of `an-input-trap` and `an-write-paragraph-tag`, ending the
+	paragraph tag diversion, restoring the adjustment mode and line
+	length, and calling `an-write-paragraph-tag`...
+	(an-write-paragraph-tag): ...which now deals only with
+	formatting the tag.
+	(an-input-trap): Ensure that `an*TP-trap` is sprung when input
+	line traps overlap...
+	(an-end): ...and when an ill-formed document ends with an input
+	trap pending.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Refactor.
+	(TH, an-write-paragraph-tag, an-input-trap, TP): Replace
+	register `an*is-in-paragraph-tag-diversion` with
+	`an*have-paragraph-tag` changing its meaning to indicate whether
+	we have collected a paragraph tag in a diversion that we need to
+	output.
+	(TP): Detect nesting of `TP` or `TQ` by testing name of current
+	diversion instead of `an*is-in-paragraph-tag-diversion`
+	register.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (TP): Don't set up an input trap if we're bailing
+	out of the macro due to invalid nesting.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Refactor to distinguish visible hyperlinks from
+	those that are sent only to device control commands.
+	(an*begin-hyperlink): Rename existing string `an*hyperlink` to
+	`an*visible-hyperlink`, which is the argument passed in via `UR`
+	and `MT` calls.  Redefine `an*hyperlink` as the same argument,
+	but with the `an*prefix` that its caller may specify.  (This
+	feature is used to get the "mailto:" URI scheme into links but
+	not clutter the page text with them.)
+	(an*end-hyperlink): Use `an*hyperlink` in device control
+	commands instead of the catenation of `an*prefix` and
+	`an*hyperlink`.  When there is no link text, use
+	`an*visible-hyperlink` for it.  Remove both of these strings
+	when done with them.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Fix code style
+	nit.  Use `sizeof` operator instead of `strlen()` to compute
+	length of string literal at compile time.  Prompted by warning
+	from Clang 17.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an-end): Call `an-input-trap`.  If a document
+	ends with an input trap pending, this ensures that any text on
+	the applicable input line will be emitted, better accommodating
+	ill-formed documents.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an_TP-works.sh: Add unit test.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp (tty_printer::special): Improve
+	diagnostic message when handling unsupported device control
+	command: report name of unrecognized tag.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an_MT-works.sh:
+	* tmac/tests/an_adjust-link-text-correctly.sh: Add more checks
+	to test cases.
+
+	* tmac/tests/an_MT-works.sh: Also stop worrying about the exact
+	placement of adjustment spaces in this test.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Refactor.
+	(an*begin-hyperlink): Before changing the stroke color to
+	typeset the link text, save it in new string
+	`an*saved-stroke-color` (as `MR` already does).
+	(an*end-hyperlink): After setting hyperlinked text, restore the
+	stroke color using the string we created for the purpose, not
+	the mysterious internal "pdf.tmac" string `pdf:curcol`.  Delete
+	string afterward.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Trivially refactor (an-write-paragraph-tag):
+	Rename `an-env-paragraph-tag` to `an*temporary-env`.
+	(an*end-hyperlink, MR): Use idiomatic delimiter in device
+	control escape sequences.
+
+2024-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor; rename and boolify.
+
+	* src/roff/troff/env.h (class environment): Demote member
+	function `do_input_trap`'s parameter type from `int` to `bool`.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (class environment): Demote member
+	variable `continued_input_trap` from `int` to `bool`.  Update
+
+	* src/roff/troff/env.cpp (class environment): Initialize member
+	variable `continued_input_trap` with Boolean, not integer,
+	literals.
+
+	* src/roff/troff/env.cpp (do_input_trap): Demote argument from
+	`int` to `bool` in definition...
+	* src/roff/troff/env.h (class environment): ...and friend
+	function declaration.
+
+	* src/roff/troff/env.cpp (do_input_trap): ...and rename it from
+	`continued` to `respect_continuation`.  Assign to
+	`continued_input_trap` using Boolean literals.
+	(input_trap, input_trap_continued): Call `do_input_trap` with
+	Boolean literals.
+
 2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* doc/GMPfront.t: Save and restore the type size.  The effective

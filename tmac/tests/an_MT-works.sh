@@ -45,11 +45,13 @@ echo "$output"
 
 echo "checking formatting of mail URI with link text" \
     "(hyperlinks disabled)" >&2
-echo "$output" | grep -Fq 'Mail the boss <modok@example.com>.' || wail
+echo "$output" | grep -Eq 'Mail +the +boss +<modok@example\.com>\.' \
+    || wail
 
 echo "checking formatting of mail URI with no link text" \
     "(hyperlinks disabled)" >&2
-echo "$output" | grep -Fq 'Complaints to <nobody@example.com>.' || wail
+echo "$output" | grep -Eq 'Complaints +to +<nobody@example\.com>\.' \
+    || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
@@ -71,14 +73,22 @@ The GNU version of
 was written by
 .MT q@\:example\:.com
 Quiller
+.ME ,
+not
+.MT r@\:example\:.com
 .ME .'
 
 output=$(printf "%s\n" "$input" | "$groff" -man -Thtml)
 echo "$output"
 
-echo "checking HTML output of mail URI" >&2
+echo "checking HTML output of mail URI with link text" >&2
 echo "$output" \
-    | grep -Fqx '<a href="mailto:q@example.com">Quiller</a>.</p>' \
+    | grep -Fqx '<a href="mailto:q@example.com">Quiller</a>, not' \
+    || wail
+
+echo "checking HTML output of mail URI with no link text" >&2
+echo "$output" \
+    | grep -Fqx '<a href="mailto:r@example.com">r@example.com</a>.</p>'\
     || wail
 
 test -z "$fail"

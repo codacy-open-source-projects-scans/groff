@@ -1,6 +1,6 @@
 .\" groff implementation of man(7) package
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"      Written by James Clark (jjc@jclark.com)
 .\" Enhanced by: Werner Lemberg <wl@gnu.org>
 .\"              Larry Kollar <kollar@alltel.net>
@@ -110,6 +110,8 @@
 .\" continuous rendering mode.
 .de1 an-end
 .  if !r an-TH-was-called .return
+.  an-input-trap
+.  if '\\n[.z]'an*paragraph-tag' .an*TP-trap
 .  if \\n[cR] \{\
 .    \" We might have a pending output line that is not yet broken, and
 .    \" also be 1v from the bottom of the page.  If we break (or flush)
@@ -145,7 +147,6 @@
 .  rn bp an-real-bp
 .  rn an-ne ne
 .  rn an-bp bp
-.  em an-end
 ..
 .
 .de an*reset-hyphenation-mode
@@ -298,7 +299,7 @@
 .
 .  nr an-need-no-space-mode 0
 .  nr an-need-break 0
-.  nr an*is-in-paragraph-tag-diversion 0
+.  nr an*have-paragraph-tag 0
 .  nr an*is-in-example 0
 .  nr an*is-in-link-text-diversion 0
 .
@@ -379,6 +380,7 @@
 .    \}
 .  \}
 .
+.  em an-end
 .  nr an*need-titles-reset 1
 ..
 .
@@ -636,14 +638,9 @@ contains unsupported escape sequence
 .\" Output the tag of a tagged paragraph, or of an indented paragraph
 .\" (IP) that has a tag.  Whether we break depends on the tag width.
 .de an-write-paragraph-tag
-.  br
-.  di
-.  ad \\*[AD]
-.  nr an*is-in-paragraph-tag-diversion 0
-.  ll
 .  \" We must emit the diversion in a separate environment to ensure
 .  \" that a possible margin character is printed correctly.
-.  ev an-env-paragraph-tag
+.  ev an*temporary-env
 .  evc 0
 .  mc
 .  nf
@@ -657,6 +654,7 @@ contains unsupported escape sequence
 .  if \\n[an-tag-fits] .DEVTAG-COL 1
 .  an*paragraph-tag
 .  rm an*paragraph-tag
+.  nr an*have-paragraph-tag 0
 .  if \\n[an-tag-fits] .sp -1v
 .  ev
 .  in (\\n[an-margin]u + \\n[an-prevailing-indent]u)
@@ -665,8 +663,8 @@ contains unsupported escape sequence
 ..
 .
 .\" Handle macros that may take an "argument" on the next input line
-.\" producing written or drawn output: .SH, .SS, .B, .I, .SM, .SB--and
-.\" .TP, which does so mandatorily.
+.\" producing written or drawn output: .SH, .SS, .B, .I, .SM, .SB.
+.\" For .TP, see below.
 .de1 an-input-trap
 .  if \\n[an-devtag-needs-end-of-heading] .DEVTAG-EO-H
 .  nr an-devtag-needs-end-of-heading 0
@@ -683,7 +681,23 @@ contains unsupported escape sequence
 .    ns
 .    nr an-need-no-space-mode 0
 .  \}
-.  if \\n[an*is-in-paragraph-tag-diversion] .an-write-paragraph-tag
+.  \" Handle nested traps, as with
+.  \"   .TP
+.  \"   .B foo
+.  \" for instance.
+.  if '\\n[.z]'an*paragraph-tag' \{\
+.    an*TP-trap
+.    gcolor \m[default]
+.  \}
+..
+.
+.\" The TP macro _requires_ a one-line input trap.
+.de1 an*TP-trap
+.  br
+.  di
+.  ad \\*[AD]
+.  ll
+.  if \\n[an*have-paragraph-tag] .an-write-paragraph-tag
 ..
 .
 .\" Break a paragraph.  Restore defaults, except for indentation.
@@ -813,14 +827,14 @@ contains unsupported escape sequence
 .de1 TP
 .  an-break-paragraph
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
-.  itc 1 an-input-trap
-.  if \\n[an*is-in-paragraph-tag-diversion] \{\
+.  if '\\n[.z]'an*paragraph-tag' \{\
 .    an-warn cannot nest .\\$0 or .TQ inside .\\$0; supply a tag
 .    return
 .  \}
+.  nr an*have-paragraph-tag 1
+.  itc 1 an-input-trap
 .  in 0
 .  ll -\\n[an-margin]u
-.  nr an*is-in-paragraph-tag-diversion 1
 .  di an*paragraph-tag
 .  na
 ..
@@ -1112,20 +1126,15 @@ contains unsupported escape sequence
 .
 .\" Store the argument and begin a diversion for link text.
 .de an*begin-hyperlink
-.  ds an*hyperlink \\$1\"
+.  ds an*hyperlink \\*[an*prefix]\\$1\"
+.  ds an*visible-hyperlink \\$1\" in case there is no link text
 .  \" We want the diversion to format as if it has an indentation of
 .  \" zero (that comes for free when we switch environments), and we
 .  \" want the line length reduced by the amount of indentation that
 .  \" obtains when we output it.
 .  nr an*saved-line-length \\n[.l]
 .  nr an*saved-indentation \\n[.i]
-.  \" We can only hyperlink if we're not in a diversion.
-.  \" XXX: There's no fundamental reason for that, just a simple matter
-.  \" of macro programming.
-.  ie !'\\n[.z]'' \
-.    an-warn cannot nest .MT or .UR inside .TP; ending paragraph tag
-.  el .if \\n[an*do-hyperlink] \{\
-.    nr an*is-in-link-text-diversion 1
+.  if \\n[an*do-hyperlink] \{\
 .    \" Start diversion in a new environment.
 .    nr an*is-in-link-text-diversion 1
 .    ev an*link-text-env
@@ -1152,36 +1161,34 @@ contains unsupported escape sequence
 .    \" Was any link text present?
 .    ie \\n[dn] \{\
 .      if '\*[.T]'html' \
-.        nop \X^html:<a href="\\*[an*prefix]\\*[an*hyperlink]">^\c
+.        nop \X'html:<a href="\\*[an*hyperlink]">'\c
 .      if '\*[.T]'pdf' \{\
-.        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- "|"
+.        pdfhref W -D \\*[an*hyperlink] -- "|"
 .      \}
 .      if \\n[an*is-output-terminal] \
-.        nop \X^tty: link \\*[an*prefix]\\*[an*hyperlink]^\c
+.        nop \X'tty: link \\*[an*hyperlink]'\c
 .      \" Replace the final newline of the diversion.
 .      chop an*link-text
 .      as an*link-text \&\c
 .      an*link-text
 .      nop \"
 .      if '\*[.T]'html' \
-.        nop \X^html:</a>^\c
+.        nop \X'html:</a>'\c
 .      if \\n[an*is-output-terminal] \
-.        nop \X^tty: link^\c
-.      if '\*[.T]'pdf' \
-.        nop \X'pdf: markend'\m[\\*[pdf:curcol]]\c
+.        nop \X'tty: link'\c
+.      if '\*[.T]'pdf' \X'pdf: markend'\m[default]\c
 .    \}
 .    \" If there was no link text, format URI as its own link text.  We
 .    \" don't add angle brackets here.
 .    el \{\
 .      if '\*[.T]'html' \
-.        nop \X^html:<a href="\\*[an*prefix]\\*[an*hyperlink]">\
-\\*[an*hyperlink]</a>^\c
+.        nop \X'html:<a href="\\*[an*hyperlink]">\
+\\*[an*visible-hyperlink]</a>'\c
 .      if '\*[.T]'pdf' \
-.        pdfhref W -D \\*[an*prefix]\\*[an*hyperlink] -- \
-\\*[an*hyperlink]\c
+.        pdfhref W -D \\*[an*hyperlink] -- \\*[an*visible-hyperlink]\c
 .      if \\n[an*is-output-terminal] \
-.        nop \X^tty: link \\*[an*prefix]\\*[an*hyperlink]^\
-\\*[an*hyperlink]\X^tty: link^\c
+.        nop \X'tty: link \\*[an*hyperlink]'\
+\\*[an*visible-hyperlink]\X'tty: link'\c
 .    \}
 .    nop \&\\$1\"
 .  \}
@@ -1189,10 +1196,12 @@ contains unsupported escape sequence
 .  \" diversion, so the link text has already been formatted normally.
 .  el \{\
 .    nh
-.    nop \\[la]\\*[an*hyperlink]\\[ra]\\$1
+.    nop \\[la]\\*[an*visible-hyperlink]\\[ra]\\$1
 .    hy \\n[an*hyphenation-mode]
 .  \}
 .  rm an*link-text
+.  rm an*hyperlink
+.  rm an*visible-hyperlink
 ..
 .
 .\" Begin email hyperlink.  Input until the next `ME` call is stored in
@@ -1223,7 +1232,7 @@ contains unsupported escape sequence
 .
 .\" Begin web hyperlink.  Input until the next `UE` call is stored in
 .\" a diversion; it becomes the link text for the hyperlinked address.
-.\" .UR nobody@example.com
+.\" .UR http://example.com/
 .de1 UR
 .  if d an*prefix \{\
 .    an-warn cannot nest .\\$0 inside .MT or .UR
@@ -1267,25 +1276,23 @@ contains unsupported escape sequence
 .  nh
 .  if \\n[an*do-hyperlink] \{\
 .    if '\*[.T]'html' \
-.      nop \X^html:<a href="\\*[an*url]">^\c
+.      nop \X'html:<a href="\\*[an*url]">'\c
 .    if '\*[.T]'pdf' \{\
-.      ds an*saved-stroke-color \\n[.m]\"
 .      nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
 .      pdfhref W -D \\*[an*url] -- "|"
 .    \}
 .    if \\n[an*is-output-terminal] \
-.      nop \X^tty: link \\*[an*url]^\c
+.      nop \X'tty: link \\*[an*url]'\c
 .  \}
 .  nop \&\\*[an-lic]\f[\\*[MF]]\\$1\\*[an-ic]\f[R](\\$2)\c
 .  if \\n[an*do-hyperlink] \{\
 .    if '\*[.T]'html' \
-.      nop \X^html:</a>^\c
+.      nop \X'html:</a>'\c
 .    if '\*[.T]'pdf' \{\
-.      nop \X'pdf: markend'\m[\\*[an*saved-stroke-color]]\c
-.      rm an*saved-stroke-color
+.      nop \X'pdf: markend'\m[default]\c
 .    \}
 .    if \\n[an*is-output-terminal] \
-.      nop \X^tty: link^\c
+.      nop \X'tty: link'\c
 .  \}
 .  nop \&\\$3
 .  hy \\n[an*hyphenation-mode]

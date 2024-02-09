@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -22,7 +22,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 
 input=$(cat <<EOF
 .TH foo 1 2021-11-05 "groff test suite"
-.TP
+.TP 9n
 .UR https://\:github.com/\:Alhadis/\:Roff\:.js/
 .I Roff.js
 .UE
@@ -44,45 +44,40 @@ output=$(printf "%s" "$input" \
     | "$groff" -bww -Tascii -P-cbou $uflag -man)
 echo "$output"
 
-echo "checking for paragraph tag on line by itself ($uflag)" >&2
-echo "$output" | grep -qx '     Roff\.js' || wail # 5 spaces
+echo "checking for tag on same line as body ($uflag)" >&2
+echo "$output" | grep -Eq '^     Roff\.js  +.*is a' || wail # 5 spaces
 
 echo "checking for presence of typeset URI ($uflag)" >&2
-echo "$output" \
-    | grep -q '^            <https://github\.com/Alhadis/Roff\.js/>' \
-    || wail # 12 spaces
-
-output=$(printf "%s" "$input" \
-    | "$groff" -bww -Tascii -P-cbou -rU0 -rLL=130n -man)
+echo "$output" | grep -Fq '<https://github.com/Alhadis/Roff.js/>' \
+    || wail
 
 # Sloppy handling of UE, ME macro arguments can cause unwanted space.
 echo "checking for normative (no extra) spacing after URI ($uflag)" >&2
 echo "$output" | grep -q '> is a viewer for intermediate' || wail
 
 # Now check for good formatting when URIs are hyperlinked.
+# Unfortunately we have to abandon `-cbou` or groff will (correctly)
+# detect that hyperlinks are impossible, and render them as text.  That
+# makes pattern matching harder because any old crazy,
+# terminal-dependent escape sequences could be present.
 uflag=-rU1
 
-output=$(printf "%s" "$input" \
-    | "$groff" -bww -Tutf8 -P-cbou $uflag -man)
+output=$(printf "%s" "$input" | "$groff" -bww -Tascii $uflag -man)
+echo "$output"
 
-echo "checking for paragraph tag on line by itself ($uflag)" >&2
-echo "$output" | grep -qx '     Roff\.js' || wail # 5 spaces
+echo "checking for tag on same line as body ($uflag)" >&2
+echo "$output" | grep -Eq 'Roff\.js.*is a viewer' || wail
 
-# Hyperlinking paragraph tags was not supported in groff 1.22.4 and
-# still isn't.
-#echo "checking for absence of typeset URI" >&2
-#! echo "$output" | grep -q https || wail
-
-output=$(printf "%s" "$input" \
-    | "$groff" -bww -Tascii -P-cbou $uflag -rLL=130n -man)
-
+text='is a viewer for intermediate output written in JavaScript.'
 echo "checking for normative (no extra) spacing after URI ($uflag)" >&2
-# This is what we expect when linking the tag works.
-#echo "$output" \
-#    | grep -q '^              is a viewer for intermediate' \
-#    || wail # 14 spaces
-# ...but in the meantime...
-echo "$output" | grep -q '[^[:space:]] is a viewer for' || wail
+echo "$output" | grep -Fq "$text" || wail
+
+output=$(printf "%s" "$input" | "$groff" -bww -Tascii $uflag -man -Z \
+    | grep '^t')
+echo "$output"
+
+echo "checking for absence of typeset URI" >&2
+! echo "$output" | grep https || wail
 
 test -z "$fail"
 

@@ -24,7 +24,7 @@
 
 
 @copying
-This manual documents GNU @command{troff} version 1.23.0+Git.
+This manual documents GNU @command{troff} version @VERSION@.
 
 Copyright @copyright{} 1994--2024 Free Software Foundation, Inc.
 
@@ -463,8 +463,8 @@ Documentation License''.
 @titlepage
 @title groff
 @subtitle The GNU implementation of @code{troff}
-@subtitle Edition 1.23.0+Git
-@subtitle January 2024
+@subtitle version @VERSION@
+@subtitle February 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -9377,16 +9377,16 @@ character is associated with the environment (@pxref{Environments}).
 Only a single character of @var{c} is recognized; any excess is ignored.
 @endDefreq
 
-@DefreqList {linetabs, n}
+@DefreqList {linetabs, [@Var{b}]}
 @DefregListEndx {.linetabs}
 @cindex tab, line-tabs mode
 @cindex line-tabs mode
 @cindex mode, line-tabs
-If @var{n} is missing or non-zero, activate @dfn{line-tabs}; deactivate
-it otherwise (the default).  Active line-tabs cause GNU @code{troff}
-to compute tab distances relative to the start of the output line
-rather than relative to the horizontal drawing position corresponding to
-the start of the input line.
+Activate line-tabs in the environment if the expression @var{b} is
+non-zero; deactivate them otherwise.  They are inactive by default, and
+activated if @var{b} is omitted.  When line-tabs are active, tab stops
+are computed relative to the start of the pending output line instead of
+the drawing position corresponding to the start of the input line.
 
 @Example
 .ta 1i 3i
@@ -9403,9 +9403,8 @@ c
     @result{} a         b                   c
 @endExample
 
-Line-tabs activation is associated with the environment
-(@pxref{Environments}).  The read-only register @code{.linetabs}
-interpolates@tie{}1 if line-tabs are active, and 0 otherwise.
+The read-only register @code{.linetabs} interpolates@tie{}1 if line-tabs
+are active, and 0 otherwise.
 @endDefreq
 
 @menu
@@ -11071,16 +11070,18 @@ characters with @samp{]} in their names.  The delimiter need not be
 a neutral apostrophe; see @ref{Delimiters}.
 @endDefesc
 
-@Defreq {composite, id1 id2}
+@Defreq {composite, c1 c2}
 @pindex composite.tmac
-Map special character name @var{id1} to @var{id2} if @var{id1} is used
-in @code{\[...]} with more than one component.  See above for examples.
-This is a strict rewriting of the special character name; no check is
-performed for the existence of a glyph for either.  A set of default
-mappings for many accents can be found in the file
-@file{composite.tmac}, loaded by the default @file{troffrc} at startup.
+Map ordinary or special character name @var{c1} to @var{c2} when
+@var{c1} is a combining component in a composite character.  See above
+for examples.  This is a strict rewriting of the special character name;
+no check is performed for the existence of a glyph for either.
+Typically, @code{composite} is used to map a spacing character to a
+combining one.  A set of default mappings for many accents can be found
+in the file @file{composite.tmac}, loaded by the default @file{troffrc}
+at startup.
 
-You can obtain a report of colors defined by @code{composite} on the
+You can obtain a report of mappings defined by @code{composite} on the
 standard error stream with the @code{pcomposite} request.
 @xref{Debugging}.
 @endDefreq
@@ -12320,15 +12321,16 @@ rules (lines), and geometric objects like circles and polygons are
 drawn, and the @dfn{fill color}, which can be used to paint the interior
 of a closed geometric figure.
 
-@DefreqList {color, [@Var{n}]}
+@DefreqList {color, [@Var{b}]}
 @DefregListEndx {.color}
-If @var{n} is missing or non-zero, enable the output of color-related
-device-independent output commands (this is the default); otherwise,
-disable them.  This request sets a global flag; it does not produce an
+Enable output of color-related device-independent output commands if the
+expression @var{b} is non-zero; disable it otherwise.  It is enabled by
+default, and if @var{b} is omitted.  This request modifies the
+formatter's internal state; it does not produce a
 token (@pxref{Gtroff Internals}).
 
-The read-only register @code{.color} is@tie{}1 if colors are enabled,
-0@tie{}otherwise.
+The read-only register @code{.color} interpolates@tie{}1 if color
+support is enabled, 0@tie{}otherwise.
 
 Color can also be disabled with the @option{-c} command-line option.
 @endDefreq
@@ -14660,17 +14662,16 @@ a certain location on the output page or in a diversion.  Its
 applications include setting page headers and footers, body text in
 multiple columns, and footnotes.
 
-@DefreqList {vpt, [@Var{flag}]}
+@DefreqList {vpt, [@Var{b}]}
 @DefregListEndx {.vpt}
 @cindex enabling vertical position traps (@code{vpt})
 @cindex vertical position traps, enabling (@code{vpt})
 @cindex vertical position trap enable register (@code{.vpt})
-Enable vertical position traps if @var{flag} is non-zero or absent;
-disable them otherwise.  Vertical position traps are those set by the
-@code{wh} request or by @code{dt} within a diversion.  The parameter
-that controls whether vertical position traps are enabled is global.
-Initially, vertical position traps are enabled.  The current value is
-stored in the @code{.vpt} read-only register.
+Enable vertical position traps if the expression @var{b} is non-zero;
+disable them otherwise.  They are enabled by default, and if @var{b} is
+omitted.  Vertical position traps are those set by the @code{wh} request
+or by @code{dt} within a diversion.  Vertical position trap enablement
+is global.  Its status is stored in the @code{.vpt} read-only register.
 
 @cindex page break, prevented by @code{vpt}
 @cindex break, page, prevented by @code{vpt}
@@ -15357,9 +15358,10 @@ from occurring at an inconvenient place by forcing a set of output lines
 to be set as a group), footnotes, tables of contents, and indices.
 @cindex top-level diversion
 @cindex diversion, top-level
-For orthogonality it is said that GNU @code{troff} is in the
+For orthogonality it is said that GNU @command{troff} is in the
 @dfn{top-level diversion} if no diversion is active (that is, formatted
-output is being ``diverted'' immediately to the output device).
+output is being ``diverted'' immediately to the output device).  The
+top-level diversion has no name.
 
 Dereferencing an undefined diversion will create an empty one of that
 name and cause a warning in category @samp{mac} to be emitted.
@@ -15368,7 +15370,6 @@ A diversion does not exist for the purpose of testing with the @code{d}
 conditional operator until its initial definition ends (@pxref{Operators
 in Conditionals}).  The following requests are used to create and alter
 diversions.
-@c END Keep (roughly) parallel with subsection "Diversions" of groff(7).
 
 @DefreqList {di, [@Var{name}]}
 @DefreqListEndx {da, [@Var{name}]}
@@ -15394,21 +15395,25 @@ current diversion, a warning in category @samp{di} is produced.
 @xref{Warnings}, regarding the enablement and suppression of warnings.
 
 @Example
-Before the diversion.
-.di yyy
-In the diversion.
+.ll 56n
+Ahoy, me hearties,
+I traveled unto a distant isle,
+.br
+.di HT
+and thereupon I lay a vast treasure,
 .br
 .di
-After the diversion.
+.HT
 .br
-    @result{} After the diversion.
-.yyy
-    @result{} Before the diversion.  In the diversion.
+which none o' ye shall ever see.
+    @result{} Ahoy, mateys, I traveled unto a distant isle,
+    @result{} and thereupon I lay a vast treasure,
+    @result{} which none o@quoteright{} ye shall ever see.
 @endExample
 @endDefreq
 
 @cindex box (diversion operation)
-GNU @code{troff} supports @dfn{box} requests to exclude a partially
+GNU @command{troff} supports @dfn{box} requests to exclude a partially
 collected line from a diversion, as this is often desirable.
 
 @DefreqList {box, [@Var{name}]}
@@ -15419,17 +15424,21 @@ included in the diversion.  Without an argument, stop diverting output;
 any pending output line inside the diversion is discarded.
 
 @Example
-Before the box.
-.box xxx
-In the box.
+.ll 56n
+Ahoy, mateys,
+I traveled unto a distant isle,
 .br
-Hidden treasure.
+.box SECRET
+and thereupon I lay a vast treasure,
+.br
+accurst wi' neutron activation,
 .box
-After the box.
+.SECRET
 .br
-    @result{} Before the box.  After the box.
-.xxx
-    @result{} In the box.
+which none o' ye shall ever see.
+    @result{} Ahoy, mateys, I traveled unto a distant isle,
+    @result{} and thereupon I lay a vast treasure,
+    @result{} which none o@quoteright{} ye shall ever see.
 @endExample
 @endDefreq
 
@@ -15447,11 +15456,33 @@ interchangeably.
 @cindex vertical position in diversion register (@code{.d})
 @cindex position, vertical, in diversion, register (@code{.d})
 @cindex diversion, vertical position in, register (@code{.d})
-Diversions may be nested.  The read-only string-valued register
+Diversion requests may be nested.  The read-only string-valued register
 @code{.z} contains the name of the current diversion.  The read-only
-register @code{.d} contains the current vertical place in the diversion.
-If the input text is not being diverted, @code{.d} reports the same
-location as the register @code{nl}.
+register @code{.d} contains the vertical drawing position in the
+diversion.  If the input text is not being diverted, @code{.d} reports
+the same location as the register @code{nl}.
+
+@Example
+.nf
+.di A
+alpha
+.di B
+beta
+.di
+gamma
+\*B
+.di
+delta
+\*A
+epsilon
+    @result{} delta
+    @result{} alpha
+    @result{} gamma
+    @result{} beta
+    @result{}
+    @result{}
+    @result{} epsilon
+@endExample
 @endDefreg
 
 @Defreg {.h}
@@ -15489,11 +15520,20 @@ baselines and thus does not increase the value interpolated by
 @cindex @code{da} request, and @code{dn} (@code{dl})
 @cindex @code{boxa} request, and @code{dn} (@code{dl})
 After completing a diversion, the writable registers @code{dn} and
-@code{dl} contain its vertical and horizontal sizes.  Only the lines
-just processed are counted: for the computation of @code{dn} and
-@code{dl}, the requests @code{da} and @code{boxa} are handled as if
-@code{di} and @code{box} had been used, respectively---lines that have
-been already stored in the diversion (box) are not taken into account.
+@code{dl} contain its vertical and horizontal sizes, respectively.
+@c XXX Do these measure:
+@c  net motion of the drawing position,
+@c  maximal motion of the drawing position relative to that where the
+@c  diversion started,
+@c or
+@c  the maximal bounds of spilled ink relative to the drawing position
+@c  where the diversion started?
+@c Savannah #64728.
+Only the lines just processed are counted: for the computation of
+@code{dn} and @code{dl}, the requests @code{da} and @code{boxa} are
+handled as if @code{di} and @code{box} had been used,
+respectively---lines that have been already stored in the diversion
+(box) are not taken into account.
 
 @Example
 .\" Center text both horizontally and vertically.
@@ -15541,23 +15581,18 @@ interpreted when read into a diversion.  This is useful for preventing
 them from taking effect until the diverted text is actually output.  The
 @code{\!} escape sequence transparently embeds input up to and including
 the end of the line.  The @code{\?} escape sequence transparently embeds
-input until its own next occurrence.
-@cindex @code{\?}, interpretation in copy mode
-Unlike @code{\!}, @code{\?} is interpreted even in copy mode
-(@pxref{Copy Mode}).
-
+input, read in copy mode, until its own next occurrence on the input
+line.
 @cindex @code{\?}, and copy mode
 @cindex copy mode, and @code{\?}
 @cindex mode, copy, and @code{\?}
 @cindex @code{\!}, and copy mode
 @cindex copy mode, and @code{\!}
 @cindex mode, copy, and @code{\!}
-@noindent
-@var{anything} may not contain newlines; use @code{\!} by itself to
-embed newlines in a diversion.  The escape sequence @code{\?} is also
-recognized in copy mode and turned into a single internal code; it is
-this code that terminates @var{anything}.  Thus the following example
-prints@tie{}4.
+Use @code{\!} by itself to embed newlines in a diversion.
+@cindex @code{\?}, interpretation in copy mode
+Unlike @code{\!}, @code{\?} is interpreted even in copy mode
+(@pxref{Copy Mode}).
 
 @Example
 .nr x 1
@@ -15575,6 +15610,7 @@ prints@tie{}4.
 .di
 .nr x 4
 .f
+    @result{} 4
 @endExample
 
 Both escape sequences read the data in copy mode.
@@ -15583,15 +15619,15 @@ Both escape sequences read the data in copy mode.
 @cindex top-level diversion, and @code{\!}
 @cindex diversion, top-level, and @code{\!}
 If @code{\!} is used in the top-level diversion, its argument is
-embedded into GNU @code{troff}'s device-independent output.  This can be
-used, for example, to control a postprocessor that transforms the data
+embedded into GNU @command{troff}'s device-independent output.  One of
+its applications is control of a postprocessor that transforms the data
 that are subsequently read by an output driver.
 
 @cindex @code{\?}, in top-level diversion
 @cindex top-level diversion, and @code{\?}
 @cindex diversion, top-level, and @code{\?}
-The @code{\?} escape used in the top-level diversion produces no output
-at all; its argument is simply ignored.
+Using the @code{\?} escape sequence in the top-level diversion produces
+no output at all; its argument is simply ignored.
 @endDefesc
 
 @cindex @code{\!}, and @code{output} request
@@ -15600,8 +15636,8 @@ at all; its argument is simply ignored.
 @cindex copy mode, and @code{output} request
 @cindex mode, copy, and @code{output} request
 @Defreq {output, [@code{"}]@Var{contents}}
-Emit @var{contents} directly to GNU @code{troff}'s output; this usage is
-similar to that of @code{\!} in the top-level diversion.  An initial
+Emit @var{contents} directly to GNU @command{troff}'s output; this usage
+is similar to that of @code{\!} in the top-level diversion.  An initial
 neutral double quote in the argument is stripped, allowing embedded
 leading spaces in @var{contents}, which is read in copy mode and
 continues to the end of the input line.  This request can't be used
@@ -15653,6 +15689,7 @@ as tokens, and spaces become adjustable again.  The vertical sizes of
 lines are not preserved, but glyph information (font, type size, space
 width, and so on) is retained.
 @endDefreq
+@c END Keep (roughly) parallel with subsection "Diversions" of groff(7).
 
 
 @c =====================================================================
@@ -15762,7 +15799,7 @@ test
 
 Usually, it is not predictable whether a diversion contains one or more
 output lines, so this mechanism should be avoided.  With @acronym{AT&T}
-@code{troff}, this was the only solution to strip off a final newline
+@command{troff}, this was the only solution to strip off a final newline
 from a diversion.  Another disadvantage is that the spaces in the copied
 string are already formatted, preventing their adjustment.  This can
 cause ugly results.
@@ -15774,9 +15811,10 @@ cause ugly results.
 @cindex horizontal space, unformatting
 @cindex space, horizontal, unformatting
 @cindex unformatting horizontal space
-A clean solution to this problem is available in GNU @code{troff}, using
-the requests @code{chop} to remove the final newline of a diversion, and
-@code{unformat} to make the horizontal spaces adjustable again.
+A clean solution to this problem is available in GNU @command{troff},
+using the requests @code{chop} to remove the final newline of a
+diversion, and @code{unformat} to make the horizontal spaces adjustable
+again.
 
 @Example
 .box xxx
@@ -16202,9 +16240,8 @@ from becoming part of the diversion (@pxref{Diversions}).
 @cindex read next file (@code{nx})
 @cindex file, next, read (@code{nx})
 @cindex next file, read (@code{nx})
-Force @command{gtroff} to continue processing of the file specified as
-an argument.  If no argument is given, immediately jump to the end of
-file.
+Stop processing the input file.  If @var{file} is specified, read it;
+otherwise, read the next pending input file, if any.
 @endDefreq
 
 @Defreq {rd, [@Var{prompt} [@Var{arg1} @Var{arg2} @dots{}]]}
@@ -16529,7 +16566,7 @@ discussed above).  @code{use_charnames_in_special} is currently employed
 only by @code{grohtml}.
 @endDefesc
 
-GNU @command{troff} also permits the interpolatation of macro contents
+GNU @command{troff} also permits the interpolation of macro contents
 as a device control command.
 
 @DefreqList {devicem, name}
@@ -16936,9 +16973,8 @@ or for instrumentation while troubleshooting.  The @code{ex} and
 exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
-defined colors, composite characters, environments, hyphenation
-exceptions, registers, and page location traps to the standard error
-stream.
+colors, composite characters, environments, hyphenation exceptions,
+registers, and page location traps to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
@@ -17062,8 +17098,8 @@ strings, and diversions with their sizes in bytes.
 @Defreq {pnr, }
 @cindex dumping registers (@code{pnr})
 @cindex registers, dumping (@code{pnr})
-Report the names and contents of all currently defined registers to the
-standard error stream.
+Report the names and contents of all defined registers to the standard
+error stream.
 @endDefreq
 
 @Defreq {ptr, }
@@ -17093,6 +17129,19 @@ Break the line and flush any pending output line immediately.  The
 effect is the same as the @code{br} request unless the no-break control
 character is used; @samp{'br} does nothing, whereas @samp{'fl} writes
 the pending output line without further updating the drawing position.
+However, the @emph{reported} horizontal drawing position is still
+reckoned from the start of the input line.
+
+@Example
+foo bar \n(hp
+foo bar \c
+'fl
+\n(hp
+    @result{} foo bar 192 foo bar 0
+@endExample
+
+The timing of a flush is most easily perceived in GNU @command{troff}'s
+device-independent output.
 
 Historically, @code{fl} was used with @code{rd} to produce interactive
 @command{nroff} documents.  GNU @command{troff} does not easily support
@@ -17124,7 +17173,7 @@ Consider the following in a file @file{test}.
 
 The @option{-b} option of GNU @code{troff} causes a backtrace to be
 generated on each error or warning.  Some warnings have to be enabled;
-@xref{Warnings}.
+see @ref{Warnings}.
 @endDefreq
 
 @Defreg {slimit}
@@ -17408,31 +17457,38 @@ extension requests, @code{open}, @code{opena}, and @code{pso}.
 @cindex compatibility mode
 @cindex mode, compatibility
 
+Some implementation differences between GNU and @acronym{AT&T}
+@command{troff}s are thought too important to neglect; @code{groff}
+therefore makes available a @dfn{compatibility mode} in an effort to
+keep documents prepared for AT&T @command{troff} rendering well.
+
 @cindex long names
 @cindex names, long
 @cindex @code{\*}, incompatibilities with @acronym{AT&T} @code{troff}
 @cindex @code{\n}, incompatibilities with @acronym{AT&T} @code{troff}
-Long identifier names may be GNU @code{troff}'s most obvious innovation.
-@acronym{AT&T} @code{troff} interprets @samp{.dsabcd} as defining a
-string @samp{ab} with contents @samp{cd}.  Normally, GNU @code{troff}
-interprets this as a call of a macro named @code{dsabcd}.
-@acronym{AT&T} @code{troff} also interprets @samp{\*[} and @samp{\n[} as
-an interpolation of a string or register, respectively, named @samp{[}.
-In GNU @code{troff}, however, the @samp{[} is normally interpreted as
-delimiting a long name.  In compatibility mode, GNU @code{troff}
-interprets names in the traditional way; they thus can be two characters
-long at most.
+Identifier names of arbitrary length may be GNU @code{troff}'s most
+obvious innovation.  @acronym{AT&T} @code{troff} interprets
+@samp{.dsabcd} as defining a string @samp{ab} with contents @samp{cd}.
+Normally, GNU @code{troff} interprets this as a call of a macro named
+@code{dsabcd}.  @acronym{AT&T} @code{troff} also interprets @samp{\*[}
+and @samp{\n[} as an interpolation of a string or register,
+respectively, named @samp{[}.  In GNU @code{troff}, however, the
+@samp{[} is normally interpreted as delimiting a long name.  In
+compatibility mode, GNU @code{troff} interprets names in the traditional
+way; they thus can be two characters long at most.
 
-@DefreqList {cp, [@Var{n}]}
+@DefreqList {cp, [@Var{b}]}
 @DefregListEndx {.C}
-If @var{n} is missing or non-zero, turn on compatibility mode;
-otherwise, turn it off.
+Enable AT&T @command{troff} compatibility mode if the expression
+@var{b} is non-zero; disable it otherwise.  It is disabled by default,
+and enabled if @var{b} is omitted.  In compatibility mode, long names
+are not recognized, and the incompatibilities they cause do not arise.
 
-The read-only register @code{.C} is@tie{}1 if compatibility mode is on,
-0@tie{}otherwise.
+The read-only register @code{.C} interpolates@tie{}1 if compatibility
+mode is enabled, 0@tie{}otherwise.
 
-Compatibility mode can be also turned on with the @option{-C}
-command-line option.
+Compatibility mode is also enabled by the @option{-C} command-line
+option.
 @endDefreq
 
 @DefreqList {do, name}
@@ -17534,11 +17590,10 @@ delimited arguments, but not in compatibility mode.
 @cindex @code{\H}, incompatibilities with @acronym{AT&T} @code{troff}
 @cindex @code{\s}, incompatibilities with @acronym{AT&T} @code{troff}
 @cindex @code{\S}, incompatibilities with @acronym{AT&T} @code{troff}
-Furthermore, the escape sequences @code{\f}, @code{\H}, @code{\m},
-@code{\M}, @code{\R}, @code{\s}, and @code{\S} are transparent for the
-purpose of recognizing a control character at the beginning of a line
-only in compatibility mode.  For example, this code produces bold output
-in both cases, but the text differs.
+Further, the escape sequences @code{\f}, @code{\H}, @code{\m},
+@code{\M}, @code{\R}, @code{\s}, and @code{\S} are transparent at the
+beginning of a line only in compatibility mode.  For example, this code
+produces bold output in both cases, but the text differs.
 
 @Example
 .de xx
@@ -17606,6 +17661,15 @@ GNU @code{troff} does not allow the use of the escape sequences
 @code{\%}, and @code{\c} in identifiers; @acronym{AT&T} @code{troff}
 does.  The @code{\A} escape sequence (@pxref{Identifiers}) may be
 helpful in avoiding use of these escape sequences in names.
+
+@cindex trailing space, on input lines, difference from @acronym{AT&T} @code{troff}
+@cindex space, trailing, on input lines, difference from @acronym{AT&T} @code{troff}
+@cindex end-of-sentence detection, cancellation, on @acronym{AT&T} @code{troff}
+@cindex sentence, cancelling detection of end of, on @acronym{AT&T} @code{troff}
+@acronym{AT&T} @command{troff} discards trailing spaces from input
+lines, like GNU @command{troff}, but if it does so, @acronym{AT&T}
+@command{troff} also cancels end-of-sentence detection.  Use of the
+dummy character escape sequence @code{\&} is more portable.
 
 @cindex adjustment to both margins, difference from @acronym{AT&T} @code{troff}
 @cindex rivers

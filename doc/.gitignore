@@ -1,4 +1,5 @@
 # build artifacts
+/GMPfront.t
 /automake.pdf
 /gnu.eps
 /grnexmpl.ps
@@ -12,6 +13,7 @@
 /groff.info-[1-9]
 /groff.pdf
 /groff.pdf.t2p/
+/groff.texi
 /groff.txt
 /img/pic-*.png
 /img/webpage-*.png

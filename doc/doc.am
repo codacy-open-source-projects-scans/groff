@@ -45,6 +45,7 @@ DOC_PDFMOM = \
 
 # This image file is used by several documents in the groff source tree.
 DOC_GNU_EPS = doc/gnu.eps
+DOC_GMP_COVER_PAGE = doc/GMPfront.t
 
 # Other doc, installed in $(docdir)
 # Files located in the source tree
@@ -53,7 +54,7 @@ DOCFILES_INST = \
   doc/ms.ms \
   doc/pic.ms
 DOCFILES_NOINST = \
-  doc/GMPfront.t \
+  doc/GMPfront.t.in \
   doc/meintro.me.in \
   doc/meintro_fr.me.in \
   doc/meref.me.in
@@ -114,7 +115,10 @@ $(PROCESSEDDOCFILES_TXT): $(PROCESSEDFILES_DEPS_TXT)
 otherdocdir = $(docdir)
 dist_otherdoc_DATA = $(DOCFILES_INST)
 nodist_otherdoc_DATA = $(PROCESSEDDOCFILES) $(GENERATEDDOCFILES)
-MOSTLYCLEANFILES += $(GENERATEDDOCFILES) $(PROCESSEDDOCFILES)
+MOSTLYCLEANFILES += \
+  $(GENERATEDDOCFILES) \
+  $(PROCESSEDDOCFILES) \
+  $(DOC_GMP_COVER_PAGE)
 EXTRA_DIST += $(DOCFILES_NOINST)
 
 EXTRA_DIST += doc/automake.mom
@@ -261,6 +265,10 @@ man-all: $(GROFF_MAN_PAGES_ALL)
 man-clean:
 	$(RM) $(GROFF_MAN_PAGES_ALL)
 
+$(DOC_GMP_COVER_PAGE): $(doc_srcdir)/GMPfront.t.in
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
+	&& $(DOC_SED) $(doc_srcdir)/GMPfront.t.in >$@
+
 # Many pages use tbl, a few use eqn, and soelim(1) uses pic.  We also
 # need groff's FreeEuro font so we can embed it.
 #
@@ -268,12 +276,12 @@ man-clean:
 # ensure consistent rendering of the document, and (3) exercise this
 # feature of gropdf.
 doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
-  $(top_srcdir)/doc/GMPfront.t \
-  eqn pic tbl \
+  $(DOC_GMP_COVER_PAGE) \
+  eqn pic tbl pdfmom \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC) font/devps/freeeuro.pfa
 	$(GROFF_V)$(DOC_PDFMOM) -pet -mandoc -dHF=HB -rC1 \
 	  -rCHECKSTYLE=3 -Tpdf -P-e \
-	  $(top_srcdir)/doc/GMPfront.t \
+	  $(DOC_GMP_COVER_PAGE) \
 	  $(GROFF_MAN_PAGES1) \
 	  $(tmac_srcdir)/sv.tmac $(GROFF_MAN_PAGES2) \
 	  $(tmac_srcdir)/en.tmac $(GROFF_MAN_PAGES3) > $@
@@ -540,20 +548,25 @@ GROFF_DVI = doc/groff.dvi
 GROFF_PDF = doc/groff.pdf
 endif
 
-all: doc/groff.info doc/groff.txt doc/groff.html $(GROFF_DVI) \
-  $(GROFF_PDF)
+all: doc/groff.info doc/groff.txt doc/groff.html \
+	$(GROFF_DVI) $(GROFF_PDF)
 
 # Distribute the manual in source form as well.
-EXTRA_DIST += doc/groff.texi doc/fdl.texi
+EXTRA_DIST += doc/groff.texi.in doc/groff.texi doc/fdl.texi
+MAINTAINERCLEANFILES += doc/groff.texi
+
+doc/groff.texi: $(top_srcdir)/doc/groff.texi.in
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
+	&& $(DOC_SED) $(top_srcdir)/doc/groff.texi.in >$@
 
 EXTRA_DIST += doc/groff.info
 MAINTAINERCLEANFILES += doc/groff.info
-doc/groff.info: $(doc_srcdir)/groff.texi
+doc/groff.info: doc/groff.texi
 	$(AM_V_at)$(MKDIR_P) $(doc_builddir)
 	$(AM_V_GEN)LANG=C \
 	LC_ALL=C \
 	$(MAKEINFO) -o doc/groff.info --enable-encoding \
-	  -I $(doc_srcdir) $(doc_srcdir)/groff.texi
+	  -I $(doc_srcdir) $(doc_builddir)/groff.texi
 
 # Distribute the Info files.
 dist-hook: dist-info-bits
@@ -646,6 +659,7 @@ maintainer-clean-local:
 	$(RM) $(doc_builddir)/groff.txt
 	$(RM) -r $(doc_builddir)/groff.html.*
 	$(RM) -r $(doc_builddir)/*.t2d $(doc_builddir)/*.t2p
+	$(RM) $(doc_builddir)/groff.texi
 
 # Generated forms of the groff Texinfo manual might be in the source
 # directory (distribution archive build) or in the build directory (Git

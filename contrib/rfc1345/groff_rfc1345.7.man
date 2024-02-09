@@ -138,7 +138,7 @@ These have also been added to
 .
 .PP
 .I rfc1345.tmac
-contains a total of 1,696 glyph names.
+contains about 1,700 glyph names.
 .
 It is not an
 error to load

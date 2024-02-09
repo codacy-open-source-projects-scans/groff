@@ -107,6 +107,11 @@ o Hyperlink support is now enabled by default on non-HTML devices that
   Instructions and commented code for disabling it remain in the
   "man.local" file.
 
+o The an (man) package now supports use of its hyperlink macros (`UR`,
+  `UE`, `MT`, and `ME`) as paragraph tags (that is, on the next line
+  after a `TP` macro call).  Use of the `MR` man page cross reference
+  macro as a tag was already supported in groff 1.23.0.
+
 o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   changed the default line length when formatting on terminals from 78n
   to 80n.  The latter is a vastly more common configuration, but that

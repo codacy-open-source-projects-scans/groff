@@ -20,21 +20,50 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
+fail=
+
+wail() {
+    echo ...FAILED >&2
+    fail=yes
+}
+
 # Ensure that link text (when the hyperlink itself is not formatted
 # because the device supports hyperlinking) uses the correct line length
 # and is adjusted.
 
+# The 'XX' provokes hyphenation interior to the line due to diversion
+# handling with certain incorrect approaches to link text handling
+# (forgetting to copy environment 0 to the diversion's environment).
 input='.TH foo 1 2022-11-08 "groff test suite"
 .SH "See also"
 .
 .UR http://\:www\:.hp\:.com/\:ctg/\:Manual/\:bpl13210\:.pdf
 .I HP PCL/PJL Reference:
-.I PCL\~5 Printer Language Technical Reference Manual,
+.I PCL\~5XX Printer Language Technical Reference Manual,
 .I Part I
 .UE'
 
+echo "checking formatting of whole-line link text" >&2
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
-echo "$output" | grep -q 'HP  PCL/PJL  Reference:.*Reference Manual'
+echo "$output" | grep -q 'HP  PCL/PJL Reference: PCL 5XX.*,$' || wail
+
+input='.TH foo 1 2022-11-08 "groff test suite"
+.SH "See also"
+.
+Consult
+.UR http://\:www\:.hp\:.com/\:ctg/\:Manual/\:bpl13210\:.pdf
+.I HP PCL/PJL Reference:
+.I PCL\~5 Printer Language Technical Reference Manual,
+.I Part I
+.UE .'
+
+echo "checking formatting of partial-line link text" >&2
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
+echo "$output"
+# 2 spaces each
+echo "$output" | grep -q 'Consult HP  PCL/PJL  Reference:  PCL' || wail
+
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

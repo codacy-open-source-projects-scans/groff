@@ -914,7 +914,7 @@ void troff_output_file::really_print_line(hunits x, vunits y, node *n,
 					  vunits before, vunits after, hunits)
 {
   moveto(x, y);
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     // Check whether we should push the current troff state and use
     // the state at the start of the invocation of this diversion.
     if (n->div_nest_level > cur_div_level && n->push_state) {
@@ -1788,7 +1788,7 @@ void ascii_output_file::really_transparent_char(unsigned char c)
 void ascii_output_file::really_print_line(hunits, vunits, node *n,
 					  vunits, vunits, hunits)
 {
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     n->ascii_print(this);
     n = n->next;
   }
@@ -2362,7 +2362,7 @@ node *kern_pair_node::copy()
 node *copy_node_list(node *n)
 {
   node *p = 0;
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     node *nn = n->copy();
     nn->next = p;
     p = nn;
@@ -2379,7 +2379,7 @@ node *copy_node_list(node *n)
 
 void delete_node_list(node *n)
 {
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     node *tem = n;
     n = n->next;
     delete tem;
@@ -2556,7 +2556,7 @@ void node::debug_node_list()
   node *n = next;
 
   debug_node();
-  while (n != 0) {
+  while (n != 0 /* nullptr */) {
     n->debug_node();
     n = n->next;
   }
@@ -2578,7 +2578,7 @@ node *kern_pair_node::last_char_node()
 hunits dbreak_node::width()
 {
   hunits x = H0;
-  for (node *n = none; n != 0; n = n->next)
+  for (node *n = none; n != 0 /* nullptr */; n = n->next)
     x += n->width();
   return x;
 }
@@ -2649,7 +2649,7 @@ italic_corrected_node::italic_corrected_node(node *nn, hunits xx, statem *s,
 					     int pop, node *p)
 : node(p, s, pop), n(nn), x(xx)
 {
-  assert(n != 0);
+  assert(n != 0 /* nullptr */);
 }
 
 italic_corrected_node::~italic_corrected_node()
@@ -3322,7 +3322,7 @@ int kern_pair_node::ends_sentence()
 
 int node_list_ends_sentence(node *n)
 {
-  for (; n != 0; n = n->next)
+  for (; n != 0 /* nullptr */; n = n->next)
     switch (n->ends_sentence()) {
     case 0:
       return 0;

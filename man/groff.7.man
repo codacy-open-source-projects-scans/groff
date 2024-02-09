@@ -2809,23 +2809,26 @@ requests.
 .REQ .color
 Enable output of color-related device-independent output commands.
 .
+It is enabled by default.
+.
 .TPx
-.REQ .color n
+.REQ .color b
 If
-.I n
+.I b
 is zero,
 disable output of color-related device-independent output commands;
 otherwise,
 enable them.
-.\" XXX: Should probably interpret negative values as false.
 .
 .TPx
-.REQ .composite "from to"
-Map glyph name
-.I from
-to glyph name
-.I to
-while constructing a composite glyph name.
+.REQ .composite "c1 c2"
+Map ordinary or special character
+.I c1
+to
+.I c2
+when
+.I c1
+is a combining component in a composite character.
 .
 .TPx
 .REQ .continue
@@ -2835,14 +2838,20 @@ loop.
 .
 .TPx
 .REQ .cp
-Enable compatibility mode.
+Enable AT&T
+.I troff \" AT&T
+compatibility mode.
+.
+It is disabled by default.
 .
 .TPx
-.REQ .cp n
+.REQ .cp b
 If
-.I n
+.I b
 is zero,
-disable compatibility mode,
+disable AT&T
+.I troff \" AT&T
+compatibility mode,
 otherwise enable it.
 .
 .TPx
@@ -3571,12 +3580,17 @@ in the register
 .
 .TPx
 .REQ .linetabs
-Enable line-tabs mode
-(calculate tab positions relative to beginning of output line).
+Activate line-tabs in the environment.
+.
+It is disabled by default.
 .
 .TPx
-.REQ .linetabs\~0
-Disable line-tabs mode.
+.REQ .linetabs b
+If
+.I b
+is zero,
+deactivate line-tabs in the environment,
+otherwise enable them.
 .
 .TPx
 .REQ .lf n
@@ -3827,12 +3841,13 @@ See
 .
 .TPx
 .REQ .nx
-Immediately jump to end of current file.
+Stop processing the input file and read the next,
+if any.
 .
 .TPx
 .REQ .nx file
-Stop formatting current file and begin reading
-.I file.
+Stop processing the input file and read
+.IR file .
 .
 .TPx
 .REQ .open "ident file"
@@ -4289,7 +4304,8 @@ is inactive and
 .I N
 is
 .scalednumber "3 m" .
-.\" XXX: negative values accepted; retain for future space-squeezing
+.\" XXX: Negative values are accepted to make future implementation of
+.\" "squeezable" adjustable spaces smoother; see Savannah #40963.
 .
 .TPx
 .REQ .ss n
@@ -4558,9 +4574,15 @@ preserving font information.
 .REQ .vpt
 Enable vertical position traps.
 .
+They are enabled by default.
+.
 .TPx
-.REQ .vpt\~0
-Disable vertical position traps.
+.REQ .vpt b
+If
+.I b
+is zero,
+disable vertical position traps,
+otherwise enable them.
 .
 .TPx
 .REQ .vs
@@ -7636,6 +7658,8 @@ if no diversion is active
 formatted output is being \[lq]diverted\[rq] immediately to the output
 device.
 .
+The top-level diversion has no name.
+.
 .
 .P
 Dereferencing an undefined diversion will create an empty one of that
@@ -7650,7 +7674,6 @@ A diversion does not exist for the purpose of testing with the
 conditional operator until its initial definition ends
 (see subsection \[lq]Conditional expressions\[rq] above).
 .\" The following requests are used to create and alter diversions.
-.\" END Keep (roughly) parallel with groff.texi node "Diversions".
 .
 .
 .P
@@ -7679,21 +7702,56 @@ Call any of these macros again without an argument to end the diversion.
 .br
 .ne 2v
 .P
-Diversions can be nested.
+Diversion requests can be nested.
 .
 The registers
 .BR .d ,
 .BR .z ,
-.BR dn ,
+report information about the current diversion,
+and
+.B dn
 and
 .B dl
-report information about the current
-(or last closed)
-diversion.
+about the most recently closed one.
 .
 .B .h
 is meaningful in diversions,
-including the top level.
+including the top-level one.
+.
+.
+.P
+After completing a diversion,
+the writable registers
+.B dn
+and
+.B dl
+contain its vertical and horizontal sizes,
+respectively.
+.\" XXX Do these measure:
+.\"  net motion of the drawing position,
+.\"  maximal motion of the drawing position relative to that where the
+.\"  diversion started,
+.\" or
+.\"  the maximal bounds of spilled ink relative to the drawing position
+.\"  where the diversion started?
+.\" Savannah #64728.
+.
+Only the lines just processed are counted:
+for the computation of
+.B dn
+and
+.BR dl ,
+the requests
+.B da
+and
+.B boxa
+are handled as if
+.B di
+and
+.B box
+had been used,
+respectively\[em]lines that have been already stored in the diversion
+(box) are not taken into account.
 .
 .
 .P
@@ -7719,6 +7777,7 @@ requests reprocess diversions.
 .\" XXX: That's a weak statement.  What we need is a `for` request and
 .\" a new conditional operator that tests whether an item in a node list
 .\" is an (otherwise unrepresentable) node.  See Savannah #62264.
+.\" END Keep (roughly) parallel with groff.texi node "Diversions".
 .
 .
 .\" ====================================================================
@@ -7995,7 +8054,7 @@ is currently employed only by
 .P
 GNU
 .I troff \" GNU
-also permits the interpolatation of macro contents as a device control
+also permits the interpolation of macro contents as a device control
 command.
 .
 The
@@ -8308,7 +8367,7 @@ defined names\[em]macros,
 strings,
 and
 .RB diversions\[em]( .pm );
-defined colors
+colors
 .RB ( .pcolor );
 composite characters
 .RB ( .pcomposite );

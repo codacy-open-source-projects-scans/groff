@@ -25,9 +25,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 # A page break should not follow the tag in a tagged paragraph when the
 # tag can fit within the indentation.
 
-FAIL=
-
-INPUT='.TH foo 1 2021-05-18 "groff test suite"
+input='.TH foo 1 2021-05-18 "groff test suite"
 .SH Name
 foo \- frobnicate a thingamajig
 .rs \" force spacing on
@@ -36,8 +34,9 @@ foo \- frobnicate a thingamajig
 3
 7th edition'
 
-OUTPUT=$(echo "$INPUT" | "$groff" -Tascii -P-cbou -man -rcR=0)
+output=$(echo "$input" | "$groff" -Tascii -P-cbou -man -rcR=0)
+echo "$output"
 
-echo "$OUTPUT" | grep -Eqx ' +3 +7th edition'
+echo "$output" | grep -Eqx ' +3 +7th edition'
 
 # vim:set ai et sw=4 ts=4 tw=72:

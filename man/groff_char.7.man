@@ -10,7 +10,7 @@ special character and glyph repertoire
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff (GNU roff), which is a free software
 .\" project.
@@ -760,8 +760,33 @@ as in the word \[lq]caf\[e aa]\[rq],
 can be expressed as
 .BR "\[rs][e aa]" .
 .
-See subsection \[lq]Accents\[rq] below for a table of combining glyph
-names.
+.
+.P
+Normally,
+the formatter advances the drawing position after setting a special
+character,
+as it does for ordinary ones.
+.
+.IR groff 's
+.B \%composite
+request designates a special character as combining,
+suppressing advancement.
+.
+.
+.P
+You can obtain a report of mappings defined by the
+.B \%composite
+request on the standard error stream with the
+.B \%pcomposite
+request.
+.
+The
+.I \%composite.tmac
+macro file,
+loaded automatically by the default
+.IR \%troffrc ,
+maps certain special characters to combining characters as shown
+in subsection \[lq]Accents\[rq] below.
 .
 .
 .P
@@ -1094,24 +1119,6 @@ L Lf(CR) L Lx.
 .\" ====================================================================
 .SS Accents
 .\" ====================================================================
-.
-Normally,
-the formatter advances the drawing position after setting a special
-character,
-as it does for ordinary ones.
-.
-.IR groff 's
-.B composite
-request designates a special character as combining,
-suppressing advancement.
-.
-The
-.I \%composite.tmac
-macro file,
-loaded automatically by the default
-.IR \%troffrc ,
-maps the following special characters to the combining characters shown
-below.
 .
 The non-combining code point in parentheses is used when the special
 character occurs in isolation
