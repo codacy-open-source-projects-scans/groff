@@ -363,6 +363,7 @@ dnl Keep this list in sync with font/devpdf/Foundry.in.
     /usr/share/fonts/default/Type1/ \
     /usr/share/fonts/default/Type1/adobestd35/ \
     /usr/share/fonts/type1/urw-base35/ \
+    /usr/share/fonts/urw-base35 \
     /opt/local/share/fonts/urw-fonts/ \
     /usr/local/share/fonts/ghostscript/"
 

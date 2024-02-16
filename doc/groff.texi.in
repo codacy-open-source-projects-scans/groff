@@ -1214,7 +1214,7 @@ Run @command{gtbl} preprocessor.
 @item -T @var{dev}
 Prepare output for device @var{dev}.  @command{groff} passes the
 @option{-T} option and its argument to @command{gtroff}, then (unless
-the @option{-Z} option is used) calls an output driver to convert
+the @option{-Z} option is used) runs an output driver to convert
 @command{gtroff}'s output to a form appropriate for @var{dev}.  The
 following output devices are available.
 
@@ -1396,7 +1396,7 @@ Specify the assumed character encoding of input files.  @command{groff}
 passes its value as an argument to the @command{preconv} preprocessor's
 @option{-e} option.  This variable's existence implies the
 @command{groff} option @option{-k}.  If set but empty, @command{groff}
-calls @code{preconv} without an @option{-e} option.  @command{groff}'s
+runs @code{preconv} without an @option{-e} option.  @command{groff}'s
 @option{-K} option overrides @env{GROFF_ENCODING}.  See
 @cite{preconv@r{(7)}}.
 
@@ -5279,12 +5279,12 @@ Adjustment}.
 
 When an output line is nearly full, it is uncommon for the next word
 collected from the input to exactly fill it---typically, there is room
-left over only for part of the next word.  The process of splitting a
-word so that it appears partially on one line (with a hyphen to indicate
-to the reader that the word has been broken) with its remainder on the
-next is @dfn{hyphenation}.  Hyphenation points can be manually
-specified; GNU @code{troff} also uses a hyphenation algorithm and
-language-specific pattern files (based on those used in @TeX{}) to
+left over only for part of the next word.  @dfn{Hyphenation} is the
+process of splitting a word so that it appears partially on one line,
+followed by a hyphen to indicate to the reader that the word has been
+broken, and its remainder on the next.  Hyphenation break points can be
+manually specified; GNU @code{troff} also uses a hyphenation algorithm
+and language-specific pattern files (based on those used in @TeX{}) to
 decide which words can be hyphenated and where.
 
 Hyphenation does not always occur even when the hyphenation rules for a
@@ -5320,7 +5320,7 @@ prompt to contrive an example of failure to break the line.  We also
 employ the @option{-z} option to suppress normal output.
 
 @Example
-$ perl -e 'print "#" x 80, "\n";' | nroff -z
+$ perl -e 'print "#" x 80, "\n";' | gnroff -z
     @error{} warning: cannot break line
 @endExample
 
@@ -5405,11 +5405,11 @@ leaders, respectively.
 
 Tabs and leaders lend themselves to table construction.@footnote{``Tab''
 abbreviates ``tabulation'', suggesting a table arrangement mechanism.}
-The tab and leader glyphs can be configured, and further facilities for
-sophisticated table composition are available; see @ref{Tabs and
-Fields}.  There are many details to track when using such low-level
-features, so most users turn to the @cite{tbl@r{(1)}} preprocessor to
-lay out tables.
+The tab and leader fill characters can be configured, and further
+facilities for sophisticated table composition are available; see
+@ref{Tabs and Fields}.  There are many details to track when using such
+low-level features, so most users turn to the @cite{tbl@r{(1)}}
+preprocessor to lay out tables.
 
 @c ---------------------------------------------------------------------
 
@@ -5704,7 +5704,7 @@ supply @samp{-m latin5} as a command-line argument to @code{groff}.
 @cindex input encoding, @w{Latin-9} (ISO @w{8859-15})
 @pindex latin9.tmac
 ISO @w{Latin-9} succeeds @w{Latin-1}; it includes a Euro sign and better
-glyph coverage for French.  To use this encoding, invoke @w{@samp{.mso
+coverage for French.  To use this encoding, invoke @w{@samp{.mso
 latin9.tmac}} at the beginning of your document or supply
 @samp{-m latin9} as a command-line argument to @code{groff}.
 @end table
@@ -5728,10 +5728,10 @@ devices as @code{groff} ships, while @w{Latin-2} is not.
 Unicode supports characters from all other input encodings; the
 @option{utf8} output driver for terminals therefore does as well.  The
 DVI output driver supports the @w{Latin-2} and @w{Latin-9} encodings if
-the command-line option @option{-m ec} is used as well.  @footnote{The
-DVI output device defaults to using the Computer Modern (CM) fonts;
-@file{ec.tmac} loads the EC fonts instead, which provide Euro
-@samp{\[Eu]} and per mille @samp{\[%0]} glyphs.}
+the command-line option @samp{@option{-m ec}} is used as well.
+@footnote{The DVI output device defaults to using the Computer Modern
+(CM) fonts; @file{ec.tmac} loads the EC fonts instead, which provide
+Euro @samp{\[Eu]} and per mille @samp{\[%0]} glyphs.}
 
 @c ---------------------------------------------------------------------
 
@@ -6191,10 +6191,11 @@ GNU @code{troff} provides a set of mathematical and logical operators
 familiar to programmers---as well as some unusual ones---but supports
 only integer arithmetic.@footnote{Provision is made for interpreting and
 reporting decimal fractions in certain cases.}  The internal data type
-used for computing results is usually a 32-bit signed integer, which
-suffices to represent magnitudes within a range of ±2
-billion.@footnote{If that's not enough, see the @cite{groff_tmac@r{(5)}}
-man page for the @file{62bit.tmac} macro package.}
+used for computing results depends on the host machine but is usually a
+32-bit signed integer, which suffices to represent magnitudes within a
+range of ±2 billion.@footnote{If that's not enough, see the
+@cite{groff_tmac@r{(5)}} man page for the @file{62bit.tmac} macro
+package.}
 
 @cindex arithmetic operators
 @cindex operators, arithmetic
@@ -9382,11 +9383,11 @@ Only a single character of @var{c} is recognized; any excess is ignored.
 @cindex tab, line-tabs mode
 @cindex line-tabs mode
 @cindex mode, line-tabs
-Activate line-tabs in the environment if the expression @var{b} is
-non-zero; deactivate them otherwise.  They are inactive by default, and
-activated if @var{b} is omitted.  When line-tabs are active, tab stops
-are computed relative to the start of the pending output line instead of
-the drawing position corresponding to the start of the input line.
+Activate or deactivate line-tabs in the environment per Boolean
+expression @var{b}.  They are inactive by default, and activated if
+@var{b} is omitted.  When line-tabs are active, tab stops are computed
+relative to the start of the pending output line instead of the drawing
+position corresponding to the start of the input line.
 
 @Example
 .ta 1i 3i
@@ -11302,7 +11303,7 @@ Define an ordinary or special character@tie{}@var{c} as @var{contents}.
 If @var{contents} is absent, an existing character definition made with
 the same request is deleted.
 
-Defining (or redefining) a character@var{c} creates an object in the
+Defining (or redefining) a character @var{c} creates an object in the
 formatter that is recognized like any other ordinary or special
 character on input, and produces @var{contents} on output.  Every time
 @var{c} is to be output, @var{contents} is processed in a temporary
@@ -11464,12 +11465,13 @@ See the @code{cflags} request in @ref{Using Symbols}, for more details.
 @cindex special fonts
 @cindex fonts, special
 
-Special fonts are those that GNU @command{troff} searches when it cannot
-find a requested glyph in the selected font.  Typically, special fonts
-contain unstyled glyphs and are declared as such in their description
-files; see @ref{Font Description File Format}.  The ``Symbol'' and
-``Zapf Dingbats'' fonts of the PostScript and PDF standards are
-examples.  Ordinarily, only typesetters have special fonts.
+Special fonts are those that GNU @command{troff} searches, in mounting
+position order, when it cannot find a requested glyph in the selected
+font.  Typically, special fonts contain unstyled glyphs and are declared
+as such in their description files; see @ref{Font Description File
+Format}.  The ``Symbol'' and ``Zapf Dingbats'' fonts of the PostScript
+and PDF standards are examples.  Ordinarily, only typesetters have
+special fonts.
 
 GNU @command{troff}'s @code{special} and @code{fspecial} requests permit
 a document to supplement the set of fonts searched for glyphs.
@@ -11698,8 +11700,7 @@ nevertheless seldom used to set text.}
 
 Most typesetters support ligatures for the sequences `fi', `fl', `ff',
 `ffi', and `ffl', and @code{troff} does likewise.  Some fonts may
-include `ft' and `ct' ligatures; they are archaic and GNU @code{troff}
-does not (yet) support them.
+include others, but GNU @code{troff} does not (yet) support them.
 
 The formatter checks only the current font for ligatures and kerning
 adjustments; neither glyphs from special fonts nor special characters
@@ -12323,11 +12324,10 @@ of a closed geometric figure.
 
 @DefreqList {color, [@Var{b}]}
 @DefregListEndx {.color}
-Enable output of color-related device-independent output commands if the
-expression @var{b} is non-zero; disable it otherwise.  It is enabled by
-default, and if @var{b} is omitted.  This request modifies the
-formatter's internal state; it does not produce a
-token (@pxref{Gtroff Internals}).
+Enable or disable output of color-related device-independent output
+commands per Boolean expression @var{b}.  It is enabled by default, and
+if @var{b} is omitted.  This request modifies the formatter's internal
+state; it does not produce a token (@pxref{Gtroff Internals}).
 
 The read-only register @code{.color} interpolates@tie{}1 if color
 support is enabled, 0@tie{}otherwise.
@@ -14667,11 +14667,11 @@ multiple columns, and footnotes.
 @cindex enabling vertical position traps (@code{vpt})
 @cindex vertical position traps, enabling (@code{vpt})
 @cindex vertical position trap enable register (@code{.vpt})
-Enable vertical position traps if the expression @var{b} is non-zero;
-disable them otherwise.  They are enabled by default, and if @var{b} is
-omitted.  Vertical position traps are those set by the @code{wh} request
-or by @code{dt} within a diversion.  Vertical position trap enablement
-is global.  Its status is stored in the @code{.vpt} read-only register.
+Enable or disable vertical position traps per Boolean expression
+@var{b}.  They are enabled by default, and if @var{b} is omitted.
+Vertical position traps are those set by the @code{wh} request or by
+@code{dt} within a diversion.  Vertical position trap enablement is
+global.  Its status is stored in the @code{.vpt} read-only register.
 
 @cindex page break, prevented by @code{vpt}
 @cindex break, page, prevented by @code{vpt}
@@ -15027,7 +15027,10 @@ error to invoke @code{dt} in the top-level diversion.
 @cindex traps, input line
 
 @DefreqList {it, [@Var{n} @Var{name}]}
-@DefreqListEndx {itc, [@Var{n} @Var{name}]}
+@DefreqItem {itc, [@Var{n} @Var{name}]}
+@DefregItem {.it}
+@DefregItem {.itc}
+@DefregListEndx {.itm}
 @cindex setting input line trap (@code{it}, @code{itc})
 @cindex input line trap, setting (@code{it}, @code{itc})
 @cindex trap, input line, setting (@code{it}, @code{itc})
@@ -15094,6 +15097,12 @@ the trap is sprung.
 .  @slanted{internal: enable centering-without-filling}
 ..
 @endExample
+
+The @code{.it}, @code{.itc}, and @code{.itm} registers report the number
+of lines remaining in a pending input trap, a Boolean indication of
+whether that pending input trap honors output line continuation, and the
+name of the macro associated with the pending input trap, respectively.
+All are read-only; @code{.itm} is string-valued as well.
 
 @need 500
 Let us consider in more detail the sorts of input lines that are or are
@@ -17479,10 +17488,10 @@ way; they thus can be two characters long at most.
 
 @DefreqList {cp, [@Var{b}]}
 @DefregListEndx {.C}
-Enable AT&T @command{troff} compatibility mode if the expression
-@var{b} is non-zero; disable it otherwise.  It is disabled by default,
-and enabled if @var{b} is omitted.  In compatibility mode, long names
-are not recognized, and the incompatibilities they cause do not arise.
+Enable or disable AT&T @command{troff} compatibility mode per Boolean
+expression @var{b}.  It is disabled by default, and enabled if @var{b}
+is omitted.  In compatibility mode, long names are not recognized, and
+the incompatibilities they cause do not arise.
 
 The read-only register @code{.C} interpolates@tie{}1 if compatibility
 mode is enabled, 0@tie{}otherwise.
@@ -17878,44 +17887,48 @@ following two sections describe their format.
 @cindex @command{gtroff}, output
 @cindex output, @command{gtroff}
 
-This section describes the @code{groff} intermediate output format
-produced by GNU @code{troff}.
+We now describe the @code{groff} device-independent output format
+produced by GNU @command{troff}.
 
-As @code{groff} is a wrapper program around GNU @code{troff} and
-automatically calls an output driver (or ``postprocessor''), this output
-does not show up normally.  This is why it is called
-@emph{intermediate}.  @code{groff} provides the option @option{-Z} to
-inhibit postprocessing such that the produced intermediate output is
-sent to standard output just as it is when calling GNU @code{troff}
-directly.
+@c BEGIN Keep parallel with subsection "Background" of groff_out(5).
+As @command{groff} is a wrapper program around GNU @command{troff} and
+automatically runs an output driver, users seldom encounter this format
+under normal circumstances.  @command{groff} offers the option
+@option{-Z} to inhibit postprocessing such that GNU @command{troff}'s
+output is sent to the standard output stream just as it is when running
+GNU @command{troff} directly.
 
-@cindex @code{troff} output format
-@cindex output format, @code{troff}
-@cindex format, @code{troff} output
+The purpose of device-independent output is to facilitate the
+development of postprocessors by providing a common programming
+interface for all devices.  It is a distinct, and much simpler, language
+from that of the formatter, @command{troff}.  The device-independent
+output can be thought of as a ``page description language''.
+
+@cindex @command{troff} output format
+@cindex output format, @command{troff}
+@cindex format, @command{troff} output
 @cindex intermediate output
 @cindex output, intermediate
-Here, the term @dfn{troff output} describes what is output by
-GNU @code{troff}, while @dfn{intermediate output} refers to the language
-that is accepted by the parser that prepares this output for the output
-drivers.  This parser handles whitespace more flexibly than
-@acronym{AT&T}'s implementation and implements obsolete elements for
+In the following discussion, the term @dfn{troff output} describes what
+is output by GNU @command{troff}, while @dfn{device-independent output}
+denotes the language accepted by the parser that interprets this output
+for the output drivers.  This parser handles whitespace more flexibly
+than @acronym{AT&T} @command{troff}'s implementation, recognizes a GNU
+extension to the language, and supports an obsolete construct for
 compatibility; otherwise, both formats are the same.@footnote{The parser
-and postprocessor for intermediate output can be found in the file@*
-@file{@var{groff-source-dir}/src/libs/libdriver/input.cpp}.}
+for device-independent output can be found in the file
+@file{@var{groff-source-dir}/@/src/@/libs/@/libdriver/@/input.cpp}.}
 
-The main purpose of the intermediate output concept is to facilitate the
-development of postprocessors by providing a common programming
-interface for all devices.  It has a language of its own that is
-completely different from the @command{gtroff} language.  While the
-@command{gtroff} language is a high-level programming language for text
-processing, the intermediate output language is a kind of low-level
-assembler language by specifying all positions on the page for writing
-and drawing.
-
-The intermediate output produced by @command{gtroff} is fairly readable,
-while output from @acronym{AT&T} @code{troff} is rather hard to
-understand because of strange habits that are still supported, but not
-used any longer by @command{gtroff}.
+When Brian Kernighan designed @acronym{AT&T} @code{troff}'s
+device-independent output format circa 1980, he had to balance
+readability and maintainability against severe constraints on file size
+and transmission speed to the output device.@footnote{See ``A
+Typesetter-independent TROFF'', Bell Labs CSTR@tie{}#97, 1982.}  A
+decade later, when James Clark wrote @code{groff}, these constraints
+were no longer as tight.  GNU @command{troff} therefore emits
+device-independent output that is more easily interpreted by humans than
+did @acronym{AT&T} @code{troff}.
+@c END Keep parallel with subsection "Background" of groff_out(5).
 
 @menu
 * Language Concepts::

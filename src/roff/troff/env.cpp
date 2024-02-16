@@ -208,7 +208,7 @@ void widow_control_request()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    curenv->widow_control = n != 0;
+    curenv->widow_control = (n > 0);
   else
     curenv->widow_control = 1;
   skip_line();
@@ -425,6 +425,21 @@ int environment::get_right_justify_lines()
 int environment::get_no_number_count()
 {
   return no_number_count;
+}
+
+int environment::get_input_trap_line_count()
+{
+  return input_trap_count;
+}
+
+int environment::get_input_trap_respects_continuation()
+{
+  return continued_input_trap;
+}
+
+const char *environment::get_input_trap_macro()
+{
+  return input_trap.contents();
 }
 
 void environment::add_italic_correction()
@@ -691,7 +706,7 @@ environment::environment(symbol nm)
   have_temporary_indent(0),
   underline_lines(0),
   underline_spaces(0),
-  input_trap_count(0),
+  input_trap_count(-1),
   continued_input_trap(false),
   line(0),
   prev_text_length(0),
@@ -784,7 +799,7 @@ environment::environment(const environment *e)
   have_temporary_indent(0),
   underline_lines(0),
   underline_spaces(0),
-  input_trap_count(0),
+  input_trap_count(-1),
   continued_input_trap(false),
   line(0),
   prev_text_length(e->prev_text_length),
@@ -865,7 +880,7 @@ void environment::copy(const environment *e)
   temporary_indent = 0;
   underline_lines = 0;
   underline_spaces = 0;
-  input_trap_count = 0;
+  input_trap_count = -1;
   continued_input_trap = false;
   prev_text_length = e->prev_text_length;
   width_total = 0;
@@ -2589,7 +2604,8 @@ void no_adjust()
 
 void do_input_trap(bool respect_continuation)
 {
-  curenv->input_trap_count = 0;
+  curenv->input_trap_count = -1;
+  curenv->input_trap = 0 /* nullptr */;
   if (respect_continuation)
     curenv->continued_input_trap = true;
   else
@@ -2598,7 +2614,7 @@ void do_input_trap(bool respect_continuation)
   if (has_arg() && get_integer(&n)) {
     if (n <= 0)
       warning(WARN_RANGE,
-	      "number of lines for input trap must be greater than zero");
+	      "input trap line count must be greater than zero");
     else {
       symbol s = get_name(true /* required */);
       if (!s.is_null()) {
@@ -2891,7 +2907,7 @@ void line_tabs_request()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    curenv->line_tabs = n != 0;
+    curenv->line_tabs = (n > 0);
   else
     curenv->line_tabs = 1;
   skip_line();
@@ -3520,6 +3536,9 @@ void init_env_requests()
   init_hunits_env_reg(".i", get_indent);
   init_hunits_env_reg(".in", get_saved_indent);
   init_int_env_reg(".int", get_prev_line_interrupted);
+  init_int_env_reg(".it", get_input_trap_line_count);
+  init_int_env_reg(".itc", get_input_trap_respects_continuation);
+  init_string_env_reg(".itm", get_input_trap_macro);
   init_int_env_reg(".linetabs", get_line_tabs);
   init_hunits_env_reg(".lt", get_title_length);
   init_int_env_reg(".j", get_adjust_mode);

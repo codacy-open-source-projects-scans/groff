@@ -314,6 +314,9 @@ public:
   hunits get_hyphenation_space();
   hunits get_hyphenation_margin();
   int get_center_lines();
+  int get_input_trap_line_count();
+  int get_input_trap_respects_continuation();
+  const char *get_input_trap_macro();
   int get_right_justify_lines();
   int get_no_number_count();
   int get_prev_line_interrupted() { return prev_line_interrupted; }

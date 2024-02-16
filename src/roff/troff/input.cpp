@@ -1487,7 +1487,7 @@ static void activate_color()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    color_flag = n != 0;
+    color_flag = (n > 0);
   else
     color_flag = 1;
   skip_line();
@@ -2616,7 +2616,7 @@ void compatible()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    compatible_flag = n != 0;
+    compatible_flag = (n > 0);
   else
     compatible_flag = 1;
   skip_line();

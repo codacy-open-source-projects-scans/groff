@@ -965,8 +965,8 @@ integer arithmetic.
 (Provision is made for interpreting and
 reporting decimal fractions in certain cases.)
 .
-The internal data type used for computing results is usually a 32-bit
-signed integer,
+The internal data type used for computing results depends on the host
+machine but is usually a 32-bit signed integer,
 which suffices to represent magnitudes within a range of \[+-]2
 billion.
 .
@@ -2261,6 +2261,12 @@ Comments are ignored;
 trailing whitespace generally is not.
 .
 .TPx
+.I b
+is a numerical expression evaluated as a Boolean;
+positive values are true,
+others false.
+.
+.TPx
 .I c
 denotes a single input character,
 ordinary or special.
@@ -2813,12 +2819,9 @@ It is enabled by default.
 .
 .TPx
 .REQ .color b
-If
-.I b
-is zero,
-disable output of color-related device-independent output commands;
-otherwise,
-enable them.
+Enable or disable output of color-related device-independent output
+commands per Boolean expression
+.IR b .
 .
 .TPx
 .REQ .composite "c1 c2"
@@ -2846,13 +2849,10 @@ It is disabled by default.
 .
 .TPx
 .REQ .cp b
-If
-.I b
-is zero,
-disable AT&T
+Enable or disable AT&T
 .I troff \" AT&T
-compatibility mode,
-otherwise enable it.
+compatibility mode per Boolean expression
+.IR b .
 .
 .TPx
 .REQ .cs "font n m"
@@ -3586,11 +3586,9 @@ It is disabled by default.
 .
 .TPx
 .REQ .linetabs b
-If
-.I b
-is zero,
-deactivate line-tabs in the environment,
-otherwise enable them.
+Activate or deactivate line-tabs in the environment per Boolean
+expression
+.IR b .
 .
 .TPx
 .REQ .lf n
@@ -4578,11 +4576,8 @@ They are enabled by default.
 .
 .TPx
 .REQ .vpt b
-If
-.I b
-is zero,
-disable vertical position traps,
-otherwise enable them.
+Enable or disable vertical position traps per Boolean expression
+.IR b .
 .
 .TPx
 .REQ .vs
@@ -6226,6 +6221,21 @@ see
 Previous output line was \[lq]interrupted\[rq] or continued with
 .esc c
 (Boolean-valued).
+.
+.TP
+.REG .it
+The count of lines remaining in the pending input trap.
+.
+.TP
+.REG .itc
+The pending input trap honors output line continuation
+.esc c
+(Boolean-valued).
+.
+.TP
+.REG .itm
+Name of the macro associated with the pending input trap
+(string-valued).
 .
 .TP
 .REG .j

@@ -460,7 +460,7 @@ then
 (unless the
 .B \-Z
 option is used)
-calls an output driver to convert
+runs an output driver to convert
 .IR @g@troff 's
 output to a form appropriate for
 .IR dev ;
@@ -1830,7 +1830,7 @@ option
 .
 If set but empty,
 .I groff
-calls
+runs
 .I preconv
 without an
 .B \-e

@@ -46,6 +46,7 @@ tmp=$(printf "%s\n" "$input" | "$groff" -t -Z -Tascii -P-cbou)
 output=$(printf "%s" "$tmp" | "$grotty" -F ./font 2>/dev/null)
 error=$(printf "%s" "$tmp" | "$grotty" -F ./font 2>&1 >/dev/null)
 echo "$output"
+echo "$error"
 
 echo "checking that no diagnostic messages are produced by grotty (1)"
 echo "$error" | grep -q 'grotty:' && wail

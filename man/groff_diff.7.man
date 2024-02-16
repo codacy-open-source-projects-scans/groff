@@ -2123,27 +2123,28 @@ See
 .TP
 .BR .color\~ [\c
 .IR b ]
-If
-.I b
-is non-zero or missing,
-enable output of color-related device-independent output commands,
-otherwise disable them.
+Enable or disable output of color-related device-independent output
+commands per Boolean expression
+.IR b .
 .
-It is enabled by default.
+It is enabled by default,
+and if
+.I b
+is omitted.
 .
 .
 .TP
 .BR .cp\~ [\c
 .IR b ]
-If
-.I b
-is non-zero or missing,
-enable AT&T
+Enable or disable AT&T
 .I troff \" AT&T
-compatibility mode,
-otherwise disable it.
+compatibility mode per Boolean expression
+.IR b .
 .
-It is disabled by default.
+It is disabled by default,
+and enabled if
+.I b
+is omitted.
 .
 In compatibility mode,
 long names are not recognized,
@@ -2971,13 +2972,14 @@ is read in copy mode.
 .TP
 .BR .linetabs\~ [\c
 .IR b ]
-If
-.I b
-is non-zero or missing,
-activate line-tabs in the environment,
-otherwise disable it.
+Activate or deactivate line-tabs in the environment per Boolean
+expression
+.IR b .
 .
-They are inactive by default.
+They are inactive by default,
+and activated if
+.I b
+is omitted.
 .
 When line-tabs are active,
 tab stops are computed relative to the start of the pending output line
@@ -3696,13 +3698,13 @@ is retained.
 .TP
 .BR .vpt\~ [\c
 .IR b ]
-If
-.I b
-is non-zero or missing,
-enable vertical position traps,
-otherwise disable them.
+Enable or disable vertical position traps per Boolean expression
+.IR b .
 .
-They are enabled by default.
+They are enabled by default,
+and if
+.I b
+is omitted.
 .
 .
 .IP
@@ -4177,6 +4179,27 @@ Interpolate\~1 if the most recently formatted text was interrupted
 (ended with
 .BR \[rs]c ),
 0\~otherwise.
+.
+.
+.TP
+.B \[rs]n[.it]
+Interpolate the count of lines remaining in any pending input trap.
+.
+.
+.TP
+.B \[rs]n[.itc]
+Interpolate\~1 if the pending input trap honors the output line
+continuation escape sequence
+.RB ( \[rs]c ),
+0\~otherwise.
+.
+.
+.TP
+.B \[rs]n[.itm]
+Interpolate the name of the macro associated with the pending input
+trap.
+.
+This is a string-valued register.
 .
 .
 .TP

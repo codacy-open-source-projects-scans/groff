@@ -985,7 +985,7 @@ void vertical_position_traps()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    vertical_position_traps_flag = (n != 0);
+    vertical_position_traps_flag = (n > 0);
   else
     vertical_position_traps_flag = 1;
   skip_line();

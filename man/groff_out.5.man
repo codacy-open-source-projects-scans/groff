@@ -2,7 +2,7 @@
 .SH Name
 groff_out \- GNU
 .I roff
-intermediate output format
+device-independent output format
 .
 .
 .\" XXX: This page needs review and editing.
@@ -10,7 +10,7 @@ intermediate output format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -116,6 +116,8 @@ after these commands, otherwise the position is not changed.
 .SH Description
 .\" ====================================================================
 .
+.\" BEGIN Keep parallel with introductory paragraph of the "Language
+.\" Concepts" node in doc/groff.texi.in.
 The fundamental operation of the
 .MR @g@troff @MAN1EXT@
 formatter is the translation of the
@@ -146,74 +148,90 @@ a catch-all for other operations.
 The last includes directives to start and stop output,
 identify the intended output device,
 and embed URL hyperlinks in supported output formats.
+.\" END Keep parallel with introductory paragraph of the "Language
+.\" Concepts" node in doc/groff.texi.in.
 .
 .
-.P
-Because the front-end command
+.\" ====================================================================
+.SS Background
+.\" ====================================================================
+.
+.\" BEGIN Keep parallel with paragraphs after the first in the "gtroff
+.\" Output" node in doc/groff.texi.in.
+As
 .MR groff @MAN1EXT@
-is a wrapper that normally runs the
-.I @g@troff
-formatter to generate intermediate output
-and an output driver (\[lq]postprocessor\[rq]) to consume it,
-users normally do not encounter this language.
+is a wrapper program around GNU
+.I troff \" GNU
+and automatically calls an output driver,
+users seldom encounter this format under normal circumstances.
 .
-The
 .I groff
-program's
-.B \-Z
-option inhibits postprocessing such that this intermediate output is
-sent to the standard output stream as when
-.I @g@troff
-is run manually.
+offers the option
+.B \-z
+to inhibit postprocessing such that GNU
+.IR troff 's \" GNU
+output is sent to the standard output stream just as it is when running
+GNU
+.I troff \" GNU
+directly.
 .
 .
 .P
-.IR groff 's
-intermediate output facilitates the development of output drivers and
-other postprocessors by offering a common programming interface.
+The purpose of device-independent output is to facilitate the
+development of postprocessors by providing a common programming
+interface for all devices.
 .
-It is an extension of the page description language developed by Brian
-Kernighan for AT&T device-independent
-.I troff \" AT&T
-circa 1980.
+It is a distinct, and much simpler, language from that of the formatter,
+.IR troff . \" generic
+The device-independent output can be thought of as a \[lq]page
+description language\[rq].
 .
-Where a distinction is necessary,
-we will say
-.RI \[lq] @g@troff
-output\[rq] to describe the output of GNU
+.
+.P
+In the following discussion,
+the term
+.I "troff output"
+describes what is output by GNU
 .IR troff , \" GNU
-and \[lq]intermediate output\[rq] to denote the language accepted by
-the parser implemented in
-.IR groff 's
-internal C++ library used by most of its output drivers.
-.\" XXX GBR leaves off here.
+while
+.I "device-independent output"
+denotes the language accepted by the parser that interprets this output
+for the output drivers.
+.
+This parser handles whitespace more flexibly than AT&T
+.IR troff 's \" AT&T
+implementation,
+recognizes a GNU extension to the language,
+and supports an obsolete construct for compatibility;
+otherwise,
+both formats are the same.
+.
+(The parser for device-independent output can be found in the
+.I groff
+sources at
+.IR \%src/\:\%libs/\:\%libdriver/\:\%input.cpp .)
 .
 .
-.\" ====================================================================
-.SH "Language concepts"
-.\" ====================================================================
+.P
+When Brian Kernighan designed AT&T
+.IR troff 's \" AT&T
+device-independent output format circa 1980,
+he had to balance
+readability and maintainability against severe constraints on file size
+and transmission speed to the output device.
 .
-During the run of
-.IR @g@troff ,
-the
-.I roff
-input is cracked down to the information on what has to be printed at
-what position on the intended device.
+A decade later,
+when James Clark wrote
+.IR groff ,
+these constraints were no longer as tight.
 .
-So the language of the
-.I intermediate output
-format can be quite small.
-.
-Its only elements are commands with or without arguments.
-.
-In this document, the term \[lq]command\[rq] always refers to the
-.I intermediate output
-language, never to the
-.I roff
-language used for document formatting.
-.
-There are commands for positioning and text writing, for drawing, and
-for device controlling.
+GNU
+.I troff \" GNU
+therefore emits device-independent output that is more easily
+interpreted by humans than did AT&T
+.IR troff . \" AT&T
+.\" END Keep parallel with paragraphs after the first in the "gtroff
+.\" Output" node in doc/groff.texi.in.
 .
 .
 .\" ====================================================================
@@ -1831,13 +1849,17 @@ describes the output device
 James Clark wrote an early version of this document,
 which described only the differences between AT&T
 device-independent
-.IR troff 's
+.IR troff 's \" AT&T
 output format and that of GNU
-.IR roff .
+.IR troff . \" GNU
 .
-The present version was completely rewritten in 2001 by
+It has since been expanded and revised by
 .MT groff\-bernd\:.warken\-72@\:web\:.de
 Bernd Warken
+.ME
+and
+.MT g.branden\:.robinson@\:gmail\:.com
+G. Branden Robinson
 .ME .
 .
 .
@@ -1879,6 +1901,7 @@ documentation as
 by Brian W.\& Kernighan,
 1982,
 AT&T Bell Laboratories Computing Science Technical Report No.\& 97,
+(CSTR\~#97),
 provides additional insights into the
 device and font description file formats
 and device-independent output format.
@@ -1910,7 +1933,7 @@ files.
 .
 .TP
 .MR @g@troff @MAN1EXT@
-generates the device-independent intermediate output documented here.
+generates the language documented here.
 .
 .
 .TP
@@ -1922,22 +1945,26 @@ systems.
 .
 .TP
 .MR groff_diff @MAN7EXT@
-enumerates differences between the intermediate output produced by AT&T
+enumerates differences between the output of AT&T
 .I troff \" AT&T
-and that of
-.IR groff .
+and that of GNU
+.IR troff . \" GNU
 .
 .
 .TP
 .MR gxditview @MAN1EXT@
-is a viewer for intermediate output.
+is a viewer for device-independent
+.I troff \" generic
+output.
 .
 .
 .TP
 .UR https://\:github.com/\:Alhadis/\:Roff\:.js/
 .I Roff.js
 .UE
-is a viewer for intermediate output written in JavaScript.
+is a viewer for device-independent
+.I troff \" generic
+output written in JavaScript.
 .
 .
 .P

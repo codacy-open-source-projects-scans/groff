@@ -1,3 +1,74 @@
+2024-02-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Implement `.it`, `.itc`, and `.itm` registers.  These
+	read-only (and, in the case of `.itm`, string-valued as well)
+	registers report the number of lines remaining in a pending
+	input trap, a Boolean indication of whether that pending input
+	trap honors output line continuation (cf. the `it` and `itc`
+	requests), and the name of the macro associated with the pending
+	input trap, respectively.
+
+	* src/roff/troff/env.h (class environment): Declare new member
+	functions to retrieve these data.
+	* src/roff/troff/env.cpp
+	(environment::get_input_trap_line_count)
+	(environment::get_input_trap_respects_continuation)
+	(environment::get_input_trap_macro): Implement them.
+	(environment::environment): Update constructors to initialize
+	`input_trap_count` to "-1", as a hint that no input trap has
+	ever been sprung in the environment.  (After one has, the count
+	remains at zero and the name of the macro associated with the
+	last trap that was sprung remains in `.itm`, until a new input
+	trap is planted or explicitly cleared.)
+	(environment::copy): Set the input trap line count to "-1".
+	(do_input_trap): Update `it`/`itc` request handler.  Reset the
+	input trap line count to "-1" and null out the associated macro
+	name.  If the `it` or `itc` requests are given no arguments,
+	this is the situation that persists.  Recast diagnostic message
+	when attempting to set a nonpositive input line count.
+	(init_env_requests): Hook up the new register names to accessor
+	functions.
+
+	* doc/groff.texi.in (Input Line Traps):
+	* man/groff.7.man (Read-only registers):
+	* man/groff_diff.7.man (New registers): Document them.
+
+	* NEWS: Add item.
+
+2024-02-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: The `color`, `cp`, `linetabs`, and `vpt` requests now
+	interpret arguments with negative values as instructions to
+	disable the corresponding feature, using the *roff
+	integer-to-Boolean conversion idiom instead of the C/C++ one.
+	Thus, if you invoke these requests with a register
+	interpolation, the outcome agrees with an `if` test of the
+	register's value.
+
+	* src/roff/troff/div.cpp (vertical_position_traps):
+	* src/roff/troff/env.cpp (widow_control_request) [WIDOW_CONTROL]
+	(line_tabs_request):
+	* src/roff/troff/input.cpp (activate_color, compatible): Do it.
+
+	* doc/groff.texi.in (Tabs and Fields, Colors)
+	(Vertical Position Traps, Compatibility Mode):
+	* man/groff.7.man (Syntax reference conventions)
+	(Request short reference):
+	* man/groff_diff.7.man (New requests): Document it.
+
+	* NEWS: Add item.
+
+2024-02-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Update default search path for URW fonts; Fedora 39 has come up
+	with a new place for them.
+
+	* font/devpdf/Foundry.in: Do it (at run time).
+	* m4/groff.m4 (GROFF_URW_FONTS_CHECK): Do it (at build time).
+
+	Thanks to T. Kurt Bond for the report to the groff mailing list.
+	<https://lists.gnu.org/archive/html/groff/2024-02/msg00018.html>
+
 2024-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Put version number on cover page of our Texinfo manual.
@@ -218,7 +289,7 @@
 
 	* src/roff/troff/env.h (class environment):
 	* src/roff/troff/env.cpp (class environment): Demote member
-	variable `continued_input_trap` from `int` to `bool`.  Update
+	variable `continued_input_trap` from `int` to `bool`.
 
 	* src/roff/troff/env.cpp (class environment): Initialize member
 	variable `continued_input_trap` with Boolean, not integer,

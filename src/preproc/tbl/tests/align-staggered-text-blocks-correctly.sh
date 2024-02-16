@@ -59,4 +59,6 @@ output=$(printf "%s\n" "$input" | "$groff" -tZ -T ps)
 echo "$output"
 test $(echo "$output" | grep -c 'V *44000') -eq 5
 
+test -z "$fail"
+
 # vim:set ai et sw=4 ts=4 tw=72:

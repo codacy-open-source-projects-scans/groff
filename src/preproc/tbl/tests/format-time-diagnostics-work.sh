@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -20,7 +20,12 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-set -e
+fail=
+
+wail () {
+    echo ...FAILED >&2
+    fail=YES
+}
 
 # Ensure we get diagnostics when we expect to, and not when we don't.
 #
@@ -49,7 +54,7 @@ echo "checking for diagnostic when row with text box overruns page" \
     "bottom"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 echo "checking 'nowarn' suppression of  diagnostic when row with text" \
     "box overruns page bottom"
@@ -57,7 +62,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nowarn;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 echo "checking 'nokeep' suppression of diagnostic when row with text" \
     "box overruns page bottom"
@@ -65,7 +70,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nokeep;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 # The other way to get "diagnostic #1" is to have a row that is too
 # tall _without_ involving a text block, for instance by having a font
@@ -83,7 +88,7 @@ echo "checking for diagnostic when row with large vertical spacing" \
     "overruns page bottom"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 echo "checking 'nowarn' suppression of diagnostic when row with large" \
     "vertical spacing overruns page bottom"
@@ -91,7 +96,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nowarn;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 echo "checking 'nokeep' suppression of diagnostic when row with large" \
     "vertical spacing overruns page bottom"
@@ -99,7 +104,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nokeep;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 # Diagnostic #2: a boxed table won't fit on a page
 
@@ -115,7 +120,7 @@ L.
 echo "checking for diagnostic when boxed table won't fit on page"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 # The above is an error, so the "nowarn" region option won't shut it up.
 #
@@ -140,7 +145,7 @@ echo "checking for diagnostic when unexpanded columns overrun line" \
     "length (1)"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 echo "checking 'nowarn' suppression of diagnostic when unexpanded" \
     "columns overrun line length (1)"
@@ -148,7 +153,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nowarn;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 # Avoiding keeps won't get you out of this one.
 echo "checking 'nokeep' NON-suppression of diagnostic when unexpanded" \
@@ -157,7 +162,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nokeep;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 # Case 2: 'x' column modifier used
 #
@@ -178,7 +183,7 @@ echo "checking for diagnostic when unexpanded columns overrun line" \
     "length (2)"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 echo "checking 'nowarn' suppression of diagnostic when unexpanded" \
     "columns overrun line length (2)"
@@ -186,7 +191,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nowarn;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 # Avoiding keeps won't get you out of this one.
 echo "checking 'nokeep' NON-suppression of diagnostic when unexpanded" \
@@ -195,7 +200,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;/nokeep;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 # Diagnostic #4: expanded table gets all column separation squashed out
 
@@ -212,7 +217,7 @@ echo "checking for diagnostic when region-expanded table has column" \
     "separation eliminated"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 echo "checking 'nowarn' suppression of diagnostic when" \
     "region-expanded table has column separation eliminated"
@@ -220,7 +225,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;$/ nowarn;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 # Avoiding keeps won't get you out of this one.
 echo "checking 'nokeep' NON-suppression of diagnostic when" \
@@ -229,7 +234,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;$/ nokeep;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 # Diagnostic #5: expanded table gets column separation reduced
 
@@ -246,7 +251,7 @@ echo "checking for diagnostic when region-expanded table has column" \
     "separation reduced"
 output=$(printf "%s" "$input" | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
 
 echo "checking 'nowarn' suppression of diagnostic when" \
     "region-expanded table has column separation reduced"
@@ -254,7 +259,7 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;$/ nowarn;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 0
+test $nlines -eq 0 || wail
 
 # Avoiding keeps won't get you out of this one.
 echo "checking 'nokeep' NON-suppression of diagnostic when" \
@@ -263,6 +268,8 @@ input_nowarn=$(printf "%s" "$input" | sed 's/;$/ nokeep;/')
 output=$(printf "%s" "$input_nowarn" \
     | "$groff" -Tascii -t 2>&1 >/dev/null)
 nlines=$(echo "$output" | grep . | wc -l)
-test $nlines -eq 1
+test $nlines -eq 1 || wail
+
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

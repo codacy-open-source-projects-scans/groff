@@ -31,9 +31,9 @@ wail() {
 # because the device supports hyperlinking) uses the correct line length
 # and is adjusted.
 
-# The 'XX' provokes hyphenation interior to the line due to diversion
-# handling with certain incorrect approaches to link text handling
-# (forgetting to copy environment 0 to the diversion's environment).
+# The 'XX' provokes hyphenation interior to the line with certain
+# incorrect approaches to link text handling (forgetting to copy
+# environment 0 to the diversion's environment).
 input='.TH foo 1 2022-11-08 "groff test suite"
 .SH "See also"
 .
