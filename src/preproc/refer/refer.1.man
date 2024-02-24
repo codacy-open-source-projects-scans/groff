@@ -541,20 +541,15 @@ or
 .I field
 need be specified.
 .
-If
-.I keywords
-are present,
+If keywords are present,
 .I @g@refer
 searches the bibliographic database(s) for a unique reference matching
 them.
 .
 Multiple matches are an error;
-add more
-.I keywords
-to disambiguate the reference.
+add more keywords to disambiguate the reference.
 .
-In the absence of
-.I keywords,
+In the absence of keywords,
 .I fields
 constitute the bibliographic record.
 .
@@ -562,9 +557,7 @@ Otherwise,
 .I fields
 specify additional data to replace or supplement those in the reference.
 .
-When references are accumulating and
-.I keywords
-are present,
+When references are accumulating and keywords are present,
 specify
 additional
 .I fields
@@ -608,8 +601,7 @@ treatment of the particular citation.
 .
 AT&T
 .I \%refer \" AT&T
-treats these flags as
-.I keywords,
+treats these flags as keywords,
 but ignores them since they are non-alphanumeric.
 .
 The following flags direct GNU

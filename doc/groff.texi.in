@@ -6630,8 +6630,9 @@ reference delimiters.
 Interpolate@tie{}1 if @var{anything} is a valid identifier, and@tie{}0
 otherwise.  The delimiter need not be a neutral apostrophe; see
 @ref{Delimiters}.  Because invalid input characters are removed (see
-above), invalid identifiers are empty or contain spaces, tabs, or
-newlines.
+above), invalid identifiers are empty or contain spaces, tabs, newlines,
+or escape sequences that interpolate something other than a sequence of
+ordinary characters.
 
 You can employ @code{\A} to validate a macro argument before using it to
 construct another escape sequence or identifier.

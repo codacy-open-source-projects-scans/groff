@@ -1130,15 +1130,7 @@ which searches the macro path for
 Because its argument is a file name,
 its
 .RB \[lq] .tmac \[rq]
-component must be included for the file to be found;
-however,
-as a convenience,
-if opening it fails,
-.B mso
-strips any such suffix and tries again with a
-.RB \[lq] tmac.\& \[rq]
-prefix,
-and vice versa.
+component must be included for the file to be found.
 .
 .
 .P

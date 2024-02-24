@@ -21,6 +21,19 @@ the Subject line or you risk my spam filters nuking your message.
 
 ====================================================================
 
+Version 2.6_d
+=============
+Prevailing quad not always being restored after exiting lists.
+---Fixed---
+
+Quitting indents not always restoring .ta \n[.l]u (right margin tab
+stop).
+---Fixed---
+
+CAPTION without LABEL when CAPTION_AFTER_LABEL is enabled not
+respecting captioned material's width and quad.
+---Fixed--
+
 Version 2.6_a
 =============
 Document line lengths other than the default not being respected

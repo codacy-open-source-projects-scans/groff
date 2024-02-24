@@ -137,6 +137,7 @@
 .    \}
 .  \}
 .  rr an-TH-was-called
+.  ds an*previous-page-ref-string \" empty
 .  ch an-header
 .  an*break-page-with-new-number
 ..
@@ -365,9 +366,6 @@
 .    DEVTAG-EO-TL
 .  \}
 .
-.  \" A bookmark is attached to the page header, but only on the first
-.  \" page of the document.
-.  nr an*was-TH-bookmark-emitted 0
 .  an-header
 .
 .  if !\\n[cR] \{\
@@ -438,9 +436,11 @@
 .de1 PT
 .  ie \\n[cR] .pl +1v
 .  el         .sp (.5i - .5m)
-.  if !\\n[an*was-TH-bookmark-emitted] \{\
+.  \" Attach a bookmark to the page header on the first page of a new
+.  \" man(7) document; a changed identifier and section indicates this.
+.  if !'\\*[an*page-ref-string]'\\*[an*previous-page-ref-string]' \{\
 .    an*bookmark 1 "\\*[an*page-ref-string]"
-.    nr an*was-TH-bookmark-emitted 1
+.    ds an*previous-page-ref-string \\*[an*page-ref-string]
 .  \}
 .  tl '\\*[an-pageref]'\\*[an-extra3]'\\*[an-pageref]'
 .  ie \\n[cR] \{\
@@ -1130,8 +1130,8 @@ contains unsupported escape sequence
 .  ds an*visible-hyperlink \\$1\" in case there is no link text
 .  \" We want the diversion to format as if it has an indentation of
 .  \" zero (that comes for free when we switch environments), and we
-.  \" want the line length reduced by the amount of indentation that
-.  \" obtains when we output it.
+.  \" want the line length reduced by the amount of indentation in
+.  \" effect at the start of the link text.
 .  nr an*saved-line-length \\n[.l]
 .  nr an*saved-indentation \\n[.i]
 .  if \\n[an*do-hyperlink] \{\
@@ -1153,18 +1153,18 @@ contains unsupported escape sequence
 .\" "mailto:", but this need not be visible when rendering an email
 .\" address on a device incapable of hyperlinking.
 .de an*end-hyperlink
+.  ds an*trailing-text \\$1\"
 .  ie (\\n[an*is-in-link-text-diversion] & \\n[an*do-hyperlink]) \{\
 .    br
 .    di
 .    ev
 .    nr an*is-in-link-text-diversion 0
-.    \" Was any link text present?
-.    ie \\n[dn] \{\
+.    \" If the diversion width is zero, assume there was no link text.
+.    ie \\n[dl] \{\
 .      if '\*[.T]'html' \
 .        nop \X'html:<a href="\\*[an*hyperlink]">'\c
-.      if '\*[.T]'pdf' \{\
-.        pdfhref W -D \\*[an*hyperlink] -- "|"
-.      \}
+.      if '\*[.T]'pdf' \
+.        pdfhref W -D \\*[an*hyperlink] -- |
 .      if \\n[an*is-output-terminal] \
 .        nop \X'tty: link \\*[an*hyperlink]'\c
 .      \" Replace the final newline of the diversion.
@@ -1177,31 +1177,36 @@ contains unsupported escape sequence
 .      if \\n[an*is-output-terminal] \
 .        nop \X'tty: link'\c
 .      if '\*[.T]'pdf' \X'pdf: markend'\m[default]\c
+.      nop \&\\*[an*trailing-text]\"
 .    \}
 .    \" If there was no link text, format URI as its own link text.  We
-.    \" don't add angle brackets here.
+.    \" don't add angle brackets here; we assume that the application
+.    \" uses some means of indicating the hyperlinked text.
 .    el \{\
 .      if '\*[.T]'html' \
 .        nop \X'html:<a href="\\*[an*hyperlink]">\
 \\*[an*visible-hyperlink]</a>'\c
 .      if '\*[.T]'pdf' \
-.        pdfhref W -D \\*[an*hyperlink] -- \\*[an*visible-hyperlink]\c
+.        pdfhref W -D \\*[an*hyperlink] -A "\\*[an*trailing-text]" \
+-- \\*[an*visible-hyperlink]\c
 .      if \\n[an*is-output-terminal] \
 .        nop \X'tty: link \\*[an*hyperlink]'\
 \\*[an*visible-hyperlink]\X'tty: link'\c
+.      if !'\*[.T]'pdf' \
+.        nop \&\\*[an*trailing-text]\"
 .    \}
-.    nop \&\\$1\"
 .  \}
 .  \" If not hyperlinking, format URI in angle brackets.  There was no
 .  \" diversion, so the link text has already been formatted normally.
 .  el \{\
 .    nh
-.    nop \\[la]\\*[an*visible-hyperlink]\\[ra]\\$1
+.    nop \\[la]\\*[an*visible-hyperlink]\\[ra]\\*[an*trailing-text]
 .    hy \\n[an*hyphenation-mode]
 .  \}
 .  rm an*link-text
 .  rm an*hyperlink
 .  rm an*visible-hyperlink
+.  rm an*trailing-text
 ..
 .
 .\" Begin email hyperlink.  Input until the next `ME` call is stored in
@@ -1374,6 +1379,8 @@ contains unsupported escape sequence
 .mso devtag.tmac
 .nr an-devtag-needs-end-of-heading 0
 .nr an-devtag-needs-second-column 0
+.
+.ds an*previous-page-ref-string \" empty
 .
 .nr an*enforce-tag-separation 1
 .

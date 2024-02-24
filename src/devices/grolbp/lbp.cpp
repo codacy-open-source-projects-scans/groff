@@ -194,6 +194,7 @@ lbp_printer::lbp_printer(int ps, double pw, double pl)
 
 lbp_printer::~lbp_printer()
 {
+  current_lineno = 0; // At this point, we've read all the input.
   lbpputs("\033P1y\033\\");
   lbpputs("\033c\033<");
 }

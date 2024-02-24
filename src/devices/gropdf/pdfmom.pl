@@ -68,18 +68,18 @@ while (my $c=shift)
     {
 	if (length($c) > 2)
 	{
-	    $preconv=$c;
+	    $preconv.=" $c";
 	}
 	else
 	{
-	    $preconv=$c;
+	    $preconv.=" $c";
 	    $preconv.=shift;
 	}
 	next;
     }
     elsif (substr($c,0,2) eq '-k')
     {
-	$preconv=$c;
+	$preconv.=" $c";
 	next;
     }
     elsif ($c eq '-Z')

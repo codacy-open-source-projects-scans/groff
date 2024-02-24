@@ -2298,6 +2298,10 @@ subsequently referred to as
 and so forth.
 .
 .TPx
+.I mac
+is a macro identifier.
+.
+.TPx
 .I message
 is a character sequence to be emitted on the standard error stream.
 .

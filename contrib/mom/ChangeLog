@@ -1,9 +1,21 @@
+2024-02-21  Deri James <deri@chuzzlewit.myzen.co.uk>
+
+	* pdfmom.pl: Accrete `-k` and `-K` options to groff instead of
+		letting one clobber the other.  See message at
+		<https://lists.gnu.org/archive/html/groff/2024-02/msg00059.html>
+		and follow-ups.
+
 2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* examples/test-mom.sh.in: Fix code style/diagnostic nits.
 	Issue more explicit message when skipping test due to missing
 	prerequisites.  Kill trailing whitespace.  Add Vim editor aid
 	comment.
+
+2024-02-17
+
+	* om.tmac: Improve pdfbox handling around headings.  LEAD argument
+	added to HEADING_STYLE.
 
 2024-01-22
 

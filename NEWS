@@ -178,6 +178,17 @@ o The doc (mdoc) macro package's `Mt` macro now sets its argument in
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
 
+o The m (mm) macro package's `EPIC` macro (a GNU extension) now
+  interprets its "width" argument in ens by default, and its "height"
+  argument in vees, instead of basic units, for consistency with the
+  rest of the package.
+
+o The m (mm) macro package's `DS` macro now interprets its third
+  argument (a right-hand indentation) in ens by default, for consistency
+  with the rest of the package.  This is a difference from DWB mm (which
+  passed the value unprocessed to the `ll` request, which itself uses
+  ems), and groff mm's own historical behavior, which used basic units.
+
 o The m (mm) macro package's `HU` macro now supports a second argument
   as a GNU extension.  It corresponds to the optional third argument of
   the `H` macro.
@@ -193,6 +204,15 @@ o The s (ms) macro package now sets the vertical spacing register
   typesetting principles.  Thus, when formatting a document with a type
   size of 20 points, the vertical spacing now defaults to 24 points
   rather than 22.
+
+Output drivers
+--------------
+
+o The PostScript output driver grops no longer accepts spaces as field
+  separators in its "download" file; this is so that spaces can appear
+  in font file names, and to better align the syntax of this file with
+  that used by gropdf.  The download file for grops shipped by groff has
+  long used tabs rather than spaces for field separation.
 
 Miscellaneous
 -------------

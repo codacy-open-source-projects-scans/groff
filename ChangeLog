@@ -1,3 +1,189 @@
+2024-02-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Rename a test.
+
+	* tmac/tests/doc_Lk-respect-sentence-ending-punctuation.sh:
+	Rename this...
+	* tmac/tests/doc_Lk-respects-sentence-ending-punctuation.sh:
+	...to this.
+	* tmac/tmac.am (tmac_TESTS): Update.
+
+2024-02-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/doc_Xr-works.sh: Unit-test `Xr` macro.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an*end-hyperlink): Fix bug: when no link text
+	was supplied, the fallback link text (the hyperlink itself) was
+	not appearing in PDF output.  This bug was masked by another:
+	the "no link text supplied" branch was never being taken because
+	the wrong diversion dimension register was being tested.  Test
+	register `dl` instead of `dn` and annotate the reasoning.  Emit
+	the trailing text in two places in the logic, since the
+	`pdfhref` macro takes over this function with its `-A` parameter
+	{which we now use}, but wasn't designed to accommodate the use
+	case where we start the mark with one call and close it with
+	another, which we use for the "no link text supplied" case.
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an_UR-works.sh: Add tests of PDF output, using
+	pdftotext(1) (from poppler-utils) to scrape the text from PDF.
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdfbookmark): Validate bookmark level argument;
+	complain if it is not a numeric expression and treat it as "1".
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an*end-hyperlink): Trivially refactor.  Store
+	the first argument in a string named `an*trailing-text` (and use
+	it) to clarify later logic.  Delete the string when done.
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Trivially refactor.
+
+	* tmac/an.tmac: Revise mechanism for detecting new page headings
+	that should get a top-level bookmark.
+	(an-end, (initialization)): Make new string
+	`an*previous-page-ref-string` empty.
+	(TH, PT): Drop `an*was-TH-bookmark-emitted` register.
+	(PT): Compare `an*page-ref-string` to
+	`an*previous-page-ref-string`; emit a bookmark if they differ.
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Trivially refactor (DRY).
+
+	* tmac/mdoc/doc-ditroff:
+	* tmac/mdoc/doc-nroff: Move string definitions that are
+	identical from here...
+	* tmac/mdoc/doc-common: ...to here.
+
+2024-02-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-nroff (ua): Define string as `ha` special
+	character, not "^".  This is (probably) a matter only of
+	pedantic correctness, as this definition takes place only in the
+	"else" block of a conditional testing for the "utf8" output
+	device, and no other supported nroff-mode device renders "^"
+	surprisingly to ASCII nostalgics.
+
+2024-02-20  Lennart Jablonka <humm@ljabl.com>
+
+	* src/preproc/eqn/main.cpp: This file includes header
+	<stdlib.h>.  As part of the C++ standard library, <stdlib.h>
+	provides a bunch of stuff, including `atexit()`, in the global
+	name space; it need not provide that stuff in the `std` name
+	space.
+
+	See <https://eel.is/c++draft/support.c.headers.other>.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp
+	(resource_manager::read_download_file): Stop interpreting spaces
+	as token delimiters, so that PostScript font files with spaces
+	in their names can be handled (read and embedded in the
+	generated PostScript).
+	* src/devices/grops/grops.1.man (Usage): Update documentation.
+
+	* NEWS: Add item reporting this user-visible change.
+
+	Fixes <https://savannah.gnu.org/bugs/?65246>.  Thanks to Deri
+	James for the report.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[output drivers]: Reset line number at end of input.
+
+	* src/devices/grodvi/dvi.cpp (dvi_printer::~dvi_printer):
+	* src/devices/grohtml/post-html.cpp
+	(html_printer::~html_printer):
+	* src/devices/grolbp/lbp.cpp (lbp_printer::~lbp_printer):
+	* src/devices/grolj4/lj4.cpp (lj4_printer::~lj4_printer):
+	* src/devices/grops/ps.cpp (ps_printer::~ps_printer):
+	* src/devices/grotty/tty.cpp (tty_printer::~tty_printer): Clear
+	line number when tearing down output writer so that diagnostic
+	messages aren't emitted with a misleading (and nonexistent) line
+	number (the number of lines in the device-independent output
+	file plus one).  The PostScript driver in particular does large
+	amounts of processing at this point (like resolving PostScript
+	resources).  The problem is more theoretical for other output
+	drivers, but done for consistency.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/string.cpp (string::string): When
+	constructing a new string from a pointer to char, if the
+	pointed-to-string doesn't exactly fit the storage reserved for
+	it, populate the storage with null bytes before copying, to
+	avoid reads of garbage heap memory.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp (resource::resource): Spell "file
+	name" thus in diagnostic message.  It's English, not C.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog):
+	Report underlying system error when `putenv()` fails.
+
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog):
+	(resource_manager::supply_resource)
+	(resource_manager::read_download_file): Parallelize wording of
+	diagnostic messages.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/ps.cpp: Promote type definition to global
+	scope and deanonymize it as `proc_table_t` so we can use it with
+	`array_length` template.
+
+	* src/devices/grops/psrm.cpp: Promote `comment_info` type
+	definition to global scope so we can use it with `array_length`
+	template.
+
+	* src/devices/grops/ps.cpp (ps_printer::special):
+	* src/devices/grops/psrm.cpp: Slightly refactor; migrate from
+	`sizeof` and division operators to groff's `array_length`
+	template function.
+	(resource_manager::read_resource_arg, parse_extensions)
+	(resource_manager::process_file)
+	(resource_manager::print_extensions_comment): Switch types of
+	loop indices iterating over these objects from `int`s of various
+	signedness to `size_t`.
+	(resource_manager::process_file)
+	(resource_manager::read_download_file): Use `sizeof` operator
+	idiomatically; it is an operator, not a function, and should be
+	followed by parentheses only when making it operate on a type
+	cast to get the size of a non-lvalue.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdfbookmark): Drop unused register storing
+	computed length of `pdf:clean` string, `pdf:clean:len`.
+
+2024-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_define_string, length_request):
+	Drop redundant diagnostic message on invalid string identifiers.
+
+2024-02-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pdf]: Regression-test Savannah #65320.
+
+	* tmac/tests/pdf_bookmark-starting-with-control-char-works.sh:
+	Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+	(tmac_XFAIL_TESTS): Mark as an expected failure since resolution
+	of this bug is blocked by resolution of Savannah #65322.
+
 2024-02-11  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Implement `.it`, `.itc`, and `.itm` registers.  These
@@ -57,6 +243,8 @@
 	* man/groff_diff.7.man (New requests): Document it.
 
 	* NEWS: Add item.
+
+	Fixes <https://savannah.gnu.org/bugs/?64233>.
 
 2024-02-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -493,6 +681,8 @@
 	email addresses in roman by default.
 
 	* NEWS: Report change in font styling.
+
+	Fixes <https://savannah.gnu.org/bugs/?60034>.
 
 2024-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
 

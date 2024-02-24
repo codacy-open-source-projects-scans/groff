@@ -4866,8 +4866,8 @@ String	7-bit	8-bit	UCS	Prefer	Meaning
 \[rs]*(Pm	+\- 	\[+-]	\*[Pm]	\[rs](+\-	plus or minus
 \[rs]*(If	infinity	infinity	\*[If]	\[rs](if	infinity
 \[rs]*(Am	\*[Am]	\*[Am]	\*[Am]	&	ampersand
-\[rs]*(Na	\*[Na]	\*[Na]	\*[Na]	NaN	not a number
-\[rs]*(Ba	\*[Ba]	\*[Ba]	\*[Ba]	|	bar
+\[rs]*(Na	\*[Na]	\*[Na]	\*[Na]	\f[I]NaN\f[]	not a number (slanted)
+\[rs]*(Ba	\*[Ba]	\*[Ba]	\*[Ba]	|	bar (upright)
 .TE
 .
 .
@@ -4899,6 +4899,14 @@ Nowadays,
 output drivers \" technically, their macro files or font descriptions
 take on the responsibility of glyph substitution,
 as they possess relevant knowledge of their available repertoires.
+.
+The
+.Ql Ba
+and
+.Ql Na
+strings imply a mandatory typeface:
+upright (roman) in the former,
+and slanted (italics) with the latter.
 .
 .
 .Sh Diagnostics

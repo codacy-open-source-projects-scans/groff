@@ -4386,7 +4386,7 @@ void do_define_string(define_mode mode, comp_mode comp)
   else if (tok.is_tab())
     c = '\t';
   else if (!tok.is_space()) {
-    error("bad string definition");
+    // get_name() should have thrown a particularized diagnostic
     skip_line();
     return;
   }
@@ -5094,7 +5094,7 @@ void length_request()
   else if (tok.is_tab())
     c = '\t';
   else if (!tok.is_space()) {
-    error("bad string definition");
+    // get_name() should have thrown a particularized diagnostic
     skip_line();
     return;
   }

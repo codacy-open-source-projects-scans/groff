@@ -5,6 +5,11 @@
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved.
 
+Release 2.6_c
+-------------
+Adds LEAD argument to HEADING_STYLE to control leading of multi-line
+headings.
+
 Release 2.6_b
 -------------
 PDF outline panel page numbers now map to printed page numbers.

@@ -279,6 +279,7 @@ tty_printer::tty_printer() : cached_v(0)
 
 tty_printer::~tty_printer()
 {
+  current_lineno = 0; // At this point, we've read all the input.
   delete[] lines;
 }
 

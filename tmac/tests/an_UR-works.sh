@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -44,26 +44,26 @@ output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU0)
 echo "$output"
 
 echo "checking formatting of web URI with link text" \
-    "(hyperlinks disabled)" >&2
+    "(ascii device; hyperlinks disabled)" >&2
 echo "$output" | grep -Fq 'See figure 1 <http://foo.example.com>.' \
     || wail
 
 echo "checking formatting of web URI with no link text" \
-    "(hyperlinks disabled)" >&2
+    "(ascii device; hyperlinks disabled)" >&2
 echo "$output" | grep -Fq 'Or <http://bar.example.com>.' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
 
 echo "checking formatting of web URI with link text" \
-    "(hyperlinks enabled)" >&2
+    "(ascii device; hyperlinks enabled)" >&2
 echo "$output" | grep -Fq 'See figure 1.' || wail
 
 echo "checking formatting of web URI with no link text" \
-    "(hyperlinks enabled)" >&2
+    "(ascii device; hyperlinks enabled)" >&2
 echo "$output" | grep -Fq 'Or http://bar.example.com.' || wail
 
-input='.TH foo 1 2022-12-04 "groff test suite"
+html_input='.TH foo 1 2022-12-04 "groff test suite"
 .SH Name
 foo \- frobnicate a bar
 .SH "See also"
@@ -73,13 +73,52 @@ check our
 website
 .UE .'
 
-output=$(printf "%s\n" "$input" | "$groff" -man -Thtml)
+output=$(printf "%s\n" "$html_input" | "$groff" -man -Thtml)
 echo "$output"
 
 echo "checking HTML output of web URI" >&2
 echo "$output" \
     | grep -Fqx '<a href="https://example.com">website</a>.</p>' \
     || wail
+
+# We want to report failure (if it happened) before we attempt checks we
+# might have to skip.
+test -z "$fail" || exit
+
+if ! command -v pdftotext >/dev/null
+then
+    echo "cannot locate 'pdftotext' command" >&2
+    exit 77 # skip
+fi
+
+output=$(printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU0 \
+    | pdftotext - -)
+echo "$output"
+
+echo "checking formatting of web URI with link text" \
+    "(pdf device; hyperlinks disabled)" >&2
+# expected: See figure 1 〈http://foo.example.com〉.
+echo "$output" | grep -q 'See figure 1 .*http://foo.example.com.*\.' \
+    || wail
+
+echo "checking formatting of web URI with no link text" \
+    "(pdf device; hyperlinks disabled)" >&2
+# expected: Or 〈http://bar.example.com〉.
+echo "$output" | grep -q 'Or .*http://bar.example.com.*\.' || wail
+
+output=$(printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU1 \
+    | pdftotext - -)
+echo "$output"
+
+echo "checking formatting of web URI with link text" \
+    "(pdf device; hyperlinks enabled)" >&2
+# expected: See figure 1. Or http://bar.example.com.
+echo "$output" | grep -Fq 'See figure 1. Or' || wail
+
+echo "checking formatting of web URI with no link text" \
+    "(pdf device; hyperlinks enabled)" >&2
+# expected: See figure 1. Or http://bar.example.com.
+echo "$output" | grep -Fq 'Or http://bar.example.com.' || wail
 
 test -z "$fail"
 

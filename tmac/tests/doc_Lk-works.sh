@@ -40,8 +40,9 @@ Sometimes you
 and you get
 .Lk http://another.example.com .'
 
-     Sometimes   you   click   one   link:   http://example.com   and   you  get
-     http://another.example.com.
+# Expected:
+#     Sometimes   you   click   one   link:   http://example.com   and   you  get
+#     http://another.example.com.
 
 output=$(echo "$input" | "$groff" -Tascii -P-cbou -mdoc)
 echo "$output"

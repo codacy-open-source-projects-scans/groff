@@ -564,6 +564,18 @@ for instance with
 .SH Macros
 .\" ====================================================================
 .
+Where a macro accepts an argument expressing a measurement,
+horizontal ones
+(such as indentation)
+are by default reckoned in ens,
+and vertical ones
+(such as spacing around a display)
+are reckoned in vees.
+.
+Use an explicit scaling unit for clarity and predictable behavior.
+.
+.
+.P
 An explicitly empty argument may be specified with a pair of double
 quotes;
 to call a macro
@@ -977,8 +989,10 @@ switch font to bold style.
 Begin boxed,
 kept display.
 .
-The text is indented one character,
-and the right margin is one character shorter.
+The text is indented by
+.BR 1n ,
+and the line length reduced by
+.BR 2n .
 .
 This is a GNU extension.
 .
@@ -1070,11 +1084,12 @@ The line is always broken after the mark;
 contrast
 .BR VL .
 .
+A
 .I text-indent
-sets the indentation of the text,
-and
+argument overrides register
+.BR Pi ;
 .I mark-indent
-the distance from the current list indentation to the mark.
+sets the distance from the indentation of the current list to the mark.
 .
 A third argument suppresses the blank line that normally precedes each
 list item.
@@ -1232,8 +1247,8 @@ Indent text by
 T}
 C@Center each line.
 CB@Center the whole display as a block.
-R@Right-adjust the lines.
-RB@Right-adjust the whole display as a block.
+R@Right-align the lines.
+RB@Right-align the whole display as a block.
 .TE
 .
 .
@@ -1284,7 +1299,7 @@ places blank lines before and after the display.
 .
 Set register
 .B Ds
-to\~0 to suppress these.
+to \[lq]0\[rq] to suppress these.
 .
 .
 .TP
@@ -1435,24 +1450,28 @@ EOPof@argument to \fBOF\fP
 .
 .
 .TP
-.BI EPIC\  "\fR[\fP\fB\-L\fP\fR]\fP width height \fR[\fPname\fR]\fP"
+.BR EPIC\~ [\c
+.BR \-L ]\~\c
+.IR "width height" \~[ name ]
 Draw a box with the given
 .I width
 and
 .IR height .
 .
-It also prints the text
+The text
 .I name
-or a default string if
-.I name
-is not specified.
+(or default text)
+is formatted inside the box;
+no attempt is made to size the box to fit the text.
 .
-This is used to include external pictures;
-just give the size of the picture.
+An application of this macro is to indicate the placement of an image to
+be determined later,
+or externally composited in postprocessing.
 .
 .B \-L
-left-aligns the picture;
-the default is to center.
+as the first argument
+left-aligns the box;
+the default is to center it.
 .
 See
 .BR PIC .
@@ -1591,11 +1610,8 @@ default
 .
 .
 .IP
-If a second argument,
-conventionally
-.BR 1 ,
-is given,
-footnote numbering is reset when a first-level heading is encountered.
+A second argument resets footnote numbering when a first-level heading
+is encountered.
 .
 See
 .BR FS .
@@ -1836,12 +1852,12 @@ otherwise.
 .
 The
 .B Hb
-register sets a threshold below which a break occurs after the heading,
+register sets a threshold at which a break occurs after the heading,
 and register
 .B Hs
 sets a threshold below which vertical space follows it.
 .
-If the heading level is not less than both of these,
+If the heading level is above both of these,
 a
 .I run-in heading
 is produced;
@@ -2614,7 +2630,7 @@ ens.
 T}
 FB@T{
 Fully blocked:
-everything begins at the left margin.
+everything is left-aligned.
 T}
 SP@T{
 Simplified:
@@ -2655,19 +2671,18 @@ for an alternative.
 .
 .TP
 .BI ML\~ "mark \fR[\fPtext-indent\~" \fR[\fP1\fR]]\fP
-Start a list with the
+Start a
+.I "marked list;"
+the
 .I mark
-argument preceding each list item.
+argument precedes each item.
 .
 .I text-indent
 overrides the default indentation of the list items set by register
 .BR Li .
 .
-If a third argument,
-conventionally
-.BR 1 ,
-is given,
-the blank line that normally precedes each list item is suppressed.
+A third argument suppresses the blank line that normally precedes each
+list item.
 .
 Use
 .B LI
@@ -2678,7 +2693,7 @@ to end the list.
 .
 .
 .TP
-.BR MT \~\c \" space in roman; we must use 2-font macro with \c
+.BR MT \~\c \" we must use 2-font macro with \c
 .RI [ type \~[ addressee ]]
 Select memorandum type.
 .
@@ -2843,7 +2858,7 @@ a list of names or attachments lies within
 If
 .I code
 is absent or does not match one of the values listed under the
-.B Letns
+.B \%Letns
 string description below,
 each line of notations is formatted as
 .RI "\[lq]Copy (" line ") to\[rq]."
@@ -2862,9 +2877,9 @@ In
 you can set up further notations to be recognized by
 .BR NS ;
 see the strings
-.B Letns
+.B \%Letns
 and
-.B Letnsdef
+.B \%Letnsdef
 below.
 .
 .
@@ -2902,10 +2917,9 @@ defines the string
 .
 .TP
 .B OP
-Make sure that the following text is printed at the top of an
-odd-numbered page.
-.
-Does not output an empty page if currently at the top of an odd page.
+Ensure that subsequent text is formatted at the top of an odd-numbered
+page;
+no page break is performed if the drawing position is already there.
 .
 .
 .br
@@ -3136,23 +3150,23 @@ without space between the arguments.
 .
 .
 .TP
-.BI RD\  "\fR[\fPprompt \fR[\fPdiversion \fR[\fPstring\fR]]]\fP"
-Read from standard input to diversion and/or string.
+.BR RD \~\c
+.RI [ prompt\~ [ div\~ [ string ]]]
+Read from standard input stream into a diversion and/or string.
 .
 The text is saved in a diversion named
-.IR diversion .
+.IR div .
 .
-Recall the text by writing the name of the diversion after a dot
-on an empty line.
+Interpolate the saved text by calling its name like a macro.
 .
-A string is also defined if
+If
 .I string
-is given.
+is present,
+the input
+.\" XXX: DWB 3.3 mm does this; Heirloom Doctools and groff mm do not.
+.\" up to the first newline
+is also stored in a string of that name.
 .
-.I Diversion
-and/or
-.I prompt
-can be empty (\[dq]\[dq]).
 .
 .TP
 .B RF
@@ -3197,10 +3211,8 @@ and
 .B LE
 to end the list.
 .
-A second argument,
-conventionally
-.BR 1 ,
-suppresses the blank line that normally precedes each list item.
+A second argument suppresses the blank line that normally precedes each
+list item.
 .
 .
 .TP
@@ -3265,10 +3277,7 @@ If
 .I reference-string
 is specified,
 .I "groff ms"
-also stores the reference mark in a string of that name,
-which can be interpolated as
-.BI \[rs]*[ reference-string ]
-subsequently.
+also stores the reference mark in a string of that name.
 .
 .
 .TP
@@ -3416,25 +3425,26 @@ at normal size.
 .
 .
 .TP
-.BI SP\  \fR[\fPlines\fR]\fP
-Space vertically.
+.BR SP \~\c
+.RI [ distance ]
+Space vertically by
+.I distance.
 .
-.I lines
-can have any scaling factor,
-like \[lq]3i\[rq] or \[lq]8v\[rq].
-.
-Several
+Multiple
 .B SP
-calls in a line only produces the maximum number of lines, not the sum.
+calls in sequence produces only the largest of the specified
+.I distances.
 .
+.
+.IP
 .B SP
-is ignored also until the first text line in a page.
+has no effect when the drawing position is at the top of the page.
 .
-Add
+Put the dummy character escape sequence
 .B \[rs]&
-before a call to
+on a text line to
 .B SP
-to avoid this.
+to overcome this restriction.
 .
 .
 .TP
@@ -3969,7 +3979,8 @@ and register
 .
 .TP
 .B EM
-interpolates an em dash.
+interpolates \(em,
+an em dash.
 .
 .
 .TP
@@ -4247,9 +4258,7 @@ it is surrounded by square brackets.
 .
 .TP
 .B Sm
-interpolates
-.if c \[u2120] \[u2120],
-the service mark sign.
+interpolates the service mark sign.
 .
 .
 .TP

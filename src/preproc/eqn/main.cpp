@@ -427,7 +427,7 @@ int main(int argc, char **argv)
   init_table(device);
   init_char_table();
   init_param_table();
-  std::atexit(free_param_table);
+  atexit(free_param_table);
   printf(".do if !dEQ .ds EQ\n"
 	 ".do if !dEN .ds EN\n");
   if (output_format == troff) {

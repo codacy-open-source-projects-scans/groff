@@ -3731,13 +3731,12 @@ and
 .B UR
 calls visible as formatted text.
 .
-.MR grohtml @MAN1EXT@
+.MR grohtml @MAN1EXT@ ,
+.MR gropdf @MAN1EXT@ ,
 and
 .MR grotty @MAN1EXT@
 enable hyperlinks by default
-(the latter only if not in legacy output mode);
-.MR gropdf @MAN1EXT@
-does not (yet).
+(the last only if not in legacy output mode).
 .
 .
 .TP

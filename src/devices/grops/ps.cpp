@@ -1377,6 +1377,7 @@ font *ps_printer::make_font(const char *nm)
 
 ps_printer::~ps_printer()
 {
+  current_lineno = 0; // At this point, we've read all the input.
   out.simple_comment("Trailer")
      .put_symbol("end")
      .simple_comment("EOF");
@@ -1523,15 +1524,18 @@ ps_printer::~ps_printer()
   fclose(tempfp);
 }
 
+typedef void (ps_printer::*SPECIAL_PROCP)(char *, const environment *);
+
+struct proc_table_t {
+  const char *name;
+  SPECIAL_PROCP proc;
+};
+
 void ps_printer::special(char *arg, const environment *env, char type)
 {
   if (type != 'p')
     return;
-  typedef void (ps_printer::*SPECIAL_PROCP)(char *, const environment *);
-  static const struct {
-    const char *name;
-    SPECIAL_PROCP proc;
-  } proc_table[] = {
+  static const proc_table_t proc_table[] = {
     { "exec", &ps_printer::do_exec },
     { "def", &ps_printer::do_def },
     { "mdef", &ps_printer::do_mdef },
@@ -1560,7 +1564,7 @@ void ps_printer::special(char *arg, const environment *env, char type)
     error("empty X command ignored");
     return;
   }
-  for (unsigned int i = 0; i < sizeof(proc_table)/sizeof(proc_table[0]); i++)
+  for (size_t i = 0; i < array_length(proc_table); i++)
     if (strncmp(command, proc_table[i].name, p - command) == 0) {
       flush_sbuf();
       if (sbuf_color != *env->col)

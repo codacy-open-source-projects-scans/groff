@@ -95,14 +95,16 @@ string::string(const char *p, int n) : len(n)
 
 string::string(const char *p)
 {
-  if (p == 0) {
+  if (p == 0 /* nullptr */) {
     len = 0;
-    ptr = 0;
+    ptr = 0 /* nullptr */;
     sz = 0;
   }
   else {
     len = strlen(p);
     ptr = salloc(len, &sz);
+    if (len < sz)
+      memset(ptr, 0, sz);
     if (len != 0)
       memcpy(ptr, p, len);
   }
@@ -120,7 +122,7 @@ string::string(const string &s) : len(s.len)
   if (len != 0)
     memcpy(ptr, s.ptr, len);
 }
-  
+
 string::~string()
 {
   sfree(ptr, sz);

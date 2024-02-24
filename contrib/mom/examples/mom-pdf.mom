@@ -405,7 +405,7 @@ can remove the window title by issuing
 .COD ".PDF_TITLE \[dq]\[dq] \e\[dq] ie. with a blank argument
 .IBQ
 .FLOAT off
-.SP .5v
+\#.SP .5v
 .HEADING 1 NAMED toc "Tables of Contents"
 .RLD .5v
 .HEADING 2 NAMED toc:gen "Generating a Table of Contents 
@@ -559,8 +559,11 @@ or \[groff]\~\[-Tps]\~\[-mpdfmark]:
 is not supported.  The TOC appears at the end of the document;
 \[psselect] must be used to re-order pages.
 .ITEM
+.RW .08
+.WS -2
 If a link crosses a page boundary, it will stop being a clickable
 hotspot on subsequent pages.
+.RW 0
 .ITEM
 When establishing whether PDF outline levels are
 .PDF_LINK open-close SUFFIX , "open or closed"
@@ -603,8 +606,8 @@ is not compatible with
 underlining (e.g., of italics)
 .ITEM
 generally produces larger files; these can be reduced by piping
-the output through \[ps2pdf]\*[B]
-.sp -1.25v
+the output through \[ps2pdf]
+.SP -1.25v
 .BOX OUTLINED black SHADED grey90 WEIGHT 1p INSET 6p
 .JUSTIFY
 \*[BD]Note:\*[PREV] Owing to a known bug, PDF files piped through

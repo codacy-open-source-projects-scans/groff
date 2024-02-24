@@ -201,13 +201,14 @@ tmac_TESTS = \
   tmac/tests/doc_CS-works.sh \
   tmac/tests/doc_CT-works.sh \
   tmac/tests/doc_D-places-page-numbers-correctly.sh \
-  tmac/tests/doc_Lk-respect-sentence-ending-punctuation.sh \
+  tmac/tests/doc_Lk-respects-sentence-ending-punctuation.sh \
   tmac/tests/doc_Lk-works.sh \
   tmac/tests/doc_Mt-works.sh \
   tmac/tests/doc_Nm-works.sh \
   tmac/tests/doc_P-register-works.sh \
   tmac/tests/doc_TS-do-not-keep-tables-when-cR-set.sh \
   tmac/tests/doc_X-register-works.sh \
+  tmac/tests/doc_Xr-works.sh \
   tmac/tests/doc_accept-mixed-case-section-headings.sh \
   tmac/tests/doc_do-not-loop-infinitely-when-shortening-headers.sh \
   tmac/tests/doc_heading-font-remapping-works.sh \
@@ -228,6 +229,7 @@ tmac_TESTS = \
   tmac/tests/latin5_works.sh \
   tmac/tests/latin9_works.sh \
   tmac/tests/localization-works.sh \
+  tmac/tests/pdf_bookmark-starting-with-control-char-works.sh \
   tmac/tests/pdfpic_does-not-choke-on-bad-pdfinfo-output.sh \
   tmac/tests/pdfpic_falls-back-to-PSPIC.sh \
   tmac/tests/s_EQ-handles-empty-first-arg.sh \
@@ -250,7 +252,8 @@ tmac_XFAIL_TESTS = \
   tmac/tests/an-ext_ME-punct-hyphenates.sh \
   tmac/tests/an-ext_UE-punct-hyphenates.sh \
   tmac/tests/an-ext_UE-breaks-before-long-URIs.sh \
-  tmac/tests/e_footnotes-work-with-columns.sh
+  tmac/tests/e_footnotes-work-with-columns.sh \
+  tmac/tests/pdf_bookmark-starting-with-control-char-works.sh
 XFAIL_TESTS += $(tmac_XFAIL_TESTS)
 
 tmac/www.tmac: tmac/www.tmac.in

@@ -223,7 +223,12 @@ am solely responsible for any bugs I may have introduced into this file.
 .   \"
 .      if '\\$1'--' .shift
 .   \"
-.      nr pdf:bm.lev 0+\\$1
+.      ie \B'\\$1' \
+.        nr pdf:bm.lev \\$1
+.      el \{\
+.        pdf:error bookmark level must be a numeric expression; got '\\$1'
+.        nr pdf:bm.lev 1
+.      \}
 .      if \\n[pdf:bm.lev]==0 .nr pdf:bm.lev 1
 .      if \\n[pdf:bm.lev]-1==\\n[PDFOUTLINE.FOLDLEVEL] .nr pdf:bm.lev \\n[pdf:bm.lev]*-1
 .      nr pdf:bm.abslev 0+\\n[pdf:bm.lev]
@@ -258,7 +263,6 @@ am solely responsible for any bugs I may have introduced into this file.
 .         box
 .         chop pdf:clean
 .         asciify pdf:clean
-.         length pdf:clean:len \\*[pdf:clean]
 .         ds pdf:cleaned \\*[pdf:clean]
 .         rm pdf:clean
 .         ev

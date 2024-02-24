@@ -1320,6 +1320,7 @@ which may be given in any order:
   FAMILY &lt;family&gt; \
   FONT   &lt;font&gt; \
   SIZE   &lt;+|-size&gt; \
+  LEAD   &lt;+|-points&gt; \
   QUAD   &lt;direction&gt; \
   COLOR  &lt;colour&gt; \
   UNDERSCORE  &lt;weight&gt; &lt;gap&gt; | NO_UNDERSCORE \
@@ -1351,6 +1352,17 @@ those you&#8217;d give to the
 <a href="#docelement-control">control macros</a>
 ending in _FAMILY, _FONT, _SIZE, _QUAD, or _COLOR.  See
 <a href="#control-macro-args">Arguments to the control macros</a>.
+</p>
+
+<p class="defaults" style="margin-bottom: 1em">
+<kbd>LEAD</kbd> allows you to adjust the
+<a href="definitions.html#leading">leading</a>
+of multi-line headings.  Pass <kbd>LEAD</kbd> the number of points
+by which you wish to increase or decrease the leading, preceded by a
+plus (+) or minus (-) sign.  Note that there is no need to append
+the
+<a href="definitions.html#unitofmeasure">unit of measure</a>
+<kbd>p</kbd> to the argument.
 </p>
 
 <p class="defaults" style="margin-bottom: 1em">

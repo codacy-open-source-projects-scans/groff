@@ -32,6 +32,25 @@
 .\"     @(#)doc-common	8.1 (Berkeley) 06/08/93
 .
 .
+.\" The following strings are part of mdoc(7)'s documented interface.
+.ds <= \[<=]
+.ds >= \[>=]
+.ds aa \[aa]
+.ds ga \[ga]
+.ds q \[dq]
+.ds Lq \[lq]
+.ds Rq \[rq]
+.ds Ne \[!=]
+.ds Le \[<=]
+.ds Ge \[>=]
+.ds Lt <
+.ds Gt >
+.ds Pm \[+-]
+.ds Am &
+.ds Na \f[I]NaN\f[]
+.ds Ba \f[R]|\f[]
+.\" See doc-{ditroff,nroff} for `ua`, `Pi`, and `If`.
+.
 .\" Macro Identifiers.  For each user macro a corresponding register
 .\" with the same name must exist.  Its value must not be zero.
 .

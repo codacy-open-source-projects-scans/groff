@@ -43,6 +43,7 @@ echo "checking that trailing text hugs link URI (-rU0)"
 echo "$output" | grep -q '\.com>(deceased)\.$' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -rU1 -man -Tascii -P-cbou)
+echo "$output"
 echo "$output" | od -c
 echo "checking that trailing text hugs link text (-rU1)"
 echo "$output" | grep -q 'Ponderous(deceased).$' || wail

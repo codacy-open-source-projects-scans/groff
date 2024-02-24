@@ -20,7 +20,7 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-Version 2.6_b
+Version 2.6_c
 -------------
 Antoine de St-Exupéry asserted that elegance in engineering is
 achieved not when there is nothing left to add, but when there is
@@ -53,7 +53,7 @@ extensions, and float management).
 .if (\n[.x]\n[.y] < 118) \
 .   ab [mom]: You need GNU troff version 1.18 or higher to run this version of mom.
 \# Mom version
-.ds version 2.6_b
+.ds version 2.6_c
 .if dVERSION \{\
 .   ab [mom]: Version \*[version]
 .\}
@@ -660,7 +660,7 @@ end
 .          vs \\n[.ps]u+\\n[#AUTOLEADING]u
 .       \}
 .    \}
-.    if \\n[pdfbx-running]=1 \{\
+.    if \\n[pdfbx-running] \{\
 .       nr #VS_DIFF \\n[#SAVED_VS]-\\n[.v]
 .       ch FOOTER \\n[#VARIABLE_FOOTER_POS]u+\\n[#VS_DIFF]u
 .    \}
@@ -702,7 +702,7 @@ end
 .    \}
 .    nr #SAVED_VS \\n[.v]
 .    vs \\$1
-.    if \\n[pdfbx-running]=1 \{\
+.    if \\n[pdfbx-running] \{\
 .       nr #VS_DIFF \\n[#SAVED_VS]-\\n[.v]
 .       ch FOOTER \\n[#VARIABLE_FOOTER_POS]u+\\n[#VS_DIFF]u
 .    \}
@@ -1446,7 +1446,6 @@ end
 \#   Justifies text left and right.
 \#
 .MAC JUSTIFY END
-\#.    if r pdfbx-top 'sp -1
 .    if \\n[#TAB_ACTIVE]=0 \{\
 .       nr #QUAD 1
 .       ds $RESTORE_QUAD_VALUE \\*[$QUAD_VALUE]
@@ -1472,13 +1471,13 @@ end
 \#
 .MAC QUAD END
 .    if r pdfbx-top \{\
-'       sp -1
+.       sp -1
 .       rr pdfbx-top
 .    \}
 .\" The QUAD in PP adds an unwanted linespace after a HEADING at the
 .\" top of a pdf box because of this .br, so HEADING assigns the
 .\" tmp register "bx-top\n[stack]" to inhibit it.
-.    ie !r pdfbx-top\\n[stack] .br
+.    ie !\\n[pdfbx-top\\n[stack]] 'br
 .    el .rr pdfbx-top\\n[stack]
 .    if \\n[#COVERTEXT_PP] \
 .       ds $RESTORE_DOC_QUAD \\*[$QUAD_VALUE]
@@ -3527,7 +3526,7 @@ end
 .    ie \\n[#IN_ITEM] .nr #L_INDENT -\\n[#IN_ITEM_L_INDENT]
 .    el \{\
 .       br
-.       ie \\n[pdfbx-running]=1 \
+.       ie \\n[pdfbx-running] \
 .          ie !r pdfbx-clear \{\
 .             in \\*[wt\\n[stack]]+\\*[gap\\n[stack]]u+\\n[#IL_ACTIVE]u
 .          el .in \\*[wt\\n[stack]]+\\*[gap\\n[stack]]u
@@ -3535,15 +3534,17 @@ end
 .       el .in 0
 .       rr #INDENT_LEFT_ACTIVE
 .       nr #L_INDENT_ILX \\n[#L_INDENT]
+.       ta \\n[.l]u
 .    \}
 .    if '\\$1'CLEAR' \{\
-.       if \\n[pdfbx-running]=1 \
+.       if \\n[pdfbx-running] \
 .          if !r pdfbx-clear \
 .             in \\*[wt\\n[stack]]+\\*[gap\\n[stack]]u
 .       rr #L_INDENT
 .       rr #INDENT_STYLE_LEFT
 .       rr #L_INDENT_ILX
 .       rr #INDENT_ACTIVE
+.       ta \\n[.l]u
 .    \}
 .END
 \#
@@ -3557,7 +3558,7 @@ end
 .          ta \\n[.l]u
 .       \}
 .       el \{\
-.          ie \\n[pdfbx-running]=1 \{\
+.          ie \\n[pdfbx-running] \{\
 .             if !r pdfbx-clear \
 .                ll \\n[pdfbx-ll]u
 .          \}
@@ -3566,12 +3567,13 @@ end
 .       \}
 .    \}
 .    if '\\$1'CLEAR' \{\
-.       if \\n[pdfbx-running]=1 \{\
+.       if \\n[pdfbx-running] \{\
 .          if !r pdfbx-clear \
 .             ll \\n[#L_LENGTH]u-(\\*[wt\\n[stack]]+\\*[gap\\n[stack]]u)
 .       \}
 .       rr #R_INDENT
 .       rr #INDENT_STYLE_RIGHT
+.       ta \\n[.l]u
 .    \}
 .END
 \#
@@ -3595,6 +3597,7 @@ end
 .       rr #BL_INDENT
 .       rr #BR_INDENT
 .       rr #INDENT_STYLE_BOTH
+.       ta \\n[.l]u
 .    \}
 .END
 \#
@@ -3676,6 +3679,7 @@ end
 .       rr #INDENT_STYLE_RIGHT
 .       rr #INDENT_STYLE_BOTH
 .    \}
+.   ta \\n[.l]u
 .END
 \#
 \# =====================================================================
@@ -5919,6 +5923,7 @@ SMALLCAPS takes precedence.
 .    if !r #HDRFTR_RULE  .HDRFTR_RULE
 .    if !r #PAGE_NUM_SET .PAGENUMBER 1
 .\" Read in number registers and strings for type parameters
+.    LL \\n[#PAGE_WIDTH]u-\\n[.o]u-\\n[#R_MARGIN]u
 .    nr #DOC_L_MARGIN \\n[#L_MARGIN]
 .    nr #DOC_L_LENGTH \\n[#L_LENGTH]
 .    nr #DOC_R_MARGIN \\n[#PAGE_WIDTH]-(\\n[#DOC_L_MARGIN]+\\n[#L_LENGTH])
@@ -8094,7 +8099,7 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .       \}
 .       el \{\
 .          br
-.          sp |\\n[#T_MARGIN]u-1v
+.          sp |\\n[#T_MARGIN]u
 .       \}
 .       if \\n[#COLUMNS] \{\
 .          mk dc
@@ -10226,14 +10231,14 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .    nr #PAGE_TOP \\n[nl]
 .    ev
 .\" PDF boxes
-.    if \\n[pdfbx-running]=1 \{\
+.    if \\n[pdfbx-running] \{\
 .       if !\\n[pdfbx-div-start] \{\
 .          ps \\n[#SIZE_AT_FOOTER]u
 .          SIZESPECS
 .          ds pdfbx-cap-adj \\*[$CAP_HEIGHT]
 .          ps
 .          sp |\\n[t]u-\\n[#LEAD_AT_FOOTER]u
-.          sp (\\*[wt\\n[stack]]/2u)+\\*[pdfbx-cap-adj]+\\*[gap\\n[stack]]u
+.          sp (\\*[wt\\n[stack]]/2)u+\\*[pdfbx-cap-adj]+\\*[gap\\n[stack]]u
 .          ch FOOTER \\n[#VFP\\n[stack]]u
 .       \}
 .    \}
@@ -10257,7 +10262,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          \}
 .          el .po \\n[#\\*[BQ]_OFFSET]u
 .       \}
-.       if !\\n[pdfbx-running]=0 \{\
+.       if \\n[pdfbx-running] \{\
 .          if \\n[#PRINT_STYLE]=2 .sp \\n[#Q_LEAD_DIFF]u
 .       \}
 .    \}
@@ -10430,7 +10435,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .       rr @TOP
 .       ch RR_@TOP
 .    \}
-.    if \\n[pdfbx-running]=1 \
+.    if \\n[pdfbx-running] \
 .       ch FOOTER \\n[#VFP\\n[stack]]u
 .END
 \#
@@ -10925,11 +10930,13 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 \#
 .MAC HEADING END
 .    ie !r pdfbx-top \{\
-'       br
+.       br
 .       if \\n[@TOP] .br
 .    \}
-.    el \{\
-.       if r pdfbx-running .nr pdfbx-top 1
+.    el .if \\n[pdfbx-running] \{\
+.       nr pdfbx-top 1
+.       nr boxed-heading 1
+.       it 2 rr-boxed-heading
 .    \}
 .    if !\B'\\$1' \{\
 .       tm1 "[mom]: The first argument to \\$0 must be a numeric heading level.
@@ -10958,15 +10965,20 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .\" Spacing
 .    if \\n[#Q_LEAD_DIFF_CHECK] .sp -1
 .    if \\n[.t]<\\n[.v] .nr nl-from-heading \\n[nl]
+.    if \\n[post-box] \{\
+.       if !\\n[#PARAHEAD] .if !\\n[#SPACE_ADDED] .sp -1
+.       rr post-box
+.    \}
 .    ie !\\n[#PARAHEAD] \{\
 .       if !\\n[@TOP] \{\
 .          nr #HEAD 1
 .          ie !\\n[#START] \{\
 .             nr #HEADING_NEEDS \\n[#NUM_ARGS]v+\\*[$HEAD_\\n[#LEVEL]_NEEDS]v+1v
 .             if \\n[#HEAD_\\n[#LEVEL]_SPACE_AFTER] .nr #HEADING_NEEDS +1v
+.             ch RR_ADVANCE_FROM_TOP
 .             if \\n[.t]<\\n[#HEADING_NEEDS] .sp \\n[.t]u
 .             vpt 0
-.             if !r pdfbx-top \
+.             if !\\n[pdfbx-top] \
 .               if !\\n[#SPACE_ADDED] .if !\\n[#LINEBREAK] .sp
 .          \}
 .          el \{\
@@ -11005,13 +11017,13 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          ab   [mom]: Aborting '\\n[.F]' at \\$0, line \\n[.c].
 .       \}
 .       vpt 0
-.       if !(\\n[#PRINT_STYLE]=1)&(\\n[#SINGLE_SPACE]=1) .sp -1v
+.       if !\\n[#SINGLE_SPACE] .sp -1v
 .       if \\n[#QUOTE_4_HD] \{\
 .          sp -1v
 .          if \\n[#PP_SPACE] \{\
 .             sp .5v
 .             SHIM
-.         \}
+.          \}
 .       \}
 .       if (\\n[#QUOTE_4_HD]=0)&(\\n[#LB_4_HD]=0)&(\\n[#START]=0) \
 .          if !\\n[#LB_4_PARAHEAD] .sp -1v
@@ -11023,12 +11035,14 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .       fam \\*[$HEAD_\\n[#LEVEL]_FAM]
 .       ft  \\*[$HEAD_\\n[#LEVEL]_FT]
 .       ps  \\n[#DOC_PT_SIZE]u\\*[$HEAD_\\n[#LEVEL]_SIZE]
-.       if r pdfbx-top \{\
+.       if !\\n[#PARAHEAD] \
+.          vs \\n[#DOC_LEAD]u\\*[$HEAD_\\n[#LEVEL]_LEAD]
+.       if \\n[pdfbx-top] \{\
 .          SIZESPECS
 .          ie \\n[#PP]=0 \{\
 .             rt
 .             ds pdfbx-cap-adj \\*[$CAP_HEIGHT]
-.             sp (\\*[wt\\n[stack]]/2u)+\\*[pdfbx-cap-adj]+\\*[gap\\n[stack]]u
+.             sp \\*[wt\\n[stack]]/2u+\\*[pdfbx-cap-adj]+\\*[gap\\n[stack]]u
 .          \}
 .          el \{\
 .             nr pdfbx-cap-adj \\*[$CAP_HEIGHT]-\\*[pdfbx-cap-adj]
@@ -11544,6 +11558,12 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          shift
 .          ds $\\*[$TOC]HEAD_\\n[#LEVEL]_SIZE \\$1
 .          if '\\$0'TOC_HEADING_STYLE' .ds $TOC_HEADING_SIZE \\$1
+.          shift
+.       \}
+.       if '\\$1'LEAD' \{\
+.          shift
+.          if !\\n[#PARAHEAD] \
+.             ds $\\*[$TOC]HEAD_\\n[#LEVEL]_LEAD \\$1p
 .          shift
 .       \}
 .       if '\\$1'QUAD' \{\
@@ -16402,11 +16422,11 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .          \}
 .       \}
 .    \}
+.    nr #PRE_LIST_QUAD \\n[.j]
 .    ds pre-list-quad \\*[$QUAD_VALUE]
 .    substring pre-list-quad 0 0
 .    if '\\*[pre-list-quad]'C' \{\
 .       if !'\\n[.z]'LIST*DIV' \{\
-.          nr #PRE_LIST_QUAD \\n[.j]
 .          nr #LIST_CENTER 1
 .          if !'\\n[.z]'LIST*DIV' .di LIST*DIV
 \!.        nr #IN_LIST 1
@@ -16415,7 +16435,6 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    \}
 .    if '\\*[pre-list-quad]'R' \{\
 .       if !'\\n[.z]'LIST*DIV' \{\
-.          nr #PRE_LIST_QUAD \\n[.j]
 .          nr #LIST_RIGHT 1
 .          if !'\\n[.z]'LIST*DIV' .di LIST*DIV
 \!.        nr #IN_LIST 1
@@ -17036,7 +17055,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .       nr #LIST_OFFSET_VALUE \\n[.l]-\\n[dl]/2
 .    if \\n[#LIST_RIGHT] \{\
 .       nr #LIST_OFFSET_VALUE \\n[.l]-\\n[dl]
-.       if r pdfbx-running \
+.       if \\n[pdfbx-running] \
 .          nr #LIST_OFFSET_VALUE \
 \\n[.l]-\\n[dl]-\\*[gap\\n[stack]]-(\\*[wt\\n[stack]]/2)
 .    \}
@@ -20905,7 +20924,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    if !'\\*[tbl*space-adj]'' .sp -\\*[tbl*space-adj]u
 .    if \\n[#MLA] \
 .       sp .5v
-.    if !r pdfbx-running \{\
+.    if !\\n[pdfbx-running] \{\
 .       ie !\\n[tbl*no-shim] \{\
 .           ie !\\n[#NO_SHIM] \
 .             if !'\\n[.z]'FLOAT*DIV' .SHIM
@@ -23617,7 +23636,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .           el \{\
 .               as PDF_TXT Unknown
 .               if !rPDF_UNKNOWN .tm \
-\\n[.F]:\\n[.c]: forward reference detected (please run using 'pdfmom')
+[mom]: \\n[.F]:\\n[.c]: forward reference detected (please run using 'pdfmom')
 .               nr PDF_UNKNOWN 1
 .           \}
 .        \}
@@ -23861,7 +23880,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .             ll -(\\*[wt\\n[stack]])+\\*[gap\\n[stack]]u
 .          \}
 .          nop \\*[pdf-img*caption]
-.          if r pdfbx-running \{\
+.          if \\n[pdfbx-running] \{\
 .             in
 .             ll
 .          \}
@@ -23929,7 +23948,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .       nr pdf-img*label-lead-diff \\n[lead-pre-label]-\\n[.v]
 .       sp -.5+\\*[$CAP_HEIGHT]+\\n[pdf-img*label-lead-diff]u
 .       if !'\\*[pdf-img*label-space]'' .sp \\*[pdf-img*label-space]
-.       if r pdfbx-running \{\
+.       if \\n[pdfbx-running] \{\
 .          in -(\\*[wt\\n[stack]])+\\*[gap\\n[stack]]u
 .          ll -(\\*[wt\\n[stack]])+\\*[gap\\n[stack]]u
 .       \}
@@ -23945,7 +23964,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .       fam
 .       ft
 .       ps
-.       if r pdfbx-running \{\
+.       if \\n[pdfbx-running] \{\
 .          in
 .          ll
 .       \}
@@ -24229,9 +24248,14 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 . rr pdfbx-div-start
 ..
 \#
+.de rr-boxed-heading
+. rr boxed-heading
+..
+\#
 \# Heavy lifting macros called from BOX.
 \#
 .de BoxStart
+. br
 . ds pdfbx-args \\$*
 . if \\n[pdfbx-inhibit-space] .sp -1
 . rr pdfbx-inhibit-space
@@ -24341,6 +24365,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 . el .ds wt 0
 . if d pdfbx-adj .sp \\*[pdfbx-adj]
 . if \\n[@TOP] \{\
+.   if \\n[#NEWPAGE] .nr pdfbx-newpage 1
 .   RESTORE_SPACE
 .   sp -1
 .   nr @TOP 1
@@ -24349,7 +24374,6 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 . br
 . if \\n[Q-float]=2 .sp -.5
 . rr pdfbxstop
-. fl
 . SIZESPECS
 . ds pdfbx-cap-adj \\*[$CAP_HEIGHT]
 .\" Top spacing
@@ -24482,7 +24506,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 . ch FOOTER \\n[#VARIABLE_FOOTER_POS]u
 . if !'\\n[.z]'' \!.ch FOOTER \\n[#VARIABLE_FOOTER_POS]u
 . ie !r pdfbxstop-consec \{\
-.   sp \\*[gap\\n[stack]]u+(\\*[wt\\n[stack]]/2u)
+.   sp \\*[gap\\n[stack]]u+(\\*[wt\\n[stack]]/2)u
 .   if r tbl*pdfbx \{\
 .     if \\n[tbl*pdfbx]=1 .sp -.6
 .     if \\n[tbl*pdfbx]=2 .sp -.6-1p
@@ -24511,6 +24535,12 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .     sp .5
 . if \\n[img*pdfbx]=2 \
 .   sp -.5
+. if \\n[boxed-heading] \{\
+.   if !\\n[pdfbx-newpage] .sp -1
+.   rr pdfbx-newpage
+.   sp -(\\*[$HEAD_\\n[#LEVEL]_BASELINE_ADJ])u
+.   rr boxed-heading
+. \}
 .
 . if '\\*[.T]'pdf' .pdfbackground off
 .
@@ -24627,6 +24657,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .     if !r #EPIGRAPH \!.SHIM
 .   \}
 . \}
+. nr post-box 1
 ..
 \#
 \# PDF outline page numbering

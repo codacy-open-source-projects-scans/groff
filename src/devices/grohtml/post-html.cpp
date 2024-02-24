@@ -5211,6 +5211,8 @@ html_printer::~html_printer()
 {
   struct tm *t;
 
+  current_lineno = 0; // At this point, we've read all the input.
+
   if (current_paragraph)
     current_paragraph->flush_text();
   html.end_line();

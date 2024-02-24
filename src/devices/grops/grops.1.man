@@ -516,7 +516,7 @@ Blank lines and those
 beginning with
 .B #
 are ignored;
-fields may be separated by tabs or spaces.
+fields are separated by tabs.
 .
 .I file
 is sought using the same mechanism as for

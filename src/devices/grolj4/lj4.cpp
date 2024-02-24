@@ -257,6 +257,7 @@ lj4_printer::lj4_printer(int ps)
 
 lj4_printer::~lj4_printer()
 {
+  current_lineno = 0; // At this point, we've read all the input.
   fputs("\033E", stdout);
 }
 

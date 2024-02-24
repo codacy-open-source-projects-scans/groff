@@ -84,7 +84,7 @@ const char *extension_table[] = {
   "FileSystem",
 };
 
-const int NEXTENSIONS = sizeof(extension_table)/sizeof(extension_table[0]);
+const size_t NEXTENSIONS = array_length(extension_table);
 
 // this must stay in sync with 'resource_type' in 'ps.h'
 const char *resource_table[] = {
@@ -97,7 +97,7 @@ const char *resource_table[] = {
   "pattern",
 };
 
-const int NRESOURCES = sizeof(resource_table)/sizeof(resource_table[0]);
+const size_t NRESOURCES = array_length(resource_table);
 
 static int read_uint_arg(const char **pp, unsigned *res)
 {
@@ -138,13 +138,14 @@ struct resource {
 };
 
 resource::resource(resource_type t, string &n, string &v, unsigned r)
-: next(0), type(t), flags(0), revision(r), filename(0), rank(-1)
+: next(0 /* nullptr */), type(t), flags(0), revision(r),
+  filename(0 /* nullptr */), rank(-1)
 {
   name.move(n);
   version.move(v);
   if (type == RESOURCE_FILE) {
     if (name.search('\0') >= 0)
-      error("filename contains a character with code 0");
+      error("file name contains character code 0");
     filename = name.extract();
   }
 }
@@ -314,7 +315,7 @@ void resource_manager::output_prolog(ps_output &out)
     e += GROPS_PROLOGUE;
     e += '\0';
     if (putenv(strsave(e.contents())))
-      fatal("putenv failed");
+      fatal("unable to update environment: %1", strerror(errno));
   }
   char *prologue = getenv("GROPS_PROLOGUE");
   FILE *fp = font::open_file(prologue, &path);
@@ -323,7 +324,7 @@ void resource_manager::output_prolog(ps_output &out)
     if (errno <= 0)
       fatal("refusing to traverse directories to open PostScript"
 	    " prologue file '%1'");
-    fatal("failed to open PostScript prologue file '%1': %2", prologue,
+    fatal("unable to open PostScript prologue file '%1': %2", prologue,
 	  strerror(errno));
   }
   fputs("%%BeginResource: ", outfp);
@@ -366,7 +367,7 @@ void resource_manager::supply_resource(resource *r, int rank,
 	  error("refusing to traverse directories to open PostScript"
 		" resource file '%1'");
 	else
-	  error("failed to open PostScript resource file '%1': %2",
+	  error("unable to open PostScript resource file '%1': %2",
 		r->filename, strerror(errno));
 	delete[] r->filename;
 	r->filename = 0 /* nullptr */;
@@ -375,7 +376,8 @@ void resource_manager::supply_resource(resource *r, int rank,
     else {
       fp = include_search_path.open_file_cautious(r->filename);
       if (0 /* nullptr */ == fp) {
-	error("can't open '%1': %2", r->filename, strerror(errno));
+	error("unable to open file '%1': %2", r->filename,
+	      strerror(errno));
 	delete[] r->filename;
 	r->filename = 0 /* nullptr */;
       }
@@ -576,7 +578,7 @@ resource *resource_manager::read_resource_arg(const char **ptr)
     error("missing resource type");
     return 0;
   }
-  int ri;
+  size_t ri;
   for (ri = 0; ri < NRESOURCES; ri++)
     if (strlen(resource_table[ri]) == size_t(*ptr - name)
 	&& strncasecmp(resource_table[ri], name, *ptr - name) == 0)
@@ -932,7 +934,7 @@ static unsigned parse_extensions(const char *ptr)
     do {
       ++ptr;
     } while (*ptr != '\0' && !white_space(*ptr));
-    int i;
+    size_t i;
     for (i = 0; i < NEXTENSIONS; i++)
       if (strlen(extension_table[i]) == size_t(ptr - name)
 	  && memcmp(extension_table[i], name, ptr - name) == 0) {
@@ -955,6 +957,11 @@ static unsigned parse_extensions(const char *ptr)
 // BeginResource: file should be postponed till we have seen
 // the first line of the file.
 
+struct comment_info {
+  const char *name;
+  int (resource_manager::*proc)(const char *, int, FILE *, FILE *);
+};
+
 void resource_manager::process_file(int rank, FILE *fp,
 				    const char *filename, FILE *outfp)
 {
@@ -972,12 +979,7 @@ void resource_manager::process_file(int rank, FILE *fp,
     "DocumentSuppliedFiles:",
   };
 
-  const int NHEADER_COMMENTS = sizeof(header_comment_table)
-			       / sizeof(header_comment_table[0]);
-  struct comment_info {
-    const char *name;
-    int (resource_manager::*proc)(const char *, int, FILE *, FILE *);
-  };
+  const size_t NHEADER_COMMENTS = array_length(header_comment_table);
 
   static const comment_info comment_table[] = {
     { "BeginResource:", &resource_manager::do_begin_resource },
@@ -997,8 +999,8 @@ void resource_manager::process_file(int rank, FILE *fp,
     { "BeginData:", &resource_manager::do_begin_data },
     { "BeginBinary:", &resource_manager::do_begin_binary },
   };
-  
-  const int NCOMMENTS = sizeof(comment_table)/sizeof(comment_table[0]);
+
+  const size_t NCOMMENTS = array_length(comment_table);
   string buf;
   int saved_lineno = current_lineno;
   const char *saved_filename = current_filename;
@@ -1009,8 +1011,8 @@ void resource_manager::process_file(int rank, FILE *fp,
     current_lineno = saved_lineno;
     return;
   }
-  if ((size_t)buf.length() < sizeof(PS_MAGIC)
-      || memcmp(buf.contents(), PS_MAGIC, sizeof(PS_MAGIC) - 1) != 0) {
+  if ((size_t)buf.length() < sizeof PS_MAGIC
+      || memcmp(buf.contents(), PS_MAGIC, (sizeof PS_MAGIC) - 1) != 0) {
     if (outfp) {
       do {
 	if (!(broken_flags & STRIP_PERCENT_BANG)
@@ -1033,7 +1035,7 @@ void resource_manager::process_file(int rank, FILE *fp,
       if (buf[0] == '%') {
 	if (buf[1] == '%') {
 	  const char *ptr;
-	  int i;
+	  size_t i;
 	  for (i = 0; i < NCOMMENTS; i++)
 	    if ((ptr = matches_comment(buf, comment_table[i].name))) {
 	      copy_this_line
@@ -1092,15 +1094,15 @@ void resource_manager::read_download_file()
   char *path = 0 /* nullptr */;
   FILE *fp = font::open_file("download", &path);
   if (0 /* nullptr */ == fp)
-    fatal("failed to open 'download' file: %1", strerror(errno));
+    fatal("unable to open 'download' file: %1", strerror(errno));
   char buf[512];
   int lineno = 0;
-  while (fgets(buf, sizeof(buf), fp)) {
+  while (fgets(buf, sizeof buf, fp)) {
     lineno++;
-    char *p = strtok(buf, " \t\r\n");
+    char *p = strtok(buf, "\t\r\n");
     if (p == 0 /* nullptr */ || *p == '#')
       continue;
-    char *q = strtok(0 /* nullptr */, " \t\r\n");
+    char *q = strtok(0 /* nullptr */, "\t\r\n");
     if (!q)
       fatal_with_file_and_line(path, lineno, "file name missing for"
 			       " font '%1'", p);
@@ -1178,7 +1180,7 @@ void resource_manager::print_extensions_comment(FILE *outfp)
 {
   if (extensions) {
     fputs("%%Extensions:", outfp);
-    for (int i = 0; i < NEXTENSIONS; i++)
+    for (size_t i = 0; i < NEXTENSIONS; i++)
       if (extensions & (1 << i)) {
 	putc(' ', outfp);
 	fputs(extension_table[i], outfp);

@@ -946,9 +946,9 @@ numeric; got '\\$1'
 .\}
 .\" Permit a document to start with EPIC.
 .if \\n[nl]<0 \&
-.ie \B'\\$1' .nr pict*w \\$1
+.ie \B'\\$1' .nr pict*w (n;\\$1)
 .el          .@error \\$0: width parameter is not numeric; got '\\$1'
-.ie \B'\\$2' .nr pict*h \\$2
+.ie \B'\\$2' .nr pict*h (v;\\$2)
 .el          .@error \\$0: height parameter is not numeric; got '\\$2'
 .\" XXX: This is kind of lame.  It's also not localized.
 .ds pict*name External picture\"
@@ -2136,7 +2136,7 @@ within DF/DE
 .\}
 .if \\n[D]>2 .tm set fill=\\n[ds*fill]
 .nr ds*rindent 0
-.if \\n[.$]>2 .nr ds*rindent \\$3
+.if \\n[.$]>2 .nr ds*rindent (n;\\$3)
 .if \\n[D]>2 .tm set indent=\\n[ds*rindent]
 ..
 .\"-----------------------------

@@ -1,3 +1,17 @@
+2024-02-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (EPIC): Reckon width argument in ens by default, and
+	height argument in vees.
+	* m.tmac (ds@set-format): Reckon right-indentation argument in
+	ens by default.  This is a difference from DWB 3.3 mm, which
+	used ems (because it passed the argument as-is to the `ll`
+	request), but groff has been using basic units for 30 years
+	without apparent complaint, even though on the PostScript device
+	this threw off the amount by five orders of magnitude instead of
+	one half.  Thus, take this opportunity to be more consistent
+	than DWB by more rigorously using ens for horizontal
+	measurement and vees for vertical ones.
+
 2023-12-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Support pic(1) pictures when formatting HTML.

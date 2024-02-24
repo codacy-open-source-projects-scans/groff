@@ -216,6 +216,7 @@ dvi_printer::dvi_printer()
 
 dvi_printer::~dvi_printer()
 {
+  current_lineno = 0; // At this point, we've read all the input.
   postamble();
 }
 
