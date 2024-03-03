@@ -2881,6 +2881,17 @@ which map to those for \[lq]a\[rq] to \[lq]z\[rq].
 .
 .
 .TP
+.BI .hydefault\~ mode
+Set hyphenation mode default to
+.I mode.
+.
+When the
+.B hy
+request is invoked without an argument,
+this mode is selected.
+.
+.
+.TP
 .BR .hym\~ [\c
 .IR length ]
 Set the (right) hyphenation margin
@@ -3028,14 +3039,6 @@ and
 .B \-m
 command-line option are
 (the \[lq]tmac path\[rq]).
-.
-If the file name to be interpolated has the form
-.IB name .tmac
-and it isn't found,
-.B mso
-tries to include
-.BI tmac. name
-instead and vice versa.
 .
 If
 .I file
@@ -4155,7 +4158,12 @@ the environment.
 .
 .TP
 .B \[rs]n[.hy]
-Interpolate hyphenation mode of the environment.
+Interpolate automatic hyphenation mode of the environment.
+.
+.
+.TP
+.B \[rs]n[.hydefault]
+Interpolate hyphenation mode default of the environment.
 .
 .
 .TP

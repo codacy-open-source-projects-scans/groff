@@ -164,9 +164,11 @@
 .nr \*[locale]*hyphenation-mode-trap 2
 .
 .ie \n[locale*use-trap-hyphenation-mode] \
-.  hy \n[\*[locale]*hyphenation-mode-trap]
+.  hydefault \n[\*[locale]*hyphenation-mode-trap]
 .el \
-.  hy \n[\*[locale]*hyphenation-mode-base]
+.  hydefault \n[\*[locale]*hyphenation-mode-base]
+.
+.hy
 .
 .rr locale*use-trap-hyphenation-mode
 .

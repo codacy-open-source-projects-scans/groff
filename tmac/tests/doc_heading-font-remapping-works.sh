@@ -39,11 +39,24 @@ input='.Dd 2022-12-26
 .Sh Hacking Xr groff
 Have fun!'
 
+output=$(printf "%s\n" "$input" | "$groff" -mdoc -Tascii)
+echo "$output"
+
 output=$(printf "%s\n" "$input" | "$groff" -mdoc -Tascii -Z)
 echo "$output"
 
+# Expected:
+#
+# tHacking
+# wx font 4 BI
+# f4
+# h24
+# tgroff
+# n40 0
+# f1
+
 echo "$output" | sed -n '/tHacking/{n
-/x font 4 BI/{n
+/w *x font 4 BI/{n
 /f4/{n
 /h/{n
 /tgroff/{n

@@ -5151,6 +5151,25 @@ is ignored when formatting for terminal devices.
 .
 .
 .Pp
+By default,
+.Xr groff
+hyperlinks the formatted text of
+.Ql \&Lk ,
+.Ql \&Mt ,
+and
+.Ql \&Xr
+calls on output devices that support hyperlinking
+.Pf ( Dq html ,
+.Dq pdf ,
+and
+terminal devices).
+.
+Set the
+.Ql U
+register to 0 to disable this feature.
+.
+.
+.Pp
 Setting the
 .Ql X
 register to a page number

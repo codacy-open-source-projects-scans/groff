@@ -1,3 +1,216 @@
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* NEWS:
+	* doc/groff.texi.in:
+	* man/groff.7.man:
+	* man/groff_diff.7.man: Document new `hydefault` feature.
+
+	Fixes <https://savannah.gnu.org/bugs/?63635>.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tmac]: Migrate localization packages to `hydefault` request.
+
+	* tmac/cs.tmac:
+	* tmac/de.tmac:
+	* tmac/en.tmac:
+	* tmac/es.tmac:
+	* tmac/fr.tmac:
+	* tmac/it.tmac:
+	* tmac/ru.tmac:
+	* tmac/sv.tmac: Set the hyphenation mode default appropriately
+	per the hyphenation patterns and the value of the trap-awareness
+	bit.
+
+	* tmac/ja.tmac:
+	* tmac/zh.tmac: Set the hyphenation mode default to zero.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (hyphenate_request): If given no
+	argument, set hyphenation mode to the configured default.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add new `hydefault` request.
+
+	* src/roff/troff/env.cpp (set_hyphenation_mode_default): New
+	function sets the environment's default hyphenation mode.
+	(init_env_requests): Wire up `hydefault` to foregoing function.
+	* src/roff/troff/env.h (class environment): Declare foregoing
+	function as a friend, permitting mutator access.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (init_env_requests): Set up `hla`
+	request and `.hla` register here, since they're
+	environment-specific...
+	(init_hyphenation_pattern_requests): ...instead of here.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (init_hyphen_requests): Rename this...
+	(init_hyphenation_pattern_requests): ...to this.
+	* src/roff/troff/input.cpp (main): Update call site.
+	* src/roff/troff/request.h: Update declaration.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add `.hydefault` read-only register storing the
+	environment's default hyphenation mode.
+
+	* src/roff/troff/env.h (class environment): Add private member
+	variable `hyphenation_mode_default` and declare public member
+	function (accessor) `get_hyphenation_mode_default`.
+	* src/roff/troff/env.cpp (environment::get_hyphenation_mode):
+	Implement.
+	(environment::environment): Initialize new member variable in
+	ordinary and copy constructors.
+	(environment::copy): Copy new member variable.
+	(environment::print_env): Report environment's hyphenation mode
+	default.
+	(init_env_requests): Wire up hyphenation mode default value to
+	`.hydefault` troff register.
+	(class hyphenation_default_mode_reg): Add class.
+	(hyphenation_default_mode_reg::get_string): Implement.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp:
+	* src/roff/troff/env.h:
+	(environment::get_adjust_mode):
+	(environment::get_hyphenation_mode): Migrate report of these
+	quantities to use "unsigned int" type instead of a signed type;
+	this is more consistent with their internal storage, more
+	appropriate given their use as bit vectors, and more
+	future-proof in the event their meaningful values ever carry
+	them close to the sign bit (let's hope not).
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Add support for read-only numeric
+	registers backed by unsigned integer values.  Define new type
+	alias `UNSIGNED_FUNCP`.  Define new C++ prepreprocessor macro
+	`init_unsigned_env_reg`, paralleling `init_int_env_reg`.
+	(class unsigned_env_reg): Add new class; just like `int_env_reg`
+	except it's for use with "unsigned int" member variables.
+	(unsigned_env_reg::unsigned_env_reg)
+	(unsigned_env_reg::get_value)
+	(unsigned_env_reg::get_string): Implement.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::print_env): Report
+	environment's numeric hyphenation mode, not just its meaning.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor (hyphenation flags->mode).
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (class environment):
+	- Rename `hyphenation_flags` to `hyphenation_mode`.
+	- Rename `get_hyphenation_flags` to `get_hyphenation_mode`.
+
+	* src/roff/troff/env.cpp (environment::get_hyphenation_flags):
+	Rename this...
+	(environment::get_hyphenation_mode): ...to this.
+
+	(environment::get_hyphenation_mode):
+	(environment::environment):
+	(environment::copy):
+	(no_hyphenate):
+	(environment::hyphenate_line):
+	(environment::print_env):
+	(init_env_requests): Update member function and variable
+	references.
+
+2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: `mso` request no longer rewrites its argument to search
+	for a file other than that named in the argument.
+
+	* src/roff/troff/input.cpp (do_macro_source): Drop logic that
+	attempts to open a macro file named "tmac.s" if "s.tmac" was
+	specified in the argument and not found, or vice versa.
+
+	* NEWS:
+	* doc/groff.texi.in (I/O):
+	* man/groff_diff.7.man (New requests): Document it.
+
+	See
+	<https://lists.gnu.org/archive/html/groff/2024-02/msg00086.html>
+	and follow-ups.
+
+2024-02-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Implement hyperlink support.
+
+	* tmac/doc.tmac: Recognize `U` register as man(7) does to enable
+	hyperlinking, defaulting on.
+	(doc-begin-hyperlink-ascii):
+	(doc-begin-hyperlink-cp1047):
+	(doc-begin-hyperlink-latin1):
+	(doc-begin-hyperlink-utf8):
+	(doc-begin-hyperlink-html):
+	(doc-begin-hyperlink-pdf):
+	(doc-end-hyperlink-ascii):
+	(doc-end-hyperlink-cp1047):
+	(doc-end-hyperlink-latin1):
+	(doc-end-hyperlink-utf8):
+	(doc-end-hyperlink-html):
+	(doc-end-hyperlink-pdf): New macros produce appropriate device
+	control commands to start and stop hyperlinking of formatted
+	text.
+	(doc-begin-hyperlink-nop):
+	(doc-end-hyperlink-nop): New do-nothing macros handle
+	user-driven hyperlink disablement and devices lacking hyperlink
+	support.  Create aliases for the "X100", "X100-12", "X75",
+	"X75-12", "dvi", "lbp", "lj4", and "ps" devices corresponding to
+	these.
+	(doc-Xr-usage, doc-Mt-usage, doc-Lk-usage): New macros eliminate
+	repeated logic to emit usage messages.
+	(Xr): Heavily rewrite to support production of hyperlinked
+	argument text.  In mdoc, there appears to be no mechanism to
+	inject macro calls later in the argument stream.  To correctly
+	place a `doc*end-hyperlink` call, we must parse (optional)
+	arguments ourselves until we have seen enough to know we've
+	reached the end of the link text (an inline macro call,
+	punctuation, or the end of the input line).  Throw usage
+	diagnostic in more cases of bad input.
+	(Mt): Include "mailto:" schema in generated hyperlink but not in
+	visible link text.
+	(Mt, Lk): Call device-appropriate `doc-{begin,end}-hyperlink`
+	macros.
+	(Lk): Hyperlink argument only if it is a "string" (mdoc parlance
+	for formattable text as opposed to a macro name or punctuation).
+	Format link text as groff man(7) does, not like mandoc(1) does,
+	with its "link-text: <url>" presentation.
+	* tmac/mdoc.local: Add commented code illustrating how to
+	disable hyperlinking.
+
+	* tmac/tests/doc_Lk-respects-sentence-ending-punctuation.sh:
+	* tmac/tests/doc_Lk-works.sh:
+	* tmac/tests/doc_Mt-works.sh:
+	* tmac/tests/doc_Xr-works.sh:
+	* tmac/tests/doc_heading-font-remapping-works.sh: Update test
+	expectations and check output when hyperlink output enabled and
+	disabled.
+
+	* NEWS:
+	* tmac/groff_mdoc.7.man (Options): Document it.
+
+2024-02-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/doc_Xr-works.sh: Add checks of inline `Pf` and `Ns`
+	call behavior after `Xr`.
+
+2024-02-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/doc_heading-font-remapping-works.sh: Dump output of
+	test case in plain text in addition to device-independent *roff
+	format.
+
 2024-02-22  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[mdoc]: Rename a test.
@@ -600,6 +813,9 @@
 	from my deri-gropdf-ng branch which uses .stringhex.
 
 	* src/devices/gropdf/gropdf.pl: minor fixes
+
+	Fixes <https://savannah.gnu.org/bugs/?64060> (pdfmom needs
+	`--help` option).
 
 2024-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -2416,13 +2632,6 @@
 
 	Fixes <https://savannah.gnu.org/bugs/?64695>.  Thanks to
 	Alexander Kanavin for the report.
-
-2023-09-16  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* doc/groff.texi (I/O) <mso, msoquiet>: Fix error.  These
-	requests do _not_ alter the argument in an attempt to locate
-	a file corresponding to it.  (That is, one says "groff -m trace"
-	but ".mso trace.tmac".)
 
 2023-09-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 

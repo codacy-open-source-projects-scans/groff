@@ -235,7 +235,9 @@
 .\" Use -rSN=<xxx> to set the subsection heading indentation amount.
 .if !r SN .nr SN 3n
 .
-.\" TODO: Implement U register.
+.\" URI enablement desired
+.if !r U \
+.  nr U 1
 .
 .\" page number after which to apply letter suffixes
 .\"
@@ -4502,6 +4504,103 @@
 .ec
 .
 .
+.\" Define device-specific macros implementing hyperlinks.
+.eo
+.de doc-begin-hyperlink-ascii
+.  nop \X'tty: link \$*'\c
+..
+.ec
+.
+.eo
+.de doc-end-hyperlink-ascii
+.  nop \X'tty: link'\c
+..
+.ec
+.
+.als doc-begin-hyperlink-cp1047 doc-begin-hyperlink-ascii
+.als doc-begin-hyperlink-latin1 doc-begin-hyperlink-ascii
+.als doc-begin-hyperlink-utf8   doc-begin-hyperlink-ascii
+.
+.als doc-end-hyperlink-cp1047 doc-end-hyperlink-ascii
+.als doc-end-hyperlink-latin1 doc-end-hyperlink-ascii
+.als doc-end-hyperlink-utf8   doc-end-hyperlink-ascii
+.
+.eo
+.de doc-begin-hyperlink-html
+.  nop \X'html:<a href="\$*">'\c
+..
+.ec
+.
+.eo
+.de doc-end-hyperlink-html
+.  nop \X'html:</a>'\c
+..
+.ec
+.
+.eo
+.de doc-begin-hyperlink-pdf
+.  pdfhref W -D \$1 -- |
+..
+.ec
+.
+.eo
+.de doc-end-hyperlink-pdf
+.  nop \X'pdf: markend'\m[default]\c
+..
+.ec
+.
+.\" Define stubs for devices without a hyperlink feature.
+.de doc-begin-hyperlink-nop
+..
+.
+.de doc-end-hyperlink-nop
+..
+.
+.als doc-begin-hyperlink-X100    doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-X100-12 doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-X75     doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-X75-12  doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-dvi     doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-lbp     doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-lj4     doc-begin-hyperlink-nop
+.als doc-begin-hyperlink-ps      doc-begin-hyperlink-nop
+.
+.als doc-end-hyperlink-X100    doc-begin-hyperlink-nop
+.als doc-end-hyperlink-X100-12 doc-begin-hyperlink-nop
+.als doc-end-hyperlink-X75     doc-begin-hyperlink-nop
+.als doc-end-hyperlink-X75-12  doc-begin-hyperlink-nop
+.als doc-end-hyperlink-dvi     doc-begin-hyperlink-nop
+.als doc-end-hyperlink-lbp     doc-begin-hyperlink-nop
+.als doc-end-hyperlink-lj4     doc-begin-hyperlink-nop
+.als doc-end-hyperlink-ps      doc-begin-hyperlink-nop
+.
+.if !\n[U] \{\
+.  als doc-begin-hyperlink-ascii  doc-begin-hyperlink-nop
+.  als doc-begin-hyperlink-latin1 doc-begin-hyperlink-nop
+.  als doc-begin-hyperlink-cp1047 doc-begin-hyperlink-nop
+.  als doc-begin-hyperlink-utf8   doc-begin-hyperlink-nop
+.  als doc-begin-hyperlink-html   doc-begin-hyperlink-nop
+.  als doc-begin-hyperlink-pdf    doc-begin-hyperlink-nop
+.
+.  als doc-end-hyperlink-ascii  doc-end-hyperlink-nop
+.  als doc-end-hyperlink-latin1 doc-end-hyperlink-nop
+.  als doc-end-hyperlink-cp1047 doc-end-hyperlink-nop
+.  als doc-end-hyperlink-utf8   doc-end-hyperlink-nop
+.  als doc-end-hyperlink-html   doc-end-hyperlink-nop
+.  als doc-end-hyperlink-pdf    doc-end-hyperlink-nop
+.\}
+.
+.
+.\" NS doc-Xr-usage macro
+.
+.eo
+.de doc-Xr-usage
+.  tm Usage: .Xr manpage_name [section#] ... (#\n[.c])
+.  doc-reset-args
+..
+.ec
+.
+.
 .\" NS Xr user macro
 .\" NS   cross reference (for man pages only)
 .\" NS
@@ -4510,7 +4609,12 @@
 .\" NS   doc-macro-name
 .\" NS
 .\" NS local variables:
-.\" NS   doc-reg-Xr
+.\" NS   doc-has-section-Xr
+.\" NS   doc-lasttext-Xr
+.\" NS   doc-next-arg-ptr-Xr
+.\" NS   doc-space-before-next-macro-Xr
+.\" NS   doc-section-arg-ptr-Xr
+.\" NS   doc-target-Xr
 .\" NS
 .\" NS width register 'Xr' set in doc-common
 .
@@ -4521,47 +4625,78 @@
 .      ds doc-macro-name Xr
 .      doc-parse-args \$@
 .    \}
-.    el \
+.    el \{\
 .      doc-Xr-usage
+.      return
+.    \}
 .  \}
 .
 .  if !\n[doc-arg-count] \
 .    return
 .
-.  nr doc-arg-ptr +1
-.  doc-print-prefixes
-.  ie (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
-.    \" first argument must be a string
-.    ie (\n[doc-type\n[doc-arg-ptr]] == 2) \{\
-.      nr doc-curr-font \n[.f]
-.      ds doc-arg\n[doc-arg-ptr] \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]
+.  if (\n[doc-arg-count] <= \n[doc-arg-ptr]) \{\
+.    doc-Xr-usage
+.    return
+.  \}
 .
-.      if (\n[doc-arg-count] > \n[doc-arg-ptr]) \{\
-.        nr doc-reg-Xr (\n[doc-arg-ptr] + 1)
-.        \" modify second argument if it is a string and
-.        \" remove space in between
-.        if (\n[doc-type\n[doc-reg-Xr]] == 2) \{\
-.          ds doc-arg\n[doc-reg-Xr] \*[lp]\*[doc-arg\n[doc-reg-Xr]]\*[rp]
-.          ds doc-space\n[doc-arg-ptr]
-.        \}
-.      \}
-.      doc-print-recursive
-.    \}
-.    el \
-.      doc-Xr-usage
+.  \" The first argument is a man page identifier.
+.  nr doc-arg-ptr +1
+.  ie (\n[doc-type\n[doc-arg-ptr]] == 2) \
+.    ds doc-target-Xr "\*[doc-arg\n[doc-arg-ptr]]
+.  el \{\
+.    doc-Xr-usage
+.    return
+.  \}
+.
+.  \" Search for trailing punctuation.
+.  nr doc-lasttext-Xr \n[doc-arg-count]
+.  while (\n[doc-lasttext-Xr] >= \n[doc-arg-ptr]) \{\
+.    if !(\n[doc-type\n[doc-lasttext-Xr]] == 3) \
+.      break
+.    nr doc-lasttext-Xr -1
+.  \}
+.
+.  nr doc-has-section-Xr 0
+.  nr doc-space-before-next-macro-Xr 0
+.
+.  if (\n[doc-arg-count] > \n[doc-arg-ptr]) \{\
+.    nr doc-next-arg-ptr-Xr (\n[doc-arg-ptr] + 1)
+.    if (\n[doc-type\n[doc-next-arg-ptr-Xr]] == 1) \
+.      if !'\*[doc-arg\n[doc-next-arg-ptr-Xr]]'Ns' \
+.        nr doc-space-before-next-macro-Xr 1
+.    if (\n[doc-type\n[doc-next-arg-ptr-Xr]] == 2) \
+.      nr doc-has-section-Xr 1
+.  \}
+.
+.  ds doc-target-Xr \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]
+.
+.  ie \n[doc-has-section-Xr] \{\
+.    nr doc-section-arg-ptr-Xr (\n[doc-arg-ptr] + 1)
+.    as doc-target-Xr \*[lp]\*[doc-arg\n[doc-section-arg-ptr-Xr]]\*[rp]
 .  \}
 .  el \
-.    doc-Xr-usage
-..
-.ec
+.    if \n[doc-space-before-next-macro-Xr] \
+.      as doc-target-Xr " \"
 .
+.  \" TODO: handle the crazy macOS alternative URL schemata
+.  if \n[doc-has-section-Xr] \
+.    doc-begin-hyperlink-\*[.T] man:\*[doc-target-Xr]
 .
-.\" NS doc-Xr-usage macro
+.  nr doc-curr-font \n[.f]
+.  nop \&\*[doc-target-Xr]\c
+.  nr doc-arg-ptr +1
 .
-.eo
-.de doc-Xr-usage
-.  tm Usage: .Xr manpage_name [section#] ... (#\n[.c])
-.  doc-reset-args
+.  if \n[doc-has-section-Xr] \{\
+.    doc-end-hyperlink-\*[.T]
+.    nr doc-arg-ptr +1
+.  \}
+.
+.  ie (\n[doc-arg-ptr] <= \n[doc-arg-count]) \
+.    doc-print-recursive
+.  el \{\
+.    nop \&
+.    doc-reset-args
+.  \}
 ..
 .ec
 .
@@ -6806,8 +6941,18 @@
 .ec
 .
 .
+.\" NS doc-Mt-usage macro
+.
+.eo
+.de doc-Mt-usage
+.  tm Usage: .Mt email_address ... (#\n[.c])
+.  doc-reset-args
+..
+.ec
+.
+.
 .\" NS Mt user macro
-.\" NS   mailto (for conversion to HTML)
+.\" NS   mailto hyperlink
 .\" NS
 .\" NS modifies:
 .\" NS   doc-arg-ptr
@@ -6816,6 +6961,7 @@
 .\" NS
 .\" NS local variables:
 .\" NS   doc-target-Mt
+.\" NS   doc-visible-target-Mt
 .
 .eo
 .de Mt
@@ -6824,28 +6970,34 @@
 .      ds doc-macro-name Mt
 .      doc-parse-args \$@
 .    \}
-.    el \
-.      tm Usage: .Mt email_address ... (#\n[.c])
+.    el \{\
+.      doc-Mt-usage
+.      return
+.    \}
 .  \}
 .
 .  if !\n[doc-arg-count] \
 .    return
 .
 .  if (\n[doc-arg-count] <= \n[doc-arg-ptr]) \{\
-.    tm Usage: .Mt email_address ... (#\n[.c])
-.    doc-reset-args
+.    doc-Mt-usage
 .    return
 .  \}
 .
 .  \" The argument is the email address.
 .  nr doc-arg-ptr +1
-.  ds doc-target-Mt "\*[doc-arg\n[doc-arg-ptr]]
+.  ds doc-visible-target-Mt "\*[doc-arg\n[doc-arg-ptr]]
+.  ds doc-target-Mt mailto:\*[doc-visible-target-Mt]
 .  nr doc-arg-ptr +1
+.
+.  doc-begin-hyperlink-\*[.T] \*[doc-target-Mt]
 .
 .  \" Format the link target.
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Mt-font]\*[doc-target-Mt]\c
+.  nop \*[doc-Mt-font]\*[doc-visible-target-Mt]\c
 .  nop \f[\n[doc-curr-font]]\c
+.
+.  doc-end-hyperlink-\*[.T]
 .
 .  \" Format trailing arguments, like punctuation, if any.
 .  ie (\n[doc-arg-ptr] <= \n[doc-arg-count]) \
@@ -6858,8 +7010,18 @@
 .ec
 .
 .
+.\" NS doc-Lk-usage macro
+.
+.eo
+.de doc-Lk-usage
+.  tm Usage: .Lk uri [link_text ...] (#\n[.c])
+.  doc-reset-args
+..
+.ec
+.
+.
 .\" NS Lk user macro
-.\" NS   link (for conversion to HTML)
+.\" NS   hyperlink
 .\" NS
 .\" NS modifies:
 .\" NS   doc-arg-ptr
@@ -6877,25 +7039,31 @@
 .      ds doc-macro-name Lk
 .      doc-parse-args \$@
 .    \}
-.    el \
-.      tm Usage: .Lk uri [link_text ...] (#\n[.c])
+.    el \{\
+.      doc-Lk-usage
+.      return
+.    \}
 .  \}
 .
 .  if !\n[doc-arg-count] \
 .    return
 .
 .  if (\n[doc-arg-count] <= \n[doc-arg-ptr]) \{\
-.    tm Usage: .Lk uri [link_text ...] (#\n[.c])
-.    doc-reset-args
+.    doc-Lk-usage
 .    return
 .  \}
 .
 .  \" The first argument is the target URI.
 .  nr doc-arg-ptr +1
-.  ds doc-target-Lk "\*[doc-arg\n[doc-arg-ptr]]
+.  ie (\n[doc-type\n[doc-arg-ptr]] == 2) \
+.    ds doc-target-Lk "\*[doc-arg\n[doc-arg-ptr]]
+.  el \{\
+.    doc-Lk-usage
+.    return
+.  \}
 .  nr doc-arg-ptr +1
 .
-.  \" Search backwards for the first closing punctuation.
+.  \" Search for trailing punctuation.
 .  nr doc-lasttext-Lk \n[doc-arg-count]
 .  while (\n[doc-lasttext-Lk] >= \n[doc-arg-ptr]) \{\
 .    if !(\n[doc-type\n[doc-lasttext-Lk]] == 3) \
@@ -6903,24 +7071,30 @@
 .    nr doc-lasttext-Lk -1
 .  \}
 .
+.  doc-begin-hyperlink-\*[.T] \*[doc-target-Lk]
+.
 .  \" Format the link text, if any.
-.  \" XXX: The forced use of the emphasis font and a trailing colon
-.  \" seems intrusive.
 .  nr doc-curr-font \n[.f]
-.  if (\n[doc-arg-ptr] <= \n[doc-lasttext-Lk]) \{\
-.    nop \*[doc-Em-font]\c
+.  ie (\n[doc-arg-ptr] <= \n[doc-lasttext-Lk]) \{\
 .    while (\n[doc-arg-ptr] < \n[doc-lasttext-Lk]) \{\
 .      nop \&\*[doc-arg\n[doc-arg-ptr]]
 .      nr doc-arg-ptr +1
 .    \}
 .    nop \&\*[doc-arg\n[doc-arg-ptr]]\c
-.    nop \f[\n[doc-curr-font]]:
 .    nr doc-arg-ptr +1
-.  \}
 .
-.  \" Format the link target.
-.  nop \*[doc-Lk-font]\*[doc-target-Lk]\c
+.    \" If we won't/can't hyperlink, format the link target.
+.    if !\n[U] \{\
+.      nop \" put a breaking space on the output
+.      nop \[la]\*[doc-target-Lk]\[ra]\c
+.    \}
+.  \}
+.  \" If no link text, format the link target as its own link text.
+.  el \
+.    nop \*[doc-Lk-font]\*[doc-target-Lk]\c
 .  nop \f[\n[doc-curr-font]]\c
+.
+.  doc-end-hyperlink-\*[.T]
 .
 .  \" Format trailing arguments, like punctuation, if any.
 .  ie (\n[doc-arg-ptr] <= \n[doc-arg-count]) \

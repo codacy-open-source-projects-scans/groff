@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle February 2024
+@subtitle March 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -569,7 +569,7 @@ create @code{nroff} and @code{troff}.  Document preparation became a
 widespread use of Unix, but no stand-alone word-processing system was
 ever undertaken.
 @end quotation
-@c https://minnie.tuhs.org/pipermail/tuhs/2022-March/025535.html
+@c https://www.tuhs.org/pipermail/tuhs/2022-March/025535.html
 
 A history relating @code{groff} to its forerunners @code{roff},
 @code{nroff}, and @code{troff} is available in @cite{roff@r{(7)}}.
@@ -812,7 +812,7 @@ output stream and does not necessarily mean that an error has
 occurred.@footnote{Unix and related operating systems distinguish
 standard output and standard error streams @emph{because} of
 @code{troff}:@:
-@uref{https://minnie.tuhs.org/pipermail/tuhs/2013-December/006113.html}.}
+@uref{https://www.tuhs.org/pipermail/tuhs/2013-December/006113.html}.}
 
 @Example
 $ echo "Twelve o'clock and" | groff -T ascii | sed '/^$/d'
@@ -6471,7 +6471,7 @@ underlines the period.
 
 For vertical motions, the @code{|} operator specifies a distance from
 the first text baseline on the page or in the current
-diversion,@footnote{@xref{Diversions}.}  using the current vertical
+diversion,@footnote{@xref{Diversions}.} using the current vertical
 spacing.
 
 @Example
@@ -7541,7 +7541,7 @@ updates only the formatter's internal state and does not contribute
 (directly) to output.  @xref{Gtroff Internals}.
 
 Further surprise can occur if you use registers like
-@code{.k},@footnote{@xref{Page Motions}.}  whose values are not
+@code{.k},@footnote{@xref{Page Motions}.} whose values are not
 determined until they are interpolated.
 
 @Example
@@ -8694,11 +8694,12 @@ additional inter-word space (@code{hys}).
 @DefreqList {hy, [@Var{mode}]}
 @DefregListEndx {.hy}
 Set automatic hyphenation mode to @var{mode}, an integer encoding
-conditions for hyphenation; if omitted, @samp{1} is implied.  The
-hyphenation mode is available in the read-only register @samp{.hy}; it
-is associated with the environment (@pxref{Environments}).  The default
-hyphenation mode depends on the localization file loaded when GNU
-@code{troff} starts up; see the @code{hpf} request below.
+conditions for hyphenation; if omitted, the configured hyphenation mode
+default (see below) is implied.  The hyphenation mode is available in
+the read-only register @samp{.hy}; it is associated with the environment
+(@pxref{Environments}).  The default hyphenation mode depends on the
+localization file loaded when GNU @code{troff} starts up; see the
+@code{hpf} request below.
 
 Typesetting practice generally does not avail itself of every
 opportunity for hyphenation, but the details differ by language and site
@@ -8823,7 +8824,19 @@ given by @code{hy}.
 @Defreq {nh, }
 Disable automatic hyphenation; i.e., set the hyphenation mode to@tie{}0
 (see above).  The hyphenation mode of the last call to @code{hy} is not
-remembered.
+remembered, but invoking @code{hy} without an argument restores the
+default hyphenation mode if it is configured; @code{groff}'s
+localization macro files do so for the languages listed above.
+@endDefreq
+
+@cindex hyphenation mode default register (@code{.hydefault})
+@DefreqList {hydefault, [@Var{mode}]}
+@DefregListEndx {.hydefault}
+Set hyphenation mode default to @var{mode}, configuring the value the
+automatic hyphenation mode takes if @code{hy} is invoked without an
+argument.  The hyphenation mode default is available in the read-only
+register @samp{.hydefault}; it is associated with the environment
+(@pxref{Environments}).
 @endDefreq
 
 @need 200
@@ -14978,7 +14991,7 @@ not the expected behaviour.
 @cindex ejection, page
 If, after starting GNU @code{troff} without loading a macro package, you
 use the @code{ptr} request to dump a list of the active traps to the
-standard error stream,@footnote{@xref{Debugging}.}  nothing is reported.
+standard error stream,@footnote{@xref{Debugging}.} nothing is reported.
 Yet the @code{.t} register will report a steadily decreasing value with
 every output line your document produces, and once the value of
 @code{.t} gets to within @code{.V} of zero, you will notice that
@@ -16192,9 +16205,7 @@ for @code{pso} also.
 Identical to the @code{so} and @code{soquiet} requests, respectively,
 except that @command{gtroff} searches for the specified @var{file} in
 the same directories as macro files for the @option{-m} command-line
-option.  Unlike that option, @var{file} must be the file name as it
-appears in the file system; these requests do not add a @file{.tmac}
-suffix or @file{tmac.} prefix to locate @var{file}.
+option.
 @endDefreq
 
 @DefreqList {trf, file}
@@ -16962,7 +16973,7 @@ restore tokens are removed.
 @slanted{Standard troff voodoo, just put a power of two backslashes in
 front of it until it works and if you still have problems add a \c.}
 --- Ron Natalie
-@c https://minnie.tuhs.org/pipermail/tuhs/2021-February/023137.html
+@c https://www.tuhs.org/pipermail/tuhs/2021-February/023137.html
 @end flushright
 
 GNU @code{troff} is not the easiest language to debug, in part thanks to
@@ -17696,7 +17707,11 @@ hard-coded rules specific to English, while GNU @code{troff} uses
 language-specific hyphenation pattern files derived from @TeX{}.
 Furthermore, in old versions of @code{troff} there was a limited amount
 of space to store hyphenation exceptions (arguments to the @code{hw}
-request); GNU @code{troff} has no such restriction.
+request); GNU @code{troff} has no such restriction.  When the @code{hy}
+request is invoked without an argument, GNU @code{troff} sets the
+automatic hyphenation mode to the value of the @code{.hydefault}
+register; the @acronym{AT&T} implementation sets it to @samp{1}, which
+is not suitable for some languages, including English.
 
 @cindex output device name string (@code{.T}), in other implementations
 GNU @code{troff} predefines a string @code{.T} containing the argument

@@ -395,7 +395,7 @@ Section headings
 .RB ( .SH ),
 one of which is mandatory and many of which are conventionally expected,
 facilitate location of material by the reader and aid the man page
-writer to discuss all essential aspects of the topic.
+writer to discuss all essential aspects of the subject.
 .
 Subsection headings
 .RB ( .SS )
@@ -418,21 +418,25 @@ to inset a region within a (sub)section.
 .
 .
 .TP
-.BI .TH " topic section"\~\c
+.BI .TH " identifier section"\~\c
 .RI [ footer-middle \~\c
 .RI [ footer-inside \~\c
 .RI [ header-middle ]]]
-Determine the contents of the page header and footer.
+Populate the page header and footer.
 _ifstyle()dnl
 .
 .I roff
 systems refer to these collectively as \(lqtitles\(rq.
 _endif()dnl
 .
-The subject of the man page is
-.I topic
-and the section of the manual to which it belongs is
-.I section.
+Together,
+.I identifier
+and the
+.I section
+of the manual to which it belongs
+can uniquely identify a
+.I man
+document on the system.
 _ifstyle()dnl
 .
 This use of \(lqsection\(rq has nothing to do with the section headings
@@ -447,14 +451,12 @@ or
 .MR intro 1
 for the manual sectioning applicable to your system.
 .
-.I topic
+.I identifier
 and
 .I section
-are positioned together at the left and right in the header
-(with
-.I section
-in parentheses immediately appended to
-.IR topic ).
+are positioned at the left and right in the header;
+the latter is set after the former,
+in parentheses and without space.
 .
 .I footer-middle
 is centered in the footer.
@@ -476,7 +478,7 @@ The outside footer is the page number,
 except in the continuous-rendering mode enabled by the option
 .BR \-rcR=1 ,
 in which case it is the
-.I topic
+.I identifier
 and
 .I section,
 as in the header.
@@ -492,8 +494,8 @@ there is no need to specify
 .I an.tmac
 will supply text for it.
 .
-The macro package may also abbreviate
-.I topic
+This package may abbreviate
+.I identifier
 and
 .I footer-inside
 with ellipses
@@ -503,7 +505,7 @@ _endif()dnl
 if they would overrun the space available in the header and footer,
 respectively.
 .
-For HTML output,
+In HTML output,
 headers and footers are suppressed.
 .
 .
@@ -2168,7 +2170,7 @@ Several macros insert vertical space:
 and the deprecated
 .BR .HP .
 .
-The default inter-section and inter-paragraph spacing is
+The default inter-section and inter-paragraph spacing
 is 1v for terminals and 0.4v for typesetters.
 _ifstyle()dnl
 \(lqv\(rq is a unit of vertical distance,
@@ -3550,7 +3552,7 @@ distinction information.
 .
 .TP
 .B \-rCT=1
-Set the man page topic
+Set the man page identifier
 (the first argument to
 .BR .TH )
 in full capitals in headers and footers.
@@ -3654,9 +3656,9 @@ above).
 .
 .TP
 .BI \-dMF= man-page-topic-font
-Select the font used for man page topics named in
+Select the font used for man page identifiers in
 .B .TH
-and
+calls and topics named in
 .B .MR
 calls;
 the default is
@@ -3936,12 +3938,53 @@ program may lack permission to open such files.
 .SH Notes
 .\" ====================================================================
 .
-Some tips on troubleshooting your man pages follow.
+Some tips on composing and troubleshooting your man pages follow.
 .
 .
-.TP
-\(bu Some ASCII characters look funny or copy and paste wrong.
+.IP \(bu 2n
+What's the difference between a man page topic and identifier?
 .
+.
+.IP
+A single man page may document several related but distinct topics.
+For example,
+.MR printf 3
+and
+.MR fprintf 3
+are often presented together.
+.
+Further,
+multiple programming languages have functions named \(lqprintf\(rq,
+and wish to document these in a man page.
+.
+The identifier is intended to
+(with the section)
+uniquely identify a page on the system;
+it may furthermore correspond closely to the file name of the document.
+.
+.
+.IP
+The
+.MR man 1
+librarian is designed to permit convenient access to man pages,
+resolving topics to man page identifiers.
+.
+Thus,
+you can type
+.RB \(lq "man fprintf" \(rq,
+and other pages can refer to it,
+without knowing whether the installed document uses
+\(lqprintf\(rq,
+\(lqfprintf\(rq,
+or even \(lqc_printf\(rq
+as an identifier.
+.
+.
+.IP \(bu 2n
+Some ASCII characters look funny or copy and paste wrong.
+.
+.
+.IP
 On devices with large glyph repertoires,
 like UTF-8-capable terminals and PDF,
 several keyboard glyphs are mapped to code points outside the Unicode
@@ -3992,9 +4035,11 @@ for an ordinary hyphen
 Review subsection \(lqPortability\(rq above.
 .
 .
-.TP
-\(bu Do I ever need to use an empty macro argument ("")?
+.IP \(bu
+Do I ever need to use an empty macro argument ("")?
 .
+.
+.IP
 Probably not.
 .
 When this seems necessary,
@@ -4074,9 +4119,12 @@ particularly with space,
 which can be overlooked in source and rendered forms.
 .
 .
-.TP
-.RB \(bu " .RS" " doesn't indent relative to my indented paragraph."
+.IP \(bu
+.B .RS
+doesn't indent relative to my indented paragraph.
 .
+.
+.IP
 The
 .B .RS
 macro determines the
@@ -4128,8 +4176,12 @@ to end the indented region before starting the next tagged paragraph
 (at the appropriate nesting level).
 .
 .
-.TP
-.RB \(bu " .RE" " doesn't move the inset back to the expected level."
+.IP \(bu
+.B .RE
+doesn't move the inset back to the expected level.
+.
+.
+.IP
 The
 .B .RS
 macro takes an inset
@@ -4172,10 +4224,13 @@ have no effect until
 is used again.
 .
 .
-.TP
-\(bu Do I need to keep typing the indentation in a series of \c
-.BR .IP " calls?"
+.IP \(bu
+Do I need to keep typing the indentation in a series of
+.B .IP
+calls?
 .
+.
+.IP
 Not if you don't want to change it.
 .
 Review subsection \(lqHorizontal and vertical spacing\(rq above.
@@ -4197,9 +4252,13 @@ _
 .TE
 .
 .
-.TP
-\(bu Why doesn't the package provide a string to insert an ellipsis?
+.br
+.ne 4v
+.IP \(bu
+Why doesn't the package provide a string to insert an ellipsis?
 .
+.
+.IP
 Examples of ellipsis usage are shown above,
 in subsection \[lq]Command synopsis macros\[rq].
 .

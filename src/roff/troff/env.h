@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -211,7 +211,8 @@ class environment {
   int line_number_indent;	// in digit spaces
   int line_number_multiple;
   int no_number_count;
-  unsigned hyphenation_flags;
+  unsigned hyphenation_mode;
+  unsigned hyphenation_mode_default;
   int hyphen_line_count;
   int hyphen_line_max;
   hunits hyphenation_space;
@@ -285,7 +286,7 @@ public:
   int get_numbering_nodes();		// .nm
   font_family *get_family() { return family; }
   int get_bold();			// .b
-  int get_adjust_mode();		// .j
+  unsigned get_adjust_mode();		// .j
   int get_fill();			// .u
   hunits get_indent();			// .i
   hunits get_temporary_indent();
@@ -308,7 +309,8 @@ public:
   hunits get_input_line_position();
   const char *get_tabs();
   int get_line_tabs();
-  int get_hyphenation_flags();
+  unsigned get_hyphenation_mode();
+  unsigned get_hyphenation_mode_default();
   int get_hyphen_line_max();
   int get_hyphen_line_count();
   hunits get_hyphenation_space();
@@ -388,6 +390,7 @@ public:
   friend void leader_character();
   friend void tab_character();
   friend void hyphenate_request();
+  friend void set_hyphenation_mode_default();
   friend void no_hyphenate();
   friend void hyphen_line_max_request();
   friend void hyphenation_space_request();

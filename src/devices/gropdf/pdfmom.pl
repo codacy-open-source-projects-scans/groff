@@ -102,7 +102,8 @@ while (my $c=shift)
 	print "usage: pdfmom [--roff] -Tps [pdfroff-option ...] [groff-option ...] [file ...]\n";
 	print "usage: pdfmom {-v | --version}\n";
 	print "usage: pdfmom --help\n";
-	print "\nHandle forward references in PDF documents.\n" .
+	print "\nHandle forward references in groff(1) documents" .
+	      " to be formatted as PDF.\n" .
 	      "See the pdfmom(1) manual page.\n";
 	exit;
     }

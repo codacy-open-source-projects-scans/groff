@@ -79,19 +79,19 @@ language reference
 .\" synopsis of a request
 .de REQ
 .  ie \\n[.$]=1 \{\
-.    Text \f[CB]\\$1\f[]
+.    Text \%\f[CB]\\$1\f[]
 .  \}
 .  el \{\
-.    Text \f[CB]\\$1\~\f[]\f[I]\\$2\f[]
+.    Text \%\f[CB]\\$1\~\f[]\f[I]\\$2\f[]
 .  \}
 ..
 .
 .\" reference of a request
 .de request
 .  ie (\\n[.$] < 2) \
-.    B \\$*
+.    B \%\\$*
 .  el \
-.    BR \\$*
+.    BR \%\\$*
 ..
 .
 .\" ========= numeric elements =========
@@ -221,7 +221,7 @@ language reference
 .
 .\" synopsis for registers, with \n[]
 .de REG
-.  Text \[rs]n[\f[CB]\\$1\f[]]
+.  Text \%\[rs]n[\f[CB]\\$1\f[]]
 ..
 .\" reference of a register, without decoration
 .de register
@@ -3418,8 +3418,9 @@ indicates a hyphenation point.
 .
 .TPx
 .REQ .hy
-Set automatic hyphenation mode to
-.BR 1 .
+Set automatic hyphenation mode to the value of the
+.REG .hydefault
+register.
 .
 .TPx
 .REQ .hy\~0
@@ -3430,6 +3431,12 @@ same as
 .TPx
 .REQ .hy mode
 Set automatic hyphenation mode to
+.IR mode ;
+see section \[lq]Hyphenation\[rq] below.
+.
+.TPx
+.REQ .hydefault mode
+Set hyphenation mode default to
 .IR mode ;
 see section \[lq]Hyphenation\[rq] below.
 .
@@ -6201,6 +6208,10 @@ Maximum quantity of consecutive hyphenated lines allowed in environment.
 Automatic hyphenation mode in environment.
 .
 .TP
+.REG .hydefault
+Hyphenation mode default in environment.
+.
+.TP
 .REG .hym
 Hyphenation margin in environment.
 .
@@ -7021,15 +7032,9 @@ see below for details),
 and at which positions within that word automatically determined
 hyphenation points are permissible.
 .
-The default is
-.RB \[lq] 1 \[rq]
-for historical reasons,
-but this is not an appropriate value for the English hyphenation
-patterns used by
-.IR groff ;
-localization macro files loaded by
+The localization macro files loaded by
 .I troffrc
-and macro packages often override it.
+configure a default hyphenation mode appropriate to the language.
 .
 .
 .br

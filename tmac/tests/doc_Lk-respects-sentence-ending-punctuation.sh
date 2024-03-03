@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -20,6 +20,13 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
+fail=
+
+wail() {
+    echo ...FAILED >&2
+    fail=yes
+}
+
 # Regression-test Savannah #59738.  The processing of arguments after
 # the link text should not break end-of-sentence detection.
 
@@ -34,7 +41,14 @@ Click
 .Lk http://example.com here .
 Follow instructions.'
 
-output=$(echo "$input" | "$groff" -Tascii -P-cbou -mdoc)
-echo "$output" | grep -Fq 'com.  Follow' # 2 spaces
+echo "checking output when hyperlinks disabled" >&2
+output=$(echo "$input" | "$groff" -rU0 -Tascii -P-cbou -mdoc)
+echo "$output"
+echo "$output" | grep -Fq 'com>.  Follow' || wail # 2 spaces
+
+echo "checking output when hyperlinks enabled" >&2
+output=$(echo "$input" | "$groff" -rU1 -Tascii -P-cbou -mdoc)
+echo "$output"
+echo "$output" | grep -Fq 'here.  Follow' || wail # 2 spaces
 
 # vim:set ai et sw=4 ts=4 tw=72:

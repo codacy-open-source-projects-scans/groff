@@ -82,7 +82,7 @@ extern void init_div_requests();
 extern void init_node_requests();
 extern void init_reg_requests();
 extern void init_env_requests();
-extern void init_hyphen_requests();
+extern void init_hyphenation_pattern_requests();
 extern void init_request(const char *, REQUEST_FUNCP);
 
 class charinfo;

@@ -34,7 +34,7 @@ input='.Dd 2024-02-22
 .Sh Name
 .Nm foo
 .Nd frobnicate a bar
-.Sh Description.
+.Sh Description
 Degenerate macro call here.
 .Xr
 .Pp
@@ -46,34 +46,98 @@ Read the man page
 .Xr groff 1 ,
 reflect,
 and find enlightenment.
+.Pf ( Xr groff_font 5
+is also worth a look.)
 .Pp
 The
 .Xr groff ,
 .Xr groff_diff ,
 and
 .Xr roff
-pages in section 7 are also illuminating.'
+pages in section 7 are also illuminating.
+.Pp
+You could also read about
+.Xr groff Xr mdoc .
+.Pp
+Or
+about
+.Xr groff Pf - Xr man
+and
+.Xr groff Ns - Ns Xr ms .'
 
-output=$(echo "$input" | "$groff" -Tascii -P-cbou -mdoc 2>/dev/null)
-error=$(echo "$input" | "$groff" -Tascii -P-cbou -mdoc 2>&1 >/dev/null)
+output=$(echo "$input" | "$groff" -rU0 -mdoc -Tascii -P-cbou \
+    2>/dev/null)
+error=$(echo "$input" | "$groff" -rU0 -mdoc -Tascii -P-cbou \
+    2>&1 >/dev/null)
 echo "$output"
 echo "$error"
 
-echo "checking for error diagnostic on argumentless Xr call" >&2
+echo "checking for error diagnostic on argumentless Xr call (-rU0)" >&2
 echo "$error" | grep -q '9' || wail
 
-echo "checking two-argument Xr call with full cross reference" >&2
+echo "checking two-argument Xr call with full cross reference (-rU0)" \
+    >&2
 echo "$output" \
     | grep -Fq 'Read the groff(1) man page.' || wail
 
 echo "checking two-argument Xr call with partial reference and" \
-   "trailing punctuation" >&2
+    "trailing punctuation (-rU0)" >&2
 echo "$output" \
-    | grep -Fq 'Read the man page groff(1), reflect,' || wail
+    | grep -Eq 'Read +the +man +page +groff\(1\), +reflect,' || wail
 
-echo "checking a series of partial references, some punctuated" >&2
+echo "checking a series of partial references, some punctuated (-rU0)" \
+    >&2
 echo "$output" \
     | grep -Fq 'The groff, groff_diff, and roff pages' || wail
+
+echo "checking that prefixed Xr macro call works (-rU0)" >&2
+echo "$output" \
+    | grep -Fq '(groff_font(5) is also worth a look.)' || wail
+
+# We don't expect an inline Pf call to prevent a word break before it.
+echo "checking that inline Pf after Xr macro call works (-rU0)" >&2
+echo "$output" | grep -Fq 'read about groff mdoc' || wail
+
+# But we do expect Ns to do so.
+echo "checking that inline Ns after Xr macro call works (-rU0)" >&2
+echo "$output" | grep -Fq 'Or about groff -man and groff-ms.' || wail
+
+output=$(echo "$input" | "$groff" -rU1 -mdoc -Tascii -P-cbou \
+    2>/dev/null)
+error=$(echo "$input" | "$groff" -rU1 -mdoc -Tascii -P-cbou \
+    2>&1 >/dev/null)
+echo "$output"
+echo "$error"
+
+echo "checking for error diagnostic on argumentless Xr call (-rU1)" >&2
+echo "$error" | grep -q '9' || wail
+
+echo "checking two-argument Xr call with full cross reference (-rU1)" \
+    >&2
+echo "$output" \
+    | grep -Fq 'Read the groff(1) man page.' || wail
+
+echo "checking two-argument Xr call with partial reference and" \
+    "trailing punctuation (-rU1)" >&2
+echo "$output" \
+    | grep -Eq 'Read +the +man +page +groff\(1\), +reflect,' || wail
+
+echo "checking a series of partial references, some punctuated (-rU1)" \
+    >&2
+echo "$output" \
+    | grep -Fq 'The groff, groff_diff, and roff pages' || wail
+
+echo "checking that prefixed Xr macro call works (-rU1)" >&2
+echo "$output" \
+    | grep -Fq '(groff_font(5) is also worth a look.)' || wail
+
+# We don't expect an inline Pf call to prevent a word break before it.
+echo "checking that inline Pf after Xr macro call works (-rU1)" >&2
+echo "$output" | grep -Fq 'read about groff mdoc' || wail
+
+# But we do expect Ns to do so.
+echo "checking that inline Ns after Xr macro call works (-rU1)" >&2
+echo "$output" | grep -Fq 'Or about groff -man and groff-ms.' || wail
 
 test -z "$fail"
 

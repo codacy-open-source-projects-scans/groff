@@ -13,12 +13,21 @@ VERSION next
 troff
 -----
 
+o The `mso` request no longer attempts to open a macro file named, say,
+  "tmac.s" if "s.tmac" was specified in the argument and not found, or
+  vice versa.  This feature was a convenience for some old AT&T troff
+  installations, but few of those remain in the field, and of those that
+  we know to survive, neither (DWB 3.3 and Solaris 10) uses a macro file
+  naming convention for which this feature is any help.  `mso` now
+  simply processes the macro search path for a file name matching the
+  request argument, and succeeds or fails depending on an exact match.
+
 o The `color`, `cp`, `linetabs`, and `vpt` requests now interpret
   arguments with negative values as instructions to disable the
   corresponding feature, using the *roff integer-to-Boolean conversion
   idiom instead of the C/C++ one.  Thus, if you invoke these requests
-  with a register interpolation, the outcome agrees with an `if` test of
-  the register's value.
+  with a register interpolation as an argument, the outcome agrees with
+  an `if` test of the register's value.
 
 o In nroff mode (in other words, when producing output for devices that
   claim to be terminals), the formatter now reports warning diagnostics
@@ -29,6 +38,23 @@ o In nroff mode (in other words, when producing output for devices that
 o The device-independent output now reports unbreakable spaces (those
   produced with the `\~` escape sequence) as word breaks with the
   documentary 'w' command, just as it does for regular breakable spaces.
+
+o A new request, `hydefault`, and read-only register, `.hydefault`,
+  manage the default automatic hyphenation mode of an environment.  This
+  resolves a long-standing problem of *roff formatting.
+
+    When processing input like this,
+    .nh
+    and we temporarily shut off automatic hyphenation,
+    .hy
+    the foregoing request does not do exactly what we expect.
+
+  AT&T and other troffs would set the hyphenation mode to 1 instead of
+  the previous value, nor, for GNU troff, was this an appropriate value
+  for the English hyphenation patterns.  (For example, "alibi" would
+  break as "ali-bi" instead of "al-ibi" after this argumentless `hy`
+  invocation.)  With updates to groff's localization files, the
+  foregoing input now works as desired.
 
 o A new read-only, string-valued register, `.trap`, interpolates the
   name of the next vertical position trap that will be sprung.
@@ -118,9 +144,9 @@ o The device-specific macro files loaded by "troffrc" automatically on
   grolbp(1).
 
 o Hyperlink support is now enabled by default on non-HTML devices that
-  support it (PDF and terminal devices) for an (man) documents.
-  Instructions and commented code for disabling it remain in the
-  "man.local" file.
+  support it (PDF and terminal devices) for an (man) and doc (mdoc)
+  documents.  Instructions and commented code for disabling it are in
+  the "man.local" and "mdoc.local" files.
 
 o The an (man) package now supports use of its hyperlink macros (`UR`,
   `UE`, `MT`, and `ME`) as paragraph tags (that is, on the next line
@@ -160,7 +186,8 @@ o The an (man) macro package's `IP` macro no longer honors the formerly
   hard-coded 1n tag separation noted in the previous item.  This means
   that the first argument to the `IP` macro can abut the text of the
   paragraph with no intervening space.  If you use a word instead of
-  punctuation for `IP`'s first argument, consider migrating to `TP`.
+  punctuation or a list enumerator for `IP`'s first argument, consider
+  migrating to `TP`.
 
 o The an (man) and doc (mdoc) macro packages now use slightly different
   vertical margins when formatting for typesetters, to align more
@@ -174,6 +201,10 @@ o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   roman, not italics (or whatever the string `doc-Pa-font` was
   configured to use).  A new string, `doc-Mt-font`, for use in
   "mdoc.local" files and similar, supports configuration of this face.
+
+o The doc (mdoc) macro package's `Lk`, `Mt`, and `Xr` macros now produce
+  hyperlinks on HTML, PDF, and terminal devices.  See above regarding
+  hyperlink support being enabled by default.
 
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
@@ -225,6 +256,9 @@ o Russian language input documents using the KOI8-R encoding are now
 o Spanish language input documents are now supported, including
   hyphenation patterns from the hyph-utf8 project and localized strings
   for the man, ms, me, mm, and mom packages.  Thanks to Eloi Montañés.
+
+o The localization macro files now set up an appropriate hyphenation
+  mode default.  For Chinese and Japanese, this is zero.
 
 o If groff programs have their current time overridden by the
   SOURCE_DATE_EPOCH environment variable, then that time is always
