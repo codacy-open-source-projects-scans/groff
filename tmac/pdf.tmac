@@ -2,7 +2,7 @@
 
 pdf.tmac
 
- Copyright (C) 2011-2020 Free Software Foundation, Inc.
+ Copyright (C) 2011-2024 Free Software Foundation, Inc.
       Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 
 This file is part of groff.
@@ -191,6 +191,24 @@ am solely responsible for any bugs I may have introduced into this file.
 .\"
 .nr PDFOUTLINE.FOLDLEVEL 10000
 .\"
+.\" Search defined bookmarks for a tag matching $1.  This gets around
+.\" problems with *roff escape sequences embedded in identifiers (which
+.\" is not allowed by the language syntax), and the need to tediously
+.\" scrub the strings of them (and throw diagnostics in the user's face
+.\" if we don't do a good enough job) at the expense of an O(n) search
+.\" every time we reference a bookmark instead of an O(1) one.
+.\"
+.de pdf:lookup
+.nr pdf:index 0 1
+.ds pdf:lookup-result \" empty
+.while d pdf:bm\\n+[pdf:index].tag \{\
+.   if '\\$1'\\*[pdf:bm\\n[pdf:index].tag]' \{\
+.      ds pdf:lookup-result \\*[pdf:bm\\n[pdf:index].tag]\"
+.      break
+.      \}
+.   \}
+..
+.
 .\" The actual job of creating an outline reference
 .\" is performed by the "pdfbookmark" macro.
 .\"
@@ -253,25 +271,30 @@ am solely responsible for any bugs I may have introduced into this file.
 .      ie '\\*[pdf:href-T]'' .ds PDFBOOKMARK.NAME pdf:bm\\n[pdf:bm.nr]
 .      el .ds PDFBOOKMARK.NAME \\*[pdf:href-T]
 .      pdf:href.sety
-.         ds pdf:cleaned \\$*
-.         ev pdfcln
-.         tr \[em]-
-.         nf
-.         box pdf:clean
-.         nop \\$*
-.         fl
-.         box
-.         chop pdf:clean
-.         asciify pdf:clean
-.         ds pdf:cleaned \\*[pdf:clean]
-.         rm pdf:clean
-.         ev
-.         tr \[em]\[em]
-.      ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\*[pdf:cleaned]
-.      if dPDF.EXPORT .tm .ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\*[pdf:cleaned]
+.      ds pdf:cleaned \\$*
+.      ev pdfcln
+.      tr \[em]-
+.      nf
+.      box pdf:clean
+.      nop \\$*
+.      fl
+.      box
+.      chop pdf:clean
+.      asciify pdf:clean
+.      ds pdf:cleaned \\*[pdf:clean]
+.      rm pdf:clean
+.      ev
+.      tr \[em]\[em]
+.      ie d PRINTSTYLE \{\
+.         ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\*[pdf:cleaned]
+.         if dPDF.EXPORT .tm .ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\*[pdf:cleaned]
+.         \}
+.      el \{\
+.         ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
+.         if d PDF.EXPORT .tm .ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
+.         \}
 .      pdfmark /Dest /\\*[PDFBOOKMARK.NAME] /View [\\*[PDFBOOKMARK.VIEW]] /DEST
 .      nop \!x X ps:exec [/Dest /\\*[PDFBOOKMARK.NAME] /Title (\\*[pdf:cleaned]) /Level \\n[pdf:bm.lev] /OUT pdfmark
-.\".      pdfmark /Dest /\\*[PDFBOOKMARK.NAME] /Title "(\\*[pdf:cleaned])" /Level \\n[pdf:bm.lev] /OUT
 .      pdf:href.options.clear
 .      rr PDFPAGE.Y
 .      rm pdf:cleaned
@@ -289,21 +312,22 @@ am solely responsible for any bugs I may have introduced into this file.
 ..
 .
 .de pdfclean
-.  ie '\\n(.z'' \{\
-.         ds pdfcleaned \\$*
-.         ev pdfcln
-.         tr \[em]-
-.         nf
-.         box pdf:clean
-.         nop \\*[\\*[pdfcleaned]]
-.         fl
-.         box
-.         chop pdf:clean
-.         asciify pdf:clean
-.         ev
-.         ds \\*[pdfcleaned] "\\*[pdf:clean]
-.         rm pdf:clean
-.         tr \[em]\[em]
+.   ie '\\n(.z'' \{\
+.      ds pdfcleaned \\$*
+.      ev pdfcln
+.      tr \[em]-
+.      nf
+.      box pdf:clean
+.      nop \\*[\\*[pdfcleaned]]
+.      fl
+.      box
+.      chop pdf:clean
+.      asciify pdf:clean
+.      ev
+.      ds \\*[pdfcleaned] "\\*[pdf:clean]
+.      rm pdf:clean
+.      tr \[em]\[em]
+.      \}
 .  el .nop \!.pdfclean \\$@
 ..
 .\"
@@ -589,8 +613,14 @@ am solely responsible for any bugs I may have introduced into this file.
 .\"
 .ds PDFBOOKMARK.NAME "\\*[pdf:href-N]\\*[pdf:href-D]
 .pdf*href.set \\*[PDFBOOKMARK.NAME] \\$1
-.ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\$*
-.if dPDF.EXPORT .tm .ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\$*
+.ie d PRINTSTYLE \{\
+.   ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\$*
+.   if dPDF.EXPORT .tm .ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\$*
+.   \}
+.el \{\
+.   ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
+.   if d PDF.EXPORT .tm .ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
+.   \}
 .\"
 .\"
 .\" Irrespective of whether this marker is created, or not,
@@ -701,11 +731,17 @@ am solely responsible for any bugs I may have introduced into this file.
 .      \" One or more "link text" argument(s) are present,
 .      \" so, set the link description from the argument(s) ...
 .      \"
-.      ds PDFHREF.DESC \\\\$*
+.      ds PDFHREF.DESC \\$*
 .      \}
 .   el \{\
-.      ie dpdf:look(\\*[pdf:href-D]) .ds PDFHREF.DESC \\*[pdf:look(\\*[pdf:href-D])]
-.      el .ds PDFHREF.DESC Unknown
+.      ds PDFHREF.DESC Unknown
+.      ie d PRINTSTYLE \{\
+.         if dpdf:look(\\*[pdf:href-D]) .ds PDFHREF.DESC \\*[pdf:look(\\*[pdf:href-D])]
+.         \}
+.      el \{\
+.         pdf:lookup \\*[pdf:href-D]
+.         if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[\\*pdf:lookup-result]
+.         \}
 .      \}
 .   \" Apply border and colour specifications to the PDFMARK string
 .   \" definition, as required.
@@ -803,11 +839,15 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" "pdfmarksuspend" and "pdfmarkrestart" should be used in any page trap
 .\" macros to prevent output from the page trap macro being considered part
 .\" of a 'hot spot' when it crosses a page boundary.
+.nr pdf*is-mark-suspended 0
+.
 .de pdfmarksuspend
 .nop \!x X pdf: marksuspend
+.nr pdf*is-mark-suspended 1
 ..
 .de pdfmarkrestart
-.nop \!x X pdf: markrestart
+.if \\n[pdf*is-mark-suspended] .nop \!x X pdf: markrestart
+.nr pdf*is-mark-suspended 0
 ..
 .de pdfpagename
 .nop \!x X pdf: pagename \\$1

@@ -708,7 +708,9 @@ and\~0 otherwise.
 Because invalid input characters are removed,
 invalid identifiers are empty or contain spaces,
 tabs,
-or newlines.
+newlines,
+or escape sequences that interpolate something other than a sequence of
+ordinary characters.
 .
 You can employ
 .B \[rs]A
@@ -2890,6 +2892,8 @@ When the
 request is invoked without an argument,
 this mode is selected.
 .
+The hyphenation mode default is associated with the environment.
+.
 .
 .TP
 .BR .hym\~ [\c
@@ -3950,6 +3954,11 @@ or string
 New values 16 and\~32 are available;
 the former enables hyphenation before the last character in a word,
 and the latter enables hyphenation after the first character in a word.
+.
+If invoked without an argument,
+the mode configured by the
+.B hydefault
+request is selected.
 .
 .
 .TP

@@ -207,6 +207,10 @@
 .  ds an*section9 Kernel Developer's Manual\"
 ..
 .
+.\" Customize this at the command line to, for example, group multiple
+.\" man pages within a collection or containing document.
+.nr an*bookmark-base-level 0
+.
 .\" Write a bookmark/anchor/link target $2 at hierarchical depth $1.
 .de an*bookmark
 .  an*bookmark*\*[.T] \\$@
@@ -439,8 +443,9 @@
 .  \" Attach a bookmark to the page header on the first page of a new
 .  \" man(7) document; a changed identifier and section indicates this.
 .  if !'\\*[an*page-ref-string]'\\*[an*previous-page-ref-string]' \{\
-.    an*bookmark 1 "\\*[an*page-ref-string]"
-.    ds an*previous-page-ref-string \\*[an*page-ref-string]
+.    nr an*bookmark-level (\\n[an*bookmark-base-level] + 1)
+.    an*bookmark \\n[an*bookmark-level]  "\\*[an*page-ref-string]"
+.    ds an*previous-page-ref-string "\\*[an*page-ref-string]
 .  \}
 .  tl '\\*[an-pageref]'\\*[an-extra3]'\\*[an-pageref]'
 .  ie \\n[cR] \{\
@@ -729,10 +734,11 @@ contains unsupported escape sequence
 .  if \\n[an-remap-I-style-in-headings] .ftr I \\*[an-heading-family]BI
 .  if \\n[.$] \{\
 .    ds an-section-heading \\$*\"
-.    if \\n[CS] .stringup an-section-heading
-.    an*bookmark 2 "\\*[an-section-heading]"
+.    if \\n[CS] \
+.      stringup an-section-heading
+.    nr an*bookmark-level (\\n[an*bookmark-base-level] + 2)
+.    an*bookmark \\n[an*bookmark-level] "\\*[an-section-heading]"
 .    nop \&\\*[an-section-heading]
-.  \}
 .  if \\n[an-remap-I-style-in-headings] .ftr I I
 ..
 .
@@ -756,7 +762,8 @@ contains unsupported escape sequence
 .  if \\n[an-remap-I-style-in-headings] .ftr I \\*[an-heading-family]BI
 .  if \\n[.$] \{\
 .    ds an*subsection-heading \\$*\"
-.    an*bookmark 3 "\\*[an*subsection-heading]"
+.    nr an*bookmark-level (\\n[an*bookmark-base-level] + 3)
+.    an*bookmark \\n[an*bookmark-level] "\\*[an*subsection-heading]"
 .    nop \&\\$*
 .  \}
 .  if \\n[an-remap-I-style-in-headings] .ftr I I
@@ -1264,6 +1271,17 @@ contains unsupported escape sequence
 .\" There is no standardized format for man page URLs, but the default
 .\" is expected to work (or be harmlessly ignored) everywhere except
 .\" macOS.  Override in man.local if desired.
+.\"
+.\" Given a man page reference id(section) (like ls(1)), we have these.
+.\"
+.\" man:id(section)                  - GNOME, KDE   (Linux)
+.\" x-man-page://section/id          - Terminal.app (macOS 10.3+)
+.\" man:id.section                   - Bwana        (macOS)
+.\" x-man-doc://section/id(section)  - ManOpen      (macOS)
+.\"
+.\" A configurable prefix/schema string is inadequate because the
+.\" arrangement of the rest of the URL is variable.  Further, the schema
+.\" doesn't unambiguously indicate the remainder of the URL format.
 .nr an*MR-URL-format 1
 .
 .\" Set a man page cross reference.
@@ -1271,33 +1289,37 @@ contains unsupported escape sequence
 .de1 MR
 .  if ((\\n[.$] < 2) : (\\n[.$] > 3)) \
 .    an-style-warn .\\$0 expects 2 or 3 arguments, got \\n[.$]
-.  ds an*url man:\\$1(\\$2)\" used everywhere but macOS
+.  ds an*url man:\\$1(\\$2)\"
 .  if (\\n[an*MR-URL-format] = 2) \
-.    ds an*url x-man-page://\\$2/\\$1\" macOS/Mac OS X since 10.3
+.    ds an*url x-man-page://\\$2/\\$1\"
 .  if (\\n[an*MR-URL-format] = 3) \
-.    ds an*url man:\\$1.\\$2\" Bwana (Mac OS X)
+.    ds an*url man:\\$1.\\$2\"
 .  if (\\n[an*MR-URL-format] = 4) \
-.    ds an*url x-man-doc://\\$2/\\$1\" ManOpen (Mac OS X pre-2005)
+.    ds an*url x-man-doc://\\$2/\\$1(\\$2)\"
 .  nh
-.  if \\n[an*do-hyperlink] \{\
-.    if '\*[.T]'html' \
-.      nop \X'html:<a href="\\*[an*url]">'\c
-.    if '\*[.T]'pdf' \{\
-.      nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
-.      pdfhref W -D \\*[an*url] -- "|"
+.  ie (\\n[.$] = 1) \
+.    nop \&\\*[an-lic]\f[\\*[MF]]\\$1\\*[an-ic]\f[]\c
+.  el \{\
+.    if \\n[an*do-hyperlink] \{\
+.      if '\*[.T]'html' \
+.        nop \X'html:<a href="\\*[an*url]">'\c
+.      if '\*[.T]'pdf' \{\
+.        nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
+.        pdfhref W -D \\*[an*url] -- "|"
+.      \}
+.      if \\n[an*is-output-terminal] \
+.        nop \X'tty: link \\*[an*url]'\c
 .    \}
-.    if \\n[an*is-output-terminal] \
-.      nop \X'tty: link \\*[an*url]'\c
-.  \}
-.  nop \&\\*[an-lic]\f[\\*[MF]]\\$1\\*[an-ic]\f[R](\\$2)\c
-.  if \\n[an*do-hyperlink] \{\
-.    if '\*[.T]'html' \
-.      nop \X'html:</a>'\c
-.    if '\*[.T]'pdf' \{\
-.      nop \X'pdf: markend'\m[default]\c
+.    nop \&\\*[an-lic]\f[\\*[MF]]\\$1\\*[an-ic]\f[R](\\$2)\c
+.    if \\n[an*do-hyperlink] \{\
+.      if '\*[.T]'html' \
+.        nop \X'html:</a>'\c
+.      if '\*[.T]'pdf' \{\
+.        nop \X'pdf: markend'\m[default]\c
+.      \}
+.      if \\n[an*is-output-terminal] \
+.        nop \X'tty: link'\c
 .    \}
-.    if \\n[an*is-output-terminal] \
-.      nop \X'tty: link'\c
 .  \}
 .  nop \&\\$3
 .  hy \\n[an*hyphenation-mode]

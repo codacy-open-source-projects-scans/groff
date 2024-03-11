@@ -3889,7 +3889,7 @@ Dewey,
 Cheatham,
 and
 .IP \[bu]
-and Howe.
+Howe.
 .RE
 .IP \[bu]
 Guns
@@ -5375,7 +5375,7 @@ Filling and Adjustment}.
 
 @c ---------------------------------------------------------------------
 
-@node Tabs and Leaders, Input Conventions, Adjustment, Text
+@node Tabs and Leaders, Requests and Macros, Adjustment, Text
 @anchor{Tab Stops} @c 1.22.4
 @subsection Tabs and Leaders
 
@@ -8697,9 +8697,10 @@ Set automatic hyphenation mode to @var{mode}, an integer encoding
 conditions for hyphenation; if omitted, the configured hyphenation mode
 default (see below) is implied.  The hyphenation mode is available in
 the read-only register @samp{.hy}; it is associated with the environment
-(@pxref{Environments}).  The default hyphenation mode depends on the
+(@pxref{Environments}).  The hyphenation mode default depends on the
 localization file loaded when GNU @code{troff} starts up; see the
-@code{hpf} request below.
+@code{hpf} request below.  If no localization file is loaded, the
+default is @samp{1}.
 
 Typesetting practice generally does not avail itself of every
 opportunity for hyphenation, but the details differ by language and site
@@ -8763,19 +8764,37 @@ together because they contradict; for instance, values 4 and@tie{}16,
 and values 8 and@tie{}32.  As noted, it is superfluous to add 1 to any
 non-zero even mode.
 
-@c TODO: Add @pindex for hyphenation pattern and exception files.
+@pindex hyphen.cs
+@pindex hyphen.den
+@pindex hyphen.det
+@pindex hyphen.en
+@pindex hyphen.es
+@pindex hyphen.fr
+@pindex hyphen.it
+@pindex hyphen.ru
+@pindex hyphen.sv
+@pindex hyphenex.cs
+@pindex hyphenex.en
+@pindex hyphenex.pl
 @cindex hyphenation pattern files
 @cindex pattern files, for hyphenation
 The automatic placement of hyphens in words is determined by
 @dfn{pattern files}, which are derived from @TeX{} and available for
-several languages.  The number of characters at the beginning of a word
-after which the first hyphenation point should be inserted is determined
-by the patterns themselves; it can't be reduced further without
-introducing additional, invalid hyphenation points (unfortunately, this
-information is not part of a pattern file---you have to know it in
-advance).  The same is true for the number of characters at the end of
-a word before the last hyphenation point should be inserted.  For
-example, you can supply the following input to @samp{echo $(nroff)}.
+several languages.  These files are named @file{hyphen.@var{xx}} (for
+the patterns) and @file{hyphenex.@var{xx}} (for a list of exceptions in
+languages that require them) where @var{xx} is an ISO@tie{}639 language
+code; see the table below.
+@c XXX: "den" and "det" aren't ISO 639 codes.  Is there a POSIX locale
+@c modifier for these variations, like de@alt and de@recht or similar?
+
+The number of characters at the beginning of a word after which the
+first hyphenation point should be inserted is determined by the patterns
+themselves; it can't be reduced further without introducing additional,
+invalid hyphenation points (unfortunately, this information is not part
+of a pattern file---you have to know it in advance).  The same is true
+for the number of characters at the end of a word before the last
+hyphenation point should be inserted.  For example, you can supply the
+following input to @samp{echo $(nroff)}.
 
 @Example
 .ll 1
@@ -8825,8 +8844,8 @@ given by @code{hy}.
 Disable automatic hyphenation; i.e., set the hyphenation mode to@tie{}0
 (see above).  The hyphenation mode of the last call to @code{hy} is not
 remembered, but invoking @code{hy} without an argument restores the
-default hyphenation mode if it is configured; @code{groff}'s
-localization macro files do so for the languages listed above.
+hyphenation mode default; @code{groff}'s localization macro files do so
+for the languages listed above.
 @endDefreq
 
 @cindex hyphenation mode default register (@code{.hydefault})
@@ -16523,18 +16542,15 @@ returned by the function @cite{getenv@r{(3)}}.
 @cindex access to postprocessor
 
 Two escape sequences and two requests enable documents to pass
-information directly to an output driver or other postprocessor.  These
-are useful for exercising device-specific capabilities that the
-@code{groff} language does not abstract or generalize; examples include
-the embedding of hyperlinks and image files.  Device-specific functions
-are documented in each output driver's man page, such as
-@cite{gropdf@r{(1)}}, @cite{grops@r{(1)}}, or @cite{grotty@r{(1)}}.
+information directly to a postprocessor.  These are useful for
+exercising device-specific capabilities that the @code{groff} language
+does not abstract or generalize; examples include the embedding of
+hyperlinks and image files.  Device-specific functions are documented in
+each output driver's man page, such as @cite{gropdf@r{(1)}},
+@cite{grops@r{(1)}}, or @cite{grotty@r{(1)}}.
 
 @DefreqList {device, [@code{"}]@Var{contents}}
-@c XXX: Can't mark the parameters with @Var because @Var gets called
-@c recursively if we do.
-@c @DefescListEndx {\\X, @code{'}, @Var{contents}, @code{'}}
-@DefescListEndx {\\X, @code{'}, contents, @code{'}}
+@DefescListEndx {\\X, @code{'}, contents @r{@dots{}}, @code{'}}
 Embed @var{contents} into GNU @command{troff} output as parameters to an
 @w{@samp{x X}} device control command.@footnote{@xref{gtroff Output}.}
 The interpretation of such parameters is determined by the output driver
@@ -16543,6 +16559,12 @@ or other postprocessor.
 The @code{device} request strips a leading neutral double quote from
 @var{contents} to allow embedding of leading spaces.
 
+@cindex @code{device} request, and copy mode
+@cindex copy mode, and @code{device} request
+@cindex mode, copy, and @code{device} request
+The @code{device} request processes its arguments in copy mode
+(@pxref{Copy Mode}).  An initial neutral double quote in @var{contents}
+is stripped to allow embedding of leading spaces.
 @cindex @code{\&}, in device control commands
 @cindex @code{\)}, in device control commands
 @cindex @code{\%}, in device control commands
@@ -16552,7 +16574,7 @@ The @code{device} request strips a leading neutral double quote from
 @ifinfo
 @cindex @code{\@r{<colon>}}, in device control commands
 @end ifinfo
-Within a device control command, the escape sequences @code{\&},
+By contrast, within @code{\X} arguments, the escape sequences @code{\&},
 @code{\)}, @code{\%}, and @code{\:} are ignored; @code{\@key{SPC}} and
 @code{\~} are converted to single space characters; and a self-escaped
 escape character is output as a backslash @code{\}.  So that the basic
@@ -16565,10 +16587,8 @@ characters; see the @cite{groff_char@r{(7)}} man page.  For this
 transformation, character translations and special character definitions
 are ignored.@footnote{They are bypassed because these parameters are not
 rendered as glyphs in the output; instead, they remain abstract
-characters---in a PDF bookmark or a URL, for example.}
-
-Escape sequences other than the foregoing in device control command
-may be ignored, or produce an error.
+characters---in a PDF bookmark or a URL, for example.}  The use of any
+other escape sequence in @code{\X} parameters is normally an error.
 
 A device control command issued with the @code{device} request will not
 be reflected in the output unless a partially collected line exists at

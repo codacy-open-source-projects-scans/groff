@@ -4590,6 +4590,21 @@
 .  als doc-end-hyperlink-pdf    doc-end-hyperlink-nop
 .\}
 .
+.\" There is no standardized format for man page URLs, but the default
+.\" is expected to work (or be harmlessly ignored) everywhere except
+.\" macOS.  Override in man.local if desired.
+.\"
+.\" Given a man page reference id(section) (like ls(1)), we have these.
+.\"
+.\" man:id(section)                  - GNOME, KDE   (Linux)
+.\" x-man-page://section/id          - Terminal.app (macOS 10.3+)
+.\" man:id.section                   - Bwana        (macOS)
+.\" x-man-doc://section/id(section)  - ManOpen      (macOS)
+.\"
+.\" A configurable prefix/schema string is inadequate because the
+.\" arrangement of the rest of the URL is variable.  Further, the schema
+.\" doesn't unambiguously indicate the remainder of the URL format.
+.nr doc*Xr-URL-format 1
 .
 .\" NS doc-Xr-usage macro
 .
@@ -4614,7 +4629,10 @@
 .\" NS   doc-next-arg-ptr-Xr
 .\" NS   doc-space-before-next-macro-Xr
 .\" NS   doc-section-arg-ptr-Xr
-.\" NS   doc-target-Xr
+.\" NS   doc-target-identifier-Xr
+.\" NS   doc-target-section-Xr
+.\" NS   doc-target-uri-Xr
+.\" NS   doc-visible-target-Xr
 .\" NS
 .\" NS width register 'Xr' set in doc-common
 .
@@ -4641,8 +4659,11 @@
 .
 .  \" The first argument is a man page identifier.
 .  nr doc-arg-ptr +1
-.  ie (\n[doc-type\n[doc-arg-ptr]] == 2) \
-.    ds doc-target-Xr "\*[doc-arg\n[doc-arg-ptr]]
+.  ie (\n[doc-type\n[doc-arg-ptr]] == 2) \{\
+.    ds doc-visible-target-Xr "\*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]
+.    ds doc-target-identifier-Xr \*[doc-arg\n[doc-arg-ptr]]
+.    ds doc-target-section-Xr \" empty
+.  \}
 .  el \{\
 .    doc-Xr-usage
 .    return
@@ -4668,22 +4689,33 @@
 .      nr doc-has-section-Xr 1
 .  \}
 .
-.  ds doc-target-Xr \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]
-.
 .  ie \n[doc-has-section-Xr] \{\
 .    nr doc-section-arg-ptr-Xr (\n[doc-arg-ptr] + 1)
-.    as doc-target-Xr \*[lp]\*[doc-arg\n[doc-section-arg-ptr-Xr]]\*[rp]
+.    as doc-visible-target-Xr \*[lp]\*[doc-arg\n[doc-section-arg-ptr-Xr]]\*[rp]
+.    as doc-target-section-Xr \*[doc-arg\n[doc-section-arg-ptr-Xr]]
 .  \}
 .  el \
 .    if \n[doc-space-before-next-macro-Xr] \
-.      as doc-target-Xr " \"
+.      as doc-visible-target-Xr " \"
 .
-.  \" TODO: handle the crazy macOS alternative URL schemata
-.  if \n[doc-has-section-Xr] \
-.    doc-begin-hyperlink-\*[.T] man:\*[doc-target-Xr]
+.  if \n[doc-has-section-Xr] \{\
+.    if (\n[doc*Xr-URL-format] = 1) \
+.      ds doc-target-uri-Xr \
+         man:\*[doc-target-identifier-Xr](\*[doc-target-section-Xr])\"
+.    if (\n[doc*Xr-URL-format] = 2) \
+.      ds doc-target-uri-Xr \
+         x-man-page://\*[doc-target-section-Xr]/\*[doc-target-identifier-Xr]\"
+.    if (\n[doc*Xr-URL-format] = 3) \
+.      ds doc-target-uri-Xr \
+         man:\*[doc-target-identifier-Xr].\*[doc-target-section-Xr]\"
+.    if (\n[doc*Xr-URL-format] = 4) \
+.      ds doc-target-uri-Xr \
+         x-man-doc://\*[doc-target-section-Xr]/\*[doc-target-identifier-Xr]\"
+.    doc-begin-hyperlink-\*[.T] \*[doc-target-uri-Xr]
+.  \}
 .
 .  nr doc-curr-font \n[.f]
-.  nop \&\*[doc-target-Xr]\c
+.  nop \&\*[doc-visible-target-Xr]\c
 .  nr doc-arg-ptr +1
 .
 .  if \n[doc-has-section-Xr] \{\

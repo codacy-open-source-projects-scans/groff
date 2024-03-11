@@ -129,8 +129,8 @@
 .        \" between those two escapes
 .        ds ps-invis \X'ps: invis'
 .        ds ps-endinvis \X'ps: endinvis'
-.        ds ps-import \X'ps: import \E$1 \En[llx] \En[lly] \En[urx] \En[ury] \
-                                    \En[ps-deswid] \E*[ps-desht]'
+.        ds ps-import \X'ps: import \\\\$1 \\\\n[llx] \\\\n[lly] \
+\\\\n[urx] \\\\n[ury] \\\\n[ps-deswid] \\\\*[ps-desht]'
 .      \}
 .      el \{\
 .        ds ps-invis

@@ -1,9 +1,14 @@
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am ($(MOMPROCESSEDEXAMPLEFILES)): Add dependency on
+	"tmac/pdf.tmac".
+
 2024-02-21  Deri James <deri@chuzzlewit.myzen.co.uk>
 
 	* pdfmom.pl: Accrete `-k` and `-K` options to groff instead of
-		letting one clobber the other.  See message at
-		<https://lists.gnu.org/archive/html/groff/2024-02/msg00059.html>
-		and follow-ups.
+	letting one clobber the other.  See message at
+	<https://lists.gnu.org/archive/html/groff/2024-02/msg00059.html>
+	and follow-ups.
 
 2024-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 

@@ -919,8 +919,10 @@ void shift()
 
 static char get_char_for_escape_parameter(bool allow_space = false)
 {
-  int c = get_copy(0 /* nullptr */, false /* is defining */,
+  int c = get_copy(0 /* nullptr */,
+		   false /* is defining */,
 		   true /* handle \E */);
+  assert(c != '\n');
   switch (c) {
   case EOF:
     copy_mode_error("end of input in escape sequence");
@@ -928,13 +930,9 @@ static char get_char_for_escape_parameter(bool allow_space = false)
   default:
     if (!is_invalid_input_char(c))
       break;
-    // fall through
-  case '\n':
-    if (c == '\n')
-      input_stack::push(make_temp_iterator("\n"));
-    // fall through
+      // fall through
   case ' ':
-    if (c == ' ' && allow_space)
+    if (allow_space)
       break;
     // fall through
   case '\t':
@@ -1297,7 +1295,7 @@ int non_interpreted_char_node::interpret(macro *mac)
 
 static void do_width();
 static node *do_non_interpreted();
-static node *do_special();
+static node *do_device_control();
 static node *do_suppress(symbol nm);
 static void do_register();
 
@@ -2360,7 +2358,7 @@ void token::next()
 	nd = new extra_size_node(x);
 	return;
       case 'X':
-	nd = do_special();
+	nd = do_device_control();
 	if (!nd)
 	  break;
 	type = TOKEN_NODE;
@@ -2475,43 +2473,54 @@ int token::operator!=(const token &t)
   return !(*this == t);
 }
 
-// is token a suitable delimiter (like ')?
+// Is the character usable as a delimiter?
+//
+// This is used directly only by `do_device_control()`, because it is
+// the only escape sequence that reads its argument in copy mode (so it
+// doesn't tokenize it) and accepts a user-specified delimiter.
+static bool is_char_usable_as_delimiter(int c)
+{
+  switch(c) {
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+  case '+':
+  case '-':
+  case '/':
+  case '*':
+  case '%':
+  case '<':
+  case '>':
+  case '=':
+  case '&':
+  case ':':
+  case '(':
+  case ')':
+  case '.':
+    return false;
+  default:
+    return true;
+  }
+}
 
+// Is the current token a suitable delimiter (like `'`)?
 bool token::is_usable_as_delimiter(bool report_error)
 {
+  bool is_valid = false;
   switch(type) {
   case TOKEN_CHAR:
-    switch(c) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-    case '+':
-    case '-':
-    case '/':
-    case '*':
-    case '%':
-    case '<':
-    case '>':
-    case '=':
-    case '&':
-    case ':':
-    case '(':
-    case ')':
-    case '.':
-      if (report_error)
-        error("character '%1' is not allowed as a starting delimiter",
-	      char(c));
-      return false;
-    default:
-      return true;
-    }
+    is_valid = is_char_usable_as_delimiter(c);
+    if (!is_valid && report_error)
+      error("character '%1' is not allowed as a starting delimiter",
+	    static_cast<char>(c));
+    return is_valid;
   case TOKEN_NODE:
     // the user doesn't know what a node is
     if (report_error)
@@ -5619,16 +5628,19 @@ static node *do_non_interpreted()
 // In troff output, we translate the escape character to '\', but it is
 // up to the postprocessor to interpret it as such.  (This mostly
 // matters for device control commands.)
-static void encode_char_for_troff_output(macro *mac, const char c)
+static void encode_char_for_device_output(macro *mac, const char c)
 {
-  bool is_char_valid = true;
-  const char *sc = 0 /* nullptr */;
   if ('\0' == c) {
-    if (tok.is_space()
-	|| tok.is_stretchable_space()
-	|| tok.is_unstretchable_space())
+    if (tok.is_stretchable_space()
+	     || tok.is_unstretchable_space())
       mac->append(' ');
+    else if ((tok.is_hyphen_indicator())
+	     || tok.is_zero_width_break()
+	     || tok.is_dummy()
+	     || tok.is_transparent_dummy())
+      /* do nothing */;
     else if (tok.is_special()) {
+      const char *sc;
       if (font::use_charnames_in_special) {
 	charinfo *ci = tok.get_char(true /* required */);
 	sc = ci->get_symbol()->contents();
@@ -5662,38 +5674,27 @@ static void encode_char_for_troff_output(macro *mac, const char c)
 	    mac->append(']');
 	  }
 	  else
-	    is_char_valid = false;
+	    error("special character '%1' cannot be used within a"
+	          " device control escape sequence", sc);
 	}
 	else
-	  is_char_valid = false;
+	  error("special character '%1' cannot be used within a device"
+		" control escape sequence", sc);
       }
     }
-    else if (tok.is_hyphen_indicator()
-	       || tok.is_dummy()
-	       || tok.is_transparent_dummy()
-	       || tok.is_zero_width_break())
-      /* silently ignore */;
     else
-      is_char_valid = false;
-    if (!is_char_valid) {
-      if (sc != 0 /* nullptr */)
-	error("special character '%1' is invalid within a device"
-	      " control command", sc);
-      else
-	error("%1 is invalid within a device control command",
-	      tok.description());
-    }
+      error("%1 is invalid within device control escape sequence",
+	    tok.description());
   }
   else {
-    if (c == escape_char) {
+    if (c == escape_char)
       mac->append('\\');
-    }
     else
       mac->append(c);
   }
 }
 
-static node *do_special()
+static node *do_device_control() // \X
 {
   int start_level = input_stack::get_level();
   token start_token;
@@ -5726,35 +5727,41 @@ static node *do_special()
       c = '\b';
     else
       c = tok.ch();
-    encode_char_for_troff_output(&mac, c);
+    encode_char_for_device_output(&mac, c);
   }
   return new special_node(mac);
 }
 
 static void device_request()
 {
-  if (!has_arg()) {
-    warning(WARN_MISSING, "device request expects arguments");
+  // We can't use `has_arg()` here because we want to read in copy mode.
+  int c;
+  for (;;) {
+    c = input_stack::peek();
+    if (' ' == c)
+      (void) get_copy(0 /* nullptr */);
+    else
+      break;
+  }
+  if (('\n' == c) || (EOF == c)) {
+    warning(WARN_MISSING, "device control request expects arguments");
     skip_line();
     return;
-  }
-  if (tok.is_newline() || tok.is_eof()) {
-    warning(WARN_MISSING, "device request expects arguments");
-    skip_line();
-    return;
-  }
-  if ('"' == tok.ch()) {
-    tok.next();
   }
   macro mac;
   for (;;) {
-    if (tok.is_newline() || tok.is_eof())
+    c = get_copy(0 /* nullptr */);
+    if ('"' == c) {
+      c = get_copy(0 /* nullptr */);
       break;
-    encode_char_for_troff_output(&mac, tok.ch());
-    tok.next();
+    }
+    if (c != ' ' && c != '\t')
+      break;
   }
+  for (; c != '\n' && c != EOF; c = get_copy(0 /* nullptr */))
+    mac.append(c);
   curenv->add_node(new special_node(mac));
-  skip_line();
+  tok.next();
 }
 
 static void device_macro_request()

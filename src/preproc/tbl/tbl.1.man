@@ -906,7 +906,8 @@ of its range.
 Move the column up one half-line,
 \[lq]staggering\[rq] the rows.
 .
-This is a Research Tenth Edition Unix extension.
+This is a Documenter's Workbench (DWB) 1.0 and Research Tenth Edition
+Unix extension.
 .
 .
 .TP
@@ -984,7 +985,8 @@ calculation purposes;
 that is,
 compute the column's width using only the information in its descriptor.
 .
-This is a GNU extension.
+This is a Documenter's Workbench (DWB) 1.0 and Research Tenth Edition
+Unix extension.
 .
 .
 .TP

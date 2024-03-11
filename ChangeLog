@@ -1,3 +1,183 @@
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(encode_char_for_troff_output): Rename this...
+	(encode_char_for_device_output): ...to this.
+	(do_device_control): Update call site.
+
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Refactor.  Pull delimiter character
+	validator into its own function operating on a character, rather
+	than on an object of the token class.
+	(is_char_usable_as_delimiter): New function compares `char`
+	parameter to list of valid delimiters.
+	(token::is_usable_as_delimiter): Refactor to call the foregoing.
+
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (is_usable_as_delimiter): Fix code
+	style nit, using C++-style type cast instead of C-style cast.
+
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_char_for_escape_parameter):
+	Slightly refactor.  Assert that the character handed to us by
+	our caller is not a newline.  Consequently, drop newline
+	handler.  Drop `if` test that is redunant with a `switch` case.
+
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(do_special): Rename this...
+	(do_device_control): ...to this.
+
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pspic.tmac (PSPIC): Prepare for alteration of `\X` device
+	control escape sequence to read its argument in copy mode; use
+	nested backslashes instead of `\E`, which cannot meaningfully
+	persist into the device-independent output.  (The *roff escape
+	character is not only undefined but meaningless in that file
+	format.)
+
+2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (ascii_output_file::outc)
+	(ascii_output_file::outs, put_string, troff_output_file::put)
+	(ascii_output_file::really_transparent_char)
+	(ascii_output_file::really_print_line): Guard uses of standard C
+	library `putc()` and `fputc()` functions with a null pointer
+	check.  They could fail if the output stream has been
+	invalidated.  Problem present from groff's birth and apparently
+	exposed by man-db man's use of AppArmor.  See
+	<https://bugs.launchpad.net/ubuntu/+source/lintian/+bug/2055402>
+	and follow-up discussion there.
+
+	Fixes <https://savannah.gnu.org/bugs/?65427>.  Thanks to an
+	anonymous submitter for the report.
+
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdf*href): Fix (harmless?) `ie`/`if` thinko.
+
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pdf]: Implement linear bookmark tag search.
+
+	* tmac/pdf.tmac (pdf:lookup): Given an argument, search defined
+	bookmark tags for a match and return one (if found) in the
+	string `pdf:lookup-result`, which is defined but empty if there
+	is no match.  Previously (and, for mom(7), still--see below),
+	lookups were O(1) because strings named `pdf:look($TAG_NAME)`
+	were defined.  The speed was great but unfortunately, in
+	practical use, tags often got *roff escape sequences stuck into
+	them, which drew diagnostic messages from the formatter and
+	could defeat the matches.
+	(pdfbookmark, pdf*href-M): Use the new mechanism to record a
+	bookmark tag if `PRINTSTYLE` (a mom(7) macro) is _not_ defined,
+	so as to not regress documents using that package.  Store the
+	tag text in the string `pdf:bm\\n[pdf:bm.nr].tag`; every PDF
+	bookmark in a groff document gets a serial number already.
+	(pdf*href): Use the new mechanism to call `pdf:lookup` and
+	locate a match for the desired tag.
+
+	* doc/GMPfront.t.in (an*cln): Delete this macro.  It iterated
+	through a string, scrubbing it of `\%` escape sequences.  Much
+	more exotic things could be placed in bookmark tags; we were
+	fortunate that man page cross references tend to stick to ASCII,
+	plus `\%` to suppress hyphenation.  But that's suitable only for
+	man page references; if we want taggable (sub)section headings,
+	like groff_mmse(7)'s "Se också", we need strings, not just valid
+	groff identifiers.
+	(an*bookmark): Populate `an*page-ref-nm` without cleaning it
+	first.
+
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/GMPfront.t.in: Resync `MR` replacement with its
+	counterpart in "an.tmac".
+
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdf*href): Fix excess escaping.
+
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdfclean): Fix missing closing brace escape
+	sequence.  Appears to have done no damage; possibly the end of
+	the macro definition reset the formatter's state.  Or maybe we
+	simply got lucky with diversions with the documents in our tree.
+
+2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Improve encoding of *roff string contents when
+	interpolated into device control escape sequences.
+
+	* src/roff/troff/input.cpp (encode_char_for_troff_output):
+	Discard several escape sequences from `\X` contents when
+	interpolated: `\%`, `\:`, `\&`, `\)`.  Interpolate the escape
+	character into device-independent output as `\` no matter what
+	the *roff escape character is defined to be.
+
+	* src/roff/groff/tests/\
+	device-control-special-character-handling.sh: Update test
+	expectations.  Comment out some tests that depended on a
+	reverted commit of a half-baked idea.  (See Savannah #64484.)
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Add experimental feature to support increasing
+	the base level of PDF bookmarks.  Define register
+	`an*bookmark-base-level`, initialized to zero.
+	(PT): Add 1 to it when producing document bookmark.
+	(SH): Add 2 to it when producing section heading bookmark.
+	(SS): Add 3 to it when producing subsection heading bookmark.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Accept `MR` calls with only one argument.
+
+	* tmac/an.tmac (MR): If only one argument is present, do not
+	hyperlink it, but do set it with italic corrections.  Prompted
+	by a similar change Deri James applied in doc/GMPfront.t.in, and
+	for consistency with the way we've long handled the analogous
+	`Xr` macro in mdoc(7).
+	* tmac/groff_man.7.man.in (Hyperlink macros) <MR>: Update macro
+	synopsis and description.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac: Add internal flag register
+	`pdf*is-mark-suspended`.
+	(pdfmarksuspend, pdfmarkrestart): Use it to avoid sending
+	PDFMark restart commands when they haven't been suspended.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (PT): Be consistently paranoid.  The idea of a
+	"page ref string" (like "ls(1)") with leading space in it
+	strikes me as dubious, but for the time being we accept it; do
+	so consistently.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (SH): Fix code style nit.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Xr): Support the crazy old menagerie of Mac OS
+	X/macOS man page URL formats as groff man(7) does.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (MR): Fix "format 4" URLs to include the section
+	number again in parentheses after the identifier.
+
+2024-03-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Xr): Fix dead store to string.
+
 2024-03-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* NEWS:
@@ -1116,32 +1296,6 @@
 	* src/devices/gropdf/gropdf.pl: Do not use hexed label unless
 	necessary.  Restores the ability for some PDF viewers to accept
 	"#label" as suffix to the file name.
-
-2024-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	[troff]: Fix Savannah #64484.
-
-	* src/roff/troff/input.cpp (encode_char_for_troff_output):
-	Annotate the function's purpose.  Initially assume the character
-	to be encoded as valid.  If the current token is a plain space,
-	write a space (U+0020) to the output.  (This is necessary
-	because the `device` request no longer reads its arguments in
-	copy mode; see below.)  Move the `sc` local variable to a higher
-	scope.  Update the new `is_char_valid` Boolean instead of
-	issuing an error diagnostic at each point of validation failure.
-	When done processing the character, test `is_char_valid` and
-	emit different diagnostics depending on whether the input was a
-	special character escape sequence we can't handle, or something
-	else.  Emit a self-quoted escape character _as a backslash_, not
-	as the current *roff escape character.
-	(device_request): Rewrite to operate in interpretation mode, not
-	copy mode.
-
-	* doc/groff.texi (Postprocessor Access):
-	* man/groff.7.man (Request short reference):
-	* NEWS: Document it.
-
-	Fixes <https://savannah.gnu.org/bugs/?64484>.
 
 2024-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
 

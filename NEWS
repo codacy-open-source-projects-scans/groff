@@ -47,10 +47,10 @@ o A new request, `hydefault`, and read-only register, `.hydefault`,
     .nh
     and we temporarily shut off automatic hyphenation,
     .hy
-    the foregoing request does not do exactly what we expect.
+    the foregoing request would not do exactly what we expect.
 
   AT&T and other troffs would set the hyphenation mode to 1 instead of
-  the previous value, nor, for GNU troff, was this an appropriate value
+  the previous value; for GNU troff this was not an appropriate value
   for the English hyphenation patterns.  (For example, "alibi" would
   break as "ali-bi" instead of "al-ibi" after this argumentless `hy`
   invocation.)  With updates to groff's localization files, the
@@ -59,13 +59,12 @@ o A new request, `hydefault`, and read-only register, `.hydefault`,
 o A new read-only, string-valued register, `.trap`, interpolates the
   name of the next vertical position trap that will be sprung.
 
-o New registers `.it`, `.itc`, and `.itm` registers are available.
-  These read-only (and, in the case of `.itm`, string-valued as well)
-  registers report the number of lines remaining in a pending input
-  trap, a Boolean indication of whether that pending input trap honors
-  output line continuation (cf. the `it` and `itc` requests), and the
-  name of the macro associated with the pending input trap,
-  respectively.
+o New registers `.it`, `.itc`, and `.itm` are available.  These
+  read-only (and, in the case of `.itm`, string-valued) registers report
+  the number of lines remaining in a pending input trap, a Boolean
+  indication of whether that pending input trap honors output line
+  continuation (cf. the `it` and `itc` requests), and the name of the
+  macro associated with the pending input trap, respectively.
 
 o A new request, `pcolor`, reports to the standard error stream the
   current list of defined colors.  (A device's default stroke and/or
@@ -84,23 +83,6 @@ o The `hla` request, when invoked with no arguments, now clears the
 o The read-only registers `.m` and `.M` now interpolate "default" when
   the default color is selected as the stroke or fill color,
   respectively, rather than interpolating nothing.
-
-o The `device` request no longer reads its arguments in copy mode; this
-  change makes it more consistent with the `\X` device control command
-  escape sequence.
-
-o The `device` request and `\X` escape sequence no longer emit a
-  self-quoted *roff escape character as itself, but instead as a
-  backslash, because troff's input and output languges are not the same
-  thing, and to avoid the need to extend the *roff output language to
-  support a configurable escape character.
-
-  This and the previous change are to enable postprocessors to reliably
-  interpret device control commands that wish to express arbitrary
-  character sequences (using whatever escaping convention they prefer)
-  without requiring different syntax for the arguments to the `device`
-  request and `\X` escape sequences.  For example, PDF bookmarks need to
-  be expressed in UTF-16LE.
 
 eqn
 ---

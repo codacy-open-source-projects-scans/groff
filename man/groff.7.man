@@ -3008,7 +3008,8 @@ with compatibility mode disabled when the macro is interpreted.
 .TPx
 .REQ .device contents
 Write
-.I contents
+.IR contents ,
+read in copy mode,
 to
 .I @g@troff
 output as a device control command.
