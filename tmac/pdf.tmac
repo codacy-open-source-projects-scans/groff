@@ -444,9 +444,10 @@ am solely responsible for any bugs I may have introduced into this file.
 .   \"
 .      nr pdf:href.ok 1
 .   \"
-.   \" Initialise -E and -X flags in the OFF state
+.   \" Initialise -E, -S, and -X flags in the OFF state
 .   \"
 .      nr pdf:href-E 0
+.      nr pdf:href-S 0
 .      nr pdf:href-X 0
 .   \"
 .   \" Handle the case where subcommand is specified as "-class",
@@ -530,6 +531,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .als pdf:href.opt-E pdf:href.flag     \" echo link descriptor
 .als pdf:href.opt-F pdf:href.option   \" remote file specifier
 .als pdf:href.opt-N pdf:href.option   \" reference name
+.als pdf:href.opt-S pdf:href.flag     \" start mark only, "leaving open"
 .als pdf:href.opt-P pdf:href.option   \" prefixed text
 .als pdf:href.opt-T pdf:href.option   \" bookmark "tag"
 .als pdf:href.opt-X pdf:href.flag     \" cross reference
@@ -714,7 +716,16 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" And now, we have no further use for "pdf*href.link".
 .\"
 .rm pdf*href.link
-.nr pdf:href.pipe 0
+.nr pdf:href.leave-mark-open 0
+.\"
+.\" Does the user want to leave the mark hanging open (using the "-S"
+.\" flag)?  If so, it's their responsibility to close it by issuing the
+.\" "pdf: markend" device control command.
+.if \\n[pdf:href-S] \{\
+.  ie !'\\*[pdf:href-A]'' .pdf:error pdfhref flag '-S' cannot be used \
+with '-A' option
+.  el .nr pdf:href.leave-mark-open 1
+.\}
 .\"
 .\" If the user specified any "link prefix" text, (using the "-P text"
 .\" option), then emit it BEFORE processing the "link text" itself.
@@ -740,7 +751,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .         \}
 .      el \{\
 .         pdf:lookup \\*[pdf:href-D]
-.         if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[\\*pdf:lookup-result]
+.         if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[pdf:lookup-result]
 .         \}
 .      \}
 .   \" Apply border and colour specifications to the PDFMARK string
@@ -756,10 +767,15 @@ am solely responsible for any bugs I may have introduced into this file.
 \#.   if dPDFHREF.COLOUR .defcolor pdf:href.colour rgb \\*[PDFHREF.COLOUR]
 .   ds pdf:curcol \\n[.m]
 .   nr pdf:bm.width \\w'\\*[PDFHREF.DESC]'
-.   if '\\*[PDFHREF.DESC]'|' .nr pdf:href.pipe 1
 .   nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
 .   device pdf: markstart \\n[rst] \\n[rsb] \\n[PDFHREF.LEADING] \\*[pdf:href.link]
-.   if !\\n[pdf:href.pipe] .nop \&\\*[PDFHREF.DESC]\X'pdf: markend'\m[\\*[pdf:curcol]]\c
+'   fl
+.   if !\\n[pdf:href.leave-mark-open] \{\
+.     nop \&\\*[PDFHREF.DESC]\c
+.     device pdf: markend
+'     fl
+.     nop \m[\\*[pdf:curcol]]\c
+.   \}
 .   \"
 .   \" Clean up the temporary registers and strings, used to
 .   \" compute the "hot-spot" bounds, and format the reference,
@@ -776,7 +792,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" And then, if the user specified any affixed text, (using the
 .\" "-A text" option), we tack it on at the end.
 .\"
-.if !\\n[pdf:href.pipe] .nop \&\\*[pdf:href-A]
+.if !\\n[pdf:href.leave-mark-open] .nop \&\\*[pdf:href-A]
 ..
 .\" Macro "pdf*href-I" is used for one time initialisation of special
 .\" "pdfhref" features; (currently, only the above page trap hook is
@@ -807,6 +823,9 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" initialisation with the user, but we provide the "pdf*href-PT.init"
 .\" macro, (invoked by ".pdfhref I -PT <macro-name>"), to implement a
 .\" suitable initialisation action.
+.\"
+.\" XXX: pdf.tmac does _not_ provide pdf*href-PT.init; does it need to?
+.\" It seems not, at least in some cases; see Savannah #65354.
 .\"
 .\"
 .\" "pdf*href-L" is the generic handler for creating references to

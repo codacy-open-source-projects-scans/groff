@@ -2510,7 +2510,7 @@ static bool is_char_usable_as_delimiter(int c)
   }
 }
 
-// Is the current token a suitable delimiter (like `'`)?
+// Is the token a valid delimiter (like `'`)?
 bool token::is_usable_as_delimiter(bool report_error)
 {
   bool is_valid = false;

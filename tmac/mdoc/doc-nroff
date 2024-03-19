@@ -197,7 +197,7 @@
 .    ie \n[.$] \
 .      ds doc-macro-name Ql
 .    el \
-.      tm Usage: .Ql argument ... (#\n[.c])
+.      doc-report-usage .Ql argument ...
 .  \}
 .
 .  ds doc-quote-left "\*[doc-left-singlequote]

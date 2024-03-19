@@ -788,7 +788,7 @@ and
 .RS
 .EX
 You might see \ef[B]bold\ef[] and \ef[I]italic\ef[].
-Some people see \ef[BI]both\ef[].
+Some people see \ef[BI]both at once\ef[].
 If the output device does (not) co\ez\e[ad]operate,
 you might see \em[red]red\em[].
 Black on cyan can have a \eM[cyan]\em[black]prominent\em[]\eM[]

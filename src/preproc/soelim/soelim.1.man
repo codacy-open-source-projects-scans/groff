@@ -128,7 +128,7 @@ arguments,
 .I @g@soelim
 reads the standard input stream.
 .
-Output is written to the standard output stream.
+The program writes to the standard output stream.
 .
 .
 .PP

@@ -539,7 +539,7 @@ o Part of the an (man) macro package has been renamed from "an-old.tmac"
 o The an (man) and doc (mdoc) macro packages support a new `AD` string
   to put the default adjustment mode under user control at rendering
   time.  The default is "b" (adjust lines to both margins) as has been
-  the Unix man(7) default since 1979.
+  the Unix man(7) default for typesetters since 1979.
 
 o The an (man) and doc (mdoc) macro packages support new `CS` and `CT`
   registers to control rendering of man page section headings and topics

@@ -147,7 +147,7 @@ int main(int argc, char **argv)
     case 'h':
       {
 	int requested_hash_table_size;
-	check_integer_arg('h', optarg, 1, &requested_hash_table_size);
+	check_integer_arg('h', optarg, 2, &requested_hash_table_size);
 	hash_table_size = requested_hash_table_size;
 	if ((hash_table_size > 2) && (hash_table_size % 2) == 0)
 		hash_table_size++;
@@ -343,16 +343,20 @@ static void check_integer_arg(char opt, const char *arg, int min, int *res)
 {
   char *ptr;
   long n = strtol(arg, &ptr, 10);
-  if (n == 0 && ptr == arg)
-    error("argument to -%1 not an integer", opt);
+  if (ERANGE == errno)
+    fatal("argument to -%1 must be between %2 and %3", arg, min,
+	  INT_MAX);
+  else if (n == 0 && ptr == arg)
+    fatal("argument to -%1 not an integer", opt);
   else if (n < min)
-    error("argument to -%1 must not be less than %2", opt, min);
+    fatal("argument to -%1 must not be less than %2", opt, min);
   else {
-    if (n > INT_MAX)
-      error("argument to -%1 greater than maximum integer", opt);
+    if ((LONG_MAX > INT_MAX) && (n > INT_MAX))
+      fatal("argument to -%1 must be between %2 and %3", arg, min,
+	    INT_MAX);
     else if (*ptr != '\0')
-      error("junk after integer argument to -%1", opt);
-    *res = int(n);
+      fatal("junk after integer argument to -%1", opt);
+    *res = static_cast<int>(n);
   }
 }
 

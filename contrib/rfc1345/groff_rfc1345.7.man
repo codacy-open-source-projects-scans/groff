@@ -7,7 +7,7 @@ groff_rfc1345 \- special character names from RFC 1345 and Vim digraphs
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (c) 2021 Dorai Sitaram
+.\" Copyright (c) 2021-2024 Dorai Sitaram
 .\"
 .\" Permission is hereby granted, free of charge, to any person
 .\" obtaining a copy of this software and associated documentation files
@@ -123,14 +123,17 @@ and box-drawing symbols.
 .
 .
 .PP
-The Vim digraph table is practically a subset of RFC 1345
+The Vim digraph table is largely a subset of RFC 1345
 (being limited to two-character mnemonics),
 but,
 as a newer implementation,
-adds four mnemonics not specified in the RFC
-(the horizontal ellipsis,
-the Euro sign,
-and two mappings for the rouble sign).
+adds several mnemonics not specified in the RFC
+.\" W` w` Y` y` oo ,. 4' =e Eu =R =P
+(Latin capital and small letters W and Y with grave accent,
+bullet,
+horizontal ellipsis,
+quadruple prime,
+and two mappings each for the Euro and rouble signs).
 .
 These have also been added to
 .IR rfc1345.tmac .

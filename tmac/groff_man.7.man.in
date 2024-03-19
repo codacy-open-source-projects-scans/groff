@@ -552,7 +552,7 @@ Set
 as a section heading.
 .
 If no argument is given,
-a one-line input trap is planted;
+the macro plants a one-line input trap;
 text on the next line
 .\", which can be formatted with a macro, \" true but discouraged
 becomes
@@ -614,7 +614,7 @@ ordinary paragraph
 .RB ( .P ).
 .
 If no argument is given,
-a one-line input trap is planted;
+the macro plants a one-line input trap;
 text on the next line
 .\", which can be formatted with a macro, \" true but discouraged
 becomes
@@ -844,9 +844,9 @@ is not.
 Set a paragraph with a leading tag,
 and the remainder of the paragraph indented.
 .
-A one-line input trap that honors the
+The macro plants a one-line input trap that honors the
 .B \(rsc
-escape sequence is planted;
+escape sequence;
 text on the next line becomes the tag,
 set without indentation.
 .
@@ -886,7 +886,7 @@ _endif()dnl
 Set an additional tag for a paragraph tagged with
 .BR .TP .
 .
-An input trap is planted as with
+The macro plants a one-line input trap as with
 .BR .TP .
 .
 .
@@ -1203,8 +1203,8 @@ Several features of the above example are of note.
 .IP \(bu 3n
 The empty request (.),
 which does nothing,
-is used to vertically space the input file for readability by the
-document maintainer.
+vertically spaces the input file for readability by the document
+maintainer.
 .
 Do not put blank (empty) lines in a man page source document.
 .
@@ -1245,8 +1245,7 @@ a space precedes the ellipsis.
 .IP \(bu
 The non-breaking adjustable space escape sequence
 .B \e\(ti
-is used to prevent the output line from breaking within the option
-brackets;
+prevents the output line from breaking within the option brackets;
 see subsection \(lqPortability\(rq below.
 .
 .
@@ -1644,7 +1643,7 @@ Set
 in bold.
 .
 If no argument is given,
-a one-line input trap is planted;
+the macro plants a one-line input trap;
 text on the next line,
 which can be further formatted with a macro,
 is set in bold.
@@ -1678,7 +1677,7 @@ Set
 in an italic or oblique face.
 .
 If no argument is given,
-a one-line input trap is planted;
+the macro plants a one-line input trap;
 text on the next line,
 which can be further formatted with a macro,
 is set in an italic or oblique face.
@@ -1722,7 +1721,7 @@ Set
 one point smaller than the default type size on typesetters.
 .
 If no argument is given,
-a one-line input trap is planted;
+the macro plants a one-line input trap;
 text on the next line,
 which can be further formatted with a macro,
 is set smaller.
@@ -2854,8 +2853,10 @@ Heirloom Doctools
 .IR troff , \" Heirloom Doctools
 and
 .IR neatroff ,
-but not Plan\~9 or Solaris
-.I troff. \" Plan 9, Solaris
+but not Documenter's Workbench,
+Plan\~9,
+or Solaris
+.I troff. \" DWB, Plan 9, Solaris
 .
 .
 .TP
@@ -3240,7 +3241,7 @@ in bold and
 one point smaller than the default type size.
 .
 If no argument is given,
-a one-line input trap is planted;
+the macro plants a one-line input trap;
 text on the next line,
 which can be further formatted with a macro,
 is set smaller and in bold.
@@ -3972,7 +3973,7 @@ are often presented together.
 .
 Further,
 multiple programming languages have functions named \(lqprintf\(rq,
-and wish to document these in a man page.
+and may document these in a man page.
 .
 The identifier is intended to
 (with the section)
@@ -3983,8 +3984,8 @@ it may furthermore correspond closely to the file name of the document.
 .IP
 The
 .MR man 1
-librarian is designed to permit convenient access to man pages,
-resolving topics to man page identifiers.
+librarian makes access to man pages convenient by resolving topics to
+man page identifiers.
 .
 Thus,
 you can type
@@ -4229,14 +4230,13 @@ that precedes it.
 .
 .
 .IP
-After calls to the
+Calling the
 .B .SH
-and
+or
 .B .SS
-sectioning macros,
-all relative insets are cleared and calls to
+sectioning macros clears all relative insets and
 .B .RE
-have no effect until
+calls have no effect until
 .B .RS
 is used again.
 .

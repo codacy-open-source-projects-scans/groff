@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -26,45 +26,47 @@ groff="${abs_top_builddir:-.}/test-groff"
 # for project name and version information) can overrun other parts of
 # the titles, such as a date in the center footer.
 
-FAIL=
+fail=
 
-INPUT='.TH foo 1 2021-10-26 "groff 1.23.0.rc1.1449-84949"
+wail () {
+    echo ...FAILED >&2
+    fail=YES
+}
+
+input='.TH foo 1 2021-10-26 "groff 1.23.0.rc1.1449-84949"
 .SH Name
 foo \- a command with a very short name'
 
 echo 'testing long inner footer with sufficient space to set it' >&2
-OUTPUT=$(echo "$INPUT" | "$groff" -Tascii -P-cbou -man)
-PATTERN='groff 1\.23\.0\.rc1\.1449-84949 +2021-10-26 +foo\(1\)'
-
-if ! echo "$OUTPUT" | grep -Eq "$PATTERN"
-then
-    FAIL=yes
-    echo "...FAILED" >&2
-fi
+output=$(echo "$input" | "$groff" -Tascii -P-cbou -man)
+echo "$output"
+pattern='groff 1\.23\.0\.rc1\.1449-84949 +2021-10-26 +foo\(1\)'
+echo "$output" | grep -Eq "$pattern" || wail
 
 echo 'testing long inner footer with insufficient space to set it' >&2
-OUTPUT=$(echo "$INPUT" | "$groff" -Tascii -P-cbou -man -rLL=60n)
-PATTERN='groff 1\.23\.0\.rc1\.1449\.\.\. +2021-10-26 +foo\(1\)'
-
-if ! echo "$OUTPUT" | grep -Eq "$PATTERN"
-then
-    FAIL=yes
-    echo "...FAILED" >&2
-fi
+output=$(echo "$input" | "$groff" -Tascii -P-cbou -man -rLL=60n)
+echo "$output"
+pattern='groff 1\.23\.0\.rc1\.1449\.\.\. +2021-10-26 +foo\(1\)'
+echo "$output" | grep -Eq "$pattern" || wail
 
 # Regression-test Savannah #61408.
 #
 # Don't spew diagnostics if the page doesn't supply a 3rd .TH argument.
 echo 'testing for graceful behavior when TH has no 3rd argument' >&2
-INPUT='.TH patch 1 "" GNU'
-OUTPUT=$(echo "$INPUT" | "$groff" -Tascii -P-cbou -man -ww -z 2>&1)
+input='.TH patch 1 "" GNU'
+error=$(echo "$input" | "$groff" -Tascii -P-cbou -man -ww -z 2>&1)
+echo "$error"
+test -z "$error" || wail
 
-if [ -n "$OUTPUT" ]
-then
-    FAIL=yes
-    echo "...FAILED" >&2
-fi
+# Regression-test Savannah #65469.
+#
+# Don't spew diagnostics if the argument being abbreviated contains '@'.
+echo 'testing for graceful treatment of argument containing "@"' >&2
+input='.TH tic 1M 2023-12-30 "ncurses @NCURSES_MAJOR@.@NCURSES_MINOR@"'
+error=$(echo "$input" | "$groff" -Tascii -P-cbou -man -ww -z 2>&1)
+echo "$error"
+test -z "$error" || wail
 
-test -z "$FAIL"
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

@@ -1,3 +1,246 @@
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an*scan-string-for-backslash): Choose an escape
+	character that is much less likely than the at sign to be
+	specified in a man(7) document's page footer.
+
+	Fixes <https://savannah.gnu.org/bugs/?65469>.  Thanks to Thomas
+	Dickey for the report.
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an_inner-footer-abbreviation-works.sh: Add
+	regression test case for Savannah #65469.
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-common (LP, PP, pp, SH): Use new `doc-warn`
+	macro instead of hand-crafting diagnostic message with `tm`
+	request.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?52463>, which I
+	should have known would not stay dead for long.  (And which I
+	won't be surprised to see scrabble forth from the grave again.)
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Xr): When formatting PDF, automatically attempt
+	lookups of `Xr` destinations as internal bookmark tags.  If
+	lookup succeeds, link to the within-document destination rather
+	than an "external" URL like "man:foobar(1)".
+
+	For example, this enables "outbound" links from the
+	groff_mdoc(7) page to the other ~60 documents collected in
+	"groff-man-pages.pdf".
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-common (Os): When formatting PDF, automatically
+	give each `Os` call a named PDF bookmark tag that can be used in
+	links (inside the guts of the `Xr` macro).
+
+	For example, this enables "inbound" links to the groff_mdoc(7)
+	page in "groff-man-pages.pdf".
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pdf,man,mdoc]: Refactor a recent feature.
+
+	The "pdfhref pipe" feature recently added used in-band signaling
+	to indicate that a PDF mark hotspot should be left open by the
+	`pdhref` hyperlink management macro.  I'm uneasy with this
+	because it forecloses the possibility of using the chosen
+	in-band signal content as link text.  (Compounding the risk of
+	user frustration is that there's no documentation of any of
+	this.)  Replace it by adding a new `-S` flag to the `pdfhref`
+	macro, indicating the caller's desire to manage closing of the
+	hotspot themselves, as "tmac/an.tmac" does already.
+
+	See <https://savannah.gnu.org/bugs/?61434#comment5>.
+
+	* tmac/pdf.tmac (pdfhref): Initialize `pdf:href-S` register to
+	zero (false).
+	(pdf:href.opt-S): Define new alias for `pdf:href.flag`, so the
+	{complex, Unix command-emulating} `pdfhref` argument management
+	system treats it as a Boolean parameter.
+	(pdf*href): Rename `pdf:href.pipe` register to
+	`pdf:href.leave-mark-open`.  Throw error and don't honor "-S"
+	parameter if the user has also specified a link text appendment
+	with the "-A" option.  (If we're not closing the hotspot, we
+	don't know where the appendment will go.)  Stop treating link
+	text (the `PDFHREF.DESC` string) specially if it is "|".
+
+	* tmac/an.tmac (an*end-hyperlink, MR):
+	* tmac/doc.tmac (doc-begin-hyperlink-pdf): Migrate to new API.
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdf*href): Fix derpy syntax error, introduced
+	by me in commit cd9fde325f, 4 March.  Exposed by a pending
+	change.
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: When formatting PDF, attempt lookups of `MR` destinations
+	as internal bookmark tags.  If lookup succeeds, link to the
+	within-document destination rather than an "external" URL like
+	"man:foobar(1)".
+
+	* doc/GMPfront.t.in: Drop `END` dummy macro and redefinition of
+	`MR` macro, moving the logic from here...
+	* tmac/an.tmac (MR): ...to here, and trivially refactoring to
+	rename variables for intelligibility.  Also simplify, using the
+	"dangling open mark" incantation of the `pdfhref` macro that
+	Deri innovated, since the existing logic unconditionally writes
+	the link text subsequently.
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: When formatting PDF, automatically give each `TH` call a
+	named PDF bookmark tag that can be used in links (inside the
+	guts of the `MR` macro).
+
+	* doc/GMPfront.t.in (reload-man [appendment]): Move logic for
+	declaring a named ("tagged") bookmark from here...
+	* tmac/an.tmac (an*bookmark*pdf): ...to here.
+
+2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdf*href): Fix problem with hotspot placement
+	when there is no link text (illustrated by the "See also"
+	section of pic(1) when rendered to PDF).  It is apparently
+	necessary to flush the output buffer immediately after
+	constructing certain device control nodes ("pdf: markstart" and
+	"pdf: markend" in this case).  Deri understands this stuff
+	better than I do; the misapprehensions I exhibited in Savannah
+	#65052 might be related.  If that's the case, then the issue is
+	maintaining synchrony between the formatter's idea of the
+	drawing position and the output driver's.
+
+2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Fix Savannah #64267.
+
+	* tmac/an.tmac (an-reset-paragraph-spacing): Restore spacing
+	{that is, cancel no-space mode} to handle a "belated" `PD` call
+	immediately after a paragraphing macro (`P`, `HP`, or `IP` with
+	no marker argument).
+
+	Fixes <https://savannah.gnu.org/bugs/index.php?64267>.  Thanks
+	to Alex Colomar for the report.
+
+2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Regression-test Savannah #64267.
+
+	* tmac/tests/tmac/tests/an_PD-restores-spacing.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Fix Savannah #65464.
+
+	* tmac/an.tmac (an*end-hyperlink): Unformat the diversion before
+	emitting it.  This way adjustment of spaces will take place in
+	the context where it's actually formatted, and be more
+	appropriate to the line.
+
+	* tmac/tests/an_adjust-link-text-correctly.sh: Update test
+	expectations.  The only change here was to adjustment parity.
+
+	Fixes <https://savannah.gnu.org/bugs/?65464>.
+
+2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Fix Savannah #65462.
+
+	* tmac/an.tmac (TP): Save the existing adjustment mode before
+	disabling adjustment in the diversion used to format the
+	paragraph tag.
+	(an*TP-trap): Restore the saved adjustment mode after closing
+	the diversion, instead of using the configured default
+	adjustment mode.
+
+	Fixes <https://savannah.gnu.org/bugs/?65462>.  Thanks to Russ
+	Allbery for the report.
+
+2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Regression-test Savannah #65462.
+
+	* tmac/tests/\
+	an_adjustment-mode-preserved-after-paragraph-tag.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-03-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/indxbib/indxbib.cpp: Validate `-h` option arguments
+	more carefully.
+	(main): Insist on an argument value of at least 2, since a hash
+	table of size 1 is pointless.
+	(check_integer_arg): Try to be more robust in the fact of
+	C/C++'s notorious lax integer sizing practices.  We might
+	consider gnulib's "xstrtol" module.  Promote `-h` argument
+	validation errors to `fatal()`.  Only perform a comparison
+	against INT_MAX if LONG_MAX is larger than INT_MAX in the first
+	place.  Report the supported range in range diagnostics.  Use
+	C++- instead of C-style type cast of result.
+
+	Mitigates, but arguably does not fix,
+	https://savannah.gnu.org/bugs/?65452>.  Thanks to Alex Colomar
+	for the report.
+
+2024-03-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Improve diagnostic message format (4/4).
+
+	* tmac/doc.tmac (doc-report-usage): Add internal macro for
+	reporting usage error diagnostics.  Arrange message per GNU
+	Coding Standards, including report of input filename.
+
+	* tmac/doc.tmac (doc-generic-macro, Cd, Fd, In, Nm, Tn, Ns, Ap)
+	(Bf, Ek, El, doc-Xr-usage, doc-column-list, Dl, D1, Vt, Ft, Fa)
+	(Fn, Fo, Rs, Re, %A, %B, %C, %D, %I, %J, %N, %O, %P, %Q, %R, %T)
+	(%U, %V, An, Rv, Ex, doc-Mt-usage, doc-Lk-usage):
+	* tmac/mdoc/doc-common (Sh, Ss):
+	* tmac/mdoc/doc-ditroff (Ql):
+	* tmac/mdoc/doc-nroff (Ql):
+	* tmac/mdoc/doc-syms (Lb): Use it.
+
+	Fixes <https://savannah.gnu.org/bugs/?52463> (at long last).
+
+2024-03-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Improve diagnostic message format (3/4).
+
+	* tmac/doc.tmac (doc-warn): Add internal macro for reporting
+	warning diagnostics.  Arrange message per GNU Coding Standards,
+	including report of input filename.
+
+	* tmac/doc.tmac (doc-generic-macro, Pf, Bf, Ef, Bk, Ek, Bd)
+	(doc-do-Bd-args, Ed, Bl, doc-do-Bl-args, It, doc-end-list, Re)
+	(doc-print-reference, em):
+	* tmac/mdoc/doc-common (Dd, Dt, Os, doc-check-depth): Use it.
+
+2024-03-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Improve diagnostic message format (2/4).
+
+	* tmac/doc.tmac (doc-err): Add internal macro for reporting
+	error diagnostics.  Arrange message per GNU Coding Standards,
+	including report of input filename.
+	(It, doc-fo-func-args, Fo, Fc, %V, Lk, doc-defunct-macro): Use
+	it.
+
+2024-03-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Improve diagnostic message format (1/4).
+
+	* tmac/doc.tmac: Add new `doc` string recording the name the
+	macro package self-reports.  Use it when issuing diagnostics
+	about rendering parameters (register and string settings) that
+	can't be honored.
+
 2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp: Trivially refactor.
@@ -24,7 +267,7 @@
 	* src/roff/troff/input.cpp (get_char_for_escape_parameter):
 	Slightly refactor.  Assert that the character handed to us by
 	our caller is not a newline.  Consequently, drop newline
-	handler.  Drop `if` test that is redunant with a `switch` case.
+	handler.  Drop `if` test that is redundant with a `switch` case.
 
 2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -139,10 +382,10 @@
 	[man]: Accept `MR` calls with only one argument.
 
 	* tmac/an.tmac (MR): If only one argument is present, do not
-	hyperlink it, but do set it with italic corrections.  Prompted
-	by a similar change Deri James applied in doc/GMPfront.t.in, and
-	for consistency with the way we've long handled the analogous
-	`Xr` macro in mdoc(7).
+	hyperlink it, but do set it with (potential) italic corrections.
+	Prompted by a similar change Deri James applied in
+	doc/GMPfront.t.in, and for consistency with the way we've long
+	handled the analogous `Xr` macro in mdoc(7).
 	* tmac/groff_man.7.man.in (Hyperlink macros) <MR>: Update macro
 	synopsis and description.
 

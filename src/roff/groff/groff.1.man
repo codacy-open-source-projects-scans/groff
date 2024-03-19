@@ -1771,7 +1771,9 @@ is searched before
 .
 .TP
 .I GROFF_COMMAND_PREFIX
-Apply a prefix to certain GNU @code{roff} commands.
+Apply a prefix to certain GNU
+.I roff
+commands.
 .
 .I groff
 can be configured at compile time to apply a prefix to the names of

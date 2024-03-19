@@ -80,7 +80,7 @@ preconv \- prepare files for typesetting with
 .SH Description
 .\" ====================================================================
 .
-.I preconv
+.I \%preconv
 reads each
 .IR file ,
 converts its encoded characters to a form
@@ -105,7 +105,7 @@ is a hexadecimal number of four to six digits corresponding to a Unicode
 code point.
 .
 By default,
-.I preconv
+.I \%preconv
 also inserts a
 .I roff
 .B .lf
@@ -120,7 +120,7 @@ option suppresses this behavior.
 .
 .PP
 In typical usage scenarios,
-.I preconv
+.I \%preconv
 need not be run directly;
 instead it should be invoked with the
 .B \-k
@@ -136,12 +136,12 @@ or if
 .I file
 is
 .RB \[lq] \- \[rq],
-.I preconv
+.I \%preconv
 reads the standard input stream.
 .
 .
 .PP
-.I preconv
+.I \%preconv
 selects an input encoding with the following algorithm,
 stopping at the first success.
 .
@@ -200,14 +200,14 @@ The coding tag and
 .I uchardet
 methods in the above procedure rely upon a seekable input stream;
 when
-.I preconv
+.I \%preconv
 reads from a pipe,
 the stream is not seekable,
 and these detection methods are skipped.
 .
 If character encoding detection of your input files is unreliable,
 arrange for one of the other methods to succeed by using
-.IR preconv 's
+.IR \%preconv 's
 .B \-D
 or
 .B \-e
@@ -249,7 +249,7 @@ natural language.
 .
 .PP
 Consequently,
-.I preconv
+.I \%preconv
 supports the coding tag convention used by GNU\~Emacs
 (with some restrictions).
 .
@@ -260,7 +260,7 @@ designated for \[lq]file-local variables\[rq].
 .br
 .ne 4v
 .P
-.I preconv
+.I \%preconv
 interprets the following syntax if it occurs in a
 .I roff
 comment
@@ -290,7 +290,7 @@ the escape character must be the default.
 .
 .PP
 The only variable
-.I preconv
+.I \%preconv
 interprets is \[lq]coding\[rq],
 which can take the values listed below.
 .
@@ -300,7 +300,7 @@ The following list comprises all MIME \[lq]charset\[rq] parameter values
 recognized,
 case-insensitively,
 by
-.IR preconv .
+.IR \%preconv .
 .
 .RS
 \%big5,
@@ -402,7 +402,7 @@ is ignored during comparison with the above tags.
 .\" ====================================================================
 .
 While
-.I preconv
+.I \%preconv
 recognizes all of the coding tags listed above,
 it is capable on its own of interpreting only three encodings:
 Latin-1,
@@ -418,7 +418,7 @@ library functions,
 which may recognize many additional encoding strings.
 .
 The command
-.RB \[lq] preconv\~\-v \[rq]
+.RB \[lq] \%preconv\~\-v \[rq]
 discloses whether
 .I iconv
 support is configured.
@@ -451,7 +451,7 @@ In the first,
 fails to detect an encoding
 (though the library on your system may behave differently)
 and
-.I preconv
+.I \%preconv
 falls back to the locale settings,
 where octal 351 starts an incomplete UTF-8 sequence and results in the
 Unicode replacement character.
@@ -469,7 +469,7 @@ it is correctly detected and mapped.
 .SS Limitations
 .\" ====================================================================
 .
-.I preconv
+.I \%preconv
 cannot perform any transformation on input that it cannot see.
 .
 Examples include files that are interpolated by preprocessors that run
@@ -489,7 +489,7 @@ command-line option.
 .
 .
 .P
-.I preconv
+.I \%preconv
 assumes that its input uses the default escape character,
 a backslash
 .BR \[rs] ,

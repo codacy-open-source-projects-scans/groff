@@ -170,6 +170,9 @@
 .de an-reset-paragraph-spacing
 .  ie \\n[.$] .nr PD (v;\\$1)
 .  el         .nr PD (.4v >? \n[.V])
+.  \" Restore spacing to handle a "belated" call immediately after a
+.  \" paragraphing macro (`P`, `HP`, or `IP` with no marker argument).
+.  rs
 ..
 .
 .de an-reset-margin-and-inset-level
@@ -227,7 +230,10 @@
 .ds an*bookmark*utf8 \" empty
 .
 .de an*bookmark*pdf
-.  pdfbookmark \\$1 \\$2
+.  ie (\\$1 = 1) \
+.    pdfbookmark -T "\\$2" \\$1 \\$2
+.  el \
+.    pdfbookmark \\$1 \\$2
 ..
 .
 .
@@ -531,9 +537,9 @@
 .  while (\\n[an*index] < \\n[an*max-index]) \{\
 .    ds an*char \\$*
 .    substring an*char \\n[an*index] \\n[an*index]
-.    ec @
+.    ec 
 .    \" Use a weird delimiter to reduce lexical colorizer confusion.
-.    if _@*[an*char]_\\_ .nr an*string-contains-backslash 1
+.    if _*[an*char]_\\_ .nr an*string-contains-backslash 1
 .    ec
 .    if \\n[an*string-contains-backslash] .break
 .    nr an*index +1
@@ -700,7 +706,8 @@ contains unsupported escape sequence
 .de1 an*TP-trap
 .  br
 .  di
-.  ad \\*[AD]
+.  ad \\n[an*saved-adjustment-mode]
+.  rr an*saved-adjustment-mode
 .  ll
 .  if \\n[an*have-paragraph-tag] .an-write-paragraph-tag
 ..
@@ -842,6 +849,7 @@ contains unsupported escape sequence
 .  itc 1 an-input-trap
 .  in 0
 .  ll -\\n[an-margin]u
+.  nr an*saved-adjustment-mode \\n[.j]
 .  di an*paragraph-tag
 .  na
 ..
@@ -1166,14 +1174,15 @@ contains unsupported escape sequence
 .    di
 .    ev
 .    nr an*is-in-link-text-diversion 0
-.    \" If the diversion width is zero, assume there was no link text.
+.    \" If the diversion width is nonzero, assume there was link text.
 .    ie \\n[dl] \{\
 .      if '\*[.T]'html' \
 .        nop \X'html:<a href="\\*[an*hyperlink]">'\c
 .      if '\*[.T]'pdf' \
-.        pdfhref W -D \\*[an*hyperlink] -- |
+.        pdfhref W -S -D \\*[an*hyperlink]
 .      if \\n[an*is-output-terminal] \
 .        nop \X'tty: link \\*[an*hyperlink]'\c
+.      unformat an*link-text \" ...so it adjusts in its new context.
 .      \" Replace the final newline of the diversion.
 .      chop an*link-text
 .      as an*link-text \&\c
@@ -1304,8 +1313,14 @@ contains unsupported escape sequence
 .      if '\*[.T]'html' \
 .        nop \X'html:<a href="\\*[an*url]">'\c
 .      if '\*[.T]'pdf' \{\
-.        nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
-.        pdfhref W -D \\*[an*url] -- "|"
+.        ds an*destination-bookmark-tag \\$1(\\$2)\"
+.        pdf:lookup \\*[an*destination-bookmark-tag]
+.        ie !'\\*[pdf:lookup-result]'' \
+.          pdfhref L -S -D \\*[an*destination-bookmark-tag]
+.        el \{\
+.          nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
+.          pdfhref W -S -D \\*[an*url]
+.        \}
 .      \}
 .      if \\n[an*is-output-terminal] \
 .        nop \X'tty: link \\*[an*url]'\c

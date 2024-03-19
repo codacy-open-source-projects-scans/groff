@@ -55,11 +55,28 @@
 .cp 0
 .
 .
+.\" Define a string for use in diagnostic messages.
+.ds doc doc.tmac\"
+.
 .if (\n[.x]\n[.y] < 118) \{\
-.  ds doc-msg doc.tmac: groff mdoc macros require groff 1.18 or later,
+.  ds doc-msg \*[doc]: groff mdoc macros require groff 1.18 or later,
 .  as doc-msg " but found groff \n[.x].\n[.y]; aborting
 .  ab \*[doc-msg]
 .\}
+.
+.de doc-err
+.  tm \*[doc]:\\n[.F]:\\n[.c]: error: \\$*
+..
+.
+.de doc-warn
+.  tm \*[doc]:\\n[.F]:\\n[.c]: warning: \\$*
+..
+.
+.\" XXX: Report "commands" with leading dot before macro name?
+.\" XXX: Omit ellipsis from usage of macros that aren't "parsed"?
+.de doc-report-usage
+.  tm \*[doc]:\\n[.F]:\\n[.c]: usage: \\$* ...
+..
 .
 .\" Handle most rendering options.
 .
@@ -85,7 +102,7 @@
 .el \
 .  if !\n[C] \
 .    if \n[doc-is-output-html] \{\
-.       tm mdoc: consecutive page numbering required for HTML output
+.       tm \*[doc]: consecutive page numbering required for HTML output
 .       nr C 1
 .    \}
 .if \n[doc-is-output-html] \
@@ -115,7 +132,7 @@
 .el \
 .  if \n[D] \
 .    if \n[doc-is-output-html] \{\
-.       tm mdoc: ignoring double-sided layout in HTML output
+.       tm \*[doc]: ignoring double-sided layout in HTML output
 .       nr D 0
 .    \}
 .
@@ -151,7 +168,7 @@
 .    \}
 .  \}
 .  if d doc-msg \{\
-.    tm mdoc: ignoring \*[doc-msg]
+.    tm \*[doc]: ignoring \*[doc-msg]
 .    rr FT
 .    rm doc-msg
 .  \}
@@ -202,7 +219,7 @@
 .    ds doc-msg when continuously rendering
 .\}
 .if d doc-msg \{\
-.  tm mdoc: ignoring starting page number \*[doc-msg]
+.  tm \*[doc]: ignoring starting page number \*[doc-msg]
 .  rr P
 .  rm doc-msg
 .\}
@@ -221,7 +238,7 @@
 .\" Also, we can't use the `P` register with grohtml at all.
 .ie \n[doc-is-output-html] \{\
 .  if r P \{\
-.     tm mdoc: ignoring starting page number in HTML output
+.     tm \*[doc]: ignoring starting page number in HTML output
 .     rr P
 .  \}
 .\}
@@ -252,7 +269,7 @@
 .    ds doc-msg when continuously rendering
 .\}
 .if d doc-msg \{\
-.  tm mdoc: ignoring page number suffix \*[doc-msg]
+.  tm \*[doc]: ignoring page number suffix \*[doc-msg]
 .  rr X
 .  rm doc-msg
 .\}
@@ -746,7 +763,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .\$0 \*[doc-\$0-usage] ... (#\n[.c])
+.      doc-report-usage .\$0 \*[doc-\$0-usage] ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -755,8 +772,7 @@
 .  nr doc-arg-ptr +1
 .  ie (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
 .    if (\n[doc-type\n[doc-arg-ptr]] == 1) \{\
-.      tmc mdoc warning: Using a macro as first argument
-.      tm1 " cancels effect of .\$0 (#\n[.c])
+.      doc-warn using a macro as first argument cancels effect of .\$0
 .
 .      \" the right action here would be to reset the argument counters
 .      \" and bail out -- unfortunately, a small number of manual pages
@@ -773,7 +789,7 @@
 .\"  \}
 .  \}
 .  el \{\
-.    tm Usage: .\$0 \*[doc-\$0-usage] ... (#\n[.c])
+.    doc-report-usage .\$0 \*[doc-\$0-usage] ...
 .    doc-reset-args
 .  \}
 ..
@@ -879,7 +895,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Cd configuration_file_declaration ... (#\n[.c])
+.      doc-report-usage .Cd configuration_file_declaration ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -911,7 +927,7 @@
 .      doc-print-recursive
 .  \}\}
 .  el \{\
-.    tm Usage: .Cd configuration_file_declaration ... (#\n[.c])
+.    doc-report-usage .Cd configuration_file_declaration ...
 .    doc-reset-args
 .  \}
 ..
@@ -1025,7 +1041,7 @@
 .    ft \n[doc-curr-font]
 .  \}
 .  el \{\
-.    tm Usage: .Fd function_declaration -- Fd is not callable (#\n[.c])
+.    doc-report-usage .Fd function_declaration -- Fd is not callable
 .    doc-reset-args
 .  \}
 ..
@@ -1054,7 +1070,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .In include_file ... (#\n[.c])
+.      doc-report-usage .In include_file ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -1088,7 +1104,7 @@
 .      doc-print-recursive
 .  \}\}
 .  el \{\
-.    tm Usage: .In include_file ... (#\n[.c])
+.    doc-report-usage .In include_file ...
 .    doc-reset-args
 .  \}
 ..
@@ -1172,7 +1188,7 @@
 .    \}
 .    el \{\
 .      ie "\*[doc-topic-name]"" \
-.        tm Usage: .Nm name ... (#\n[.c])
+.        doc-report-usage .Nm name ...
 .      el \
 .        doc-parse-args \*[doc-topic-name]
 .  \}\}
@@ -1185,7 +1201,7 @@
 .  ie (\n[doc-arg-count] < \n[doc-arg-ptr]) \{\
 .    \" last argument
 .    ie "\*[doc-topic-name]"" \{\
-.      tm Usage: .Nm name ... (#\n[.c])
+.      doc-report-usage .Nm name ...
 .      doc-reset-args
 .    \}
 .    el \{\
@@ -1197,7 +1213,7 @@
 .
 .    ie !(\n[doc-type\n[doc-arg-ptr]] == 2) \{\
 .      ie "\*[doc-topic-name]"" \
-.        tm Usage: .Nm name ... (#\n[.c])
+.        doc-report-usage .Nm name ...
 .      el \{\
 .        \" replace previous argument (Nm) with default value
 .        nr doc-arg-ptr -1
@@ -1321,7 +1337,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Tn trade_name ... (#\n[.c])
+.      doc-report-usage .Tn trade_name ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -1339,7 +1355,7 @@
 .      doc-do-references
 .  \}
 .  el \{\
-.    tm Usage: .Tn trade_name ... (#\n[.c])
+.    doc-report-usage .Tn trade_name ...
 .    doc-reset-args
 .  \}
 ..
@@ -2306,7 +2322,7 @@
 .      nop \)\*[doc-arg\n[doc-arg-ptr]]\c
 .    \}
 .    el \
-.      tm mdoc warning: .Pf: trailing prefix (#\n[.c])
+.      doc-warn .Pf: trailing prefix
 .  \}
 .  el \{\
 .    nop \)\$1\)\c
@@ -2314,7 +2330,7 @@
 .    ie \n[.$] \
 .      doc-parse-args \$@
 .    el \{\
-.      tm mdoc warning: .Pf: missing arguments (#\n[.c])
+.      doc-warn .Pf: missing arguments
 .      nop \)
 .  \}\}
 .
@@ -2346,7 +2362,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Ns must be called with arguments (#\n[.c])
+.      doc-report-usage .Ns must be called with arguments
 .  \}
 .
 .  if \n[doc-arg-count] \{\
@@ -2368,7 +2384,7 @@
 .eo
 .de Ap
 .  ie !\n[doc-arg-count] \
-.    tm Usage: 'Ap' cannot be first macro on a line (no '.Ap') (#\n[.c])
+.    doc-report-usage 'Ap' cannot be first macro on a line (no '.Ap')
 .  el \{\
 .    nop \)'\)\c
 .    nr doc-arg-ptr +1
@@ -2805,11 +2821,10 @@
 .    el \{ .ie "\$1"-symbolic" \
 .      nop \*[doc-Sy-font]\c
 .    el \{\
-.      tmc mdoc warning: Unknown keyword '\$1' in .Bf macro
-.      tm1 " (#\n[.c])
+.      doc-warn unknown keyword '\$1' in .Bf macro
 .  \}\}\}\}\}\}\}
 .  el \
-.    tm Usage: .Bf [Em | -emphasis | Li | -literal | Sy | -symbolic] (#\n[.c])
+.    doc-report-usage .Bf [Em | -emphasis | Li | -literal | Sy | -symbolic]
 ..
 .ec
 .
@@ -2837,7 +2852,7 @@
 .    nr doc-fontmode-depth -1
 .  \}
 .  el \
-.    tm mdoc warning: Extraneous .Ef (#\n[.c])
+.    doc-warn extraneous .Ef
 ..
 .ec
 .
@@ -2862,11 +2877,10 @@
 .  ds doc-macro-name Bk
 .
 .  if \n[doc-keep-type] \
-.    tm .Bk: nesting keeps not implemented yet. (#\n[.c])
-.
+.    doc-warn .Bk: nesting keeps not implemented yet
 .  ie        "\$1"-lines" \{\
 .    nr doc-keep-type 2
-.    tm .Bk -lines: Not implemented yet. (#\n[.c])
+.    doc-warn .Bk -lines: not implemented yet
 .  \}
 .  el \{ .ie "\$1"-words" \{\
 .    nr doc-keep-type 1
@@ -2878,7 +2892,7 @@
 .    doc-set-hard-space
 .  \}
 .  el \{\
-.    tm mdoc warning: Unknown keyword '\$1' in .Bk macro (#\n[.c])
+.    doc-warn unknown keyword '\$1' in .Bk macro
 .    nr doc-keep-type 3
 .  \}\}\}
 .
@@ -2903,15 +2917,15 @@
 \#.  nr doc-nesting-level -1
 .
 .  ie \n[.$] \
-.    tm Usage: .Ek (does not take arguments) (#\n[.c])
+.    doc-report-usage .Ek (does not take arguments)
 .  el \{\
 .    if !\n[doc-keep-type] \
-.      tm mdoc warning: .Ek found without .Bk before (#\n[.c])
+.      doc-warn .Ek found without .Bk before
 .
 .    ie        (\n[doc-keep-type] == 1) \
 .      doc-set-soft-space
 .    el \{ .if (\n[doc-keep-type] == 2) \
-.      tm .Bk -lines: Not implemented yet. (#\n[.c])
+.      doc-warn .Bk -lines: Not implemented yet.
 .  \}\}
 .
 .  nr doc-keep-type 0
@@ -3014,8 +3028,8 @@
 .  ds doc-macro-name Bd
 .
 .  if !\n[.$] \{\
-.    tm1 "Usage: .Bd {-literal | -filled | -ragged | -centered | -unfilled}
-.    tm1 "           [-offset [string]] [-compact] [-file name] (#\n[.c])
+.    doc-report-usage .Bd {-literal | -filled | -ragged | -centered | \
+-unfilled} [-offset [string]] [-compact] [-file name]
 .    return
 .  \}
 .
@@ -3059,8 +3073,8 @@
 .    nf
 .  \}
 .  el \{\
-.    tm1 "mdoc warning: Unknown keyword '\$1' (or missing display type)
-.    tm1 "              in .Bd macro (#\n[.c])
+.    doc-warn unknown keyword '\$1' (or missing display type) in .Bd \
+macro
 .    nr doc-reg-Bd 0
 .  \}\}\}\}\}
 .
@@ -3187,10 +3201,10 @@
 .      nr doc-reg-ddBa 2
 .    \}
 .    el \
-.      tm mdoc warning: .Bd '-file' keyword requires argument (#\n[.c])
+.      doc-warn .Bd '-file' keyword requires argument
 .  \}
 .  el \
-.      tm mdoc warning: Unknown keyword '\$1' in .Bd macro (#\n[.c])
+.    doc-warn unknown keyword '\$1' in .Bd macro
 .  \}\}
 .
 .  if (\n[doc-reg-ddBa] < \n[.$]) \{\
@@ -3219,7 +3233,7 @@
 .  br
 .
 .  if !\n[doc-display-depth] \{\
-.    tm mdoc warning: Extraneous .Ed (#\n[.c])
+.    doc-warn extraneous .Ed
 .    nr doc-display-depth 1
 .  \}
 .
@@ -3351,9 +3365,8 @@
 .    linetabs 1
 .  \}
 .  el \{\
-.    tm1 "mdoc warning: Unknown list type '\$1' (or missing list type)
-.    tm1 "              in .Bl macro
-.    tm
+.    doc-warn unknown list type '\$1' (or missing list type) in .Bl \
+macro
 .    nr doc-arg-ptr 0
 .  \}\}\}\}\}\}\}\}\}\}\}
 .
@@ -3406,12 +3419,12 @@
 .
 .eo
 .de doc-Bl-usage
-.  tm1 "Usage: .Bl {-hang | -ohang | -tag | -diag | -inset}
-.  tm1 "             [-width <string>]
-.  tm1 "             [-offset <string>] [-compact]
-.  tm1 "       .Bl -column [-offset <string>] <string1> <string2> ...
-.  tm1 "       .Bl {-item | -enum [-nested] | -bullet | -hyphen | -dash}
-.  tm1 "             [-offset <string>] [-compact] (#\n[.c])
+.  doc-report-usage .Bl {-hang | -ohang | -tag | -diag | -inset} \
+[-width <string>] [-offset <string>] [-compact]
+.  doc-report-usage .Bl -column [-offset <string>] <string1> <string2> \
+...
+.  doc-report-usage .Bl {-item | -enum [-nested] | -bullet | -hyphen | \
+-dash} [-offset <string>] [-compact]
 ..
 .ec
 .
@@ -3465,7 +3478,7 @@
 .      nr doc-list-indent-stack\n[doc-list-depth] +\n[doc-reg-dBla1]n
 .    \}
 .    el \
-.      tm mdoc warning: '-nested' allowed with nested .Bl macros only (#\n[.c])
+.      doc-warn '-nested' allowed with nested .Bl macros only
 .  \}
 .
 .  el \{ .ie "\*[doc-arg\n[doc-arg-ptr]]"-width" \{\
@@ -3634,8 +3647,8 @@
 .        ds doc-arg\n[doc-num-columns] "\*[doc-arg\n[doc-arg-ptr]]
 .    \}
 .    el \{\
-.      tmc mdoc warning: Unknown keyword '\*[doc-arg\n[doc-arg-ptr]]'
-.      tm1 " in .Bl macro (#\n[.c])
+.      doc-warn unknown keyword '\*[doc-arg\n[doc-arg-ptr]]' in .Bl \
+macro
 .  \}\}
 .
 .  if (\n[doc-arg-count] > \n[doc-arg-ptr]) \
@@ -3941,7 +3954,7 @@
 .eo
 .de El
 .  if \n[.$] \{\
-.    tm Usage: .El (does not take arguments) (#\n[.c])
+.    doc-report-usage .El (does not take arguments)
 .    return
 .  \}
 .
@@ -4021,12 +4034,10 @@
 .  ds doc-str-It \*[doc-list-type-stack\n[doc-list-depth]]
 .
 .  if "\*[doc-str-It]"" \
-.    tm mdoc error: .It without preceding .Bl (#\n[.c])
+.    doc-err .It without preceding .Bl
 .
-.  if \n[doc-nesting-level] \{\
-.    tmc "mdoc error: .It found in enclosing (e.g. .Ac ... .It ... .Ao)
-.    tm1 " (#\n[.c])
-.  \}
+.  if \n[doc-nesting-level] \
+.    doc-err .It found in enclosing (e.g. .Ac ... .It ... .Ao)
 .
 .  br
 .  if !\n[cR] \
@@ -4059,8 +4070,8 @@
 .
 .  ie (\n[doc-reg-It] == 1) \{\
 .    if \n[.$] \{\
-.      tm1 "mdoc warning: .It macros in lists of type '\*[doc-str-It]'
-.      tm1 "              don't take arguments (#\n[.c])
+.      doc-warn .It macros in lists of type '\*[doc-str-It]' don't \
+take arguments
 .  \}\}
 .  el \{\
 .    ie \n[.$] \{\
@@ -4080,8 +4091,8 @@
 .          doc-print-recursive
 .    \}\}\}
 .    el \{\
-.      tm1 "mdoc warning: .It macros in lists of type '\*[doc-str-It]'
-.      tm1 "              require arguments (#\n[.c])
+.      doc-warn .It macros in lists of type '\*[doc-str-It]' require \
+arguments
 .    \}
 .  \}
 .
@@ -4442,7 +4453,7 @@
 '  in -\n[doc-list-offset-stack\n[doc-list-depth]]u
 .
 .  if (\n[doc-list-depth] <= 0) \
-.    tm mdoc warning: extraneous .El call (#\n[.c])
+.    doc-warn extraneous .El call
 .
 .  doc-decrement-list-stack
 .  nr doc-list-depth -1
@@ -4539,7 +4550,7 @@
 .
 .eo
 .de doc-begin-hyperlink-pdf
-.  pdfhref W -D \$1 -- |
+.  pdfhref W -S -D \$1
 ..
 .ec
 .
@@ -4610,7 +4621,7 @@
 .
 .eo
 .de doc-Xr-usage
-.  tm Usage: .Xr manpage_name [section#] ... (#\n[.c])
+.  doc-report-usage .Xr manpage_name [section#] ...
 .  doc-reset-args
 ..
 .ec
@@ -4624,6 +4635,7 @@
 .\" NS   doc-macro-name
 .\" NS
 .\" NS local variables:
+.\" NS   doc-destination-bookmark-tag-Xr
 .\" NS   doc-has-section-Xr
 .\" NS   doc-lasttext-Xr
 .\" NS   doc-next-arg-ptr-Xr
@@ -4711,7 +4723,17 @@
 .    if (\n[doc*Xr-URL-format] = 4) \
 .      ds doc-target-uri-Xr \
          x-man-doc://\*[doc-target-section-Xr]/\*[doc-target-identifier-Xr]\"
-.    doc-begin-hyperlink-\*[.T] \*[doc-target-uri-Xr]
+.    ie '\*[.T]'pdf' \{\
+.      ds doc-destination-bookmark-tag-Xr \
+"\*[doc-target-identifier-Xr](\*[doc-target-section-Xr])
+.      pdf:lookup \*[doc-destination-bookmark-tag-Xr]
+.      ie !'\\*[pdf:lookup-result]'' \
+.        pdfhref L -S -D \*[doc-destination-bookmark-tag-Xr]
+.      el \
+.        doc-begin-hyperlink-\*[.T] \*[doc-target-uri-Xr]
+.    \}
+.    el \
+.      doc-begin-hyperlink-\*[.T] \*[doc-target-uri-Xr]
 .  \}
 .
 .  nr doc-curr-font \n[.f]
@@ -4838,7 +4860,7 @@
 .  nr doc-arg-ptr +1
 .
 .  if (\n[doc-arg-count] < \n[doc-arg-ptr]) \{\
-.    tm Usage: .It column_string [Ta [column_string ...] ] (#\n[.c])
+.    doc-report-usage .It column_string [Ta [column_string ...] ]
 .    return
 .  \}
 .
@@ -4879,8 +4901,8 @@
 .      doc-reset-args
 .  \}
 .  el \{\
-.    tm1 "Usage: Ta must follow column entry: e.g.
-.    tm1 "         .It column_string [Ta [column_string ...]] (#\n[.c])
+.    doc-report-usage Ta must follow column entry: e.g., \
+\&.It column_string [Ta [column_string ...]]
 .  \}
 ..
 .ec
@@ -4904,7 +4926,7 @@
 .  in +\n[doc-display-indent]u
 .
 .  ie \n[doc-arg-count] \{\
-.    tm Usage: .Dl not callable by other macros (#\n[.c])
+.    doc-report-usage .Dl not callable by other macros
 .    doc-reset-args
 .  \}
 .  el \{\
@@ -4917,7 +4939,7 @@
 .      doc-print-recursive
 .    \}
 .    el \
-.      tm Usage: .Dl argument ... (#\n[.c])
+.      doc-report-usage .Dl argument ...
 .  \}
 .
 .  in -\n[doc-display-indent]u
@@ -4940,7 +4962,7 @@
 .  in +\n[doc-display-indent]u
 .
 .  ie \n[doc-arg-count] \{\
-.    tm Usage: .D1 not callable by other macros (#\n[.c])
+.    doc-report-usage .D1 not callable by other macros
 .    doc-reset-args
 .  \}
 .  el \{\
@@ -4951,7 +4973,7 @@
 .      doc-print-recursive
 .    \}
 .    el \
-.      tm Usage: .D1 argument ... (#\n[.c])
+.      doc-report-usage .D1 argument ...
 .  \}
 .
 .  in -\n[doc-display-indent]u
@@ -4980,7 +5002,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Vt variable_type ... (#\n[.c])
+.      doc-report-usage .Vt variable_type ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -4988,7 +5010,7 @@
 .
 .  nr doc-arg-ptr +1
 .  if (\n[doc-arg-count] < \n[doc-arg-ptr]) \{\
-.    tm Usage: .Vt variable_type ... (#\n[.c])
+.    doc-report-usage .Vt variable_type ...
 .    doc-reset-args
 .    return
 .  \}
@@ -5052,7 +5074,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Ft function_type ... (#\n[.c])
+.      doc-report-usage .Ft function_type ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -5060,7 +5082,7 @@
 .
 .  nr doc-arg-ptr +1
 .  if (\n[doc-arg-count] < \n[doc-arg-ptr]) \{\
-.    tm Usage: .Ft function_type ... (#\n[.c])
+.    doc-report-usage .Ft function_type ...
 .    doc-reset-args
 .    return
 .  \}
@@ -5148,7 +5170,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Fa function_arguments ... (#\n[.c])
+.      doc-report-usage .Fa function_arguments ...
 .  \}
 .
 .  ie \n[doc-func-arg-count] \
@@ -5268,7 +5290,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Fn function_name [function_arg] ... (#\n[.c])
+.      doc-report-usage .Fn function_name [function_arg] ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -5313,7 +5335,7 @@
 .  nr doc-arg-ptr +1
 .  doc-print-prefixes
 .  if (\n[doc-arg-count] < \n[doc-arg-ptr]) \{\
-.    tm Usage: .Fn function_name [function_arg] ... (#\n[.c])
+.    doc-report-usage .Fn function_name [function_arg] ...
 .    doc-reset-args
 .    return
 .  \}
@@ -5425,7 +5447,7 @@
 .eo
 .de Fo
 .  if (\n[doc-in-func-enclosure]) \{\
-.    tm mdoc error: .Fo/.Fc can't be nested (#\n[.c])
+.    doc-err .Fo/.Fc can't be nested
 .    return
 .  \}
 .
@@ -5438,7 +5460,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Fo function_name (#\n[.c])
+.      doc-report-usage .Fo function_name
 .  \}
 .
 .  if \n[doc-in-synopsis-section] \{\
@@ -5510,7 +5532,7 @@
 .eo
 .de Fc
 .  if !\n[doc-in-func-enclosure] \{\
-.    tm mdoc warning: Extraneous .Fc (#\n[.c])
+.    doc-err extraneous .Fc
 .    return
 .  \}
 .
@@ -5521,7 +5543,7 @@
 .  \}
 .
 .  if !(\n[doc-saved-nesting-level] == \n[doc-nesting-level]) \
-.    tm mdoc warning: Unbalanced enclosure commands within .Fo/.Fc
+.    doc-err unbalanced enclosure commands within .Fo/.Fc
 .
 .  nr doc-func-arg-count 0
 .  nr doc-in-func-enclosure 0
@@ -5623,7 +5645,7 @@
 .eo
 .de Rs
 .  ie \n[.$] \
-.    tm Usage: .Rs (does not take arguments) (#\n[.c])
+.    doc-report-usage .Rs (does not take arguments)
 .  el \{\
 .    nr doc-is-reference 1
 .    doc-reset-reference
@@ -5646,10 +5668,10 @@
 .eo
 .de Re
 .  ie \n[.$] \
-.    tm Usage: .Re (does not take arguments) (#\n[.c])
+.    doc-report-usage .Re (does not take arguments)
 .  el \{\
 .    if !\n[doc-is-reference] \{\
-.      tm mdoc warning: Extraneous .Re (#\n[.c])
+.      doc-warn extraneous .Re
 .      return
 .    \}
 .    doc-print-reference
@@ -5866,7 +5888,7 @@
 .  \}
 .
 .  if \n[doc-reference-count] \
-.    tm mdoc warning: unresolved reference problem
+.    doc-warn unresolved reference problem
 .
 .  hy \n[doc-hyphen-flags]
 ..
@@ -5938,7 +5960,7 @@
 .eo
 .de %A
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%A author_name ... (#\n[.c])
+.    doc-report-usage .%A author_name ...
 .    return
 .  \}
 .
@@ -5992,7 +6014,7 @@
 .eo
 .de %B
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%B book_name ... (#\n[.c])
+.    doc-report-usage .%B book_name ...
 .    return
 .  \}
 .
@@ -6055,7 +6077,7 @@
 .eo
 .de %C
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%C city_name ... (#\n[.c])
+.    doc-report-usage .%C city_name ...
 .    return
 .  \}
 .
@@ -6109,7 +6131,7 @@
 .eo
 .de %D
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%D date ... (#\n[.c])
+.    doc-report-usage .%D date ...
 .    return
 .  \}
 .
@@ -6163,7 +6185,7 @@
 .eo
 .de %I
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%I issuer/publisher_name ... (#\n[.c])
+.    doc-report-usage .%I issuer/publisher_name ...
 .    return
 .  \}
 .
@@ -6218,7 +6240,7 @@
 .eo
 .de %J
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%J journal_name ... (#\n[.c])
+.    doc-report-usage .%J journal_name ...
 .    return
 .  \}
 .
@@ -6273,7 +6295,7 @@
 .eo
 .de %N
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%N issue_number ... (#\n[.c])
+.    doc-report-usage .%N issue_number ...
 .    return
 .  \}
 .
@@ -6327,7 +6349,7 @@
 .eo
 .de %O
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%O optional_information ... (#\n[.c])
+.    doc-report-usage .%O optional_information ...
 .    return
 .  \}
 .
@@ -6381,7 +6403,7 @@
 .eo
 .de %P
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%P page_number ... (#\n[.c])
+.    doc-report-usage .%P page_number ...
 .    return
 .  \}
 .
@@ -6435,7 +6457,7 @@
 .eo
 .de %Q
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%Q corporate_or_foreign_author ... (#\n[.c])
+.    doc-report-usage .%Q corporate_or_foreign_author ...
 .    return
 .  \}
 .
@@ -6489,7 +6511,7 @@
 .eo
 .de %R
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%R reference_report ... (#\n[.c])
+.    doc-report-usage .%R reference_report ...
 .    return
 .  \}
 .
@@ -6550,7 +6572,7 @@
 .eo
 .de %T
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%T reference_title ... (#\n[.c])
+.    doc-report-usage .%T reference_title ...
 .    return
 .  \}
 .
@@ -6638,7 +6660,7 @@
 .eo
 .de %U
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%U URL ... (#\n[.c])
+.    doc-report-usage .%U URL ...
 .    return
 .  \}
 .
@@ -6680,7 +6702,7 @@
 .eo
 .de %V
 .  if (\n[doc-arg-count] : (\n[.$] == 0)) \{\
-.    tm Usage: .%V volume ... (#\n[.c])
+.    doc-report-usage .%V volume ...
 .    return
 .  \}
 .
@@ -6717,7 +6739,7 @@
 .eo
 .de doc-do-references
 .  if !\n[doc-is-reference] \
-.    tm mdoc error: .\*[doc-macro-name] found outside of .Rs ... .Re (#\n[.c])
+.    doc-err .\*[doc-macro-name] found outside of .Rs ... .Re
 .
 .  nr doc-reg-ddr1 \n[doc-type\n[doc-arg-ptr]]
 .
@@ -6804,8 +6826,7 @@
 .        doc-parse-args \$@
 .    \}\}\}
 .    el \{\
-.      tm1 "Usage: .An {-nosplit | -split}
-.      tm1 "       .An author_name ... (#\n[.c])
+.      doc-report-usage .An {-nosplit | -split} .An author_name ...
 .  \}\}
 .
 .  if \n[doc-in-authors-section] \{\
@@ -6822,7 +6843,7 @@
 .      doc-print-recursive
 .    \}
 .    el \{\
-.      tm Usage: .An author_name ... (#\n[.c])
+.      doc-report-usage .An author_name ...
 .      doc-reset-args
 .  \}\}
 ..
@@ -6868,20 +6889,20 @@
 .\" XXX: what does this function without '-std'?
 .
 .  if \n[doc-arg-count] \{\
-.    tm Usage: .Rv not callable by other macros (#\n[.c])
+.    doc-report-usage .Rv not callable by other macros
 .    doc-reset-args
 .    return
 .  \}
 .
 .  if !\n[.$] \{\
-.    tm Usage: .Rv [-std] [<function> ...] (#\n[.c])
+.    doc-report-usage .Rv [-std] [<function> ...]
 .    return
 .  \}
 .
 .  if "\$1"-std" \{\
 .    nr doc-reg-Rv \*[doc-section]
 .    if ((\n[doc-reg-Rv] < 2) : (\n[doc-reg-Rv] > 3)) \
-.      tm Usage: .Rv -std in sections 2 and 3 only (#\n[.c])
+.      doc-report-usage .Rv -std in sections 2 and 3 only
 .    br
 .    shift
 .    ie (\n[.$] > 1) \{\
@@ -6934,20 +6955,20 @@
 .\" XXX: what does this function without '-std'?
 .
 .  if \n[doc-arg-count] \{\
-.    tm Usage: .Ex not callable by other macros (#\n[.c])
+.    doc-report-usage .Ex not callable by other macros
 .    doc-reset-args
 .    return
 .  \}
 .
 .  if !\n[.$] \{\
-.    tm Usage: .Ex [-std] [<utility> ...] (#\n[.c])
+.    doc-report-usage .Ex [-std] [<utility> ...]
 .    return
 .  \}
 .
 .  if "\$1"-std" \{\
 .    nr doc-reg-Ex \*[doc-section]
 .    if !((\n[doc-reg-Ex] == 1) : (\n[doc-reg-Ex] == 6) : (\n[doc-reg-Ex] == 8)) \
-.      tm Usage: .Ex -std in sections 1, 6 and 8 only (#\n[.c])
+.      doc-report-usage .Ex -std in sections 1, 6 and 8 only
 .    br
 .    shift
 .    ie (\n[.$] > 1) \{\
@@ -6977,7 +6998,7 @@
 .
 .eo
 .de doc-Mt-usage
-.  tm Usage: .Mt email_address ... (#\n[.c])
+.  doc-report-usage .Mt email_address ...
 .  doc-reset-args
 ..
 .ec
@@ -7046,7 +7067,7 @@
 .
 .eo
 .de doc-Lk-usage
-.  tm Usage: .Lk uri [link_text ...] (#\n[.c])
+.  doc-report-usage .Lk uri [link_text ...]
 .  doc-reset-args
 ..
 .ec
@@ -7145,10 +7166,10 @@
 .
 .eo
 .de doc-defunct-macro
-.  tmc mdoc error: .\$0 defunct
+.  tmc \*[doc]:\n[.F]:\n[.c]: error: '\$0' macro is defunct
 .  if d doc-\$0-usage \
-.    tmc , \*[doc-\$0-usage]
-.  tm1 " (#\n[.c])
+.    tmc ; \*[doc-\$0-usage]
+.  tm
 ..
 .ec
 .
@@ -7170,8 +7191,8 @@
 .
 .eo
 .de em
-.  tm1 "mdoc error: end-macro (.em) respecification is not allowed. (#\n[.c])
-.  tm1 "            Should this have been '.Em ...'?
+.  doc-err end-macro (.em) respecification is not allowed; \
+should this have been '.Em ...'?
 .  ab
 ..
 .ec
@@ -7183,7 +7204,7 @@
 .eo
 .de doc-empty-line
 .  if !\n[doc-display-depth] \
-.    tm mdoc warning: Empty input line #\n[.c]
+.    doc-warn empty input line
 .  sp
 ..
 .ec

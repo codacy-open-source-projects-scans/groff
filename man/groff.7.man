@@ -966,7 +966,7 @@ integer arithmetic.
 reporting decimal fractions in certain cases.)
 .
 The internal data type used for computing results depends on the host
-machine but is usually a 32-bit signed integer,
+machine but is at least a 32-bit signed integer,
 which suffices to represent magnitudes within a range of \[+-]2
 billion.
 .
@@ -1678,6 +1678,8 @@ or support an additional modifier character
 again,
 and
 .BR \|\[rs]n ).
+.
+In no case can an escape sequence parameter contain a newline.
 .\" As with requests, use of some escape sequences in source documents
 .\" may interact poorly with a macro package you use; consult its
 .\" documentation to learn of ``safe'' sequences or alternative

@@ -43,10 +43,14 @@ input='.TH foo 1 2022-11-08 "groff test suite"
 .I Part I
 .UE'
 
+# Expected:
+#   PCL 5XX Printer Language Technical Reference  Manual,
+
 echo "checking formatting of whole-line link text" >&2
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
-echo "$output" | grep -q 'HP  PCL/PJL Reference: PCL 5XX.*,$' || wail
+echo "$output" \
+    | grep -q 'Printer Language Technical Reference  Manual,$' || wail
 
 input='.TH foo 1 2022-11-08 "groff test suite"
 .SH "See also"
@@ -58,11 +62,15 @@ Consult
 .I Part I
 .UE .'
 
+# Expected:
+#   PCL 5 Printer  Language  Technical  Reference
+
 echo "checking formatting of partial-line link text" >&2
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
 # 2 spaces each
-echo "$output" | grep -q 'Consult HP  PCL/PJL  Reference:  PCL' || wail
+echo "$output" \
+    | grep -q 'Printer  Language  Technical  Reference$' || wail
 
 test -z "$fail"
 

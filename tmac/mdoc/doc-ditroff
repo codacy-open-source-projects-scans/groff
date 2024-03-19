@@ -217,7 +217,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Ql argument ... (#\n[.c])
+.      doc-report-usage .Ql argument ...
 .  \}
 .
 .  nr doc-reg-Ql (\n[doc-arg-ptr] + 1)

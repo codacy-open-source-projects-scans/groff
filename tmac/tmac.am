@@ -168,6 +168,7 @@ tmac_TESTS = \
   tmac/tests/an_MT-body-hyphenates.sh \
   tmac/tests/an_MT-works.sh \
   tmac/tests/an_P-register-works.sh \
+  tmac/tests/an_PD-restores-spacing.sh \
   tmac/tests/an_TH-repairs-ad-damage.sh \
   tmac/tests/an_TH-repairs-hy-damage.sh \
   tmac/tests/an_TP-works.sh \
@@ -179,6 +180,7 @@ tmac_TESTS = \
   tmac/tests/an_UR-works.sh \
   tmac/tests/an_X-register-works.sh \
   tmac/tests/an_adjust-link-text-correctly.sh \
+  tmac/tests/an_adjustment-mode-preserved-after-paragraph-tag.sh \
   tmac/tests/an_avoid-two-font-denial-of-service.sh \
   tmac/tests/an_do-not-abbreviate-escape-using-TH-arguments.sh \
   tmac/tests/an_font-remapping-does-not-affect-titles.sh \

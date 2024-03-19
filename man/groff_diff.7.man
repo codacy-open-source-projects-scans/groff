@@ -1102,7 +1102,7 @@ Other escape sequences are not supported.
 .
 .
 .br
-.ne 3v
+.ne 5v
 .TP
 .BI \[rs]Y m
 .TQ

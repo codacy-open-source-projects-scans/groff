@@ -326,7 +326,7 @@
 .  if \n[C] .rr P
 .
 .  if !\n[.$] \
-.    tm mdoc warning: .Dd directive expects an argument (#\n[.c])
+.    doc-warn .Dd directive expects an argument
 .  if \n[.$] \{\
 .    ie "\$1"$Mdocdate:" .ds doc-date-string \$2\~\$3, \$4\"
 .    el                  .ds doc-date-string \$*\"
@@ -462,8 +462,7 @@
 .eo
 .de Dt
 .  if !\n[.$] \
-.    tm mdoc warning: .Dt directive expects one or more arguments \
-(#\n[.c])
+.    doc-warn .Dt directive expects one or more arguments
 .  if !"\$1"" \
 .    ds doc-page-topic "\$1
 .
@@ -942,7 +941,7 @@
 .      ie d doc-operating-system-BSD-\$2 \
 .        ds doc-operating-system "\*[doc-operating-system-BSD-\$2]
 .      el \
-.        tm mdoc warning: .Os: Unknown BSD version '\$2' (#\n[.c])
+.        doc-warn .Os: Unknown BSD version '\$2'
 .  \}\}
 .  el \{ .ie "\$1"FreeBSD" \{\
 .    ds doc-operating-system FreeBSD
@@ -950,7 +949,7 @@
 .      ie d doc-operating-system-FreeBSD-\$2 \
 .        as doc-operating-system \~\*[doc-operating-system-FreeBSD-\$2]
 .      el \
-.        tm mdoc warning: .Os: Unknown FreeBSD version '\$2' (#\n[.c])
+.        doc-warn .Os: Unknown FreeBSD version '\$2'
 .  \}\}
 .  el \{ .ie "\$1"DragonFly" \{\
 .    ds doc-operating-system DragonFly
@@ -958,7 +957,7 @@
 .      ie d doc-operating-system-DragonFly-\$2 \
 .        as doc-operating-system \~\*[doc-operating-system-DragonFly-\$2]
 .      el \
-.        tm mdoc warning: .Os: Unknown DragonFly version '\$2' (#\n[.c])
+.        doc-warn .Os: Unknown DragonFly version '\$2'
 .  \}\}
 .  el \{ .ie "\$1"NetBSD" \{\
 .    ds doc-operating-system NetBSD
@@ -966,7 +965,7 @@
 .      ie d doc-operating-system-NetBSD-\$2 \
 .        as doc-operating-system \~\*[doc-operating-system-NetBSD-\$2]
 .      el \
-.        tm mdoc warning: .Os: Unknown NetBSD version '\$2' (#\n[.c])
+.        doc-warn .Os: Unknown NetBSD version '\$2'
 .  \}\}
 .  el \{ .ie "\$1"OpenBSD" \{\
 .    ds doc-operating-system OpenBSD
@@ -974,7 +973,7 @@
 .      ie d doc-operating-system-OpenBSD-\$2 \
 .        as doc-operating-system \~\*[doc-operating-system-OpenBSD-\$2]
 .      el \
-.        tm mdoc warning: .Os: Unknown OpenBSD version '\$2' (#\n[.c])
+.        doc-warn .Os: Unknown OpenBSD version '\$2'
 .  \}\}
 .  el \{ .ie "\$1"Darwin" \{\
 .    ds doc-operating-system Darwin
@@ -982,7 +981,7 @@
 .      ie d doc-operating-system-Darwin-\$2 \
 .        as doc-operating-system \~\*[doc-operating-system-Darwin-\$2]
 .      el \
-.        tm mdoc warning: .Os: Unknown Darwin version '\$2' (#\n[.c])
+.        doc-warn .Os: Unknown Darwin version '\$2'
 .  \}\}
 .  el \{\
 .    ds doc-operating-system \$1
@@ -992,8 +991,11 @@
 .
 .  doc-set-up-titles
 .
-.  if '\*[.T]'pdf' \
-.    pdfbookmark 1 "\*[doc-page-topic](\*[doc-section])"
+.  if '\*[.T]'pdf' \{\
+.    ds doc-page-tag "\*[doc-page-topic](\*[doc-section])\"
+.    pdfbookmark -T "\*[doc-page-tag]" 1 "\*[doc-page-tag]"
+.    rm doc-page-tag
+.  \}
 .
 .  doc-header
 .  nr doc-need-titles-reset 1
@@ -1116,15 +1118,15 @@
 .eo
 .de doc-check-depth
 .  if \n[doc-list-depth] \{\
-.    tm mdoc warning: A .Bl directive has no matching .El (#\n[.c])
+.    doc-warn A .Bl directive has no matching .El
 .    nr doc-list-depth 0
 .  \}
 .  if \n[doc-display-depth] \{\
-.    tm mdoc warning: A .Bd directive has no matching .Ed (#\n[.c])
+.    doc-warn A .Bd directive has no matching .Ed
 .    nr doc-display-depth 0
 .  \}
 .  if \n[doc-fontmode-depth] \{\
-.    tm mdoc warning: A .Bf directive has no matching .Ef (#\n[.c])
+.    doc-warn A .Bf directive has no matching .Ef
 .    nr doc-fontmode-depth 0
 .  \}
 ..
@@ -1230,28 +1232,28 @@
 .
 .eo
 .de LP
-.  tm Not a \-mdoc command: .LP (#\n[.c])
+.  doc-warn \$0 is not an mdoc macro name
 ..
 .ec
 .
 .
 .eo
 .de PP
-.  tm Not a \-mdoc command: .PP (#\n[.c])
+.  doc-warn \$0 is not an mdoc macro name
 ..
 .ec
 .
 .
 .eo
 .de pp
-.  tm Not a \-mdoc command: .pp (#\n[.c])
+.  doc-warn \$0 is not an mdoc macro name
 ..
 .ec
 .
 .
 .eo
 .de SH
-.  tm Not a \-mdoc command: .SH (#\n[.c])
+.  doc-warn \$0 is not an mdoc macro name
 ..
 .ec
 .
@@ -1412,16 +1414,16 @@
 .        doc-print-recursive
 .      \}
 .      el \{\
-.        tm Usage: .Sh section_name ... (#\n[.c])
+.        doc-report-usage .Sh section_name ...
 .        doc-reset-args
 .    \}\}
 .    el \{\
-.      tm Usage: .Sh not callable by other macros (#\n[.c])
+.      doc-report-usage .Sh not callable by other macros
 .      doc-reset-args
 .  \}\}
 .  el \{\
 .    if !\n[.$] \{\
-.      tm Usage: .Sh section_name ... (#\n[.c])
+.      doc-report-usage .Sh section_name ...
 .      return
 .    \}
 .
@@ -1542,16 +1544,16 @@
 .        doc-print-recursive
 .      \}
 .      el \{\
-.        tm Usage: .Ss subsection_name ... (#\n[.c])
+.        doc-report-usage .Ss subsection_name ...
 .        doc-reset-args
 .    \}\}
 .    el \{\
-.      tm Usage: .Ss not callable by other macros (#\n[.c])
+.      doc-report-usage .Ss not callable by other macros
 .      doc-reset-args
 .  \}\}
 .  el \{\
 .    if !\n[.$] \{\
-.      tm Usage: .Ss subsection_name ... (#\n[.c])
+.      doc-report-usage .Ss subsection_name ...
 .      return
 .    \}
 .

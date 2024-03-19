@@ -236,8 +236,8 @@
 .        ie d doc-str-At-\*[doc-arg\n[doc-arg-ptr]] \
 .          ds doc-str-At1 "\*[doc-str-At-\*[doc-arg\n[doc-arg-ptr]]]
 .        el \{\
-.          tmc mdoc warning: .At: Unknown AT&T UNIX version
-.          tm1 " '\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
+.          doc-warn .At: Unknown AT&T Unix version \
+'\*[doc-arg\n[doc-arg-ptr]]'
 .          nr doc-arg-ptr -1
 .      \}\}
 .      el \
@@ -301,8 +301,8 @@
 .        ie d doc-operating-system-DragonFly-\*[doc-arg\n[doc-arg-ptr]] \
 .          as doc-str-Dx1 \~\*[doc-operating-system-DragonFly-\*[doc-arg\n[doc-arg-ptr]]]
 .        el \{\
-.          tmc mdoc warning: .Dx: Unknown DragonFly version
-.          tm1 " '\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
+.          doc-warn .Dx: Unknown DragonFly version \
+'\*[doc-arg\n[doc-arg-ptr]]'
 .          as doc-str-Dx1 \~\*[doc-arg\n[doc-arg-ptr]]
 .      \}\}
 .      el \
@@ -366,8 +366,8 @@
 .        ie d doc-operating-system-FreeBSD-\*[doc-arg\n[doc-arg-ptr]] \
 .          as doc-str-Fx1 \~\*[doc-operating-system-FreeBSD-\*[doc-arg\n[doc-arg-ptr]]]
 .        el \{\
-.          tmc mdoc warning: .Fx: Unknown FreeBSD version
-.          tm1 " '\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
+.          doc-warn .Fx: Unknown FreeBSD version \
+'\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
 .          as doc-str-Fx1 \~\*[doc-arg\n[doc-arg-ptr]]
 .      \}\}
 .      el \
@@ -432,8 +432,8 @@
 .        ie d doc-operating-system-NetBSD-\*[doc-arg\n[doc-arg-ptr]] \
 .          as doc-str-Nx1 \~\*[doc-operating-system-NetBSD-\*[doc-arg\n[doc-arg-ptr]]]
 .        el \{\
-.          tmc mdoc warning: .Nx: Unknown NetBSD version
-.          tm1 " '\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
+.          doc-warn .Nx: Unknown NetBSD version \
+'\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
 .          as doc-str-Nx1 \~\*[doc-arg\n[doc-arg-ptr]]
 .      \}\}
 .      el \
@@ -736,10 +736,8 @@
 .      ie d doc-str-St-\*[doc-arg\n[doc-arg-ptr]] \
 .        ds doc-str-St1 "\*[doc-str-St-\*[doc-arg\n[doc-arg-ptr]]]
 .      el \{\
-.        tmc "mdoc warning: .St: Unknown standard abbreviation
-.        tm1 " '\*[doc-arg\n[doc-arg-ptr]]' (#\n[.c])
-.        tm1 "              Please refer to the groff_mdoc(7) manpage for a
-.        tm1 "              list of available standard abbreviations.
+.        doc-warn .St: Unknown standard abbreviation \
+'\*[doc-arg\n[doc-arg-ptr]]'
 .    \}\}
 .    el \
 .      doc-St-usage
@@ -761,9 +759,7 @@
 .
 .eo
 .de doc-St-usage
-.  tm1 "Usage: .St standard (#\n[.c])
-.  tm1 "       Please refer to the groff_mdoc(7) manpage for a list of
-.  tm1 "       available standard abbreviations.
+.  doc-report-usage .St standard
 ..
 .ec
 .
@@ -865,7 +861,7 @@
 .      doc-parse-args \$@
 .    \}
 .    el \
-.      tm Usage: .Lb library_name ... (#\n[.c])
+.      doc-report-usage .Lb library_name ...
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -879,8 +875,8 @@
 .    ie d doc-str-Lb-\*[doc-arg\n[doc-arg-ptr]] \
 .      ds doc-str-Lb1 "\*[doc-str-Lb-\*[doc-arg\n[doc-arg-ptr]]]
 .    el \{\
-.      tmc "mdoc warning: .Lb: no description for library
-.      tm1 " '\*[doc-arg\n[doc-arg-ptr]]' available (#\n[.c])
+.      doc-warn .Lb: no description available for library \
+'\*[doc-arg\n[doc-arg-ptr]]'
 .      ds doc-str-Lb1 library \*[Lq]\*[doc-arg\n[doc-arg-ptr]]\*[Rq]
 .    \}
 .
@@ -894,7 +890,7 @@
 .      br
 .  \}
 .  el \{\
-.    tm Usage: .Lb library_name ... (#\n[.c])
+.    doc-report-usage .Lb library_name ...
 .    doc-reset-args
 .  \}
 ..

@@ -4171,7 +4171,7 @@ for @command{geqn}, @option{-p} for @command{gpic}, @option{-R} for
 
 @c ---------------------------------------------------------------------
 
-@node ms Footnotes, , ms Insertions, ms Body Text
+@node ms Footnotes, ms language and localization, ms Insertions, ms Body Text
 @subsubsection Footnotes
 @cindex @file{ms} macros, footnotes
 @cindex footnotes [@file{ms}]
@@ -4757,7 +4757,7 @@ register.
 
 @c ---------------------------------------------------------------------
 
-@node Missing Unix Version 7 ms Macros, , Differences from AT&T ms, Differences from AT&T ms
+@node Missing Unix Version 7 ms Macros, ms Legacy Features, Differences from AT&T ms, Differences from AT&T ms
 @subsubsection Unix Version 7 @file{ms} macros not implemented by @code{groff} @file{ms}
 
 Several macros described in the Unix Version@tie{}7 @file{ms}
@@ -5397,10 +5397,13 @@ arrows @arrow{} and bullets @bullet{} to indicate input tabs and
 leaders, respectively.
 
 @Example
+A@arrow{}B@arrow{}C@bullet{}D@arrow{}@bullet{}E
+.br
 1
-@arrow{} 2 @arrow{} 3 @bullet{} 4
-@arrow{} @bullet{} 5
-@result{} 1         2       3.......4         ........5
+@arrow{}2@arrow{}3@bullet{}4
+@arrow{}@bullet{}5
+    @result{} A       B       C.......D       ........E
+    @result{} 1         2       3       4                 5
 @endExample
 
 Tabs and leaders lend themselves to table construction.@footnote{``Tab''
@@ -6191,7 +6194,7 @@ GNU @code{troff} provides a set of mathematical and logical operators
 familiar to programmers---as well as some unusual ones---but supports
 only integer arithmetic.@footnote{Provision is made for interpreting and
 reporting decimal fractions in certain cases.}  The internal data type
-used for computing results depends on the host machine but is usually a
+used for computing results depends on the host machine but is at least a
 32-bit signed integer, which suffices to represent magnitudes within a
 range of ±2 billion.@footnote{If that's not enough, see the
 @cite{groff_tmac@r{(5)}} man page for the @file{62bit.tmac} macro
@@ -7069,9 +7072,10 @@ character.  A few escape sequences are idiosyncratic, and support both
 of the foregoing conventions (@code{\s}), designate their own
 termination sequence (@code{\?}), consume input until the next newline
 (@code{\!}, @code{\"}, @code{\#}), or support an additional modifier
-character (@code{\s} again, and @code{\n}).  As with requests, use of
-some escape sequences in source documents may interact poorly with a
-macro package you use; consult its documentation to learn of ``safe''
+character (@code{\s} again, and @code{\n}).  In no case can an escape
+sequence parameter contain a newline.  As with requests, use of some
+escape sequences in source documents may interact poorly with a macro
+package you use; consult its documentation to learn of ``safe''
 sequences or alternative facilities it provides to achieve the desired
 result.
 
