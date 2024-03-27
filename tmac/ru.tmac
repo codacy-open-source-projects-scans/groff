@@ -173,6 +173,15 @@
 .
 .rr locale*use-trap-hyphenation-mode
 .
+.\" Check (heuristically) for output device coverage of Cyrillic script.
+.if !r \*[locale]*device-checked-for-glyph-coverage \{\
+.  if !c \[u0410] \{\
+.    tm \*[locale].tmac: warning: font \n[.fn] may lack coverage of \
+Cyrillic script
+.    nr \*[locale]*device-checked-for-glyph-coverage 1
+.  \}
+.\}
+.
 .hcode Á Á  á Á
 .hcode Â Â  â Â
 .hcode × ×  ÷ ×

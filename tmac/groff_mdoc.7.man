@@ -664,7 +664,7 @@ to construct a man page from the following template.
 .Bd -literal -offset indent
 \&.\e" The following three macro calls are required.
 \&.Dd date
-\&.Dt topic [section-identifier [section-keyword-or-title]]
+\&.Dt identifier [section-id [section-keyword-or-title]]
 \&.Os [package-or-operating system [version-or-release]]
 \&.Sh Name
 \&.Nm topic
@@ -853,17 +853,17 @@ belong to the page structure domain macros.
 .\" that kind of reader last _week_.
 .
 They designate the
-topic,
+page identifier and section of the manual,
 date of last revision,
 and the operating system or software project associated with the page.
 .
 Call each once at the beginning of the document.
 .
 They populate the page headers and footers,
-which are in
+.Dq titles
+in
 .Xr roff
-parlance termed
-.Dq titles .
+parlance.
 .
 .
 .Bl -tag -width 6n
@@ -882,8 +882,7 @@ Historically,
 .Ar date
 was written in U.S.\& traditional format,
 .Do
-.\" XXX: Em -> Ar when we de-Courierize .Ar.
-.Em Month day Li , Em year
+.Ar Month day Li , Ar year
 .Dc
 where
 .Em Month
@@ -917,14 +916,16 @@ This macro is neither callable nor parsed.
 .
 .br
 .ne 5v
-.It Li .Dt Ar topic Op Ar section-identifier \
+.It Li .Dt Ar identifier Op Ar section-id \
 Op Ar section-keyword-or-title
 .
-.Ar topic
-is the subject of the man page.
+.Ar identifier
+and
+.Ar section-id
+together should uniquely indicate the man page on the system.
 .
 A
-.Ar section-identifier
+.Ar section-id
 that begins with an integer in the range 1\[en]9
 or is one of the words
 .Ql unass ,
@@ -1578,7 +1579,7 @@ is output.
 .
 .
 .Pp
-.Bl -tag -width ".Li .Ar\ file1\ file2" -compact -offset 15n
+.Bl -tag -width ".Li .Ar\ file\ ...\ dest-dir" -compact -offset 15n
 .It Li .Ar
 .Ar
 .It Li ".Ar file1"
@@ -1587,6 +1588,8 @@ is output.
 .Ar file1 .
 .It Li ".Ar file1 file2"
 .Ar file1 file2
+.It Li ".Ar file ... dest-dir"
+.Ar file ... dest-dir
 .It Li ".Ar f1 f2 f3 :"
 .Ar f1 f2 f3 :
 .It Li ".Ar file ) ) ,"
@@ -2282,16 +2285,15 @@ The default width is 16n.
 .
 The
 .Ql \&Nm
-macro is used for the document title or page topic.
+macro identifies the document's central topic.
 .
 Upon its first call,
-it has the peculiarity of remembering its argument,
-which should always be the topic of the man page.
+it has the peculiarity of remembering its argument.
 .
 When subsequently called without arguments,
 .Ql \&Nm
 regurgitates this initial name for the sole purpose of making less work
-for the author.
+for the document's author.
 .
 Use of
 .Ql \&Nm
@@ -2875,7 +2877,8 @@ Quote	Open	Close	Function	Result
 \&.Dq	.Do	.Dc	Double Quote	\[lq]string\[rq]
 \&.Eq	.Eo	.Ec	Enclose String (in XY)	XstringY
 \&.Pq	.Po	.Pc	Parenthesis Enclosure	(string)
-\&.Ql			Quoted Literal	\[lq]string\[rq] or string
+\&.Ql			Quoted or Literal	\[lq]string\[rq] or \
+\f[CR]string\f[]
 \&.Qq	.Qo	.Qc	Straight Double Quote	"string"
 \&.Sq	.So	.Sc	Single Quote	\[oq]string\[cq]
 .TE
@@ -2909,24 +2912,23 @@ The default width value is 12n for both macros.
 .It Li .Eq
 The first and second arguments of this macro are the opening and
 closing strings respectively, followed by the arguments to be enclosed.
+.
 .It Li .Ql
-The quoted literal macro behaves differently in
+The quoted-or-literal macro behaves differently in
 .Xr troff \" mode
 and
 .Xr nroff \" mode
 modes.
 .
-If formatted with
+When formatting with
 .Xr @g@nroff @MAN1EXT@ ,
-a quoted literal is always quoted.
+.Xr mdoc
+quotes the arguments.
 .
-If formatted with
+With
 .Xr @g@troff ,
-an item is only quoted if the width of the item is less than three
-constant-width characters.
-.
-This is to make short strings more visible where the font change to
-literal (constant-width) is less noticeable.
+.Xr mdoc
+sets them in a constant-width font.
 .
 .
 .Pp
@@ -5118,6 +5120,25 @@ respectively:
 .
 If not set,
 both registers default to 80n for terminal devices and 6.5i otherwise.
+.
+.
+.Pp
+The
+.Ql MF
+string sets
+the font used for man page identifiers in document headers and footers
+and in the formatted output of the
+.Ql \&Xr
+macro.
+.
+The default is
+.Ql I
+(italic style of the default family).
+.
+Any valid argument to
+.Xr groff Ns 's
+.Ql ft
+request may be used.
 .
 .
 .Pp

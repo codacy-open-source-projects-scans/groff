@@ -51,32 +51,32 @@
 .
 .\" the 'doc-xx-font' strings must not be empty!
 .
-.ds doc-page-topic-font \f[I]
+.ds doc-page-identifier-font \f[\*[MF]]
 .ds doc-page-section-font \f[R]
 .ds doc-Ad-font \f[I]
-.ds doc-Ar-font \f[CI]
-.ds doc-Cm-font \f[CR]
+.ds doc-Ar-font \f[I]
+.ds doc-Cm-font \f[B]
 .ds doc-Em-font \f[I]
-.ds doc-Er-font \f[CR]
+.ds doc-Er-font \f[R]
 .ds doc-Ev-font \f[I]
-.ds doc-Fa-font \f[CI]
-.ds doc-Fd-font \f[CB]
-.ds doc-Fl-font \f[CR]
-.ds doc-Fn-font \f[CB]
-.ds doc-Ft-font \f[CI]
-.ds doc-Ic-font \f[CB]
-.ds doc-Li-font \f[CR]
-.ds doc-Lk-font \f[R]\"
+.ds doc-Fa-font \f[I]
+.ds doc-Fd-font \f[B]
+.ds doc-Fl-font \f[B]
+.ds doc-Fn-font \f[B]
+.ds doc-Ft-font \f[I]
+.ds doc-Ic-font \f[B]
+.ds doc-Li-font \f[B]
+.ds doc-Lk-font \f[R]
 .ds doc-Me-font \f[B]
 .ds doc-Mt-font \f[R]
-.ds doc-Nm-font \f[CB]
+.ds doc-Nm-font \f[B]
 .ds doc-No-font \f[R]
 .ds doc-Pa-font \f[I]
-.ds doc-Sh-font \f[\*[HF]]\"
+.ds doc-Sh-font \f[\*[HF]]
 .ds doc-Sy-font \f[B]
 .ds doc-Tn-font \f[R]
 .ds doc-Va-font \f[I]
-.ds doc-Xr-font \f[I]
+.ds doc-Xr-font \f[\*[MF]]
 .
 .ds doc-left-parenthesis \f[R](\f[]
 .ds doc-right-parenthesis \f[R])\f[]
@@ -189,23 +189,60 @@
 .ec
 .
 .
+.\" NS Dl user macro
+.\" NS   display (one line) literal
+.\" NS
+.\" NS   this function uses the 'Li' font
+.\" NS
+.\" NS modifies:
+.\" NS   doc-arg-ptr
+.\" NS   doc-curr-font
+.\" NS   doc-macro-name
+.\" NS
+.\" NS local variables:
+.\" NS   doc-saved-family-Dl
+.\" NS
+.\" NS width register 'Dl' set in doc-common
+.
+.eo
+.de Dl
+.  ta T .5i
+.  in +\n[doc-display-indent]u
+.
+.  ie \n[doc-arg-count] \{\
+.    doc-report-usage .Dl not callable by other macros
+.    doc-reset-args
+.  \}
+.  el \{\
+.    ie \n[.$] \{\
+.      ds doc-macro-name Dl
+.      doc-parse-args \$@
+.      nr doc-arg-ptr 1
+.      nr doc-curr-font \n[.f]
+.      ds doc-saved-family-Dl \n[.fam]
+.      fam C
+.      doc-print-recursive
+.      fam \*[doc-saved-family-Dl]
+.    \}
+.    el \
+.      doc-report-usage .Dl argument ...
+.  \}
+.
+.  in -\n[doc-display-indent]u
+..
+.ec
+.
+.
 .\" NS Ql user macro
 .\" NS   quoted literal define
 .\" NS
 .\" NS modifies:
-.\" NS   doc-argXXX
-.\" NS   doc-arg-count
-.\" NS   doc-arg-ptr
 .\" NS   doc-macro-name
-.\" NS   doc-spaceXXX
-.\" NS   doc-typeXXX
 .\" NS   doc-quote-left
 .\" NS   doc-quote-right
 .\" NS
 .\" NS local variables:
-.\" NS   doc-reg-Ql
-.\" NS   doc-reg-Ql1
-.\" NS   doc-reg-Ql2
+.\" NS   doc-saved-family-Ql
 .\" NS
 .\" NS width register 'Ql' set in doc-common
 .
@@ -220,48 +257,12 @@
 .      doc-report-usage .Ql argument ...
 .  \}
 .
-.  nr doc-reg-Ql (\n[doc-arg-ptr] + 1)
-.  doc-get-arg-width \n[doc-reg-Ql]
+.    ds doc-saved-family-Ql \n[.fam]
 .
-.  \" don't use quotes if we have more than two succeeding string
-.  \" arguments
-.  nr doc-reg-Ql +1
-.  if (\n[doc-arg-count] >= \n[doc-reg-Ql]) \
-.    if (\n[doc-type\n[doc-reg-Ql]] == 2) \
-.      nr doc-width 3
+.    ds doc-quote-left \F[C]
+.    ds doc-quote-right \F[\*[doc-saved-family-Ql]]
 .
-.  \" make a difference in quotation style for strings longer
-.  \" than two characters
-.  ie (\n[doc-width] > 2) \
-.    Li
-.  el \{\
-.    ie \n[doc-arg-ptr] \{\
-.      \" we replace 'Ql' with 'Li'
-.      ds doc-arg\n[doc-arg-ptr] Li
-.      nr doc-arg-ptr -1
-.    \}
-.    el \{\
-.      \" if .Ql has been called directly, we must shift all elements in
-.      \" the argument vector to the right so that we can insert 'Li'
-.      nr doc-reg-Ql \n[doc-arg-count]
-.      nr doc-reg-Ql1 (\n[doc-arg-count] + 1)
-.      while \n[doc-reg-Ql] \{\
-.        rn doc-arg\n[doc-reg-Ql] doc-arg\n[doc-reg-Ql1]
-.        rnn doc-type\n[doc-reg-Ql] doc-type\n[doc-reg-Ql1]
-.        rn doc-space\n[doc-reg-Ql] doc-space\n[doc-reg-Ql1]
-.        nr doc-reg-Ql -1
-.        nr doc-reg-Ql1 -1
-.      \}
-.      ds doc-arg1 Li
-.      nr doc-type1 1
-.      ds doc-space1
-.      nr doc-arg-count +1
-.    \}
-.
-.    ds doc-quote-left "\*[doc-left-singlequote]
-.    ds doc-quote-right "\*[doc-right-singlequote]
-.    doc-enclose-string
-.  \}
+.    doc-enclose-string \$@
 ..
 .ec
 .

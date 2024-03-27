@@ -3604,7 +3604,7 @@ the increase in width is a linear function of the type size.
 As
 .BR tm ,
 but recognizes and strips a leading neutral double quote,
-allowing embedded spaces in
+allowing embedded leading spaces in
 .IR message .
 .
 .

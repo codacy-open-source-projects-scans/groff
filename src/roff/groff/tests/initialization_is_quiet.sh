@@ -46,8 +46,10 @@ do
   for locale in cs de en fr it ja sv zh
   do
     echo testing \"-m $locale$compat\" >&2
-    output=$("$groff" -ww -m $locale$compat -a </dev/null 2>/dev/null)
-    error=$("$groff" -ww -m $locale$compat -z </dev/null 2>&1)
+    output=$("$groff" -ww -m $locale$compat -a -Tutf8 </dev/null \
+        2>/dev/null)
+    error=$("$groff" -ww -m $locale$compat -z -Tutf8 </dev/null \
+        >/dev/null 2>&1)
     test -n "$error" && echo "$error"
     test -n "$output" && echo "$output"
     test -n "$error$output" && wail

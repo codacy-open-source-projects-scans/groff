@@ -735,6 +735,15 @@ The current inset amount is saved,
 then moved right by
 .I inset-amount,
 if specified,
+by the
+.I indentation
+amount of the preceding
+.BR .IP ,
+.BR .TP ,
+or (deprecated)
+.B .HP
+macro call if no (sub-)sectioning or ordinary paragraphing macro has
+intervened,
 and by the amount of the
 .B IN
 register otherwise.

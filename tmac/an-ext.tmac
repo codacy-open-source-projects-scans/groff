@@ -154,7 +154,10 @@
 .de TQ
 .  br
 .  ns
-.  TP \\$1\" We do not quote the argument, so that the caller can.
+.  \" Do not quote the argument to `TP`; the user might specify
+.  \" their own, for multi-word tags or to exercise AT&T troff quoting
+.  \" rules.
+.  TP \\$1\"
 ..
 .
 .

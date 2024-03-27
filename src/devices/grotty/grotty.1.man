@@ -92,7 +92,7 @@ TTY
 output driver translates the output of
 .MR @g@troff @MAN1EXT@
 into a form suitable for typewriter-like devices,
-including terminal emulators.
+including video terminal emulators.
 .
 Normally,
 .I grotty

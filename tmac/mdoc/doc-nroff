@@ -43,7 +43,7 @@
 .
 .\" the 'doc-xx-font' strings must not be empty!
 .
-.ds doc-page-topic-font \f[I]
+.ds doc-page-identifier-font \f[\*[MF]]
 .ds doc-page-section-font \f[R]
 .ds doc-Ad-font \f[I]
 .ds doc-Ar-font \f[I]
@@ -58,17 +58,17 @@
 .ds doc-Ft-font \f[I]
 .ds doc-Ic-font \f[B]
 .ds doc-Li-font \f[B]
-.ds doc-Lk-font \f[R]\"
+.ds doc-Lk-font \f[R]
 .ds doc-Me-font \f[B]
 .ds doc-Mt-font \f[R]
 .ds doc-Nm-font \f[B]
 .ds doc-No-font \f[R]
 .ds doc-Pa-font \f[I]
-.ds doc-Sh-font \f[\*[HF]]\"
+.ds doc-Sh-font \f[\*[HF]]
 .ds doc-Sy-font \f[B]
 .ds doc-Tn-font \f[R]
 .ds doc-Va-font \f[I]
-.ds doc-Xr-font \f[I]
+.ds doc-Xr-font \f[\*[MF]]
 .
 .ds doc-left-parenthesis \f[R](\f[]
 .ds doc-right-parenthesis \f[R])\f[]
@@ -177,6 +177,45 @@
 .  \}
 .  el \
 .    nr doc-width 0
+..
+.ec
+.
+.
+.\" NS Dl user macro
+.\" NS   display (one line) literal
+.\" NS
+.\" NS   this function uses the 'Li' font
+.\" NS
+.\" NS modifies:
+.\" NS   doc-arg-ptr
+.\" NS   doc-curr-font
+.\" NS   doc-macro-name
+.\" NS
+.\" NS width register 'Dl' set in doc-common
+.
+.eo
+.de Dl
+.  ta T .5i
+.  in +\n[doc-display-indent]u
+.
+.  ie \n[doc-arg-count] \{\
+.    doc-report-usage .Dl not callable by other macros
+.    doc-reset-args
+.  \}
+.  el \{\
+.    ie \n[.$] \{\
+.      ds doc-macro-name Dl
+.      doc-parse-args \$@
+.      nr doc-arg-ptr 1
+.      nr doc-curr-font \n[.f]
+.      nop \*[doc-Li-font]\c
+.      doc-print-recursive
+.    \}
+.    el \
+.      doc-report-usage .Dl argument ...
+.  \}
+.
+.  in -\n[doc-display-indent]u
 ..
 .ec
 .

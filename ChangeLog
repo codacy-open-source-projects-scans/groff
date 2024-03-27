@@ -1,3 +1,203 @@
+2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Simplify `Ql` macro behavior.
+
+	* tmac/mdoc/doc-ditroff (Ql): Rip out most of the logic
+	{counting and measuring arguments}, replacing it with a save and
+	restore of the font family to temporarily use the Courier
+	family.  The new behavior is: when formatting for terminals,
+	`Ql`'s arguments are quoted; when formatting for typesetters,
+	its arguments are set in Courier.  In practice, it does not seem
+	difficult to distinguish even single characters in Courier from
+	those in Times.  (If it is, an _explicit_ quoting macro like
+	`Sq` or `Dq` should be used.)
+	* tmac/groff_mdoc.7.man (Enclosure and Quoting Macros) <Ql>:
+	* NEWS: Document this.
+
+	See, e.g., <https://savannah.gnu.org/bugs/index.php?61276>.
+
+2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-ditroff (Dl): Refactor.  Instead of using the
+	"literal" (`Li` macro) font, save the family, switch to Courier,
+	emit the arguments, then restore the family.
+
+2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Refactor.
+
+	* tmac/doc.tmac: Move `Dl` macro definition from here...
+	* tmac/mdoc/doc-ditroff:
+	* tmac/mdoc/doc-nroff: ...to these files to prepare for changes
+	to the "ditroff" version.
+
+2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-ditroff: Align typesetting font defaults with
+	terminal font defaults.  Change `Cm`, `Fl`, and `Li` to use bold
+	instead of roman.
+
+2024-03-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac: Add new string "array",
+	`doc-display-fam-stack`, to maintain a stack of font family
+	changes.
+	(Bd): If the `-literal` argument is given, push the current font
+	family onto the stack and select family `C`.
+	(Ed): If we're ending a display of type "literal", pop the
+	saved font family from its stack.
+	(doc-save-global-vars, doc-restore-global-vars): Add this new
+	string.
+
+2024-03-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Change default font used for many macros when formatting
+	for typesetters (cf. terminals).
+
+	* tmac/mdoc/doc-ditroff: Stop switching to Courier family when
+	setting arguments to the macros `Ar`, `Cm`, `Er`, `Fa`, `Fd`,
+	`Fl`, `Fn`, `Ft`, `Ic`, `Li`, and `Nm`.
+
+	Only you can prevent aneurysms; see discussion starting at
+	<https://lists.gnu.org/archive/html/groff/2024-03/msg00152.html>
+	and bear in mind that you can use the mdoc.local file to
+	customize the font used to render nearly any mdoc(7) macro.
+	This mechanism has been in place since 1992.
+
+2024-03-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Add support for `MF` rendering option.  in parallel with
+	groff man(7), and working much like the `HF` string.
+
+	* tmac/doc.tmac (initialization): If the user specifies no `MF`
+	string definition, define it as `I`.
+	* tmac/mdoc/doc-ditroff:
+	* tmac/mdoc/doc-nroff: Default `doc-page-identifier-font` and
+	`doc-Xr-font` to use the value of the `MF` string.
+
+	* NEWS:
+	* tmac/groff_mdoc.7.man (Options): Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?65484>.
+
+2024-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-common ([initialization], Dt, Os, doc-header,
+	doc-footer, doc-reset-titles, Rd):
+	* tmac/mdoc/doc-ditroff:
+	* tmac/mdoc/doc-nroff: Rename string `doc-page-topic` to
+	`doc-page-identifier` and `doc-page-topic-font` to
+	`doc-topic-identifier-font`, following terminological reform in
+	groff_mdoc(7) (and groff_man(7)).
+
+2024-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/main.cpp (main): Fix missing space in
+	diagnostic message.
+
+2024-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/{ja,ru,zh}.tmac: Add heuristic checks for glyph coverage
+	of characteristic code points for these languages' scripts.
+	Throw the warning only once for each language.  The formatter
+	will merrily spew "special character ... not defined" error
+	diagnostics for each non-covered glyph encountered; this leads
+	people to complain that "groff doesn't support Unicode".  (This
+	additional warning diagnostic might not help much; the error
+	diagnostics already refer to characters in these scripts _by
+	their Unicode code points_, which should be a clue, but too
+	often isn't.)  And this one will slip through even if someone
+	runs groff (or troff) with the `-E` option.  If you want to
+	typeset Unicode, you have to use a font that covers Unicode.
+	groff can't force one onto your system.  (We could do more to
+	help the user configure one for use with groff, though; see
+	Savannah #60930.)
+	* src/roff/groff/tests/initialization_is_quiet.sh: Update test;
+	check the "utf8" output device, not the "ps" default (which
+	might not have been the configured default anyway), and which
+	will lack glyph coverage for Chinese and Japanese (as the base
+	14 fonts of Adobe PostScript lacked it).
+
+2024-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an-reset-paragraph-spacing, RS, RE): Trivially
+	refactor.  Rename structurally named sets of registers emulating
+	arrays (more precisely in this instance, stacks) to separate the
+	index from the rest of the name with a `!` character, as is done
+	in groff ms(7) and some other packages.  This makes the names
+	more readable and less resembling of typos in the unfortunate
+	event a troff(1) diagnostic message discloses their names to a
+	hapless human reader.
+
+2024-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (an-reset-paragraph-spacing): Assign
+	`an-saved-margin1` the value of the `BP`, not the `IN` register.
+	It makes no practical difference (because this is the
+	"outermost" inset level), but the status quo ante made the
+	inset register pushing and popping logic harder to reason about.
+	Continues commit 5d2e49f818, 9 August.
+
+2024-03-19  Alexis <flexibeast@gmail.com>
+
+	[grohtml]: Migrate from psselect(1) to ps2ps(1).
+
+	* src/preproc/html/pre-html.cpp (imageList::createPage): Do it.
+	* src/devices/grohtml/grohtml.1.man (Dependencies): Document
+	the changed runtime requirement.
+	* m4/groff.m4 (GROFF_CHECK_GROHTML_PROGRAMS):
+	* src/roff/groff/tests/html_works_with_grn_and_eqn.sh:
+	* src/roff/groff/tests/smoke-test_html_device.sh: Check for
+	existence of `ps2ps` command instead of `psselect`.
+
+2024-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Ar): Don't reset the selected font to its
+	previous value when formatting `doc-str-Ar-default`; the latter
+	string already takes care of this.
+
+	* tmac/groff_mdoc.7.man (Arguments) <Ar>: Add a case of an
+	interstitial ellipsis in an argument list, to demonstrate that
+	the typeface gets reset correctly after the ellipsis.
+
+	Fixes a post-1.23.0 regression.  Thanks to Lennart Jablonka for
+	the report.  Problem introduced by me in commit df1fc139af, 3
+	September.
+
+2024-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-common: Trivially refactor.  Rename
+	`doc-need-titles-reset` register to `doc-end-previous-document`,
+	reflecting its newly narrowed purpose.
+
+2024-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/mdoc/doc-common (doc-reset-titles): New macro pulls
+	several string assignment operations to here...
+	(doc-end-macro): ...from here, because they're needed more
+	generally.
+	(Dd): Call the new macro unconditionally.
+
+	Fixes <https://savannah.gnu.org/bugs/?65480>.  Problem
+	introduced by me in the 1.23.0 development cycle; I didn't
+	bother to bisect it down to an individual commit because I know
+	I churned parts of the macro package pretty vigorously to get
+	batch rendering of mixed man(7) and mdoc(7) documents working
+	correctly.  (And as we can see, I didn't _quite_ succeed.)
+
+2024-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Regression-test Savannah #65480.
+
+	* tmac/tests/doc_reset-data-between-documents.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (Xr): Fix copy-and-paste error that made all man
+	page hyperlinks "internal".  Continues commit 4c59005ba0, 16
+	March.
+
 2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an.tmac (an*scan-string-for-backslash): Choose an escape
@@ -14,9 +214,25 @@
 
 2024-03-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* tmac/mdoc/doc-common (LP, PP, pp, SH): Use new `doc-warn`
+	[mdoc]: Improve diagnostic message format (5/4).
+
+	* tmac/doc.tmac (Bd, Ta, An):
+	* tmac/mdoc/doc-syms (doc-St-usage): Use new `doc-report-usage`
 	macro instead of hand-crafting diagnostic message with `tm`
 	request.
+
+	* tmac/doc.tmac (Bl): Drop unneccessary argumentless `tm` request.
+	(doc-Bl-usage): Use three single-line `doc-report-usage`
+	requests instead of writing a six-line diagnostic.  Both are
+	regrettable--`Bl` is just crazily complex.
+	(doc-defunct-macro): Use new `doc` string to construct bespoke
+	diagnostic complaining of defunct macro usage.
+
+	* tmac/doc.tmac (Bk):
+	* tmac/mdoc/doc-common (LP, PP, pp, SH):
+	* tmac/mdoc/doc-syms (At, Dx, Fx, Nx, St, Lb): Use new
+	`doc-warn` macro instead of hand-crafting diagnostic message
+	with `tm` request.
 
 	Continues fixing <https://savannah.gnu.org/bugs/?52463>, which I
 	should have known would not stay dead for long.  (And which I
@@ -133,7 +349,7 @@
 
 	[man]: Regression-test Savannah #64267.
 
-	* tmac/tests/tmac/tests/an_PD-restores-spacing.sh: Do it.
+	* tmac/tests/an_PD-restores-spacing.sh: Do it.
 	* tmac/tmac.am (tmac_TESTS): Run test.
 
 2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -585,12 +801,11 @@
 	(doc-end-hyperlink-pdf): New macros produce appropriate device
 	control commands to start and stop hyperlinking of formatted
 	text.
-	(doc-begin-hyperlink-nop):
-	(doc-end-hyperlink-nop): New do-nothing macros handle
-	user-driven hyperlink disablement and devices lacking hyperlink
-	support.  Create aliases for the "X100", "X100-12", "X75",
-	"X75-12", "dvi", "lbp", "lj4", and "ps" devices corresponding to
-	these.
+	(doc-begin-hyperlink-nop, doc-end-hyperlink-nop): New do-nothing
+	macros handle user-driven hyperlink disablement for devices
+	lacking hyperlink support.  Create aliases for the "X100",
+	"X100-12", "X75", "X75-12", "dvi", "lbp", "lj4", and "ps"
+	devices corresponding to these.
 	(doc-Xr-usage, doc-Mt-usage, doc-Lk-usage): New macros eliminate
 	repeated logic to emit usage messages.
 	(Xr): Heavily rewrite to support production of hyperlinked

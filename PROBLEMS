@@ -37,11 +37,11 @@ General Problems
 
   pnmcrop: The image is entirely background; there is nothing to crop.
 
-This appears to be a bug in the pnmcrop in Netpbm 11.01.00; it is
-ignoring or overriding the "-quiet" option that the pre-grohtml(1)
-program passes to it.  We see this in groff builds when generating the
-"pic.html" and "webpage.html" documents, but the images are correctly
-created nonetheless.
+This appears to be two bugs in Netpbm 11.01.00 through 11.3.5 at least;
+the diagnostic is spurious, and pnmcrop is ignoring or overriding the
+"-quiet" option that the pre-grohtml(1) program passes to it.  We see
+this in groff builds when generating the "pic.html" and "webpage.html"
+documents, but the images are correctly created nonetheless.
 
 ----------------------------------------------------------------------
 

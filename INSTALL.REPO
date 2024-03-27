@@ -30,7 +30,8 @@ are several others.
     $ export AUTOCONF_VERSION=2.69
 
 * You will need a 'yacc' program.  We recommend Berkeley yacc ('byacc')
-  or GNU Bison ('bison').
+  or GNU Bison ('bison').  The version of byacc in OpenBSD 7.4 is known
+  to not work; Bison does.
 
 * groff's Texinfo manual is generated in several formats: GNU Info,
   HTML, plain text, TeX DVI, and PDF.  The former three require

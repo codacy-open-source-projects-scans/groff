@@ -184,9 +184,28 @@ o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   configured to use).  A new string, `doc-Mt-font`, for use in
   "mdoc.local" files and similar, supports configuration of this face.
 
+o The doc (mdoc) macro package now performs font family switches
+  inline (that is, on the same output line) to Courier much less
+  frequently when formatting for typesetters, affecting the `Ar`, `Cm`,
+  `Er`, `Fa`, `Fd`, `Fl`, `Fn`, `Ft`, `Ic`, `Li`, and `Nm` macros.  This
+  change was made to reduce the ambiguity of space widths when
+  typesetting the monospaced Courier and proportional Times fonts
+  adjacently.  Bear in mind that you can use the mdoc.local file to
+  customize the font used to render nearly any mdoc(7) macro; this
+  mechanism has been in place since 1992.
+
+o The doc (mdoc) macro package's `Ql` macro now operates more simply; it
+  no longer (ever) quotes its arguments when formatting for typesetters.
+  In practice, it does not seem difficult to distinguish even single
+  characters in Courier from those in Times.  (If it is, an _explicit_
+  quoting macro like `Sq` or `Dq` should be used.)
+
 o The doc (mdoc) macro package's `Lk`, `Mt`, and `Xr` macros now produce
   hyperlinks on HTML, PDF, and terminal devices.  See above regarding
   hyperlink support being enabled by default.
+
+o The doc (mdoc) macro package now honors the `U` register and `MF`
+  string as the an (man) package does.
 
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
@@ -262,6 +281,11 @@ o grog(1) no longer supports the `--ligatures` and `--run` options.
 
 o The minimum version of Perl required to build groff is now 5.8 (18
   July 2002), incremented from 5.6.1.
+
+o groff no longer requires the PSUtils package to build; the
+  pre-grohtml(1) preprocessor that used the `psselect` command now uses
+  Ghostscript's ps2ps(1) instead.  PSUtils might continue to be useful
+  to a groff user at run time, of course.
 
 o The groff_diff(7) man page no longer contains examples.  They remain
   in groff's Texinfo manual.

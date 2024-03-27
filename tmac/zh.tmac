@@ -54,6 +54,15 @@
 .hydefault 0
 .hy
 .
+.\" Check (heuristically) for output device coverage of Chinese script.
+.if !r \*[locale]*device-checked-for-glyph-coverage \{\
+.  if !c \[u7684] \{\
+.    tm \*[locale].tmac: warning: font \n[.fn] may lack coverage of \
+Chinese script
+.    nr \*[locale]*device-checked-for-glyph-coverage 1
+.  \}
+.\}
+.
 .cp \n[*groff_zh_tmac_C]
 .do rr *groff_zh_tmac_C
 .

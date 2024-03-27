@@ -69,20 +69,20 @@ language reference
 .\" ========= characters =========
 .
 .de squoted_char
-.  Text \[oq]\f[CB]\\$1\f[]\[cq]\\$2
+.  Text \[oq]\f[B]\\$1\f[]\[cq]\\$2
 ..
 .de dquoted_char
-.  Text \[lq]\f[CB]\\$1\f[]\[rq]\\$2
+.  Text \[lq]\f[B]\\$1\f[]\[rq]\\$2
 ..
 .\" ========= requests =========
 .
 .\" synopsis of a request
 .de REQ
 .  ie \\n[.$]=1 \{\
-.    Text \%\f[CB]\\$1\f[]
+.    Text \%\f[B]\\$1\f[]
 .  \}
 .  el \{\
-.    Text \%\f[CB]\\$1\~\f[]\f[I]\\$2\f[]
+.    Text \%\f[B]\\$1\~\f[]\f[I]\\$2\f[]
 .  \}
 ..
 .
@@ -98,13 +98,13 @@ language reference
 .
 .\" number with a trailing unit
 .de scalednumber
-.  Text \\$1\^\f[CB]\\$2\f[]\\$3\f[R]
+.  Text \\$1\^\f[B]\\$2\f[]\\$3\f[R]
 .  ft P
 ..
 .
 .\" representation of units within the text
 .de scaleindicator
-.  Text \f[CB]\\$1\f[]\\$2\f[R]
+.  Text \f[B]\\$1\f[]\\$2\f[R]
 .  ft P
 ..
 .
@@ -123,10 +123,10 @@ language reference
 .\" Args   : 1 or 2; 'name' obligatory, 'arg' optional
 .\"   name : suitable name for an escape sequence (c, (xy, [long])
 .\"   arg  : arbitrary word
-.\" Result : prints \namearg, where 'name' is in CB, 'arg' in I
+.\" Result : prints \namearg, where 'name' is in B, 'arg' in I
 .\"
 .de ESC
-.  Text "\f[CB]\e\\$1\,\f[I]\\$2\/\fR"
+.  Text "\f[B]\e\\$1\,\f[I]\\$2\/\fR"
 ..
 .\" ====================================================================
 .\" .ESC[] name arg
@@ -135,10 +135,10 @@ language reference
 .\" Args   : 2 obligatory
 .\"   name : suitable name for an escape sequence (c, (xy, [long])
 .\"   arg  : arbitrary text
-.\" Result : prints \name[arg], where 'name' is in CB, 'arg' in I
+.\" Result : prints \name[arg], where 'name' is in B, 'arg' in I
 .\"
 .de ESC[]
-.  Text "\f[CB]\e\\$1\[lB]\f[]\,\f[I]\\$2\/\f[]\f[CB]\[rB]\f[]"
+.  Text "\f[B]\e\\$1\[lB]\f[]\,\f[I]\\$2\/\f[]\f[B]\[rB]\f[]"
 ..
 .\" ====================================================================
 .\" .ESCq name arg
@@ -147,10 +147,10 @@ language reference
 .\" Args   : 2 obligatory
 .\"   name : suitable name for an escape sequence (c, (xy, [long])
 .\"   arg  : arbitrary text
-.\" Result : prints \name'arg', where 'name' is in CB, 'arg' in I
+.\" Result : prints \name'arg', where 'name' is in B, 'arg' in I
 .\"
 .de ESCq
-.  Text "\f[CB]\e\\$1\[aq]\f[]\,\f[I]\\$2\/\f[]\f[CB]\[aq]\f[]"
+.  Text "\f[B]\e\\$1\[aq]\f[]\,\f[I]\\$2\/\f[]\f[B]\[aq]\f[]"
 ..
 .\" ====================================================================
 .\" .ESC? arg
@@ -158,10 +158,10 @@ language reference
 .\" Synopsis for escape sequence with a bracketed long argument
 .\" Args   : 1 obligatory
 .\"   arg  : arbitrary text
-.\" Result : prints '\?arg\?', where the '\?' are in CB, 'arg' in I
+.\" Result : prints '\?arg\?', where the '\?' are in B, 'arg' in I
 .\"
 .de ESC?
-.  Text "\f[CB]\e?\,\f[I]\\$1\/\f[CB]\[rs]?\f[R]"
+.  Text "\f[B]\e?\,\f[I]\\$1\/\f[B]\[rs]?\f[R]"
 ..
 .\" ====================================================================
 .\" .esc name [punct]
@@ -198,30 +198,30 @@ language reference
 .\" Args   : 2 obligatory
 .\"   name : suitable name for an escape sequence (c, (xy, [long])
 .\"   arg  : arbitrary text
-.\" Result : prints \name[arg], where 'name' is in CB, 'arg' in CI
+.\" Result : prints \name[arg], where 'name' is in B, 'arg' in I
 .\"
 .de esc[]
-.  Text \f[CB]\e\\$1\[lB]\f[]\,\f[CI]\\$2\/\f[]\f[CB]\[rB]\f[]\\$3
+.  Text \f[B]\e\\$1\[lB]\f[]\,\f[I]\\$2\/\f[]\f[B]\[rB]\f[]\\$3
 ..
 .
 .\" ========= strings =========
 .
 .\" synopsis for string, with \*[]
 .de STRING
-.  Text \[rs]*[\f[CB]\\$1\f[]] \\$2
+.  Text \[rs]*[\f[B]\\$1\f[]] \\$2
 ..
 .\" synopsis for a long string
 .de string
 .  if \n[.$]=0 \
 .    return
-.  Text \f[CB]\[rs]*\[lB]\\$1\[rB]\f[]\\$2
+.  Text \f[B]\[rs]*\[lB]\\$1\[rB]\f[]\\$2
 ..
 .
 .\" ========= registers =========
 .
 .\" synopsis for registers, with \n[]
 .de REG
-.  Text \%\[rs]n[\f[CB]\\$1\f[]]
+.  Text \%\[rs]n[\f[B]\\$1\f[]]
 ..
 .\" reference of a register, without decoration
 .de register
@@ -3323,7 +3323,7 @@ to
 .TPx
 .REQ .fzoom font
 .TQ
-.REQ .fzoom font\~\f[CB]0\f[]
+.REQ .fzoom font\~\f[B]0\f[]
 Stop magnifying
 .IR font .
 .
@@ -3422,7 +3422,7 @@ indicates a hyphenation point.
 .TPx
 .REQ .hy
 Set automatic hyphenation mode to the value of the
-.REG .hydefault
+.B \%.hydefault
 register.
 .
 .TPx
@@ -4219,7 +4219,7 @@ left-shift arguments by
 positions.
 .
 .TPx
-.REQ .sizes "s1 s2 \f[R].\|.\|.\&\f[] sn \f[R][\f[CB]0\f[]]"
+.REQ .sizes "s1 s2 \f[R].\|.\|.\&\f[] sn \f[R][\f[B]0\f[]]"
 Set available type sizes similarly to the
 .B sizes
 directive in a
@@ -4405,7 +4405,7 @@ Unsafe request;
 disabled by default.
 .
 .TPx
-.REQ .ta "n1 n2 \fR\&.\|.\|.\&\fP n\fRn\fP \f[CB]T\f[] r1 r2 \
+.REQ .ta "n1 n2 \fR\&.\|.\|.\&\fP n\fRn\fP \f[B]T\f[] r1 r2 \
 \fR\&.\|.\|.\&\fP r\fRn\fP"
 Set tabs at positions
 .IR n1 ,
@@ -4476,8 +4476,8 @@ Enable track kerning for
 .IR font .
 .
 .TPx
-.REQ .tl \f[CB]\[aq]\f[]left\f[CB]\[aq]\f[]center\f[CB]\[aq]\f[]right\
-\f[CB]\[aq]\f[]
+.REQ .tl \f[B]\[aq]\f[]left\f[B]\[aq]\f[]center\f[B]\[aq]\f[]right\
+\f[B]\[aq]\f[]
 Format three-part title.
 .
 .TPx
@@ -4492,7 +4492,7 @@ to the standard error stream.
 As
 .request .tm ,
 but recognizes and strips a leading neutral double quote,
-allowing embedded spaces in
+allowing embedded leading spaces in
 .IR message .
 .
 .TPx
@@ -4997,7 +4997,7 @@ and each component
 .
 .
 .TP
-.ESC[] "" "\f[CB]char\f[]nnn"
+.ESC[] "" "\f[B]char\f[]nnn"
 Interpolate glyph of eight-bit encoded character
 .IR nnn ,
 where
@@ -5005,14 +5005,14 @@ where
 .
 .
 .TP
-.ESC[] "" "\f[CB]u\f[]nnnn\f[R][\f[]n\f[R][\f[]n\f[R]]]"
+.ESC[] "" "\f[B]u\f[]nnnn\f[R][\f[]n\f[R][\f[]n\f[R]]]"
 Interpolate glyph of Unicode character with code point
 .IR nnnn [ n [ n ]]
 in uppercase hexadecimal.
 .
 .
 .TP
-.ESC[] "" "\f[CB]u\f[]base-char\f[R][\f[]\f[CB]_\f[]\
+.ESC[] "" "\f[B]u\f[]base-char\f[R][\f[]\f[B]_\f[]\
 combining-component\f[R]].\|.\|."
 Interpolate composite glyph from Unicode character
 .I base-char
@@ -5350,7 +5350,7 @@ End a nested suppression level.
 .
 .
 .TP
-.ESC[] O "\f[CB]5\f[]Pfile"
+.ESC[] O "\f[B]5\f[]Pfile"
 At the outermost suppression level,
 write the name
 .I file
@@ -7167,6 +7167,9 @@ file.
 provides localization files for several languages;
 see
 .MR groff_tmac @MAN5EXT@ .
+.
+These also set the default automatic hyphenation mode with
+.BR \%.hydefault .
 .
 .
 .\" ====================================================================

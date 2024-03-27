@@ -17055,7 +17055,7 @@ cannot contain special characters, to the standard error stream,
 followed by a newline.  Leading spaces in @var{message} are ignored.
 
 @code{tm1} is similar, but recognizes and strips a leading neutral
-double quote, allowing embedded spaces in @var{message}.
+double quote, allowing leading embedded spaces in @var{message}.
 
 @code{tmc} works as @code{tm1}, but does not append a newline.
 @endDefreq
