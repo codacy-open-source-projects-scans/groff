@@ -182,7 +182,7 @@ AC_DEFUN([GROFF_CHECK_GROHTML_PROGRAMS], [
   missing=
   m4_foreach([groff_prog],
 dnl Keep this list of programs in sync with grohtml test scripts.
-    [[pnmcrop], [pnmcut], [pnmtopng], [pnmtops], [ps2ps]], [
+    [[pnmcrop], [pnmcut], [pnmtopng], [pnmtops], [psselect]], [
       AC_CHECK_PROG(groff_prog, groff_prog, [found], [missing])
       if test $[]groff_prog = missing
       then

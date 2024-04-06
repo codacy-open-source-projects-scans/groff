@@ -1,3 +1,13 @@
+2024-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl (do_line): Recognize new requests in
+	forthcoming groff 1.24 release.  Update lists of characteristic
+	package macros: for mm, add list management macros (except for
+	`LI`, made ambiguous by groff_www(7)), unnumbered header macro,
+	and `EPIC`; for man(7), drop `MT` (it is also an mm macro) and
+	add `MR`, from groff 1.23.0 and plan9port.  Also discard closing
+	brace escape sequence as not a legitimate macro name.
+
 2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[mdoc]: Simplify `Ql` macro behavior.
@@ -14,7 +24,7 @@
 	* tmac/groff_mdoc.7.man (Enclosure and Quoting Macros) <Ql>:
 	* NEWS: Document this.
 
-	See, e.g., <https://savannah.gnu.org/bugs/index.php?61276>.
+	See, e.g., <https://savannah.gnu.org/bugs/?61276>.
 
 2024-03-24  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -137,18 +147,6 @@
 	"outermost" inset level), but the status quo ante made the
 	inset register pushing and popping logic harder to reason about.
 	Continues commit 5d2e49f818, 9 August.
-
-2024-03-19  Alexis <flexibeast@gmail.com>
-
-	[grohtml]: Migrate from psselect(1) to ps2ps(1).
-
-	* src/preproc/html/pre-html.cpp (imageList::createPage): Do it.
-	* src/devices/grohtml/grohtml.1.man (Dependencies): Document
-	the changed runtime requirement.
-	* m4/groff.m4 (GROFF_CHECK_GROHTML_PROGRAMS):
-	* src/roff/groff/tests/html_works_with_grn_and_eqn.sh:
-	* src/roff/groff/tests/smoke-test_html_device.sh: Check for
-	existence of `ps2ps` command instead of `psselect`.
 
 2024-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -342,8 +340,8 @@
 	immediately after a paragraphing macro (`P`, `HP`, or `IP` with
 	no marker argument).
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?64267>.  Thanks
-	to Alex Colomar for the report.
+	Fixes <https://savannah.gnu.org/bugs/?64267>.  Thanks to Alex
+	Colomar for the report.
 
 2024-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 

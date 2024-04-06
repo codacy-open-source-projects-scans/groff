@@ -940,20 +940,16 @@ _endif()dnl
 .
 .TP
 .BR .IP\~ [\c
-.IR tag \~\c
+.IR mark \~\c
 .RI [ indentation ]]
-Set an indented paragraph with an optional tag.
+Set an indented paragraph with an optional mark.
 .
-The
-.I tag
-and
-.I indentation
-arguments,
+Arguments,
 if present,
 are handled as with
 .BR .TP ,
 except that the
-.I tag
+.I mark
 argument to
 .B .IP
 cannot `include' a macro call,
@@ -986,7 +982,7 @@ and
 .
 .IP (2)
 to set a paragraph with a short
-.I tag
+.I mark
 that is not semantically important,
 such as a bullet (\(bu)\(emobtained with the
 .B \e(bu
@@ -1038,7 +1034,7 @@ _endif()dnl
 .
 .
 .TP
-.BI .SY " command"
+.BI .SY\~ keyword
 Begin synopsis.
 .
 A new paragraph begins as with
@@ -1051,12 +1047,12 @@ in which case only a break is performed.
 .
 Adjustment and automatic hyphenation are disabled.
 .
-.I command
+.I keyword
 is set in bold.
 .
 If a break is required,
 lines after the first are indented by the width of
-.I command
+.I keyword
 plus a space.
 .
 .
@@ -2114,9 +2110,9 @@ the inset amount and indentation.
 .
 .
 .IP \(bu
-This indented paragraph has a bullet for a tag,
+This indented paragraph is marked with a bullet,
 contrasting the inset amount and the indentation;
-only the former affects the tag,
+only the former affects the mark,
 but both affect the text of the paragraph.
 .
 .
@@ -2747,7 +2743,9 @@ and perhaps with some other formatters.
 .
 .TP
 .B \ee
-Format the current escape character on the output;
+Format the
+.I roff
+escape character on the output;
 widely used in man pages to render a backslash glyph.
 .
 .\" Don't bold the .ec request in this discussion; it's not a major
@@ -3160,8 +3158,8 @@ is handled as with
 Use of this presentation-oriented macro is deprecated.
 .
 A hanging indentation cannot be expressed naturally in HTML,
-a hanging paragraph is not distinguishable from an ordinary one if it is
-shorter than one output line,
+a hanging paragraph is not distinguishable from an ordinary one if it
+formats on only one output line,
 and
 .RI non- roff -based
 man page interpreters may treat
@@ -4113,8 +4111,8 @@ a page maintainer will keep both up to date.
 .IP
 .B .IP
 is sometimes ill-understood and misused,
-especially when no marker argument is supplied\(eman indentation
-argument is not required.
+especially when no mark argument is supplied\(eman indentation argument
+is not required.
 .
 By setting an explicit indentation,
 you may be overriding the reader's preference as set with the

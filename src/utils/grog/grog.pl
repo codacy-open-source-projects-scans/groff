@@ -282,7 +282,7 @@ sub do_line {
   # If the line calls a user-defined macro, skip it.
   return if (exists $user_macro{$command});
 
-  # These are all requests supported by groff 1.23.0.
+  # These are all requests supported by groff 1.24.0.
   my @request = ('ab', 'ad', 'af', 'aln', 'als', 'am', 'am1', 'ami',
 		 'ami1', 'as', 'as1', 'asciify', 'backtrace', 'bd',
 		 'blm', 'box', 'boxa', 'bp', 'br', 'brp', 'break', 'c2',
@@ -294,13 +294,14 @@ sub do_line {
 		 'evc', 'ex', 'fam', 'fc', 'fchar', 'fcolor', 'fi',
 		 'fp', 'fschar', 'fspecial', 'ft', 'ftr', 'fzoom',
 		 'gcolor', 'hc', 'hcode', 'hla', 'hlm', 'hpf', 'hpfa',
-		 'hpfcode', 'hw', 'hy', 'hym', 'hys', 'ie', 'if', 'ig',
-		 'in', 'it', 'itc', 'kern', 'lc', 'length', 'linetabs',
-		 'lf', 'lg', 'll', 'lsm', 'ls', 'lt', 'mc', 'mk', 'mso',
-		 'msoquiet', 'na', 'ne', 'nf', 'nh', 'nm', 'nn', 'nop',
-		 'nr', 'nroff', 'ns', 'nx', 'open', 'opena', 'os',
-		 'output', 'pc', 'pev', 'pi', 'pl', 'pm', 'pn', 'pnr',
-		 'po', 'ps', 'psbb', 'pso', 'ptr', 'pvs', 'rchar', 'rd',
+		 'hpfcode', 'hw', 'hy', 'hydefault', 'hym', 'hys', 'ie',
+		 'if', 'ig', 'in', 'it', 'itc', 'kern', 'lc', 'length',
+		 'linetabs', 'lf', 'lg', 'll', 'lsm', 'ls', 'lt', 'mc',
+		 'mk', 'mso', 'msoquiet', 'na', 'ne', 'nf', 'nh', 'nm',
+		 'nn', 'nop', 'nr', 'nroff', 'ns', 'nx', 'open',
+		 'opena', 'os', 'output', 'pc', 'pcolor', 'pcomposite',
+		 'pev', 'phw', 'pi', 'pl', 'pm', 'pn', 'pnr', 'po',
+		 'ps', 'psbb', 'pso', 'ptr', 'pvs', 'rchar', 'rd',
 		 'return', 'rfschar', 'rj', 'rm', 'rn', 'rnn', 'rr',
 		 'rs', 'rt', 'schar', 'shc', 'shift', 'sizes', 'so',
 		 'soquiet', 'sp', 'special', 'spreadwarn', 'ss',
@@ -338,6 +339,7 @@ sub do_line {
   # Ignore all other requests.  Again, macro names can contain Perl
   # regex metacharacters, so be careful.
   return if (grep(/^\Q$command\E$/, @request));
+  return if ($command eq '\}'); # *roff closing brace escape sequence
   # What remains must be a macro name.
   my $macro = $command;
 
@@ -388,8 +390,14 @@ sub do_line {
   #############
   # mm and mmse
 
+  # `LI` is unique to mm among full-service macro packages, but www.tmac
+  # muddies the waters, so omit it.
   if ($macro =~ /^(
+		   AL|BL|BVL|DL|ML|RL|VL|
+		   EPIC|
 		   H|
+		   HU|
+		   LB|LE
 		   MULB|
 		   LO|
 		   LT|
@@ -505,7 +513,7 @@ sub infer_man_or_ms_package {
 		   'SB',
 		   'EE', 'EX',
 		   'OP',
-		   'MT', 'ME', 'SY', 'YS', 'TQ', 'UR', 'UE');
+		   'ME', 'SY', 'YS', 'TQ', 'UR', 'UE', 'MR');
 
   my @macro_man_or_ms = ('B', 'I', 'BI',
 			 'DT',

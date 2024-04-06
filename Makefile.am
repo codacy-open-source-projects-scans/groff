@@ -797,6 +797,8 @@ endif
 
 # Other files that should be present in the distribution tarball.
 EXTRA_DIST += \
+  bootstrap \
+  bootstrap.conf \
   BUG-REPORT \
   ChangeLog.old \
   ChangeLog.111 \

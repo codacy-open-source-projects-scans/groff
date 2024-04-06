@@ -1,3 +1,7 @@
+2024-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/letter.mm: Replace with idiomatic content.
+
 2024-02-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (EPIC): Reckon width argument in ens by default, and

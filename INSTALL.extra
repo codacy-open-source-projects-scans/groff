@@ -86,11 +86,9 @@ directories used by the 'make install' command are in locations that
 require administrative access for writing.  You can 'configure' groff
 with options like '--prefix' that select an alternative directory that
 is writable by the user conducting the build.  Type './configure --help'
-from the groff source tree for documentation of relevant options.
-Running groff commands from such a directory may require you to set the
-'GROFF_BIN_PATH', 'GROFF_FONT_PATH', and 'GROFF_TMAC_PATH' environment
-variables.  See the groff(1) man page.  See "Evaluation" below for
-instructions on viewing this man page without having groff installed.
+from the groff source tree for documentation of relevant options.  See
+"Evaluation" below for instructions on viewing this man page without
+having groff installed.
 
 
 Non-POSIX Platforms

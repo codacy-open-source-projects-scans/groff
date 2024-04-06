@@ -918,7 +918,7 @@ int imageList::createPage(int pageno)
     fprintf(stderr, "creating page %d\n", pageno);
 #endif
 
-  s = make_string("ps2ps -sPageList=%d %s %s\n",
+  s = make_string("psselect -q -p%d %s %s\n",
 		   pageno, psFileName, psPageName);
   html_system(s, 1);
   assert(strlen(image_gen) > 0);

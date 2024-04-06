@@ -304,11 +304,10 @@ These include the \%Netpbm tools
 .IR \%pnmcut ,
 and
 .IR \%pnmtopng ;
-as well as
-\%Ghostscript's
-.I \%gs
-and
-.IR \%ps2ps .
+\%Ghostscript
+.RI ( gs );
+and the \%PSUtils tool
+.IR \%psselect .
 .
 .
 .\" ====================================================================

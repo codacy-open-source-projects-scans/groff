@@ -3189,7 +3189,7 @@ Each hyphenation point is marked with
 Words that will not be hyphenated at all are prefixed with
 .RB \[lq] \- \[rq].
 .
-Those to which the hyphenation mode applies
+Those to which the automatic hyphenation mode applies
 (meaning those defined in a hyphenation pattern file rather than with
 the
 .B hw
@@ -5416,6 +5416,32 @@ request);
 GNU
 .I troff \" GNU
 has no such restriction.
+.
+.
+.P
+GNU
+.I troff \" GNU
+handles the dummy character
+.B \[rs]&
+differently from AT&T
+.I troff \" AT&T
+when it is followed by the hyphenation control escape sequence
+.B \[rs]%
+at the beginning of a word.
+.
+GNU
+.I troff \" GNU
+does not regard the dummy character as \[lq]starting\[rq] the word;
+AT&T
+.I troff \" AT&T
+does.
+.
+Further,
+Heirloom Doctools
+.I troff \" Heirloom
+does not honor an explicit hyphenation point marked with
+.B \[rs]%
+after a word-initial one.
 .
 .
 .\" ====================================================================

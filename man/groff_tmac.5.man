@@ -11,16 +11,18 @@ typesetting system
 .\"
 .\" Copyright (C) 2000-2023 Free Software Foundation, Inc.
 .\"
-.\" This file is part of groff, the GNU roff typesetting system.
+.\" This file is part of groff (GNU roff), which is a free software
+.\" project.
 .\"
-.\" Permission is granted to copy, distribute and/or modify this
-.\" document under the terms of the GNU Free Documentation License,
-.\" Version 1.3 or any later version published by the Free Software
-.\" Foundation; with no Invariant Sections, with no Front-Cover Texts,
-.\" and with no Back-Cover Texts.
+.\" You can redistribute it and/or modify it under the terms of the GNU
+.\" General Public License as published by the Free Software Foundation,
+.\" either version 2 of the License, or (at your option) any later
+.\" version.
 .\"
-.\" A copy of the Free Documentation License is included as a file
-.\" called FDL in the main directory of the groff source package.
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program.
+.\"
+.\" If not, see <http://www.gnu.org/licenses/gpl-2.0.html>.
 .
 .
 .\" Save and disable compatibility mode (for, e.g., Solaris 10/11).
@@ -142,7 +144,7 @@ and the encodings used by documents employing a macro file can vary.
 .\" ====================================================================
 .
 Macro packages come in two varieties;
-those which assume responsibility for page layout and other critical
+those that assume responsibility for page layout and other critical
 functions
 (\[lq]major\[rq] or \[lq]full-service\[rq])
 and those that do not
@@ -176,17 +178,6 @@ support for arbitrarily long identifiers affords few excuses for name
 collisions,
 apart from attempts at compatibility with the demands of historical
 documents.
-.
-As a rule,
-direct the formatter to load full-service macro packages using the
-.B \-m
-option of
-.MR @g@troff 1
-(or a wrapper).
-.
-A document should load auxiliary macro files with the
-.B mso
-request.
 .
 .
 .\" ====================================================================
@@ -574,15 +565,15 @@ See
 .
 .TP
 .I papersize
-enables the paper format to be set on the command line by giving a
+enables the paper format to be set on the command line with the
 .RB \[lq] \-d
-.BI \%paper= format\c
+.BI \%paper= fmt\c
 \[rq]
 option to
 .IR @g@troff .
 .
-Possible values for
-.I format
+Valid
+.IR fmt s
 are the ISO and DIN formats
 .RB \[lq] A0 \[en] A6 \[rq],
 .RB \[lq] B0 \[en] B6 \[rq],
@@ -607,7 +598,7 @@ and
 All formats,
 even those for envelopes,
 are in portrait orientation:
-the length measurement is vertical.
+the longer measurement is vertical.
 .
 Appending \[lq]l\[rq] (ell) to any of these denotes landscape
 orientation instead.
@@ -630,7 +621,8 @@ or
 .B ll
 and/or
 .B po
-requests to adjust them.
+requests,
+to adjust them.
 .
 An output device typically requires command-line options
 .B \-p
@@ -846,7 +838,7 @@ to format permuted index entries as produced by the GNU
 program.
 .
 If your formatting needs differ,
-copy the macro into your document and adapt it to your needs.
+copy the macro into your document and adapt it.
 .
 .
 .TP
@@ -1306,12 +1298,15 @@ See section \[lq]Copy mode\[rq] of
 .MR groff @MAN7EXT@ .
 .
 In such cases,
-you might define and test the macro with the escape mechanism doubled,
-then double the backslashes and remove the
+you might define and test the macro with the escape character doubled
+before escape sequences that are interpreted even in copy mode,
+then bracket it with
 .B eo
 and
 .B ec
-requests as a final step.
+requests,
+un-double the escape characters,
+then test again.
 .
 .
 .\" ====================================================================
@@ -1372,72 +1367,13 @@ to clarify a macro's structure.
 .
 .
 .\" ====================================================================
-.SS Diversions
-.\" ====================================================================
-.
-Diversions can be used to implement quite advanced programming
-constructs.
-.
-They are comparable to pointers to large data structures in the
-C\~programming language, but their usage is quite different.
-.
-.
-.P
-In their simplest form, diversions are multi-line strings, but
-diversions get their power when used dynamically within macros.
-.
-The (formatted) information stored in a diversion can be retrieved by
-calling the diversion just like a macro.
-.
-.
-.P
-Most of the problems arising with diversions can be avoided if you
-remember that diversions always store complete lines.
-.
-Using diversions when the line buffer has not been flushed produces
-strange results; not knowing this, many people get desperate about
-diversions.
-.
-To ensure that a diversion works, add line breaks at the right
-places.
-.
-To be safe, enclose everything that has to do with diversions within
-a pair of line breaks; for example, by explicitly using
-.B .br
-requests.
-.
-This rule should be applied to diversion definition, both inside and
-outside, and to all calls of diversions.
-.
-This is a bit of overkill, but it works nicely.
-.
-.
-.P
-(If you really need diversions which should ignore the current partial
-line, use environments to save the current partial line and/\:or use the
-.B .box
-request.)
-.
-.
-.P
-The most powerful feature using diversions is to start a diversion
-within a macro definition and end it within another macro.
-.
-Then everything between each call of this macro pair is stored within
-the diversion and can be manipulated from within the macros.
-.
-.
-.\" ====================================================================
 .SH Authors
 .\" ====================================================================
 .
 This document was written by
-.MT groff\-bernd\:.warken\-72@\:web\:.de
-Bernd Warken
-.ME ,
 .MT wl@\:gnu\:.org
 Werner Lemberg
-.ME ,
+.ME
 and
 .MT g.branden\:.robinson@\:gmail\:.com
 G.\& Branden Robinson

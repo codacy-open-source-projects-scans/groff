@@ -22,7 +22,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 
 # Keep this list of programs in sync with GROFF_CHECK_GROHTML_PROGRAMS
 # in m4/groff.m4.
-for cmd in pnmcrop pnmcut pnmtopng pnmtops ps2ps
+for cmd in pnmcrop pnmcut pnmtopng pnmtops psselect
 do
     if ! command -v $cmd >/dev/null
     then

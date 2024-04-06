@@ -9,6 +9,10 @@ This file describes how to prepare 'groff' for a new release.
 
 ########################################################################
 
+* Update 'grog' to include the names of new GNU troff requests and macro
+  names unique to packages (and sufficiently heavily used in typical
+  documents).
+
 * Update font description files that we generate from external data and
   provide with our source distribution.
 
@@ -40,16 +44,13 @@ This file describes how to prepare 'groff' for a new release.
   + NEWS
   + BUG-REPORT
   + arch/mingw/grap2graph.cmd
-  + doc/groff.texi (multiple occurrences)
   + doc/webpage.ms
 
 * If the major or minor version number is being incremented, split off
   a historical ChangeLog file and add it to `EXTRA_DIST` in Makefile.am.
 
 * Update in 'src/roff/groff/groff.cpp' the 'printf' that displays the
-  copyright.
-
-* Update the copyright year with 'update-copyright.sh'.
+  copyright to include the current year if it is not present.
 
 * Increment the version number by tagging the release, beta, or release
   candidate.  groff requires an explicit three-part version,

@@ -191,8 +191,8 @@ o The doc (mdoc) macro package now performs font family switches
   change was made to reduce the ambiguity of space widths when
   typesetting the monospaced Courier and proportional Times fonts
   adjacently.  Bear in mind that you can use the mdoc.local file to
-  customize the font used to render nearly any mdoc(7) macro; this
-  mechanism has been in place since 1992.
+  customize the font used to render nearly any mdoc(7) macro's
+  arguments; this mechanism has been in place since 1992.
 
 o The doc (mdoc) macro package's `Ql` macro now operates more simply; it
   no longer (ever) quotes its arguments when formatting for typesetters.

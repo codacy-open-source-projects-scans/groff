@@ -1267,8 +1267,7 @@ string,
 or diversion),
 typeface,
 color,
-special character,
-character class,
+special character or character class,
 environment,
 or stream.
 .
@@ -1289,7 +1288,7 @@ input.
 .\" troff input in general, and include a reference to the `trin`
 .\" request.
 .P
-Invalid input characters are subset of control characters
+Invalid input characters are a subset of control characters
 (from the sets \[lq]C0 Controls\[rq] and \[lq]C1 Controls\[rq] as
 Unicode describes them).
 .
@@ -1401,9 +1400,8 @@ and subsection \[lq]Interpolating registers\[rq] and section
 Attempting to use an undefined
 typeface,
 style,
-special character,
+special character or character class,
 color,
-character class,
 environment,
 or stream generally provokes an error diagnostic.
 .
@@ -1430,7 +1428,7 @@ No other object types do.
 .\" requests and call macros was introduced in @ref{Requests and Macros}.
 Control characters are recognized only at the beginning of an input
 line,
-or at the beginning of the branch of a control structure request;
+or at the beginning of a branch of a control structure request;
 .\" see @ref{Conditionals and Loops}.
 see section \[lq]Control structures\[rq] below.
 .
@@ -1539,8 +1537,9 @@ See section \[lq]Strings\[rq] below.
 Spaces and tabs immediately after a control character are ignored.
 .
 Commonly,
-authors structure the source of documents or macro files with them.
-.\" END Keep (roughly) parallel with groff.texi node "Requests".
+authors use them to indent the source of documents or macro files.
+.\" END Keep (roughly) parallel with groff.texi node "Invoking
+.\" Requests".
 .
 .
 .\" ====================================================================
@@ -3951,7 +3950,7 @@ Each hyphenation point is marked with
 Words that will not be hyphenated at all are prefixed with
 .RB \[lq] \- \[rq].
 .
-Those to which the hyphenation mode applies
+Those to which the automatic hyphenation mode applies
 (meaning those defined in a hyphenation pattern file rather than with
 the
 .B hw
@@ -5859,8 +5858,22 @@ The resulting string is stored
 .I without
 the newlines.
 .
-Care is therefore required when interpolating strings while filling is
-disabled.
+When filling is disabled,
+care is required to avoid overrunning the line length when interpolating
+strings.
+.
+Conversely,
+when filling is enabled,
+it is not necessary to append
+.B \[rs]c
+to a string interpolation to prevent a break afterward,
+as might be required in a macro argument.
+.
+Nor does a string require use of
+the GNU
+.I troff \" GNU
+.B chop
+request to excise a trailing newline as is often done with diversions.
 .
 It is not possible to embed a newline in a string that will be
 interpreted as such when the string is interpolated.

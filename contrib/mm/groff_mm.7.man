@@ -709,8 +709,10 @@ A
 argument overrides register
 .BR Li .
 .
-A third argument suppresses the blank line that normally precedes each
-list item.
+A third argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 Use
 .B LI
@@ -722,18 +724,20 @@ to end the list.
 .
 .TP
 .BR APP \~\c
-.RI [ id\~ [ title ]]
+.RI [ sequence-number\~ [ title ]]
 Begin an appendix.
 .
-If the identifier
-.I id
+If
+.I sequence-number
 is omitted,
 it is incremented
-(or initialized,
+(or initialized
+.RB to\~ 1 ,
+.\" ...technically, initialized to zero but autoincremented.
 if necessary).
 .
 The register format used for
-.I id
+.I sequence-number
 is \[lq]A\[rq].
 .
 The page is broken.
@@ -845,7 +849,8 @@ and reduces the line length by twice this amount.
 .
 A scaling unit of ens is assumed.
 .
-The default is\~0.
+The default
+.RB is\~ 0 .
 .
 .
 .\" XXX: Do we need a macro for this?  Why is it not a string like App
@@ -950,7 +955,7 @@ Above these rules,
 the text in the string
 .B Letapp
 is formatted;
-a second argument replaces this text with a blank line.
+a second argument replaces this text with one vee of vertical space.
 .
 See
 .BR LT .
@@ -1036,7 +1041,10 @@ A
 argument overrides register
 .BR Pi .
 .
-A second argument suppresses blank lines between items.
+A second argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 Use
 .B LI
@@ -1091,8 +1099,10 @@ argument overrides register
 .I mark-indent
 sets the distance from the indentation of the current list to the mark.
 .
-A third argument suppresses the blank line that normally precedes each
-list item.
+A third argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 Use
 .B LI
@@ -1126,7 +1136,7 @@ is
 .BR ms ;
 the
 .I ms.cov
-file prepares a cover page resembling those of the
+file prepares a cover page resembling that of the
 .I ms
 package.
 .
@@ -1203,7 +1213,10 @@ A
 argument overrides register
 .BR Pi .
 .
-A second argument suppresses blank lines between items.
+A second argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 Use
 .B LI
@@ -1247,7 +1260,7 @@ Indent text by
 T}
 C@Center each line.
 CB@Center the whole display as a block.
-R@Right-align the lines.
+R@Right-align each line.
 RB@Right-align the whole display as a block.
 .TE
 .
@@ -1295,11 +1308,11 @@ reduces the line length by
 .IP
 .I mm
 normally
-places blank lines before and after the display.
+places vertical space before and after the display.
 .
 Set register
 .B Ds
-to \[lq]0\[rq] to suppress these.
+to \[lq]0\[rq] to suppress it.
 .
 .
 .TP
@@ -1419,7 +1432,7 @@ defines the string
 .
 .TP
 .B EN
-End equation input preprocessed by
+End mathematical expression input preprocessed by
 .MR @g@eqn @MAN1EXT@ ;
 see
 .BR EQ .
@@ -1480,7 +1493,7 @@ See
 .TP
 .BR EQ \~[\c
 .IR label ]
-Start equation input preprocessed by
+Start mathematical expression input preprocessed by
 .MR @g@eqn @MAN1EXT@ .
 .
 .B EQ
@@ -1568,7 +1581,7 @@ Configure display of footnotes.
 .
 The first argument encodes enablement of
 automatic hyphenation,
-adjustment to the right margin,
+adjustment to both margins,
 indentation of footnote text,
 and left- vs.\& right-alignment of the footnote label within the space
 allocated for it.
@@ -1965,8 +1978,8 @@ and the value of
 .RB register\~ Hu
 for unnumbered headings.
 .
-.I title
-is the corresponding argument to
+.I title-suffix
+is the catenation of the corresponding arguments to
 .B H
 or
 .BR HU .
@@ -1974,7 +1987,7 @@ or
 .
 .RS
 .TP
-.BI HX\~ "declared-level actual-level title"
+.BI HX\~ "declared-level actual-level title-suffix"
 .I mm
 calls
 .B HX
@@ -2030,7 +2043,7 @@ The default is
 .
 .
 .TP
-.BI HY\~ "declared-level actual-level title"
+.BI HY\~ "declared-level actual-level title-suffix"
 .I mm
 calls
 .B HY
@@ -2040,7 +2053,7 @@ It could be used to change indentation.
 .
 .
 .TP
-.BI HZ\~ "declared-level actual-level title"
+.BI HZ\~ "declared-level actual-level title-suffix"
 .I mm
 calls
 .B HZ
@@ -2681,8 +2694,10 @@ argument precedes each item.
 overrides the default indentation of the list items set by register
 .BR Li .
 .
-A third argument suppresses the blank line that normally precedes each
-list item.
+A third argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 Use
 .B LI
@@ -2824,12 +2839,27 @@ End notation begun with
 filling is enabled.
 .
 .
+.\" XXX: Could we use a more general mechanism?  Call it `NP`?
 .TP
-.BI nP\  \fR[\fPtype\fR]\fP
-Begin a numbered paragraph at heading level two.
+.BR nP\~ [
+.IR type ]
+As
+.BR P ,
+but set a paragraph number in the form
+.IR x . yy ,
+where
+.I x
+is the number of the second heading level,
+and
+.I yy
+increments with each
+.B nP
+call;
+its value is not reset when the second-level heading number changes.
 .
-See
-.BR P .
+.I mm
+uses a register format of \[lq]00\[rq] for
+.I yy.
 .
 .
 .br
@@ -2953,9 +2983,10 @@ determines the amount of vertical space between paragraphs.
 .
 .TP
 .B PE
-Picture end;
+End picture input preprocessed by
+.MR @g@pic @MAN1EXT@ ;
 see
-.MR @g@pic @MAN1EXT@ .
+.BR PS .
 .
 .
 .TP
@@ -3106,17 +3137,15 @@ and
 .
 .TP
 .B PS
-Picture start; see
+Start picture input preprocessed by
 .MR @g@pic @MAN1EXT@ .
 .
 .
 .TP
 .B PY
-Picture end with flyback.
-.
-Ends a
-.MR @g@pic @MAN1EXT@
-picture,
+As
+.B PE ,
+but with \[lq]flyback\[rq],
 returning the vertical position to where it was prior to the picture.
 .
 This is a GNU extension.
@@ -3211,8 +3240,10 @@ and
 .B LE
 to end the list.
 .
-A second argument suppresses the blank line that normally precedes each
-list item.
+A second argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 .
 .TP
@@ -3778,8 +3809,10 @@ and
 .I mark-indent
 the distance from the current list indentation to the mark.
 .
-A third argument suppresses the blank line that normally precedes each
-list item.
+A third argument suppresses the vertical space that normally precedes
+each list item;
+see register
+.BR Lsp .
 .
 Use
 .B LI
