@@ -1,3 +1,34 @@
+2024-04-12  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Correct and improve linear search introduced in commit
+	cd9fde325f, 4th March.
+
+	* tmac/pdf.tmac: Various problems have been rectified, speed
+	improvements to the linear search, Keith protection against
+	illegal characters being used in string identifiers.
+
+	* contrib/mom/om.tmac: Switch to using Branden's linear search
+	so that we don't have to maintain two different methods.
+
+	Fixes <https://savannah.gnu.org/bugs/?65585>
+
+2024-04-12  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Support UTF-16 Bookmarks.
+
+	* src/devices/grops: Add comment field to the font files
+	which specifies the UTF-16 code for the character.
+
+	* utils/afmtodit/afmtodit.pl: Add comment field holding the
+	UTF-16 code.
+
+	* man/groff_font.5.man: Document use of comment field to hold
+	UTF-16 code.
+
+	* src/devices/gropdf/gropdf.pl: Extract UTF-16 code from font
+	comment field (rather than a new field). And tweak to pdf
+	parser.
+
 2024-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/utils/grog/grog.pl (do_line): Recognize new requests in

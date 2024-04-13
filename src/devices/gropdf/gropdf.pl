@@ -1700,12 +1700,12 @@ sub do_x
 		PutHotSpot($xpos) if defined($mark);
 		$mark=undef;
 	    }
-	    elsif (lc($xprm[1]) eq 'marksuspend')
+	    elsif (lc($xprm[1]) eq 'marksuspend' and $mark)
 	    {
 		$suspendmark=$mark;
 		$mark=undef;
 	    }
-	    elsif (lc($xprm[1]) eq 'markrestart')
+	    elsif (lc($xprm[1]) eq 'markrestart' and $suspendmark)
 	    {
 		$mark=$suspendmark;
 		$suspendmark=undef;
@@ -2879,7 +2879,7 @@ sub ParsePDFValue
 	}
     }
 
-    if ($wd=~m/(.+?)(\/.*)$/)
+    if ($wd=~m/(.+?)(\/.*)$/ and substr($wd,0,1) ne '/')
     {
 	if (defined($2) and length($2))
 	{
@@ -3231,7 +3231,7 @@ sub LoadFont
 	    $r[0]='u0020' if $r[3] == 32;
 	    $r[0]="u00".hex($r[3]) if $r[0] eq '---';
 	    $r[4]=$r[0] if !defined($r[4]);
-	    $fnt{NAM}->{$r[0]}=[$p[0],$r[3],'/'.$r[4],undef,undef,$r[5]];
+	    $fnt{NAM}->{$r[0]}=[$p[0],$r[3],'/'.$r[4],undef,undef,$r[6]];
 	    $fnt{NO}->[$r[3]]=$r[0];
 	    $lastnm=$r[0];
 	    $lastchr=$r[3] if $r[3] > $lastchr;

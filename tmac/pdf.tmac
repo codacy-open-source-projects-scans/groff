@@ -68,6 +68,7 @@ am solely responsible for any bugs I may have introduced into this file.
 .pdf:SS \[*z]
 .char \[lh] \X'pdf: xrev'\[rh]\X'pdf: xrev'
 .nr pdf:bm.nl 1
+.nr pdf:bm.nk 0
 .de pdfmark
 . nop \!x X ps:exec [\\$* pdfmark
 ..
@@ -156,7 +157,8 @@ am solely responsible for any bugs I may have introduced into this file.
 .\"
 .\" Parse any specified (recognisable) PDFNOTE options
 .\"
-.   while dpdf:note\\$1 \{\
+.   while \A'\\$1' \{\
+.      if !dpdf:note\\$1 .break
 .      pdf:note\\$1 \\$@
 .      shift \\n[pdf:note.argc]
 .      \}
@@ -201,9 +203,11 @@ am solely responsible for any bugs I may have introduced into this file.
 .de pdf:lookup
 .nr pdf:index 0 1
 .ds pdf:lookup-result \" empty
+.ds pdf:lookup-value  \" empty
 .while d pdf:bm\\n+[pdf:index].tag \{\
 .   if '\\$1'\\*[pdf:bm\\n[pdf:index].tag]' \{\
 .      ds pdf:lookup-result \\*[pdf:bm\\n[pdf:index].tag]\"
+.      ds pdf:lookup-value \\*[pdf:bm\\n[pdf:index].val]\"
 .      break
 .      \}
 .   \}
@@ -230,8 +234,10 @@ am solely responsible for any bugs I may have introduced into this file.
 .   \" Make the bookmark name "untagged" by default,
 .   \" then parse any specified options, to set a "tag", if required
 .   \"
+.      nr pdf:bm.nr +1
 .      ds pdf:href-T
-.      while dpdf:href.opt\\$1 \{\
+.      while \A'\\$1' \{\
+.         if !dpdf:href.opt\\$1 .break
 .         pdf:href.opt\\$1 \\$@
 .         shift \\n[pdf:href.argc]
 .         \}
@@ -267,38 +273,26 @@ am solely responsible for any bugs I may have introduced into this file.
 .   \" in order to generate a uniquely serialised bookmark name,
 .   \" ( which we return in the string "PDFBOOKMARK.NAME" ),
 .   \"
-.      nr pdf:bm.nr +1
 .      ie '\\*[pdf:href-T]'' .ds PDFBOOKMARK.NAME pdf:bm\\n[pdf:bm.nr]
 .      el .ds PDFBOOKMARK.NAME \\*[pdf:href-T]
 .      pdf:href.sety
 .      ds pdf:cleaned \\$*
-.      ev pdfcln
-.      tr \[em]-
-.      nf
-.      box pdf:clean
-.      nop \\$*
-.      fl
-.      box
-.      chop pdf:clean
-.      asciify pdf:clean
-.      ds pdf:cleaned \\*[pdf:clean]
-.      rm pdf:clean
-.      ev
-.      tr \[em]\[em]
-.      ie d PRINTSTYLE \{\
-.         ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\*[pdf:cleaned]
-.         if dPDF.EXPORT .tm .ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\*[pdf:cleaned]
+.      if !'\\*[pdf:href-T]'' \{\
+.         nr pdf:bm.nk +1
+.         if !d pdf:bm\\n[pdf:bm.nk].tag \{\
+.            ds pdf:bm\\n[pdf:bm.nk].tag \\*[PDFBOOKMARK.NAME]
+.            ds pdf:bm\\n[pdf:bm.nk].val \\*[pdf:cleaned]
 .         \}
-.      el \{\
-.         ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
-.         if d PDF.EXPORT .tm .ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
+.         if d PDF.EXPORT \{\
+.            tm .ds pdf:bm\\n[pdf:bm.nk].tag \\*[PDFBOOKMARK.NAME]
+.            tm .ds pdf:bm\\n[pdf:bm.nk].val \\*[pdf:cleaned]
 .         \}
+.      \}
 .      pdfmark /Dest /\\*[PDFBOOKMARK.NAME] /View [\\*[PDFBOOKMARK.VIEW]] /DEST
 .      nop \!x X ps:exec [/Dest /\\*[PDFBOOKMARK.NAME] /Title (\\*[pdf:cleaned]) /Level \\n[pdf:bm.lev] /OUT pdfmark
 .      pdf:href.options.clear
 .      rr PDFPAGE.Y
 .      rm pdf:cleaned
-.      rm pdf:clean
 .      \}
 .   \}
 .el \{\
@@ -597,7 +591,8 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" options -- anything which is not recognised is assumed to start
 .\" the "descriptive text" component of the argument list).
 .\"
-.while dpdf:href.opt\\$1 \{\
+.while \A'\\$1' \{\
+.   if !dpdf:href.opt\\$1 .break
 .   pdf:href.opt\\$1 \\$@
 .   shift \\n[pdf:href.argc]
 .   \}
@@ -613,16 +608,17 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" if any, and set the marker -- if we still can't identify the name
 .\" for the destination, then this marker will not be created.
 .\"
+.nr pdf:bm.nk +1
 .ds PDFBOOKMARK.NAME "\\*[pdf:href-N]\\*[pdf:href-D]
 .pdf*href.set \\*[PDFBOOKMARK.NAME] \\$1
-.ie d PRINTSTYLE \{\
-.   ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\$*
-.   if dPDF.EXPORT .tm .ds pdf:look(\\*[PDFBOOKMARK.NAME]) \\$*
-.   \}
-.el \{\
-.   ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
-.   if d PDF.EXPORT .tm .ds pdf:bm\\n[pdf:bm.nr].tag \\*[PDFBOOKMARK.NAME]
-.   \}
+.if !d pdf:bm\\n[pdf:bm.nk].tag \{\
+.   ds pdf:bm\\n[pdf:bm.nk].tag \\*[PDFBOOKMARK.NAME]
+.   ds pdf:bm\\n[pdf:bm.nk].val \\$*
+.\}
+.if d PDF.EXPORT \{\
+.   tm .ds pdf:bm\\n[pdf:bm.nk].tag \\*[PDFBOOKMARK.NAME]
+.   tm .ds pdf:bm\\n[pdf:bm.nk].val \\$*
+.\}
 .\"
 .\"
 .\" Irrespective of whether this marker is created, or not,
@@ -686,7 +682,8 @@ am solely responsible for any bugs I may have introduced into this file.
 .\" options -- anything which is not recognised is assumed to start
 .\" the "link text" component of the argument list).
 .\"
-.while dpdf:href.opt\\$1 \{\
+.while \A'\\$1' \{\
+.   if !dpdf:href.opt\\$1 .break
 .   pdf:href.opt\\$1 \\$@
 .   shift \\n[pdf:href.argc]
 .   \}
@@ -746,13 +743,8 @@ with '-A' option
 .      \}
 .   el \{\
 .      ds PDFHREF.DESC Unknown
-.      ie d PRINTSTYLE \{\
-.         if dpdf:look(\\*[pdf:href-D]) .ds PDFHREF.DESC \\*[pdf:look(\\*[pdf:href-D])]
-.         \}
-.      el \{\
-.         pdf:lookup \\*[pdf:href-D]
-.         if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[pdf:lookup-result]
-.         \}
+.      pdf:lookup \\*[pdf:href-D]
+.      if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[pdf:lookup-value]
 .      \}
 .   \" Apply border and colour specifications to the PDFMARK string
 .   \" definition, as required.
@@ -862,11 +854,9 @@ with '-A' option
 .
 .de pdfmarksuspend
 .nop \!x X pdf: marksuspend
-.nr pdf*is-mark-suspended 1
 ..
 .de pdfmarkrestart
-.if \\n[pdf*is-mark-suspended] .nop \!x X pdf: markrestart
-.nr pdf*is-mark-suspended 0
+.nop \!x X pdf: markrestart
 ..
 .de pdfpagename
 .nop \!x X pdf: pagename \\$1

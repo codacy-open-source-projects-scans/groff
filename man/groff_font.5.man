@@ -972,12 +972,15 @@ these data are now compiled directly into
 .I grops
 uses the field to build sub-encoding arrays for PostScript fonts
 containing more than 256 glyphs.
-.
+.P
 Anything on the line after the
 .I entity-name
 field or
 .RB \[lq] \-\- \[rq]
-is ignored.
+is ignored. When
+.I afmtodit
+is used to generate fontfiles for grops and gropdf
+the comment field contains the UTF-16 code for the character.
 .
 .
 .P

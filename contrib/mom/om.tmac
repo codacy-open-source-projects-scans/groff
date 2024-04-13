@@ -23631,8 +23631,9 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .    if '\\*[PDF_AST]'*' \{\
 .        chop PDF_TXT
 .        ie '\\*[.T]'pdf' \{\
-.           ie d pdf:look(\\*[PDF_NM]) \
-.               as PDF_TXT \&\\*[PDF_AST_Q]\\*[pdf:look(\\*[PDF_NM])]\\*[PDF_AST_Q]
+.           pdf:lookup \\*[PDF_NM]
+.           ie !'\\*[pdf:lookup-result]'' \
+.               as PDF_TXT \&\\*[PDF_AST_Q]\\*[pdf:lookup-value]\\*[PDF_AST_Q]
 .           el \{\
 .               as PDF_TXT Unknown
 .               if !rPDF_UNKNOWN .tm \

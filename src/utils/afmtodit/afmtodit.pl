@@ -621,7 +621,7 @@ for (my $i = 0; $i <= $#encoding; $i++) {
 	    printf(",%d", conv($h));
 	}
 	printf("\t%d", $type);
-	printf("\t%d\t%s\n", $i, $ch);
+	printf("\t%d\t%s\t%s\t%s\n", $i, $ch, '--', $AGL_to_unicode{$ch}||'');
 	if (defined $nmap{$ch}) {
 	    for (my $j = 1; $j < $nmap{$ch}; $j++) {
 		printf("%s\t\"\n", $map{$ch, $j});
