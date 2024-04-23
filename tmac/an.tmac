@@ -212,7 +212,7 @@
 .
 .\" Customize this at the command line to, for example, group multiple
 .\" man pages within a collection or containing document.
-.nr an*bookmark-base-level 0
+.nr an*bookmark-base-level +0
 .
 .\" Write a bookmark/anchor/link target $2 at hierarchical depth $1.
 .de an*bookmark
@@ -229,8 +229,11 @@
 .ds an*bookmark*ps \" empty
 .ds an*bookmark*utf8 \" empty
 .
+.\" TODO: Construct a hierarchical tag name for (sub)section headings
+.\" based on the page identifier (and for subsections, the parent
+.\" section).
 .de an*bookmark*pdf
-.  ie (\\$1 = 1) \
+.  ie ((\\$1 - \\n[an*bookmark-base-level]) = 1) \
 .    pdfbookmark -T "\\$2" \\$1 \\$2
 .  el \
 .    pdfbookmark \\$1 \\$2

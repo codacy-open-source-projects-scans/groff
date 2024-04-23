@@ -548,7 +548,7 @@ _
 1@2@number@11@2048@tab
 2@4@break@12@4096@right\-brace
 3@8@delim@13@8192@missing
-4@16@el@14@16384@input
+4@16@\fIunused\fP@14@16384@input
 5@32@scale@15@32768@escape
 6@64@range@16@65536@space
 7@128@syntax@17@131072@font
@@ -604,13 +604,13 @@ request was invoked without an argument when there was no current
 diversion.
 .
 .
-.TP
-.BR el "\t16"
-The
-.B el
-request was encountered with no prior corresponding
-.B ie
-request.
+.\" .TP
+.\" .BR el "\t16"
+.\" The
+.\" .B el
+.\" request was encountered with no prior corresponding
+.\" .B ie
+.\" request.
 .
 .
 .TP

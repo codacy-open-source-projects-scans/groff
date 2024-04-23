@@ -271,6 +271,7 @@ M4WORDS = define|divert|include|index|shift|undefine|undivert
 M4CHECK = tmac/groff_man-passed-check-for-m4-keywords-stamp
 
 $(M4CHECK): tmac/groff_man.7.man.in
+	$(AM_V_at)$(MKDIR_P) $(top_builddir)/tmac
 	$(AM_V_at)! $(EGREP) \
 	  '(^|[[:space:]])($(M4WORDS))($$|[[:space:]])' \
 	  $(tmac_srcdir)/groff_man.7.man.in > $@

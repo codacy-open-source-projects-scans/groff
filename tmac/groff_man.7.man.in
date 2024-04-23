@@ -1413,6 +1413,11 @@ Set a man page cross reference as
 \[rq].
 .
 If
+.I manual-section
+is absent,
+the package omits the surrounding parentheses.
+.
+If
 .I trailing-text
 (typically punctuation)
 is specified,

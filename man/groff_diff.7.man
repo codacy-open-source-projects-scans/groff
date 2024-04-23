@@ -455,7 +455,7 @@ The
 .B .s
 and
 .B .ps
-registers represent the type size selected by the output driver as it
+registers represent the type size selected by the formatter as it
 understands a device's capability.
 .
 The last
@@ -578,12 +578,12 @@ can be an abstract style
 or a font name.
 .
 .I fnt
-is handled as if it
-were accessed with the
+is handled as if it were an argument to the
 .B ft
 request
 (that is,
-abstract styles are resolved and font translations applied),
+the default family is combined with an abstract style and font
+translation is applied),
 but
 .I fnt
 cannot be a mounting position,
@@ -1242,7 +1242,7 @@ as arguments.
 .
 .\" Keep \/ before \, in spite of collation.
 .TP
-.B \[rs]/
+.B \[rs]\|/
 Apply an
 .IR "italic correction" :
 modify the spacing of the preceding glyph so that the distance between
@@ -1311,8 +1311,7 @@ but the soft hyphen character does not mark the break point if it does
 (in contrast to
 .RB \[lq]\^ \[rs]% \[rq]).
 .
-This escape sequence is an input word boundary,
-so the remainder of the word is subject to hyphenation as normal.
+The remainder of the word is subject to hyphenation as normal.
 .
 .
 .TP
@@ -2254,7 +2253,7 @@ is stripped to allow the embedding of
 leading spaces.
 .
 .
-.P
+.IP
 A device control command issued with the
 .B device
 request will not be reflected in the output unless a partially collected
@@ -2343,7 +2342,7 @@ Save the current escape character.
 Copy the properties of environment
 .I env
 to the current environment,
-except for the following data.
+except for:
 .
 .
 .RS

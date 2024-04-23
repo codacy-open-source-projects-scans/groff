@@ -305,19 +305,18 @@ default is 10 point.
 .SS Bonds
 .\" ====================================================================
 .
-This
-.
-.RS
 .SY bond
 .RI [ direction ]
 .RI [ length\ n ]
 .RB [ from\ \c
 .IR Name | picstuff ]
 .YS
-.RE
+.
 .
 .P
-draws a single bond in direction from nearest corner of
+The
+.B bond
+command draws a single bond in direction from nearest corner of
 .IR Name .
 .B bond
 can also be
@@ -392,18 +391,18 @@ is the benzene ring with a circle inside.
 .B aromatic
 puts a circle into any kind of ring.
 .
-.RS
+.
+.P
 .SY ring
-.RB [ \%pointing\  ( up | right | left | down )]
-.RB [ \%aromatic ]
+.RB \%[ pointing\  ( up | right | left | down )]
+.RB \%[ aromatic ]
 .RB [ put\ Mol\ at\ \fIn\/\fP ]
-.RB [ \%double\ \c
+.RB \%[ double\ \c
 .IR i , j\ \/\c
 .IR k , l\ \/\c
 \&.\|.\|.\&
 .RI [ picstuff ]
 .YS
-.RE
 .
 .
 .P

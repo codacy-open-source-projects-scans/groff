@@ -1,3 +1,9 @@
+2024-04-12  Deri James <deri@chuzzlewit.myzen.co.uk>
+
+	* om.tmac: Switch to using Branden's linear search so that we
+	don't have to maintain two different methods of looking up PDF
+	bookmarks.
+
 2024-03-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mom.am ($(MOMPROCESSEDEXAMPLEFILES)): Add dependency on

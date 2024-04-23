@@ -22,9 +22,9 @@ avec pdfmom(1).
     pdfmom mom-pdf.mom > mom-pdf.pdf
     pdfmom sample_docs.mom > sample_docs.pdf
     pdfmom slide-demo.mom > slide-demo.pdf
-    pdfmom -k letter.mom > letter.pdf
-    pdfmom -k mon_premier_doc.mom > mon_premier_doc.pdf
-    pdfmom -k typesetting.mom > typesetting.pdf
+    pdfmom -K utf8 letter.mom > letter.pdf
+    pdfmom -K utf8 mon_premier_doc.mom > mon_premier_doc.pdf
+    pdfmom -K utf8 typesetting.mom > typesetting.pdf
 
 Les fichiers
 ------------
@@ -84,7 +84,7 @@ transition sont disponibles pour tous les lecteurs PDF.
 Le fichier mon_premier_doc.mom est un exemple simple en français
 montrant l'utilisation d'éléments de formattage courants: titres de
 section, paragraphes, listes, table des matières et liens PDF
-cliquables. Il doit être généré avec l'option -k du fait de la
+cliquables. Il doit être généré avec l'option -K utf8 du fait de la
 présence de caractères accentués.
 
 Un certain nombre de réglages ont également été changés pour ce

@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle March 2024
+@subtitle April 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -8636,8 +8636,8 @@ just prior to it; most likely this isn't what you want.
 @cindex breaking URLs (@code{\:})
 @code{\:} inserts a non-printing break point; that is, a word can break
 there, but the soft hyphen glyph (see below) is not written to the
-output if it does.  This escape sequence is an input word boundary, so
-the remainder of the word is subject to hyphenation as normal.
+output if it does.  The remainder of the word is subject to hyphenation
+as normal.
 
 You can combine @code{\:} and @code{\%} to control breaking of a file
 name or URL, or to permit hyphenation only after certain explicit
@@ -10542,7 +10542,7 @@ font name of the selected font.  Copy its value to a string to save it
 for later use.
 
 @Example
-.nr saved-font \n[.fn]
+.ds saved-font \n[.fn]
 @r{@dots{} @i{text involving many font changes} @dots{}}
 .ft \*[saved-font]
 @endExample
@@ -12305,7 +12305,7 @@ scaling units.
 @cindex @code{.s} register, compared to @code{.sr}
 Output devices may be limited in the type sizes they can employ.  The
 @code{.s} and @code{.ps} registers represent the type size selected by
-the output driver as it understands a device's capability.  The last
+the formatter as it understands a device's capability.  The last
 @emph{requested} type size is interpolated in scaled points by the
 read-only register @code{.psr} and in points as a decimal fraction by
 the read-only string-valued register @code{.sr}.  Both are associated
@@ -12870,10 +12870,9 @@ an error.  @xref{Writing Macros}.
 To remove an alias, call @code{rm} on its name.  The object itself is
 not destroyed until it has no more names.
 
-When a request, macro, string, or diversion is aliased, redefinitions
-and appendments ``write through'' alias names.  To replace an alias with
-a separately defined object, you must use the @code{rm} request on its
-name first.
+Redefinitions and appendments ``write through'' request, macro, string,
+and diversion names.  To replace an aliased object with a separately
+defined one, you must use the @code{rm} request on its name first.
 @endDefreq
 @c END Keep (roughly) parallel with section "Strings" of groff(7).
 
@@ -12929,8 +12928,9 @@ True if the current page is even-numbered.
 
 @item F @var{font}
 True if @var{font} exists.  @var{font} is handled as if it were an
-argument to the @code{ft} request (that is, font translation and styles
-are applied), but it is not mounted.
+argument to the @code{ft} request (that is, the default family is
+combined with an abstract style and font translation is applied), but
+@var{font} cannot be a mounting position, and no font is mounted.
 
 @item m @var{color}
 True if @var{color} is defined.
@@ -13159,7 +13159,6 @@ does to any other request.  This fact can surprise C programmers.
 .  ie \na a is true
 .  el     a is false
 .el z is false
-    @error{} warning: unbalanced 'el' request
     @result{} a is false
 @endExample
 
@@ -16013,9 +16012,8 @@ We can familiarize ourselves with stack behavior by wrapping the
 @Defreq {evc, environment}
 @cindex copying environment (@code{evc})
 @cindex environment, copying (@code{evc})
-Copy the contents of @var{environment} to the current environment.
-
-The following environment data are not copied.
+Copy the properties of @var{environment} to the current environment,
+except for:
 
 @itemize @bullet
 @item
@@ -17333,12 +17331,12 @@ default.
 @itemx 8
 The closing delimiter in an escape sequence was missing or mismatched.
 
-@item el
-@itemx 16
-@cindex @code{ie} request, and warnings
-@cindex @code{el} request, and warnings
-The @code{el} request was encountered with no prior corresponding
-@code{ie} request.  @xref{if-else}.
+@c @item el
+@c @itemx 16
+@c @cindex @code{ie} request, and warnings
+@c @cindex @code{el} request, and warnings
+@c The @code{el} request was encountered with no prior corresponding
+@c @code{ie} request.  @xref{if-else}.
 
 @item scale
 @itemx 32
@@ -17734,23 +17732,24 @@ alternating output lines in this adjustment mode to prevent ``rivers''
 in the text.
 
 @cindex hyphenation, incompatibilities with @acronym{AT&T} @code{troff}
-GNU @code{troff} does not always hyphenate words as @acronym{AT&T}
-@code{troff} does.  The @acronym{AT&T} implementation uses a set of
-hard-coded rules specific to English, while GNU @code{troff} uses
+GNU @command{troff} does not always hyphenate words as @acronym{AT&T}
+@command{troff} does.  The @acronym{AT&T} implementation uses a set of
+hard-coded rules specific to English, while GNU @command{troff} uses
 language-specific hyphenation pattern files derived from @TeX{}.
-Furthermore, in old versions of @code{troff} there was a limited amount
-of space to store hyphenation exceptions (arguments to the @code{hw}
-request); GNU @code{troff} has no such restriction.  When the @code{hy}
-request is invoked without an argument, GNU @code{troff} sets the
-automatic hyphenation mode to the value of the @code{.hydefault}
-register; the @acronym{AT&T} implementation sets it to @samp{1}, which
-is not suitable for some languages, including English.
+Furthermore, in old versions of @command{troff} there was a limited
+amount of space to store hyphenation exceptions (arguments to the
+@code{hw} request); GNU @command{troff} has no such restriction.  When
+the @code{hy} request is invoked without an argument, GNU
+@command{troff} sets the automatic hyphenation mode to the value of the
+@code{.hydefault} register; the @acronym{AT&T} implementation sets it to
+@samp{1}, which is not suitable in GNU @command{troff} for some
+languages, including English.
 
 GNU @command{troff} handles the dummy character @code{\&} differently
 from @acronym{AT&T} @command{troff} when it is followed by the
 hyphenation control escape sequence @code{\%} at the beginning of a
 word.  GNU @command{troff} does not regard the dummy character as
-``starting'' the word;@acronym{AT&T} @command{troff}
+``starting'' the word; @acronym{AT&T} @command{troff}
 does.  Further, Heirloom Doctools @command{troff} does not honor an
 explicit hyphenation point marked with @code{\%} after a word-initial
 one.@footnote{Thus,

@@ -21,9 +21,9 @@ files with pdfmom(1).
     pdfmom mom-pdf.mom > mom-pdf.pdf
     pdfmom sample_docs.mom > sample_docs.pdf
     pdfmom slide-demo.mom > slide-demo.pdf
-    pdfmom -k letter.mom > letter.pdf
-    pdfmom -k mon_premier_doc.mom > mon_premier_doc.pdf
-    pdfmom -k typesetting.mom > typesetting.pdf
+    pdfmom -K utf8 letter.mom > letter.pdf
+    pdfmom -K utf8 mon_premier_doc.mom > mon_premier_doc.pdf
+    pdfmom -K utf8 typesetting.mom > typesetting.pdf
 
 The files themselves
 --------------------
@@ -77,9 +77,9 @@ all PDF readers.
 ***mon_premier_doc.mom***
 
 The file, mon_premier_doc.mom, is a simple example in French showing
-the use of common elements: section headings, paragraphs, lists, table
-of contents and clickable links.  It should be generated with option -k
-as there are some accented letters.
+the use of common elements: section headings, paragraphs, lists,
+table of contents and clickable links.  It should be generated with
+the option -K utf8 as there are some accented letters.
 
 A few settings were also changed for this French document:
 ATTRIBUTE_STRING is used to replace "by" by "par" in the document

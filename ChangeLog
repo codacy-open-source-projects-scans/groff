@@ -1,33 +1,251 @@
+2024-04-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tmac.am ($(M4CHECK)): Ensure directory exists to house
+	the stamp file before attempting to create the latter.
+
+2024-04-17  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Handle both types in one document.
+
+	The different format of font described in previous commit fails
+	if document contains fonts of both formats. The reason is
+	because the regexes included the /o flag (compile once) for
+	speed, but if the format changed (from RD to -|) in a different
+	font, parsing failed.
+
+	Now the regexes are compiled once for each font.
+
+	* src/devices/gropdf/gropdf.pl: Use qr// to compile regexes once
+	per font.
+
+2024-04-17  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Improve font parsing.
+
+	The usual (for fontforge converted ttf fonts) is to use the RD,
+	ND and NP operators within charstring definitions, however these
+	are just named in the private subrs dictionary so could be
+	assigned any name.
+
+	A debian .pfb version of a google .ttf font (which has not
+	passed through fontforge) used -| |- and | as the 3 equivalent.
+	In addition it used a different lenIV value for the eexec
+	encryption (4) and the charstring encryption (0) (didn't know
+	you could do that).
+
+	* src/devices/gropdf/gropdf.pl: Make RD, ND and NP variables set
+	from parsing the private subrs. Honour lenIV=0 when encrypting
+	charstrings.
+
+2024-04-16  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Problem with '(' and '\' (\[rs])
+
+	Both these tokens have meaning for roff AND pdf strings. In
+	pdfs unbalanced parentheses have to be escaped (with '\') and
+	a single '\' has to be similarly escaped, '\\'. It is gropdf's
+	responsibility to ensure pdf strings are valid, no matter what
+	the input.
+
+	If '\(ul' is passed then the UTF-16 character becomes '_'.
+	If '\[rs](ul' is passed (i.e. '\(ul' is intended to become the
+	UTF-16 string) \[rs] becomes '\' leaving '\(ul', which
+	becomes '_', not what is intended. If the unbalanced '(' is
+	escaped first, '\[rs]\(ul' which could become '\\_' when the '\'
+	is escaped, yielding '\_'. The code which escapes parenthesis
+	checks it is not already preceded by '\' since adding another
+	would give you '\\(' which is not what you want. The correct
+	output should be '\\\(ul' to achieve the correct pdf string.
+
+	This fixes the above issue (I hope).
+
+	* src/devices/gropdf/gropdf.pl: Change pattern matches
+
+2024-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an-ext.tmac <mV, mQ>: Trivially refactor.  Rename string
+	used to store URI hyperlink from `m1` to `mU`.
+
+2024-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Fix computation of bookmark level.  If this
+	register's value is specified on the command line, don't clobber
+	it.  Adjust logic for assigning tag to the bookmark to the
+	{possibly adjusted} base level accordingly.  Based on a patch by
+	Deri James.
+
+2024-04-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Retire "el" warning category.
+
+	It's much too hard to perform this analysis without the risk of
+	throwing this warning spuriously.  Paul Eggert reported a
+	real-world use of `ie`/`el` requests nested without the use of
+	brace escape sequences in his zic(8) man page that is
+	structurally equivalent to the following (with indentation added
+	for clarity).
+
+	.ie \nA .tm register A is truthy
+	.el .ie t .tm in typesetter mode
+	.    el   .tm in terminal mode
+
+	Without brace escape sequences, the `skip_branch()` function
+	that discards input corresponding to control flow branches not
+	taken does not reliably keep track of the nesting level.  So why
+	not just make `skip_branch()` more sophisticated to handle this
+	case?  Because it doesn't generalize.  What if the input changes
+	the control character, or uses the no-break control character?
+	What if the input has renamed the `ie` request or invokes it
+	through a macro?
+
+	* src/roff/troff/input.cpp: Drop this warning category from the
+	`warning_table` global.
+	(else_request): Stop throwing it.
+	* src/roff/troff/troff.h: Comment out its value in the
+	`warning_type` enum.
+
+	* doc/groff.texi.in (if-else, Warnings):
+	* src/roff/troff/troff.1.man (Warnings): De-document "el" troff
+	warning category.
+
+	Fixes <https://savannah.gnu.org/bugs/?65474>.  Thanks to Paul
+	Eggert for the report.
+
+2024-04-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (skip_branch): Handle control flow
+	branches consisting only of a newline correctly when skipping
+	them--actually skip them, as AT&T troff does.  A newline after
+	the `el` request, or after the conditional expression of an
+	`if`, `ie`, or `while` request, is not "nothing"; if the branch
+	is taken, it puts a newline on the output, and if it is not
+	taken, it should neither affect output nor be _syntactically_
+	ignored on the pretense that the next input line was actually
+	part of the branch.
+
+	Fixes <https://savannah.gnu.org/bugs/?45502>.  Problem likely
+	goes back to groff's origin.  (You could always avoid it with
+	brace escape sequences, which might explain why it seemed to
+	cause little consternation.)  Thanks to Carsten Kunze for the
+	report and to Dave Kemper for the code review.
+
+2024-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Regression-test Savannah #45502.
+
+	* src/roff/groff/tests/degenerate-control-flow-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2024-04-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	functions to use more idiomatic computer science terminology.
+	(begin_alternative): Rename this...
+	(take_branch): ...to this.
+	(skip_alternative): Rename this...
+	(skip_branch): ...to this.
+	(do_if_request, else_request): Update call sites.
+
+2024-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Refactor.  Replace bespoke class
+	`bool_stack` with STL `stack<bool>`.  Migrate global
+	`if_else_stack` to use it.
+	(process_input_stack): Migrate `trap_bol_stack` to use it.
+	(process_input_stack, else_request): Migrate member function
+	calls.
+	- `is_empty()` -> `empty()`
+	- `pop()` -> `top()`, `pop()`
+
+2024-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.  Reconstruct
+	class `int_stack` as `bool_stack` since all we require are
+	Boolean values.
+
+2024-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.  Boolify.  Demote
+	and rename global `while_break_flag` to `want_loop_break`.
+	(do_if_request): Demote return type from `int` to `bool`.
+	Demote and rename local `invert` to `want_test_sense_inverted`.
+	(while_request): Demote and rename local `escaped` to
+	`is_char_escaped`.
+
 2024-04-12  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Correct and improve linear search introduced in commit
 	cd9fde325f, 4th March.
 
-	* tmac/pdf.tmac: Various problems have been rectified, speed
-	improvements to the linear search, Keith protection against
-	illegal characters being used in string identifiers.
+	* tmac/pdf.tmac: Add mark counter, `pdf:bm.nk`.
+	(pdfbookmark, pdf*href-M): ...and use it.
+	(pdf:lookup): Add string `pdf:lookup-value` to record the `.val`
+	attribute of a PDF bookmark, distinctly from its `.tag`.
+	(pdfnote, pdfbookmark, pdf*href-M, pdf*href): Use `\A` escape
+	sequence to validate *roff strings as (parts of) identifiers
+	{seen in Keith Marshall's "pdfmark.tmac"}.
+	(pdf*href-M, pdf*href, pdfbookmark): Stop using old `pdf:look`
+	method of bookmark tag lookup.  Drop conditionals on presence of
+	mom(7) `PRINTSTYLE` macro to select its use.
+	(pdfbookmark): Drop logic for cleaning bookmark tag of material
+	invalid in *roff identifiers, since the foregoing ensure that
+	we no longer use such in their construction.
+	(pdfmarksuspend, pdfmarkrestart): Drop management of mark
+	suspension state; "pdf.tmac" now subsumes this function.
 
-	* contrib/mom/om.tmac: Switch to using Branden's linear search
-	so that we don't have to maintain two different methods.
-
-	Fixes <https://savannah.gnu.org/bugs/?65585>
+	Fixes <https://savannah.gnu.org/bugs/?65585>.
 
 2024-04-12  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
-	Support UTF-16 Bookmarks.
+	Support UTF-16-encoded PDF bookmarks.
 
-	* src/devices/grops: Add comment field to the font files
-	which specifies the UTF-16 code for the character.
+	* utils/afmtodit/afmtodit.pl: Generate comment field holding the
+	UTF-16 code for each groff character.
 
-	* utils/afmtodit/afmtodit.pl: Add comment field holding the
-	UTF-16 code.
+	* font/devps/AB:
+	* font/devps/ABI:
+	* font/devps/AI:
+	* font/devps/AR:
+	* font/devps/BMB:
+	* font/devps/BMBI:
+	* font/devps/BMI:
+	* font/devps/BMR:
+	* font/devps/CB:
+	* font/devps/CBI:
+	* font/devps/CI:
+	* font/devps/CR:
+	* font/devps/HB:
+	* font/devps/HBI:
+	* font/devps/HI:
+	* font/devps/HNB:
+	* font/devps/HNBI:
+	* font/devps/HNI:
+	* font/devps/HNR:
+	* font/devps/HR:
+	* font/devps/NB:
+	* font/devps/NBI:
+	* font/devps/NI:
+	* font/devps/NR:
+	* font/devps/PB:
+	* font/devps/PBI:
+	* font/devps/PI:
+	* font/devps/PR:
+	* font/devps/S:
+	* font/devps/TB:
+	* font/devps/TBI:
+	* font/devps/TI:
+	* font/devps/TR:
+	* font/devps/ZCMI: Regenerate with updated aftmtodit.pl.
 
 	* man/groff_font.5.man: Document use of comment field to hold
 	UTF-16 code.
 
-	* src/devices/gropdf/gropdf.pl: Extract UTF-16 code from font
-	comment field (rather than a new field). And tweak to pdf
-	parser.
+	* src/devices/gropdf/gropdf.pl (LoadFont): Extract UTF-16 code
+	from font comment field (rather than a new field).
+	(ParsePDFValue): Validate input more strictly.
+	(do_x): Manage state more strictly; don't suspend a mark
+	{hotspot} when one is not active, and don't restart it when one
+	is not suspended.
 
 2024-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -107,7 +325,7 @@
 
 2024-03-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[mdoc]: Add support for `MF` rendering option.  in parallel with
+	[mdoc]: Add support for `MF` rendering option in parallel with
 	groff man(7), and working much like the `HF` string.
 
 	* tmac/doc.tmac (initialization): If the user specifies no `MF`
@@ -423,8 +641,8 @@
 	more carefully.
 	(main): Insist on an argument value of at least 2, since a hash
 	table of size 1 is pointless.
-	(check_integer_arg): Try to be more robust in the fact of
-	C/C++'s notorious lax integer sizing practices.  We might
+	(check_integer_arg): Try to be more robust in the face of
+	C/C++'s notoriously lax integer sizing practices.  We might
 	consider gnulib's "xstrtol" module.  Promote `-h` argument
 	validation errors to `fatal()`.  Only perform a comparison
 	against INT_MAX if LONG_MAX is larger than INT_MAX in the first

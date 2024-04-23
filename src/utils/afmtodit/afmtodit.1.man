@@ -9,7 +9,7 @@ PostScript and PDF output
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -277,15 +277,20 @@ meaning that
 .I groff
 should search it whenever a glyph is not found in the current font.
 .
-In that case,
+To enable this search,
 .I font-description-file
-should be listed as an argument to the
+can be listed as an argument to the
 .B fonts
 directive in the output device's
 .I DESC
 file;
-if it is not special,
-there is no need to do so,
+alternatively,
+a document can designate it with the
+.B \%special
+request.
+.
+If the font is not special,
+there is no need to do either,
 since
 .MR @g@troff @MAN1EXT@
 will automatically mount it when it is first used.

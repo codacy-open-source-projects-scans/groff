@@ -35,6 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "unicode.h"
 #include "curtime.h"
 
+#include <stack>
+
 // Needed for getpid() and isatty()
 #include "posix.h"
 
@@ -2874,56 +2876,6 @@ static int transparent_translate(int cc)
   return cc;
 }
 
-class int_stack {
-  struct int_stack_element {
-    int n;
-    int_stack_element *next;
-  } *top;
-public:
-  int_stack();
-  ~int_stack();
-  void push(int);
-  int is_empty();
-  int pop();
-};
-
-int_stack::int_stack()
-{
-  top = 0;
-}
-
-int_stack::~int_stack()
-{
-  while (top != 0) {
-    int_stack_element *temp = top;
-    top = top->next;
-    delete temp;
-  }
-}
-
-int int_stack::is_empty()
-{
-  return top == 0;
-}
-
-void int_stack::push(int n)
-{
-  int_stack_element *p = new int_stack_element;
-  p->next = top;
-  p->n = n;
-  top = p;
-}
-
-int int_stack::pop()
-{
-  assert(top != 0);
-  int_stack_element *p = top;
-  top = top->next;
-  int n = p->n;
-  delete p;
-  return n;
-}
-
 int node::reread(int *)
 {
   return 0;
@@ -2981,7 +2933,7 @@ static int leading_spaces_space = 0;
 
 void process_input_stack()
 {
-  int_stack trap_bol_stack;
+  std::stack<int> trap_bol_stack;
   int bol = 1;
   for (;;) {
     int suppress_next = 0;
@@ -3179,10 +3131,12 @@ void process_input_stack()
       }
     case token::TOKEN_END_TRAP:
       {
-	if (trap_bol_stack.is_empty())
+	if (trap_bol_stack.empty())
 	  error("spurious end trap token detected!");
-	else
-	  bol = trap_bol_stack.pop();
+	else {
+	  bol = trap_bol_stack.top();
+	  trap_bol_stack.pop();
+	}
 	have_formattable_input = false;
 
 	/* I'm not totally happy about this.  But I can't think of any other
@@ -3205,7 +3159,7 @@ void process_input_stack()
 	  will print all but the first lines from the word immediately
 	  after the footer, rather than on the next page. */
 
-	if (trap_bol_stack.is_empty())
+	if (trap_bol_stack.empty())
 	  curenv->output_pending_lines();
 	break;
       }
@@ -5924,8 +5878,12 @@ static void troff_request()
   skip_line();
 }
 
-static void skip_alternative()
+static void skip_branch()
 {
+  if (tok.is_newline()) {
+    tok.next();
+    return;
+  }
   int level = 0;
   // ensure that ".if 0\{" works as expected
   if (tok.is_left_brace())
@@ -5966,7 +5924,7 @@ static void skip_alternative()
   tok.next();
 }
 
-static void begin_alternative()
+static void take_branch()
 {
   while (tok.is_space() || tok.is_left_brace())
     tok.next();
@@ -5978,16 +5936,16 @@ static void nop_request()
     tok.next();
 }
 
-static int_stack if_else_stack;
+static std::stack<bool> if_else_stack;
 
-static int do_if_request()
+static bool do_if_request()
 {
-  int invert = 0;
+  bool want_test_sense_inverted = false;
   while (tok.is_space())
     tok.next();
   while (tok.ch() == '!') {
     tok.next();
-    invert = !invert;
+    want_test_sense_inverted = !want_test_sense_inverted;
   }
   int result;
   unsigned char c = tok.ch();
@@ -6030,7 +5988,7 @@ static int do_if_request()
     tok.next();
     symbol nm = get_name(true /* required */);
     if (nm.is_null()) {
-      skip_alternative();
+      skip_branch();
       return 0;
     }
     result = (c == 'd'
@@ -6041,7 +5999,7 @@ static int do_if_request()
     tok.next();
     symbol nm = get_long_name(true /* required */);
     if (nm.is_null()) {
-      skip_alternative();
+      skip_branch();
       return 0;
     }
     result = (nm == default_symbol
@@ -6052,7 +6010,7 @@ static int do_if_request()
     tok.skip();
     charinfo *ci = tok.get_char(true /* required */);
     if (ci == 0) {
-      skip_alternative();
+      skip_branch();
       return 0;
     }
     result = character_exists(ci, curenv);
@@ -6062,7 +6020,7 @@ static int do_if_request()
     tok.next();
     symbol nm = get_long_name(true /* required */);
     if (nm.is_null()) {
-      skip_alternative();
+      skip_branch();
       return 0;
     }
     result = is_font_name(curenv->get_family()->nm, nm);
@@ -6071,7 +6029,7 @@ static int do_if_request()
     tok.next();
     symbol nm = get_long_name(true /* required */);
     if (nm.is_null()) {
-      skip_alternative();
+      skip_branch();
       return 0;
     }
     result = is_abstract_style(nm);
@@ -6116,18 +6074,18 @@ static int do_if_request()
   else {
     units n;
     if (!get_number(&n, 'u')) {
-      skip_alternative();
+      skip_branch();
       return 0;
     }
     else
       result = n > 0;
   }
-  if (invert)
+  if (want_test_sense_inverted)
     result = !result;
   if (result)
-    begin_alternative();
+    take_branch();
   else
-    skip_alternative();
+    skip_branch();
   return result;
 }
 
@@ -6153,26 +6111,26 @@ static void if_request()
 
 static void else_request()
 {
-  if (if_else_stack.is_empty()) {
-    warning(WARN_EL, "unbalanced 'el' request");
-    skip_alternative();
-  }
+  if (if_else_stack.empty())
+    skip_branch();
   else {
-    if (if_else_stack.pop())
-      skip_alternative();
+    bool predicate = if_else_stack.top();
+    if_else_stack.pop();
+    if (predicate)
+      skip_branch();
     else
-      begin_alternative();
+      take_branch();
   }
 }
 
 static int while_depth = 0;
-static int while_break_flag = 0;
+static bool want_loop_break = false;
 
 static void while_request()
 {
   // We can't use `has_arg()` here.  XXX: Figure out why.
   macro mac;
-  int escaped = 0;
+  bool is_char_escaped = false;
   int level = 0;
   mac.append(new token_node(tok));
   for (;;) {
@@ -6181,15 +6139,15 @@ static void while_request()
     if (c == EOF)
       break;
     if (c == 0) {
-      escaped = 0;
+      is_char_escaped = false;
       mac.append(n);
     }
-    else if (escaped) {
+    else if (is_char_escaped) {
       if (c == '{')
 	level += 1;
       else if (c == '}')
 	level -= 1;
-      escaped = 0;
+      is_char_escaped = false;
       mac.append(c);
     }
     else {
@@ -6198,7 +6156,7 @@ static void while_request()
       else if (c == ESCAPE_RIGHT_BRACE)
 	level -= 1;
       else if (c == escape_char)
-	escaped = 1;
+	is_char_escaped = true;
       mac.append(c);
       if (c == '\n' && level <= 0)
 	break;
@@ -6218,8 +6176,8 @@ static void while_request()
 	break;
       }
       process_input_stack();
-      if (while_break_flag || input_stack::is_return_boundary()) {
-	while_break_flag = 0;
+      if (want_loop_break || input_stack::is_return_boundary()) {
+	want_loop_break = false;
 	break;
       }
     }
@@ -6236,7 +6194,7 @@ static void while_break_request()
     skip_line();
   }
   else {
-    while_break_flag = 1;
+    want_loop_break = true;
     while (input_stack::get(0) != EOF)
       ;
     tok.next();
@@ -7525,7 +7483,7 @@ charinfo *token::get_char(bool required)
       // character is null.  If not, this should be an assert().  Also
       // see escape_off().
       error("escaped 'e' used while escape sequences disabled");
-      return 0;
+      return 0 /* nullptr */;
     }
   }
   if (required) {
@@ -7535,7 +7493,7 @@ charinfo *token::get_char(bool required)
       error("expected ordinary or special character, got %1",
 	    description());
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 charinfo *get_optional_char()
@@ -8967,7 +8925,6 @@ static struct {
   { "range", WARN_RANGE },
   { "break", WARN_BREAK },
   { "delim", WARN_DELIM },
-  { "el", WARN_EL },
   { "scale", WARN_SCALE },
   { "number", WARN_NUMBER },
   { "syntax", WARN_SYNTAX },

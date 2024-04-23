@@ -42,6 +42,7 @@ groff_TESTS = \
   src/roff/groff/tests/backslash-exclamation-early-does-not-fail.sh \
   src/roff/groff/tests/break_zero-length_output_line_sanely.sh \
   src/roff/groff/tests/cf-request-early-does-not-fail.sh \
+  src/roff/groff/tests/degenerate-control-flow-works.sh \
   src/roff/groff/tests/detect-evil-link-time-optimizer.sh \
   src/roff/groff/tests/device-request-works.sh \
   src/roff/groff/tests/device_control_escapes_express_basic_latin.sh \

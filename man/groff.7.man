@@ -5960,13 +5960,12 @@ and aliasing
 .br
 .ne 2v
 .P
-When a request,
+Redefinitions and appendments \[lq]write through\[rq] request,
 macro,
 string,
-or diversion is aliased,
-redefinitions and appendments \[lq]write through\[rq] alias names.
+and diversion names.
 .
-To replace an alias with a separately defined object,
+To replace an aliased object with a separately defined one,
 you must use the
 .B rm
 request on its name first.

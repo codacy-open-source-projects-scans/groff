@@ -21,7 +21,7 @@ the Subject line or you risk my spam filters nuking your message.
 
 ====================================================================
 
-Version 2.6_d
+Version 2.6_c
 =============
 Prevailing quad not always being restored after exiting lists.
 ---Fixed---
@@ -32,7 +32,11 @@ stop).
 
 CAPTION without LABEL when CAPTION_AFTER_LABEL is enabled not
 respecting captioned material's width and quad.
----Fixed--
+---Fixed---
+
+ITEM's <space> argument not being respected at document start and at
+tops of page.
+---Fixed---
 
 Version 2.6_a
 =============
