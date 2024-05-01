@@ -126,7 +126,7 @@ bool get_vunits(vunits *res, unsigned char si, vunits prev_value)
     *res = prev_value - v;
     break;
   default:
-    assert(0 == "unhandled switch case returned by get_incr_number()");
+    assert(0 == "unhandled case returned by get_incr_number()");
   }
   return true;
 }
@@ -147,7 +147,7 @@ bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
     *res = prev_value - v;
     break;
   default:
-    assert(0 == "unhandled switch case returned by get_incr_number()");
+    assert(0 == "unhandled case returned by get_incr_number()");
   }
   return true;
 }
@@ -168,7 +168,7 @@ bool get_number(units *res, unsigned char si, units prev_value)
     *res = prev_value - v;
     break;
   default:
-    assert(0 == "unhandled switch case returned by get_incr_number()");
+    assert(0 == "unhandled case returned by get_incr_number()");
   }
   return true;
 }
@@ -189,7 +189,7 @@ bool get_integer(int *res, int prev_value)
     *res = prev_value - int(v);
     break;
   default:
-    assert(0 == "unhandled switch case returned by get_incr_number()");
+    assert(0 == "unhandled case returned by get_incr_number()");
   }
   return true;
 }
@@ -395,7 +395,7 @@ static bool is_valid_expression(units *v, int scaling_unit,
       *v %= v2;
       break;
     default:
-      assert(0 == "unhandled switch case while processing operator");
+      assert(0 == "unhandled case of operator");
     }
   }
   return result;
@@ -644,7 +644,7 @@ static bool is_valid_term(units *v, int scaling_unit,
     *v = scale(*v, sizescale, divisor);
     break;
   default:
-    assert(0 == "unhandled switch case when processing scaling unit");
+    assert(0 == "unhandled case of scaling unit");
   }
   if (do_next)
     tok.next();

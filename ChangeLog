@@ -1,3 +1,507 @@
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (node::debug_node): Report list of
+	nodes produced by most recent input line in forward order,
+	likely corresponding to user intuition.  (Internally, the
+	formatter stores the nodes in LIFO order, for the convenience of
+	traversing a singly-list list.)
+
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add new request `pline` to dump list of nodes
+	corresponding to most recently seen input line.
+
+	* src/roff/troff/env.h (class environment): Declare new
+	`dump_node_list` member function.
+	* src/roff/troff/env.cpp (environment::dump_node_list): New
+	function calls `debug_node_list()` if the most recent input line
+	was productive of output.
+	(print_node_list): New function dumps list of nodes
+	pending in the environment and produced by the most recent input
+	line.
+	(init_env_requests): Wire up `pline` request to
+	`print_node_list()`.
+
+	* doc/groff.texi (Manipulating Filling and Adjustment)
+	(Debugging):
+	* man/groff.7.man (Request short reference, Debugging):
+	* man/groff_diff.7.man (New requests, Debugging):
+	* NEWS: Document it.
+
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (page_number):
+	* src/roff/troff/env.cpp (environment::add_node)
+	(environment::construct_state):
+	* src/roff/troff/input.cpp (psbb_locator::psbb_locator)
+	(psbb_locator::parse_bounding_box, psbb_locator::get_line)
+	(psbb_locator::context_args, psbb_locator::get_header_comment)
+	(psbb_locator::skip_to_trailer): Use idiomatic C++98 null
+	pointer constant literal.
+
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::print_env): Revise
+	report.  Recast for comprehensibility and to use terminology
+	from our man pages and our Texinfo manual.  In nroff mode, stop
+	reporting type size and font family parameters; the formatter
+	ignores the relevant requests and escape sequences in that mode.
+	Report the previous and current resolved font names alongside
+	the existing mounting position selections.
+
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::print_env): Stop
+	reporting the value of the "discarding" flag as a property of
+	the *roff environment.  There's no corresponding concept in CSTR
+	#54 or groff's documentation.  It is an internal
+	implementation detail having to do with the disposal of trailing
+	spaces on input lines (and not even in general at that; as far
+	as I can tell it applies only when the `\p` escape sequence is
+	also used).  Move the report of its value from here...
+	(environment::dump_troff_state): ...to here, a member function
+	that is only reachable if the `DEBUGGING` preprocessor symbol is
+	defined or if one is using a debugger on an unstripped troff
+	executable.
+
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::possibly_break_line):
+	(environment::print_env): Explicitly compare variable of pointer
+	type to null pointer constant instead of letting it pun down to
+	a Boolean.
+	(environment::print_env): Similarly for testing value of
+	function returning pointer.
+
+2024-04-30  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Re-arrange pattern matches.
+
+	* src/devices/gropdf/gropdf.pl: Correct order of pattern
+	match.
+
+	Fixes https://savannah.gnu.org/bugs/?65585 (again!)
+
+2024-04-30  Christof Meerwald <cmeerw@cmeerw.org>
+
+	* src/devices/gropdf/gropdf.pl: Call PDFDate with the output of
+	`time` rather than one of the processed versions.
+	(PDFDate): Accept an epoch-seconds argument rather than a
+	reference to a list as returned by `gmtime` or `localtime`.
+	Calculate the relationship between local time and UT more
+	carefully.  Remove incorrect sign character before minutes
+	field.
+
+	Problem introduced in commit d7bbfb04ea, 9 July.
+
+2024-04-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(pending_output_line::pending_output_line)
+	(environment::add_node, environment::get_prev_char)
+	(environment::extract_output_line, environment::output_line)
+	(environment::choose_breakpoint, node_list_reverse)
+	(distribute_space, environment::construct_state)
+	(environment::construct_format_state)
+	(environment::construct_new_line_state)
+	(environment::make_tab_node): Rename function parameters and
+	local variables from `n` to `nd` (or `nod` in one case when `nd`
+	was already in use) when they are of `node *` type; the file
+	also uses `n` for integers, which is confusing.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (select_font): Fix code style nit.
+	Compare constant character to null character literal, not an
+	integral zero.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::add_char)
+	(environment::add_node, environment::add_hyphen_indicator)
+	(environment::add_italic_correction, environment::space_newline)
+	(environment::space, environment::get_input_line_position)
+	(environment::set_input_line_position)
+	(environment::get_prev_char, environment::get_text_length)
+	(environment::extract_output_line, environment::newline)
+	(environment::possibly_break_line, environment::do_break)
+	(environment::is_empty, environment::wrap_up_tab)
+	(environment::handle_tab, environment::wrap_up_field)
+	(environment::handle_tab, environment::wrap_up_field): Fix code
+	style nit.  Perform explicit comparisons of `current_tab` (an
+	enumerated type) against `TAB_NONE` instead of punning down to a
+	Boolean.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::add_italic_correction):
+	Fix code style nit; explicitly compare variable of pointer type
+	to null pointer constant instead of letting it pun down to a
+	Boolean.
+	(environment::output) [WIDOW_CONTROL]: Same, in de-configured
+	code.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename member functions and
+	variables such that it is easier to tell Boolean objects (or
+	even an imperative verb/noun action) from a countable quantity.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::get_centered_line_count)
+	(environment::environment, environment::copy, center)
+	(right_justify, environment::newline)
+	(environment::possibly_break_line)
+	(environment::dump_troff_state, environment::construct_state)
+	(environment::construct_format_state, environment::print_env)
+	(init_env_requests): Rename `center_lines` to
+	`centered_line_count`.  Rename `get_center_lines()` to
+	`get_centered_line_count()`.
+	* src/roff/troff/env.cpp (environment::print_env): Perform
+	integer comparison, not Boolean, test, for clarity and to ensure
+	consistency with *roff integer-to-Boolean conversion idiom.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp
+	(environment::get_right_aligned_line_count)
+	(environment::environment, environment::copy, center)
+	(right_justify, environment::newline)
+	(environment::possibly_break_line)
+	(environment::dump_troff_state, environment::construct_state)
+	(environment::construct_format_state, environment::print_env)
+	(init_env_requests): Rename `right_justify_lines` to
+	`right_aligned_line_count`.  Rename `get_right_justify_lines()`
+	to `get_right_aligned_line_count()`.
+	* src/roff/troff/env.cpp (environment::print_env): Perform
+	integer comparison, not Boolean, test, for clarity and to ensure
+	consistency with *roff integer-to-Boolean conversion idiom.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::environment)
+	(environment::copy, do_underline) (environment::newline)
+	(environment::print_env): Rename `underline_lines` to
+	`underlined_line_count`.
+	* src/roff/troff/env.cpp (environment::print_env): Perform
+	integer comparison, not Boolean, test, for clarity and to ensure
+	consistency with *roff integer-to-Boolean conversion idiom.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::environment)
+	(environment::copy, environment::distance_to_next_tab)
+	(line_tabs_request, environment::print_env, init_env_requests):
+	Rename `line_tabs` to `using_line_tabs`.
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::get_line_tabs): Rename
+	this...
+	(environment::get_using_line_tabs): ...to this.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Demote parameter of global `do_underline` function from
+	`int` to `bool`.
+
+	* src/roff/troff/env.h: Do it.
+	* src/roff/troff/env.cpp (do_underline): Do it.  Rename paramter
+	from `underline_spaces` to `want_spaces_underlined`.
+
+	* src/roff/troff/env.h (class environment): Update friend
+	access.
+
+	* src/roff/troff/env.cpp (continuous_underline, underline): Call
+	it with Boolean, not integer, literals.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify `suppress_push` global variable, and declare it
+	in a header file.
+
+	* src/roff/troff/env.cpp: Move `extern` declaration from here...
+	* src/roff/troff/input.h: ...to here.
+
+	* src/roff/troff/input.cpp: Demote it from `int` to `bool` and
+	assign Boolean, not integer, literals to it.
+
+2024-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify `translate_space_to_dummy` global variable.
+
+	* src/roff/troff/env.h:
+	* src/roff/troff/env.cpp: Do it.
+
+2024-04-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify more `environment` class member variables,
+	member function parameters, and local variables.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (class pending_output_line)
+	(pending_output_line::output, environment::output)
+	(environment:output_title): Rename `no_fill` to
+	`suppress_filling` and demote it from `int` to `bool`.
+
+	* src/roff/troff/env.h (class environment) [WIDOW_CONTROL]:
+	* src/roff/troff/env.cpp (class pending_output_line)
+	[WIDOW_CONTROL]: Update prototype of `environment::output`
+	friend declaration.
+
+	* src/roff/troff/env.cpp (class pending_output_line)
+	(pending_output_line::pending_output_line): Demote parameter
+	`nf` from `int` to `bool`.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (class pending_output_line)
+	(environment::output, environment::newline)
+	(environment::output_line, environment::possibly_break_line):
+	(environment::construct_format_state, environment::do_break):
+	Demote `was_centered` from `int` to `bool`.
+	(environment::newline): Assign Boolean literals to variables of
+	type `bool`.
+	(class pending_output_line) [WIDOW_CONTROL]: Update prototype of
+	`environment::output` friend declaration.
+
+	* src/roff/troff/env.cpp (class pending_output_line)
+	(pending_output_line::pending_output_line)
+	(pending_output_line::output, environment::mark_last_line)
+	[WIDOW_CONTROL]: Rename `last_line` to `is_last_line` and demote
+	it from `int` to `bool`.
+
+	* src/roff/troff/env.cpp (class pending_output_line)
+	(pending_output_line::output): Demote member function's return
+	type from `int` to `bool`.  Return Boolean, not integer,
+	literals from functions returning `bool`.
+
+	* src/roff/troff/env.cpp (class pending_output_line)
+	(pending_output_line::output): Demote parameter `ce` from `int`
+	to `bool`.
+
+	* src/roff/troff/env.h (class environment) [WIDOW_CONTROL]:
+	* src/roff/troff/env.cpp (environment::output)
+	(environment::output_pending_lines, widow_control_request)
+	(environment::output, environment::environment)
+	(environment::copy, environment::print_env) [WIDOW_CONTROL]:
+	- Rename `widow_control` to `want_widow_control` and demote it
+	  from `int` to `bool`.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::space_newline)
+	(environment::space, environment::environment)
+	(environment::copy, environment::print_env):
+	- Rename member variable `spread_flag` to `spreading` and demote
+	  it from `int` to `bool`.
+	- Assign Boolean literals to it.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::hyphenate_line)
+	(environment::possibly_break_line):
+	- Rename parameter `start_here` to `must_break_here` and demote
+	  it from `int` to `bool`.
+
+	* src/roff/troff/env.cpp (environment::possibly_break_line):
+	* src/roff/troff/input.cpp (process_input_stack):
+	- Pass Boolean, not integer, literals to it.
+
+	* src/roff/troff/env.h (class environment): Demote `fill` member
+	variable from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::environment, fill)
+	(no_fill): Assign Boolean literals to it.
+
+	* src/roff/troff/env.h (class environment): Rename member
+	variable `interrupted` to `line_interrupted` and demote it from
+	`int` to `bool`.
+	* src/roff/troff/env.cpp (environment::add_char)
+	(environment::add_node, environment::add_italic_correction)
+	(environment::space, environment::set_font):
+	(environment::set_family, environment::set_size):
+	(environment::set_char_height, environment::set_char_slant):
+	(environment::set_glyph_color, environment::set_fill_color):
+	(environment::set_glyph_color, environment::set_fill_color):
+	(environment::environment, environment::copy):
+	(environment::interrupt, environment::newline): Assign Boolean
+	literals to it.
+
+	* src/roff/troff/env.cpp (environment::choose_breakpoint):
+	Demote local variable `best_bp_fits` from `int` to `bool`.
+	Assign Boolean literals to it.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::possibly_break_line):
+	Rename parameter `forced` to `must_adjust` and demote it from
+	`int` to `bool`.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::handle_tab): Demote
+	parameter `is_leader` from `int` to `bool`.  Assign Boolean
+	literal to it.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp
+	(environment::construct_state): Rename parameter `only_eol` to
+	`has_only_eol` and demote it from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::add_char):
+	(environment::add_node):
+	* src/roff/troff/input.cpp (input_stack::push): Assign Boolean
+	literals to it.
+
+	* src/roff/troff/env.h (class environment): Demote member
+	variables `seen_space`, `seen_eol`, `suppress_next_eol`, and
+	`seen_break` from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::environment)
+	(environment_switch, no_fill, environment::newline)
+	(environment::construct_state)
+	(environment::construct_format_state)
+	(environment::construct_new_line_state,  environment::do_break):
+	Assign Boolean literals to them.  Simplify conditional
+	expressions.
+
+	* src/roff/troff/env.h (class environment): Demote member
+	variable `underline_spaces` from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::environment)
+	(environment::copy, do_underline, environment::newline): Assign
+	Boolean literals to it.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp
+	(environment::add_char, environment::add_node)
+	(environment::space_newline, environment::space)
+	(environment::environment, environment::copy)
+	(environment::newline, environment::possibly_break_line)
+	(environment::wrap_up_tab, environment::start_field)
+	(environment::wrap_up_field, environment::print_env): Rename
+	parameter `current_field` to `has_current_field` and demote it
+	from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::add_char):
+	(environment::add_node):
+	* src/roff/troff/input.cpp (input_stack::push): Assign Boolean
+	literals to it.
+
+	* src/roff/troff/env.h (class environment): Demote member
+	variable `composite` from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::environment)
+	(environment::copy):
+	* src/roff/troff/env.h (environment::set_composite): Assign
+	Boolean literals to it.
+	* src/roff/troff/env.h (environment::is_composite): Return a
+	`bool`, not an `int`.
+
+	* src/roff/troff/env.cpp (temporary_indent): Rename local
+	variable `err` to `is_valid`, invert its sense, and demote it
+	from `int` to `bool`.  Assign Boolean literals to it.
+
+	* src/roff/troff/env.h (class environment): Demote member
+	variable `dummy` from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::environment): Assign
+	Boolean literals to it.
+	* src/roff/troff/env.h (environment::is_dummy): Return a
+	`bool`, not an `int`.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::is_empty): Return a
+	`bool`, not an `int`.
+
+	* src/roff/troff/env.cpp (hyphen_trie::read_patterns_file):
+	Rename local variables.
+	- final_pattern     -> is_final_pattern
+	- final_hyphenation -> is_final_hyphenation
+	- traditional       -> is_traditional
+	Demote these and `have_patterns`, `have_hyphenation`, and
+	`have_keyword` from `int` to `bool`.  Assign Boolean literals to
+	them.
+
+	* src/roff/troff/env.h (class environment): Demote member
+	variable `tab_precedes_field` from `int` to `bool`.
+	* src/roff/troff/env.cpp (environment::wrap_up_tab): Assign
+	Boolean literal to it.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp (environment::add_tab): Rename
+	parameter `repeated` to `is_repeated` and demote it from `int`
+	to `bool`.
+
+	* src/roff/troff/env.cpp (environment::hyphenate_line): Demote
+	local variable `inhibit` from `int` to `bool`.
+
+2024-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (tab_stops::to_string)
+	(environment::wrap_up_tab, environment::handle_tab):
+	* src/roff/troff/input.cpp (process_input_stack, read_size)
+	(token::process, main)
+	* src/roff/troff/node.cpp (font_info::get_tfont)
+	(kern_pair_node::ends_sentence, node_list_ends_sentence)
+	(node::split, unbreakable_space_node::nbreaks):
+	* src/roff/troff/reg.cpp (number_value_to_ascii):
+	Replace `assert(0)` calls with communicative predicates.
+
+	* src/roff/troff/number.cpp (get_vunits, get_hunits, get_number)
+	(get_integer, is_valid_expression, is_valid_term): Align
+	language of assertion failures with others in use.
+
+2024-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::print_env): Fix glitch in
+	report of line number multiple when line numbering enabled.
+
+2024-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::dump_troff_state): Tweak
+	debugging function's output to report Boolean value more
+	idiomatically.
+
+2024-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify some `environment` class member variables.
+
+	* src/roff/troff/env.h (class environment): Demote type of
+	member variables `have_temporary_indent` and `discarding` from
+	`int` to `bool`.
+	* src/roff/troff/env.cpp (environment::environment)
+	(environment::copy, indent, temporary_indent)
+	(environment::start_line, environment:possibly_break_line)
+	(environment::do_break): Use Boolean instead of integer literals
+	to initialize or update aforementioned member variables.
+
+2024-04-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an-ext.tmac (mQ): Remove `mU` string once unneeded.
+
+2024-04-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] ignore 'Cspace' as input
+
+	* src/devices/gropdf/gropdf.pl: As grops does.
+
+2024-04-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] use nospace mode if font does not contain
+	/space glyph.
+
+	Gropdf always had two modes, depending on whether the font
+	defined /space or not (using space could make the pdf
+	slightly more compact). Some fonts which don't have /space
+	do have a glyph named /u0020 and the code used that as a
+	space, however I'm not convinced of the robustness of this
+	so, now, if a font has no /space then nospace mode is used.
+
+	* src/devices/gropdf/gropdf.pl: Always use nospace mode if
+	font has no /space glyph.
+
+2024-04-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Can't handle DecodeParams in Deflate filter.
+
+	If gropdf called with -d (debug) the pdf is produced with
+	objects uncompressed, if object does not use default deflate
+	parameters Zlib does not decompress properly, so the
+	decompressed object is invalid. This affects when using a
+	pdf imported with 'pdfpic' which contains a png image.
+
+	This only affects imported pdfs when using the -d flag,
+	because otherwise it is just passed through with no
+	decompress.
+
+	* src/devices/gropdf/gropdf.pl: Don't decompress if object has
+	a DecodeParams dictionary.
+
 2024-04-20  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/tmac.am ($(M4CHECK)): Ensure directory exists to house
@@ -4063,12 +4567,12 @@
 
 	* src/preproc/tbl/table.cpp: Add C preprocessor macro storing a
 	"text block staggering macro" name.
-	(block_entry::position_vertically): Call it in generated output
-	with a negative half-vee motion.
+	(block_entry::position_vertically): If staggering, call it in
+	generated output with a negative half-vee motion.
 	(block_entry::position_vertically, left_block_entry::print)
 	(right_block_entry::print, center_block_entry::print)
-	(alphabetic_block_entry::print): Call it in generated output
-	with a positive half-vee motion.
+	(alphabetic_block_entry::print): If staggering, call it in
+	generated output with a positive half-vee motion.
 	(table::init_output): Write out its definition in generated
 	output.  It wraps the `sp` request.  If we're in a diversion,
 	use the `\!` technique to recursively call ourselves and bubble

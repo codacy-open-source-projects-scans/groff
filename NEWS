@@ -85,6 +85,11 @@ o A new request, `pcomposite`, reports to the standard error stream the
 o A new request, `phw`, reports to the standard error stream the current
   list of hyphenation exceptions.
 
+o A new request, `pline`, reports to the standard error stream the list
+  of nodes (an internal data structure) corresponding to the most
+  recently seen input line.  The list is empty if there was no previous
+  input line or if it was not productive.
+
 o The `hla` request, when invoked with no arguments, now clears the
   hyphenation language, disabling automatic hyphenation.
 
@@ -133,10 +138,10 @@ o The device-specific macro files loaded by "troffrc" automatically on
   families of monospaced fonts (and never have).  See grodvi(1) and
   grolbp(1).
 
-o Hyperlink support is now enabled by default on non-HTML devices that
-  support it (PDF and terminal devices) for an (man) and doc (mdoc)
-  documents.  Instructions and commented code for disabling it are in
-  the "man.local" and "mdoc.local" files.
+o Hyperlink support is now enabled by default on PDF and terminal
+  devices for an (man) and doc (mdoc) documents.  Instructions and
+  commented code for disabling it are in the "man.local" and
+  "mdoc.local" files.
 
 o The an (man) package now supports use of its hyperlink macros (`UR`,
   `UE`, `MT`, and `ME`) as paragraph tags (that is, on the next line
@@ -146,8 +151,8 @@ o The an (man) package now supports use of its hyperlink macros (`UR`,
 o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   changed the default line length when formatting on terminals from 78n
   to 80n.  The latter is a vastly more common configuration, but that
-  line length had been avoided for decades (perhaps as long as as groff
-  has existed), for an undocumented reason.  That reason appears to have
+  line length had been avoided for decades (perhaps as long as groff has
+  existed), for an undocumented reason.  That reason appears to have
   been the interaction of bugs in GNU tbl(1) with an aspect of
   grotty(1)'s design.  Those bugs have been resolved.  A man(1) program
   can still instruct groff to format for any desired line length by
@@ -180,12 +185,12 @@ o The an (man) macro package's `IP` macro no longer honors the formerly
   migrating to `TP`.
 
 o The an (man) and doc (mdoc) macro packages now use slightly different
-  vertical margins when formatting for typesetters, to align more
-  closely with the traditional implementations of these packages.  Per
-  man(7) in the AT&T Unix System III manual (June 1980), the text area
-  was 6.5 by 10 inches.  When formatting for terminals with continuous
-  rendering disabled (by default, it is enabled), the page footer now
-  sets 1 line higher than before.
+  vertical margins to align more closely with the traditional
+  implementations of these packages.  Per man(7) in the AT&T Unix System
+  III manual (June 1980), the text area was 6.5 by 10 inches (on
+  typesetters).  When formatting for terminals with continuous rendering
+  disabled (by default, it is enabled), the page footer now sets 1 line
+  higher than before.
 
 o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   roman, not italics (or whatever the string `doc-Pa-font` was

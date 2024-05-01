@@ -368,7 +368,7 @@ and
 these are termed
 .I commands.
 .
-Other primitives perform formatting operations on the tokens after them
+Other primitives perform formatting operations on the tokens around them
 (as with
 .BR fat ,
 .BR over ,
@@ -773,11 +773,11 @@ is not recognized as a macro if called with arguments.
 .IB e1 \~smallover\~ e2
 As
 .BR over ,
-but reduces the type size of
+but reduce the type size of
 .I e1
 and
 .IR e2 ,
-and puts less vertical space between
+and put less vertical space between
 .I e1
 and
 .I e2

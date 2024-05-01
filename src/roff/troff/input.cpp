@@ -570,7 +570,7 @@ int input_stack::level = 0;
 int input_stack::limit = DEFAULT_INPUT_STACK_LIMIT;
 int input_stack::div_level = 0;
 statem *input_stack::diversion_state = 0 /* nullptr */;
-int suppress_push=0;
+bool suppress_push = false;
 
 
 inline int input_stack::get_level()
@@ -701,7 +701,7 @@ void input_stack::push(input_iterator *in)
   if (top->is_diversion) {
     div_level++;
     in->diversion_state = diversion_state;
-    diversion_state = curenv->construct_state(0);
+    diversion_state = curenv->construct_state(false);
 #if defined(DEBUGGING)
     if (want_html_debugging) {
       curenv->dump_troff_state();
@@ -1102,7 +1102,7 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
       return c;
   again:
     c = input_stack::peek();
-    switch(c) {
+    switch (c) {
     case 0:
       return escape_char;
     case '"':
@@ -1546,7 +1546,7 @@ static void report_color()
   dictionary_iterator iter(color_dictionary);
   symbol key;
   color *value;
-  while(iter.get(&key, reinterpret_cast<void **>(&value))) {
+  while (iter.get(&key, reinterpret_cast<void **>(&value))) {
     assert(!key.is_null());
     assert(value != 0 /* nullptr */);
     errprint("%1\n", key.contents());
@@ -1883,7 +1883,7 @@ void token::next()
     int cc = input_stack::get(&n);
     if (cc != escape_char || escape_char == 0) {
     handle_ordinary_char:
-      switch(cc) {
+      switch (cc) {
       case INPUT_NO_BREAK_SPACE:
 	  type = TOKEN_STRETCHABLE_SPACE;
 	  return;
@@ -2060,7 +2060,7 @@ void token::next()
     else {
     handle_escape_char:
       cc = input_stack::get(&n);
-      switch(cc) {
+      switch (cc) {
       case '(':
 	nm = read_two_char_escape_parameter();
 	type = TOKEN_SPECIAL;
@@ -2458,7 +2458,7 @@ int token::operator==(const token &t)
 {
   if (type != t.type)
     return 0;
-  switch(type) {
+  switch (type) {
   case TOKEN_CHAR:
     return c == t.c;
   case TOKEN_SPECIAL:
@@ -2482,7 +2482,7 @@ int token::operator!=(const token &t)
 // doesn't tokenize it) and accepts a user-specified delimiter.
 static bool is_char_usable_as_delimiter(int c)
 {
-  switch(c) {
+  switch (c) {
   case '0':
   case '1':
   case '2':
@@ -2516,7 +2516,7 @@ static bool is_char_usable_as_delimiter(int c)
 bool token::is_usable_as_delimiter(bool report_error)
 {
   bool is_valid = false;
-  switch(type) {
+  switch (type) {
   case TOKEN_CHAR:
     is_valid = is_char_usable_as_delimiter(c);
     if (!is_valid && report_error)
@@ -3055,7 +3055,7 @@ void process_input_stack()
 	  break;
 #endif /* COLUMN */
 	default:
-	  assert(0);
+	  assert(0 == "unhandled case of `request_code` (int)");
 	  break;
 	}
 	suppress_next = 1;
@@ -3111,7 +3111,7 @@ void process_input_stack()
 	  curenv->add_node(tok.nd);
 	  tok.nd = 0;
 	  bol = 0;
-	  curenv->possibly_break_line(1);
+	  curenv->possibly_break_line(true /* must break here */);
 	}
 	break;
       }
@@ -4203,7 +4203,7 @@ bool is_codepoint_composite(const char *n)
   dictionary_iterator iter(composite_dictionary);
   symbol key;
   char *value;
-  while(iter.get(&key, reinterpret_cast<void **>(&value))) {
+  while (iter.get(&key, reinterpret_cast<void **>(&value))) {
     assert(!key.is_null());
     assert(value != 0 /* nullptr */);
     const char *k = key.contents();
@@ -4225,7 +4225,7 @@ static void report_composite_characters()
   dictionary_iterator iter(composite_dictionary);
   symbol key;
   char *value;
-  while(iter.get(&key, reinterpret_cast<void **>(&value))) {
+  while (iter.get(&key, reinterpret_cast<void **>(&value))) {
     assert(!key.is_null());
     assert(value != 0 /* nullptr */);
     const char *k = key.contents();
@@ -5325,7 +5325,7 @@ static bool read_size(int *x)
       *x = curenv->get_requested_point_size() - val;
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of type size increment operator");
     }
     if (*x <= 0) {
       warning(WARN_RANGE,
@@ -5898,7 +5898,7 @@ static void skip_branch()
     else if (c == ESCAPE_RIGHT_BRACE)
       --level;
     else if (c == escape_char && escape_char > 0)
-      switch(input_stack::get(0)) {
+      switch (input_stack::get(0)) {
       case '{':
 	++level;
 	break;
@@ -6043,7 +6043,7 @@ static bool do_if_request()
     environment env2(curenv);
     environment *oldenv = curenv;
     curenv = &env1;
-    suppress_push = 1;
+    suppress_push = true;
     for (int i = 0; i < 2; i++) {
       for (;;) {
 	tok.next();
@@ -6068,7 +6068,7 @@ static bool do_if_request()
     delete_node_list(n2);
     curenv = oldenv;
     have_formattable_input = false;
-    suppress_push = 0;
+    suppress_push = false;
     tok.next();
   }
   else {
@@ -6405,9 +6405,9 @@ filename(fname), llx(0), lly(0), urx(0), ury(0), lastc(EOF)
       // specify a %%BoundingBox comment; locate it, initially
       // expecting to find it in the comments header...
       //
-      const char *context = NULL;
-      while ((context == NULL) && get_header_comment()) {
-	if ((context = bounding_box_args()) != NULL) {
+      const char *context = 0 /* nullptr */;
+      while ((context == 0 /* nullptr */) && get_header_comment()) {
+	if ((context = bounding_box_args()) != 0 /* nullptr */) {
 
 	  // When the "%%BoundingBox" comment is found, it may simply
 	  // specify the bounding box property values, or it may defer
@@ -6420,10 +6420,10 @@ filename(fname), llx(0), lly(0), urx(0), ury(0), lastc(EOF)
 	    // for the appropriate specification within it.
 	    //
 	    if (skip_to_trailer() > 0) {
-	      while ((context = bounding_box_args()) == NULL
+	      while ((context = bounding_box_args()) == 0 /* nullptr */
 		     && get_line(DSC_LINE_MAX_ENFORCE) > 0)
 		;
-	      if (context != NULL) {
+	      if (context != 0 /* nullptr */) {
 		//
 		// When we find a bounding box specification here...
 		//
@@ -6440,7 +6440,7 @@ filename(fname), llx(0), lly(0), urx(0), ury(0), lastc(EOF)
 	      // The trailer could not be found, so there is no context in
 	      // which a trailing %%BoundingBox comment might be located.
 	      //
-	      context = NULL;
+	      context = 0 /* nullptr */;
 	  }
 	  if (status == PSBB_RANGE_IS_BAD) {
 	    //
@@ -6453,7 +6453,7 @@ filename(fname), llx(0), lly(0), urx(0), ury(0), lastc(EOF)
 	  }
 	}
       }
-      if (context == NULL)
+      if (context == 0 /* nullptr */)
 	//
 	// Conversely, this arises when no value specifying %%BoundingBox
 	// comment has been found, in any appropriate location...
@@ -6518,7 +6518,7 @@ int psbb_locator::parse_bounding_box(const char *context)
       // ...before checking for "(atend)", and setting the
       // appropriate exit status accordingly.
       //
-      status = (context_args("(atend)", context) == NULL)
+      status = (context_args("(atend)", context) == 0 /* nullptr */)
 		 ? llx = lly = urx = ury = PSBB_RANGE_IS_BAD
 		 : PSBB_RANGE_AT_END;
     }
@@ -6612,7 +6612,7 @@ int psbb_locator::get_line(int dscopt)
 //
 // Returns a pointer to the trailing substring of the current
 // input line, following an initial substring matching the "tag"
-// argument, or NULL if "tag" is not matched.
+// argument, or 0 if "tag" is not matched.
 //
 inline const char *psbb_locator::context_args(const char *tag)
 {
@@ -6631,19 +6631,19 @@ inline const char *psbb_locator::context_args(const char *tag)
 //
 // Returns a pointer to the trailing substring of the specified
 // text buffer, following an initial substring matching the "tag"
-// argument, or NULL if "tag" is not matched.
+// argument, or 0 if "tag" is not matched.
 //
 inline const char *psbb_locator::context_args(const char *tag, const char *p)
 {
   size_t len = strlen(tag);
-  return (strncmp(tag, p, len) == 0) ? p + len : NULL;
+  return (strncmp(tag, p, len) == 0) ? p + len : 0 /* nullptr */;
 }
 
 // psbb_locator::bounding_box_args()
 //
 // Returns a pointer to the arguments string, within the current
 // input line, when this represents a PostScript "%%BoundingBox:"
-// comment, or NULL otherwise.
+// comment, or 0 otherwise.
 //
 inline const char *psbb_locator::bounding_box_args(void)
 {
@@ -6684,7 +6684,7 @@ inline bool psbb_locator::get_header_comment(void)
 
     // Finally, the input line must not say "%%EndComments".
     //
-    && context_args("%%EndComments") == NULL;
+    && context_args("%%EndComments") == 0 /* nullptr */;
 }
 
 // psbb_locator::skip_to_trailer()
@@ -6723,7 +6723,8 @@ inline int psbb_locator::skip_to_trailer(void)
 	   // ...until we either exhaust the available stream data, or
 	   // we have located a "%%Trailer" comment line.
 	   //
-	 } while ((status != 0) && (context_args("%%Trailer") == NULL));
+	 } while ((status != 0)
+	          && (context_args("%%Trailer") == 0 /* nullptr */));
       if (status > 0)
 	//
 	// We found the "%%Trailer" comment, so we may immediately
@@ -7604,10 +7605,10 @@ void token::process()
     curenv->add_node(new dummy_node);
     break;
   case TOKEN_EMPTY:
-    assert(0);
+    assert(0 == "unhandled empty token");
     break;
   case TOKEN_EOF:
-    assert(0);
+    assert(0 == "unhandled end-of-file token");
     break;
   case TOKEN_ESCAPE:
     if (escape_char != 0)
@@ -7685,7 +7686,7 @@ void token::process()
       break;
     }
   default:
-    assert(0);
+    assert(0 == "unhandled token type");
   }
 }
 
@@ -8285,7 +8286,7 @@ int main(int argc, char **argv)
 			  "abciI:vw:W:zCEf:m:n:o:r:d:F:M:T:tqs:RU"
 			  DEBUG_OPTION, long_options, 0))
 	 != EOF)
-    switch(c) {
+    switch (c) {
     case 'v':
       {
 	printf("GNU troff (groff) version %s\n", Version_string);
@@ -8396,7 +8397,7 @@ int main(int argc, char **argv)
       exit(1);
       break;		// never reached
     default:
-      assert(0);
+      assert(0 == "unhandled case of command-line option");
     }
   if (want_unsafe_requests)
     mac_path = &macro_path;

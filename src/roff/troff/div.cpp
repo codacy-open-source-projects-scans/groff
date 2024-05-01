@@ -850,7 +850,7 @@ void page_number()
   // XXX: Yuck!  Get rid of this; macro packages already test the
   // register before invoking .pn.
   reg *r = (reg *)register_dictionary.lookup("ps4html");
-  if (r == NULL)
+  if (r == 0 /* nullptr */)
     if (has_arg() && get_integer(&n, topdiv->get_page_number()))
       topdiv->set_next_page_number(n);
   skip_line();

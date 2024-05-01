@@ -148,8 +148,8 @@ inline node::~node()
     delete push_state;
 }
 
+// three-valued Boolean :-|
 // 0 means it doesn't, 1 means it does, 2 means it's transparent
-
 int node_list_ends_sentence(node *);
 
 struct breakpoint {

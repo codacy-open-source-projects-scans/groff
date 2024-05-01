@@ -1111,20 +1111,21 @@ own command-line interface illustrates most specimens one may encounter.
 \&.
 \&.
 \&.SY groff
-\&.B \e-h
+\&.B \e\-h
+\&.YS
 \&.
 \&.SY groff
-\&.B \e-\e-help
+\&.B \e\-\e\-help
 \&.YS
 \&.
 \&.
 \&.SY groff
-\&.B \e-v
+\&.B \e\-v
 \&.RI [ option\e\(ti .\e|.\e|.\e&]
 \&.RI [ file\e\(ti .\e|.\e|.]
 \&.
 \&.SY groff
-\&.B \e-\e-version
+\&.B \e\-\e\-version
 \&.RI [ option\e\(ti .\e|.\e|.\e&]
 \&.RI [ file\e\(ti .\e|.\e|.]
 \&.YS

@@ -3146,7 +3146,7 @@ Start picture input preprocessed by
 As
 .B PE ,
 but with \[lq]flyback\[rq],
-returning the vertical position to where it was prior to the picture.
+returning the drawing position to where it was prior to the picture.
 .
 This is a GNU extension.
 .

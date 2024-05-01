@@ -3983,6 +3983,15 @@ Change page length to
 .scaleindicator v ).
 .
 .TPx
+.REQ .pline
+Report,
+to the standard error stream,
+the list of nodes corresponding to the most recently seen input line.
+.
+The list is empty if there was no previous input line or if it was not
+productive.
+.
+.TPx
 .REQ .pm
 Report,
 to the standard error stream,
@@ -8414,8 +8423,10 @@ hyphenation exceptions
 .RB ( .phw );
 registers
 .RB ( .pnr );
-and page location traps
-.RB ( .ptr )
+page location traps
+.RB ( .ptr );
+and a list of nodes corresponding to the most recent input line
+.RB ( .pline )
 to the standard error stream.
 .\" END Keep (roughly) parallel with groff.texi node "Debugging".
 .

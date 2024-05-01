@@ -87,7 +87,7 @@ public:
   tab_type distance_to_next_tab(hunits pos, hunits *distance);
   tab_type distance_to_next_tab(hunits curpos, hunits *distance, hunits *leftpos);
   void clear();
-  void add_tab(hunits pos, tab_type type, int repeated);
+  void add_tab(hunits pos, tab_type type, bool is_repeated);
   const char *to_string();
 };
 
@@ -115,7 +115,7 @@ void line_spacing();
 void line_length();
 void indent();
 void temporary_indent();
-void do_underline(int);
+void do_underline(bool);
 void do_input_trap(bool);
 void set_tabs();
 void margin_character();
@@ -140,7 +140,7 @@ void widow_control_request();
 #endif /* WIDOW_CONTROL */
 
 class environment {
-  int dummy;			// dummy environment used for \w
+  bool dummy;			// dummy environment used for \w
   hunits prev_line_length;
   hunits line_length;
   hunits prev_title_length;
@@ -158,11 +158,11 @@ class environment {
   int space_size;		// in 36ths of an em
   int sentence_space_size;	// same but for spaces at the end of sentences
   int adjust_mode;
-  int fill;
-  int interrupted;
-  int prev_line_interrupted;
-  int center_lines;
-  int right_justify_lines;
+  bool fill;
+  bool line_interrupted;
+  int prev_line_interrupted;	// three-valued Boolean :-|
+  int centered_line_count;
+  int right_aligned_line_count;
   vunits prev_vertical_spacing;
   vunits vertical_spacing;
   vunits prev_post_vertical_spacing;
@@ -172,12 +172,12 @@ class environment {
   hunits prev_indent;
   hunits indent;
   hunits temporary_indent;
-  int have_temporary_indent;
+  bool have_temporary_indent;
   hunits saved_indent;
   hunits target_text_length;
   int pre_underline_fontno;
-  int underline_lines;
-  int underline_spaces;
+  int underlined_line_count;
+  bool underline_spaces;
   symbol input_trap;
   int input_trap_count;
   bool continued_input_trap;
@@ -189,19 +189,19 @@ class environment {
   node *tab_contents;
   hunits tab_width;
   hunits tab_distance;
-  int line_tabs;
+  bool using_line_tabs;
   tab_type current_tab;
   node *leader_node;
   charinfo *tab_char;
   charinfo *leader_char;
-  int current_field;		// is there a current field?
+  bool has_current_field;
   hunits field_distance;
   hunits pre_field_width;
   int field_spaces;
   int tab_field_spaces;
-  int tab_precedes_field;
-  int discarding;
-  int spread_flag;		// set by \p
+  bool tab_precedes_field;
+  bool discarding;
+  bool spreading;		// set by \p
   unsigned margin_character_flags;
   node *margin_character_node;
   hunits margin_character_distance;
@@ -217,10 +217,10 @@ class environment {
   int hyphen_line_max;
   hunits hyphenation_space;
   hunits hyphenation_margin;
-  int composite;		// used for construction of composite char?
+  bool composite;	// used for construction of composite character
   pending_output_line *pending_lines;
 #ifdef WIDOW_CONTROL
-  int widow_control;
+  bool want_widow_control;
 #endif /* WIDOW_CONTROL */
   color *glyph_color;
   color *prev_glyph_color;
@@ -232,26 +232,28 @@ class environment {
   tab_type distance_to_next_tab(hunits *);
   tab_type distance_to_next_tab(hunits *distance, hunits *leftpos);
   void start_line();
-  void output_line(node *, hunits, int);
-  void output(node *nd, int retain_size, vunits vs, vunits post_vs,
-	      hunits width, int was_centered);
-  void output_title(node *nd, int retain_size, vunits vs, vunits post_vs,
-		    hunits width);
+  void output_line(node * /* nd */, hunits /* width */,
+		   bool /* was_centered */);
+  void output(node * /* nd */, bool /* suppress_filling */,
+	      vunits /* vs */, vunits /* post_vs */, hunits /* width */,
+	      bool /* was_centered */);
+  void output_title(node *nd, bool suppress_filling, vunits vs,
+		    vunits post_vs, hunits width);
 #ifdef WIDOW_CONTROL
   void mark_last_line();
 #endif /* WIDOW_CONTROL */
   breakpoint *choose_breakpoint();
-  void hyphenate_line(int start_here = 0);
+  void hyphenate_line(bool /* must_break_here */ = false);
   void start_field();
   void wrap_up_field();
   void add_padding();
   node *make_tab_node(hunits d, node *next = 0);
   node *get_prev_char();
 public:
-  int seen_space;
-  int seen_eol;
-  int suppress_next_eol;
-  int seen_break;
+  bool seen_space;
+  bool seen_eol;
+  bool suppress_next_eol;
+  bool seen_break;
   tab_stops tabs;
   const symbol name;
   charinfo *hyphen_indicator_char;
@@ -263,13 +265,13 @@ public:
   bool set_control_character(unsigned char);
   unsigned char get_no_break_control_character();
   bool set_no_break_control_character(unsigned char);
-  statem *construct_state(int only_eol);
+  statem *construct_state(bool has_only_eol);
   void print_env();
   void copy(const environment *);
-  int is_dummy() { return dummy; }
-  int is_empty();
-  int is_composite() { return composite; }
-  void set_composite() { composite = 1; }
+  bool is_dummy() { return dummy; }
+  bool is_empty();
+  bool is_composite() { return composite; }
+  void set_composite() { composite = true; }
   vunits get_vertical_spacing();	// .v
   vunits get_post_vertical_spacing();	// .pvs
   int get_line_spacing();		// .L
@@ -308,18 +310,18 @@ public:
     { return env_half_narrow_space_width(this); }
   hunits get_input_line_position();
   const char *get_tabs();
-  int get_line_tabs();
+  int get_using_line_tabs();
   unsigned get_hyphenation_mode();
   unsigned get_hyphenation_mode_default();
   int get_hyphen_line_max();
   int get_hyphen_line_count();
   hunits get_hyphenation_space();
   hunits get_hyphenation_margin();
-  int get_center_lines();
+  int get_centered_line_count();
   int get_input_trap_line_count();
   int get_input_trap_respects_continuation();
   const char *get_input_trap_macro();
-  int get_right_justify_lines();
+  int get_right_aligned_line_count();
   int get_no_number_count();
   int get_prev_line_interrupted() { return prev_line_interrupted; }
   color *get_fill_color();
@@ -340,13 +342,14 @@ public:
   void set_char_slant(int);
   void set_input_line_position(hunits);	// used by \n(hp
   void interrupt();
-  void spread() { spread_flag = 1; }
-  void possibly_break_line(int start_here = 0, int forced = 0);
+  void spread() { spreading = true; }
+  void possibly_break_line(bool /* must_break_here */ = false,
+			   bool /* must_adjust */ = false);
   void do_break(bool /* want_adjustment */ = false);	// .br, .brp
   void final_break();
   node *make_tag(const char *name, int i);
   void newline();
-  void handle_tab(int is_leader = 0);	// do a tab or leader
+  void handle_tab(bool /* is_leader */ = false); // do a tab or leader
   void add_node(node *);
   void add_char(charinfo *);
   void add_hyphen_indicator();
@@ -363,10 +366,12 @@ public:
   const char *get_point_size_string();
   const char *get_requested_point_size_string();
   void output_pending_lines();
-  void construct_format_state(node *n, int was_centered, int fill);
+  void construct_format_state(node * /* nd */, bool /* was_centered */,
+			      int /* fill */);
   void construct_new_line_state(node *n);
   void dump_troff_state();
-  
+  void dump_node_list();
+
   friend void title_length();
   friend void space_size();
   friend void fill();
@@ -381,7 +386,7 @@ public:
   friend void line_length();
   friend void indent();
   friend void temporary_indent();
-  friend void do_underline(int);
+  friend void do_underline(bool);
   friend void do_input_trap(bool);
   friend void set_tabs();
   friend void margin_character();
@@ -420,7 +425,7 @@ extern double spread_limit;
 
 extern bool want_break;
 extern symbol default_family;
-extern int translate_space_to_dummy;
+extern bool translate_space_to_dummy;
 
 extern unsigned char hpf_code_table[];
 

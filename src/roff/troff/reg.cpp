@@ -80,7 +80,7 @@ static char lowercase_array[] = {
 static const char *number_value_to_ascii(int value, char format, int width)
 {
   static char buf[128];		// must be at least 21
-  switch(format) {
+  switch (format) {
   case '1':
     if (width <= 0)
       return i_to_a(value);
@@ -194,7 +194,7 @@ static const char *number_value_to_ascii(int value, char format, int width)
       break;
     }
   default:
-    assert(0);
+    assert(0 == "unhandled case of register format");
     break;
   }
   return buf;

@@ -8353,10 +8353,13 @@ lines containing requests like @code{tl} or escape sequences like
 counted, but their interpolated contents can be.  Empty requests, and
 requests and escape sequences that define registers or strings or alter
 the formatting environment (as with changes to the size, face, height,
-slant, or color of the type) are not productive.  We will also preview
-the output line continuation escape sequence, @code{\c}, which
-``connects'' two input lines that would otherwise be counted separately.
-@footnote{@xref{Line Continuation}.}
+slant, or color of the type) are not productive.@footnote{If you're not
+sure whether an input line has been productive, you can use the
+@code{pline} request to see whether it produced any formatting nodes.
+@xref{Debugging}.}  We will also preview the output line continuation
+escape sequence, @code{\c}, which ``connects'' two input lines that
+would otherwise be counted separately.  @footnote{@xref{Line
+Continuation}.}
 
 @Example
 @c .ll 56n
@@ -17026,7 +17029,8 @@ exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
 colors, composite characters, environments, hyphenation exceptions,
-registers, and page location traps to the standard error stream.
+registers, page location traps, and a list of nodes corresponding to
+the most recent input line to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
@@ -17138,6 +17142,16 @@ will not be hyphenated at all are prefixed with @samp{-}.  Those to
 which the automatic hyphenation mode applies (meaning those defined in a
 hyphenation pattern file rather than with the @code{hw} request) are
 suffixed with a tab and asterisk (@code{*}).
+@endDefreq
+
+@Defreq {pline, }
+@cindex dumping node list of most recent input line (@code{pline})
+@cindex node list of most recent input line, dumping (@code{pline})
+@cindex most recent input line, dumping node list of (@code{pline})
+Report, to the standard error stream, the list of nodes corresponding to
+the most recently seen input line.  The list is empty if there was no
+previous input line or if it was not productive; recall
+@xref{Manipulating Filling and Adjustment}.
 @endDefreq
 
 @Defreq {pm, }

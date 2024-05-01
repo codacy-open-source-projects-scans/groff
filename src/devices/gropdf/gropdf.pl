@@ -592,13 +592,7 @@ for $papersz ( split(" ", lc($possiblesizes).' #duff#') )
     # If we get here, $papersz was invalid, so try the next one.
 }
 
-my @dt;
-if ($ENV{SOURCE_DATE_EPOCH}) {
-    @dt=gmtime($ENV{SOURCE_DATE_EPOCH});
-} else {
-    @dt=localtime;
-}
-my $dt=PDFDate(\@dt);
+my $dt=PDFDate(time);
 
 my %info=('Creator' => "(groff version $cfg{GROFF_VERSION})",
 	  'Producer' => "(gropdf version $cfg{GROFF_VERSION})",
@@ -729,7 +723,7 @@ foreach my $fontno (sort keys %fontlst)
     my @fontdesc=();
     my $chars=$fnt->{TRFCHAR};
     my $glyphs='/.notdef';
-    $glyphs.='/space' if defined($fnt->{NO}->[32]) and $fnt->{NO}->[32] eq 'u0020';
+    $glyphs.='/space' if defined($fnt->{NO}->[32]) and $fnt->{NO}->[32] eq 'space';
     my $fobj;
     @glyphused=@subrused=%seac=();
     push(@subrused,'#0','#1','#2','#3','#4');
@@ -783,7 +777,7 @@ foreach my $fontno (sort keys %fontlst)
 	my @widths;
 	my $miss=-1;
 	my $CharSet=join('',@{$fnt->{CHARSET}->[$j]});
-	push(@{$chars->[$j]},'u0020') if $j==0 and $fnt->{NAM}->{u0020}->[PSNAME];
+	push(@{$chars->[$j]},'space') if $j==0 and $fnt->{NAM}->{space}->[PSNAME];
 
 	foreach my $og (sort { $nam->{$a}->[MINOR] <=> $nam->{$b}->[MINOR] } (@{$chars->[$j]}))
 	{
@@ -1102,14 +1096,19 @@ sub GetObj
 
 sub PDFDate
 {
-    my $dt=shift;
+    my $ts=shift;
+    my @dt;
     my $offset;
+    my $rel;
     if ($ENV{SOURCE_DATE_EPOCH}) {
 	$offset=0;
+	@dt=gmtime($ENV{SOURCE_DATE_EPOCH});
     } else {
-	$offset=mktime((localtime $dt)[0..5]) - mktime((gmtime $dt)[0..5]);
+	@dt=localtime($ts);
+	$offset=mktime(@dt[0..5]) - mktime((gmtime $ts)[0..5]);
     }
-    return(sprintf("D:%04d%02d%02d%02d%02d%02d%+03d'%+03d'",$dt->[5]+1900,$dt->[4]+1,$dt->[3],$dt->[2],$dt->[1],$dt->[0],int($offset/3600),int(($offset%3600)/60)));
+    $rel=($offset==0)?'Z':($offset>0)?'+':'-';
+    return(sprintf("D:%04d%02d%02d%02d%02d%02d%s%02d'%02d'",$dt[5]+1900,$dt[4]+1,$dt[3],$dt[2],$dt[1],$dt[0],$rel,int(abs($offset)/3600),int((abs($offset)%3600)/60)));
 }
 
 sub ToPoints
@@ -1984,6 +1983,7 @@ sub Clean
     my $p=shift;
 
     $p=~s/\\c?$//g;
+    $p=~s/\\[eE]/\\/g;
     $p=~s/\\[ 0~t]/ /g;
     $p=~s/\\[,!"#\$%&’.0:?{}ˆ_‘|^prud]//g;
     $p=~s/\\'/\\[aa]/g;
@@ -1993,8 +1993,8 @@ sub Clean
 
     $p=~s/\\[Oz].//g;
     $p=~s/\\[ABbDHlLoRSvwXZ]$parcln//g;
-    $p=~s/\\[hs][-+]?$parclntyp//g;
     $p=~s/\\[FfgkMmnVY]$parclntyp//g;
+    $p=~s/\\[hs][-+]?$parclntyp//g;
 
     $p=~s/\\\((\w\w)/\\\[$1\]/g;	# convert \(xx to \[xx]
 
@@ -2577,7 +2577,7 @@ sub LoadStream
     Warn("failed to read all of the stream")
     if $l != sysread(PD,$o->{STREAM},$l);
 
-    if ($gotzlib and exists($o->{OBJ}->{'Filter'}) and $o->{OBJ}->{'Filter'} eq '/FlateDecode')
+    if ($gotzlib and exists($o->{OBJ}->{'Filter'}) and $o->{OBJ}->{'Filter'} eq '/FlateDecode' and !exists($o->{OBJ}->{'DecodeParms'}))
     {
 	$o->{STREAM}=Compress::Zlib::uncompress($o->{STREAM});
 	delete($o->{OBJ }->{'Filter'});
@@ -3232,8 +3232,6 @@ sub LoadFont
 	    }
 
 	    $r[3]=oct($r[3]) if substr($r[3],0,1) eq '0';
-	    $r[0]='u0020' if $r[3] == 32;
-	    $r[0]="u00".hex($r[3]) if $r[0] eq '---';
 	    $r[4]=$r[0] if !defined($r[4]);
 	    $fnt{NAM}->{$r[0]}=[$p[0],$r[3],'/'.$r[4],undef,undef,$r[6]];
 	    $fnt{NO}->[$r[3]]=$r[0];
@@ -3253,8 +3251,8 @@ sub LoadFont
 
     close($f);
 
-    $fnt{NAM}->{u0020}->[MINOR]=32;
-    $fnt{NAM}->{u0020}->[MAJOR]=0;
+    $fnt{NAM}->{space}->[MINOR]=32;
+    $fnt{NAM}->{space}->[MAJOR]=0;
     my $fno=0;
     my $slant=0;
     $fnt{DIFF}=[];
@@ -3266,7 +3264,7 @@ sub LoadFont
     $fnt{NAM}->{''}=[0,-1,'/.notdef',-1,0];
     $slant=-$fnt{'slant'} if exists($fnt{'slant'});
     $fnt{slant}=$slant;
-    $fnt{nospace}=(!defined($fnt{NAM}->{u0020}->[PSNAME]) or $fnt{NAM}->{u0020}->[PSNAME] ne '/space' or !exists($fnt{'spacewidth'}))?1:0;
+    $fnt{nospace}=(!defined($fnt{NAM}->{space}->[PSNAME]) or $fnt{NAM}->{space}->[PSNAME] ne '/space' or !exists($fnt{'spacewidth'}))?1:0;
     $fnt{'spacewidth'}=270 if !exists($fnt{'spacewidth'});
     Notice("Using nospace mode for font '$ofontnm'") if $fnt{nospace} == 1 and $options & USESPACE;
 
@@ -4457,7 +4455,7 @@ sub do_C
     my $par=shift;
     my $fnt=$fontlst{$cft}->{FNT};
 
-    PutGlyph($fnt,$par,1);
+    PutGlyph($fnt,$par,1) if $par ne 'space';
 }
 
 sub do_c
@@ -4481,7 +4479,7 @@ sub do_N
     }
 
     my $chnm=$fnt->{NO}->[$par];
-    PutGlyph($fnt,$chnm,1);
+    PutGlyph($fnt,$chnm,1) if $chnm ne 'space';
 }
 
 sub do_n

@@ -114,6 +114,8 @@ extern void do_glyph_color(symbol);
 extern void do_fill_color(symbol);
 extern bool is_codepoint_composite(const char *n);
 
+extern bool suppress_push;
+
 // Local Variables:
 // fill-column: 72
 // mode: C++
