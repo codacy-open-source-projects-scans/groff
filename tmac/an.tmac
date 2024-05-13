@@ -302,6 +302,10 @@
 .  ad \\*[AD]
 .  ll \\n[LL]u
 .
+.  \" Reset any lingering state from extensions in an-ext.tmac.
+.  nr mE 0
+.  nr mS 0
+.
 .  \" We've seen no tbl(1) tables yet in this document.
 .  rr TW
 .  nr an-was-tbl-failure-reported 0

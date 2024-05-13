@@ -55,13 +55,16 @@ Font ASCII
 .YS
 .
 .
+.P
 .SY pfbtops
 .B \-\-help
 .YS
 .
 .
+.P
 .SY pfbtops
 .B \-v
+.YS
 .
 .SY pfbtops
 .B \%\-\-version

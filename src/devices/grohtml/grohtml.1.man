@@ -75,19 +75,23 @@ output driver for HTML
 .YS
 .
 .
+.P
 .SY pre\-grohtml
 .B \-\-help
 .YS
 .
 .
+.P
 .SY pre\-grohtml
 .B \-v
+.YS
 .
 .SY pre\-grohtml
 .B \%\-\-version
 .YS
 .
 .
+.P
 .SY post\-grohtml
 .RB [ \-bCGhlnrVy ]
 .RB [ \-F
@@ -104,13 +108,16 @@ output driver for HTML
 .YS
 .
 .
+.P
 .SY post\-grohtml
 .B \-\-help
 .YS
 .
 .
+.P
 .SY post\-grohtml
 .B \-v
+.YS
 .
 .SY post\-grohtml
 .B \%\-\-version

@@ -4188,38 +4188,6 @@ static symbol composite_glyph_name(symbol nm)
   return symbol(gl.contents());
 }
 
-// Does the hexadecimal four-character sequence `n` represent a code
-// point with a composite mapping?  Either the key or value component
-// of an entry in the composite dictionary qualifies.
-//
-// This is an O(n) search, but by default groff defines only 22
-// composite character mappings ("tmac/composite.tmac").  If this
-// becomes a performance problem, we will need another dictionary
-// mapping the unique values of `composite_dictionary` (which is not
-// one-to-one) to a Boolean.
-bool is_codepoint_composite(const char *n)
-{
-  bool result = false;
-  dictionary_iterator iter(composite_dictionary);
-  symbol key;
-  char *value;
-  while (iter.get(&key, reinterpret_cast<void **>(&value))) {
-    assert(!key.is_null());
-    assert(value != 0 /* nullptr */);
-    const char *k = key.contents();
-    if (strcmp(k, n) == 0) {
-      result = true;
-      break;
-    }
-    const char *v = reinterpret_cast<char *>(value);
-    if (strcmp(v, n) == 0) {
-      result = true;
-      break;
-    }
-  }
-  return result;
-}
-
 static void report_composite_characters()
 {
   dictionary_iterator iter(composite_dictionary);
@@ -5947,7 +5915,7 @@ static bool do_if_request()
     tok.next();
     want_test_sense_inverted = !want_test_sense_inverted;
   }
-  int result;
+  bool result;
   unsigned char c = tok.ch();
   if (compatible_flag)
     switch (c) {
@@ -5974,7 +5942,7 @@ static bool do_if_request()
   }
   else if (c == 'v') {
     tok.next();
-    result = 0;
+    result = false;
   }
   else if (c == 'o') {
     result = (topdiv->get_page_number() & 1);
@@ -5989,29 +5957,29 @@ static bool do_if_request()
     symbol nm = get_name(true /* required */);
     if (nm.is_null()) {
       skip_branch();
-      return 0;
+      return false;
     }
     result = (c == 'd'
-	      ? request_dictionary.lookup(nm) != 0
-	      : register_dictionary.lookup(nm) != 0);
+	      ? request_dictionary.lookup(nm) != 0 /* nullptr */
+	      : register_dictionary.lookup(nm) != 0 /* nullptr */);
   }
   else if (c == 'm') {
     tok.next();
     symbol nm = get_long_name(true /* required */);
     if (nm.is_null()) {
       skip_branch();
-      return 0;
+      return false;
     }
     result = (nm == default_symbol
-	      || color_dictionary.lookup(nm) != 0);
+	      || color_dictionary.lookup(nm) != 0 /* nullptr */);
   }
   else if (c == 'c') {
     tok.next();
     tok.skip();
     charinfo *ci = tok.get_char(true /* required */);
-    if (ci == 0) {
+    if (ci == 0 /* nullptr */) {
       skip_branch();
-      return 0;
+      return false;
     }
     result = character_exists(ci, curenv);
     tok.next();
@@ -6021,7 +5989,7 @@ static bool do_if_request()
     symbol nm = get_long_name(true /* required */);
     if (nm.is_null()) {
       skip_branch();
-      return 0;
+      return false;
     }
     result = is_font_name(curenv->get_family()->nm, nm);
   }
@@ -6030,12 +5998,12 @@ static bool do_if_request()
     symbol nm = get_long_name(true /* required */);
     if (nm.is_null()) {
       skip_branch();
-      return 0;
+      return false;
     }
     result = is_abstract_style(nm);
   }
   else if (tok.is_space())
-    result = 0;
+    result = false;
   else if (tok.is_usable_as_delimiter()) {
     token delim = tok;
     int delim_level = input_stack::get_level();
@@ -6052,10 +6020,11 @@ static bool do_if_request()
 		  " comparison operator (got %1)", tok.description());
 	  tok.next();
 	  curenv = oldenv;
-	  return 0;
+	  return false;
 	}
 	if (tok == delim
-	    && (compatible_flag || input_stack::get_level() == delim_level))
+	    && (compatible_flag
+	        || input_stack::get_level() == delim_level))
 	  break;
 	tok.process();
       }
@@ -6075,7 +6044,7 @@ static bool do_if_request()
     units n;
     if (!get_number(&n, 'u')) {
       skip_branch();
-      return 0;
+      return false;
     }
     else
       result = n > 0;
@@ -8436,9 +8405,6 @@ int main(int argc, char **argv)
 	warning(WARN_FONT, "cannot mount font '%1' directed by 'DESC'"
 		" file for device '%2'", font::font_name_table[i],
 		device);
-  if (fflag && !(is_family_valid(default_family.contents())))
-      fatal("'%1' is not a valid font family",
-	    default_family.contents());
   curdiv = topdiv = new top_level_diversion;
   if (nflag)
     topdiv->set_next_page_number(next_page_number);

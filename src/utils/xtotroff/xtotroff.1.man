@@ -62,13 +62,16 @@ font metrics
 .YS
 .
 .
+.P
 .SY xtotroff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY xtotroff
 .B \-v
+.YS
 .
 .SY xtotroff
 .B \%\-\-version

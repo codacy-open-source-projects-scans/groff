@@ -321,7 +321,7 @@ void environment::add_char(charinfo *ci)
       start_line();
 #if 0
     fprintf(stderr, "current line is\n");
-    line->debug_node_list();
+    line->dump_node_list();
 #endif
     if (ci != hyphen_indicator_char)
       line = line->add_char(ci, this, &width_total, &space_total, &gc_np);
@@ -330,7 +330,7 @@ void environment::add_char(charinfo *ci)
   }
 #if 0
   fprintf(stderr, "now after we have added character the line is\n");
-  line->debug_node_list();
+  line->dump_node_list();
 #endif
   if ((!suppress_push) && gc_np) {
     if (gc_np && (gc_np->state == 0 /* nullptr */)) {
@@ -344,7 +344,7 @@ void environment::add_char(charinfo *ci)
   }
 #if 0
   fprintf(stderr, "now we have possibly added the state the line is\n");
-  line->debug_node_list();
+  line->dump_node_list();
 #endif
 }
 
@@ -1075,13 +1075,14 @@ hunits environment::get_title_length()
 
 node *environment::get_prev_char()
 {
-  for (node *nd = (current_tab != TAB_NONE) ? tab_contents : line; nd;
+  for (node *nd = (current_tab != TAB_NONE) ? tab_contents : line;
+       nd != 0 /* nullptr */;
        nd = nd->next) {
     node *last = nd->last_char_node();
     if (last)
       return last;
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 hunits environment::get_prev_char_width()
@@ -1153,7 +1154,7 @@ void environment::width_registers()
   vunits real_min = V0;
   vunits real_max = V0;
   vunits v1, v2;
-  for (node *tem = line; tem; tem = tem->next) {
+  for (node *tem = line; tem != 0 /* nullptr */; tem = tem->next) {
     tem->vertical_extent(&v1, &v2);
     v1 += cur;
     if (v1 < real_min)
@@ -1293,32 +1294,9 @@ static void select_font()
   skip_line();
 }
 
-bool is_family_valid(const char *fam)
-{
-#if 0 // C++11, some day
-  std::vector<const char *> styles{"R", "I", "B", "BI"}; // C++11
-  for (auto style : styles) // C++11
-#else
-  const size_t nstyles = 4;
-  const char *st[nstyles] = { "R", "I", "B", "BI" };
-  std::vector<const char *> styles(st, (st + nstyles));
-  std::vector<const char *>::iterator style;
-  for (style = styles.begin(); style != styles.end(); style++)
-#endif
-    if (!is_font_name(fam, *style))
-      return false;
-  return true;
-}
-
 void family_change()
 {
   symbol s = get_name();
-  if (s != 0 /* nullptr */)
-    if (!is_family_valid(s.contents())) {
-      error("'%1' is not a valid font family", s.contents());
-      skip_line();
-      return;
-    }
   curenv->set_family(s);
   skip_line();
 }
@@ -2085,7 +2063,7 @@ breakpoint *environment::choose_breakpoint()
       output_warning(WARN_BREAK, "cannot break line");
     return best_bp;
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 void environment::hyphenate_line(bool must_break_here)
@@ -2196,7 +2174,7 @@ static void distribute_space(node *nd, int nspaces,
     if (Ems > spread_limit)
       output_warning(WARN_BREAK, "spreading %1m per space", Ems);
   }
-  for (node *tem = nd; tem; tem = tem->next)
+  for (node *tem = nd; tem != 0 /* nullptr */; tem = tem->next)
     tem->spread_space(&nspaces, &desired_space);
   if (force_reverse_node_list || do_reverse_node_list)
     (void)node_list_reverse(nd);
@@ -2368,7 +2346,7 @@ node *environment::make_tag(const char *nm, int i)
     m.append_int(i);
     return new special_node(m);
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 void environment::dump_troff_state()
@@ -2396,7 +2374,7 @@ void environment::dump_troff_state()
 void environment::dump_node_list()
 {
   if (line != 0 /* nullptr */)
-    line->debug_node_list();
+    line->dump_node_list();
 }
 
 statem *environment::construct_state(bool has_only_eol)
@@ -2971,7 +2949,7 @@ void line_tabs_request()
   skip_line();
 }
 
-int environment::get_using_line_tabs()
+int environment::is_using_line_tabs()
 {
   return using_line_tabs;
 }
@@ -3079,7 +3057,7 @@ void environment::start_field()
     has_current_field = true;
     field_spaces = 0;
     tab_field_spaces = 0;
-    for (node *p = line; p; p = p->next)
+    for (node *p = line; p != 0 /* nullptr */; p = p->next)
       if (p->nspaces()) {
 	p->freeze_space();
 	space_total--;
@@ -3515,7 +3493,7 @@ void environment::print_env()
 	     line_number_multiple > 1
 	       ? i_to_a(line_number_multiple) : "",
 	     line_number_multiple > 1 ? "s" : "");
-    errprint("  lines remaining for which to supress numbering: %1\n",
+    errprint("  lines remaining for which to suppress numbering: %1\n",
 	     no_number_count);
   }
   string hf = hyphenation_mode ? "on" : "off";
@@ -3568,6 +3546,7 @@ void print_env()
 static void print_nodes_from_input_line()
 {
   curenv->dump_node_list();
+  skip_line();
 }
 
 // Hyphenation - TeX's hyphenation algorithm with a less fancy implementation.
@@ -4200,7 +4179,7 @@ void init_env_requests()
   init_int_env_reg(".it", get_input_trap_line_count);
   init_int_env_reg(".itc", get_input_trap_respects_continuation);
   init_string_env_reg(".itm", get_input_trap_macro);
-  init_int_env_reg(".linetabs", get_using_line_tabs);
+  init_int_env_reg(".linetabs", is_using_line_tabs);
   init_hunits_env_reg(".lt", get_title_length);
   init_unsigned_env_reg(".j", get_adjust_mode);
   init_hunits_env_reg(".k", get_text_length);

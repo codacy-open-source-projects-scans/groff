@@ -52,16 +52,20 @@ documents
 .YS
 .
 .
+.P
 .SY @g@chem
 .B \-h
+.YS
 .
 .SY @g@chem
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@chem
 .B \-v
+.YS
 .
 .SY @g@chem
 .B \%\-\-version

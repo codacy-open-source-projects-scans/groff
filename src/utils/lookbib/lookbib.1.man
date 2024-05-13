@@ -59,13 +59,16 @@
 .YS
 .
 .
+.P
 .SY @g@lookbib
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@lookbib
 .B \-v
+.YS
 .
 .SY @g@lookbib
 .B \%\-\-version

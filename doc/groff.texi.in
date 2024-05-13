@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle April 2024
+@subtitle May 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -8355,10 +8355,10 @@ requests and escape sequences that define registers or strings or alter
 the formatting environment (as with changes to the size, face, height,
 slant, or color of the type) are not productive.@footnote{If you're not
 sure whether an input line has been productive, you can use the
-@code{pline} request to see whether it produced any formatting nodes.
-@xref{Debugging}.}  We will also preview the output line continuation
-escape sequence, @code{\c}, which ``connects'' two input lines that
-would otherwise be counted separately.  @footnote{@xref{Line
+@code{pline} request before and after it to see whether it produced any
+output nodes.  @xref{Debugging}.}  We will also preview the output line
+continuation escape sequence, @code{\c}, which ``connects'' two input
+lines that would otherwise be counted separately.  @footnote{@xref{Line
 Continuation}.}
 
 @Example
@@ -17029,8 +17029,8 @@ exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
 colors, composite characters, environments, hyphenation exceptions,
-registers, page location traps, and a list of nodes corresponding to
-the most recent input line to the standard error stream.
+registers, page location traps, and a list of pending output nodes
+corresponding to the previous input line to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
@@ -17145,13 +17145,13 @@ suffixed with a tab and asterisk (@code{*}).
 @endDefreq
 
 @Defreq {pline, }
-@cindex dumping node list of most recent input line (@code{pline})
-@cindex node list of most recent input line, dumping (@code{pline})
-@cindex most recent input line, dumping node list of (@code{pline})
-Report, to the standard error stream, the list of nodes corresponding to
-the most recently seen input line.  The list is empty if there was no
-previous input line or if it was not productive; recall
-@xref{Manipulating Filling and Adjustment}.
+@cindex dumping pending output line node list (@code{pline})
+@cindex node list, of pending output line, dumping (@code{pline})
+@cindex output line, node list of pending, dumping (@code{pline})
+@cindex pending node list of output line, dumping (@code{pline})
+Report, to the standard error stream, the list of output nodes
+corresponding to the pending output line.  The list is empty if there
+are none.
 @endDefreq
 
 @Defreq {pm, }
@@ -17820,8 +17820,8 @@ may exist, using any valid identifiers for their names
 @cindex sizes, fractional
 @cindex @code{ps} request, incompatibilities with @acronym{AT&T}@
 @code{troff}
-Fractional type sizes cause one noteworthy incompatibility.  In
-@acronym{AT&T} @code{troff} the @code{ps} request ignores scaling units
+Fractional type size support causes an incompatibility.  In
+@acronym{AT&T} @code{troff}, the @code{ps} request ignores scaling units
 and thus @samp{.ps 10u} sets the type size to 10@tie{}points, whereas in
 GNU @code{troff} it sets the type size to 10@tie{}@emph{scaled} points.
 @xref{Using Fractional Type Sizes}.

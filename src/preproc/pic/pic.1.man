@@ -74,6 +74,7 @@ or TeX
 .YS
 .
 .
+.P
 .SY @g@pic
 .B \-t
 .RB [ \-cCSUz ]
@@ -81,13 +82,16 @@ or TeX
 .YS
 .
 .
+.P
 .SY @g@pic
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@pic
 .B \-v
+.YS
 .
 .SY @g@pic
 .B \%\-\-version

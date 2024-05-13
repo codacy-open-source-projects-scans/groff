@@ -75,6 +75,7 @@ documents
 .SY "groff \-me"
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY "groff \-m me"
 .RI [ option\~ .\|.\|.\&]

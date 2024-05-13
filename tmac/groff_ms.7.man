@@ -55,6 +55,7 @@ manuscript macro package for formatting documents
 .SY "groff \-m@TMAC_S_PREFIX@s"
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY "groff \-m m@TMAC_S_PREFIX@s"
 .RI [ option\~ .\|.\|.\&]

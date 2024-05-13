@@ -60,6 +60,7 @@ output driver for typewriter-like (terminal) devices
 .YS
 .
 .
+.P
 .SY "grotty \-c"
 .RB [ \-bBdfhouU ]
 .RB [ \-F\~\c
@@ -68,13 +69,16 @@ output driver for typewriter-like (terminal) devices
 .YS
 .
 .
+.P
 .SY grotty
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grotty
 .B \-v
+.YS
 .
 .SY grotty
 .B \%\-\-version

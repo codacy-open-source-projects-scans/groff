@@ -43,13 +43,16 @@ equation into a cropped image
 .YS
 .
 .
+.P
 .SY eqn2graph
 .B \-\-help
 .YS
 .
 .
+.P
 .SY eqn2graph
 .B \-v
+.YS
 .
 .SY eqn2graph
 .B \%\-\-version

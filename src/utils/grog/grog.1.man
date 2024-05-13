@@ -55,16 +55,20 @@ command a document requires
 .YS
 .
 .
+.P
 .SY grog
 .B \-h
+.YS
 .
 .SY grog
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grog
 .B \-v
+.YS
 .
 .SY grog
 .B \%\-\-version

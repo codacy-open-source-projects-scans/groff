@@ -78,13 +78,16 @@ or MathML
 .YS
 .
 .
+.P
 .SY @g@eqn
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@eqn
 .B \-v
+.YS
 .
 .SY @g@eqn
 .B \%\-\-version

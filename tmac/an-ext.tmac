@@ -1,6 +1,6 @@
 .\" groff extension macros for man(7) package
 .\"
-.\" Copyright (C) 2007-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 2007-2024 Free Software Foundation, Inc.
 .\"
 .\" Written by Eric S. Raymond <esr@thyrsus.com>
 .\"            Werner Lemberg <wl@gnu.org>
@@ -55,35 +55,59 @@
 .
 .\" Declare start of command synopsis.  Sets up hanging indentation.
 .de SY
-.  ie !\\n(mS \{\
-.    mY
-.    nh
-.    nr mS 1
-.    nr mA \\n(.j
+.  ie \\n(.$ \{\
+.    if !\\n(mS \{\
+.      mY
+.      nh
+.      nr mS 1
+.      nr mA \\n(.j
+.      nr mI \\n(.i
+.      nr mT \\n(.k+\w'\fB\\$1\fP'
+.      if \\n(.$=1 \
+.        nr mT +\w'\ '
+.      if \\n(.$>1 \
+.        nr mT +\w'\fB\\$2\fP'
+.    \}
+.
 .    ad l
-.    nr mI \\n(.i
-.    sp
+.    \" Ensure that a partially collected line exists so that the `in`
+.    \" request affects only _subsequent_ output lines.  (CSTR #54 §6)
+\&\c
+'    in +\\n(mTu
+.
+.    if \\n(.$=1 \{\
+.      do nr .X +0 \" Ensure this Heirloom register exists for testing.
+.      \" If the formatter is not groff, work around DWB/Heirloom/
+.      \" Solaris 10 glitch.  Something in their man(7) defeats the
+.      \" rules set forth in CSTR #54 §6.
+.      if \\n(.g=0:\\n(.X \
+'        ti -\\n(mTu
+.      B \\$1\ \c
+.    \}
+.    if \\n(.$>1 \
+.      B \\$1\\$2\c
 .  \}
 .  el \{\
-.    br
-.    ns
+.    \" If (invalidly) given no arguments, do as little as possible.
+.    \" Set these registers for subsequent `YS` use.
+.    nr mA \\n(.j
+.    nr mI \\n(.i
 .  \}
-.
-.  nr mT \w'\fB\\$1\fP\ '
-.  HP \\n(mTu
-.  rr mT
-.  B "\\$1"
 ..
 .
 .
-.\" End of command synopsis.  Restores adjustment.
+.\" End of command synopsis.
 .de YS
 .  in \\n(mIu
 .  ad \\n(mA
 .  hy \\n(mH
-.  rr mA
-.  rr mI
 .  nr mS 0
+.
+.  if !\\n(.$ \{\
+.    rr mA
+.    rr mI
+.    rr mT
+.  \}
 ..
 .
 .

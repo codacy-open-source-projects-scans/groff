@@ -73,16 +73,20 @@ output in X11
 .YS
 .
 .
+.P
 .SY gxditview
 .B \-help
+.YS
 .
 .SY gxditview
 .B \-\-help
 .YS
 .
 .
+.P
 .SY gxditview
 .B \-version
+.YS
 .
 .SY gxditview
 .B \%\-\-version

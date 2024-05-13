@@ -210,8 +210,12 @@
 .nr doc-punct? 3
 .nr doc-punct! 3
 .
+.\" Macros that are part of the external interface (Dd, Sh, Pp, etc.) or
+.\" that are called by traps of any kind must be defined with `de1`
+.\" because they might be called from a context where compatibility mode
+.\" is enabled.  For other macros, `de` suffices.
 .
-.\" Define alternate requests to handle continuous rendering.
+.\" Define replacements for requests to handle continuous rendering.
 .\"
 .\" This .ne replacement avoids page breaks; instead, the page length is
 .\" increased to the necessary amount (this is needed for tables).
@@ -1027,7 +1031,7 @@
 .\" NS   doc-hs-len-prev
 .
 .eo
-.de doc-header
+.de1 doc-header
 .  ds doc-xref \*[doc-page-identifier-font]\*[doc-page-identifier]\f[]\"
 .  as doc-xref \*[doc-page-section-font](\*[doc-section])\f[]\"
 .  ds doc-abbv \*[doc-page-identifier]\"
@@ -1070,7 +1074,7 @@
 .\" NS doc-break-body-text
 .\" NS   Schedule a page break when the next output line is written (not
 .\" NS   called if continuously rendering).
-.de doc-break-body-text
+.de1 doc-break-body-text
 '  bp
 ..
 .
@@ -1083,7 +1087,7 @@
 .\" NS   doc-page-id
 .
 .eo
-.de doc-footer
+.de1 doc-footer
 .  ds doc-xref \*[doc-page-identifier-font]\*[doc-page-identifier]\f[]\"
 .  as doc-xref \*[doc-page-section-font](\*[doc-section])\f[]\"
 .  ds doc-page-id \n[%]
@@ -1159,7 +1163,7 @@
 .\" NS   doc-end-previous-document
 .
 .eo
-.de doc-end-macro
+.de1 doc-end-macro
 .  doc-check-depth
 .
 .  if \n[cR] \{\

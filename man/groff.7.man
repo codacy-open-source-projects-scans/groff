@@ -3986,10 +3986,9 @@ Change page length to
 .REQ .pline
 Report,
 to the standard error stream,
-the list of nodes corresponding to the most recently seen input line.
+the list of output nodes corresponding to the pending output line.
 .
-The list is empty if there was no previous input line or if it was not
-productive.
+The list is empty if there are none.
 .
 .TPx
 .REQ .pm
@@ -8425,7 +8424,8 @@ registers
 .RB ( .pnr );
 page location traps
 .RB ( .ptr );
-and a list of nodes corresponding to the most recent input line
+and a list of pending output nodes corresponding to the previous input
+line
 .RB ( .pline )
 to the standard error stream.
 .\" END Keep (roughly) parallel with groff.texi node "Debugging".

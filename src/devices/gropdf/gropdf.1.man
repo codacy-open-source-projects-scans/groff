@@ -78,13 +78,16 @@ output driver for Portable Document Format
 .YS
 .
 .
+.P
 .SY gropdf
 .B \-\-help
 .YS
 .
 .
+.P
 .SY gropdf
 .B \-v
+.YS
 .
 .SY gropdf
 .B \%\-\-version

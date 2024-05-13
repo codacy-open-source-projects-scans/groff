@@ -85,13 +85,16 @@ for TTY (terminal) devices
 .YS
 .
 .
+.P
 .SY @g@nroff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@nroff
 .B \-v
+.YS
 .
 .SY @g@nroff
 .B \%\-\-version

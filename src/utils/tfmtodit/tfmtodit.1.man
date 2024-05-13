@@ -72,13 +72,16 @@ and
 .YS
 .
 .
+.P
 .SY tfmtodit
 .B \-\-help
 .YS
 .
 .
+.P
 .SY tfmtodit
 .B \-v
+.YS
 .
 .SY tfmtodit
 .B \%\-\-version

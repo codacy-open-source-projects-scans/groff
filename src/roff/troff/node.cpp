@@ -36,7 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "charinfo.h"
 #include "input.h"
 #include "geometry.h"
-#include "unicode.h" // valid_unicode_code_sequence()
 
 #include "nonposix.h"
 
@@ -1845,8 +1844,9 @@ public:
   int overlaps_horizontally();
 };
 
-charinfo_node::charinfo_node(charinfo *c, statem *s, int pop, node *x)
-: node(x, s, pop), ci(c)
+charinfo_node::charinfo_node(charinfo *c, statem *s, int divlevel,
+			     node *x)
+: node(x, s, divlevel), ci(c)
 {
 }
 
@@ -1910,7 +1910,7 @@ public:
   const char *type();
   int force_tprint();
   bool is_tag();
-  void debug_node();
+  void dump_node();
 };
 
 class ligature_node : public glyph_node {
@@ -1992,6 +1992,7 @@ public:
   const char *type();
   int force_tprint();
   bool is_tag();
+  void dump_node();
 };
 
 void *ligature_node::operator new(size_t n)
@@ -2005,8 +2006,8 @@ void ligature_node::operator delete(void *p)
 }
 
 glyph_node::glyph_node(charinfo *c, tfont *t, color *gc, color *fc,
-		       statem *s, int pop, node *x)
-: charinfo_node(c, s, pop, x), tf(t), gcol(gc), fcol(fc)
+		       statem *s, int divlevel, node *x)
+: charinfo_node(c, s, divlevel, x), tf(t), gcol(gc), fcol(fc)
 {
 #ifdef STORE_WIDTH
   wid = tf->get_width(ci);
@@ -2016,8 +2017,8 @@ glyph_node::glyph_node(charinfo *c, tfont *t, color *gc, color *fc,
 #ifdef STORE_WIDTH
 glyph_node::glyph_node(charinfo *c, tfont *t,
 		       color *gc, color *fc, hunits w,
-		       statem *s, int pop, node *x)
-: charinfo_node(c, s, pop, x), tf(t), gcol(gc), fcol(fc), wid(w)
+		       statem *s, int divlevel, node *x)
+: charinfo_node(c, s, divlevel, x), tf(t), gcol(gc), fcol(fc), wid(w)
 {
 }
 #endif
@@ -2182,35 +2183,36 @@ void glyph_node::ascii_print(ascii_output_file *ascii)
     ascii->outs(ci->nm.contents());
 }
 
-void glyph_node::debug_node()
+void glyph_node::dump_node()
 {
   unsigned char c = ci->get_ascii_code();
-  fprintf(stderr, "{ %s [", type());
+  fprintf(stderr, "{type: %s, character: ", type());
   if (c)
-    fprintf(stderr, "%c", c);
+    fprintf(stderr, "\"%c\"", c);
   else
-    fprintf(stderr, "%s", ci->nm.contents());
+    fprintf(stderr, "\"\\%s\"", ci->nm.contents());
+  fputs(", ", stderr);
   if (push_state)
-    fprintf(stderr, " <push_state>");
+    fprintf(stderr, "push_state, ");
   if (state)
     state->display_state();
-  fprintf(stderr, " nest level %d", div_nest_level);
-  fprintf(stderr, "]}\n");
+  fprintf(stderr, "diversion level: %d", div_nest_level);
+  fprintf(stderr, "}");
   fflush(stderr);
 }
 
 ligature_node::ligature_node(charinfo *c, tfont *t, color *gc, color *fc,
 			     node *gn1, node *gn2, statem *s,
-			     int pop, node *x)
-: glyph_node(c, t, gc, fc, s, pop, x), n1(gn1), n2(gn2)
+			     int divlevel, node *x)
+: glyph_node(c, t, gc, fc, s, divlevel, x), n1(gn1), n2(gn2)
 {
 }
 
 #ifdef STORE_WIDTH
 ligature_node::ligature_node(charinfo *c, tfont *t, color *gc, color *fc,
 			     hunits w, node *gn1, node *gn2, statem *s,
-			     int pop, node *x)
-: glyph_node(c, t, gc, fc, w, s, pop, x), n1(gn1), n2(gn2)
+			     int divlevel, node *x)
+: glyph_node(c, t, gc, fc, w, s, divlevel, x), n1(gn1), n2(gn2)
 {
 }
 #endif
@@ -2254,13 +2256,14 @@ node *ligature_node::add_self(node *n, hyphen_list **p)
 }
 
 kern_pair_node::kern_pair_node(hunits n, node *first, node *second,
-			       statem* s, int pop, node *x)
-: node(x, s, pop), amount(n), n1(first), n2(second)
+			       statem* s, int divlevel, node *x)
+: node(x, s, divlevel), amount(n), n1(first), n2(second)
 {
 }
 
-dbreak_node::dbreak_node(node *n, node *p, statem *s, int pop, node *x)
-: node(x, s, pop), none(n), pre(p), post(0)
+dbreak_node::dbreak_node(node *n, node *p, statem *s, int divlevel,
+			 node *x)
+: node(x, s, divlevel), none(n), pre(p), post(0)
 {
 }
 
@@ -2550,23 +2553,24 @@ units node::size()
   return points_to_units(10);
 }
 
-void node::debug_node()
+void node::dump_node()
 {
-  fprintf(stderr, "{ %s ", type());
+  fprintf(stderr, "{type: %s, ", type());
   if (push_state)
-    fprintf(stderr, " <push_state>");
+    fprintf(stderr, "<push_state>, ");
   if (state)
-    fprintf(stderr, " <state>");
-  fprintf(stderr, " nest level %d", div_nest_level);
-  fprintf(stderr, " }\n");
+    fprintf(stderr, "<state>, ");
+  fprintf(stderr, "diversion level: %d", div_nest_level);
+  fprintf(stderr, "}");
   fflush(stderr);
 }
 
-void node::debug_node_list()
+void node::dump_node_list()
 {
   // It's stored in reverse order already; this puts it forward again.
   std::stack<node *> reversed_node_list;
   node *n = next;
+  bool need_comma = false;
 
   assert(next != 0 /* nullptr */);
   do {
@@ -2574,9 +2578,14 @@ void node::debug_node_list()
     n = n->next;
   } while (n != 0 /* nullptr */);
   while (!reversed_node_list.empty()) {
-    reversed_node_list.top()->debug_node();
+    if (need_comma)
+      fputs(",\n", stderr);
+    reversed_node_list.top()->dump_node();
     reversed_node_list.pop();
+    need_comma = true;
   }
+  fputc('\n', stderr);
+  fflush(stderr);
 }
 
 hunits kern_pair_node::width()
@@ -2663,8 +2672,8 @@ node *node::add_italic_correction(hunits *wd)
 }
 
 italic_corrected_node::italic_corrected_node(node *nn, hunits xx, statem *s,
-					     int pop, node *p)
-: node(p, s, pop), n(nn), x(xx)
+					     int divlevel, node *p)
+: node(p, s, divlevel), n(nn), x(xx)
 {
   assert(n != 0 /* nullptr */);
 }
@@ -2800,8 +2809,9 @@ break_char_node::break_char_node(node *n, int bc, int pbc, color *c, node *x)
 }
 
 break_char_node::break_char_node(node *n, int bc, int pbc, color *c,
-				 statem *s, int pop, node *x)
-: node(x, s, pop), ch(n), break_code(bc), prev_break_code(pbc), col(c)
+				 statem *s, int divlevel, node *x)
+: node(x, s, divlevel), ch(n), break_code(bc), prev_break_code(pbc),
+  col(c)
 {
 }
 
@@ -2928,8 +2938,8 @@ node *extra_size_node::copy()
   return new extra_size_node(n, state, div_nest_level);
 }
 
-extra_size_node::extra_size_node(vunits i, statem *s, int pop)
-: node(0, s, pop), n(i)
+extra_size_node::extra_size_node(vunits i, statem *s, int divlevel)
+: node(0, s, divlevel), n(i)
 {
 }
 
@@ -2943,8 +2953,9 @@ node *vertical_size_node::copy()
   return new vertical_size_node(n, state, div_nest_level);
 }
 
-vertical_size_node::vertical_size_node(vunits i, statem *s, int pop)
-: node(0, s, pop), n(i)
+vertical_size_node::vertical_size_node(vunits i, statem *s,
+				       int divlevel)
+: node(0, s, divlevel), n(i)
 {
 }
 
@@ -2968,8 +2979,8 @@ vmotion_node::vmotion_node(vunits i, color *c)
 {
 }
 
-vmotion_node::vmotion_node(vunits i, color *c, statem *s, int pop)
-: node(0, s, pop), n(i), col(c)
+vmotion_node::vmotion_node(vunits i, color *c, statem *s, int divlevel)
+: node(0, s, divlevel), n(i), col(c)
 {
 }
 
@@ -2999,8 +3010,9 @@ hline_node::hline_node(hunits i, node *c, node *nxt)
 {
 }
 
-hline_node::hline_node(hunits i, node *c, statem *s, int pop, node *nxt)
-: node(nxt, s, pop), x(i), n(c)
+hline_node::hline_node(hunits i, node *c, statem *s, int divlevel,
+		       node *nxt)
+: node(nxt, s, divlevel), x(i), n(c)
 {
 }
 
@@ -3019,8 +3031,9 @@ vline_node::vline_node(vunits i, node *c, node *nxt)
 {
 }
 
-vline_node::vline_node(vunits i, node *c, statem *s, int pop, node *nxt)
-: node(nxt, s, pop), x(i), n(c)
+vline_node::vline_node(vunits i, node *c, statem *s,
+		       int divlevel, node *nxt)
+: node(nxt, s, divlevel), x(i), n(c)
 {
 }
 
@@ -3040,8 +3053,8 @@ hunits vline_node::width()
   return n == 0 ? H0 : n->width();
 }
 
-zero_width_node::zero_width_node(node *nd, statem *s, int pop)
-: node(0, s, pop), n(nd)
+zero_width_node::zero_width_node(node *nd, statem *s, int divlevel)
+: node(0, s, divlevel), n(nd)
 {
 }
 
@@ -3101,8 +3114,8 @@ overstrike_node::overstrike_node()
 {
 }
 
-overstrike_node::overstrike_node(statem *s, int pop)
-: node(0, s, pop), list(0), max_width(H0)
+overstrike_node::overstrike_node(statem *s, int divlevel)
+: node(0, s, divlevel), list(0), max_width(H0)
 {
 }
 
@@ -3143,8 +3156,8 @@ bracket_node::bracket_node()
 {
 }
 
-bracket_node::bracket_node(statem *s, int pop)
-: node(0, s, pop), list(0), max_width(H0)
+bracket_node::bracket_node(statem *s, int divlevel)
+: node(0, s, divlevel), list(0), max_width(H0)
 {
 }
 
@@ -3203,8 +3216,8 @@ space_node::space_node(hunits nn, color *c, node *p)
 }
 
 space_node::space_node(hunits nn, int s, int flag, color *c, statem *st,
-		       int pop, node *p)
-: node(p, st, pop), n(nn), set(s), was_escape_colon(flag), col(c)
+		       int divlevel, node *p)
+: node(p, st, divlevel), n(nn), set(s), was_escape_colon(flag), col(c)
 {
 }
 
@@ -3285,9 +3298,9 @@ void space_node::is_escape_colon()
   was_escape_colon = 1;
 }
 
-diverted_space_node::diverted_space_node(vunits d, statem *s, int pop,
-					 node *p)
-: node(p, s, pop), n(d)
+diverted_space_node::diverted_space_node(vunits d, statem *s,
+					 int divlevel, node *p)
+: node(p, s, divlevel), n(d)
 {
 }
 
@@ -3302,8 +3315,8 @@ node *diverted_space_node::copy()
 }
 
 diverted_copy_file_node::diverted_copy_file_node(symbol s, statem *st,
-						 int pop, node *p)
-: node(p, st, pop), filename(s)
+						 int divlevel, node *p)
+: node(p, st, divlevel), filename(s)
 {
 }
 
@@ -3605,9 +3618,10 @@ void hmotion_node::asciify(macro *m)
 }
 
 space_char_hmotion_node::space_char_hmotion_node(hunits i, color *c,
-						 statem *s, int pop,
+						 statem *s,
+						 int divlevel,
 						 node *nxt)
-: hmotion_node(i, c, s, pop, nxt)
+: hmotion_node(i, c, s, divlevel, nxt)
 {
 }
 
@@ -3876,9 +3890,10 @@ special_node::special_node(const macro &m, int n)
 
 special_node::special_node(const macro &m, tfont *t,
 			   color *gc, color *fc,
-			   statem *s, int pop,
+			   statem *s, int divlevel,
 			   int n)
-: node(0, s, pop), mac(m), tf(t), gcol(gc), fcol(fc), no_init_string(n)
+: node(0, s, divlevel), mac(m), tf(t), gcol(gc), fcol(fc),
+  no_init_string(n)
 {
   is_special = 1;
 }
@@ -3954,9 +3969,9 @@ suppress_node::suppress_node(symbol f, char p, int id)
 
 suppress_node::suppress_node(int issue_limits, int on_or_off,
 			     symbol f, char p, int id,
-			     statem *s, int pop)
-: node(0, s, pop), is_on(on_or_off), emit_limits(issue_limits), filename(f),
-  position(p), image_id(id)
+			     statem *s, int divlevel)
+: node(0, s, divlevel), is_on(on_or_off), emit_limits(issue_limits),
+  filename(f), position(p), image_id(id)
 {
 }
 
@@ -3994,8 +4009,8 @@ tag_node::tag_node(string s, int delay)
   is_special = !delay;
 }
 
-tag_node::tag_node(string s, statem *st, int pop, int delay)
-: node(0, st, pop), tag_string(s), delayed(delay)
+tag_node::tag_node(string s, statem *st, int divlevel, int delay)
+: node(0, st, divlevel), tag_string(s), delayed(delay)
 {
   is_special = !delay;
 }
@@ -4267,8 +4282,8 @@ public:
 };
 
 composite_node::composite_node(node *p, charinfo *c, tfont *t, statem *s,
-			       int pop, node *x)
-: charinfo_node(c, s, pop, x), n(p), tf(t)
+			       int divlevel, node *x)
+: charinfo_node(c, s, divlevel, x), n(p), tf(t)
 {
 }
 
@@ -4401,9 +4416,10 @@ word_space_node::word_space_node(hunits d, color *c, width_list *w, node *x)
 {
 }
 
-word_space_node::word_space_node(hunits d, int s, color *c, width_list *w,
-				 int flag, statem *st, int pop, node *x)
-: space_node(d, s, 0, c, st, pop, x), orig_width(w), unformat(flag)
+word_space_node::word_space_node(hunits d, int s, color *c,
+				 width_list *w, int flag, statem *st,
+				 int divlevel, node *x)
+: space_node(d, s, 0, c, st, divlevel, x), orig_width(w), unformat(flag)
 {
 }
 
@@ -4463,9 +4479,10 @@ unbreakable_space_node::unbreakable_space_node(hunits d, color *c, node *x)
 }
 
 unbreakable_space_node::unbreakable_space_node(hunits d, int s,
-					       color *c, statem *st, int pop,
+					       color *c, statem *st,
+					       int divlevel,
 					       node *x)
-: word_space_node(d, s, c, 0, 0, st, pop, x)
+: word_space_node(d, s, c, 0, 0, st, divlevel, x)
 {
 }
 
@@ -4519,8 +4536,8 @@ draw_node::draw_node(char c, hvpair *p, int np, font_size s,
 }
 
 draw_node::draw_node(char c, hvpair *p, int np, font_size s,
-		     color *gc, color *fc, statem *st, int pop)
-: node(0, st, pop), npoints(np), sz(s), gcol(gc), fcol(fc), code(c)
+		     color *gc, color *fc, statem *st, int divlevel)
+: node(0, st, divlevel), npoints(np), sz(s), gcol(gc), fcol(fc), code(c)
 {
   point = new hvpair[npoints];
   for (int i = 0; i < npoints; i++)
@@ -4927,27 +4944,6 @@ static node *make_glyph_node(charinfo *s, environment *env,
   if (fontno < 0) {
     error("cannot format glyph: no current font");
     return 0 /* nullptr */;
-  }
-  const char *seq = valid_unicode_code_sequence(s->nm.contents());
-  if (seq != 0 /* nullptr */) {
-    // If it is a multi-character sequence like u1234_5678, every code
-    // point after the first must have (or be) a composite mapping.
-    char codepoint[5] = { 0, 0, 0, 0, 0 };
-    bool is_composite_glyph_valid = true;
-    while ((seq = strchr(seq, '_')) != 0 /* nullptr */) {
-      seq++;
-      (void) strncpy(codepoint, seq, 4);
-      if (!is_codepoint_composite(codepoint)) {
-	is_composite_glyph_valid = false;
-	break;
-      }
-      seq += 4;
-    }
-    if (!is_composite_glyph_valid) {
-      error("cannot format glyph: '%1' is not a valid composite"
-	    " character", s->nm.contents());
-      return 0 /* nullptr */;
-    }
   }
   assert(fontno < font_table_size && font_table[fontno] != 0);
   int fn = fontno;
@@ -5458,9 +5454,10 @@ left_italic_corrected_node::left_italic_corrected_node(node *xx)
 {
 }
 
-left_italic_corrected_node::left_italic_corrected_node(statem *s, int pop,
+left_italic_corrected_node::left_italic_corrected_node(statem *s,
+						       int divlevel,
 						       node *xx)
-: node(xx, s, pop), n(0)
+: node(xx, s, divlevel), n(0)
 {
 }
 
@@ -5786,6 +5783,30 @@ int dbreak_node::force_tprint()
 bool dbreak_node::is_tag()
 {
   return false;
+}
+
+void dbreak_node::dump_node()
+{
+  fprintf(stderr, "{type: %s, ", type());
+  if (push_state)
+    fprintf(stderr, "<push_state>, ");
+  if (state)
+    fprintf(stderr, "<state>, ");
+  fprintf(stderr, " diversion level: %d", div_nest_level);
+  if (none != 0 /* nullptr */) {
+    fputs(", none: ", stderr);
+    none->dump_node();
+  }
+  if (pre != 0 /* nullptr */) {
+    fputs(", pre: ", stderr);
+    pre->dump_node();
+  }
+  if (post != 0 /* nullptr */) {
+    fputs(", post: ", stderr);
+    post->dump_node();
+  }
+  fprintf(stderr, "}");
+  fflush(stderr);
 }
 
 bool break_char_node::is_same_as(node *nd)

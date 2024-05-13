@@ -65,18 +65,22 @@ pdfroff \- construct files in Portable Document Format using
 .YS
 .
 .
+.P
 .SY pdfroff
 .B \-h
+.YS
 .
 .SY pdfroff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY pdfroff
 .B \-v
 .RI [ groff-option
 \&.\|.\|.\&]
+.YS
 .
 .SY pdfroff
 .B \%\-\-version

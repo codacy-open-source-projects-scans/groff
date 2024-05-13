@@ -62,7 +62,7 @@ documents
 .RB [{ \-v | \-V }]
 .RB [ \-\- ]
 .RI [ file\~ .\|.\|.]
-.
+.YS
 .
 .SY glilypond
 .RB [{ \-\-ly2eps | \-\-pdf2eps }]
@@ -81,24 +81,35 @@ documents
 .YS
 .
 .
+.P
 .SY glilypond
 .B \-?
+.YS
+.
 .SY glilypond
 .B \-h
+.YS
+.
 .SY glilypond
 .B \-\-help
+.YS
+.
 .SY glilypond
 .B \-\-usage
 .YS
 .
 .
+.P
 .SY glilypond
 .B \-l
+.YS
+.
 .SY glilypond
 .B \-\-license
 .YS
 .
 .
+.P
 .SY glilypond
 .B \%\-\-version
 .YS

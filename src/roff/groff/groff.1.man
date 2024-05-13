@@ -94,18 +94,22 @@ document formatting system
 .YS
 .
 .
+.P
 .SY groff
 .B \-h
+.YS
 .
 .SY groff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY groff
 .B \-v
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY groff
 .B \%\-\-version

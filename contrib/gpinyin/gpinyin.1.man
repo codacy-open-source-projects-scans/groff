@@ -61,15 +61,20 @@ documents
 .YS
 .
 .
+.P
 .SY gpinyin
 .B \-h
+.YS
 .
 .SY gpinyin
 .B \-\-help
 .YS
 .
+.
+.P
 .SY gpinyin
 .B \-v
+.YS
 .
 .SY gpinyin
 .B \%\-\-version

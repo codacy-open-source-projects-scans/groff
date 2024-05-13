@@ -75,13 +75,16 @@ output driver for TeX DVI format
 .YS
 .
 .
+.P
 .SY grodvi
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grodvi
 .B \-v
+.YS
 .
 .SY grodvi
 .B \%\-\-version

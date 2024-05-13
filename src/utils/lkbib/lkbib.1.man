@@ -63,13 +63,16 @@ lkbib \- search bibliographic databases
 .YS
 .
 .
+.P
 .SY lkbib
 .B \-\-help
 .YS
 .
 .
+.P
 .SY lkbib
 .B \-v
+.YS
 .
 .SY lkbib
 .B \%\-\-version

@@ -54,6 +54,7 @@ groff_mm \- memorandum macros for GNU
 .SY "groff \-m@TMAC_M_PREFIX@m"
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY "groff \-m m@TMAC_M_PREFIX@m"
 .RI [ option\~ .\|.\|.\&]

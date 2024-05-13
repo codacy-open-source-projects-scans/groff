@@ -75,13 +75,16 @@
 .YS
 .
 .
+.P
 .SY @g@indxbib
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@indxbib
 .B \-v
+.YS
 .
 .SY @g@indxbib
 .B \%\-\-version

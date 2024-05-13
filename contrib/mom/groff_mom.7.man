@@ -87,6 +87,7 @@ groff_mom \- modern macros for document composition with GNU
 .B \-mom
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY groff
 .B "\-m mom"

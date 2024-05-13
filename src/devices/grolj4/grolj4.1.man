@@ -75,13 +75,16 @@ output driver for HP LaserJet 4 and compatible printers
 .YS
 .
 .
+.P
 .SY grolj4
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grolj4
 .B \-v
+.YS
 .
 .SY grolj4
 .B \%\-\-version

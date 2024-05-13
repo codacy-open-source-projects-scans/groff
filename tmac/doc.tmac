@@ -54,6 +54,10 @@
 .
 .cp 0
 .
+.\" Macros that are part of the external interface (Dd, Sh, Pp, etc.) or
+.\" that are called by traps of any kind must be defined with `de1`
+.\" because they might be called from a context where compatibility mode
+.\" is enabled.  For other macros, `de` suffices.
 .
 .\" Define a string for use in diagnostic messages.
 .ds doc doc.tmac\"
@@ -7188,7 +7192,7 @@ should this have been '.Em ...'?
 .\" NS   emit warning and print empty line
 .
 .eo
-.de doc-empty-line
+.de1 doc-empty-line
 .  if !\n[doc-display-depth] \
 .    doc-warn empty input line
 .  sp

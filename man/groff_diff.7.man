@@ -3200,10 +3200,9 @@ are suffixed with a tab and asterisk
 .B .pline
 Report,
 to the standard error stream,
-the list of nodes corresponding to the most recently seen input line.
+the list of output nodes corresponding to the pending output line.
 .
-The list is empty if there was no previous input line or if it was not
-productive.
+The list is empty if there are none.
 .
 .
 .TP
@@ -5354,7 +5353,8 @@ registers
 .RB ( pnr ),
 page location traps
 .RB ( ptr ),
-and a list of nodes corresponding to the most recent input line
+and a list of pending output nodes corresponding to the previous input
+line
 .RB ( .pline )
 to the standard error stream.
 .
@@ -5785,10 +5785,10 @@ McIlroy referred to it as a \[lq]living fossil\[rq].]
 .
 .
 .P
-Fractional type sizes cause one noteworthy incompatibility.
+Fractional type size support causes an incompatibility.
 .
 In AT&T
-.I troff \" AT&T
+.IR troff , \" AT&T
 the
 .B ps
 request ignores scaling units and thus

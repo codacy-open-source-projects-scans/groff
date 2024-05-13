@@ -77,13 +77,16 @@
 .YS
 .
 .
+.P
 .SY @g@refer
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@refer
 .B \-v
+.YS
 .
 .SY @g@refer
 .B \%\-\-version

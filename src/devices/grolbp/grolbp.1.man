@@ -69,6 +69,7 @@ output driver for Canon CaPSL printers
 .RB [ \-w\~\c
 .IR width ]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY grolbp
 [\c
@@ -88,16 +89,20 @@ output driver for Canon CaPSL printers
 .YS
 .
 .
+.P
 .SY grolbp
 .B \-h
+.YS
 .
 .SY grolbp
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grolbp
 .B \-v
+.YS
 .
 .SY grolbp
 .B \%\-\-version

@@ -60,16 +60,20 @@ preconv \- prepare files for typesetting with
 .YS
 .
 .
+.P
 .SY preconv
 .B \-h
+.YS
 .
 .SY preconv
 .B \-\-help
 .YS
 .
 .
+.P
 .SY preconv
 .B \-v
+.YS
 .
 .SY preconv
 .B \%\-\-version

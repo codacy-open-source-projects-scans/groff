@@ -73,13 +73,16 @@ PostScript and PDF output
 .YS
 .
 .
+.P
 .SY afmtodit
 .B \-\-help
 .YS
 .
 .
+.P
 .SY afmtodit
 .B \-v
+.YS
 .
 .SY afmtodit
 .B \%\-\-version

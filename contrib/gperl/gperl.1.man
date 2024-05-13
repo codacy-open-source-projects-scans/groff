@@ -51,15 +51,20 @@ documents
 .YS
 .
 .
+.P
 .SY gperl
 .B \-h
+.YS
 .
 .SY gperl
 .B \-\-help
 .YS
 .
+.
+.P
 .SY gperl
 .B \-v
+.YS
 .
 .SY gperl
 .B \%\-\-version

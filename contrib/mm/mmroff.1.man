@@ -57,11 +57,13 @@ macro package
 .YS
 .
 .
+.P
 .SY mmroff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY mmroff
 .B \%\-\-version
 .YS

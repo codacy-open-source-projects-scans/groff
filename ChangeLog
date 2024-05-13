@@ -1,24 +1,230 @@
+2024-05-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (class dbreak_node): Add `dump_node`
+	member function, overriding virtual function in `node` base
+	class.
+	(dbreak_node::dump_node): Disclose more information, namely the
+	contents of any defined glyph nodes within.
+
+2024-05-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (glyph_node::dump_node)
+	(node::dump_node, node::dump_node_list): Tweak output format.
+
+2024-05-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (doc-empty-line):
+	* tmac/mdoc/doc-common (doc-header, doc-break-body-text)
+	(doc-footer, doc-end-macro): Define macros with `de1` instead of
+	`de` so the macro package doesn't throw warnings when used in
+	compatibility mode.
+
+	Fixes <https://savannah.gnu.org/bugs/?65717>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-05-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::get_prev_char)
+	(environment::width_registers, distribute_space)
+	(environment::start_field): Slightly refactor.  Explicitly
+	compare variable of pointer type to null pointer constant
+	instead of letting it pun down to a Boolean.
+
+2024-05-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor.  Rename member
+	function argument indicating the diversion level to be used when
+	constructing a `node` struct from "pop" (a word that suggests
+	action, or a Boolean indicator, to me) to "divlevel", as is
+	already used in the constructors in "node.h".
+	(charinfo_node::charinfo_node, glyph_node::glyph_node)
+	(ligature_node::ligature_node, kern_pair_node::kern_pair_node)
+	(dbreak_node::dbreak_node)
+	(italic_corrected_node::italic_corrected_node)
+	(break_char_node::break_char_node)
+	(extra_size_node::extra_size_node)
+	(vertical_size_node::vertical_size_node)
+	(vmotion_node::vmotion_node, hline_node::hline_node)
+	(vline_node::vline_node, zero_width_node::zero_width_node)
+	(overstrike_node::overstrike_node, bracket_node::bracket_node)
+	(space_node::space_node)
+	(diverted_space_node::diverted_space_node)
+	(diverted_copy_file_node::diverted_copy_file_node)
+	(space_char_hmotion_node::space_char_hmotion_node)
+	(special_node::special_node)
+	(suppress_node::suppress_node, tag_node::tag_node)
+	(composite_node::composite_node)
+	(word_space_node::word_space_node)
+	(unbreakable_space_node::unbreakable_space_node)
+	(draw_node::draw_node)
+	(left_italic_corrected_node::left_italic_corrected_node): Do it.
+
+2024-05-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (print_nodes_from_input_line): Fix
+	elementary mistake in request implementation.  It is essential
+	that requests call `skip_line()` when they are done interpreting
+	arguments--even if there are none, to prevent the newline at the
+	end of the input line from being interpreted as text (and
+	causing a line or word break, depending on filling enablement).
+
+2024-05-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an-ext.tmac (YS): Clear `mS` register unconditionally.
+
+2024-05-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an-ext_SY-and-YS-work.sh: Add test case exercising
+	correct suspension of automatic hyphenation.  Thanks to Alex
+	Colomar for the report and a reproducer.
+
+2024-05-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.h (class environment): Rename member
+	function.
+	* src/roff/troff/env.cpp (environment::get_using_line_tabs):
+	Rename this...
+	(environment::is_using_line_tabs): ...to this.
+	(init_env_requests): Update reference.
+
+2024-05-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::print_env): Fix typo in
+	environment report.
+
+2024-05-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_if_request): Boolify.  Demote
+	`result` from `int` to `bool`.  Assign Boolean literals to it.
+
+2024-05-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (TH): Reset `mE` and `mS` registers from
+	"an-ext.tmac" to zero upon beginning a new document.
+
+2024-05-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Revise and expand `SY` and `YS` macro behavior, largely
+	to accommodate C library function synopses.  `SY` no longer puts
+	vertical space on the output, and initially breaks the output
+	line _only_ if it is encountered repeatedly without a preceding
+	`YS` call.  The computed indentation of synopsis lines after the
+	first now also includes the width of anything on the line
+	_before_ the synopsis, so that you can precede the `SY` call
+	with, for instance, the C language data type used for the return
+	value in a function prototype.  The `SY` macro now accepts an
+	optional second argument.  This second argument is typeset in
+	bold, replaces the fixed-width space that is appended to the
+	synopsis keyword in `SY`'s single-argument form, and is used in
+	computation of the indentation of non-initial synopsis lines.
+
+	...unless overridden.  You can now reuse the indentation amount
+	computed in a previous synopsis.  To do this, give any argument
+	to the `YS` macro call "closing" the synopsis whose indentation
+	you want to reuse.  When you're done with such a grouped
+	synopsis, simply leave the argument off the final `YS` call.
+
+	Finally, the `SY` macro is now effectively a no-op if it is
+	called with no arguments; no text is discarded.
+
+	* tmac/an-ext.tmac (SY, YS): Do it.
+
+	* NEWS:
+	* tmac/groff_man.7.man.in: Document it.
+
+	* tmac/tests/an-ext_SY-and-YS-work.sh: Update test expectations.
+
+	* contrib/chem/chem.1.man:
+	* contrib/eqn2graph/eqn2graph.1.man:
+	* contrib/gdiffmk/gdiffmk.1.man:
+	* contrib/glilypond/glilypond.1.man:
+	* contrib/gperl/gperl.1.man:
+	* contrib/gpinyin/gpinyin.1.man:
+	* contrib/grap2graph/grap2graph.1.man:
+	* contrib/mm/groff_mm.7.man:
+	* contrib/mm/groff_mmse.7.man:
+	* contrib/mm/mmroff.1.man:
+	* contrib/mom/groff_mom.7.man:
+	* contrib/pdfmark/pdfroff.1.man:
+	* contrib/pic2graph/pic2graph.1.man:
+	* src/devices/grodvi/grodvi.1.man:
+	* src/devices/grohtml/grohtml.1.man:
+	* src/devices/grolbp/grolbp.1.man:
+	* src/devices/grolj4/grolj4.1.man:
+	* src/devices/gropdf/gropdf.1.man:
+	* src/devices/gropdf/pdfmom.1.man:
+	* src/devices/grops/grops.1.man:
+	* src/devices/grotty/grotty.1.man:
+	* src/devices/xditview/gxditview.1.man:
+	* src/preproc/eqn/eqn.1.man:
+	* src/preproc/grn/grn.1.man:
+	* src/preproc/pic/pic.1.man:
+	* src/preproc/preconv/preconv.1.man:
+	* src/preproc/refer/refer.1.man:
+	* src/preproc/soelim/soelim.1.man:
+	* src/preproc/tbl/tbl.1.man:
+	* src/roff/groff/groff.1.man:
+	* src/roff/nroff/nroff.1.man:
+	* src/roff/troff/troff.1.man:
+	* src/utils/addftinfo/addftinfo.1.man:
+	* src/utils/afmtodit/afmtodit.1.man:
+	* src/utils/grog/grog.1.man:
+	* src/utils/hpftodit/hpftodit.1.man:
+	* src/utils/indxbib/indxbib.1.man:
+	* src/utils/lkbib/lkbib.1.man:
+	* src/utils/lookbib/lookbib.1.man:
+	* src/utils/pfbtops/pfbtops.1.man:
+	* src/utils/tfmtodit/tfmtodit.1.man:
+	* src/utils/xtotroff/xtotroff.1.man:
+	* tmac/groff_man.7.man.in:
+	* tmac/groff_me.7.man:
+	* tmac/groff_ms.7.man: Migrate synopses to new idiom, using `YS`
+	to terminate each synopsized item, and `P` to vertically
+	separate item(s) where appropriate.
+
+	Thanks to Alex Colomar and Lennart Jablonka for feedback and to
+	Peter Chubb for his suggestion of `bsearch()` as an exemplar.
+
+2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename node and node list dumping
+	member function prefixes from "debug_" to "dump_", to reflect
+	the fact that they're not just for (source-level) debugging
+	anymore.
+
+	* src/roff/troff/node.h (struct node): Rename.
+	- `debug_node` -> `dump_node`
+	- `debug_node_list` -> `dump_node_list`
+	* src/roff/troff/node.cpp (glyph_node::debug_node)
+	(node::debug_node)
+	(node::debug_node_list): Rename these...
+	(glyph_node::dump_node)
+	(node::dump_node):
+	(node::dump_node_list): ...to these.
+	* src/roff/troff/env.cpp (environment::add_char)
+	(environment::dump_node_list):
+	* src/roff/troff/node.cpp (node::dump_node_list): Update call
+	sites.
+
 2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/node.cpp (node::debug_node): Report list of
-	nodes produced by most recent input line in forward order,
-	likely corresponding to user intuition.  (Internally, the
-	formatter stores the nodes in LIFO order, for the convenience of
-	traversing a singly-list list.)
+	pending output nodes in forward order, likely corresponding to
+	user intuition.  (Internally, the formatter stores the nodes in
+	LIFO order, for the convenience of appending to a singly-linked
+	list.)
 
 2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Add new request `pline` to dump list of nodes
-	corresponding to most recently seen input line.
+	[troff]: Add new request `pline` to dump list of nodes in the
+	pending output line.
 
 	* src/roff/troff/env.h (class environment): Declare new
 	`dump_node_list` member function.
 	* src/roff/troff/env.cpp (environment::dump_node_list): New
-	function calls `debug_node_list()` if the most recent input line
-	was productive of output.
+	function calls `debug_node_list()`.
 	(print_node_list): New function dumps list of nodes
-	pending in the environment and produced by the most recent input
-	line.
+	in the environment's pending output line.
 	(init_env_requests): Wire up `pline` request to
 	`print_node_list()`.
 
@@ -61,7 +267,7 @@
 	also used).  Move the report of its value from here...
 	(environment::dump_troff_state): ...to here, a member function
 	that is only reachable if the `DEBUGGING` preprocessor symbol is
-	defined or if one is using a debugger on an unstripped troff
+	defined and if one is using a debugger on an unstripped troff
 	executable.
 
 2024-04-30  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -158,7 +364,7 @@
 	`centered_line_count`.  Rename `get_center_lines()` to
 	`get_centered_line_count()`.
 	* src/roff/troff/env.cpp (environment::print_env): Perform
-	integer comparison, not Boolean, test, for clarity and to ensure
+	integer comparison, not Boolean test, for clarity and to ensure
 	consistency with *roff integer-to-Boolean conversion idiom.
 
 	* src/roff/troff/env.h (class environment):
@@ -440,6 +646,8 @@
 
 	* src/roff/troff/env.cpp (environment::print_env): Fix glitch in
 	report of line number multiple when line numbering enabled.
+
+	Problem introduced in commit b022f38dfa, 2 September 2006.
 
 2024-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -2406,33 +2614,6 @@
 
 	* doc/doc.am (doc/webpage.ms): Register dependency on
 	"tmac/pspic.tmac".
-
-2024-01-18  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	[troff]: Diagnose bogus composite character escape sequences.
-	That is, when a composite character escape sequence like \[a ~]
-	has a bogus modifier (as opposed to base) character, meaning one
-	that has not been defined as the source _or_ destination of a
-	`composite` request, warn about it.  For instance, \[a $] is
-	nonsense, barring a request like `.composite $ \[uFF00]`, which
-	would map `$`, when used as a modifier character in a composite
-	special character escape sequence, to U+FF00, which would be a
-	modifier form of the dollar sign in an alternate universe.
-
-	* src/roff/troff/input.cpp (is_codepoint_composite): New
-	function searches `composite_dictionary` for the presence of the
-	given four-digit hexadecimal string as a key _or_ value.
-
-	* src/roff/troff/input.h: Expose foregoing function to other
-	translation units.
-
-	* src/roff/troff/node.cpp (make_glyph_node): Check input
-	`charinfo` for a Unicode code point sequence, and if it contains
-	one, call `valid_unicode_code_sequence()` to check it for
-	validity.  Then, iterate through each code point after the first
-	{the base character}, and call `is_codepoint_composite()` on it.
-	Diagnose invalid composite character and return null pointer if
-	validation fails.
 
 2024-01-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -5086,22 +5267,6 @@
 	diagnostic message to clarify what "level" we're talking about:
 	it's lexical.  Which, sadly, probably won't help any but
 	CS/SWeng people...
-
-2023-05-25  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	[troff]: Validate a font family before trying to use it.
-
-	* src/roff/troff/env.cpp (is_family_valid): New function checks
-	for all text styles (R, I, B, BI) and returns true only if the
-	given family supports them all.
-	(family_change): Call `is_family_valid()` on given argument.
-	If invalid, throw diagnostic and ignore `fam` request.
-	* src/roff/troff/env.h (is_family_valid): Declare; make visible.
-	* src/roff/troff/input.cpp (main): Call `is_family_valid()` on
-	`-f` option argument.  Its invalidity is a fatal error.
-
-	Fixes <https://savannah.gnu.org/bugs/?64155>.  Thanks to Dave
-	Kemper for the report.
 
 2023-05-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 

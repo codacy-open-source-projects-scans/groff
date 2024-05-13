@@ -112,7 +112,6 @@ const int INPUT_SOFT_HYPHEN= 0312;
 
 extern void do_glyph_color(symbol);
 extern void do_fill_color(symbol);
-extern bool is_codepoint_composite(const char *n);
 
 extern bool suppress_push;
 

@@ -75,13 +75,16 @@ fonts for use with
 .YS
 .
 .
+.P
 .SY addftinfo
 .B \-\-help
 .YS
 .
 .
+.P
 .SY addftinfo
 .B \-v
+.YS
 .
 .SY addftinfo
 .B \%\-\-version

@@ -64,16 +64,20 @@ documents
 .YS
 .
 .
+.P
 .SY @g@grn
 .B \-?
+.YS
 .
 .SY @g@grn
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@grn
 .B \-v
+.YS
 .
 .SY @g@grn
 .B \%\-\-version

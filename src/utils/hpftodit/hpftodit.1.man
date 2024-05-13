@@ -62,6 +62,7 @@ and
 .YS
 .
 .
+.P
 .SY hpftodit
 .B \-d
 .I tfm-file
@@ -69,13 +70,16 @@ and
 .YS
 .
 .
+.P
 .SY hpftodit
 .B \-\-help
 .YS
 .
 .
+.P
 .SY hpftodit
 .B \-v
+.YS
 .
 .SY hpftodit
 .B \%\-\-version

@@ -61,7 +61,7 @@ _endif()dnl
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1999-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1999-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -106,6 +106,7 @@ _endif()dnl
 .SY "groff \-man"
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY "groff \-m man"
 .RI [ option\~ .\|.\|.\&]
@@ -181,13 +182,13 @@ _
 \&.SH	Section heading	Document structure macros
 \&.SM	Small	Font style macros
 \&.SS	Subsection heading	Document structure macros
-\&.SY	Synopsis start	Command synopsis macros
+\&.SY	Synopsis start	Synopsis macros
 \&.TH	Title heading	Document structure macros
 \&.TP	Tagged paragraph	Paragraphing macros
 \&.TQ	Supplemental paragraph tag	Paragraphing macros
 \&.UE	URI end	Hyperlink macros
 \&.UR	URI start	Hyperlink macros
-\&.YS	Synopsis end	Command synopsis macros
+\&.YS	Synopsis end	Synopsis macros
 .TE
 .
 .
@@ -893,9 +894,8 @@ _endif()dnl
 .TP
 .B .TQ
 Set an additional tag for a paragraph tagged with
-.BR .TP .
-.
-The macro plants a one-line input trap as with
+.BR .TP ,
+planting a one-line input trap as with
 .BR .TP .
 .
 .
@@ -994,7 +994,7 @@ as seen in this very paragraph.
 .
 _endif()dnl
 .\" ====================================================================
-.SS "Command synopsis macros"
+.SS "Synopsis macros"
 .\" ====================================================================
 .
 Use
@@ -1002,8 +1002,6 @@ Use
 and
 .B .YS
 to summarize syntax using familiar Unix conventions.
-.
-These macros break the output line.
 .
 .\" TODO: Determine whether this (is still? was ever?) true.
 .\" Furthermore,
@@ -1034,54 +1032,69 @@ _endif()dnl
 .
 .
 .TP
-.BI .SY\~ keyword
+.BI .SY\~ keyword\~\c
+.RI [ suffix ]
 Begin synopsis.
-.
-A new paragraph begins as with
-.BR .P ,
-unless
-.B .SY
-has already been called without a corresponding
-.BR .YS ,
-in which case only a break is performed.
 .
 Adjustment and automatic hyphenation are disabled.
 .
-.I keyword
-is set in bold.
+If
+.B .SY
+has already been called without a corresponding
+.BR .YS ,
+a break is performed.
 .
-If a break is required,
-lines after the first are indented by the width of
 .I keyword
-plus a space.
+and
+.I suffix
+(if any)
+are set in bold.
+.
+If a break is required in subsequent text
+(up to another paragraphing,
+sectioning,
+or synopsis macro call),
+lines after the first are indented.
+.
+The indentation amount is the width of
+.I keyword
+plus a space,
+if that is the only argument,
+and by the sum of the widths of
+.I keyword
+and
+.I suffix
+otherwise.
 .
 .
 .TP
-.B .YS
-End synopsis.
-.
-Indentation,
+.BR .YS\~ [\c
+.IR reuse-indentation ]
+End synopsis,
+breaking the line and restoring
+indentation,
 adjustment,
 and hyphenation
-are restored to their previous states.
+to their previous states.
+.
+If an argument is given,
+the indentation corresponding to the previous
+.B .SY
+call is reused by the next
+.B .SY
+call instead of being computed.
 _ifstyle()dnl
 .
 .
 .P
-Multiple
+Interleave multiple
 .BR .SY / .YS
-blocks can be specified,
-for instance to distinguish differing modes of operation of a complex
-command like
-.MR tar 1 ;
-each will be vertically separated as paragraphs are.
+blocks with paragraphing macros to distinguish differing modes of
+operation of a complex command like
+.MR tar 1 .
 .
-.
-.P
-.B .SY
-can be repeated before
-.B .YS
-to indicate synonymous ways of invoking a particular mode of operation.
+Omit the paragraphing macro to indicate synonymous ways of invoking a
+particular mode of operation.
 .
 .
 .P
@@ -1110,6 +1123,7 @@ own command-line interface illustrates most specimens one may encounter.
 \&.YS
 \&.
 \&.
+\&.P
 \&.SY groff
 \&.B \e\-h
 \&.YS
@@ -1119,10 +1133,12 @@ own command-line interface illustrates most specimens one may encounter.
 \&.YS
 \&.
 \&.
+\&.P
 \&.SY groff
 \&.B \e\-v
 \&.RI [ option\e\(ti .\e|.\e|.\e&]
 \&.RI [ file\e\(ti .\e|.\e|.]
+\&.YS
 \&.
 \&.SY groff
 \&.B \e\-\e\-version
@@ -1136,6 +1152,7 @@ own command-line interface illustrates most specimens one may encounter.
 produces the following output.
 .
 .
+.P
 .RS
 .SY groff
 .RB [ \-abcCeEgGijklNpRsStUVXzZ ]
@@ -1181,18 +1198,22 @@ produces the following output.
 .YS
 .
 .
+.P
 .SY groff
 .B \-h
+.YS
 .
 .SY groff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY groff
 .B \-v
 .RI [ option\~ .\|.\|.\&]
 .RI [ file\~ .\|.\|.]
+.YS
 .
 .SY groff
 .B \%\-\-version
@@ -1275,6 +1296,46 @@ sentence
 and causing additional inter-sentence space to be placed after it.
 .
 See subsection \(lqPortability\(rq below.
+.
+.
+.P
+We might synopsize the standard C library function
+.MR bsearch 3
+as follows.
+.
+.
+.P
+.RS
+.EX
+\&.P
+\&.B void *\(rsc
+\&.SY bsearch (
+\&.BI const\(rs\(tivoid\(rs\(ti* key ,
+\&.BI const\(rs\(tivoid\(rs\(ti* base ,
+\&.BI size_t\(rs\(ti nmemb ,
+\&.BI int\(rs\(ti(* compar )\(rsc
+\&.B (const\(rs\(tivoid\(rs\(ti*, const\(rs\(tivoid\(rs\(ti*));
+\&.YS
+.EE
+.RE
+.
+.
+.P
+.I man
+produces the following result.
+.
+.
+.RS
+.P
+.B void *\c
+.SY bsearch (
+.BI const\~void\~* key ,
+.BI const\~void\~* base ,
+.BI size_t\~ nmemb ,
+.BI int\~(* compar )\c
+.B (const\~void\~*, const\~void\~*));
+.YS
+.RE
 _endif()dnl
 .
 .
@@ -4290,7 +4351,7 @@ Why doesn't the package provide a string to insert an ellipsis?
 .
 .IP
 Examples of ellipsis usage are shown above,
-in subsection \[lq]Command synopsis macros\[rq].
+in subsection \[lq]Synopsis macros\[rq].
 .
 The idiomatic
 .I roff

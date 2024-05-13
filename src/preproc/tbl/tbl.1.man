@@ -58,13 +58,16 @@ documents
 .YS
 .
 .
+.P
 .SY @g@tbl
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@tbl
 .B \-v
+.YS
 .
 .SY @g@tbl
 .B \%\-\-version

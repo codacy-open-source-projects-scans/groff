@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2023 Free Software Foundation, Inc.
+# Copyright (C) 2023-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -37,14 +37,20 @@ foo \\- a command with a very short name
 This pre-synopsis text is not often used in practice.
 .
 .
+.P
 .SY foo
 .I "operand1 operand2 operand3 operand4 operand5 operand6 operand6"
 .I "operand7 operand8 operand9"
 .YS
 .
 .
-.SY "foo \\-h"
-.SY "foo \\-\\-help"
+.P
+.SY foo
+.B \\-h
+.YS
+.
+.SY foo
+.B \\-\\-help
 .YS
 .
 This post-synopsis text is not often used in practice.
@@ -87,6 +93,55 @@ echo "$output" \
         -e 'n;/post-synopsis/p' \
         -e '}' \
     | grep -q . || wail
+
+# Thanks to Alex Colomar for the meat of the following test case.
+
+input2='.TH foo 3 2024-05-06 "groff test suite"
+.SH Name
+foo \\- a small library for converting strings to integers
+.
+.
+.SH Synopsis
+.
+.B int
+.SY a2i (
+.B TYPE,
+.BI TYPE\~*restrict\~ n ,
+.BI const\~char\~* s ,
+.BI char\~**_Nullable\~restrict\~ endp ,
+.BI int\~ base ,
+.BI TYPE\~ min ,
+.BI TYPE\~ max );
+.YS .
+.
+.B int
+.SY a2s (
+.B TYPE,
+.BI TYPE\~*restrict\~ n ,
+.BI const\~char\~* s ,
+.BI char\~**_Nullable\~restrict\~ endp ,
+.BI int\~ base ,
+.BI TYPE\~ min ,
+.BI TYPE\~ max );
+.YS .
+.
+.B int
+.SY a2u (
+.B TYPE,
+.BI TYPE\~*restrict\~ n ,
+.BI const\~char\~* s ,
+.BI char\~**_Nullable\~restrict\~ endp ,
+.BI int\~ base ,
+.BI TYPE\~ min ,
+.BI TYPE\~ max );
+.YS'
+
+output2=$(echo "$input2" | "$groff" -rLL=80n -man -T ascii -P -cbou)
+echo "$output2"
+
+echo 'checking for automatic hyphenation disablement inside synopsis' \
+    >&2
+echo "$output2" | grep -q 're-$' && wail
 
 test -z "$fail"
 

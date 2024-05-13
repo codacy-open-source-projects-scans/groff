@@ -60,6 +60,7 @@ macro package for
 .YS
 .
 .
+.P
 .SY pdfmom
 .RB [ \-\-roff ]
 .B \-Tps
@@ -69,8 +70,10 @@ macro package for
 .YS
 .
 .
+.P
 .SY pdfmom
 .B \-v
+.YS
 .
 .SY pdfmom
 .B \%\-\-version

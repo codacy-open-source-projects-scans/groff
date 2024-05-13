@@ -73,11 +73,13 @@ files
 .YS
 .
 .
+.P
 .SY gdiffmk
 .B \-\-help
 .YS
 .
 .
+.P
 .SY gdiffmk
 .B \%\-\-version
 .YS

@@ -86,9 +86,8 @@ o A new request, `phw`, reports to the standard error stream the current
   list of hyphenation exceptions.
 
 o A new request, `pline`, reports to the standard error stream the list
-  of nodes (an internal data structure) corresponding to the most
-  recently seen input line.  The list is empty if there was no previous
-  input line or if it was not productive.
+  of output nodes (an internal data structure) corresponding to
+  the pending output line.  The list is empty if no such nodes exist.
 
 o The `hla` request, when invoked with no arguments, now clears the
   hyphenation language, disabling automatic hyphenation.
@@ -147,6 +146,94 @@ o The an (man) package now supports use of its hyperlink macros (`UR`,
   `UE`, `MT`, and `ME`) as paragraph tags (that is, on the next line
   after a `TP` macro call).  Use of the `MR` man page cross reference
   macro as a tag was already supported in groff 1.23.0.
+
+o The behavior of the an (man) package's `SY` and `YS` macros has been
+  expanded to enable greater user control over vertical spacing and to
+  make them convenient for synopsizing C language functions, not just
+  commands.  `SY` no longer puts vertical space on the output, and
+  initially breaks the output line _only_ if it is encountered
+  repeatedly without a preceding `YS` call.  The computed indentation of
+  synopsis lines after the first now also includes the width of anything
+  on the line _before_ the synopsis, so that you can precede the `SY`
+  call with, for instance, the C language data type used for the return
+  value in a function prototype.  The `SY` macro now accepts an optional
+  second argument.  This second argument is typeset in bold, replaces
+  the fixed-width space that is appended to the synopsis keyword in
+  `SY`'s single-argument form, and is used in computation of the
+  indentation of non-initial synopsis lines.  However, this computed
+  indentation can now also be overridden, and the indentation of a
+  previous syopsis item reused.  To do this, give any argument to the
+  `YS` macro call "closing" the synopsis whose indentation you want to
+  reuse.  When you're done with such a grouped synopsis, leave the
+  argument off the final `YS` call.
+
+  In a "Synopsis" section of a man page, existing synopses consisting of
+  a single item require no migration.  This is the most common case.
+
+  For others, where before you would write...
+
+  .SY mv
+  .I source
+  .I destination
+  .YS
+  .
+  .SY mv
+  .I source
+  \&.\|.\|.\|
+  .I destination-directory
+  .YS
+
+  ...you would now write the following.
+
+  .SY mv
+  .I source
+  .I destination
+  .YS
+  .
+  .P
+  .SY mv
+  .I source
+  \&.\|.\|.\|
+  .I destination-directory
+  .YS
+
+  (That is, simply call a paragraphing macro.)
+
+   And where before you would write...
+
+  .SY mv
+  .B \-h
+  .
+  .SY mv
+  .B \-\-help
+  .YS
+
+   ...you would now write the following.
+
+  .SY mv
+  .B \-h
+  .YS
+  .
+  .SY mv
+  .B \-\-help
+  .YS
+
+  (That is, simply call `YS` after the first synopsis item.)
+
+  Likely the biggest benefit of these changes is that it is now much
+  easier to format C function prototypes with these macros.  Here's how
+  we would synopsize a somewhat complex standard C library function.
+
+  .B "#include <stdio.h>"
+  .P
+  .B void *\c
+  .SY bsearch (
+  .BI const\~void\~*\~ key ,
+  .BI const\~void\~*\~ base ,
+  .BI size_t\~ nmemb ,
+  .BI int\~(* compar )\c
+  .B (const\~void\~*, const\~void\~*));
+  .YS
 
 o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   changed the default line length when formatting on terminals from 78n

@@ -80,13 +80,16 @@ output driver for PostScript
 .YS
 .
 .
+.P
 .SY grops
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grops
 .B \-v
+.YS
 .
 .SY grops
 .B \%\-\-version

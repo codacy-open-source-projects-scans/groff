@@ -84,13 +84,16 @@ typesetter and document formatter
 .YS
 .
 .
+.P
 .SY @g@troff
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@troff
 .B \-v
+.YS
 .
 .SY @g@troff
 .B \%\-\-version

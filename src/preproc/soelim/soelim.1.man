@@ -70,13 +70,16 @@ or other text files
 .YS
 .
 .
+.P
 .SY @g@soelim
 .B \-\-help
 .YS
 .
 .
+.P
 .SY @g@soelim
 .B \-v
+.YS
 .
 .SY @g@soelim
 .B \%\-\-version

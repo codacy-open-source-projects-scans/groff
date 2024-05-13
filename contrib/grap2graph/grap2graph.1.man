@@ -44,13 +44,16 @@ diagram into a cropped image
 .YS
 .
 .
+.P
 .SY grap2graph
 .B \-\-help
 .YS
 .
 .
+.P
 .SY grap2graph
 .B \-v
+.YS
 .
 .SY grap2graph
 .B \%\-\-version
