@@ -977,10 +977,8 @@ height.
 .B \[rs]X\[aq]pdf: xrev\[aq]
 Toggle the reversal of glyph direction.
 .
-This feature works \[lq]letter by letter\[rq],
-that is,
-each letter in a word is reversed left-to-right,
-not the entire word.
+This feature works by reversing all following text.
+Each separate letter is also mirrored.
 .
 One application is the reversal of glyphs in the Zapf Dingbats font.
 .

@@ -1,3 +1,80 @@
+2024-05-14  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Problem if mixed fonts have different lenIV.
+
+	* src/devices/gropdf/gropdf: Restore default value (4) for
+	each font in case custom value used by previous font. Slight
+	change to pattern matches.
+
+2024-05-14  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] \X'pdf: xrev' has issues.
+
+	* src/devices/gropdf/gropdf: Fails if point size not = 10, in
+	a number of ways.
+
+	* src/devices/gropdf/gropdf.1.man: Clarify exact operation of
+	'xrev'.
+
+2024-05-14  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Passing just "\" as a bookmark problem.
+
+	* src/devices/gropdf/gropdf: it ends up as a pdf string "(\)",
+	which is treated as an escaped bracket and the string is not
+	terminated! Solution is to embed the "\" in octal notation,
+	i.e. (\134).
+
+2024-05-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (EE): Define macro with `de1` request, not `de`.
+
+	Fixes <https://savannah.gnu.org/bugs/?65729>.  Thanks to Bjarni
+	Ingi Gislason for the report.  Problem introduced by me in
+	commit 15f8188656, 21 February 2022.
+
+2024-05-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[tmac]: Perform actual string comparisons.
+
+	* tmac/fallbacks.tmac:
+	* tmac/troffrc-end: Bracket comparands to formatted output
+	comparison operator with `\?` escape sequences to perform a more
+	elementary string comparison on them (cf. a comparison of
+	_formatted text_).  This way they continue to perform their
+	function even if the default font family has no coverage of
+	Basic Latin (not a bizarre choice when considering potential
+	rendering of documents using Devanagari or East Asian
+	languages).  Unfortunately this means of comparing strings,
+	while long documented in the GNU troff Manual, is neither
+	idiomatic for *roff macro programmers nor portable to AT&T
+	troff.  (The *roff language historically _lacks_ a string
+	comparison operator.)  Each macro package will have to decide
+	for itself whether it wants to have portability at the expense
+	of requiring Basic Latin coverage (possibly switching fonts
+	before and after a formatted output comparison for the sole
+	purpose of obtaining it).  These two files are unconditionally
+	loaded by the stock `troffrc`, and therefore must be dealt with
+	in any case.
+
+	Fixes <https://savannah.gnu.org/bugs/?64155>.  Thanks to Dave
+	Kemper for the report, and to him, Peter Schaffter, and Deri
+	James for the discussion.
+
+2024-05-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Begin withdrawing support for CCSID (code page) 1047 (EBCDIC).
+
+	* tmac/X.tmac:
+	* tmac/Xps.tmac:
+	* tmac/dvi.tmac:
+	* tmac/html.tmac:
+	* tmac/ps.tmac: Stop loading "latin1.tmac" or "cp1047.tmac"
+	depending on the special character `\[char97]` matching "a".
+
+	* tmac/troffrc: Simplify logic; map special character
+	`\[char160` to `\~` unconditionally.
+
 2024-05-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/node.cpp (class dbreak_node): Add `dump_node`

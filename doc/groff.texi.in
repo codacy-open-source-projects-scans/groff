@@ -5635,8 +5635,8 @@ other hand, must be in one of two encodings it can recognize.
 @cindex IBM code page 1047 input encoding
 @pindex cp1047.tmac
 The code page 1047 input encoding works only on @acronym{EBCDIC}
-platforms (and conversely, the other input encodings don't work with
-@acronym{EBCDIC}); the file @file{cp1047.tmac} is loaded at startup.
+platforms (and conversely, the other input encodings don't work on
+@acronym{EBCDIC} platforms).
 
 @item latin1
 @cindex encoding, input, @w{Latin-1} (ISO @w{8859-1})
@@ -5644,9 +5644,7 @@ platforms (and conversely, the other input encodings don't work with
 @cindex ISO @w{8859-1} (@w{Latin-1}), input encoding
 @cindex input encoding, @w{Latin-1} (ISO @w{8859-1})
 @pindex latin1.tmac
-ISO @w{Latin-1}, an encoding for Western European languages, is the
-default input encoding on non-@acronym{EBCDIC} platforms; the file
-@file{latin1.tmac} is loaded at startup.
+ISO @w{Latin-1} is an encoding for Western European languages.
 @end table
 
 @noindent
@@ -5658,8 +5656,6 @@ are interchangeable in their first 128 code points.@footnote{The
 @emph{semantics} of certain punctuation code points have gotten stricter
 with the successive standards, a cause of some frustration among man
 page writers; see @cite{groff_char@r{(7)}}.}
-
-Other encodings are supported by means of macro packages.
 
 @table @code
 @item koi8-r

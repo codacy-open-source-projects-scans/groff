@@ -47,12 +47,8 @@ troffrc!lj4 \
 troffrc!lbp \
 troffrc!html
 .
-.\" Test whether we work under EBCDIC and map the no-break space
-.\" character accordingly.
-.do ie '\[char97]'a' \
-.	do tr \[char160]\~
-.el \
-.	do tr \[char65]\~
+.\" Map no-break space character to an adjustable non-breaking space.
+.do tr \[char160]\~
 .
 .\" Set the input localization to English.
 .do mso en.tmac

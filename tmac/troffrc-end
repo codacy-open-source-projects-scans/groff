@@ -4,7 +4,7 @@
 .\"
 .\" Use .do for any groff extensions so that this file works with -C.
 .
-.do if '\*[.T]'html' \
+.do if '\?\*[.T]\?'\?html\?' \
 .	do mso html-end.tmac
 .
 .\" Load www if we are running the PostScript driver for HTML images.

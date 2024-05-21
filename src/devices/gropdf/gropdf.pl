@@ -747,6 +747,7 @@ foreach my $fontno (sort keys %fontlst)
 
 	($head,$body,$tail)=GetType1($fnt->{fontfile});
 	$head=~s/\/Encoding \d.*?readonly def\b/\/Encoding StandardEncoding def/s;
+	$lenIV=4;
 
 	if ($options & SUBSET)
 	{
@@ -1507,6 +1508,7 @@ sub do_x
 		    my ($pre,$title,$post)=($1,$2,$3);
 		    $title=utf16($title);
 
+		    $title="\\134" if $title eq "\\";
 		    my @xwds=split(' ',"<< $pre$title$post >>");
 		    my $out=ParsePDFValue(\@xwds);
 		    $out->{Dest}=UTFName($out->{Dest});
@@ -4087,11 +4089,11 @@ sub PutLine
     my $len=0;
     my $rev=0;
 
-    if (($lin[0]->[CHR]||0) < 0)
+    if ($xrev)
     {
-	$len=($lin[$#lin]->[XPOS]-$lin[0]->[XPOS]+$lin[$#lin]->[HWID])*100;
-	$s.=d3($len).' ';
-    $rev=1;
+	$len=($lin[$#lin]->[XPOS]-$lin[0]->[XPOS]+$lin[$#lin]->[HWID])*1000/$cftsz;
+	$s.=d3($len).' ' if $len;
+	$rev=1;
     }
 
     $stream.="%! wht0sz=".d3($whtsz/$unitwidth).", wt=".((defined($wt))?d3($wt/$unitwidth):'--')."\n" if $debug;
@@ -4156,7 +4158,7 @@ sub PutLine
 	    if ($rev)
 	    {
 		$s.=') ' if !$n;
-		$s.=d3(($c->[CWID]-$c->[HWID])*100).' (';
+		$s.=d3(($c->[CWID]-$c->[HWID])*1000/$cftsz).' (';
 		$n=0;
 	    }
 
@@ -4330,11 +4332,13 @@ sub PutGlyph
 	{
 	    MakeMatrix(1);
 	    $inxrev=1;
+	    $#lin=-1;
 	}
 	elsif ($inxrev and $cn > 0)
 	{
 	    MakeMatrix(0);
 	    $inxrev=0;
+	    $#lin=-1;
 	}
 
 	if ($matrixchg or $poschg)
@@ -4614,15 +4618,15 @@ sub map_subrs
 		$RDre=qr/\Q$RD\E/;
 		$NDre=qr/\Q$ND\E/;
 	    }
-	    elsif ($lin=~m/^\/(.+?)\s+\{string currentfile exch readstring pop\}\s*executeonly def/)
+	    elsif ($lin=~m/^\/(.+?)\s*\{string currentfile exch readstring pop\}\s*executeonly def/)
 	    {
 		$RD=$1;
 	    }
-	    elsif ($lin=~m/^\/(.+?)\s+\{noaccess def\}\s*executeonly def/)
+	    elsif ($lin=~m/^\/(.+?)\s*\{noaccess def\}\s*executeonly def/)
 	    {
 		$ND=$1;
 	    }
-	    elsif ($lin=~m/^\/(.+?)\s+\{noaccess put\}\s*executeonly def/)
+	    elsif ($lin=~m/^\/(.+?)\s*\{noaccess put\}\s*executeonly def/)
 	    {
 		$NP=$1;
 	    }
@@ -4870,7 +4874,7 @@ sub MarkSub
     }
     else
     {
-	Log(1,"Missing Subrs '$k'");
+	Warn("Missing Subrs '$k'");
     }
 }
 

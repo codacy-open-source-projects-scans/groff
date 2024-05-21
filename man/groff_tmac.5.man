@@ -448,6 +448,10 @@ Chinese.
 .SS "Input encodings"
 .\" ====================================================================
 .
+A document that requires one of the following encodings can load a
+corresponding macro file.
+.
+.
 .TP 8n \" "latin1" + 2n
 .I latin1
 .TQ
@@ -456,35 +460,21 @@ Chinese.
 .I latin5
 .TQ
 .I latin9
-are various ISO\~8859 input encodings supported by
-.IR groff .
-.
-On systems using ISO character encodings,
-.I groff
-loads
-.I latin1.tmac
-automatically at startup.
-.
-A document that uses Latin-2,
+support the ISO\~8859 Latin-1,
+Latin-2,
 Latin-5,
-or Latin-9
-can specify one of these alternative encodings.
+and
+Latin-9 encodings
 .
 .
 .TP
 .I cp1047
-provides support for EBCDIC-based systems.
-.
-On those platforms,
-.I groff
-loads
-.I cp1047.tmac
-automatically at startup.
+supports EBCDIC-based systems using CCSID\~1047.
 .
 .
 .TP
 .I koi8\-r
-provides support for the KOI8-R encoding.
+supports the KOI8-R encoding.
 .
 KOI8-R code points in the range 0x80\[en]0x9F are not valid input on
 systems using ISO character codings natively;
