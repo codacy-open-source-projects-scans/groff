@@ -1465,11 +1465,12 @@ sub do_x
 			$cat->{$k}=$docview->{$k} if !exists($cat->{$k});
 		    }
 		}
-		elsif ($pdfmark=~m/(.+) \/DEST\s*$/)
+		elsif ($pdfmark=~m/\/Dest (\/.+?)( \/View .+) \/DEST\s*$/)
 		{
-		    my @xwds=split(' ',"<< $1 >>");
+		    my (@d)=($1,$2);
+		    my @xwds=split(' ',"<< $d[1] >>");
 		    my $dest=ParsePDFValue(\@xwds);
-		    $dest->{Dest}=UTFName($dest->{Dest});
+		    $dest->{Dest}=UTFName($d[0]);
 		    $dest->{View}->[1]=GraphY($dest->{View}->[1]*-1);
 		    unshift(@{$dest->{View}},"$cpageno 0 R");
 
@@ -1504,14 +1505,14 @@ sub do_x
 		    my $t=$1;
 		    $t=~s/\\\) /\\\\\) /g;
 		    $t=~s/\\e/\\\\/g;
-		    $t=~m/(^.*\/Title \()(.*)(\).*)/;
-		    my ($pre,$title,$post)=($1,$2,$3);
+		    $t=~m/^\/Dest (.+?) \/Title \((.*)(\).*)/;
+		    my ($d,$title,$post)=($1,$2,$3);
 		    $title=utf16($title);
 
 		    $title="\\134" if $title eq "\\";
-		    my @xwds=split(' ',"<< $pre$title$post >>");
+		    my @xwds=split(' ',"<< \/Title ($title$post >>");
 		    my $out=ParsePDFValue(\@xwds);
-		    $out->{Dest}=UTFName($out->{Dest});
+		    $out->{Dest}=UTFName($d);
 
 		    my $this=[$out,[]];
 

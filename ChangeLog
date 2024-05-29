@@ -1,3 +1,39 @@
+2024-05-25  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Deal better with invalid destination names.
+
+	Bookmark destinations (supplied by -T to .pdfbookmark)
+	are "Name Objects" in pdf terms, as such they are limited
+	to characters in the range 33 (!) to 126 (~). Characters
+	outside this range must be coded as a # followed by the
+	2 digit hex number. So a space character should be '#20'.
+
+	Gropdf produces pdfs which conform to this rule, but the
+	pdf parser (used to import pdfs for pdfpic) expects only
+	valid syntax. To convert pdfmark input to a pdf object
+	gropdf used this inbuilt parser.
+
+	The .TH macro in an.tmac passes its first parameter as a
+	bookmark destination. Normally this is fine, since the
+	convention is that this will be the name of the program
+	the man page is documenting. The problem in this case
+	is the line:-
+
+	.TH "Pamaltsat User Manual" 0 "14 September 2018"
+	    "netpbm documentation"
+
+	The first parameter contains spaces, which yields invalid
+	syntax when parsed as "/Dest /Pamaltsat User Manual(0)".
+
+	* src/devices/gropdf/gropdf: Don't use internal parser
+	on "user" supplied input, be a bit more careful.
+
+	Fixes:-
+
+	https://savannah.gnu.org/bugs/?65788
+
+	Thanks to Bjarni for the report.
+
 2024-05-14  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	[gropdf] Problem if mixed fonts have different lenIV.
