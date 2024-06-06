@@ -4556,10 +4556,21 @@ static void interpolate_arg(symbol nm)
   }
   else {
     const char *p;
-    for (p = s; *p && csdigit(*p); p++)
-      ;
-    if (*p)
-      copy_mode_error("invalid positional argument number '%1'", s);
+    bool is_valid = true;
+    bool is_printable = true;
+    for (p = s; *p != 0 /* nullptr */; p++) {
+      if (!csdigit(*p))
+	is_valid = false;
+      if (!csprint(*p))
+	is_printable = false;
+    }
+    if (!is_valid) {
+      const char msg[] = "invalid positional argument number";
+      if (is_printable)
+	copy_mode_error("%1 '%2'", msg, s);
+      else
+	copy_mode_error("%1 (unprintable)", msg);
+    }
     else
       input_stack::push(input_stack::get_arg(atoi(s)));
   }

@@ -1,3 +1,76 @@
+2024-06-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[docs]: Fix Savannah #65837.
+
+	* doc/groff.texi: Fix erroneous documentation of input backspace
+	handling.
+	(Requests and Macros): Add footnote directing reader to "Page
+	Motions" node for discussion of backspace.
+	(Identifiers): Drop 0x08 from list of invalid input characters.
+	(Manipulating Filling and Adjustment): Add concept index entry
+	for "word space".  Define "word space" as terminology.
+	(Page Motions): Describe semantics of input backspace character,
+	motivate its existence, and discourage its use.
+
+	* man/groff.7.man (Identifiers):
+	* man/roff.7.man (Requests and macros): Sync.
+
+	Fixes <https://savannah.gnu.org/bugs/?65837>.
+
+2024-06-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Fix Savannah #64005 (again).
+
+	* tmac/s.tmac (@break-page, bp): Fix thinko swapping the normal
+	and no-break control characters.
+
+	Fixes <https://savannah.gnu.org/bugs/?64005>.  Thanks to Deri
+	James for catching this misbehavior.
+
+2024-06-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Further regression-test Savannah #64005.
+
+	* tmac/tests/s_honor-page-break-in-text.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-06-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac: Drop nilpotent junk from end of file.
+
+	Fixes <https://savannah.gnu.org/bugs/?65701>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-06-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_WCOREFLAG): Use `AC_LANG_PROGRAM` more
+	idiomatically; stop explicitly defining `main()`.  Reportedly
+	resolves implicit function declaration warnings from Clang.
+
+	Fixes <https://savannah.gnu.org/bugs/?65762>.  Thanks to Eli
+	Schwartz for the report.
+
+2024-06-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (interpolate_arg): Stop embedding
+	unprintable input characters in messages diagnosing invalid
+	syntax.
+
+	See
+	<https://lists.gnu.org/archive/html/groff/2024-05/msg00057.html>
+	and follow-ups.
+
+2024-05-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (glyph_node::dump_node):
+	(node::dump_node): Favor `fputs()` over `fprintf()` when the
+	output string doesn't require formatting.
+
+2024-05-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (dbreak_node::dump_node): Drop
+	extraneous space from output.
+
 2024-05-25  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	[gropdf] Deal better with invalid destination names.

@@ -942,8 +942,6 @@ AC_DEFUN([GROFF_WCOREFLAG],
        ]],
        [[
 
-main()
-{
 #ifdef WCOREFLAG
   exit(1);
 #else
@@ -951,7 +949,6 @@ main()
   ((union wait *)&i)->w_coredump = 1;
   exit(i != 0200);
 #endif
-}
 
        ]])
      ],

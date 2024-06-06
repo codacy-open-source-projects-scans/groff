@@ -104,8 +104,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .de bp
 .	nr @saved-no-space-mode \\n[.ns]
 .	rs
-.	ie \\n[.br] '@break-page \\$1
-.	el          .@break-page \\$1
+.	ie \\n[.br] .@break-page \\$1
+.	el          '@break-page \\$1
 .	if \\n[@saved-no-space-mode] .ns
 .	rr @saved-no-space-mode
 ..

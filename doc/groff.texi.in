@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle May 2024
+@subtitle June 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -5421,7 +5421,9 @@ preprocessor to lay out tables.
 @subsection Requests and Macros
 
 We have now encountered almost all of the syntax there is in the
-@code{roff} language, with an exception already noted in passing.
+@code{roff} language, with an exception already noted in
+passing.@footnote{The backspace character is another; see
+@ref{Page Motions}.}
 @cindex request
 @cindex control character (@code{.})
 @cindex character, control (@code{.})
@@ -6564,7 +6566,7 @@ during interpretation: an identifier @samp{foo}, followed by an invalid
 character and then @samp{bar}, is processed as @samp{foobar}.
 
 On a machine using the ISO 646, 8859, or 10646 character encodings,
-invalid input characters are @code{0x00}, @code{0x08}, @code{0x0B},
+invalid input characters are @code{0x00}, @code{0x0B},
 @code{0x0D}--@code{0x1F}, and @code{0x80}--@code{0x9F}.  On an
 @acronym{EBCDIC} host, they are @code{0x00}--@code{0x01}, @code{0x08},
 @code{0x09}, @code{0x0B}, @code{0x0D}--@code{0x14},
@@ -8454,6 +8456,8 @@ doomed to success. \[em] C. A. R. Hoare
 @DefreqList {ss, word-space-size [@Var{additional-sentence-space-size}]}
 @DefregItemx {.ss}
 @DefregListEndx {.sss}
+@cindex word space
+@cindex space, word
 @cindex word space size register (@code{.ss})
 @cindex size of word space register (@code{.ss})
 @cindex space between words register (@code{.ss})
@@ -8468,7 +8472,7 @@ Set the sizes of spaces between words and sentences@footnote{Recall
 sentence boundaries, respectively.} in twelfths of the space width of
 the currently selected font.@footnote{@xref {Font Description File
 Format}.  This request is incorrectly documented in the @acronym{AT&T}
-@code{troff} manual as using units of 1/36 em.}  (An inter-word space is
+@code{troff} manual as using units of 1/36 em.}  (A @dfn{word space} is
 typically one-fourth to one-third em for Western scripts.)  The default
 for both parameters is@tie{}12.  Negative values are erroneous.
 @cindex inter-word spacing, minimal
@@ -10223,13 +10227,25 @@ This request is incorrectly documented in the @acronym{AT&T}
 
 @cindex page number register (@code{%})
 @cindex current page number (@code{%})
-The register @code{%} interpolates the current page number.
+The register @code{%} interpolates the page number.
 
 @Example
 .de BP
 '  bp \" schedule page break once current line is output
 ..
 @endExample
+
+@strong{Caution:@:} Interpolations occur before formatting operations.
+The act of filling, breaking, and adjusting a line can change the page
+number.  @code{%} is a register like any other, not a placeholder that
+is populated after the line it appears on is formatted.  Consider, for
+example, an extremely long page number at the end of the last line on
+the page; numbers aren't hyphenated, so the word containing the page
+number might break the line and the page, causing the reported page
+number to lag by one.  This sequencing also means that interpolating the
+@code{%} register inside a diversion (such as a footnote) records the
+page number at the time the diversion is populated, not when it is
+output.
 @endDefreq
 
 @Defreq {ne, [@Var{space}]}
@@ -11314,13 +11330,10 @@ on the right doesn't get examined.
 @DefreqItemx {fschar, f c [@code{"}][@Var{contents}]}
 @DefreqListEndx {schar, c [@code{"}][@Var{contents}]}
 @cindex defining character (@code{char})
-@cindex defining fallback character (@code{fchar}, @code{fschar},@
-@code{schar})
+@cindex defining fallback character (@code{fchar}, @code{fschar}, @code{schar})
 @cindex character, defining (@code{char})
-@cindex character, defining fallback (@code{fchar}, @code{fschar},@
-@code{schar})
-@cindex fallback character, defining (@code{fchar}, @code{fschar},@
-@code{schar})
+@cindex character, defining fallback (@code{fchar}, @code{fschar}, @code{schar})
+@cindex fallback character, defining (@code{fchar}, @code{fschar}, @code{schar})
 @cindex creating new characters (@code{char})
 @cindex defining symbol (@code{char})
 @cindex symbol, defining (@code{char})
@@ -14101,8 +14114,17 @@ logo.@footnote{@xref{Strings}, for an explanation of the trailing
 .ds TeX T\h'-.1667m'\v'.224m'E\v'-.224m'\h'-.125m'X\"
 @endExample
 
-There are a number of special-case escape sequences for horizontal
-motion.
+@cindex backspace character
+@cindex character, backspace
+An input backspace becomes a negative horizontal motion of one word
+space (recall @ref{Manipulating Filling and Adjustment}).  This feature
+persists for backward compatibiity with early formatters that predate
+@command{nroff} and even Unix itself, and which used it to facilitate
+user-directed overstriking for character composition, boldfacing, and
+underlining.  GNU @command{troff} has explicit features to support each
+of these; use them instead.
+
+Several escape sequences support special cases of horizontal motion.
 
 @Defesc {\\@key{SPC}, , , }
 @cindex space, unbreakable and unadjustable (@code{\@key{SPC}})
@@ -16045,16 +16067,13 @@ the count of consecutive hyphenated lines (set to zero).
 @DefregItemx {.cht}
 @DefregItemx {.cdp}
 @DefregListEndx {.csk}
-@cindex environment, dimensions of last glyph (@code{.w}, @code{.cht},@
-@code{.cdp}, @code{.csk})
+@cindex environment, dimensions of last glyph (@code{.w}, @code{.cht}, @code{.cdp}, @code{.csk})
 @cindex width, of last glyph (@code{.w})
 @cindex height, of last glyph (@code{.cht})
 @cindex depth, of last glyph (@code{.cdp})
 @cindex skew, of last glyph (@code{.csk})
-@cindex last glyph, dimensions (@code{.w}, @code{.cht}, @code{.cdp},@
-@code{.csk})
-@cindex glyph, last, dimensions (@code{.w}, @code{.cht}, @code{.cdp},@
-@code{.csk})
+@cindex last glyph, dimensions (@code{.w}, @code{.cht}, @code{.cdp}, @code{.csk})
+@cindex glyph, last, dimensions (@code{.w}, @code{.cht}, @code{.cdp}, @code{.csk})
 The @code{\n[.w]} register contains the width of the last glyph
 formatted in the environment.
 
@@ -17051,12 +17070,9 @@ document.
 @DefreqList {tm, message}
 @DefreqItemx {tm1, [@code{"}]message}
 @DefreqListEndx {tmc, [@code{"}]message}
-@cindex print to the standard error stream (@code{tm}, @code{tm1},@
-@code{tmc})
-@cindex standard error stream, write to (@code{tm}, @code{tm1},@
-@code{tmc})
-@cindex stream, standard error, write to (@code{tm}, @code{tm1},@
-@code{tmc})
+@cindex print to the standard error stream (@code{tm}, @code{tm1}, @code{tmc})
+@cindex standard error stream, write to (@code{tm}, @code{tm1}, @code{tmc})
+@cindex stream, standard error, write to (@code{tm}, @code{tm1}, @code{tmc})
 Send @var{message}, which consumes the remainder of the input line and
 cannot contain special characters, to the standard error stream,
 followed by a newline.  Leading spaces in @var{message} are ignored.
@@ -17781,12 +17797,9 @@ string is a common feature of device-independent
 Plan@tie{}9 @code{troff}s all support it.} but valid values are specific
 to each implementation.
 
-@cindex removal of read-only registers, incompatibility with@
-@acronym{AT&T} @code{troff}
-@cindex register, read-only, removal, incompatibility with@
-@acronym{AT&T} @code{troff}
-@cindex read-only register removal, incompatibility with@
-@acronym{AT&T} @code{troff}
+@cindex removal of read-only registers, incompatibility with @acronym{AT&T} @code{troff}
+@cindex register, read-only, removal, incompatibility with @acronym{AT&T} @code{troff}
+@cindex read-only register removal, incompatibility with @acronym{AT&T} @code{troff}
 @acronym{AT&T} @code{troff} ignored attempts to remove read-only
 registers; GNU @code{troff} honors such requests.  @xref{Built-in
 Registers}.
@@ -17814,56 +17827,43 @@ may exist, using any valid identifiers for their names
 @cindex point sizes, fractional
 @cindex type sizes, fractional
 @cindex sizes, fractional
-@cindex @code{ps} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
+@cindex @code{ps} request, incompatibilities with @acronym{AT&T} @code{troff}
 Fractional type size support causes an incompatibility.  In
 @acronym{AT&T} @code{troff}, the @code{ps} request ignores scaling units
 and thus @samp{.ps 10u} sets the type size to 10@tie{}points, whereas in
 GNU @code{troff} it sets the type size to 10@tie{}@emph{scaled} points.
 @xref{Using Fractional Type Sizes}.
 
-@cindex @code{ab} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
+@cindex @code{ab} request, incompatibilities with @acronym{AT&T} @code{troff}
 The @code{ab} request differs from @acronym{AT&T} @code{troff}: GNU
 @code{troff} writes no message to the standard error stream if no
 arguments are given, and it exits with a failure status instead of a
 successful one.
 
-@cindex @code{bp} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
+@cindex @code{bp} request, incompatibilities with @acronym{AT&T} @code{troff}
 The @code{bp} request differs from @acronym{AT&T} @code{troff}: GNU
 @code{troff} does not accept a scaling unit on the argument, a page
 number; the former (somewhat uselessly) does.
 
-@cindex @code{pm} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
+@cindex @code{pm} request, incompatibilities with @acronym{AT&T} @code{troff}
 The @code{pm} request differs from @acronym{AT&T} @code{troff}: GNU
 @code{troff} reports the sizes of macros, strings, and diversions in
 bytes and ignores an argument to report only the sum of the sizes.
 
-@cindex @code{ss} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
+@cindex @code{ss} request, incompatibilities with @acronym{AT&T} @code{troff}
 Unlike @acronym{AT&T} @code{troff}, GNU @code{troff} does not ignore the
 @code{ss} request if the output is a terminal device; instead, the
 values of minimal inter-word and additional inter-sentence space are
 each rounded down to the nearest multiple of@tie{}12.
 
-@cindex @code{bd} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
-@cindex @code{cs} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
-@cindex @code{tr} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
-@cindex @code{fp} request, incompatibilities with @acronym{AT&T}@
-@code{troff}
-@cindex input characters and output glyphs, compatibility with@
-@acronym{AT&T} @code{troff}
-@cindex output glyphs, and input characters, compatibility with@
-@acronym{AT&T} @code{troff}
-@cindex characters, input, and output glyphs, compatibility with@
-@acronym{AT&T} @code{troff}
-@cindex glyphs, output, and input characters, compatibility with@
-@acronym{AT&T} @code{troff}
+@cindex @code{bd} request, incompatibilities with @acronym{AT&T} @code{troff}
+@cindex @code{cs} request, incompatibilities with @acronym{AT&T} @code{troff}
+@cindex @code{tr} request, incompatibilities with @acronym{AT&T} @code{troff}
+@cindex @code{fp} request, incompatibilities with @acronym{AT&T} @code{troff}
+@cindex input characters and output glyphs, compatibility with @acronym{AT&T} @code{troff}
+@cindex output glyphs, and input characters, compatibility with @acronym{AT&T} @code{troff}
+@cindex characters, input, and output glyphs, compatibility with @acronym{AT&T} @code{troff}
+@cindex glyphs, output, and input characters, compatibility with @acronym{AT&T} @code{troff}
 In GNU @code{troff} there is a fundamental difference between
 (unformatted) characters and (formatted) glyphs.  Everything that
 affects how a glyph is output is stored with the glyph node; once a
@@ -18355,8 +18355,7 @@ In the following command reference, the syntax element @angles{line
 break} means a syntactical line break as defined above.
 
 @table @code
-@item D~ @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn}@
-@var{vn}@angles{line break}
+@item D~ @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn} @var{vn}@angles{line break}
 Draw B-spline from current position to offset (@var{h1},@var{v1}), then
 to offset (@var{h2},@var{v2}), if given, etc., up to
 (@var{hn},@var{vn}).  This command takes a variable number of argument
@@ -18396,8 +18395,7 @@ a vertical diameter of@tie{}@var{v} (both integers in basic units
 @samp{u}) with the leftmost point at current position; then move to the
 rightmost point of the ellipse.
 
-@item DF @var{color-scheme} @r{[}@var{component}@
-@dots{}@r{]}@angles{line break}
+@item DF @var{color-scheme} @r{[}@var{component} @dots{}@r{]}@angles{line break}
 Set fill color for solid drawing objects using different color schemes;
 the analogous command for setting the color of text, line graphics, and
 the outline of graphic objects is @samp{m}.  The color components are
@@ -18466,8 +18464,7 @@ Draw line from current position to offset (@var{h},@var{v}) (integers in
 basic units @samp{u}); then set current position to the end of the drawn
 line.
 
-@item Dp @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn}@
-@var{vn}@angles{line break}
+@item Dp @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn} @var{vn}@angles{line break}
 Draw a polygon line from current position to offset (@var{h1},@var{v1}),
 from there to offset (@var{h2},@var{v2}), etc., up to offset
 (@var{hn},@var{vn}), and from there back to the starting position.  For
@@ -18481,8 +18478,7 @@ the position doesn't change.
 @end ignore
 This command is a @command{gtroff} extension.
 
-@item DP @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn}@
-@var{vn}@angles{line break}
+@item DP @var{h1} @var{v1} @var{h2} @var{v2} @dots{} @var{hn} @var{vn}@angles{line break}
 Draw a solid polygon in the current fill color rather than an outlined
 polygon, using the same arguments and positioning as the corresponding
 @samp{Dp} command.

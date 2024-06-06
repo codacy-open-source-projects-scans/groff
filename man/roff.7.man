@@ -391,7 +391,9 @@ preprocessor to lay out tables.
 .\" BEGIN Keep roughly parallel with groff.texi node "Requests and
 .\" Macros".
 .\" We have now encountered almost all of the syntax there is in the
-.\" @code{roff} language, with an exception already noted in passing.
+.\" @code{roff} language, with an exception already noted in
+.\" passing.@footnote{The backspace character is another; see
+.\" @ref{Page Motions}.}
 A
 .I request
 is an instruction to the formatter that occurs after a

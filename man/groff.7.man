@@ -1313,7 +1313,6 @@ On a machine using the ISO 646,
 or 10646 character encodings,
 invalid input characters are
 .BR 0x00 ,
-.BR 0x08 ,
 .BR 0x0B ,
 .BR 0x0D \[en] 0x1F ,
 and

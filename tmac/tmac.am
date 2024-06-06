@@ -245,6 +245,7 @@ tmac_TESTS = \
   tmac/tests/s_XA-literal-no-argument-suppresses-leader.sh \
   tmac/tests/s_honor-MINGW-when-two-columns.sh \
   tmac/tests/s_honor-page-break-after-display.sh \
+  tmac/tests/s_honor-page-break-in-text.sh \
   tmac/tests/s_mark-column-start-correctly.sh \
   tmac/tests/s_no-excess-space-around-displays.sh \
   tmac/tests/s_rejects-too-short-page-lengths.sh
