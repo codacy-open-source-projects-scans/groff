@@ -43,6 +43,7 @@ Index		array!index
 .
 .mso devtag.tmac
 .\" ######## init #######
+.ds Abstract ABSTRACT\"
 .\"	create table of contents entry for headings of level <= Cl
 .nr Cl 2
 .\"	Eject page between LIST OF XXXX if Cp == 0
@@ -2387,6 +2388,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .de ML
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
+.if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
 .if \\n[D]>2 .tm ML $*
 .nr li*ml-width \w@\\$1@u+1n
 .if \\n[.$]<2 .LB \\n[li*ml-width]u 0 1 0 "\\$1"
@@ -3099,8 +3101,8 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"########################### module cov ############################
 .\" title stored in diversion cov*title
 .\" abstract stored in diversion cov*abstract
-.\"	arg to abstract stored in cov*abs-arg
-.\"	indent stored in cov*abs-ind
+.\"	placement value to `AS` stored in cov*abstract-placement
+.\"	indentation argument to `AS` stored in cov*abstract-indent
 .\" number of authors stored in cov*au
 .\" author(s) stored in cov*au!x!y
 .\" number of authors' titles stored in cov*at!x
@@ -3109,8 +3111,6 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" author(s) firm stored in cov*firm
 .\" new date (if .ND exists) is stored in cov*new-date
 .\"
-.\"
-.ds cov*abs-name ABSTRACT
 .\"
 .nr cov*au 0
 .de TL
@@ -3162,18 +3162,19 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\"-------------------
 .de AF
-.cov@title-end
 .if !''\\$1' .ds cov*firm \\$1
 ..
+.\" Kill this macro off in groff 1.25.
 .de AST
-.ds cov*abs-name "\\$1\"
+.@warning \\$0: macro is deprecated; define string 'Abstract' instead
+.ds Abstract "\\$1\"
 ..
 .de AS
 .pg@disable-top-trap
 .if d cov*abstract .@error \\$0: only one abstract allowed
 .if !''\\n[.z]' .@error \\$0: no diversion allowed (previous .AS?)
-.nr cov*abs-arg 0\\$1
-.nr cov*abs-ind (n;0\\$2)
+.nr cov*abstract-placement 0\\$1
+.nr cov*abstract-indent (n;0\\$2)
 .de cov*abstract AE
 ..
 .de AE

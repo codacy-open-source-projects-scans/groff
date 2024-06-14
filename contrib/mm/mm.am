@@ -67,6 +67,7 @@ mm_TESTS = \
   contrib/mm/tests/MT-1-reports-all-TM-numbers.sh \
   contrib/mm/tests/MT-5-includes-AT-in-SG.sh \
   contrib/mm/tests/P-indentation-works.sh \
+  contrib/mm/tests/cover-page-info-is-present.sh \
   contrib/mm/tests/flush-long-displays-at-end-of-input.sh \
   contrib/mm/tests/indexing-works.sh \
   contrib/mm/tests/ms-cover-sheet-robust-to-missing-AF.sh \

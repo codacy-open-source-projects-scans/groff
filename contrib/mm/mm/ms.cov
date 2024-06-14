@@ -1,4 +1,3 @@
-.\" -*- nroff -*-
 .ig
 
 Copyright (C) 1991-2020 Free Software Foundation, Inc.
@@ -76,9 +75,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .if d cov*abstract \{\
 .	misc@ev-keep cov*ev
 .	init@reset
-.	if \\n[cov*abs-ind]>0 \{\
-.		in +\\n[cov*abs-ind]u
-.		ll -\\n[cov*abs-ind]u
+.	if \\n[cov*abstract-indent]>0 \{\
+.		in +\\n[cov*abstract-indent]u
+.		ll -\\n[cov*abstract-indent]u
 .	\}
 .	ce
 \fI\\$1\fP
@@ -103,13 +102,13 @@ http://savannah.gnu.org/bugs/?group=groff.
 .cov@print-title
 .cov@print-authors
 .cov@print-firm
-.cov@print-abstract "\\*[cov*abs-name]"
+.cov@print-abstract "\\*[Abstract]"
 .cov@print-date
 .pg@enable-top-trap
 .bp 1
 .pg@enable-trap
-.if r cov*abs-arg .if \\n[cov*abs-arg] \{\
-.	cov@print-abstract ABSTRACT
+.if r cov*abstract-placement .if \\n[cov*abstract-placement] \{\
+.	cov@print-abstract "\\*[Abstract]"
 .	SP 2
 .\}
 ..

@@ -51,22 +51,23 @@ bibliography $artifact_dir/60657.ref
 .R2"
 
 output=$(echo "$input" | "$groff" -R -mm -Tascii -P-cbou)
+echo "$output"
 
-echo "checking first entry"
+echo "checking first entry" >&2
 echo "$output" \
     | grep -q "1\. First Author in First Book\. Test one\.$" \
     || wail
 
-echo "checking second entry"
+echo "checking second entry" >&2
 echo "$output" \
     | grep -q "2\. Second Author in Second Book\.$" \
     || wail
 
-echo "checking third entry"
+echo "checking third entry" >&2
 echo "$output" \
     | grep -q "3\. Third Author\.$" \
     || wail
 
-test -z "$fail" || exit 1
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

@@ -1,3 +1,63 @@
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Replace `AST` macro and `cov*abs-name` string with `Abstract`
+	string.
+
+	* m.tmac: Define `Abstract` instead of `cov*abs-name` string at
+	initialization.
+	(AST): Throw warning if called, but honor the instruction (using
+	new string name).
+	* mm/0.MT:
+	* mm/4.MT (cov*print-abstract):
+	* mm/ms.cov (COVEND): Use new string name.
+
+	* groff_mm.7.man (Macros) <AST>: De-document.
+	(Strings) <Abstract>: Document.
+
+	* NOTES: De-document `cov*abs-name`.
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac:
+	* mm/0.MT:
+	* mm/4.MT:
+	* mm/ms.cov: Rename `cov*abs-arg` to `cov*abstract-placement`.
+	Rename `cov*abs-ind` to `cov*abstract-indent`.
+
+	* NOTES: Update (internal) documentation.
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT: Align memorandum captions with DWB 3.3 mm.
+	* groff_mm.7.man <MT>: Document this.  Also fix error; omitting
+	the argument implies memorandum type 1, not 0.
+	* tests/cover-page-info-is-present.sh: Update test expectations.
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (AF): Drop unnecessary macro call.  `AU` performs the
+	requisite cleanup.
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT: Move `cov@print-firm` call to where it works.
+	Annotate the fairly subtle point revealed.
+
+	Fixes <https://savannah.gnu.org/bugs/?65865>.  Problem appears
+	to date back to commit bd5385e4ea, 17 November 1991 (groff 1.04,
+	the first that shipped an implementation of mm).
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #65865.
+
+	* tests/cover-page-info-is-present.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2024-06-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Throw error if mandatory first argument missing.
+
 2024-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* examples/letter.mm: Replace with idiomatic content.

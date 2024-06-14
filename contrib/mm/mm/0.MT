@@ -127,9 +127,9 @@ TM
 .SP 3
 .if d cov*abstract \{\
 .	misc@ev-keep cov*ev
-.	if \\n[cov*abs-ind]>0 \{\
-.		in +\\n[cov*abs-ind]u
-.		ll -\\n[cov*abs-ind]u
+.	if \\n[cov*abstract-indent]>0 \{\
+.		in +\\n[cov*abstract-indent]u
+.		ll -\\n[cov*abstract-indent]u
 .	\}
 .	ce
 \fI\\$1\fP
@@ -141,17 +141,26 @@ TM
 .\}
 ..
 .\"-----------------
-.ds cov*mt0-txt!1 MEMORANDUM FOR FILE
-.ds cov*mt0-txt!2 PROGRAMMER'S NOTES
-.ds cov*mt0-txt!3 ENGINEER'S NOTES
-.if d cov*default-firm .if !d cov*firm .ds cov*firm \\*[cov*default-firm]
+.ds cov*mt0-txt!1 TECHNICAL MEMORANDUM\"
+.ds cov*mt0-txt!2 INTERNAL MEMORANDUM\"
+.ds cov*mt0-txt!3 ADMINISTRATIVE MEMORANDUM\"
+.if d cov*default-firm \
+.	if !d cov*firm .ds cov*firm \\*[cov*default-firm]\"
 .\"
+.\" Note: The firm name (if any) is formatted _above_ the title and
+.\" other data, but the `AF` macro call defining it might be stuffed
+.\" inside the `TL` macro content, so its string won't be visible until
+.\" we format the title.  This is weird but DWB-compatible.
+.\"
+.\" (Technical details: DWB mm stores the title in a diversion.  groff
+.\" mm stores it in a macro, and only calling `AU` ends the macro
+.\" definition.)
 .if !d cov*mt-printed \{\
-.	cov@print-firm
 .	cov@print-title subject
+.	cov@print-firm
 .	cov@print-date date
 .	cov@print-authors from
-.	cov@print-abstract \\*[cov*abs-name]
+.	cov@print-abstract \\*[Abstract]
 .	SP 3
 .	if (\*[cov*mt-type]>=1)&(\*[cov*mt-type]<=3) \{\
 .		ce

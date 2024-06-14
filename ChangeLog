@@ -1,3 +1,18 @@
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl (do_line): Recognize new `pline`
+	request forthcoming in groff 1.24 release.
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/trans.tmac: For mm package, alias new string name
+	`Abstract` instead of old (and internal!) one, `cov*abs-name`.
+
+2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next, interpolate_arg):
+	Tighten up null-terminated string traversal.
+
 2024-06-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[docs]: Fix Savannah #65837.
@@ -21,8 +36,8 @@
 
 	[ms]: Fix Savannah #64005 (again).
 
-	* tmac/s.tmac (@break-page, bp): Fix thinko swapping the normal
-	and no-break control characters.
+	* tmac/s.tmac (bp): Fix thinko swapping the normal and no-break
+	control characters.
 
 	Fixes <https://savannah.gnu.org/bugs/?64005>.  Thanks to Deri
 	James for catching this misbehavior.

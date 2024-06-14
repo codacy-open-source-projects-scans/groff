@@ -47,6 +47,7 @@ x = y
 .DE'
 
 output=$(printf "%s\n" "$input" | "$groff" -e -mm -Tascii -P-cbou)
+echo "$output"
 
 echo "checking left-aligned displayed equation" >&2
 echo "$output" | grep -Eq 'p=q {54}\(1\)' || wail
@@ -57,6 +58,6 @@ echo "$output" | grep -Eq 'w=z {49}\(2\)' || wail
 echo "checking centered displayed equation" >&2
 echo "$output" | grep -Eq 'x=y {26}\(3\)' || wail
 
-test -z "$fail" || exit 1
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:

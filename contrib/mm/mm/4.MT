@@ -66,12 +66,12 @@ http://savannah.gnu.org/bugs/?group=groff.
 .if d cov*abstract \{\
 .	misc@ev-keep cov*ev
 .	init@reset
-.	if \\n[cov*abs-ind]>0 \{\
-.		in +\\n[cov*abs-ind]u
-.		ll -\\n[cov*abs-ind]u
+.	if \\n[cov*abstract-indent]>0 \{\
+.		in +\\n[cov*abstract-indent]u
+.		ll -\\n[cov*abstract-indent]u
 .	\}
 .	ce
-\fI\\*[cov*abs-name]\fP
+\fI\\*[Abstract]\fP
 .	SP 2
 .	fi
 .	cov*abstract
@@ -86,7 +86,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	cov@print-authors
 .	cov@print-firm
 .	if d cov*abstract \{\
-.		if !\n[cov*abs-arg] .cov@print-abstract
+.		if !\n[cov*abstract-placement] .cov@print-abstract
 .	\}
 .	SP 2
 .	nr hd*cur-bline \n[nl]

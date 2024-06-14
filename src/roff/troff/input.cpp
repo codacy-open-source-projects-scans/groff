@@ -2189,7 +2189,9 @@ void token::next()
 	  if (s.is_null())
 	    break;
 	  const char *p;
-	  for (p = s.contents(); *p != '\0'; p++)
+	  for (p = s.contents();
+	       p != 0 /* nullptr */ && *p != '\0';
+	       p++)
 	    if (!csdigit(*p))
 	      break;
 	  // environment::set_font warns if a bogus mounting position is
@@ -4558,7 +4560,7 @@ static void interpolate_arg(symbol nm)
     const char *p;
     bool is_valid = true;
     bool is_printable = true;
-    for (p = s; *p != 0 /* nullptr */; p++) {
+    for (p = s; p != 0 /* nullptr */ && *p != '\0'; p++) {
       if (!csdigit(*p))
 	is_valid = false;
       if (!csprint(*p))

@@ -310,6 +310,10 @@ o The doc (mdoc) macro package now honors the `U` register and `MF`
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
 
+o The m (mm) macro package's `AST` macro is deprecated, warns upon
+  usage, and is slated for withdrawal in the next release.  Assign to
+  the new string `Abstract` instead.
+
 o The m (mm) macro package's `EPIC` macro (a GNU extension) now
   interprets its "width" argument in ens by default, and its "height"
   argument in vees, instead of basic units, for consistency with the

@@ -68,11 +68,9 @@ cov*at!x!y		S	Author(s) title given to .AT
 
 cov*firm		I	Organizational affiliation.
 
-cov*abs-arg		I	Argument to abstract.
+cov*abstract-placement	I	Placement argument to .AS.
 
-cov*abs-ind		I	Indent for abstract.
-
-cov*abs-name		S	The string 'ABSTRACT', changed with .AST
+cov*abstract-indent	I	Indentation argument to .AS.
 
 cov*abstract		M	The abstract.
 
