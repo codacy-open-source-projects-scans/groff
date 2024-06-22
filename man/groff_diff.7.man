@@ -146,8 +146,10 @@ within can be of arbitrary length.
 GNU
 .I troff \" GNU
 can group text typefaces into
-.I families
-containing each of the styles
+.I families.
+For example,
+.I groff
+ships families containing each of the styles
 .RB \[lq] R \[rq],
 .RB \[lq] I \[rq],
 .RB \[lq] B \[rq],
@@ -650,8 +652,9 @@ if you want a filled,
 stroked figure,
 you must draw the same figure twice using each drawing command.
 .
-A filled figure is always smaller than a stroked one because the former
-is drawn only within its defined area,
+A filled figure is always smaller
+than a stroked one using the same parameters
+because the former is drawn only within its defined area,
 whereas strokes have a line thickness
 (set with another new drawing command,
 .BR \[rs]D\[aq]t\[aq] ).

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2023 Free Software Foundation, Inc.
+# Copyright (C) 2023-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -61,9 +61,18 @@ list item
 .P
 P10 not indented.
 .P
-P11 indented.'
+P11 indented.
+.H 1 "Heading Two"
+P12 not indented.
+.P
+P13 indented.
+.H 1 "Unidiomatic Heading Three"
+.P
+P14 not indented.
+.P
+P15 indented.'
 
-output=$(printf "%s\n" "$input" | "$groff" -mm -Tascii -P-cbou)
+output=$(printf "%s\n" "$input" | "$groff" -rD3 -mm -Tascii -P-cbou)
 echo "$output"
 
 #       P1 not indented.
@@ -91,11 +100,25 @@ echo "$output"
 #
 #            P9 indented.
 #
-#          o list item
+#          o  list item
 #
 #       P10 not indented.
 #
 #            P11 indented.
+#
+#
+#       2.  Heading Two
+#
+#       P12 not indented.
+#
+#            P13 indented.
+#
+#
+#       3.  Unidiomatic Heading Three
+#
+#       P14 not indented.
+#
+#            P15 indented.
 
 echo "checking that initial untyped paragraph not indented" >&2
 echo "$output" | grep -Eqx ' {7}P1 not indented\.' || wail
@@ -129,6 +152,20 @@ echo "$output" | grep -Eqx ' {7}P10 not indented\.' || wail
 
 echo "checking that second paragraph after list indented" >&2
 echo "$output" | grep -Eqx ' {12}P11 indented\.' || wail
+
+echo "checking that implied paragraph after heading not indented" >&2
+echo "$output" | grep -Eqx ' {7}P12 not indented\.' || wail
+
+echo "checking that explicit paragraph after implied one indented" >&2
+echo "$output" | grep -Eqx ' {12}P13 indented\.' || wail
+
+echo "checking that first explicit paragraph after heading" \
+    "not indented" >&2
+echo "$output" | grep -Eqx ' {7}P14 not indented\.' || wail
+
+echo "checking that second explicit paragraph after heading" \
+    "not indented" >&2
+echo "$output" | grep -Eqx ' {12}P15 indented\.' || wail
 
 test -z "$fail"
 

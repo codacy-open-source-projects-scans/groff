@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 2003-2020 Free Software Foundation, Inc.
  *
  *  mtsm.h
@@ -24,6 +23,8 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#include <stack>
 
 struct int_value {
   int value;
@@ -99,7 +100,7 @@ struct statem {
   ~statem();
   void flush(FILE *, statem *);
   int changed(statem *);
-  void merge(statem *, statem *);
+  void merge(statem *, statem &);
   void add_tag(int_value_state, int);
   void add_tag(bool_value_state);
   void add_tag(units_value_state, hunits);
@@ -108,23 +109,15 @@ struct statem {
   void add_tag_if_unknown(int_value_state, int);
   void add_tag_ta();
   void display_state();
-  void update(statem *, statem *, int_value_state);
-  void update(statem *, statem *, bool_value_state);
-  void update(statem *, statem *, units_value_state);
-  void update(statem *, statem *, string_value_state);
-};
-
-struct stack {
-  stack *next;
-  statem *state;
-  stack();
-  stack(statem *, stack *);
-  ~stack();
+  void update(statem &, statem *, int_value_state);
+  void update(statem &, statem *, bool_value_state);
+  void update(statem &, statem *, units_value_state);
+  void update(statem &, statem *, string_value_state);
 };
 
 class mtsm {
   statem *driver;
-  stack *sp;
+  std::stack<statem> stack;
   int has_changed(int_value_state, statem *);
   int has_changed(bool_value_state, statem *);
   int has_changed(units_value_state, statem *);

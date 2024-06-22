@@ -1,3 +1,51 @@
+2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/mtsm.cpp (mtsm::inherit): Fix failing test.
+
+2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Fix Savannah #65894.  Refactor troff's "mini-troff state
+	machine" to use STL stack implementation instead of a bespoke
+	one, fixing a double-free error.
+
+	* src/roff/troff/mtsm.h: Include C++ standard library "stack"
+	header.
+	(struct stack): Drop.
+	(class mtsm): Declare `stack` data member as a standard stack of
+	`statem` objects instead of a pointer to local `stack` type.
+
+	* src/roff/troff/mtsm.h (statem::merge, statem::update):
+	* src/roff/troff/mtsm.cpp (statem::merge, statem::update): Take
+	references instead of pointers to some `statem` arguments (those
+	that will be accessed via the `stack` data member).
+
+	* src/roff/troff/mtsm.cpp (stack::stack, stack::~stack): Drop.
+	(mtsm::mtsm): Drop initializer of `sp` data member.
+	(mtsm::~mtsm): Drop (conditional) deletion of `sp`.
+	(mtsm::push_state, mtsm::pop_state, mtsm::inherit): Use STL
+	`stack`'s `push()`, `empty()`, and `pop()` instead of primitive
+	operations.
+	(statem::update): Access data members of `mtsm` class via
+	references instead of pointers (using `.` instead of `->`
+	operator).
+	(statem::merge): Drop null pointer test of reference, which
+	can't be null.
+
+	Fixes <https://savannah.gnu.org/bugs/?65894>.  This was a latent
+	bug exposed by commit 0951ff53e4, 10 August (a change to the
+	man(7) macro package; such things should _never_ cause the
+	formatter to crash).
+
+2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Add regression test for latent bug: surprising "grout" produced
+	when using "html" output device and a memory management bug is
+	fixed.
+
+	* src/roff/groff/tests/html-does-not-fumble-tagged-paragraph.sh:
+	Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
 2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/utils/grog/grog.pl (do_line): Recognize new `pline`

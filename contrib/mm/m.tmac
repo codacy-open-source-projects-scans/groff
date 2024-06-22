@@ -174,19 +174,15 @@ Index		array!index
 .\"
 .nr @copy_type 0
 .if r C .nr @copy_type \n[C]
-.\" >0 if Subject/Date/From should be bold, roman otherwise
-.ie n .ds @sdf_font R
-.el .ds @sdf_font B
+.\"
+.if !r E .nr E 1
+.ie \n[E] .ds @metadata-font B\"
+.el       .ds @metadata-font R\"
+.\"
 .if \n[@copy_type]=4 \{\
 .	ls 2
 .	nr Pi 10
 .	nr Pt 1
-.\}
-.\"
-.\"
-.if r E \{\
-.	ie \n[E] .ds @sdf_font B
-.	el .ds @sdf_font R
 .\}
 .\"
 .\"	Set the type size and vertical spacing.  If given on the command
@@ -274,7 +270,7 @@ Index		array!index
 .if !r Idxf .nr Idxf 0
 .\"	Change these in the national configuration file
 .ds Lifg Figure
-.ds Litb TABLE
+.ds Litb Table
 .ds Liex Exhibit
 .ds Liec Equation
 .ds Licon CONTENTS
@@ -501,7 +497,11 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .br
 .if !r line*lp\\n[.z] .nr line*lp\\n[.z] 0
 .if !r line*ac\\n[.z] .nr line*ac\\n[.z] 0
-.ie \\n[.$] .nr line*temp (v;\\$1)
+.ie \\n[.$] \{\
+.	if !\B'\\$1' .@error \\$0: parameter is not numeric; got '\\$1'
+.	if (\\$1 < 0) .@error \\$0: negative motion '\\$1' not supported
+.	nr line*temp (v;\\$1)
+.\}
 .el .nr line*temp 1v
 .\"
 .ie \\n[line*lp\\n[.z]]=\\n[.d] \{\
@@ -760,8 +760,8 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .misc@ev-keep misc*verb-ev
 .nf
 .if (0\\n[misc*verb]%16)/8 .nm \\*[Verbnm]
-.ie !'\\$3'' .ft \\$3
-.el .ft CR
+.ie !'\\$3'' .if F \\$3 .ft \\$3
+.el .if F CR .ft CR
 .ie 0\\$2 \{\
 .	ss \\$2
 .	ps \\$2
@@ -1037,6 +1037,10 @@ numeric; got '\\$1'
 .H 0 \\$@
 ..
 .\"-------------
+.de hd*trap
+.nr par@suppress-indentation 0
+..
+.\"-------------
 .de H
 .if !r hd*cur-bline .nr hd*cur-bline \\n[nl]
 .br
@@ -1177,10 +1181,7 @@ numeric; got '\\$1'
 .	if (\\n[Hi]=1)&(\\n[Pt]=1) .ti +\\n[Pi]n
 .	\"	indent size of mark if Hi=2
 .	if \\n[hd*htype]&(\\n[Hi]>1) .ti +\\n[hd*mark-size]u
-.	nr par@suppress-indentation 1
 .\}
-.\" We're setting a run-in heading; the next paragraph is normal.
-.el .nr par@suppress-indentation 0
 .\"
 .\"	check if it is time to reset footnotes
 .if (\\n[hd*level]=1)&\\n[ft*clear-at-header] .nr ft*nr 0 1
@@ -1198,6 +1199,8 @@ numeric; got '\\$1'
 .nr hd*last-hsize \\n[.k]
 .\" HTML: end of heading
 .misc@tag EO-H
+.\" _Any_ output after this heading resets suppression of indentation.
+.itc 1 hd*trap
 ..
 .\"--------
 .de HM
@@ -2305,13 +2308,13 @@ within DF/DE
 ..
 .\"---------------
 .de LI
-.if \\n[li*lvl]<1 .@error \\$0: no list active; call AL, BL, BVL, ... \
-first
+.if \\n[li*lvl]<1 .@error \\$0: no list active; call AL, BL, BVL, DL, \
+ML, RL, VL, or LB first
 .if \\n[li*li-spc]&(\\n[li*lvl]<=\\n[Ls]) \
 .	SP (u;\\n[li*li-spc]*\\n[Lsp])
 .ne 2v
 .\"
-.ds li*c-mark \\*[li*mark]
+.ds li*c-mark \\*[li*mark] \" mark specific to this item's context
 .nr li*cnt!\\n[li*lvl] +1
 .if \\n[li*type]=1 .ds li*c-mark \\n[li*cnt!\\n[li*lvl]].
 .if \\n[li*type]=2 .ds li*c-mark \\n[li*cnt!\\n[li*lvl]])
@@ -2324,20 +2327,29 @@ first
 .	ie (\\$2=2):(\\n[Limsp]=0) .ds li*c-mark \\$1\\*[li*c-mark]
 .	el .ds li*c-mark \\$1\ \\*[li*c-mark]
 .\}
+.nr li*c-pad \\n[li*pad]
 .\"
 .\" determine where the text begins
-.nr li*text-begin \\n[li*tind]>?\w@\\*[li*c-mark]\ @
+.if \w'\\*[li*c-mark]'>\\n[li*tind] \{\
+.	@warning \\$0: overlong mark '\\*[li*c-mark]'
+.	nr li*c-pad 2n \" force item/mark separation
+.\}
+.nr li*text-begin \\n[li*tind]>?\w@\\*[li*c-mark]@+\\n[li*c-pad]
 .\"
 .\" determine where the mark begin
-.ie !\\n[li*pad] .nr li*in \\n[li*mind]
-.el .nr li*in \\n[li*text-begin]-\\n[li*pad]-\w@\\*[li*c-mark]@
-.if !\\n[li*in] .nr li*in 0
+.ie !\\n[li*c-pad] .nr li*mark-begin \\n[li*mind]
+.el .nr li*mark-begin \\n[li*text-begin]-\\n[li*c-pad]-\w@\\*[li*c-mark]@
+.if !\\n[li*mark-begin] .nr li*mark-begin 0
 .\"
 .ti -\\n[li*tind]u
 .\" no indentation if hanging indent
 .if (\w@\\*[li*c-mark]@=0)&((\\n[.$]=0):(\w@\\$1@=0)) .nr li*text-begin 0
-\Z'\&\h'\\n[li*in]u'\\*[li*c-mark]'\h'\\n[li*text-begin]u'\&\c
+.nop \Z@\&\h'\\n[li*mark-begin]u'\\*[li*c-mark]@\h'\\n[li*text-begin]u'\&\c
 .if \\n[li*type]=-1 .br
+.rr li*c-pad
+.rr li*mark-begin
+.rr li*text-begin
+.rm li*c-mark
 ..
 .\"
 .\"-------------
@@ -2377,12 +2389,12 @@ exceeds depth of nested lists (\\n[li*lvl])
 .de AL
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .if \\n[D]>2 .tm AL $*
-.ie \\n[.$]<=1 .LB \\n[Li] 0 2 1 "\\$1"
+.ie \\n[.$]<=1 .LB              \\n[Li] 0 2 1 "\\$1"
 .el \{\
-.	ie \\n[.$]=2 .LB 0\\$2 0 2 1 "\\$1"
+.	ie \\n[.$]=2 .LB        0\\$2   0 2 1 "\\$1"
 .	el \{\
-.		ie !'\\$2'' .LB \\$2 0 2 1 "\\$1" 0 1
-.		el .LB \\n[Li] 0 2 1 "\\$1" 0 1
+.		ie !'\\$2'' .LB \\$2    0 2 1 "\\$1" 0 1
+.		el          .LB \\n[Li] 0 2 1 "\\$1" 0 1
 .	\}
 .\}
 ..
@@ -2391,11 +2403,11 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
 .if \\n[D]>2 .tm ML $*
 .nr li*ml-width \w@\\$1@u+1n
-.if \\n[.$]<2 .LB \\n[li*ml-width]u 0 1 0 "\\$1"
-.if \\n[.$]=2 .LB 0\\$2 0 1 0 "\\$1"
+.if \\n[.$]<2 .LB      \\n[li*ml-width]u 0 1 0 "\\$1"
+.if \\n[.$]=2 .LB      0\\$2             0 1 0 "\\$1"
 .if \\n[.$]=3 \{\
 .	ie '\\$2'' .LB \\n[li*ml-width]u 0 1 0 "\\$1" 0 1
-.	el .LB \\n[Li] 0 1 0 "\\$1" 0 1
+.	el         .LB \\n[Li]           0 1 0 "\\$1" 0 1
 .\}
 ..
 .de VL
@@ -2403,7 +2415,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
 .ie \\n[.$]<3 .LB 0\\$1 0\\$2 0 0
-.el .LB 0\\$1 0\\$2 0 0 \& 0 1
+.el           .LB 0\\$1 0\\$2 0 0 \& 0 1
 ..
 .de BL
 .if \\n[D]>2 .tm BL $*
@@ -2412,27 +2424,27 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \\n[.$]=1 .LB 0\\$1 0 1 0 \\*[BU]
 .if \\n[.$]=2 \{\
 .	ie '\\$1'' .LB \\n[Pi] 0 1 0 \\*[BU] 0 1
-.	el .LB 0\\$1 0 1 0 \\*[BU] 0 1
+.	el         .LB 0\\$1   0 1 0 \\*[BU] 0 1
 .\}
 ..
 .de DL
 .if \\n[D]>2 .tm DL $*
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \[em]
-.if \\n[.$]=1 .LB 0\\$1 0 1 0 \[em]
+.if \\n[.$]=1 .LB 0\\$1   0 1 0 \[em]
 .if \\n[.$]=2 \{\
 .	ie '\\$1'' .LB \\n[Pi] 0 1 0 \[em] 0 1
-.	el .LB 0\\$1 0 1 0 \[em] 0 1
+.	el         .LB 0\\$1   0 1 0 \[em] 0 1
 .\}
 ..
 .de RL
 .if \\n[D]>2 .tm RL $*
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
-.if \\n[.$]<1 .LB 6 0 2 4
-.if \\n[.$]=1 .LB 0\\$1 0 2 4
+.if \\n[.$]<1 .LB      6     0 2 4
+.if \\n[.$]=1 .LB      0\\$1 0 2 4
 .if \\n[.$]=2 \{\
-.	ie '\\$1'' .LB 6 0 2 4 1 0 1
-.	el .LB 0\\$1 0 2 4 1 0 1
+.	ie '\\$1'' .LB 6     0 2 4 1 0 1
+.	el         .LB 0\\$1 0 2 4 1 0 1
 .\}
 ..
 .\" Broken Variable List. As .VL but text begin on the next line
@@ -2441,7 +2453,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
 .ie \\n[.$]<3 .LB 0\\$1 0\\$2 0 -1
-.el .LB 0\\$1 0\\$2 0 -1 \& 0 1
+.el           .LB 0\\$1 0\\$2 0 -1 \& 0 1
 ..
 .\" ####### module tbl #######################################
 .\" This module is copied from groff_ms and modified for mm.
@@ -3477,9 +3489,12 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\"------------------------
 .\" Signature line
+.nr let*sg-suppress-all 0
+.nr let*sg-suppress-annotation 0
 .de SG
+.if \\n[let*sg-suppress-all] .return
 .ie d let*type .let*lt-sign \\$@
-.el .let*mt-sign \\$@
+.el            .let*mt-sign \\$@
 ..
 .\"------------------------
 .de let*lt-sign
@@ -3502,33 +3517,42 @@ undefined
 .ne \\n[cov*au]u*4v
 .ie \\n[.$]>1 .nr let*k 1
 .el .nr let*k \\n[cov*au]
-.ds let*tmp \" empty
+.ds let*anno \" secretarial annotation
 .if d cov*au!\\n[let*k]!3 \{\
-.	as let*tmp \\*[cov*au!\\n[let*k]!3]\"
+.	as let*anno \\*[cov*au!\\n[let*k]!3]\"
 .	if d cov*au!\\n[let*k]!4 \
-.		as let*tmp -\\*[cov*au!\\n[let*k]!4]-\"
+.		as let*anno -\\*[cov*au!\\n[let*k]!4]-\"
 .\}
 .nr let*i 0 1
 .while \\n+[let*i]<=\\n[cov*au] \{\
-.	if \\n[let*i]>1 .as let*tmp /\"
-.	if d cov*au!\\n[let*i]!2 .as let*tmp \\*[cov*au!\\n[let*i]!2]\"
+.	if \\n[let*i]>1 .as let*anno /\"
+.	if d cov*au!\\n[let*i]!2 \{\
+.		as let*anno \\*[cov*au!\\n[let*i]!2]\"
+.	\}
 .\}
-.if !''\\$1' .as let*tmp -\\$1
+.if !''\\$1' .as let*anno -\\$1
 .in (u;\\n[.l]/2)
 .nf
+.ft \*[@metadata-font]
 .nr let*i 0 1
 .while \\n+[let*i]<=\\n[cov*au] \{\
 .	ne 3v+\\n[cov*at!\\n[let*i]]v
 .	SP 3v
 .	if \\n[let*i]=\\n[let*k] \{\
-\Z'\h'-(u;\\n[.l]/2)'\\*[let*tmp]'\c
+.		if !\\n[let*sg-suppress-annotation] \{\
+.			\" Set annotation to left of last author's name.
+.			\" It does _not_ get the metadata font.
+.			nop \Z'\h'-(u;\\n[.l]/2)'\f[R]\\*[let*anno]\f[]'\c
+.		\}
 .	\}
-\\*[cov*au!\\n[let*i]!1]
+.	nop \\*[cov*au!\\n[let*i]!1]
+.	\" Set author's title(s).
 .	nr let*j 0 1
 .	while \\n+[let*j]<=\\n[cov*at!\\n[let*i]] \{\
-\\*[cov*at!\\n[let*i]!\\n[let*j]]
+.		nop \\*[cov*at!\\n[let*i]!\\n[let*j]]
 .	\}
 .\}
+.ft
 .fi
 .in
 ..
@@ -3543,7 +3567,7 @@ undefined
 .sp 2
 .ie n ______________________________      ______________
 .el \D'l 25m 0'\h'4m'\D'l 12m 0'
-\Z'\\$1'\h'29m'\f[\\*[@sdf_font]]\\*[Letdate]\fP
+\Z'\\$1'\h'29m'\f[\\*[@metadata-font]]\\*[Letdate]\fP
 .fi
 ..
 .\"------------------------
@@ -3706,7 +3730,7 @@ undefined
 .	el \{\
 .		sp
 .		if '\\*[let*type]'SB' .ti +5m
-\\*[LetSJ] \f[\\*[@sdf_font]]\\*[let*lo-SJ]\fP
+\\*[LetSJ] \f[\\*[@metadata-font]]\\*[let*lo-SJ]\fP
 .	\}
 .	sp
 .\}
@@ -3757,8 +3781,13 @@ undefined
 .if d let@wa-junk .rm let@wa-junk
 ..
 .\"-------------------
-.\" Copy to
+.\" Notations ("Copy to", etc.)
+.nr let*ns-suppress 0
 .de NS
+.if \\n[let*ns-suppress] \{\
+.	ie \\n[.$] .return
+.	el         .box let*ns-discard
+.\}
 .sp
 .ie !''\\$2' .ds let*str \\$1
 .el \{\
@@ -3776,6 +3805,10 @@ undefined
 \\*[let*str]
 ..
 .de NE
+.if \\n[let*ns-suppress] \{\
+.	box
+.	return
+.\}
 .fi
 ..
 .\"-------------------

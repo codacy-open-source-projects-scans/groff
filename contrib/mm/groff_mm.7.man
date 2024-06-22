@@ -195,7 +195,6 @@ are defined.
 The registers
 .BR A ,
 .BR C ,
-.BR E ,
 .BR T ,
 and
 .BR U ,
@@ -226,6 +225,20 @@ of the text of the first
 (after the paragraph number);
 .IR "groff mm" 's
 does not.
+.
+.
+.IP \[bu]
+For
+.B MT
+memoranda and
+.B LT
+letters,
+.I "groff mm"
+uses the same adjustment and font defaults in
+.I nroff
+and
+.I troff
+modes.
 .
 .
 .IP \[bu]
@@ -594,6 +607,14 @@ you could input the following.
 .
 .
 .P
+Some macros are documented as causing a page break;
+this does not occur if such a macro is called when the drawing position
+is already at the top of a page
+(after a page heading,
+if any).
+.
+.
+.P
 Macro names longer than two characters are GNU extensions;
 some shorter names were not part of DWB
 .IR mm 's
@@ -659,8 +680,8 @@ See
 .
 .
 .\" In DWB mm, the mnemonic for `AF` was "alternate first-page format",
-.\" and was described in the context of the `A` and `E` registers and
-.\" `}Z` and `]S` strings, none of which we support.
+.\" and was described in the context of the `A` register and `}Z` and
+.\" `]S` strings, none of which we support.
 .\"
 .\" The "mm Reference" in _XENIX 286 Text Formatting Guide_ (1984) used
 .\" "affiliation", which makes sense to GBR.
@@ -672,11 +693,6 @@ Specify a memorandum's organizational affiliation.
 At most one can be declared;
 .I org-name
 is used by memorandum types and available to cover sheets.
-.
-.B AF
-terminates a document title started with
-.BR TL ,
-and can be called without an argument for that purpose.
 .
 See
 .B MT
@@ -770,7 +786,7 @@ and made empty otherwise.
 .
 .
 .TP
-.BI APPSK\~ "id n" \~\c
+.BI APPSK\~ "sequence-number n" \~\c
 .RI [ title ]
 As
 .BR APP ,
@@ -883,7 +899,7 @@ memoranda.
 .
 The
 .B ms
-cover sheet style also uses it.
+cover sheet style also formats these data.
 .
 .
 .br
@@ -947,9 +963,9 @@ respectively,
 beneath them.
 .
 Above these rules,
-the text in the string
-.B Letapp
-is formatted;
+.I mm
+formats the text in the string
+.BR Letapp ;
 a second argument replaces this text with one vee of vertical space.
 .
 See
@@ -962,11 +978,10 @@ See
 .IR name ]
 As
 .BR AV ,
-but the date,
+but omitting the date,
 date rule,
 and approval notation
-.B Letapp
-are omitted.
+.BR Letapp .
 .
 .
 .TP
@@ -1004,7 +1019,7 @@ This is a GNU extension.
 End boxed static display.
 .
 See
-.BR DS .
+.BR B1 .
 .
 This is a GNU extension.
 .
@@ -1033,7 +1048,8 @@ without space between the arguments.
 .BR 1 ]]
 Begin bulleted list.
 .
-Items are prefixed with a bullet and a space.
+.I mm
+prefixes each item with a bullet and a space.
 .
 A
 .I text-indent
@@ -1167,8 +1183,8 @@ are required.
 .IP
 .EX
 \&.COVER
-\&.TL
 \&.AF
+\&.TL
 \&.AU
 \&.AT
 \&.AS
@@ -1407,9 +1423,9 @@ if the Boolean register
 .B Le
 is true.
 .
-Such a list uses the string
+The string
 .B Le
-as a heading.
+captions this list.
 .
 .
 .TP
@@ -1567,9 +1583,9 @@ if the Boolean register
 .B Lx
 is true.
 .
-Such a list uses the string
+The string
 .B Lx
-as a heading.
+captions this list.
 .
 .
 .TP
@@ -1680,9 +1696,9 @@ if the Boolean register
 .B Lf
 is true.
 .
-Such a list uses the string
+The string
 .B Lf
-as a heading.
+captions this list.
 .
 .
 .TP
@@ -1845,20 +1861,22 @@ See
 .
 .
 .IP
-Heading behavior is highly configurable.
+Heading behavior is configurable.
 .
-Several registers set a
-.I threshold,
-where heading levels at or below the threshold value are handled in one
+Several registers set
+.I thresholds,
+where heading levels at or below a threshold value are handled in one
 way,
 and those above it another.
 .
 For example,
-the title of a heading level within the threshold of register
-.B Cl
-is included in the table of contents
+.I mm
+populates a table of contents
 (see
-.BR TC ).
+.BR TC )
+with the title of a heading if its level is within the
+.B Cl
+register threshold.
 .
 .
 .IP
@@ -2510,7 +2528,7 @@ while
 a value of\~2 does not
 (rendering the two adjacent).
 .
-Also see register
+See register
 .BR Limsp .
 .
 .
@@ -2808,11 +2826,15 @@ without arguments to return to normal.
 .
 .TP
 .BR MULB \~\c \" space in roman; we must use 2-font macro with \c
-.IR "cw1 space1\~" [ "cw2 space2" "] .\|.\|.\~" cwn
+.IR "cw1 sp1\~" [ "cw2 sp2" "] .\|.\|.\~" cwn
 Begin alternative multi-column mode.
 .
-All column widths must be specified,
-as must the amount of space between each column pair.
+All column widths
+.IR cw i
+must be specified,
+as must the amount of space
+.IR sp i
+between each column pair.
 .
 The arguments' default scaling unit is
 .BR n .
@@ -3367,12 +3389,13 @@ An argument of
 .B P
 restores the previous value,
 .B C
-indicates the current value,
+retains the current value,
 and
 .B D
 requests the default.
 .
-An empty or omitted argument is treated as
+.I mm
+treats an empty or omitted argument as
 .BR P .
 .
 .
@@ -3388,9 +3411,10 @@ or
 as
 .I mode
 to set a document's default explicitly;
-.B 1
-is assumed by
-.IR mm .
+.I "groff mm"
+assumes
+.BR 1 .
+.\" DWB 3.3 mm assumed 1 for troff mode, 0 for nroff mode.
 .
 Adjustment can be temporarily suspended with the
 .B na
@@ -3406,7 +3430,8 @@ or when
 is called without a
 .I mode
 argument,
-the default adjustment is restored.
+.I mm
+restores the default adjustment.
 .
 .
 .TP
@@ -3431,29 +3456,53 @@ See
 .BR SG\~ [\c
 .IR arg \~[\c
 .BR 1 ]]
-Write a signature line.
-.
-Authors' names are placed after the formal closing;
-see
+Output author signature block(s) in
 .B LT
-(one author only)
-and
-.BR MT .
+letters and
+.B MT
+memoranda.
 .
-For memoranda,
-reference data
-(the location,
-department,
-and initials specified in an
-.B AU
-call),
-followed by any
-.IR arg ,
-are written at the left margin preceding the last author's name,
-or preceding the first if a second argument is present and the
-memorandum type supports it.
+The format of a signature block depends on the letter or memorandum
+type.
 .
 See section \[lq]Internals\[rq] below.
+.
+.
+.IP
+.B LT
+letters emit a signature for one author at most
+(see
+.BR WA ).
+.
+The author's title,
+if any,
+is set on the next line,
+indented to align with the name,
+except in letter type \[lq]SP\[rq],
+where it is set in full capitals
+(like the name)
+after a comma and space.
+.
+.
+.IP
+Memorandum type\~4 uses no signature block.
+.
+In other memoranda,
+each of an author's titles is set on a subsequent line,
+indented to align with the name.
+.
+They furthermore encode a secretarial annotation
+including the location,
+department,
+and initials specified in each author's
+.B AU
+call,
+followed by any
+.IR arg ,
+writing it at the left margin preceding the last author's name,
+or preceding the first if a second
+.B SG
+argument is present.
 .
 .
 .TP
@@ -3490,19 +3539,25 @@ joined with any specified
 .I pre
 and
 .I post
-at normal size.
+at normal size,
+without space between the arguments.
 .
 .
 .TP
 .BR SP \~\c
 .RI [ distance ]
-Space vertically by
+Space downward by
 .I distance.
 .
 Multiple
 .B SP
 calls in sequence produces only the largest of the specified
 .I distances.
+.
+Absolute motions with a prefixed
+.B |
+operator are accepted;
+negative ones are not.
 .
 .
 .IP
@@ -3555,9 +3610,9 @@ if the Boolean register
 .B Lt
 is true.
 .
-Such a list uses the string
+The string
 .B Lt
-as a heading.
+captions this list.
 .
 .
 .TP
@@ -3656,10 +3711,15 @@ of formatting the contents caption.
 .
 .
 .IP
-Analogous handling of lists of figures,
+.I mm
+then presents lists of
+figures,
 tables,
 equations,
-and exhibits is achieved by defining
+and exhibits,
+in that order.
+A list appears only if at least one such captioned item is present.
+.
 .BI TX xx
 and
 .BI TY xx
@@ -3670,16 +3730,13 @@ is \[lq]FG\[rq],
 \[lq]TB\[rq],
 \[lq]EC\[rq],
 or \[lq]EX\[rq],
-respectively.
-.
-Similarly,
-the strings
+and strings
 .BR Lifg ,
 .BR Litb ,
-.BR Liex ,
+.BR Liec ,
 and
-.B Liec
-determine captions for their respective lists.
+.B Liex
+analogously configure the output of each captioned list.
 .
 .
 .TP
@@ -3691,19 +3748,18 @@ See
 .
 .TP
 .B TH
-End table heading.
+Mark the end of a
+.BR TS / TE
+table heading.
 .
-It is repeated after page breaks within a table.
+When a table spans multiple pages,
+the heading repeats at the top of each page.
 .
-See
-.BR TS .
-.
-The
+.I "groff mm"
+does not implement the
 .B N
 argument supported by DWB
-.I mm
-is not implemented by
-.I "groff mm."
+.IR mm .
 .
 .
 .TP
@@ -3712,20 +3768,20 @@ is not implemented by
 .IR filing-case-number ]]
 Begin document title.
 .
-Input is collected into the title until
-.B AF
-or
+.I mm
+collects
+input into the title until a subsequent
 .B AU
-is called,
-and output as directed by the cover page.
+call and formats it as directed by the
+.B MT
+memorandum type or cover sheet macros.
 .
+.I mm
+saves
 .I charging-case-number
 and
 .I filing-case-number
-are saved for use in memorandum types 0 and 5.
-.
-See
-.BR MT .
+for use in all memorandum types except 4.
 .
 .
 .TP
@@ -3779,8 +3835,7 @@ and
 .TP
 .BR VERBON \~\c \" space in roman; we must use 2-font macro with \c
 .RI [ format \~[ type-size \~[ font ]]]
-Begin verbatim display,
-where characters have equal width.
+Begin display of verbatim content.
 .
 .I format
 controls several parameters.
@@ -3797,7 +3852,9 @@ and the face
 .RI ( font );
 the default is
 .B CR
-(Courier roman).
+(Courier roman),
+a monospaced font
+(all glyphs are equally wide).
 .
 .
 .IP
@@ -4289,7 +4346,7 @@ The default is
 .
 .TP
 .B Litb
-\[lq]TABLE\[rq]
+\[lq]Table\[rq]
 .
 .
 .TP
@@ -4618,6 +4675,25 @@ see
 .
 .
 .TP
+.B E
+determines the font style used by
+.B MT
+memoranda,
+.B LT
+letters,
+and the
+.I ms.cov
+cover page style to set the date and certain other document data;
+.B 0
+selects roman,
+and
+.B 1
+bold
+(Boolean-valued;
+.BR 1 ).
+.
+.
+.TP
 .B Ej
 sets the threshold for page breaks (ejection) prior to the format of
 headings.
@@ -4919,10 +4995,11 @@ see
 .
 .TP
 .B Limsp
-inserts a space between the prefix and the mark
-in automatically numbered lists;
+inserts a space between the prefix and the mark in lists;
 see
-.B AL
+.B LB
+and
+.B LI
 (Boolean-valued;
 .BR 1 ).
 .
@@ -5138,7 +5215,7 @@ calls affect headers and footers only when followed by
 .BR EH ,
 .BR OF ,
 or
-.B OE
+.B EF
 calls
 (Boolean-valued;
 .BR 1 ).
@@ -5174,6 +5251,7 @@ Value@Effect
 always,
 except immediately after
 .BR H ,
+.BR HU ,
 .BR DE ,
 or
 .B LE
@@ -5318,8 +5396,11 @@ see
 .SH Internals
 .\" ====================================================================
 .
-The letter macros call further macros depending on the letter type,
-with which they are suffixed.
+.BR LT 's
+behavior depends on the
+.I style
+argument given to it;
+it calls macros with names suffixed accordingly.
 .
 It is therefore possible to define additional letter types,
 either in the territory-specific macro file,
@@ -5412,6 +5493,19 @@ to the string
 \&.
 .
 .
+.P
+The argument
+(if any)
+to a
+.B COVER
+or
+.B MT
+call determines the file that
+.I "groff mm"
+loads to configure the document's layout;
+see section \[lq]Files\[rq] below.
+.
+.
 .\" ====================================================================
 .\".SH BUGS
 .\" ====================================================================
@@ -5467,6 +5561,27 @@ implements memorandum type 5.
 .TP
 .I @TMAC_MDIR@/locale
 performs any (further) desired necessary localization if present.
+.
+.
+.TP
+.I @DOCDIR@/examples/letter.mm
+illustrates features of the
+.B LT
+letter formats.
+.
+.
+.TP
+.I @DOCDIR@/examples/memorandum.mm
+illustrates features of the
+.B MT
+memorandum formats.
+.
+.
+.TP
+.I @DOCDIR@/examples/story.mm
+illustrates use of
+.I mm
+for literary purposes.
 .
 .
 .br

@@ -1,3 +1,283 @@
+2024-06-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/story.mm: New file illustrates a "normal" document,
+	neither a letter nor memorandum.
+	* groff_mm.7.man (Files): Document it.
+	* mm.am (MMEXAMPLEFILES): Ship it.
+
+2024-06-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (hd*trap): New macro shuts off suppression of paragraph
+	indentation.
+	(H): Stop trying to figure out whether we should suppress
+	indentation based on whether the heading is run-in or not; that
+	is not the relevant criterion.  What matters is whether
+	formatted output (such as implied paragraph text) follows the
+	heading call.  To that end, set a 1-line input trap calling the
+	new macro `hd*trap`.
+
+	Fixes <https://savannah.gnu.org/bugs/?65884>.  Problem
+	introduced by me in commit 814e204d16, 24 January 2023.
+
+2024-06-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #65884.
+
+	* tests/P-indentation-works.sh: Do it.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm.am (MMEXAMPLEFILES): Ship new "memorandum.mm" example in
+	distribution archive.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Fix code style nits.  Rename `li*in` to
+	`li*mark-begin`, to parallel existing `li*text-begin`.  Use
+	`nop` for clarity.  Remove registers and strings that are no
+	longer needed at the end of the macro definition.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Fix Savannah #65843.  Introduce list-item-local
+	register `li*c-pad`, for use in overriding a single item's
+	padding amount.  Initialize it to the list's padding amount
+	{`li*pad`}.  Calculate whether the mark is overlong using the
+	padding amount rather than an unadjustable space escape sequence
+	embedded in a `\w` width computation.  If the mark is overlong,
+	override that, setting it to 2n.  Use `li*c-pad` instead of
+	`li*pad` for further computations.  Remove the new register at
+	the end of the macro definition.
+
+	Fixes <https://savannah.gnu.org/bugs/?65843>.  Problem may date
+	back to commit af2d6f8e58, 26 December 1999 (groff 1.14), which
+	introduced the `Limsp` register.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #65843.
+
+	* tests/VL-accommodates-overlong-mark.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Throw warning if a list item mark is overlong.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Improve diagnostic message; name _all_ of the
+	macros that begin lists.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Test letter output more rigorously.
+
+	* tests/artifacts/letter.BL:
+	* tests/artifacts/letter.SB:
+	* tests/artifacts/letter.FB:
+	* tests/artifacts/letter.SP: Add expected renderings.
+	* mm.am (EXTRA_DIST): Ship them.
+
+	* tests/letters-format-correctly.sh: Add test.
+	* mm.am (mm_TESTS): Run test.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Test memorandum output more rigorously.
+
+	* tests/artifacts/memorandum.0:
+	* tests/artifacts/memorandum.1:
+	* tests/artifacts/memorandum.2:
+	* tests/artifacts/memorandum.3:
+	* tests/artifacts/memorandum.4:
+	* tests/artifacts/memorandum.5:
+	* tests/artifacts/memorandum.custom: Add expected renderings.
+	* mm.am (EXTRA_DIST): Ship them.
+
+	* tests/cover-page-info-is-present.sh: Replace this test...
+	* tests/memoranda-format-correctly.sh: ...with this one.
+	* mm.am (mm_TESTS): Run the new test instead of the old one.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT: Revise to more closely approximate DWB 3.3 troff
+	output.
+	(cov@print-title): Use `SP` macro instead of `MOVE`.  Honor
+	argument instead of ignoring it.  Save and restore the
+	adjustment mode, and left-align text instead of turning off
+	filling.  The latter (1) lost track of whether filling was
+	enabled in the document already (though it _probably_ was) and
+	more importantly (2) permitted lengthy charging or filing case
+	numbers to overprint author information.  Use `nop` to maintain
+	logical indentation when formatting output.  Use `br` requests
+	to separate title/subject and the charging and filing case
+	numbers.  Favor font selection requests over escape sequences.
+	(cov@print-authors): Use `rt` request instead of `MOVE` macro,
+	to return to the vertical position marked at the end of the
+	`cov@print-date` macro (which could format more than one line of
+	output).  Suspend and restore hyphenation since the context is
+	crowded, not all names follow English hyphenation patterns, and
+	arguments after the first to `AU` are often codes or
+	abbreviations.  Avoid disabling filling using same technique as
+	above.  Arrange `AU` arguments 3-6 as DWB 3.3 does.  Stop
+	formatting a literal `TM` in the output; DWB 3.3 didn't do this.
+	{Worse, we were putting it there even if no technical memorandum
+	numbers were defined.}  Drop unnecessary `PGFORM` call.
+	(cov@print-au1, cov@print-au2): Internally document what these
+	macros are for (formatting `AU` arguments, some of which get
+	special treatment), and align with DWB 3.3 output.
+	(cov@print-date): Use `sp` request instead of `MOVE` macro; we
+	can't call `SP` because this motion is negative (upward).  Avoid
+	disabling filling using same technique as above.  Drop
+	unnecessary `PGFORM` call.  Use `mk` to mark the bottom of the
+	date output.
+	(cov@print-firm): Return early if no firm name defined.  Use
+	`sp` request instead of `MOVE` macro; we can't call `SP` because
+	this motion is negative (upward).  Align firm name left instead
+	of right.  Set firm name in Helvetica roman if Helvetica family
+	is available; in nroff mode, use bold.  Use `nop` to maintain
+	logical indentation when formatting output.
+	(cov@print-abstract):  Favor font selection requests over escape
+	sequences.
+	(initialization): Define several registers to vertically and
+	horizontally arrange the document metadata.  Adjust vertical
+	spacing around abstract and its caption.  Favor font selection
+	requests over escape sequences.
+
+	* m.tmac (let*mt-sign): Set signatures, except for the
+	secretarial annotation, using the metadata font.
+
+	* tests/cover-page-info-is-present.sh: Update test expectations.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (SP): Validate argument.  It must be numeric and can't
+	be negative.
+	* groff_mm.7.man (Macros) <SP>: Document restrictions.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (VERBON): Check for font availability before switching.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/memorandum.mm: New file illustrates `MT` documents.
+	* groff_mm.7.man (Files): Document it.
+
+2024-06-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/letter.mm: Parameterize the letter in its `LT` type,
+	making it easy to render in any of the four supported styles by
+	defining a *roff string on the command line.
+
+2024-06-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/5.MT: Revise to more closely approximate DWB 3.3 troff
+	output.  Initialize `let*sg-suppress-annotation` true.  Set
+	document title (and charging and filing case numbers, if any)
+	closer to where DWB 3.3 puts it.  Put the date where DWB 3.3
+	does, but let it shift down if the title et al. are too
+	garrulous, as DWB 3.3 does.  Put less space between the date and
+	the document body.
+	(cov@print-title): Adjust line length.  Stop turning on fill
+	mode unnecessarily.  It should already be on at the start of a
+	document.  Save and restore adjustment mode instead of
+	clobbering it.  Use the "metadata font" for the charging and
+	filing case numbers, not necessarily bold.
+	(cov@print-date): Drop unnecessary break request.
+
+2024-06-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/4.MT: Revise to more closely approximate DWB 3.3 troff
+	output.  Initialize `let*sg-suppress-all` and `let*ns-suppress`
+	true.
+	(cov@print-title): Set document title closer to where DWB 3.3
+	puts it.  Stop turning on fill mode unnecessarily.  It should
+	already be on at the start of a document.  Save and restore
+	adjustment mode instead of clobbering it.
+	(cov@print-authors): In nroff mode, space by a full vee before
+	and after setting authors, since most nroff devices are
+	incapable of the half-line motions used in troff mode.
+	(cov@print-firm): Space by two vees before setting the
+	document's affiliated firm name.
+	(cov@print-abstract): Use mm macros instead of formatter
+	requests to change fonts.
+
+2024-06-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Support suppression of `SG`, `NS` features.  In DWB 3.3 mm,
+	signatures (`SG`) and notations (`NS`/`NE`) are suppressed from
+	output in memorandum type 4 (".MT 4").
+
+	* m.tmac: Add new registers `let*sg-suppress-all`,
+	`let*sg-suppress-annotation`, and `let*ns-suppress`.  Initialize
+	them false.
+	(SG): Return immediately if `let*sg-suppress-all` is true.
+	Otherwise, check value of `let*sg-suppress-annotation` before
+	emitting the secretarial annotation.  (I don't have a better
+	term for this.)
+	(NS): If given arguments, return immediately if
+	`let*ns-suppress`.  Otherwise, begin box diversion
+	`let*ns-discard`.
+	(NE): If `let*ns-suppress`, end box diversion and return.
+
+2024-06-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Trivially refactor.
+	(let*mt-sign): Rename string `let*tmp` to `let*anno`, reflecting
+	its purpose as collector of the "secretarial annotation" used by
+	some letter and memorandum types.  Use `nop` to maintain logical
+	indentation when formatting output.  Break long lines for
+	clarity.  Add comments to illuminate material laden with syntax.
+
+2024-06-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/4.MT (cov*print-title):
+	* mm/5.MT (cov*print-title): Apply metadata font as DWB mm does
+	in memorandum types 4 and 5.
+
+2024-06-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Rename internal register `@sdf_font` to `@metadata-font` for
+	greater clarity and (forthcoming) accuracy.  In DWB mm, the font
+	style configured by the `E` register applies not just to the
+	"subject" (document title), "date", and "from" (author name)
+	metadata, but the signature lines produced by `SG`, and
+	auxiliary author information optionally present in `AU` macro
+	calls.
+
+	* m.tmac (initialization, AV, let@print-head):
+	* mm/0.MT (cov@print-title, cov@print-authors, cov@print-date):
+	* mm/5.MT (cov@print-date):
+	* mm/ms.cov (cov@print-date): Do it.
+
+2024-06-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Complete (mostly already existing) support for DWB mm
+	`E` register.
+	* groff_mm.7.man (Description, Registers): Document it.
+
+2024-06-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT:
+	* mm/4.MT (cov@print-authors, cov@print-firm)
+	(cov@print-abstract):
+	* mm/5.MT (cov@print-date): Fix code style nits.  Favor font
+	selection requests over escape sequences.  Employ `nop` request
+	to clarify control and macro structures.
+
+	* mm/0.MT (cov*print-authors): Drop unnecessary `br` request
+	adjacently to invoking (with the normal control character) a
+	request that implies a break.
+
+2024-06-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Define `Litb` string using mixed case instead of full
+	caps.  This is more consistent with (1) `Liec`, `Liex`, and
+	`Lifg`; and (2) DWB 3.3 mm rendering.
+	* groff_mm.7.man (Strings) <Litb>: Document this.
+
 2024-06-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Replace `AST` macro and `cov*abs-name` string with `Abstract`
@@ -1938,7 +2218,7 @@ Sun Jan 1 00:00:00 1991 Joergen Haegg (jh at efd.lth.se)
 
 ________________________________________________________________________
 
-Copyright 1991-2023 Free Software Foundation, Inc.
+Copyright 1991-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

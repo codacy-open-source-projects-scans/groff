@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -20,25 +20,29 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Regression-test Savannah #57034.
-#
-# Ensure that an author's title (if any) is written in the signature.
-#
-# Thanks to Ken Mandelberg for the reproducer.
+# A paragraph tag should typeset on one line if it's shorter than the
+# line length.
 
-input='.TL
-Inquiry
-.AU "John SMITH"
-.AT "Director"
-.MT 5
-.P
-sentence
-.FC Sincerely,
-.SG'
+input='.TH foo 1 2024-06-19 "groff test suite"
+.SH Name
+foo \- frobnicate a bar
+.SH Description
+.PP
+A character definition can be removed with the
+.B rchar
+request.
+.
+.
+.TP
+.BI .chop\~ name
+Remove the last character from the macro,
+string,
+or diversion
+.IR name .'
 
-output=$(echo "$input" | "$groff" -mm -Tascii -P-cbou)
+output=$(echo "$input" | "$groff" -man -T html -Z)
 echo "$output"
 
-echo "$output" | grep -Eqx '[[:space:]]+Director[[:space:]]*'
+echo "$output" | grep -qx 't *\.chop'
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:

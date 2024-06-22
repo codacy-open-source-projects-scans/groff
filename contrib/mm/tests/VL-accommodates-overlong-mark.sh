@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
-# Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
 #
 # groff is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -20,25 +20,25 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Regression-test Savannah #57034.
-#
-# Ensure that an author's title (if any) is written in the signature.
-#
-# Thanks to Ken Mandelberg for the reproducer.
+# Regression-test Savannah #65843.
 
-input='.TL
-Inquiry
-.AU "John SMITH"
-.AT "Director"
-.MT 5
-.P
-sentence
-.FC Sincerely,
-.SG'
+input='.P
+This is an
+.I mm
+document.
+.VL 11 5
+.LI mark
+Item text.
+.LI foo
+Bar.
+.LI "oversized\ bazqux"
+This mark is oversized.
+But it should not overprint.
+.LE'
 
-output=$(echo "$input" | "$groff" -mm -Tascii -P-cbou)
+output=$(echo "$input" | "$groff" -mm -Tascii -P -cbou)
 echo "$output"
-
-echo "$output" | grep -Eqx '[[:space:]]+Director[[:space:]]*'
+echo "$output" \
+    | grep -q '^ *oversized bazqux  This mark is oversized\.'
 
 # vim:set ai et sw=4 ts=4 tw=72:

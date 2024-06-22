@@ -1,7 +1,11 @@
 .ig
 
-Copyright (C) 1991-2020 Free Software Foundation, Inc.
+Copyright (C) 1991-2024 Free Software Foundation, Inc.
 mm is written by Jörgen Hägg <jh@axis.com>
+
+Modified by G. Branden Robinson <g.branden.robinson@gmail.com> to more
+closely approximate DWB 3.3 troff output, and to make nroff output
+flexible.
 
 mm is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -21,106 +25,180 @@ http://savannah.gnu.org/bugs/?group=groff.
 ..
 .
 .\"------------
-.\" Cover sheet. Memorandum type 0-3 and "string".
+.\" cover sheet for memorandum types 0-3 and 6 ("string")
 .\"------------
 .if !r Au .nr Au 1
+.\" TODO: We might compute these from the page dimensions (L, W, O).
+.\" For historical reconstructions, these suffice because the AT&T mm
+.\" product anticipated only U.S. letter paper.
+.nr cov*top1 1.1i \" horizontal rule above firm name
+.nr cov*top2 1.8i \" cover sheet field data
+.ie t \{\
+.	nr cov*column2-hpos   0.4i \" title, charging case, filing case
+.	nr cov*column2-limit 4i
+.	nr cov*column3-hpos   4.3i \" "date", "from"
+.	nr cov*column4-hpos   4.65i \" date, author names, TM number
+.	nr cov*column4-limit 6i
+.\}
+.el \{\
+.	nr cov*column2-hpos   9n
+.	nr cov*column2-limit 37n
+.	nr cov*column3-hpos  39n
+.	nr cov*column4-hpos  45n
+.	nr cov*column4-limit 60n
+.\}
+.\"------------
 .de cov@print-title
+.\" "subject:" is indented flush left; the title and any charging or
+.\" file numbers share another indentation.
 .if !d cov*title .@error title not defined; call TL and AU before MT
-.MOVE 4.8c 1.5c
+.SP |\\n[cov*top2]u
 .S 8
-subject:
-.sp -1.1
+.nop \\$1:
 .S
-.PGFORM
-.ft \\*[@sdf_font]
-.ll 9c
-.fi
+.ft \\*[@metadata-font]
+.nr cov*saved-adjustment \\n[.j]
+.ad l
+.\" Cause break to force the indentation to "take", then back up.
+.in \\n[cov*column2-hpos]u
+.ll \\n[cov*column2-limit]u
+.sp -1
 .cov*title
 .ft
+.br
+.if d cov*title-charge-case \{\
+.	B
+.	nop Work Project No.\& \\*[cov*title-charge-case]
+.	R
+.\}
+.br
+.if d cov*title-file-case \{\
+.	B
+.	nop File Case \\*[cov*title-file-case]
+.	R
+.\}
+.ad \\n[cov*saved-adjustment]
+.rr cov*saved-adjustment
 .ll
-.nf
-.if d cov*title-charge-case \fBCharge Case \\*[cov*title-charge-case]\fP
-.if d cov*title-file-case \fBFile Case \\*[cov*title-file-case]\fP
-.fi
+.in
 ..
 .\"------------
 .de cov@print-authors
 .\" The following diagnostic might be unreachable.
 .if !r cov*au .@error no authors defined; call AU before MT
-.MOVE 5.7c 13.3c
-.nf
+.rt \\n[cov*authors-vpos]
+.\" The authors always start 2 vees below the date and have 1 vee
+.\" between them in DWB 3.3.
+.SP
+.\" The material formatted here consists of proper names that could be
+.\" from any linguistic background, and character sequences that may
+.\" already be abbreviations, so suspend automatic hyphenation.
+.nr cov*saved-hyphenation-mode \n[.hy]
+.nh
+.nr cov*saved-indentation \\n[.i]
+'in \\n[cov*column3-hpos]u
 .S 8
 \\$1:
-.br
 .S
+.\" Cause break to force the indentation to "take", then back up.
+.in \\n[cov*column4-hpos]u
+.ll \\n[cov*column4-limit]u
 .sp -1
-.in 0.8c
-.ft \\*[@sdf_font]
+.ft \\*[@metadata-font]
 .nr cov*i 0 1
+.\" DWB 3.3 mm turned off filling, but that runs a big risk of
+.\" oversetting the line in nroff mode.
+.nr cov*saved-adjustment \\n[.j]
+.ad l
 .while \\n+[cov*i]<=\\n[cov*au] \{\
 .	cov@print-au1 \\n[cov*i] 1
 .	if \\n[Au] \{\
-.		cov@print-au2 \\n[cov*i] 3 4
-.		cov@print-au2 \\n[cov*i] 6 5
+.		cov@print-au1 \\n[cov*i] 4
+.		cov@print-au2 \\n[cov*i] 3 6
+.		cov@print-au1 \\n[cov*i] 5
 .		cov@print-au1 \\n[cov*i] 7
 .		cov@print-au1 \\n[cov*i] 8
 .		cov@print-au1 \\n[cov*i] 9
 .	\}
 .	if \\n[cov*i]<\\n[cov*au] .SP 1
 .\}
+.rr cov*i
 .ft
 .if r cov*mt-tm-max \{\
 .	SP 1
 .	nr cov*i 0 1
-.	ft \\*[@sdf_font]
-TM
-.	in 1.5c
-.	sp -1
+.	ft \\*[@metadata-font]
 .	while \\n+[cov*i]<=\\n[cov*mt-tm-max] \\*[cov*mt-tm!\\n[cov*i]]
-.	in
 .	ft
 .\}
-.fi
-.PGFORM
+.ad \\n[cov*saved-adjustment]
+.rr cov*saved-adjustment
+.in \\n[cov*saved-indentation]
+.rr cov*saved-indentation
+.ll
+.hy \\n[cov*saved-hyphenation-mode]
+.rr cov*saved-hyphenation-mode
 ..
 .\"------------
-.\" index arg1
+.\" cov@print-au1 m n
+.\" Format nth argument to `AU` call of mth author.
 .de cov@print-au1
-.if d cov*au!\\$1!\\$2 \\*[cov*au!\\$1!\\$2] 
+.if d cov*au!\\$1!\\$2 \{\
+.	ds cov*prefix \" empty
+.	if '\\$2'4' .as cov*prefix Org.\& \"
+.	if '\\$2'5' .as cov*prefix x\"
+.	nop \\*[cov*prefix]\\*[cov*au!\\$1!\\$2]
+.	rm cov*prefix
+.\}
+.br
 ..
 .\"------------
+.\" cov@print-au2 m n q
+.\" Format nth and qth arguments to `AU` call of mth author.
 .de cov@print-au2
-.\" index arg1 arg2
 .if d cov*au!\\$1!\\$2 \\*[cov*au!\\$1!\\$2] \c
-.if \\$3=5 .if d cov*au!\\$1!\\$3 x\c
-.if d cov*au!\\$1!\\$3 \\*[cov*au!\\$1!\\$3]\c
+.if d cov*au!\\$1!\\$3 \\*[cov*au!\\$1!\\$3]
 .br
 ..
 .\"------------
 .de cov@print-date
-.MOVE 4.8c 13.3c
+.\" We must use `sp` instead of `SP` because this motion is negative.
+.sp |\\n[cov*top2]u
+.nr cov*saved-indentation \\n[.i]
+'in \\n[cov*column3-hpos]u
 .S 8
-.nf
 \\$1:
-.br
 .S
+.\" Cause break to force the indentation to "take", then back up.
+.in \\n[cov*column4-hpos]u
+.ll \\n[cov*column4-limit]u
 .sp -1
-.in 0.8c
-\f[\\*[@sdf_font]]\\*[cov*new-date]\fP
-.br
+.ft \\*[@metadata-font]
+.nop \\*[cov*new-date]
+.ft
 .fi
-.PGFORM
+.ll
+.mk cov*authors-vpos
+.in \\n[cov*saved-indentation]
+.rr cov*saved-indentation
 ..
 .\"------------
 .de cov@print-firm
-.if d cov*firm \{\
-.	MOVE 2.8c 0 17.7c
-.	S 18
-.	rj 1
-\fB\\*[cov*firm]\fP
-.	S
-.	PGFORM
-.\}
+.if !d cov*firm .return
+.\" We must use `sp` instead of `SP` because this motion is negative.
+.sp |\\n[cov*top1]u
+.nr cov*saved-adjustment \\n[.j]
+.ad l
+.nop \l'\\n[.l]u\[em]'
+.\" DWB 3.3 mm set the firm name in bold on nroff devices, and
+.\" Helvetica roman on troff devices.  Register `E` had no effect on it.
+.ie t .if F HR .fam H
+.el   .B
+.nop \\*[cov*firm]
+.ie t .if F HR .fam
+.el   .R
+.ad \\n[cov*saved-adjustment]
+.rr cov*saved-adjustment
 ..
 .\"------------
 .de cov@print-abstract
@@ -132,7 +210,9 @@ TM
 .		ll -\\n[cov*abstract-indent]u
 .	\}
 .	ce
-\fI\\$1\fP
+.	I
+.	nop \\$1
+.	R
 .	SP 1.5
 .	fi
 .	cov*abstract
@@ -150,7 +230,9 @@ TM
 .\" Note: The firm name (if any) is formatted _above_ the title and
 .\" other data, but the `AF` macro call defining it might be stuffed
 .\" inside the `TL` macro content, so its string won't be visible until
-.\" we format the title.  This is weird but DWB-compatible.
+.\" we format the title.  That in turn means that we _must_ call
+.\" `cov@print-title` before `cov@print-firm`.  This is weird but
+.\" DWB-compatible.
 .\"
 .\" (Technical details: DWB mm stores the title in a diversion.  groff
 .\" mm stores it in a macro, and only calling `AU` ends the macro
@@ -164,14 +246,17 @@ TM
 .	SP 3
 .	if (\*[cov*mt-type]>=1)&(\*[cov*mt-type]<=3) \{\
 .		ce
-\fI\*[cov*mt0-txt!\*[cov*mt-type]]\fP
-.		SP 1.5
+.		I
+.		nop \*[cov*mt0-txt!\*[cov*mt-type]]
+.		R
 .	\}
 .	if \*[cov*mt-type]=6 \{\
 .		ce
-\fI\*[cov*mt-type-text]\fP
-.		SP 1.5
+.		I
+.		nop \*[cov*mt-type-text]
+.		R
 .	\}
+.	SP 3
 .	pg@enable-top-trap
 .	pg@enable-trap
 .	ds cov*mt-printed

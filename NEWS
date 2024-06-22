@@ -179,7 +179,7 @@ o The behavior of the an (man) package's `SY` and `YS` macros has been
   .
   .SY mv
   .I source
-  \&.\|.\|.\|
+  \&.\|.\|.
   .I destination-directory
   .YS
 
@@ -193,11 +193,11 @@ o The behavior of the an (man) package's `SY` and `YS` macros has been
   .P
   .SY mv
   .I source
-  \&.\|.\|.\|
+  \&.\|.\|.
   .I destination-directory
   .YS
 
-  (That is, simply call a paragraphing macro.)
+  (That is, simply add a paragraphing macro.)
 
    And where before you would write...
 
@@ -218,7 +218,7 @@ o The behavior of the an (man) package's `SY` and `YS` macros has been
   .B \-\-help
   .YS
 
-  (That is, simply call `YS` after the first synopsis item.)
+  (That is, simply add `YS` after the first synopsis item.)
 
   Likely the biggest benefit of these changes is that it is now much
   easier to format C function prototypes with these macros.  Here's how
@@ -332,6 +332,8 @@ o The m (mm) macro package's `HU` macro now supports a second argument
 o The m (mm) macro package's `IND` macro (a GNU extension), now calls
   `SK` only if no `TXIND` macro is defined, instead of performing this
   action as part of the fallback when no `TYIND` macro is defined.
+
+o The m (mm) macro package now supports the `E` register as DWB mm did.
 
 o The s (ms) macro package now sets the vertical spacing register
   defaults for normal (`VS`) and footnote (`FVS`) text to 120% of the

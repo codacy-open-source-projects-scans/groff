@@ -1,3 +1,10 @@
+.\" To observe how the different `LT` letter types affect document
+.\" rendering, define the string `lT` to any of `SB`, `FB`, or `SP`,
+.\" when formatting it.  `BL` is the implied default.
+.\"
+.\" For example...
+.\"   $ groff -mm -dlT=SB letter.mm > letter.ps
+.do if !d lT .ds lT \" empty
 .ND "17 May 2023"
 .WA "Epi G. Netic" "Head of Research"
 123 Main Street
@@ -7,7 +14,7 @@ Anytown, ST  10101
 456 Elsewhere Avenue
 Nirvana, PA  20406
 .IE
-.LT
+.LT \*(lT
 .P
 We have a research leak!
 The next person I catch embedding engineering samples of our Lightspeed

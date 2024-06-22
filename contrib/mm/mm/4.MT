@@ -1,7 +1,10 @@
 .ig
 
-Copyright (C) 1991-2020 Free Software Foundation, Inc.
+Copyright (C) 1991-2024 Free Software Foundation, Inc.
 mm is written by Jörgen Hägg <jh@axis.com>
+
+Modified by G. Branden Robinson <g.branden.robinson@gmail.com> to more
+closely approximate DWB 3.3 troff output.
 
 mm is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -25,39 +28,45 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"------------
 .de cov@print-title
 .if !d cov*title .@error title not defined; call TL and AU before MT
-.MOVE 2.8c
+.\" TODO: We might compute this from the vertical page dimension (L).
+.\" For historical reconstructions, this suffices because the AT&T mm
+.\" product anticipated only U.S. letter paper.
+.SP |(1.3333i-1v)
 .S +2
+.nr cov*saved-adjustment \\n[.j]
 .ad c
-.fi
-.B
+.ft \\*[@metadata-font]
 .cov*title
 .br
 .S
-.R
-.ad b
+.ft
+.ad \\n[cov*saved-adjustment]
+.rr cov*saved-adjustment
 ..
 .\"------------
 .de cov@print-authors
 .\" The following diagnostic might be unreachable.
 .if !r cov*au .@error no authors defined; call AU before MT
-.SP 0.5
+.ie t .SP 0.5
+.el   .SP
 .I
 .S +1
 .nr cov*i 0 1
 .while \\n+[cov*i]<=\\n[cov*au] \{\
-.ce
-\\*[cov*au!\\n[cov*i]!1]
-.br
+.	ce
+.	nop \\*[cov*au!\\n[cov*i]!1]
 .\}
 .S
 .R
+.ie t .SP 0.5
+.el   .SP
 ..
 .\"------------
 .de cov@print-firm
 .if d cov*firm \{\
-.	SP 0.5
+.	SP 2
 .	ce
-\\*[cov*firm]
+.	nop \\*[cov*firm]
 .\}
 ..
 .\"------------
@@ -71,7 +80,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .		ll -\\n[cov*abstract-indent]u
 .	\}
 .	ce
-\fI\\*[Abstract]\fP
+.	I
+.	nop \\*[Abstract]
+.	R
 .	SP 2
 .	fi
 .	cov*abstract
@@ -80,6 +91,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\}
 ..
 .\"-----------------
+.nr let*sg-suppress-all 1
+.nr let*ns-suppress 1
+.
 .if d cov*default-firm .if !d cov*firm .ds cov*firm \\*[cov*default-firm]
 .if !d cov*mt-printed \{\
 .	cov@print-title

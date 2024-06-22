@@ -297,37 +297,37 @@ void statem::add_tag_ta()
   }
 }
 
-void statem::update(statem *older, statem *newer, int_value_state t)
+void statem::update(statem &older, statem *newer, int_value_state t)
 {
-  if (newer->int_values[t].differs(older->int_values[t])
+  if (newer->int_values[t].differs(older.int_values[t])
       && !newer->int_values[t].is_known)
-    newer->int_values[t].set(older->int_values[t].value);
+    newer->int_values[t].set(older.int_values[t].value);
 }
 
-void statem::update(statem *older, statem *newer, units_value_state t)
+void statem::update(statem &older, statem *newer, units_value_state t)
 {
-  if (newer->units_values[t].differs(older->units_values[t])
+  if (newer->units_values[t].differs(older.units_values[t])
       && !newer->units_values[t].is_known)
-    newer->units_values[t].set(older->units_values[t].value);
+    newer->units_values[t].set(older.units_values[t].value);
 }
 
-void statem::update(statem *older, statem *newer, bool_value_state t)
+void statem::update(statem &older, statem *newer, bool_value_state t)
 {
-  if (newer->bool_values[t].differs(older->bool_values[t])
+  if (newer->bool_values[t].differs(older.bool_values[t])
       && !newer->bool_values[t].is_known)
-    newer->bool_values[t].set(older->bool_values[t].value);
+    newer->bool_values[t].set(older.bool_values[t].value);
 }
 
-void statem::update(statem *older, statem *newer, string_value_state t)
+void statem::update(statem &older, statem *newer, string_value_state t)
 {
-  if (newer->string_values[t].differs(older->string_values[t])
+  if (newer->string_values[t].differs(older.string_values[t])
       && !newer->string_values[t].is_known)
-    newer->string_values[t].set(older->string_values[t].value);
+    newer->string_values[t].set(older.string_values[t].value);
 }
 
-void statem::merge(statem *newer, statem *older)
+void statem::merge(statem *newer, statem &older)
 {
-  if (newer == 0 || older == 0)
+  if (0 /* nullptr */ == newer)
     return;
   update(older, newer, MTSM_EOL);
   update(older, newer, MTSM_BR);
@@ -341,26 +341,7 @@ void statem::merge(statem *newer, statem *older)
   update(older, newer, MTSM_CE);
 }
 
-stack::stack()
-: next(0), state(0)
-{
-}
-
-stack::stack(statem *s, stack *n)
-: next(n), state(s)
-{
-}
-
-stack::~stack()
-{
-  if (state)
-    delete state;
-  if (next)
-    delete next;
-}
-
 mtsm::mtsm()
-: sp(0)
 {
   driver = new statem();
 }
@@ -368,8 +349,6 @@ mtsm::mtsm()
 mtsm::~mtsm()
 {
   delete driver;
-  if (sp)
-    delete sp;
 }
 
 /*
@@ -386,7 +365,7 @@ void mtsm::push_state(statem *n)
       fflush(stderr);
     }
 #endif
-    sp = new stack(n, sp);
+    stack.push(n);
   }
 }
 
@@ -399,13 +378,9 @@ void mtsm::pop_state()
       fflush(stderr);
     }
 #endif
-    if (sp == 0)
+    if (stack.empty())
       fatal("empty state machine stack");
-    sp->state = 0;
-    stack *t = sp;
-    sp = sp->next;
-    t->next = 0;
-    delete t;
+    stack.pop();
   }
 }
 
@@ -415,36 +390,35 @@ void mtsm::pop_state()
 
 void mtsm::inherit(statem *s, int reset_bool)
 {
-  if (sp && sp->state) {
+  if (!stack.empty()) {
+    statem top = stack.top();
     if (s->units_values[MTSM_IN].is_known
-	&& sp->state->units_values[MTSM_IN].is_known)
-      s->units_values[MTSM_IN].value += sp->state->units_values[MTSM_IN].value;
-    s->update(sp->state, s, MTSM_FI);
-    s->update(sp->state, s, MTSM_LL);
-    s->update(sp->state, s, MTSM_PO);
-    s->update(sp->state, s, MTSM_RJ);
-    s->update(sp->state, s, MTSM_TA);
-    s->update(sp->state, s, MTSM_TI);
-    s->update(sp->state, s, MTSM_CE);
-    if (sp->state->bool_values[MTSM_BR].is_known
-	&& sp->state->bool_values[MTSM_BR].value) {
+	&& top.units_values[MTSM_IN].is_known)
+      s->units_values[MTSM_IN].value += top.units_values[MTSM_IN].value;
+    s->update(top, s, MTSM_FI);
+    s->update(top, s, MTSM_LL);
+    s->update(top, s, MTSM_PO);
+    s->update(top, s, MTSM_RJ);
+    s->update(top, s, MTSM_TA);
+    s->update(top, s, MTSM_TI);
+    s->update(top, s, MTSM_CE);
+    if (top.bool_values[MTSM_BR].is_known
+	&& top.bool_values[MTSM_BR].value) {
       if (reset_bool)
-	sp->state->bool_values[MTSM_BR].set(0);
+	top.bool_values[MTSM_BR].set(0);
       s->bool_values[MTSM_BR].set(1);
 #if defined(DEBUGGING)
       if (want_html_debugging)
 	fprintf(stderr, "inherited br from pushed state %d\n",
-		sp->state->issue_no);
+		top.issue_no);
 #endif
     }
-    else if (s->bool_values[MTSM_BR].is_known
-	     && s->bool_values[MTSM_BR].value)
-      if (! s->int_values[MTSM_CE].is_known)
+    if (! s->int_values[MTSM_CE].is_known)
 	s->bool_values[MTSM_BR].unset();
-    if (sp->state->bool_values[MTSM_EOL].is_known
-	&& sp->state->bool_values[MTSM_EOL].value) {
+    if (top.bool_values[MTSM_EOL].is_known
+	&& top.bool_values[MTSM_EOL].value) {
       if (reset_bool)
-	sp->state->bool_values[MTSM_EOL].set(0);
+	top.bool_values[MTSM_EOL].set(0);
       s->bool_values[MTSM_EOL].set(1);
     }
   }
