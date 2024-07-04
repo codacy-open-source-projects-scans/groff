@@ -319,6 +319,10 @@ o The m (mm) macro package's `EPIC` macro (a GNU extension) now
   argument in vees, instead of basic units, for consistency with the
   rest of the package.
 
+o Similarly, the m (mm) macro package's `PIC` macro (a GNU extension)
+  now interprets an argument to its `-I` option in ens instead of ems
+  by default.
+
 o The m (mm) macro package's `DS` macro now interprets its third
   argument (a right-hand indentation) in ens by default, for consistency
   with the rest of the package.  This is a difference from DWB mm (which

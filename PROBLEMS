@@ -140,7 +140,7 @@ In groff, as in traditional troff, the yr number register yields the
 year minus 1900.  Unfortunately, the Bell Labs document "Troff User's
 Manual" (Computing Science Technical Report #54) incorrectly claims that
 yr is the last two digits of the year.  This claim has never been true
-AT&T troff nor of groff.
+of AT&T troff nor of groff.
 
 If your text looks like this:
 

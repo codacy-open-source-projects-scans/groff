@@ -38,6 +38,7 @@ my @inferred_main_package = ();	# full-service package(s) detected
 my $main_package;		# full-service package we go with
 my $use_compatibility_mode = 0;	# is -C being passed to groff?
 
+# See subroutine interpret_line below for chem(1) handling.
 my %preprocessor_for_macro = (
   'EQ', 'eqn',
   'G1', 'grap',
@@ -46,10 +47,6 @@ my %preprocessor_for_macro = (
   '[',  'refer',
   #'so', 'soelim', # Can't be inferred this way; see grog man page.
   'TS', 'tbl',
-  'cstart',   'chem',
-  'lilypond', 'glilypond',
-  'Perl',     'gperl',
-  'pinyin',   'gpinyin',
 );
 
 (undef, undef, my $program_name) = File::Spec->splitpath($0);
@@ -69,7 +66,7 @@ my $ms_score = 0;
 
 my $had_inference_problem = 0;
 my $had_processing_problem = 0;
-my $have_any_valid_arguments = 0;
+my $have_any_valid_operands = 0;
 
 
 sub fail {
@@ -92,7 +89,7 @@ sub process_arguments {
   my $optarg = 0;
 
   foreach my $arg (@ARGV) {
-    if ( $optarg ) {
+    if ($optarg) {
       push @command, $arg;
       $optarg = 0;
       next;
@@ -116,7 +113,7 @@ sub process_arguments {
       next;
     }
 
-    unless ( $arg =~ /^-/ ) { # file name, no opt, no optarg
+    unless ($arg =~ /^-/) { # file name, no opt, no optarg
       push @input_file, $arg;
       next;
     }
@@ -166,7 +163,7 @@ sub process_arguments {
     # take no arguments.
     my $cluster = '[abcCeEgGijklNpRsStUVXzZ]*';
 
-    # Our do_line() needs to know if it should do compatibility parsing.
+    # Our interpret_line() must know if compatibility parsing is needed.
     $use_compatibility_mode = 1 if ($arg =~ /^-${cluster}C${cluster}/);
 
     push @command, $arg;
@@ -176,23 +173,23 @@ sub process_arguments {
 } # process_arguments()
 
 
-sub process_input {
+sub read_input {
   foreach my $file (@input_file) {
-    unless ( open(FILE, $file eq "-" ? $file : "< $file") ) {
+    unless (open(FILE, $file eq "-" ? $file : "< $file")) {
       &fail("cannot open '$file': $!");
       next;
     }
 
-    $have_any_valid_arguments = 1;
+    $have_any_valid_operands = 1;
 
     while (my $line = <FILE>) {
       chomp $line;
-      &do_line($line);
+      &interpret_line($line);
     }
 
     close(FILE);
   } # end foreach
-} # process_input()
+} # read_input()
 
 
 # Push item onto inferred full-service list only if not already present.
@@ -204,7 +201,7 @@ sub push_main_package {
 } # push_main_package()
 
 
-sub do_line {
+sub interpret_line {
   my $command;			# request or macro name
   my $args;			# request or macro arguments
 
@@ -247,6 +244,15 @@ sub do_line {
     }
   }
 
+  # Handle "chem" as a special case, since its start/end tokens collide
+  # with AT&T troff request names in their first two characters.
+  if ($line =~ /^\.(cstart|cend)\b/) {
+    my $preproc = 'chem';
+    if (!grep(/$preproc/, @inferred_preprocessor)) {
+      push @inferred_preprocessor, $preproc;
+    }
+  }
+
   # Normalize control lines; convert no-break control character to the
   # regular one and remove unnecessary whitespace.
   $line =~ s/^['.]\s*/./;
@@ -276,11 +282,33 @@ sub do_line {
   $command = '' unless ($command);
   $args = '' unless ($args);
 
-  ######################################################################
-  # user-defined macros
-
   # If the line calls a user-defined macro, skip it.
   return if (exists $user_macro{$command});
+
+  # Add user-defined macro names to %user_macro.
+  #
+  # Macros can also be defined with .dei{,1}, ami{,1}, but supporting
+  # that would be a heavy lift for the benefit of users that probably
+  # don't require grog's help.  --GBR
+  if ($command =~ /^(de|am)1?$/) {
+    my $name = $args;
+    # Strip off any end macro.
+    $name =~ s/\s+.*$//;
+    # Handle special cases of macros starting with '[' or ']'.
+    if ($name =~ /^[][]/) {
+      delete $preprocessor_for_macro{'['};
+    }
+    # XXX: If the macro name shadows a standard macro name, maybe we
+    # should delete the latter from our lists and hashes.  This might
+    # depend on whether the document is trying to remain compatible
+    # with an existing interface, or simply colliding with names they
+    # don't care about (consider a raw roff document that defines 'PP').
+    # --GBR
+    $user_macro{$name} = 0 unless (exists $user_macro{$name});
+    return;
+  }
+
+  # XXX: Handle .rm as well?
 
   # These are all requests supported by groff 1.24.0.
   my @request = ('ab', 'ad', 'af', 'aln', 'als', 'am', 'am1', 'ami',
@@ -310,31 +338,6 @@ sub do_line {
 		 'tmc', 'tr', 'trf', 'trin', 'trnt', 'troff', 'uf',
 		 'ul', 'unformat', 'vpt', 'vs', 'warn', 'warnscale',
 		 'wh', 'while', 'write', 'writec', 'writem');
-
-  # Add user-defined macro names to %user_macro.
-  #
-  # Macros can also be defined with .dei{,1}, ami{,1}, but supporting
-  # that would be a heavy lift for the benefit of users that probably
-  # don't require grog's help.  --GBR
-  if ($command =~ /^(de|am)1?$/) {
-    my $name = $args;
-    # Strip off any end macro.
-    $name =~ s/\s+.*$//;
-    # Handle special cases of macros starting with '[' or ']'.
-    if ($name =~ /^[][]/) {
-      delete $preprocessor_for_macro{'['};
-    }
-    # XXX: If the macro name shadows a standard macro name, maybe we
-    # should delete the latter from our lists and hashes.  This might
-    # depend on whether the document is trying to remain compatible
-    # with an existing interface, or simply colliding with names they
-    # don't care about (consider a raw roff document that defines 'PP').
-    # --GBR
-    $user_macro{$name} = 0 unless (exists $user_macro{$name});
-    return;
-  }
-
-  # XXX: Handle .rm as well?
 
   # Ignore all other requests.  Again, macro names can contain Perl
   # regex metacharacters, so be careful.
@@ -376,7 +379,6 @@ sub do_line {
 
   ##########
   # me
-
   if ($macro =~ /^(
 		   [ilnp]p|
 		   n[12]|
@@ -386,12 +388,8 @@ sub do_line {
     return;
   }
 
-
   #############
   # mm and mmse
-
-  # `LI` is unique to mm among full-service macro packages, but www.tmac
-  # muddies the waters, so omit it.
   if ($macro =~ /^(
 		   AL|BL|BVL|DL|ML|RL|VL|
 		   EPIC|
@@ -405,13 +403,15 @@ sub do_line {
 		   PH|
 		   SA
 		  )$/x) {
+    # `LI` is unique to mm among full-service macro packages, but
+    # www.tmac muddies the waters, so omit it.  `MT` also used by man.
     if ($macro =~ /^LO$/) {
-      if ( $args =~ /^(DNAMN|MDAT|BIL|KOMP|DBET|BET|SIDOR)/ ) {
+      if ($args =~ /^(DNAMN|MDAT|BIL|KOMP|DBET|BET|SIDOR)/) {
 	&push_main_package('mse');
 	return;
       }
     } elsif ($macro =~ /^LT$/) {
-      if ( $args =~ /^(SVV|SVH)/ ) {
+      if ($args =~ /^(SVV|SVH)/) {
 	&push_main_package('mse');
 	return;
       }
@@ -422,7 +422,6 @@ sub do_line {
 
   ##########
   # mom
-
   if ($macro =~ /^(
 		   ALD|
 		   AUTHOR|
@@ -456,7 +455,7 @@ sub do_line {
     &push_main_package('om');
     return;
   }
-} # do_line()
+} # interpret_line()
 
 my @preprocessor = ();
 
@@ -514,6 +513,7 @@ sub infer_man_or_ms_package {
 		   'EE', 'EX',
 		   'OP',
 		   'ME', 'SY', 'YS', 'TQ', 'UR', 'UE', 'MR');
+  # MT is also used by mm.
 
   my @macro_man_or_ms = ('B', 'I', 'BI',
 			 'DT',
@@ -568,6 +568,7 @@ sub construct_command {
   my @main_package = ('an', 'doc', 'doc-old', 'e', 'm', 'om', 's');
   my $file_args_included;	# file args now only at 1st preproc
   unshift @command, 'groff';
+
   if (@preprocessor) {
     my @progs;
     $progs[0] = shift @preprocessor;
@@ -685,9 +686,9 @@ my $in_unbuilt_source_tree = 0;
 $groff_version = '@VERSION@' unless ($in_unbuilt_source_tree);
 
 &process_arguments();
-&process_input();
+&read_input();
 
-if ($have_any_valid_arguments) {
+if ($have_any_valid_operands) {
   &infer_preprocessors();
   &infer_man_or_ms_package() if (scalar @inferred_main_package != 1);
   &construct_command();

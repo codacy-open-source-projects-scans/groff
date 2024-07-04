@@ -2503,6 +2503,8 @@ Part 1: System API
 .St -p1003.1-2004
 .It Li \-p1003.1\-2008
 .St -p1003.1-2008
+.It Li \-p1003.1\-2024
+.St -p1003.1-2024
 .El
 .Pp
 .
@@ -3887,7 +3889,9 @@ It has the following syntax:
 .Pp
 .Bl -tag -width ".Fl file Ao Ar file name Ac " -compact
 .It Fl ragged
-Fill, but do not adjust the right margin (only left-justify).
+Fill,
+but do not adjust
+(leave the right margin ragged).
 .
 .It Fl centered
 Center lines between the current left and right margin.
@@ -3902,8 +3906,8 @@ This can produce overlong lines without warning messages.
 .
 .It Fl filled
 Display a filled block.
-The block of text is formatted (i.e., the text is justified on both the left
-and right side).
+Text is filled and adjusted;
+the left and right margins are straight.
 .
 .It Fl literal
 Display block with literal font (usually fixed-width).

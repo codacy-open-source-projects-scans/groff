@@ -788,8 +788,15 @@ and ``@key{SPC}'' is the space bar.
 
 The @code{roff} language features several major syntactical categories
 within which many items are predefined.  Presentations of these items
-feature the form in which the item is most commonly used on the left,
-and, aligned to the right margin, the name of the category in brackets.
+comprise
+@iftex
+the form in which the item is most commonly used on the left, and,
+aligned to the right margin, the name of the category in brackets.
+@end iftex
+@ifnottex
+the name of the category followed by a colon and the form in which the
+item is most commonly used.
+@end ifnottex
 
 @deffn Register \n[example]
 The register @samp{example} is one that that @code{groff} @emph{doesn't}
@@ -9064,7 +9071,7 @@ register.
 @cindex hyphenation space adjustment threshold
 @cindex @code{ad} request, and hyphenation space
 Suppress hyphenation of the line in adjustment modes @samp{b} or
-@samp{n} if it can be justified by adding no more than
+@samp{n} if that adjustment can be achieved by adding no more than
 @var{hyphenation-space} extra space to each inter-word space.  Without
 an argument, the hyphenation space adjustment threshold is set to its
 default value, 0.  The default scaling unit is @samp{m}.  The
@@ -9441,7 +9448,6 @@ c
 a@arrow{}\c
 b@arrow{}\c
 c
-.Tabs
     @result{} a         b         c
     @result{} a         b                   c
 @endExample
@@ -9666,9 +9672,9 @@ character/glyph pair as an argument of @code{tr}.  Additionally, it is
 not possible to map the space character to any other glyph; requests
 like @w{@samp{.tr aa x}} undo @w{@samp{.tr aa \&}} instead.
 
-If justification is active, lines are justified in spite of the `empty'
-space character (but there is no minimal distance, i.e., the space
-character, between words).
+If adjustment is enabled, it occurs in spite of the `empty' space
+character; but no minimum distance---no minimal inter-word
+space---separates words).
 
 @item
 After an output glyph has been constructed (this happens at the moment
@@ -17151,7 +17157,7 @@ other environments to the standard error stream.
 Report, to the standard error stream, the list of hyphenation
 exceptions.  Each hyphenation point is marked with @samp{-}.  Words that
 will not be hyphenated at all are prefixed with @samp{-}.  Those to
-which the automatic hyphenation mode applies (meaning those defined in a
+which automatic hyphenation applies (meaning those defined in a
 hyphenation pattern file rather than with the @code{hw} request) are
 suffixed with a tab and asterisk (@code{*}).
 @endDefreq

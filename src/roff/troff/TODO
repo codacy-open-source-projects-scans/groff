@@ -21,8 +21,7 @@ next to a line that's been stretched a lot.  The difficulty is to
 design a mechanism that allows the user complete control over the
 decision of where to break the line.
 
-Provide a mechanism to control the shape of the rag in non-justified
-text.
+Provide a mechanism to control the shape of the rag in unadjusted text.
 
 Add a discretionary break escape sequence. \='...'...'...' like TeX.
 
@@ -87,9 +86,9 @@ Unpaddable, breakable space escape sequence.
 
 Support hanging punctuation.
 
-In justified text, if the last line of a paragraph is only a little
-bit short it might be desirable to justify the line.  Allow the user
-control over this.
+In adjusted text, if the last line of a paragraph is only a little
+bit short of the line length it might be desirable to adjust it anyway.
+Allow the user control over this.
 
 The pm request could print where the macro was defined.  Also could
 optionally print the contents of a macro.

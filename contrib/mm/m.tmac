@@ -1,7 +1,10 @@
 .ig
 
-Copyright (C) 1991-2023 Free Software Foundation, Inc.
-mm is written by Jörgen Hägg <jh@axis.com>
+Copyright (C) 1991-2024 Free Software Foundation, Inc.
+groff mm is written by Jörgen Hägg <jh@axis.com>
+based on groff ms by James Clark <jjc@jclark.com>
+and further developed by Werner Lemberg <wl@gnu.org>
+and G. Branden Robinson <g.branden.robinson@gmail.com>.
 
 mm is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -18,13 +21,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Please submit bug reports using groff's 'BUG-REPORT' file to
 http://savannah.gnu.org/bugs/?group=groff.
-
-Naming convention adapted from groff ms.
-Local names	module*name
-Extern names	module@name
-Env.var		environ:name
-Index		array!index
 ..
+.\" Package identifier naming convention
+.\"   name		API, user-visible, global
+.\"   @name		global
+.\"   module@name	module-specific, public
+.\"   module*name	module-specific, private to module
+.\"
+.\" The latter three may be combined with the following notations.
+.\"   env:id		property of *roff environment named "env" (.ev)
+.\"   id!index		array element numbered "index"
+.
 .if !\n(.g \
 .  ab groff mm macros require groff extensions; aborting
 .
@@ -42,33 +49,171 @@ Index		array!index
 .if d PH .nx
 .
 .mso devtag.tmac
-.\" ######## init #######
-.ds Abstract ABSTRACT\"
-.\"	create table of contents entry for headings of level <= Cl
+.\" ######## initialize package #######
+.\"	create table of contents entry for heading of level <= Cl
 .nr Cl 2
-.\"	Eject page between LIST OF XXXX if Cp == 0
+.\"	suppress page break after TOC lists of figures, tables, ...?
 .nr Cp 0
-.\"	Debugflag
+.\"	report debugging messages?
 .if !r D .nr D 0
-.\"	Eject after floating display is output [0:1]
+.\"	eject page after floating display?
 .nr De 0
-.\"	Floating keep output [0;5]
+.\"	floating display output policy [0:5]
 .nr Df 5
-.\"	space before and after display if == 1 [0:1]
+.\"	vertically space before and after display?
 .nr Ds 1
-.\"	eject page before headings of level <= Ej
+.\"	eject page before headings of level <= Ej?
 .nr Ej 0
-.\"	Equation label adjust 0=left, 1=right
+.\"	align equation labels to the left instead of the right?
 .nr Eq 0
-.\"	Bullet string (for .BL)
+.\"	bullet string (for .BL)
 .ie n .ds BU \[bu]
-.el .ds BU \s-2\[bu]\s0
-.\"	Em dash string
+.el   .ds BU \s-2\[bu]\s0
+.\"	em dash string
 .ie n .ds EM " --
-.el .ds EM \[em]
-.\"	Footnote spacing
+.el   .ds EM \[em]
+.\"	multiple of Lsp to put between items of footnote text
 .nr Fs 1
-.\"	H1-H7	heading counters
+.\"	break after headings of level <= Hb
+.nr Hb 2
+.\"	center headings of level <= Hc
+.nr Hc 0
+.\"	heading font, per level
+.ds HF 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+.\"	indentation policy of text after headings
+.\"	0 -> no indentation
+.\"	1 -> first-line indentation, like ".P 1"
+.\"	2 -> indent to line up with text part of preceding heading
+.nr Hi 1
+.\"	header point (type) size, per level
+.ds HP 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+.\"	put vertical space of \n[Hss] after headings of level <= Hs
+.nr Hs 2
+.\"	heading numbering type
+.\"	0 -> multiple (1.1.1 ...)
+.\"	1 -> single
+.nr Ht 0
+.\"	unnumbered headings format like numbered headings of this level
+.nr Hu 2
+.\"	automatic hyphenation enabled?
+.nr Hy 0
+.\"	captions of lists potentially appearing in table of contents
+.ds Lf LIST OF FIGURES
+.nr Lf 1
+.ds Lt LIST OF TABLES
+.nr Lt 1
+.ds Lx LIST OF EXHIBITS
+.nr Lx 1
+.ds Le LIST OF EQUATIONS
+.nr Le 0
+.\"	list indentation in ens
+.nr Li 6
+.\"	put vertical space before list items of nesting level <= Ls
+.nr Ls 99 \" TODO: use \n[.R]; see Savannah #63587
+.\"	page numbering style [0:5]
+.if !r N .nr N 0
+.\"	number paragraphs under first-level headings?
+.nr Np 0
+.\"	format of figure,table,exhibit,equation titles
+.\"	0= ". ", 1=" - "
+.nr Of 0
+.\"	table of contents page numbering style
+.nr Oc 0
+.\"	page number, normally same as \n[%]
+.nr P 0
+.\"	paragraph indentation in ens
+.nr Pi 5
+.\"	multiple of Lsp to put between paragraphs
+.nr Ps 1
+.\"	paragraph indentation policy (for .P)
+.\"	0 == no indentation
+.\"	1 == indented by \n[Pi]
+.\"	2 == indented by \n[Pi] except after .H, .DE, or .LE
+.nr Pt 0
+.\"	reference list caption
+.ds Rp REFERENCES\"
+.\"	display indentation in ens
+.nr Si 5
+.\" service mark string
+.ie t .ds Sm \v'-.4m'\s-3SM\s0\v'.4m'\"
+.el \{\
+.	ie c \[u2120] .ds Sm \[u2120]\"
+.	el            .ds Sm (SM)\"
+.\}
+.\" trade mark string
+.ie t .ds Tm \v'-.4m'\s-3TM\s0\v'.4m'\"
+.el \{\
+.	ie c \[tm] .ds Tm \[tm]\"
+.	el         .ds Tm (TM)\"
+.\}
+.\"---------------------------------------------
+.\"	documented but command-line-only registers
+.\"
+.\" S and V are handled specially later.
+.
+.\" XXX: The man page says C isn't supported.  Unfinished?  Check it
+.\" against DWB.
+.if r C .nr @copy_type \n[C]
+.
+.if !r E .nr E 1
+.ie \n[E] .ds @metadata-font B\"
+.el       .ds @metadata-font R\"
+.
+.if r L .pl \n[L]u
+.
+.ie r O .po \n[O]u
+.el \{\
+.	ie n .po .75i
+.	el   .po .963i
+.\}
+.
+.ie r W .ll \n[W]u
+.el     .ll 6i
+.\"---------------------------------------------
+.nr @copy_type 0
+.if \n[@copy_type]=4 \{\
+.	ls 2
+.	nr Pi 10
+.	nr Pt 1
+.\}
+.\"	Configure type size and vertical spacing.  If given on the
+.\"	command line, these have already been converted to basic units.
+.if !r S .nr S 10
+.ie (\n[S] >= 1000) .ps \n[S]z/1000u
+.el                 .ps \n[S]
+.nr *vs-default \n[.ps]*120/100
+.if !r V .nr V \n[*vs-default]
+.ie (\n[V] >= 1000) .vs \n[V]p/1000u
+.el                 .vs \n[V]
+.rr *vs-default
+.
+.nr @ps \n[.ps]
+.nr @vs \n[.v]
+.if \n[D]>1 .tm @ps=\n[@ps], @vs=\n[@vs]
+.if \n[D]>3 .tm INIT: l:\n[.l] p:\n[.p] o:\n[.o]
+.nr @pl \n[.p]
+.nr @ll \n[.l]
+.nr @cur-ll \n[@ll]
+.lt \n[@ll]u
+.nr @po \n[.o]
+.
+.nr @in-verbatim-region 0
+.\"---------------------------------------------
+.\"	public groff mm extension registers and strings
+.
+.\" Indicate groff mm macro package; documents may test this.
+.nr .mgm 1
+.\" Abstract caption
+.ds Abstract ABSTRACT\"
+.\" Appendix caption
+.ds App APPENDIX
+.\" format appendix caption?
+.nr Aph 1
+.\" appendix text possibly set by APP or APPSK
+.ds Apptext \" empty
+.\" spacing before and after static displays (if undefined, Lsp is used)
+.\" .nr Dsp 1v
+.\" heading level counters
 .nr H1 0 1
 .nr H2 0 1
 .nr H3 0 1
@@ -83,205 +228,42 @@ Index		array!index
 .nr H12 0 1
 .nr H13 0 1
 .nr H14 0 1
-.\"	break after headings of level <= Hb
-.nr Hb 2
-.\"	center headings of level <= Hc
-.nr Hc 0
-.\"	header format
-.ds HF 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-.\"	heading temp. indent [0:2]
-.\"	0 -> 0 indent, left margin
-.\"	1 -> indent to right , like .P 1
-.\"	2 -> indent to line up with text part of preceding heading
-.nr Hi 1
-.\"	header pointsize
-.ds HP 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-.\"	put vertical space of \n[Hss] after headings of level <= Hs
-.nr Hs 2
-.\"	heading numbering type
-.\"	0 -> multiple (1.1.1 ...)
-.\"	1 -> single
-.nr Ht 0
-.\"	Unnumbered heading level
-.nr Hu 2
-.\"	hyphenation in body
-.\"	0 -> no hyphenation
-.\"	1 -> hyphenation 14 on
-.nr Hy 0
-.\"	text for toc, selfexplanatory. Look in the new variable section
-.ds Lf LIST OF FIGURES
-.nr Lf 1
-.ds Lt LIST OF TABLES
-.nr Lt 1
-.ds Lx LIST OF EXHIBITS
-.nr Lx 1
-.ds Le LIST OF EQUATIONS
-.nr Le 0
-.\"	List indentation in ens, used by .AL
-.nr Li 6
-.\"	put vertical space before list items of nesting level <= Ls
-.nr Ls 99 \" TODO: use \n[.R]; see Savannah #63587
-.\"	Numbering style [0:5]
-.if !r N .nr N 0
-.\"	numbered paragraphs
-.\"	0 == not numbered
-.\"	1 == numbered in first level headings.
-.nr Np 0
-.\"	Format of figure,table,exhibit,equation titles.
-.\"	0= ". ", 1=" - "
-.nr Of 0
-.\"	Table of contents page numbering style
-.nr Oc 0
-.\"	Page-number, normally same as %.
-.nr P 0
-.\"	paragraph indentation in ens
-.nr Pi 5
-.\"	paragraph spacing
-.nr Ps 1
-.\"	paragraph type
-.\"	0 == left-justified
-.\"	1 == indented .P
-.\"	2 == indented .P except after .H, .DE or .LE.
-.nr Pt 0
-.\"	Reference title
-.ds Rp REFERENCES
-.\"	Reference page eject status
-.nr Rpe 0
-.\"	display indentation in ens
-.nr Si 5
-.\"
-.\" Current state of TOC, empty outside TC, inside
-.\" it will be set to co,fg,tb,ec,ex or ap.
-.ds Tcst
-.\"
-.ie t .ds Sm \v'-.4m'\s-3SM\s0\v'.4m'\"
-.el \{\
-.	ie c \[u2120] .ds Sm \[u2120]\"
-.	el            .ds Sm (SM)\"
-.\}
-.
-.ie t .ds Tm \v'-.4m'\s-3TM\s0\v'.4m'\"
-.el \{\
-.	ie c \[tm] .ds Tm \[tm]\"
-.	el         .ds Tm (TM)\"
-.\}
-.\"
-.\"---------------------------------------------
-.\"	Internal global variables
-.\"
-.\" This is for cover macro .MT
-.\" .ds @country
-.\"
-.nr @copy_type 0
-.if r C .nr @copy_type \n[C]
-.\"
-.if !r E .nr E 1
-.ie \n[E] .ds @metadata-font B\"
-.el       .ds @metadata-font R\"
-.\"
-.if \n[@copy_type]=4 \{\
-.	ls 2
-.	nr Pi 10
-.	nr Pt 1
-.\}
-.\"
-.\"	Set the type size and vertical spacing.  If given on the command
-.\"	line, these have already been converted to basic units.
-.if !r S .nr S 10
-.ie (\n[S] >= 1000) .ps \n[S]z/1000u
-.el                 .ps \n[S]
-.nr *vs-default \n[.ps]*120/100
-.if !r V .nr V \n[*vs-default]
-.ie (\n[V] >= 1000) .vs \n[V]p/1000u
-.el                 .vs \n[V]
-.rm *vs-default
-.\"
-.nr @ps \n[.ps]
-.nr @vs \n[.v]
-.if \n[D]>1 .tm @ps=\n[@ps], @vs=\n[@vs]
-.if \n[D]>3 .tm INIT: l:\n[.l] p:\n[.p] o:\n[.o]
-.\"
-.\"	page length
-.if r L \{\
-.	pl \n[L]u
-.\}
-.nr @pl \n[.p]
-.\"
-.\"	line length
-.ie r W \{\
-.	ll \n[W]u
-.\}
-.el .ll 6i
-.nr @ll \n[.l]
-.nr @cur-ll \n[@ll]
-.lt \n[@ll]u
-.\"
-.\"	page offset
-.ie r O .po \n[O]u
-.el \{\
-.	ie n .po .75i
-.	el .po .963i
-.\}
-.\"
-.nr @po \n[.o]
-.\"
-.\" non-zero if escape mechanism is turned off. Used by VERBON/OFF
-.nr @verbose-flag 0
-.\"---------------------------------------------
-.\"	New variables
-.\"
-.\" Appendix name
-.ds App APPENDIX
-.\" print appendixheader, 0 == don't
-.nr Aph 1
-.\"
-.\" Current appendix text
-.ds Apptext
-.\" Controls the space before and after static displays if defined.
-.\" Lsp is used otherwise
-.\" .nr Dsp 1v
-.\"
-.\" Add a dot after level one heading number if >0
+.\" add a dot after level one heading number?
 .nr H1dot 1
-.\"
 .\" put vertical space of \n[Hps2] before headings of level <= Hps
 .nr Hps 1
-.\"
 .\" amount of vertical space before headings when level > Hps
-.nr Hps1 0.5v
-.if n .nr Hps1 1v
-.\"
+.ie t .nr Hps1 0.5v
+.el   .nr Hps1 1v
 .\" amount of vertical space before headings when level <= Hps
-.nr Hps2 1v
-.if n .nr Hps2 2v
-.\"
-.\" Hss is the number of lines (Lsp) after the header.
+.ie t .nr Hps2 1v
+.el   .nr Hps2 2v
+.\" multiple of Lsp to put after a heading
 .nr Hss 1
-.\"
-.\" H1txt will be updated by .H and .HU, containing the heading text.
-.\" Will also be updated in table of contents & friends
-.\"
-.ds H1txt
-.\"
-.\" header text for the index
+.\" H1txt is updated by .H and .HU, containing the heading text.
+.\" .TC and lix@print-ds also update it.
+.ds H1txt \" empty
+.\" caption for the index
 .ds Index INDEX
-.\"
-.\" flag for mkindex
+.\" flag for mkindex (XXX: undocumented: do we need this?)
 .if !r Idxf .nr Idxf 0
-.\"	Change these in the national configuration file
+.\" captions for displays
 .ds Lifg Figure
 .ds Litb Table
 .ds Liex Exhibit
 .ds Liec Equation
+.\" caption for the table of contents
 .ds Licon CONTENTS
+.\" Put space between a list item's mark and prefix?
 .\" Flag for space between mark and prefix 1==space, 0==no space
 .\" Can also be controlled by using '.LI mark 2'
 .nr Limsp 1
 .\"
 .\" Lsp controls the height of an empty line. Normally 0.5v
 .\" Normally used for nroff compatibility.
-.nr Lsp 0.5v
-.if n .nr Lsp 1v
+.ie t .nr Lsp 0.5v
+.el   .nr Lsp 1v
+.
 .ds MO1 January
 .ds MO2 February
 .ds MO3 March
@@ -294,43 +276,57 @@ Index		array!index
 .ds MO10 October
 .ds MO11 November
 .ds MO12 December
+.
+.\" use body text size and vertical spacing for titles?
+.nr Pgps 1
+.
+.\" Text printed below the footer. Controlled by @copy_type (C).
+.\" (XXX: undocumented)
+.ds Pg_type!0
+.ds Pg_type!1 OFFICIAL FILE COPY
+.ds Pg_type!2 DATE FILE COPY
+.ds Pg_type!3 D\ R\ A\ F\ T
+.ds Pg_type!4 D\ R\ A\ F\ T
+.
 .\" for GETR
 .ds Qrf See chapter \E*[Qrfh], page \E*[Qrfp].
-.\"
-.\" header- and footer-size will only change to the current
-.\" if Pgps is > 0.
-.nr Pgps 1
-.\"
-.\" section-page if Sectp > 0
+.\" output reference marks to standard error?
+.if !r Ref .nr Ref 0
+.\" reference list page ejection policy
+.nr Rpe 0
+.\" use section-page page numbering?
 .nr Sectp 0
 .if (\n[N]=3):(\n[N]=5) \{\
 .	nr Sectp 1
 .	nr Ej 1
 .\}
-.\" section-figure if Sectf > 0
-.nr Sectf 0
-.if \n[N]=5 .nr Sectf 1
-.\"
-.\" argument to .nm in .VERBON.
+.\" use section-figure page numbering?
+.ie \n[N]=5 .nr Sectf 1
+.el         .nr Sectf 0
+.\" state of TOC formatting
+.\" This is empty outside the table of contents; inside it is set to co,
+.\" fg, tb, ec, ex, or ap.
+.ds Tcst \" empty
+.\" argument(s) for VERBON to give to `nm` request
 .ds Verbnm 1\"
-.\" indent for VERBON
+.\" indentation of verbatim regions (VERBON)
 .nr Verbin 5n
-.\"
+.
 .\" Letter section
 .\" Formal closing (.FC)
 .ds Letfc Yours very truly,
-.\"
+.
 .\" Approval line
 .ds Letapp APPROVED:
 .\" Approval date-string
 .ds Letdate Date
-.\"
+.
 .ds LetCN CONFIDENTIAL\"		Confidential default
 .ds LetSA To Whom It May Concern:\"	Salutation default
 .ds LetAT ATTENTION:\"			Attention string
 .ds LetSJ SUBJECT:\"			Subject string
 .ds LetRN In reference to:\"		Reference string
-.\"
+.
 .\" Copy to (.NS)
 .ds Letnsdef 0
 .ds Letns!copy Copy \" space!
@@ -350,43 +346,25 @@ Index		array!index
 .ds Letns!12 Abstract Only to
 .ds Letns!13 Complete Memorandum to
 .ds Letns!14 CC:
-.\"
-.\" Text printed below the footer. Controlled by @copy_type (C).
-.ds Pg_type!0
-.ds Pg_type!1 OFFICIAL FILE COPY
-.ds Pg_type!2 DATE FILE COPY
-.ds Pg_type!3 D\ R\ A\ F\ T
-.ds Pg_type!4 D\ R\ A\ F\ T
-.\" Max lines in return address
+.\" maximum number of productive input lines read into `WA` information
 .nr Letwam 14
-.\"--------------------------
-.\"	test for mgm macro. This can be used if the text must test
-.\"	what macros is used.
-.nr .mgm 1
-.\"
-.\" Due to security problems with groff I had to rewrite
-.\" the reference system. It's not as elegant as before, you
-.\" have to run groff with '-z -rRef=1' and put stderr into the filename
-.\" for .INITR
-.\"
-.\" Output references to stderr if non-zero
-.if !r Ref \{\
-.	nr Ref 0
-.\}
-.\"
+.
 .\"---------------------------------------------
-.\" set local variables.
+.\" Localize package.
 .ie d @country .msoquiet mm/\*[@country]_locale
-.el .msoquiet mm/locale
+.el            .msoquiet mm/locale
 .\"---------------------------------------------
-.\" ####### module init ######
-.\"	reset all things
+.de @enable-hyphenation
+.ie r .hydefault .hy \" Use groff 1.24 feature.
+.el              .hy \\n[\\*[locale]*hyphenation-mode-trap]
+..
+.\"	reset all the things
 .\" XXX: Resets .cu and .ul but _not_ .ce or .rj.
-.de init@reset
-.ie \\n[misc@adjust] 'ad
-.el 'na
-.ie \\n[Hy] 'hy 14
-.el 'nh
+.de @reset
+.ie \\n[misc@adjust] .ad
+.el                  .na
+.ie \\n[Hy] .@enable-hyphenation
+.el         .nh
 'in 0
 'ti 0
 .ps \\n[@ps]u
@@ -416,17 +394,18 @@ Index		array!index
 .br
 ..
 .\" ####### module debug #################################
-.de debug
-'tm \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s],\\n[.ps] \
-in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
+.de debug@little-dump
+.tmc \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s],\\n[.ps]
+.tm1 " in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 ..
-.de debug-all
+.de debug@big-dump
 .nr debug*n 1n
 .nr debug*m 1m
-'tm \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s] in=\\n[.i]\
- ad=\\n[.j] fi=\\n[.u] pl=\\n[.p] page=\\n[%] .o=\\n[.o]
-'tm _______ .d=\\n[.d] .f=\\n[.f] .h=\\n[.h] .k=\\n[.k] .n=\\n[.n]\
- .p=\\n[.p] .t=\\n[.t] .z=\\n[.z] nl=\\n[nl] dn=\\n[dn] n=\\n[debug*n]
+.tmc \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s] in=\\n[.i]
+.tm1 " ad=\\n[.j] fi=\\n[.u] pl=\\n[.p] page=\\n[%] .o=\\n[.o]
+.tmc _______ .d=\\n[.d] .f=\\n[.f] .h=\\n[.h] .k=\\n[.k] .n=\\n[.n]
+.tmc " .p=\\n[.p] .t=\\n[.t] .z=\\n[.z] nl=\\n[nl] dn=\\n[dn]
+.tm1 " n=\\n[debug*n]
 ..
 .\" ####### module par #################################
 .nr par*indentation-eligible 1		\" indent following P if Pt=2
@@ -536,8 +515,8 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .\}
 .\" XXX: ...and finally an unconditional.
 .\"   .ad \\n[.j]
-.ie \\n[misc@adjust] 'ad
-.el 'na
+.ie \\n[misc@adjust] .ad
+.el                  .na
 ..
 .\"-------------
 .\" switch environment, keep all important settings.
@@ -749,8 +728,8 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .\"	flag
 .\"	bit	function
 .\"	0	escape character disablement
-.\"	1	add an empty line before verbose text
-.\"	2	add an empty line after verbose text
+.\"	1	add an empty line before verbatim text
+.\"	2	add an empty line after verbatim text
 .\"	3	number output lines using Verbnm string for .nm args
 .\"	4	indent text by amount in register Verbin
 .de VERBON
@@ -761,7 +740,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .nf
 .if (0\\n[misc*verb]%16)/8 .nm \\*[Verbnm]
 .ie !'\\$3'' .if F \\$3 .ft \\$3
-.el .if F CR .ft CR
+.el          .if F CR   .ft CR
 .ie 0\\$2 \{\
 .	ss \\$2
 .	ps \\$2
@@ -772,7 +751,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .if (0\\n[misc*verb]%32)/16 .in +\\n[Verbin]u
 .if 0\\n[misc*verb]%2 \{\
 .	eo
-.	nr @verbose-flag 1		\" tell pageheader to set ec/eo
+.	nr @in-verbatim-region 1
 .\}
 ..
 .de VERBOFF
@@ -782,7 +761,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .if (0\\n[misc*verb]%16)/8 .nm
 .if (0\\n[misc*verb]%32)/16 .in
 .ev
-.nr @verbose-flag 0
+.nr @in-verbatim-region 0
 ..
 .\" Wrapper to cancel the side effect of .tag + .br generating
 .\" unwanted vertical space.
@@ -839,7 +818,7 @@ in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 .		continue
 .	\}
 .	if '-I'\\$1' \{\
-.		nr pict*ind (m;\\$2)
+.		nr pict*ind (n;\\$2)
 .		nr pict*mode 2
 .		shift 2
 .		continue
@@ -1047,7 +1026,7 @@ numeric; got '\\$1'
 .df@print-float 2\"	$$$ could be wrong...
 .\" terminate all lists
 .LC
-.init@reset
+.@reset
 .nr hd*level 0\\$1
 .nr hd*arg1 0\\$1
 .if !\\n[hd*level] .nr hd*level \\n[Hu]
@@ -1102,8 +1081,8 @@ numeric; got '\\$1'
 .if \\n[hd*level]<=\\n[Hb] .nr hd*htype 1
 .if \\n[hd*level]<=\\n[Hs] .nr hd*htype 2
 .					\" two spaces if hd*htype == 0
-.ie (\\n[hd*htype]=0)&(\w@\\$2@) .ds hd*suf-space "  \"
-.el .ds hd*suf-space \" empty
+.ie (\\n[hd*htype]=0)&(\w@\\$2@) .ds hd*suf-space "  \" 2 spaces
+.el                              .ds hd*suf-space \" empty
 .nr hd*need 2v				\" hd*need = header need space
 .\"---------- user macro HX ------------
 .\" User exit macro to override numbering.
@@ -1113,7 +1092,7 @@ numeric; got '\\$1'
 .\"--------------------------------------
 .\" pre-space
 .ie \\n[hd*level]<=\\n[Hps] .SP (u;\\n[Hps2])
-.el .SP (u;\\n[Hps1])
+.el                         .SP (u;\\n[Hps1])
 .\"
 .par@reset-num \\n[hd*level]\"			reset numbered paragraph
 .\" start diversion to measure size of header
@@ -1213,7 +1192,7 @@ numeric; got '\\$1'
 .de hd@set-page
 .\"
 .ie \\n[.$]>0 .nr P \\$1
-.el .nr P +1
+.el           .nr P +1
 .\" Set section-page-string
 .ds hd*sect-pg \\n[H1]-\\n[P]
 .if \\n[Sectp]>1 .if '\\n[H1]'0' .ds hd*sect-pg "
@@ -1299,10 +1278,10 @@ numeric; got '\\$1'
 .\"-------------------------
 .\" stop output and begin on next page. Fix footnotes and all that.
 .de pg@next-page
-.\".debug next-page
+.\".debug@little-dump next-page
 .br
 .if \\n[pg*at-end-of-input] \c
-.ne 999i		\" activate trap
+.ne 999i	\" activate trap; TODO: use \n[.R]; see Savannah #63587
 .\" .pg@footer
 ..
 .\"-------------------------
@@ -1333,9 +1312,8 @@ numeric; got '\\$1'
 .		@error insufficient page length; aborting
 .	\}
 .\}
-.\" check if Hy has been changed
-.ie \\n[Hy] 'hy 14
-.el 'nh
+.ie \\n[Hy] .@enable-hyphenation
+.el         .nh
 .if \\n[Idxf] \{\
 .tl '<pagenr\ \\n[%]>'''
 .\}
@@ -1402,7 +1380,7 @@ numeric; got '\\$1'
 .ec
 .if \\n[D]>2 .tm Footer# \\n[%] (\\n[.F]:\\n[c.]) nl=\\n[nl]
 .pg@disable-trap
-.\".debug footer
+.\".debug@little-dump footer
 .tbl@bottom-hook
 .\" increment pageoffset for MC
 .\" move to the exact start of footer.
@@ -1417,7 +1395,7 @@ numeric; got '\\$1'
 .\" next column
 .pg@set-po
 .pg@enable-trap
-.if \\n[@verbose-flag] .eo		\" to help VERBON/VERBOFF
+.if \\n[@in-verbatim-region] .eo
 ..
 .\"-------------------------
 .de pg@print-footer
@@ -1458,8 +1436,8 @@ numeric; got '\\$1'
 .\"
 .\" Initialize the title environment
 .de pg@set-env
-'na
-'nh
+.na
+.nh
 'in 0
 'ti 0
 .ie \\n[Pgps] \{\
@@ -1516,7 +1494,7 @@ numeric; got '\\$1'
 .\"-------------------------
 .\" end of page processing
 .de pg@footnotes
-.\".debug footnotes
+.\".debug@little-dump footnotes
 .\" output footnotes. set trap for block
 .\"
 ..
@@ -1535,7 +1513,7 @@ numeric; got '\\$1'
 .\" define bottom block
 .de BS
 .misc@ev-keep pg*block-ev
-.init@reset
+.@reset
 .br
 .di pg*block-div
 ..
@@ -1654,9 +1632,9 @@ active
 .br
 .nr pg*head-mark \\n[nl]u
 .ie ''\\$1' .nr pg*column-size \\n[.l]
-.el .nr pg*column-size (n;\\$1)
+.el         .nr pg*column-size (n;\\$1)
 .ie ''\\$2' .nr pg*column-sep \\n[pg*column-size]/15
-.el .nr pg*column-sep (n;\\$2)
+.el         .nr pg*column-sep (n;\\$2)
 .\"
 .\" calculate the number of columns/page
 .nr pg*cols-per-page 0 \" temporarily invalid!
@@ -1672,8 +1650,10 @@ page
 .ll \\n[pg*column-size]u
 .\" .lt \\n[pg*column-size]u
 ..
-.\" begin a new column
+.\" begin a new column if using `2C` or `MC`
 .de NCOL
+.if \\n[pg*cols-per-page]<2 .@warning \\$0: not in multi-column mode; \
+breaking page
 .br
 .if \\n[nl]>\\n[pg*last-ncol] .nr pg*last-ncol \\n[nl]
 .pg@footer
@@ -1711,14 +1691,18 @@ page
 .fam \\*[pg*mul-fam]
 .ft \\n[pg*mul-font]
 .fi
-.hy 6
+.@enable-hyphenation
 .di pg*mul-div
 .MULN
 ..
 .\"-----------
 .de MULN
-.if \\n[pg*mul-x]>=\\n[pg*mul-max-col] .@abort undefined column width \
-(pg*mul-x=\\n[pg*mul-x >= pg*mul-max-col=\\n[pg*mul-max])
+.if \\n[pg*cols-per-page]<2 .@error \\$0: not in multi-column mode
+.if \\n[pg*mul-x]>=\\n[pg*mul-max-col] \{\
+.	ds pg*msg .@abort undefined column width \"
+.	as (pg*mul-x=\\n[pg*mul-x] >= pg*mul-max-col=\\n[pg*mul-max])\"
+.	@abort \\*[pg*msg]
+.\}
 .br
 .if \\n[.d]>\\n[pg*mul-last] .nr pg*mul-last \\n[.d]
 .rt +0
@@ -1773,10 +1757,10 @@ page
 .\" label justification not implemented $$$
 'in 0
 'fi
-.ie \\n[ft*adjust] 'ad
-.el 'na
-.ie \\n[ft*hyphen] 'hy 6
-.el 'hy 0
+.ie \\n[ft*adjust] .ad
+.el                .na
+.ie \\n[ft*hyphen] .@enable-hyphenation
+.el                .hy 0
 .ll \\n[@cur-ll]u
 .lt \\n[@cur-ll]u
 .ps (p;\\n[@ps]u-2)
@@ -1788,7 +1772,7 @@ page
 .de FD
 .if \\n[.$]=0 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .ie \\n[.$]=2 .nr ft*clear-at-header 1
-.el .nr ft*clear-at-header 0
+.el           .nr ft*clear-at-header 0
 .\"
 .if !'\\$1'' \{\
 .	ie \\$1>11 .nr ft*format 0
@@ -1853,7 +1837,7 @@ page
 .sp \\n[ft*space]u
 .\" print mark
 .ie \\n[.$] .ds ft*mark \\$1
-.el .ds ft*mark \\n[ft*nr].
+.el         .ds ft*mark \\n[ft*nr].
 \\*[ft*mark]
 .in +.75c
 .sp -1
@@ -1942,14 +1926,17 @@ page
 .\"--------------------------------------------
 .de DE
 .ie \\n[df*float] .df@end \\$@
-.el .ds@end \\$@
+.el               .ds@end \\$@
 ..
 .\"--------------------------------------------
 .\" floating display start
 .\" nested DF/DE is not allowed.
 .de DF
-.if \\n[df*float] .@error \\$0: cannot nest floating keeps; use DS \
-within DF/DE
+.if \\n[df*float] \{\
+.	ds df*msg \\$0: cannot nest floating displays; \"
+.	as df@msg use DS within DF/DE\"
+.	@error \\*[df*msg]
+.\}
 .ds ds@macro \\$0
 .ds@set-format \\$@
 .\"
@@ -1958,7 +1945,7 @@ within DF/DE
 .misc@ev-keep df*ev
 .ft \\n[ds*ftmp]
 .\"
-.init@reset
+.@reset
 .di df*div
 'in 0
 .\"
@@ -1995,7 +1982,7 @@ within DF/DE
 .	if \\n[D]>2 .tm Print remaining displays.
 .\" still some floats left, make non-empty environment
 .	misc@ev-keep ne
-.	init@reset
+.	@reset
 \c
 .	df@print-float 3
 .	ev
@@ -2072,12 +2059,12 @@ within DF/DE
 .nr df*f \\n[df*format!\\n[df*i]]
 .\"
 .in \\n[df*old-in]u
-.if \\n[df*f]=1 'in +\\n[Si]n
+.if \\n[df*f]=1  'in +\\n[Si]n
 .if \\n[df*f]>=2 'in 0
-.if \\n[df*f]=2 'ce 9999
-.if \\n[df*f]=3 'in (u;(\\n[.l]-\\n[df*width!\\n[df*i]])/2)
-.if \\n[df*f]=4 'rj 9999
-.if \\n[df*f]=5 'in (u;\\n[.l]-\\n[df*width!\\n[df*i]])
+.if \\n[df*f]=2  'ce 9999
+.if \\n[df*f]=3  'in (u;(\\n[.l]-\\n[df*width!\\n[df*i]])/2)
+.if \\n[df*f]=4  'rj 9999
+.if \\n[df*f]=5  'in (u;\\n[.l]-\\n[df*width!\\n[df*i]])
 .\"
 .\"
 .df*fdiv!\\n[df*o-fnr]
@@ -2158,7 +2145,7 @@ within DF/DE
 .\}
 .\"
 .ie \\n[ds*fill] 'fi
-.el 'nf
+.el              'nf
 ..
 .\"--------------------------------------------------------
 .nr ds*format 0\"	dummy value for .En/.EQ
@@ -2200,7 +2187,7 @@ within DF/DE
 .misc@ev-keep ds*ev!\\n+[ds*snr]
 .ft \\n[ds*ftmp]
 .\"
-.init@reset
+.@reset
 .\" indent in a diversion doesn't seem like a good idea.
 'in 0
 .di ds*div!\\n[ds*snr]
@@ -2213,8 +2200,8 @@ within DF/DE
 .\"--------------------------------------------
 .de ds@end
 .\" We hard-code the DE macro name here since this macro is internal but
-.\" only DE calls it.  We also know we're closing a static keep because
-.\" df@end is called otherwise.  See `DE`.
+.\" only DE calls it.  We also know we're closing a static display
+.\" because df@end is called otherwise.  See `DE`.
 .if \\n-[ds*lvl]<0 .@error DE: no corresponding DS
 .br
 .di
@@ -2244,12 +2231,12 @@ within DF/DE
 .\" check if pending equation label
 .eq@check \\n[ds*need]
 'in \\n[ds*old-in]u
-.if \\n[ds*format]=1 'in \\n[ds*old-in]u+\\n[Si]n
+.if \\n[ds*format]=1  'in \\n[ds*old-in]u+\\n[Si]n
 .if \\n[ds*format]>=2 'in 0
-.if \\n[ds*format]=2 'ce 9999
-.if \\n[ds*format]=3 'in (u;(\\n[.l]-\\n[ds*width])/2)
-.if \\n[ds*format]=4 'rj 9999
-.if \\n[ds*format]=5 'in (u;\\n[.l]-\\n[ds*width])
+.if \\n[ds*format]=2  'ce 9999
+.if \\n[ds*format]=3  'in (u;(\\n[.l]-\\n[ds*width])/2)
+.if \\n[ds*format]=4  'rj 9999
+.if \\n[ds*format]=5  'in (u;\\n[.l]-\\n[ds*width])
 .\" **********
 .\"
 .ds*div!\\n[ds*snr]
@@ -2276,7 +2263,7 @@ within DF/DE
 .nr li*cur-vpos 0
 .\"--------------------------
 .\"	the major list-begin macro.
-.\"	If type == -1 a 'break' will occur.
+.\"	If type is -1, a break occurs.
 .de LB
 .if \\n[.$]<4 .@error \\$0: expected at least 4 arguments, got \\n[.$]
 .misc@push cind \\n[.i]
@@ -2294,9 +2281,9 @@ within DF/DE
 .nr li*type 0\\$4\"			type
 .ds li*mark \\$5\"			mark
 .ie !'\\$6'' .nr li*li-spc \\$6\"	LI-space
-.el .nr li*li-spc 1
+.el          .nr li*li-spc 1
 .ie !'\\$7'' .nr li*lb-spc \\$7\"	LB-space
-.el .nr li*lb-spc 0
+.el          .nr li*lb-spc 0
 .\" init listcounter
 .nr li*cnt!\\n[li*lvl] 0 1
 .\" assign format
@@ -2338,7 +2325,7 @@ ML, RL, VL, or LB first
 .\"
 .\" determine where the mark begin
 .ie !\\n[li*c-pad] .nr li*mark-begin \\n[li*mind]
-.el .nr li*mark-begin \\n[li*text-begin]-\\n[li*c-pad]-\w@\\*[li*c-mark]@
+.el                .nr li*mark-begin \\n[li*text-begin]-\\n[li*c-pad]-\w@\\*[li*c-mark]@
 .if !\\n[li*mark-begin] .nr li*mark-begin 0
 .\"
 .ti -\\n[li*tind]u
@@ -2526,7 +2513,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .HTML-IMAGE
 ..
 .de PY
-.init@reset
+.@reset
 .HTML-IMAGE-END
 ..
 .de PE
@@ -2736,10 +2723,10 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ds lix*text "\\$4
 .\"
 .ie \\n[Sectf] .ds lix*numb \\n[H1]-\\$3
-.el .ds lix*numb \\$3
+.el            .ds lix*numb \\$3
 .\"
 .ie !\\n[Of] .ds lix*ds-form .\ \ \"
-.el .ds lix*ds-form "\ \[em]\ \"
+.el          .ds lix*ds-form "\ \[em]\ \"
 .nr lix*in \\n[.i]
 .ds lix*label \\*[Li\\$1]\ \\*[lix*numb]\\*[lix*ds-form]
 .if !'\\$5'' \{\
@@ -2760,10 +2747,10 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" label text type stringvar refname
 .de lix@print-text
 .ie \\n[Sectp] .ds lix*pgnr \\*[hd*sect-pg]
-.el .ds lix*pgnr \\n[%]
+.el            .ds lix*pgnr \\n[%]
 .SP \\n[Lsp]u
 .misc@ev-keep lix
-.init@reset
+.@reset
 .br
 .ie (\w@\\$1\\$2@)>(\\n[.l]-\\n[.i]) \{\
 .	in +\w@\\$1@u
@@ -2788,7 +2775,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 \!.SP \\\\n[Lsp]u
 \!.misc@ev-keep lix
 \!.ll \\n[.l]u
-\!.init@reset
+\!.@reset
 \!.fi
 \!.ie (\w@\\$1\\$2@)>(\\\\n[.l]-\\\\n[.i]) \{\
 .	in +\w@\\$1@u
@@ -2873,15 +2860,15 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"-----------
 .de B
 .ie \\n[.$] .fnt@switch \f3 \f[\\n[.f]] \\$@
-.el .ft 3
+.el         .ft 3
 ..
 .de I
 .ie \\n[.$] .fnt@switch \f2 \f[\\n[.f]] \\$@
-.el .ft 2
+.el         .ft 2
 ..
 .de R
 .ie \\n[.$] .fnt@switch \f1 \f[\\n[.f]] \\$@
-.el .ft 1
+.el         .ft 1
 ..
 .de IB
 .if \\n[.$] .fnt@switch \f2 \f3 \\$@
@@ -2920,7 +2907,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .vs \\n[@vs]u
 .in 1n
 .ll (u;\\n[box*wid]-1n)
-.hy \\n[.hy]
+.@enable-hyphenation
 ..
 .de B2
 .if !\\n[box*ll] .@error \\$0: no corresponding B1
@@ -3000,7 +2987,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	return
 .\}
 .ie !''\\$2' .nr ref*i 0\\$2
-.el .nr ref*i \\n[Rpe]
+.el          .nr ref*i \\n[Rpe]
 .if \\n[ref*i]<2 .SK
 .SP 2
 .ref@print-refs
@@ -3016,7 +3003,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	nr ref*flag 0
 .	br
 .	misc@ev-keep ne
-.	init@reset
+.	@reset
 \c
 '	bp
 .	ev
@@ -3057,7 +3044,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ds Apptxt \\$2
 .\"
 .ie \\n[Aph] .app@header \\*[app*ind] "\\$2"
-.el .bp
+.el          .bp
 .app@index "\\*[app*ind]" "\\$2"
 ..
 .\"------------
@@ -3071,7 +3058,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ds Apptxt \\$3
 .\"
 .ie \\n[Aph] .app@header \\*[app*ind] "\\$3"
-.el .bp
+.el          .bp
 .app@index "\\*[app*ind]" "\\$3"
 .pn +\\$2
 ..
@@ -3248,17 +3235,17 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ds cov*mt-addressee "\\$2
 .ds cov*mt-type-text "\\$1
 .ie d @country .ds cov*str mm/\\*[@country]_
-.el .ds cov*str mm/
+.el            .ds cov*str mm/
 .mso \\*[cov*str]\\*[cov*mt-file!\\*[cov*mt-type]]
 ..
 .de COVER
 .ds @cover \\$0
 .@disable IA IE WA WE LO LT MT
 .ie !\\n[.$] .ds cov*cov-type ms
-.el .ds cov*cov-type \\$1
+.el          .ds cov*cov-type \\$1
 .pg@disable-top-trap
 .ie d @country .ds cov*str mm/\\*[@country]_\\*[cov*cov-type].cov
-.el .ds cov*str mm/\\*[cov*cov-type].cov
+.el            .ds cov*str mm/\\*[cov*cov-type].cov
 .mso \\*[cov*str]
 ..
 .\"########################### module qrf ############################
@@ -3475,9 +3462,9 @@ exceeds depth of nested lists (\\n[li*lvl])
 .de FC
 .df@print-float 3
 .ie \\n[.$] .ds let*i \\$1
-.el .ds let*i \\*[Letfc]
+.el         .ds let*i \\*[Letfc]
 .ie d let*type .let@fc_\\*[let*type] "\\*[let*i]" \\$@
-.el .let@formal-closing "\\*[let*i]" \\$@
+.el            .let@formal-closing "\\*[let*i]" \\$@
 ..
 .\"-------
 .de let@formal-closing
@@ -3516,7 +3503,7 @@ undefined
 .df@print-float 3
 .ne \\n[cov*au]u*4v
 .ie \\n[.$]>1 .nr let*k 1
-.el .nr let*k \\n[cov*au]
+.el           .nr let*k \\n[cov*au]
 .ds let*anno \" secretarial annotation
 .if d cov*au!\\n[let*k]!3 \{\
 .	as let*anno \\*[cov*au!\\n[let*k]!3]\"
@@ -3563,10 +3550,10 @@ undefined
 .nf
 .sp
 .ie \\n[.$]<2 \\*[Letapp]
-.el .sp
+.el           .sp
 .sp 2
 .ie n ______________________________      ______________
-.el \D'l 25m 0'\h'4m'\D'l 12m 0'
+.el   \D'l 25m 0'\h'4m'\D'l 12m 0'
 \Z'\\$1'\h'29m'\f[\\*[@metadata-font]]\\*[Letdate]\fP
 .fi
 ..
@@ -3577,7 +3564,7 @@ undefined
 .nf
 .sp 3
 .ie n ______________________________
-.el \D'l 25m 0'
+.el   \D'l 25m 0'
 \Z'\\$1'
 .fi
 ..
@@ -3683,7 +3670,7 @@ undefined
 .if '1'\\$1' .in (u;\\n[.l]/2)
 .\" ---- WA
 .ie d let@wa-div .let@wa-div
-.el .sp 3
+.el              .sp 3
 .\" ---- datum
 \\*[cov*new-date]
 .sp
@@ -3743,7 +3730,7 @@ undefined
 .if \\n[.$] .ds let*ia-name!\\n+[let*ia-n] \\$1
 .if \\n[.$]>1 .ds let*ia-title!\\n[let*ia-n] \\$2
 .ev let@ev
-.init@reset
+.@reset
 'nf
 .di let@ia-div
 .eo
@@ -3760,7 +3747,7 @@ undefined
 .if \\n[.$] .ds let*wa-name!\\n+[let*wa-n] \\$1
 .if \\n[.$]>1 .ds let*wa-title!\\n[let*wa-n] \\$2
 .ev let@ev
-.init@reset
+.@reset
 'nf
 .di let@wa-div
 .it \\n[Letwam] let@wa-drain
@@ -3826,7 +3813,7 @@ undefined
 ..
 .\"--------------------
 .\" Start with a clean slate
-.init@reset
+.@reset
 .
 .\" Local Variables:
 .\" mode: nroff

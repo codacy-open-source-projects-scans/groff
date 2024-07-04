@@ -327,7 +327,7 @@ doc/grnexmpl.ps: $(doc_srcdir)/grnexmpl.me $(doc_srcdir)/grnexmpl.g \
 #   the target, it is a single-suffix inference rule. Targets with two
 #   periods are double-suffix inference rules. Inference rules can have
 #   only one target before the <colon>."
-#     (POSIX Issue 8 Draft 3, make(1), "Inference Rules")
+#     (POSIX Issue 8 Draft 4.1, make(1), "Inference Rules")
 #
 # A double-suffix rule won't work in an obvious way because its
 # semantics are that the suffix is replaced, not removed.  You have to
@@ -606,7 +606,7 @@ MAINTAINERCLEANFILES += doc/groff.html doc/groff.html.node
 
 EXTRA_DIST += doc/groff.dvi doc/groff.pdf
 
-# Define pattern rules to make our Texinfo manual in DVI and PDF
+# Define suffix rules to make our Texinfo manual in DVI and PDF
 # formats.  'pdf' and 'dvi' and their installation counterparts
 # 'install-pdf' and 'install-dvi' are standard Automake targets.
 .texi.dvi:

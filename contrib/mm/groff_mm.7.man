@@ -278,6 +278,17 @@ macro names are usually in full capitals;
 registers and strings tend to have mixed-case names.
 .
 .
+.P
+Except where noted,
+.I mm
+assumes that horizontal measurements are reckoned in ens
+(scaling unit
+.BR n )
+and vertical ones in vees
+(scaling unit
+.BR v ).
+.
+.
 .\" ====================================================================
 .SS "Document styles"
 .\" ====================================================================
@@ -868,8 +879,6 @@ but is not by
 A second argument increases the indentation by
 .I indentation
 and reduces the line length by twice this amount.
-.
-A scaling unit of ens is assumed.
 .
 The default
 .RB is\~ 0 .
@@ -1778,7 +1787,16 @@ See
 .TP
 .BI GETR\~ ref-name
 Retrieve location data for reference
-.I ref-name
+.IR ref-name ,
+call
+.B GETHN
+and
+.B GETPN
+to populate strings
+.B Qrfh
+and
+.BR Qrfn ,
+respectively,
 and interpolate string
 .B Qrf
 as a cross reference to it.
@@ -1900,7 +1918,7 @@ The
 register sets a threshold at which a break occurs after the heading,
 and register
 .B Hs
-sets a threshold below which vertical space follows it.
+sets a threshold within which vertical space follows it.
 .
 If the heading level is above both of these,
 a
@@ -2522,10 +2540,14 @@ prefixes
 to the configured mark;
 an
 .I item-mark-mode
-value of\~1 places an unbreakable space after
+value
+.RB of\~ 1
+places an unbreakable space after
 .I mark,
 while
-a value of\~2 does not
+a value
+.RB of \~2
+does not
 (rendering the two adjacent).
 .
 See register
@@ -2703,11 +2725,16 @@ is the interior spacing between columns.
 It defaults to
 .IR column-width /15.
 .
+.B NCOL
+moves to the next column,
+and
 .B 1C
 returns to single-column layout.
 .
 .B MC
-is a GNU extension.
+is a GNU extension,
+generalizing
+.BR 2C .
 .
 See
 .B MULB
@@ -2836,9 +2863,6 @@ as must the amount of space
 .IR sp i
 between each column pair.
 .
-The arguments' default scaling unit is
-.BR n .
-.
 .B MULB
 uses a diversion and operates in a separate environment.
 .
@@ -2886,7 +2910,7 @@ filling is enabled.
 .
 .\" XXX: Could we use a more general mechanism?  Call it `NP`?
 .TP
-.BR nP\~ [
+.BR nP\~ [\c
 .IR type ]
 As
 .BR P ,
@@ -3006,13 +3030,14 @@ Begin new paragraph.
 .
 If
 .I type
-is missing or\~ 0,
+is missing
+.RB or\~ 0 ,
 .BR P \~sets
 the paragraph fully left\-aligned.
 .
 A
 .I type
-of\~1
+.RB of\~ 1
 idents the first line by
 .B \[rs][Pi]
 ens.
@@ -3092,8 +3117,11 @@ line length, page length, and page offset instead.)
 .B PGNH
 Suppress header on the next page.
 .
-This macro must be called before any macros that produce output to
-affect the layout of the first page.
+To suppress a header on the first page,
+call this macro prior to formatting any text in the document.
+.
+Also see
+.RB register\~ N .
 .
 .
 .TP
@@ -3151,10 +3179,10 @@ and
 .TP
 .BR PIC \~\c
 .RB [ \-B ]\~\c
-.RB [ \-C |\c
+.RB [ \-C \||\|\c
 .BI \-I\~ n\c
-.RB | \-L \c
-.RB | \-R ]\~\c
+.RB \||\| \-L \c
+.RB \||\| \-R ]\~\c
 .IR file \~[ width \~[ height ]]
 Include PostScript document
 .IR file .
@@ -3170,9 +3198,7 @@ The optional
 and
 .BI \-I\~ n
 arguments align the picture or indent it by
-.I n
-(assuming a scaling unit of
-.BR m ).
+.IR n .
 .
 By default,
 the picture is left-aligned.
@@ -3199,7 +3225,7 @@ Start picture input preprocessed by
 .TP
 .B PY
 As
-.B PE ,
+.BR PE ,
 but with \[lq]flyback\[rq],
 returning the drawing position to where it was prior to the picture.
 .
@@ -3343,7 +3369,7 @@ suppresses this spacing.
 .
 The string
 .B Rp
-contains the reference page caption.
+contains the reference list caption.
 .
 .
 .br
@@ -3416,22 +3442,21 @@ assumes
 .BR 1 .
 .\" DWB 3.3 mm assumed 1 for troff mode, 0 for nroff mode.
 .
-Adjustment can be temporarily suspended with the
+Invoke the
 .B na
-request.
+request as desired to temporarily suspend adjustment.
 .
-When the
 .B H
-or
+and
 .B HU
-macros are used to format a heading,
-or when
+are called,
+and
 .B SA
-is called without a
+when called without a
 .I mode
 argument,
 .I mm
-restores the default adjustment.
+restore the default adjustment.
 .
 .
 .TP
@@ -3514,7 +3539,8 @@ pages.
 .
 If
 .I n
-is\~0 or omitted,
+.RB is\~ 0
+or omitted,
 the page is broken unless the drawing position is already at the top of
 a page.
 .
@@ -3551,7 +3577,7 @@ Space downward by
 .
 Multiple
 .B SP
-calls in sequence produces only the largest of the specified
+calls in sequence produce only the largest of the specified
 .I distances.
 .
 Absolute motions with a prefixed
@@ -3569,14 +3595,18 @@ Put the dummy character escape sequence
 (followed by
 .B \[rs]c
 if desired to prevent a break)
-on a text line to
+on a text line prior to an
 .B SP
-to overcome this restriction.
+call to overcome this restriction.
 .
 .
 .TP
 .B TAB
 Reset tab stops to every 5\~ens.
+.
+The
+.B ta
+request customizes them.
 .
 .
 .br
@@ -3844,17 +3874,19 @@ Add up the values of desired features;
 the default
 .RB is\~ 0 .
 .
-On typesetting devices,
-further arguments configure the
+Further arguments configure the
 .I type-size
-in scaled points,
+in scaled points
+(on typesetting devices),
 and the face
-.RI ( font );
-the default is
+.RI ( font ).
+.
+On typesetting devices,
+the default face is
 .B CR
 (Courier roman),
-a monospaced font
-(all glyphs are equally wide).
+a monospaced font:
+all glyphs are equally wide.
 .
 .
 .IP
@@ -4073,7 +4105,7 @@ These are presented in quotation marks.
 .B Apptxt
 stores the
 .I title
-argument to the last
+argument to the most recent
 .B APP
 call.
 .
@@ -4087,16 +4119,15 @@ interpolates a bullet
 .
 .TP
 .B Ci
-is a list of indentation amounts to use for table of contents heading
-levels,
-overriding their automatic computation.
+assigns indentation amounts used by each heading level listed
+in a table of contents,
+in one-to-one correspondence,
+overriding those computed by
+.BR TC .
 .
 Each word must be a horizontal measurement
 (like
-.RB \[lq] 1i \[rq])
-and is mapped one-to-one to heading levels 1,
-2,
-and so on.
+.RB \[lq] 1i \[rq]).
 .
 .
 .TP
@@ -4260,6 +4291,8 @@ and suffixed with
 Observe the spaces after \[lq]Copy\[rq] and before \[lq]to\[rq].
 .
 .
+.br
+.ne 3v
 .RS
 .P
 .TS
@@ -4294,8 +4327,8 @@ selects the notation format when
 .B NS
 is given no argument.
 .
-The default is
-.RB \[lq] 0 \[rq].
+The default
+.RB is\~ 0 .
 .
 .
 .TP
@@ -4372,6 +4405,24 @@ The default is
 .B Qrf
 \[lq]See chapter \[rs]E*[Qrfh],
 page \[rs]En[Qrfp].\[rq]
+.
+If your document uses multiple heading levels,
+you might redefine this string to use the word \[lq]section\[rq]
+instead of \[lq]chapter\[rq].
+.
+.
+.TP
+.B Qrfh
+stores the heading number corresponding to the most recent
+.B \%GETR
+call.
+.
+.
+.TP
+.B Qrfp
+stores the page number corresponding to the most recent
+.B \%GETR
+call.
 .
 .
 .TP
@@ -4450,7 +4501,8 @@ request employed by the
 .B VERBON
 macro.
 .
-The default is\~\[lq]1\[rq].
+The default
+.RB is\~ 1 .
 .
 .
 .br
@@ -4530,8 +4582,7 @@ Headings at levels above this value are excluded;
 see
 .B H
 and
-.B TC
-.RB ( 2 ).
+.BR TC .
 .
 The
 .B Cl
@@ -4546,7 +4597,8 @@ if you change
 .BR Cl 's
 value immediately prior to calling
 .BR TC ,
-you are unlikely to get the result you want.
+you are unlikely to get the result you want
+.RB ( 2 ).
 .
 .
 .TP
@@ -4776,7 +4828,7 @@ and
 .B Hb
 sets the threshold for breaking the line after formatting a heading.
 .
-Text after headings at levels above this value are set on the same
+Text after headings at levels above this value is set on the same
 output line if possible;
 see
 .B H
@@ -4861,8 +4913,7 @@ devices:
 .
 .TP
 .B Hps2
-configures the amount of vertical space preceding a heading at or below
-the
+configures the amount of vertical space preceding a heading within the
 .B Hps
 threshold;
 see
@@ -5391,11 +5442,23 @@ see
 .MR groff_tmac @MAN5EXT@ .
 .
 .
-.
 .\" ====================================================================
 .SH Internals
 .\" ====================================================================
 .
+The argument
+(if any)
+to a
+.B COVER
+or
+.B MT
+call determines the file that
+.I "groff mm"
+loads to configure the document's layout;
+see section \[lq]Files\[rq] below.
+.
+.
+.P
 .BR LT 's
 behavior depends on the
 .I style
@@ -5493,19 +5556,6 @@ to the string
 \&.
 .
 .
-.P
-The argument
-(if any)
-to a
-.B COVER
-or
-.B MT
-call determines the file that
-.I "groff mm"
-loads to configure the document's layout;
-see section \[lq]Files\[rq] below.
-.
-.
 .\" ====================================================================
 .\".SH BUGS
 .\" ====================================================================
@@ -5560,7 +5610,7 @@ implements memorandum type 5.
 .
 .TP
 .I @TMAC_MDIR@/locale
-performs any (further) desired necessary localization if present.
+performs any (further) desired localization if present.
 .
 .
 .TP

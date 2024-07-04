@@ -1,3 +1,80 @@
+2024-06-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac ([initialization], VERBON, VERBOFF, pg@footer):
+	Trivially refactor.  Rename internal register `@verbose-flag` to
+	`@in-verbatim-region`, fixing linguistic solecism and clarifying
+	the register's purpose.  Update comments accordingly.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Manipulate automatic hyphenation using
+	locale-appropriate modes, not those particular to English.
+	(@enable-hyphenation): New macro restores hyphenation using
+	groff 1.24 `hy` behavior if available, and registers defined by
+	locale tmac files otherwise (see groff_tmac(5)).
+	(@reset, pg@header): Replace explicit setting of hyphenation
+	mode 14 with call of `@enable-hyphenation`.
+	(MULB, ft@init): Replace explicit setting of hyphenation mode 6
+	with call of `@enable-hyphenation`.
+	(B1): Replace no-op request with call of `@enable-hyphenation`.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (PIC): Reckon optional indentation argument in ens by
+	default.
+
+	* groff_mm.7.man (Macros) <PIC>: Document this.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Rename macros to get out of user name space.
+
+	* m.tmac (debug): Rename this macro...
+	(debug@little-dump): ...to this.
+	(debug-all): ...and this one...
+	(debug@big-dump): ...to this.
+	(pg@next-page, pg@disable-trap, pg@footnotes): Update
+	{commented-out} call sites.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (init@reset): Rename this macro...
+	(@reset): ...to this.  The init "module" had no other contents.
+	(H, BS, DF, df@eot-print, DS, PY, lix@print-text)
+	(lix@embedded-text, ref@eot-print, IA, WA, [initialization]):
+	Update call sites.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (init@reset, debug, debug-all, SA, pg@header)
+	(pg@set-env, ft@init): Fix code style nit.  Invoke requests that
+	don't break with the normal control character.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Trivially refactor.  Reorganize initialization logic
+	and update its internal documentation.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (MULN, DF): Fix code style nit, favoring assembly of
+	long strings with both `ds` and `as` instead of using input line
+	continuation.  Refer to displays as such in comments and
+	diagnostic messages, not as "keep"; mm tradition seems not to
+	use the latter term.
+
+2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Actually remove temporary register `*vs-default`.
+
+2024-06-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (NCOL): Validate package state, throwing warning if
+	called when not in multi-column mode.
+	(MULN): Validate package state, aborting with error if not in
+	multi-column mode, rather than accessing undefined registers and
+	spewing much noise about internal parameters if `-wreg` enabled.
+
 2024-06-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* examples/story.mm: New file illustrates a "normal" document,
@@ -121,7 +198,7 @@
 	arguments after the first to `AU` are often codes or
 	abbreviations.  Avoid disabling filling using same technique as
 	above.  Arrange `AU` arguments 3-6 as DWB 3.3 does.  Stop
-	formatting a literal `TM` in the output; DWB 3.3 didn't do this.
+	formatting a literal "TM" in the output; DWB 3.3 didn't do this.
 	{Worse, we were putting it there even if no technical memorandum
 	numbers were defined.}  Drop unnecessary `PGFORM` call.
 	(cov@print-au1, cov@print-au2): Internally document what these
@@ -193,7 +270,7 @@
 	output.  Initialize `let*sg-suppress-all` and `let*ns-suppress`
 	true.
 	(cov@print-title): Set document title closer to where DWB 3.3
-	puts it.  Stop turning on fill mode unnecessarily.  It should
+	puts it.  Stop enabling filling unnecessarily.  It should
 	already be on at the start of a document.  Save and restore
 	adjustment mode instead of clobbering it.
 	(cov@print-authors): In nroff mode, space by a full vee before

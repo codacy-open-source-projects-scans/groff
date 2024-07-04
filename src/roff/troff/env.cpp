@@ -2220,6 +2220,12 @@ void environment::possibly_break_line(bool must_break_here,
     case ADJUST_RIGHT:
       saved_indent += target_text_length - bp->width;
       break;
+    case ADJUST_LEFT:
+    case ADJUST_CENTER - 1:
+    case ADJUST_RIGHT - 1:
+      break;
+    default:
+      assert(0 == "unhandled case of `adjust_mode`");
     }
     distribute_space(pre, bp->nspaces, extra_space_width);
     hunits output_width = bp->width + extra_space_width;

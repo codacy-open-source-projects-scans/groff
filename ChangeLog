@@ -1,3 +1,81 @@
+2024-06-28  Dave Kemper <saint.snit@gmail.com>
+
+	* doc/groff.texi.in: Drop relict macro call.
+
+	Fixes <https://savannah.gnu.org/bugs/?65929>.
+
+2024-06-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl: Trivially refactor.  Relocate
+	declaration of huge list `request` closer to its point of use.
+
+2024-06-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl: Trivially refactor.  Rename scalar
+	`have_any_valid_arguments` to `have_any_valid_operands`,
+	reflecting its more specific purpose.  Rename subroutine
+	`process_input` to `read_input`; it transforms its input only
+	for internal purposes (to draw inferences), without output.
+	Rename subroutine `do_line` to `interpret_line`.  "Do" is an
+	overused term in software development, too often meaning
+	"whatever the programmer had in mind at the time but failed to
+	document anywhere".
+
+2024-06-22  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf] Fix invalid pdf when using certain sizes of
+	dashed ellipse in pic.
+
+	* src/devices/gropdf/gropdf.pl: For short dashes on flat part
+	of ellipse some v. small numbers written in form n.nnnE-n which
+	is invalid for pdfs. Also rather than split each arc always into
+	4 pieces, split into number of quadrants described between start
+	and end angle. If arc describes a straight line, use line segment
+	rather than bezier curve. (grops does this as well)
+
+	Fixes https://savannah.gnu.org/bugs/index.php?65901
+
+	Thanks to Morten Bo Johansen for reporting this issue.
+
+2024-06-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::possibly_break_line):
+	Trivially refactor.  Explicitly handle adjustment modes that had
+	been handled by falling completely through a `switch` statement.
+	Throw assertion if an unhandled case is encountered.
+
+2024-06-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Recognize new POSIX.1-2024 standard.
+
+	* tmac/mdoc/doc-syms: Do it.
+	* tmac/groff_mdoc.7.man (Standards): Document it.
+
+2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grog]: Fix Savannah #65902 (detect use of chem(1)).
+
+	* src/utils/grog/grog.pl: Take `cstart` and `cend` tokens out of
+	`preprocessor_for_macro` hash.  They don't work with the
+	existing logic.  Also drop tokens used by preprocessors that
+	don't have corresponding groff(1) options and therefore don't
+	influence the output grog(1) can emit.
+	(do_line): Add bespoke handling for `cstart` and `cend`.  Not
+	only are they the only AT&T troff preprocessor tokens that are
+	longer than two characters, but their names collide in those
+	first two characters with the names of troff requests.
+
+	Fixes Savannah #65902.  Thanks to Morten Bo Johansen for the
+	report.  Problem introduced by me in commit 53a9964497, 31 July
+	2021.
+
+2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #65902.
+
+	* src/utils/grog/tests/detect-chem.sh: Do it.
+	* src/utils/grog/grog.am (grog_TESTS): Run test.
+
 2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/mtsm.cpp (mtsm::inherit): Fix failing test.
@@ -245,7 +323,7 @@
 	depending on the special character `\[char97]` matching "a".
 
 	* tmac/troffrc: Simplify logic; map special character
-	`\[char160` to `\~` unconditionally.
+	`\[char160]` to `\~` unconditionally.
 
 2024-05-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 

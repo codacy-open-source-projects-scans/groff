@@ -3922,7 +3922,7 @@ sub do_D
     }
     elsif ($Dcmd eq 'a')
     {
-	# Arc
+	# Arc : h1 v1 h2 v2
 	$par=substr($par,1);
 	my (@p)=split(' ',$par);
 	my $rad180=3.14159;
@@ -3941,25 +3941,42 @@ sub do_D
 
 	my ($startang,$r)=RtoP(-$centre->[0],$centre->[1]);
 	my ($endang,$r2)=RtoP(($p[0]+$p[2])-$centre->[0],-($p[1]+$p[3]-$centre->[1]));
-	$endang+=$rad360 if $endang < $startang;
-	my $totang=($endang-$startang)/4;       # do it in 4 pieces
 
-	# Now 1 piece
-
-	my $x0=cos($totang/2);
-	my $y0=sin($totang/2);
-	my $x3=$x0;
-	my $y3=-$y0;
-	my $x1=(4-$x0)/3;
-	my $y1=((1-$x0)*(3-$x0))/(3*$y0);
-	my $x2=$x1;
-	my $y2=-$y1;
-
-	# Rotate to start position and draw 4 pieces
-
-	foreach my $j (0..3)
+	if (abs($endang-$startang) < 0.004)
 	{
-	    PlotArcSegment($totang/2+$startang+$j*$totang,$r,$xpos+$centre->[0],GraphY($ypos+$centre->[1]),$x0,$y0,$x1,$y1,$x2,$y2,$x3,$y3);
+	    if ($frot)
+	    {
+		$stream.="q $ypos ".GraphY($xpos)." m ".($ypos+$p[1]+$p[3])." ".GraphY($xpos+$p[0]+$p[2])." l S Q\n";
+	    }
+	    else
+	    {
+		$stream.="q $xpos ".GraphY($ypos)." m ".($xpos+$p[0]+$p[2])." ".GraphY($ypos+$p[1]+$p[3])." l S Q\n";
+	    }
+	}
+	else
+	{
+	    $endang+=$rad360 if $endang < $startang;
+	    my $pieces=int(($endang-$startang) / $rad90)+1;
+	    my $totang=($endang-$startang)/$pieces;       # do it in pieces
+
+	    # Now 1 piece
+
+	    my $x0=cos($totang/2);
+	    my $y0=sin($totang/2);
+	    return if !$y0;
+	    my $x3=$x0;
+	    my $y3=-$y0;
+	    my $x1=(4-$x0)/3;
+	    my $y1=((1-$x0)*(3-$x0))/(3*$y0);
+	    my $x2=$x1;
+	    my $y2=-$y1;
+
+	    # Rotate to start position and draw pieces
+
+	    foreach my $j (0..$pieces-1)
+	    {
+		PlotArcSegment($totang/2+$startang+$j*$totang,$r,d3($xpos+$centre->[0]),d3(GraphY($ypos+$centre->[1])),d3($x0),d3($y0),d3($x1),d3($y1),d3($x2),d3($y2),d3($x3),d3($y3));
+	    }
 	}
 
 	$xpos+=$p[0]+$p[2];
@@ -4001,7 +4018,7 @@ sub adjust_arc_centre
     }
     else
     {
-	return(undef);
+	return([0,0]);
     }
 }
 
@@ -4009,8 +4026,8 @@ sub adjust_arc_centre
 sub PlotArcSegment
 {
     my ($ang,$r,$transx,$transy,$x0,$y0,$x1,$y1,$x2,$y2,$x3,$y3)=@_;
-    my $cos=cos($ang);
-    my $sin=sin($ang);
+    my $cos=sprintf("%0.5f",cos($ang));
+    my $sin=sprintf("%0.5f",sin($ang));
     my @mat=($cos,$sin,-$sin,$cos,0,0);
     my $lw=$lwidth/$r;
 

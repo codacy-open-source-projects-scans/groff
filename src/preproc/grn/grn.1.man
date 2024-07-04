@@ -122,7 +122,7 @@ or
 .B R
 argument to center,
 left-,
-or right-justify the whole
+or right-align the whole
 .I gremlin
 picture
 (the default is to center).
@@ -669,21 +669,21 @@ nBlBl.
 \f[I]gremlin\f[] File Format: Object Type Specification
 _
 AED Number@Sun/X11 Name@Description
-0@BOTLEFT@bottom-left-justified text
-1@BOTRIGHT@bottom-right-justified text
-2@CENTCENT@center-justified text
+0@BOTLEFT@text aligned to bottom left
+1@BOTRIGHT@text aligned to bottom right
+2@CENTCENT@center object
 3@VECTOR@vector
 4@ARC@arc
 5@CURVE@curve
 6@POLYGON@polygon
 7@BSPLINE@b-spline
 8@BEZIER@B\['e]zier
-10@TOPLEFT@top-left-justified text
-11@TOPCENT@top-center-justified text
-12@TOPRIGHT@top-right-justified text
-13@CENTLEFT@left-center-justified text
-14@CENTRIGHT@right-center-justified text
-15@BOTCENT@bottom-center-justified text
+10@TOPLEFT@text aligned to top left
+11@TOPCENT@text aligned to top center
+12@TOPRIGHT@text aligned to top right
+13@CENTLEFT@text aligned to center left
+14@CENTRIGHT@text aligned to center right
+15@BOTCENT@text aligned to bottom center
 .TE
 .
 .

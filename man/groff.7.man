@@ -400,6 +400,7 @@ recognized where the control character is.
 .
 It suppresses the (first) break implied by the
 .request .bp ,
+.request .ce ,
 .request .cf ,
 .request .fi ,
 .request .fl ,
@@ -3466,7 +3467,7 @@ Suppress automatic hyphenation in adjustment modes
 .RB \[lq] b \[rq]
 or
 .RB \[lq] n \[rq]
-if the line can be justified with the addition of up to
+if that adjustment can be achieved by adding no more than
 .I hyphenation-space
 to each inter-word space
 (default scaling unit\~\c
