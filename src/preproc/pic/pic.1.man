@@ -114,7 +114,7 @@ is a
 preprocessor that translates descriptions of diagrammatic pictures
 embedded in
 .MR roff @MAN7EXT@
-or \*[tx] input files into the language understood by \*[tx] or
+or \*[tx] input into the language understood by \*[tx] or
 .IR @g@troff .
 .
 It copies each

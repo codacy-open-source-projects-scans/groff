@@ -56,6 +56,10 @@
 .\"			to provide variant functions
 .\"		---	internal macro; not to be called by user
 .\"
+.\"	Prior to package load, set the register `@` to a value from 2 to
+.\"	5 inclusive to produce debugging messages on the standard error
+.\"	stream.  Higher numbers provide more detail.
+.\"
 .
 .do nr devtag-needs-end-of-heading 0
 .do nr devtag-needs-end-of-title 0
@@ -2066,7 +2070,7 @@
 .nr sx 0.2m			\" super/subscript x-height adjustment
 .nr no \w'0000'u		\" offset for line numbers
 .
-.@R 0x\" set by GNU pic to _disable_ \x in super/scripting
+.@R 0x\" set by GNU pic to _disable_ \x in super/subscripting
 .
 .\"		*** OTHER INITIALIZATION ***
 .

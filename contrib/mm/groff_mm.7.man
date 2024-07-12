@@ -145,7 +145,7 @@ either is terminated with
 is intended to be compatible with the
 .I mm
 implementation found in the AT&T Documenter's Workbench (DWB),
-with the following limitations.
+with the following limitations and changes.
 .
 .
 .IP \[bu] 3n
@@ -217,6 +217,15 @@ use an explicit scaling unit to avoid surprises.
 .
 .
 .IP \[bu]
+The
+.B Li
+register configures the text indentation of
+.B RL
+list items;
+DWB used a hard-coded value of 6\~ens.
+.
+.
+.IP \[bu]
 DWB
 .IR mm 's
 .B nP
@@ -228,11 +237,6 @@ does not.
 .
 .
 .IP \[bu]
-For
-.B MT
-memoranda and
-.B LT
-letters,
 .I "groff mm"
 uses the same adjustment and font defaults in
 .I nroff
@@ -713,17 +717,17 @@ and
 .
 .TP
 .BR AL \~[\c
-.IR type \~[ text-indent \~[\c
+.IR number-format \~[ text-indent \~[\c
 .BR 1 ]]]
 Begin an auto-incrementing numbered list.
 .
 Item numbers start at one.
 .
-The
-.I type
-argument assigns the register format
+.I number-format
+assigns the register format
 (see above)
-of the list item enumerators.
+.I mm
+uses for the list item enumerators.
 .
 The default
 .RB is\~ 1 .
@@ -745,7 +749,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -1058,7 +1063,8 @@ without space between the arguments.
 Begin bulleted list.
 .
 .I mm
-prefixes each item with a bullet and a space.
+marks each item with the bullet string
+.BR BU .
 .
 A
 .I text-indent
@@ -1073,7 +1079,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -1115,7 +1122,7 @@ Begin broken variable-item
 (or \[lq]tagged\[rq])
 list.
 .
-Each item is expected to supply its own mark.
+Each item should supply its own mark.
 .
 The line is always broken after the mark;
 contrast
@@ -1136,7 +1143,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -1240,7 +1248,9 @@ and
 .BR 1 ]]
 Begin dashed list.
 .
-Items are prefixed with an em dash and a space.
+.I mm
+marks each item with the em-dash string
+.BR EM .
 .
 A
 .I text-indent
@@ -1255,7 +1265,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -2418,6 +2429,8 @@ such that
 .I pad
 ens of space follow the mark.
 .
+.
+.IP
 .I type
 determines the mark's format.
 .
@@ -2456,6 +2469,13 @@ is greater than zero,
 items are automatically numbered and
 .I mark
 is interpreted as a register format.
+.
+A
+.I type
+of\~\-1 breaks the line after the mark
+even if it fits within
+.I text-indent;
+this is a GNU extension.
 .
 The default
 .I type
@@ -2518,10 +2538,11 @@ to follow the list.
 .
 .TP
 .BR LI \~[\c
-.IR mark \~[ item-mark-mode ]]
+.IR mark \~[ pad-prefix ]]
 Begin a list item.
 .
-Input is collected into a list item until the current list is terminated
+.I mm
+collects input into a list item until the current list terminates
 or
 .B LI
 is called again.
@@ -2534,21 +2555,20 @@ If only
 is specified,
 it replaces the configured mark.
 .
+If the width of the mark plus any padding
+(specified in the list's
+.B LB
+call)
+exceeds the text indentation,
+.I "groff mm"
+warns and uses one en of padding.
+.
 A second argument
 prefixes
 .I mark
-to the configured mark;
-an
-.I item-mark-mode
-value
-.RB of\~ 1
-places an unbreakable space after
-.I mark,
-while
-a value
-.RB of \~2
-does not
-(rendering the two adjacent).
+to the configured mark
+and conditionally puts an unbreakable space between the prefix and mark
+per the argument's Boolean value.
 .
 See register
 .BR Limsp .
@@ -2752,8 +2772,10 @@ the
 argument precedes each item.
 .
 .I text-indent
-overrides the default indentation of the list items set by register
-.BR Li .
+overrides the default indentation of the list items,
+which is the width of
+.I mark
+plus one word space.
 .
 A third argument suppresses the vertical space that normally precedes
 each list item;
@@ -2763,7 +2785,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -3322,7 +3345,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -3448,14 +3472,12 @@ request as desired to temporarily suspend adjustment.
 .
 .B H
 and
-.B HU
-are called,
+.BR HU ,
 and
 .B SA
 when called without a
 .I mode
 argument,
-.I mm
 restore the default adjustment.
 .
 .
@@ -3917,9 +3939,9 @@ End verbatim display.
 .
 .
 .TP
-.BI VL\~ text-indent\c
-.RI \~[ mark-indent \~[\c
-.BR 1 ]]
+.BR VL \~[\c
+.IR text-indent \~[ mark-indent \~[\c
+.BR 1 ]]]
 Begin variable-item
 (or \[lq]tagged\[rq])
 list.
@@ -3927,17 +3949,12 @@ list.
 Each item should supply its own mark,
 or tag.
 .
-If the mark is wider than
-.I mark-indent,
-one space separates it from subsequent text;
-contrast
-.BR BVL .
-.
+A
 .I text-indent
-sets the indentation of the text,
-and
+argument overrides register
+.BR Pi ;
 .I mark-indent
-the distance from the current list indentation to the mark.
+sets the distance from the indentation of the current list to the mark.
 .
 A third argument suppresses the vertical space that normally precedes
 each list item;
@@ -3947,7 +3964,8 @@ see register
 Vertical space in the amount of
 .B Lsp
 precedes the list itself,
-but does not accumulate with any pre-item space.
+but does not accumulate with pre-item space
+when this list is nested in another.
 .
 Use
 .B LI
@@ -4112,9 +4130,9 @@ call.
 .
 .TP
 .B BU
-interpolates a bullet
-(see
-.BR BL ).
+interpolates a bullet mark in
+.B BL
+lists.
 .
 .
 .TP
@@ -4151,8 +4169,9 @@ and register
 .
 .TP
 .B EM
-interpolates \(em,
-an em dash.
+interpolates an em dash mark in
+.B DL
+lists.
 .
 .
 .TP
@@ -4446,6 +4465,10 @@ it is surrounded by square brackets.
 .B Rp
 \[lq]REFERENCES\[rq]
 .
+.
+.TP
+.B Rg
+interpolates the registered (trade) mark sign.
 .
 .
 .TP
@@ -5038,10 +5061,19 @@ and
 .
 .TP
 .B Li
-configures the amount of indentation in ens applied to list items;
-see
-.B LI
-.RB ( 6 ).
+configures the text indentation applied to enumerated list types;
+that is,
+to items in
+.B AL
+and
+.B RL
+lists,
+and in
+.B LB
+lists whose
+.I type
+argument is greater than zero
+.RB ( 5 ).
 .
 .
 .TP
@@ -5241,10 +5273,26 @@ except when
 .
 .TP
 .B Pi
-configures the amount of indentation in ens applied to the first line of
-a paragraph;
-see
-.B P
+configures the amount of indentation applied
+to the first line of a paragraph
+(see
+.BR P )
+and the text indentation of non-enumerated list items;
+that is,
+to items in
+.BR BL ,
+.BR BVL ,
+.BR DL ,
+and
+.B VL
+lists
+(but not
+.BR ML ),
+and in
+.B LB
+lists whose
+.I type
+argument is zero or less
 .RB ( 5 ).
 .
 .
@@ -5338,10 +5386,18 @@ tab(@);
 Lb Lb
 L Lx.
 Value@Effect
-0@Break the page before and after the list of references.
-1@Suppress page break after the list.
-2@Suppress page break before the list.
-3@Suppress page breaks before and after the list.
+0@T{
+Break the page before and after the reference list.
+T}
+1@T{
+Suppress page break after the list.
+T}
+2@T{
+Suppress page break before the list.
+T}
+3@T{
+Suppress page breaks before and after the list.
+T}
 .TE
 .
 .

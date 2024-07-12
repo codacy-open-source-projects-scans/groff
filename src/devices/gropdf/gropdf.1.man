@@ -1495,7 +1495,7 @@ Some features have no direct device control command counterpart.
 Define PDF metadata.
 .
 .I field
-may be be one of
+may be one of
 .BR Title ,
 .BR Author ,
 .BR Subject ,

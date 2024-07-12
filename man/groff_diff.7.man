@@ -1018,7 +1018,7 @@ and inline alignments within the document,
 respectively.
 .
 .I file
-is is a name associated with the production of the next image.
+is a name associated with the production of the next image.
 .RE
 .
 .
@@ -1319,8 +1319,34 @@ The remainder of the word is subject to hyphenation as normal.
 .
 .TP
 .BI \[rs]? anything \[rs]?
+Suppress formatting of
+.I anything.
+.
+This feature has two applications.
+.
+.
+.IP
+Use it with the output comparison operator to compare its operands
+by character rather than as formatted output.
+.
+Since
+.MR @g@troff
+reads comparands protected with
+.B \[rs]?\&
+in copy mode,
+they need not even be valid
+.I groff
+syntax.
+.
+The escape character is still lexically recognized,
+however,
+and consumes the next character.
+.
+.
+.IP
 When used in a diversion,
-this escape sequence transparently embeds input,
+.B \[rs]?\&
+transparently embeds input,
 read in copy mode,
 until its own next occurrence on the input line.
 .
@@ -1399,6 +1425,20 @@ and
 .\" ====================================================================
 .SS "New requests"
 .\" ====================================================================
+.
+Several GNU
+.I troff \" GNU
+requests work like AT&T
+.IR troff 's \" AT&T
+.RB \[lq] as \[rq]
+and
+.B ds
+requests,
+accepting an optional leading neutral double-quote
+.B \[dq]
+in an argument that extends to the end of the input line,
+permitting inclusion of leading spaces.
+.
 .
 .TP 8n \" ".break" + 2n
 .BI .aln\~ "new old"
@@ -1610,7 +1650,7 @@ If a blank line macro is thus defined,
 .I groff
 executes
 .I name
-when a blank line is encountered in the input file,
+when a blank line is encountered in the input,
 instead of the usual behavior.
 .
 A line consisting only of spaces is also treated as blank and subject to
@@ -3833,7 +3873,7 @@ the default number of available recursion levels is 1,000 or somewhat
 less (because things other than macro calls can be on the input stack).
 .
 You can disable this protective measure,
-or raise the limit,
+or alter the limit,
 by setting the
 .B slimit
 register.
@@ -5356,9 +5396,9 @@ registers
 .RB ( pnr ),
 page location traps
 .RB ( ptr ),
-and a list of pending output nodes corresponding to the previous input
+and a list of output nodes corresponding to the pending input
 line
-.RB ( .pline )
+.RB ( pline )
 to the standard error stream.
 .
 .

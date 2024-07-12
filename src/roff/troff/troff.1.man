@@ -360,7 +360,7 @@ option of Unix C compilers.
 .BI \-m\~ mac
 Search for the macro package
 .RI mac .tmac
-and read it prior to any input files.
+and read it prior to any input.
 .
 If not found,
 .IR tmac. mac

@@ -307,8 +307,8 @@ picture is encountered in the input.
 therefore may run several commands as part of its operation.
 .
 These include the \%Netpbm tools
+.IR \%pamcut ,
 .IR \%pnmcrop ,
-.IR \%pnmcut ,
 and
 .IR \%pnmtopng ;
 \%Ghostscript

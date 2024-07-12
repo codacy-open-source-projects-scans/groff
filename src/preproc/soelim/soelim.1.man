@@ -99,7 +99,7 @@ document formatting system.
 .I @g@soelim
 works as a filter to eliminate source requests in
 .MR roff @MAN7EXT@
-input files;
+input;
 that is,
 it replaces lines of the form
 .RB \[lq] .so
@@ -314,7 +314,7 @@ to source files.
 If a file to be sourced should also be preprocessed,
 it must already be read
 .I before
-the input file passes through the preprocessor.
+the input passes through the preprocessor.
 .
 .IR @g@soelim ,
 normally invoked via

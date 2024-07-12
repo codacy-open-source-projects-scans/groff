@@ -102,7 +102,7 @@ and
 .pp
 \*G, a computer program
 that runs on the \*U operating system,
-reads an input file
+reads input
 prepared by the user
 and outputs a formatted paper
 suitable for publication or framing.

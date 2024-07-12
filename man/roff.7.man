@@ -111,7 +111,7 @@ and recommend further reading materials.
 .\" BEGIN Keep roughly parallel with groff.texi nodes "Text" through
 .\" "Tab Stops".
 .I roff
-input files contain text interspersed with instructions to control the
+input contains text interspersed with instructions to control the
 formatter.
 .
 Even in the absence of such instructions,
@@ -1581,9 +1581,9 @@ input.
 .
 Most
 .I roff
-input files employ the macros of a document formatting package,
+input employs the macros of a document formatting package,
 intermixed with instructions for one or more preprocessors,
-and are seasoned with escape sequences and requests from the
+and is seasoned with escape sequences and requests from the
 .I roff
 language.
 .
@@ -2167,7 +2167,7 @@ to ignore the remainder of the input line.
 .
 .IP \[bu]
 Use the empty request\[em]a control character followed immediately by a
-newline\[em]to visually manage separation of material in input files.
+newline\[em]to visually manage separation of material in the input.
 .
 Many of the
 .I groff

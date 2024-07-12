@@ -1065,7 +1065,7 @@ The traditional method of employing a macro package is to specify the
 option to the formatter,
 which then reads
 .IR package 's
-macro file prior to any input files.
+macro file prior to any input.
 .
 Historically,
 .I package

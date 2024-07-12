@@ -355,7 +355,7 @@ picture.
 This is meant to be used as a global parameter setting mechanism at
 the beginning of the
 .I @g@troff
-input file,
+input,
 but can be used at any time to reset the default settings.
 .
 .

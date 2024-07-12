@@ -209,7 +209,7 @@ reads from a pipe,
 the stream is not seekable,
 and these detection methods are skipped.
 .
-If character encoding detection of your input files is unreliable,
+If character encoding detection of your input is unreliable,
 arrange for one of the other methods to succeed by using
 .IR \%preconv 's
 .B \-D
@@ -268,7 +268,7 @@ designated for \[lq]file-local variables\[rq].
 interprets the following syntax if it occurs in a
 .I roff
 comment
-in the first or second line of the input file.
+in the first or second line of the input.
 .
 Both \[lq]\^\[rs]"\^\[rq] and \[lq]\^\[rs]#\^\[rq] comment forms are
 recognized,

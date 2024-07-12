@@ -219,7 +219,7 @@
 
          netpbm.dll
          pnmcrop.exe
-         pnmcut.exe
+         pamcut.exe
          pnmtopng.exe
          pnmtops.exe
 

@@ -1,6 +1,100 @@
+2024-05-14  Dave Kemper <saint.snit@gmail.com>
+
+	* tmac/e.tmac: Add debugging advice for developers.
+
+	Fixes <https://savannah.gnu.org/bugs/?64189>.
+
+2024-07-09  Bjarni Ingi Gislason <bjarniig@rhi.hi.is>
+
+	[docs]: Fix doubled word typos.
+
+	Fixes <https://savannah.gnu.org/bugs/?65886>.
+
+2024-07-09  Dave Kemper <saint.snit@gmail.com>
+
+	[docs]: Revise "input file" usage.
+
+	Change the term "input file" to "input" in groff documentation
+	in cases where the referenced input need not come from a file.
+
+	Fixes <https://savannah.gnu.org/bugs/?65967>.
+
+2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grohtml]: Pass `-blank-image=pass` to pnmcrop(1) if supported
+	by the installed version of Netpbm.
+
+	* m4/groff.m4 (GROFF_PNMTOOLS_CAN_BE_QUIET): Set up an
+	Autoheader template for the C/C++ preprocessor symbol
+	`PNMCROP_PASS`.  Report the detected option (if any) as the
+	result of this configuration test.  Get the expansion into the
+	"config.h" file with `AC_DEFINE_UNQUOTED`.
+	* src/preproc/html/pre-html.cpp (imageList::createImage): Use
+	the preprocessor symbol.
+
+	Fixes <https://savannah.gnu.org/bugs/?65961>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Actually use the detected Netpbm option for quieting output in
+	the pre-grohtml(1) preprocessor.
+
+	* m4/groff.m4 (GROFF_PNMTOOLS_CAN_BE_QUIET): Set up an
+	Autoheader template for the C/C++ preprocessor symbol
+	`PNMTOOLS_QUIET`.  Report the detected option (if any) as the
+	result of this configuration test.  Get the expansion into the
+	"config.h" file with `AC_DEFINE_UNQUOTED`.
+	* src/preproc/html/pre-html.cpp (imageList::createImage): Use
+	the preprocessor symbol instead of a "-quiet" string literal.
+
+2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Search for and use pamcut(1), not pnmcut(1).  Per upstream, the
+	former was introduced 23 years ago and the latter withdrawn 15
+	years ago.  And we just got the memo!
+
+	* m4/groff.m4 (GROFF_CHECK_GROHTML_PROGRAMS):
+	* src/preproc/html/pre-html.cpp (imageList::createImage): Do it.
+
+	* src/roff/groff/tests/html_works_with_grn_and_eqn.sh:
+	* src/roff/groff/tests/smoke-test_html_device.sh: Update tests.
+
+	* NEWS:
+	* README.MinGW:
+	* src/devices/grohtml/grohtml.1.man (Dependencies): Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?65960>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.
+	(pipe_output): Reduce cleverness of assignment nested inside
+	conditional--a favorite of C obscurantists and an especially
+	gratuitous case since it was immediately preceded by a
+	declarator without an initializer.  This aligns the logic with
+	`system_request`.
+	(pipe_output, system_request): Reorder comparisons to avoid
+	inadvertent lvalue assignment.
+
+2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (while):
+	* man/groff_diff.7.man (New requests) <while>: Point out that
+	the `slimit` register can be used to _lower_ the formatter's
+	internal stack size limit as well.
+
+	Fixes <https://savannah.gnu.org/bugs/?65962>.  Thanks to Bjarni
+	Ingi Gislason for the report and Dave Kemper for the suggestion.
+
+2024-07-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an-ext.tmac (SY): Drop unnecessary `do` request.
+
 2024-06-28  Dave Kemper <saint.snit@gmail.com>
 
-	* doc/groff.texi.in: Drop relict macro call.
+	* doc/groff.texi.in: Drop relict macro call in example.
 
 	Fixes <https://savannah.gnu.org/bugs/?65929>.
 
@@ -1763,13 +1857,6 @@
 
 	* src/roff/troff/input.cpp (is_usable_as_delimiter): Fix code
 	style nit, using C++-style type cast instead of C-style cast.
-
-2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* src/roff/troff/input.cpp (get_char_for_escape_parameter):
-	Slightly refactor.  Assert that the character handed to us by
-	our caller is not a newline.  Consequently, drop newline
-	handler.  Drop `if` test that is redundant with a `switch` case.
 
 2024-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 

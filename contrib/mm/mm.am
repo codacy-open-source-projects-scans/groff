@@ -50,6 +50,9 @@ MMEXAMPLEFILES=\
 mmexampledir=$(exampledir)/mm
 dist_mmexample_DATA = $(MMEXAMPLEFILES)
 
+# If we created rendered versions of these, we'd need this dependency.
+# $(MMEXAMPLEFILES): $(TMAC_PACKAGE_MM)
+
 EXTRA_DIST += \
   contrib/mm/ChangeLog \
   contrib/mm/examples \
@@ -66,6 +69,7 @@ mm_TESTS = \
   contrib/mm/tests/LT-SP-AU-without-AT-works.sh \
   contrib/mm/tests/LT-SP-multi-word-LO-SJ-works.sh \
   contrib/mm/tests/LT-should-space-after-inside-address.sh \
+  contrib/mm/tests/ML-marks-work.sh \
   contrib/mm/tests/MT-1-reports-all-TM-numbers.sh \
   contrib/mm/tests/MT-5-includes-AT-in-SG.sh \
   contrib/mm/tests/P-indentation-works.sh \
@@ -73,6 +77,7 @@ mm_TESTS = \
   contrib/mm/tests/flush-long-displays-at-end-of-input.sh \
   contrib/mm/tests/indexing-works.sh \
   contrib/mm/tests/letters-format-correctly.sh \
+  contrib/mm/tests/lists-indent-correctly.sh \
   contrib/mm/tests/memoranda-format-correctly.sh \
   contrib/mm/tests/ms-cover-sheet-robust-to-missing-AF.sh \
   contrib/mm/tests/mse_has-sufficient-footnote-space.sh \

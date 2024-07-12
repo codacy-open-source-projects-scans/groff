@@ -236,7 +236,7 @@ The formatter
 .MR @g@troff @MAN1EXT@
 collects words from the input and
 .I fills
-output lines with as many as will fit.
+output lines with as many as can fit.
 .
 .I Words
 are separated by spaces and newlines.
@@ -375,7 +375,7 @@ See section \(lqNotes\(rq below for examples of cases where better
 alternatives to empty arguments in macro calls are available.
 _endif()dnl
 .
-Most macro arguments will be formatted as text in the output;
+Most macro arguments are formatted as text in the output;
 exceptions are noted.
 .
 .
@@ -493,7 +493,7 @@ is an integer between 1 and\~9 (inclusive),
 there is no need to specify
 .I header-middle;
 .I an.tmac
-will supply text for it.
+supplies text for it.
 .
 This package may abbreviate
 .I identifier
@@ -1287,7 +1287,7 @@ see subsection \(lqPortability\(rq below.
 .IP \(bu
 The dummy character escape sequence
 .B \e&
-follows the ellipsis when further text will follow after space on the
+follows the ellipsis when further text is to follow after space on the
 output line,
 keeping its last period from being interpreted as the end of a
 sentence
@@ -1802,7 +1802,7 @@ is set smaller.
 _ifstyle()dnl
 .IP
 .I Note:
-terminals will render
+terminals render
 .I text
 at normal size instead.
 .
@@ -1810,7 +1810,7 @@ Do not rely upon
 .B .SM
 to communicate semantic information distinct from using roman style at
 normal size;
-it will be hidden from readers using such devices.
+it is hidden from readers using such devices.
 .
 .
 .P
@@ -2156,7 +2156,7 @@ tag lacks.
 A paragraph like this one,
 set with
 .BR .IP ,
-will appear to the reader as also associated with the tag above,
+appears to the reader as also associated with the tag above,
 because
 .B .IP
 re-uses the previous paragraph's indentation unless given an argument
@@ -2799,7 +2799,7 @@ Using
 .B \ec
 to continue a
 .B .TP
-paragraph tag across multiple input lines will render incorrectly with
+paragraph tag across multiple input lines renders incorrectly with
 .I groff
 1.22.3,
 .I mandoc
@@ -3099,7 +3099,7 @@ Because these macros are hooks for
 internals,
 man pages have no reason to call them.
 .
-Such hook definitions will likely consist of \[lq].sp\[rq] and
+Such hook definitions typically consist of \[lq].sp\[rq] and
 \[lq].tl\[rq] requests.
 .
 They must also increase the page length with \[lq].pl\[rq] requests in
@@ -3342,7 +3342,7 @@ with the latter.
 _ifstyle()dnl
 .IP
 .I Note:
-terminals will render
+terminals render
 .I text
 in bold at the normal size instead.
 .
@@ -3350,7 +3350,7 @@ Do not rely upon
 .B .SB
 to communicate semantic information distinct from using bold style at
 normal size;
-it will be hidden from readers using such devices.
+it is hidden from readers using such devices.
 .
 .
 _endif()dnl
@@ -3910,7 +3910,7 @@ packages prior to
 .B .TH
 or
 .B .Dd
-calls will be \(lqclobbered\(rq by the reloading process.
+calls are \(lqclobbered\(rq by the reloading process.
 .
 If you want to provide your own definition of an extension macro to
 ensure its availability,
@@ -4172,7 +4172,7 @@ information;
 it should not be omitted.
 .
 Ideally,
-a page maintainer will keep both up to date.
+a page maintainer keeps both up to date.
 .
 .
 .IP
@@ -4226,7 +4226,7 @@ the position at which an
 paragraph
 .RB ( .P
 and its synonyms)
-will be set;
+is set;
 the value of the
 .B IN
 register determines its default amount.
@@ -4254,7 +4254,7 @@ paragraph.
 Another approach to tagged paragraphs places an
 .B .RS
 call immediately after the tag;
-this will also force a break regardless of the tag's width,
+this also forces a break regardless of the tag's width,
 which some authors prefer.
 .
 Follow-up paragraphs under the tag can then be set with
@@ -4422,7 +4422,7 @@ escape sequence.
 We discourage the use of these;
 on terminals,
 they may crowd the dots into a half-width character cell,
-and will not render at all if the output device doesn't have the glyph.
+and do not render at all if the output device doesn't have the glyph.
 .
 In syntax synopses,
 missing ellipses can mislead the reader.

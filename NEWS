@@ -245,6 +245,19 @@ o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   can still instruct groff to format for any desired line length by
   setting the `LL` register on {g,n,t}roff's command line.
 
+o The an (man) and doc (mdoc) macro packages now use slightly different
+  vertical margins to align more closely with the traditional
+  implementations of these packages.  Per man(7) in the AT&T Unix System
+  III manual (June 1980), the text area was 6.5 by 10 inches (on
+  typesetters).  When formatting for terminals with continuous rendering
+  disabled (by default, it is enabled), the page footer now sets 1 line
+  higher than before.
+
+o The an (man) and doc (mdoc) macro packages have added additional
+  registers `BP`, `PO`, and `TS` for user configuration of man page
+  rendering at formatting time.  As noted in groff_man(7) and
+  groff_mdoc(7), documents should never manipulate these.
+
 o The an (man) and doc (mdoc) macro packages now support a `BP` register
   to configure the ("base") paragraph inset amount; that is the amount
   used by man(7) for paragraphs not within an `RS`/`RE` relative inset,
@@ -270,14 +283,6 @@ o The an (man) macro package's `IP` macro no longer honors the formerly
   paragraph with no intervening space.  If you use a word instead of
   punctuation or a list enumerator for `IP`'s first argument, consider
   migrating to `TP`.
-
-o The an (man) and doc (mdoc) macro packages now use slightly different
-  vertical margins to align more closely with the traditional
-  implementations of these packages.  Per man(7) in the AT&T Unix System
-  III manual (June 1980), the text area was 6.5 by 10 inches (on
-  typesetters).  When formatting for terminals with continuous rendering
-  disabled (by default, it is enabled), the page footer now sets 1 line
-  higher than before.
 
 o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   roman, not italics (or whatever the string `doc-Pa-font` was
@@ -323,6 +328,21 @@ o Similarly, the m (mm) macro package's `PIC` macro (a GNU extension)
   now interprets an argument to its `-I` option in ens instead of ems
   by default.
 
+o The m (mm) macro package's `Li` register now defaults to 5 ens (not 6)
+  to align with the `Pi` register default.
+
+o The m (mm) macro package's `Li` register now configures the text
+  indentation of items in `RL` lists (as it long has for `AL` lists)
+  instead of hard-coding a value of 6 ens as DWB 3.3 mm does.
+
+o The m (mm) macro package's `BVL` and `VL` macros' first arguments are
+  now optional.  If omitted, the paragraph indentation amount (register
+  `Pi`) is used for list items' text indentations.
+
+o The m (mm) macro package's `DL` macro now uses the `EM` string as the
+  mark instead of an em dash special character literal.  (The latter
+  remains the default definition of the `EM` string.)
+
 o The m (mm) macro package's `DS` macro now interprets its third
   argument (a right-hand indentation) in ens by default, for consistency
   with the rest of the package.  This is a difference from DWB mm (which
@@ -337,7 +357,18 @@ o The m (mm) macro package's `IND` macro (a GNU extension), now calls
   `SK` only if no `TXIND` macro is defined, instead of performing this
   action as part of the fallback when no `TYIND` macro is defined.
 
+o The m (mm) macro package's `LI` macro now interprets its second
+  argument as a Boolean indicating whether a space should separate the
+  list item mark from its prefix (the first argument).  Thus, where you
+  formerly specified "2" to indicate no such separation, you would now
+  use "0", matching the semantics of the `Limsp` register (which
+  configures a default prefix/mark separation policy).  "2" continues to
+  be recognized and handled as before, but prompts a warning; migrate
+  your documents.
+
 o The m (mm) macro package now supports the `E` register as DWB mm did.
+
+o The m (mm) macro package now supports AT&T/DWB mm's `Rg` string.
 
 o The s (ms) macro package now sets the vertical spacing register
   defaults for normal (`VS`) and footnote (`FVS`) text to 120% of the
@@ -391,6 +422,10 @@ o grog(1) no longer supports the `--ligatures` and `--run` options.
 
 o The minimum version of Perl required to build groff is now 5.8 (18
   July 2002), incremented from 5.6.1.
+
+o groff now looks for the Netpbm program pamcut(1) rather than
+  pnmcut(1).  Per upstream, the former was introduced 23 years ago and
+  the latter withdrawn 15 years ago.
 
 o The groff_diff(7) man page no longer contains examples.  They remain
   in groff's Texinfo manual.

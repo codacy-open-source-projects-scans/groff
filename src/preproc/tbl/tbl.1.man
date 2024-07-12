@@ -89,7 +89,7 @@ is a
 .MR @g@troff @MAN1EXT@
 preprocessor that translates descriptions of tables embedded in
 .MR roff @MAN7EXT@
-input files into the language understood by
+input into the language understood by
 .IR @g@troff .
 .
 It copies the contents of each

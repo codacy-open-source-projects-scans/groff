@@ -42,8 +42,7 @@ This file summarizes the structure of the groff source distribution.
 ./contrib       Resources provided with groff, but maintained by others.
   chem          Embed chemical structure diagrams in groff documents.
   eqn2graph     Convert eqn(1) equations into graphical images.
-  gdiffmk       An improved implementation of the diffmk command to mark
-                differences between groff/nroff/troff files.
+  gdiffmk       Mark differences between groff/nroff/troff files.
   glilypond     Embed LilyPond sheet music in groff documents.
   gperl         Populate groff registers and strings using perl(1).
   gpinyin       Use Hanyu Pinyin input to compose groff documents.
@@ -117,8 +116,7 @@ This file summarizes the structure of the groff source distribution.
   troff         Formatter.
 
 ./src/utils     Utility programs relevant to groff.
-  addftinfo     Supplement AT&T troff font descriptions with metrics
-                groff requires.
+  addftinfo     Enhance AT&T troff font descriptions for use with groff.
   afmtodit      Create font description files for the PostScript device.
   grog          Guess groff command-line options required by a document.
   hpftodit      Create font description files for the 'lj4' device.

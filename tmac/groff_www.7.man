@@ -467,8 +467,7 @@ the default is
 .BR #eeeeee .
 .
 .I width-percentage
-allocates the given percentage of the the navigation pane's table
-column;
+allocates the given percentage of the navigation pane's table column;
 the default is
 .BR 30 .
 .

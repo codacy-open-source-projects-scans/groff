@@ -1,3 +1,217 @@
+2024-07-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Sort `BU` and `EM` string definitions in lexicographic
+	order.  Add annotations.
+
+2024-07-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Format complex numeric expressions in conditionals
+	using the dense and AT&T-compatible manner of the rest of the
+	package, omitting parentheses and spaces where possible.
+
+2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Right-align mark within text indentation when the
+	latter is specified.  Problem introduced by me in commit
+	512b749f4e, 2 July.
+
+	* tests/lists-indent-correctly.sh: Update test expectations.
+
+2024-07-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (DL): Use the `EM` string as the mark instead of an em
+	dash special character literal.
+
+	* groff_mm.7.man (Macros) <DL>:
+	(Strings) <EM>: Document this.
+
+2024-07-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/lists-indent-correctly.sh: Add unit test.
+	* mm.am (mm_TESTS): Run test.
+
+2024-07-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/ML-marks-work.sh: Add unit test.
+	* mm.am (mm_TESTS): Run test.
+
+2024-07-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Tweak diagnostic message wording.
+	(P, SP, EPIC, LC, ML): Parallelize wording of diagnostics about
+	macro arguments that are invalid numeric expressions.  Where a
+	macro takes multiple arguments, identify the one we're
+	complaining about by its purpose.
+	(qrf*validate-identifier): Say "string identifier" rather than
+	"roff string name".
+	(INITI): Parallelize wording with `INITR`, `GETR`, and `IND`.
+
+	* m.tmac: Fix code style nits.  Rename `mm-msg` string in
+	initialization to `@msg`, for consistency with package naming
+	scheme.
+	(P, SA): Format complex numeric expressions in the dense and
+	AT&T-compatible manner most of the rest of the package uses,
+	omitting parentheses where possible and eschewing space.
+	(DF): Construct lengthy diagnostic strings in a consistent
+	manner.
+	(AL, RL, VL, BVL, BL, DL, ML): Use `\$0` for macro
+	self-reference instead of a literal in debugging diagnostics.
+	(AL, ML): Emit debugging report of argument list before other
+	diagnostics, as the other list macros do.
+	(VL, BVL, ML): Remove `li*text-indent` register when finished.
+
+2024-07-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Interpret a second argument not just as
+	indicating that the specified mark should be applied as a
+	prefix, but as a Boolean indicating whether to put space between
+	the prefix and the mark.  Thus, where formerly one would use "2"
+	as the second argument to eliminate the space, one would now use
+	"0".  We continue to recognize "2" specially, but throw a
+	warning in anticipation of future removal of this handling.
+
+2024-07-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Refactor logic that constructs the item mark, its
+	prefix (if any), and the padding space between the two (if any).
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (VL): Make first argument optional.  If omitted, use
+	the paragraph indentation amount (register `Pi`) for the list
+	item's text indentation.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Improve overlong mark detection: count the
+	padding since it can throw off the alignment of indented text.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (AL, RL): Reduce "pad" argument to `LB` call from 2
+	to 1.  This keeps marks in `AL` list items from oversetting even
+	when prefixed (with intra-mark padding), if the enumerator and
+	prefix are only one character in nroff mode (and similarly thin
+	in troff mode).  `RL` oversets under the same circumstances
+	{because two brackets "[" and "]" are wider than a dot "."}
+	This change however makes the macros more consistent with each
+	other, and `RL` more consistent with DWB 3.3 mm, whose manual
+	doesn't document the macros' behavior in this much detail; I
+	thus regard the alteration as cosmetic.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (RL): Honor `RL` setting for list items' text
+	indentation as `AL` does instead of using a hard-coded value of
+	6 ens.
+	* groff_mm.7.man (Description): Document this difference.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Initialize register `Li` to 5, not 6, for better
+	alignment with (1) the default value of `Pi` and (2) DWB 3.3 mm
+	behavior.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Fix bug in text indentation computation; it was
+	1n too short when no explicit indentation (a second argument)
+	was given.  Yet another problem introduced by me in commit
+	e0332c122e, 14 June.  (Oddly, DWB 3.3 mm misbehaves the same way
+	in nroff mode.)
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Revise debugging output.
+	(AL, ML, VL, BL, DL, RL, BVL): Add escape characters so that
+	actual arguments are reported, not just a literal "$*".  Problem
+	dates back to groff 1.06, September 1992.
+	(PGFORM, AL, ML, VL, BL, DL, RL, BVL): Report arguments using
+	`$@` instead of `$*` for clarity when they contain whitespace.
+	(LB): Report arguments passed to macro using `$@`.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Fix computation of item's text indentation when
+	the mark (plus any padding) exceeds that of the list.  Problem
+	introduced by me in commit e0332c122e, 14 June.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LI): Reduce padding after overlong mark from 2n to 1n.
+	This is more consistent with DWB mm behavior, though unspecified
+	in the 3.3 manual.
+	* tests/VL-accommodates-overlong-mark.sh: Update test
+	expectations.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* groff_mm.7.man (Macros) <ML>: Fix error; the default
+	text indentation is computed from the width of the specified
+	mark, and uses neither register `Li` nor `Pi` as other list
+	types do.  Incorrect claim appears to date back to groff 1.10,
+	26 November 1995.
+
+2024-07-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (BVL): Trivially refactor.  Rename and retype `list*ti`
+	string to `li*text-indent` register.  Fix internal
+	documentation; the name of the "module" is "li", not "list".
+
+2024-06-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LB): Don't throw an overlong mark warning when the
+	line is to be broken after the mark, as in `BVL` lists.
+
+2024-06-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* groff_mm.7.man (Macros) <LB>: Document behavior when fourth
+	argument ("type") is -1.  The groff mm `BVL` macro relies on it.
+
+2024-06-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (BVL): Make first argument optional.  If omitted, use
+	the paragraph indentation amount (register `Pi`) for the list
+	item's text indentation.
+
+2024-06-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (Rg, Sm, Tm): Favor registered sign, service
+	mark sign, and trade mark sign font glyphs on typesetters when
+	present.  Annotate a limitation of this approach.
+
+2024-06-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (Sm, Tm): Tweak string definitions to use half-line
+	motions in nroff mode when the font lacks a dedicated glyph.
+	At present no nroff device supports half-line motions, but this
+	prepares us if we ever do, and DWB 3.3 mm does specify this
+	behavior on page A-2 of its manual.
+
+2024-06-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Handle command-line (or pre-`mso` request) register
+	settings earlier when initializing, and validate their values.
+
+2024-06-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Move definitions of diagnostic macros earlier.  Also
+	test for existence of `D` register before testing its value to
+	determine emission of backtrace (this way `-wreg` doesn't warn
+	about it).  This enables the `@warning` macro to be used in
+	validation of command-line registers (C, D, E, L, W, and so on).
+
+2024-06-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (DE): Fix corrupted error message.  Problem introduced
+	by me in commit 97a1e260b3, 22 June.
+
+2024-06-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac ([initialization]): Fix regression in initialization of
+	undocumented `C`/`@copy_type` register.  Problem
+	introduced by me in commit 4b2f6de31e, 22 June.
+
 2024-06-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac ([initialization], VERBON, VERBOFF, pg@footer):
@@ -60,7 +274,7 @@
 	* m.tmac (MULN, DF): Fix code style nit, favoring assembly of
 	long strings with both `ds` and `as` instead of using input line
 	continuation.  Refer to displays as such in comments and
-	diagnostic messages, not as "keep"; mm tradition seems not to
+	diagnostic messages, not as "keeps"; mm tradition seems not to
 	use the latter term.
 
 2024-06-22  G. Branden Robinson <g.branden.robinson@gmail.com>

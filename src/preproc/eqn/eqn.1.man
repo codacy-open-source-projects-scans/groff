@@ -110,7 +110,7 @@ is a
 preprocessor that translates expressions in its own language,
 embedded in
 .MR roff @MAN7EXT@
-input files,
+input,
 into mathematical notation typeset by
 .MR @g@troff @MAN1EXT@ .
 .
@@ -177,7 +177,7 @@ and finally in the standard macro directory
 .
 If it exists and is readable,
 .I @g@eqn
-processes it before any input files.
+processes it before any input.
 .
 .
 .P

@@ -23,7 +23,7 @@ What is groff?
 ==============
 
 groff (GNU roff) is a typesetting system that reads plain text input
-files that include formatting commands to produce output in PostScript,
+that includes formatting commands to produce output in PostScript,
 PDF, HTML, or DVI formats or for display to a terminal.  Formatting
 commands can be low-level typesetting primitives, macros from a
 supplied package, or user-defined macros.  All three approaches can be

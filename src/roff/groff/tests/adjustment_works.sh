@@ -29,100 +29,98 @@ wail () {
 
 input='.pl 1v
 .ll 9n
-foo bar\p
+abc def\p
 .na
-foo bar\p
-.ad l
-foo bar\p
-.na
-foo bar\p
+ghi jkl\p
 .ad
-foo bar\p
+.ad l
+mno pqr\p
+.na
+stu vwx\p
+.ad
+yza bcd\p
 .ad l
 .ad b
-foo bar\p
+efg hij\p
 .na
-foo bar\p
+klm nop\p
 .ad c
-foo bar\p
+qrs tuv\p
 .na
-foo bar\p
+wxy zab\p
 .ad
-foo bar\p
+cde fgh\p
 .ad r
-foo bar\p
+ijk lmn\p
 .na
-foo bar\p
+opq rst\p
 .ad
-foo bar\p
+uvw xyz\p
 .ad b
 .ad 100
-foo bar\p'
+ABC DEF\p'
 
 output=$(echo "$input" | "$groff" -T ascii)
 echo "$output"
 
 # Expected output:
 #
-#   foo   bar
-#   foo bar
-#   foo bar
-#   foo bar
-#   foo   bar
-#   foo bar
-#    foo bar
-#   foo bar
-#     foo bar
-#   foo bar
-#     foo bar
-#     foo bar
+#   abc   def
+#   ghi jkl
+#   mno pqr
+#   stu vwx
+#   yza   bcd
+#   efg   hij
+#   klm nop
+#    qrs tuv
+#   wxy zab
+#    cde fgh
+#     ijk lmn
+#   opq rst
+#     uvw xyz
+#   ABC   DEF
 
-B='foo   bar' # 3 spaces
-L='foo bar' # left or off
-C=' foo bar' # trailing space truncated
-R='  foo bar' # 2 leading spaces
+echo "verifying that adjustment is enabled by default" >&2
+echo "$output" | grep -Fqx "abc   def" || wail # 3 spaces
 
-echo "verifying default adjustment mode 'b'" >&2
-echo "$output" | sed -n '1p' | grep -Fqx "$B" || wail
-
-echo "verifying that '.na' turns off adjustment and aligns left" >&2
-echo "$output" | sed -n '2p' | grep -Fqx "$L" || wail
+echo "verifying that '.na' disables adjustment" >&2
+echo "$output" | grep -Fqx "ghi jkl" || wail
 
 echo "verifying that '.ad l' aligns left" >&2
-echo "$output" | sed -n '3p' | grep -Fqx "$L" || wail
+echo "$output" | grep -Fqx "mno pqr" || wail
 
-echo "verifying that '.na' turns off adjustment and aligns left" >&2
-echo "$output" | sed -n '4p' | grep -Fqx "$L" || wail
+echo "verifying that '.na' is a no-op after '.ad l'" >&2
+echo "$output" | grep -Fqx "stu vwx" || wail
 
-echo "verifying that '.ad' restores adjustment" >&2
-echo "$output" | sed -n '5p' | grep -Fqx "$B" || wail
+echo "verifying that '.ad' enables adjustment after '.ad l'" >&2
+echo "$output" | grep -Fqx "yza   bcd" || wail # 3 spaces
 
-echo "verifying that '.ad b' enables adjustment" >&2
-echo "$output" | sed -n '6p' | grep -Fqx "$B" || wail
+echo "verifying that '.ad b' enables adjustment after '.ad l'" >&2
+echo "$output" | grep -Fqx "efg   hij" || wail # 3 spaces
 
-echo "verifying that '.na' turns off adjustment and aligns left" >&2
-echo "$output" | sed -n '7p' | grep -Fqx "$L" || wail
+echo "verifying that '.na' disables adjustment after '.ad b'" >&2
+echo "$output" | grep -Fqx "klm nop" || wail
 
-echo "verifying that '.ad c' aligns to the center" >&2
-echo "$output" | sed -n '8p' | grep -Fqx "$C" || wail
+echo "verifying that '.ad c' center-aligns" >&2
+echo "$output" | grep -Fqx " qrs tuv" || wail
 
-echo "verifying that '.na' turns off adjustment and aligns left" >&2
-echo "$output" | sed -n '9p' | grep -Fqx "$L" || wail
+echo "verifying that '.na' left-aligns after '.ad c'" >&2
+echo "$output" | grep -Fqx "wxy zab" || wail
 
-echo "verifying that '.ad' restores previous alignment (center)" >&2
-echo "$output" | sed -n '10p' | grep -Fqx "$C" || wail
+echo "verifying that '.ad' center-aligns after '.na' after '.ad c'" >&2
+echo "$output" | grep -Fqx " cde fgh" || wail
 
-echo "verifying that '.ad r' aligns right" >&2
-echo "$output" | sed -n '11p' | grep -Fqx "$R" || wail
+echo "verifying that '.ad r' right-aligns" >&2
+echo "$output" | grep -Fqx "  ijk lmn" || wail # 2 leading spaces
 
-echo "verifying that '.na' turns off adjustment and aligns left" >&2
-echo "$output" | sed -n '12p' | grep -Fqx "$L" || wail
+echo "verifying that '.na' left-aligns after '.ad r'" >&2
+echo "$output" | grep -Fqx "opq rst" || wail
 
-echo "verifying that '.ad' restores previous alignment (right)" >&2
-echo "$output" | sed -n '13p' | grep -Fqx "$R" || wail
+echo "verifying that '.ad' right-aligns after '.na' after '.ad r'" >&2
+echo "$output" | grep -Fqx "  uvw xyz" || wail # 2 leading spaces
 
-echo "verifying that out-of-range mode works like '.ad b'" >&2
-echo "$output" | sed -n '14p' | grep -Fqx "$B" || wail
+echo "verifying that out-of-range numeric mode is a no-op" >&2
+echo "$output" | grep -Fqx "ABC   DEF" || wail # 3 spaces
 
 test -z "$fail"
 

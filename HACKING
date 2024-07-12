@@ -90,6 +90,44 @@ their impact.
     horizontally compresses tables as well, _would_ be 'NEWS'-worthy.
 
 
+Updating Copyright Notices
+--------------------------
+
+* The overall copyright notice for groff as a work of software is
+  updated at release time.  See the 'FOR-RELEASE' file in the Git
+  repository.
+
+* Update a _file_'s copyright notice in a year when committing a change
+  to it that is "original work" and would thus merit copyright
+  protection.  This is a subjective and arguable matter, so it's not
+  necessarily offensive to apply an expansive interpretation, but
+  "bumping" the copyright notice when _no_ change has been made, or when
+  the alterations are trivial by another standard (code style changes
+  that don't require regression testing; editorial changes to text that
+  are _invisible_ to the lay reader without technological
+  assistance--like trailing tab/space removal) abuse the principle.
+
+* If you forget the foregoing step, or contributions to a file seem to
+  accrete original status over time or a series of commits, it's fine to
+  later update the notice to include the relevant (hopefully current)
+  year in a stand-alone commit.  Use "git log --oneline" on a file to
+  gather commit IDs that justify the update and put them in the commit
+  message so that other people understand the basis of your claim.
+
+* It's okay to simply report a range of years in the copyright notice
+  instead of a comma-separated list.  As far as GBR knows there is no
+  hard rule that such ranges are interpreted exhaustively, and unless
+  someone has a chronological record of changes to the file, a broken
+  sequence of copyright overage years makes little practical difference.
+  Copyright protection extends to those portions of the work fixed in a
+  tangible medium in the years declared in the copyright notice, except
+  for those portions whose copyright durations have elapsed.  But these
+  are so lengthy that, in the United States as of 2024, no work of
+  computer software or documentation has ever yet even _partially_ aged
+  into the public domain.  (Some has been placed in the public domain
+  deliberately, and some never enjoyed copyright protection at all.)
+
+
 Writing Tests
 -------------
 

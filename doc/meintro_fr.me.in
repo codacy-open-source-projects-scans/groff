@@ -108,7 +108,7 @@ et
 .pp
 \*G, est un logiciel
 fonctionnant sur le système d'exploitation \*U.
-Il lit un fichier d'entrée
+Il lit la entrée
 préparé par l'utilisateur
 et sort un texte formaté,
 prêt à être publié ou mis en page.

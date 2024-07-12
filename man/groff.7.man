@@ -316,8 +316,8 @@ a program that reads device and font descriptions
 .MR groff_font @MAN5EXT@ ),
 interprets the
 .I groff
-language expressed in text input files,
-and translates that input into a device-independent output format
+language expressed in input text,
+translating it to a device-independent output format
 (\c
 .MR groff_out @MAN5EXT@ )
 that is usually then post-processed by an output driver to produce
@@ -2281,6 +2281,12 @@ is a diversion identifier.
 is an environment identifier.
 .
 .TPx
+.I file
+is an ordinary character sequence representing a file name on the
+system.
+.\" ...limiting the file names you can express; see Savannah #64071.
+.
+.TPx
 .I font
 is a typeface specified as a font name,
 an abstract style,
@@ -2304,11 +2310,8 @@ is a macro identifier.
 .
 .TPx
 .I message
-is a character sequence to be emitted on the standard error stream.
-.
-Special character escape sequences are
-.I not
-interpreted.
+is an ordinary character sequence to emit on the standard error stream.
+.\" ...limiting the messages you can express; see Savannah #62787.
 .
 .TPx
 .I n
@@ -3610,11 +3613,11 @@ Set number of next input line to
 .\" XXX: negative values accepted; check AT&T troff
 .
 .TPx
-.REQ .lf "n file"
+.REQ .lf "n file-name"
 Set number of next input line to
 .I n
-and input file name to
-.IR file .
+and report input file name as
+.IR file-name .
 .
 .TPx
 .REQ .lg m
@@ -4051,7 +4054,9 @@ See registers
 .TPx
 .REQ .pso command-line
 Execute
-.I command-line
+.IR command-line ,
+a sequence of ordinary characters,
+.\" ...limiting the shell commands you can express; see Savannah #65108.
 with
 .MR popen 3
 and interpolate its output.
@@ -4404,7 +4409,9 @@ request
 .TPx
 .REQ .sy command-line
 Execute
-.I command-line
+.IR command-line ,
+a sequence of ordinary characters,
+.\" ...limiting the shell commands you can express; see Savannah #65108.
 with
 .MR system 3 .
 .
@@ -8436,7 +8443,7 @@ to the standard error stream.
 .\" ====================================================================
 .
 This document was written by
-by Trent A.\& Fisher,
+Trent A.\& Fisher,
 .MT wl@\:gnu\:.org
 Werner Lemberg
 .ME ,

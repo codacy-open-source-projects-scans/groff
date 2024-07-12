@@ -3391,7 +3391,7 @@ manual
 (installed version)
 .
 .
-.P \" Should be `TP`; see Savannah #61434
+.TP
 .UR http://\:www\:.schaffter\:.ca/\:mom/\:momdoc/\:toc\:.html
 .I mom
 manual
@@ -3399,7 +3399,7 @@ manual
 (latest version)
 .
 .
-.P \" Should be `TP`; see Savannah #61434
+.TP
 .UR http://\:www\:.schaffter\:.ca/\:mom/
 .I mom
 homepage

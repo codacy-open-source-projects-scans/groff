@@ -326,7 +326,7 @@ special fonts
 .B SB
 (msbm10).
 .
-They are are not mounted by default.
+They are not mounted by default.
 .
 .
 .P

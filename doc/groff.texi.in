@@ -587,7 +587,7 @@ A history relating @code{groff} to its forerunners @code{roff},
 @c This language is slightly expanded from that in the "ANNOUNCE" file
 @c and on the groff home page.
 @code{groff} (GNU @code{roff}) is a typesetting system that reads plain
-text input files that include formatting commands to produce output in
+text input that includes formatting commands to produce output in
 PostScript, PDF, HTML, or other formats, or for display to a terminal.
 Formatting commands can be low-level typesetting primitives, macros from
 a supplied package, or user-defined macros.  All three approaches can be
@@ -1144,7 +1144,7 @@ spooler.
 
 @item -m @var{mac}
 Search for the macro package @file{@var{mac}.tmac} and read it prior to
-any input files.  If not found, @file{tmac.@var{mac}} is attempted.
+any input.  If not found, @file{tmac.@var{mac}} is attempted.
 @xref{Macro Directories}.  @command{groff} passes @option{-m} options
 and their arguments to to @command{geqn}, @command{grap}, and
 @command{ggrn}.
@@ -1399,7 +1399,7 @@ the utilities @command{indxbib} and @command{lookbib}.
 
 @item GROFF_ENCODING
 @tindex GROFF_ENCODING@r{, environment variable}
-Specify the assumed character encoding of input files.  @command{groff}
+Specify the assumed character encoding of the input.  @command{groff}
 passes its value as an argument to the @command{preconv} preprocessor's
 @option{-e} option.  This variable's existence implies the
 @command{groff} option @option{-k}.  If set but empty, @command{groff}
@@ -1759,8 +1759,8 @@ fruitfully.@footnote{The remainder of this chapter is based on
 which is distributed with @code{groff} as @file{meintro.me}.}
 References are made throughout to more detailed information.
 
-GNU @command{troff} reads an input file prepared by the user and outputs
-a formatted document suitable for publication or framing.  The input
+GNU @command{troff} reads input prepared by the user and outputs a
+formatted document suitable for publication or framing.  The input
 consists of text, or words to be printed, and embedded commands
 (@slanted{requests} and @slanted{escape sequences}), which tell GNU
 @code{troff} how to format the output.  @xref{Formatter Instructions}.
@@ -5086,7 +5086,7 @@ both.  GNU @code{troff} continues this tradition of permitting an author
 to compose a single master version of a document which can then be
 rendered for a variety of output formats or devices.
 
-@code{roff} input files contain text interspersed with instructions to
+@code{roff} input contains text interspersed with instructions to
 control the formatter.  Even in the absence of such instructions, GNU
 @code{troff} still processes its input in several ways, by filling,
 hyphenating, breaking, and adjusting it, and supplementing it with
@@ -5962,7 +5962,7 @@ one vee.
 @c interpolation at the scope of input lines to interpolations _within_
 @c lines.  It is also a good time to introduce the \n and \* escape
 @c sequences to avoid painful, "WTF"-producing forward references later.
-@c Some materal from groff_mm(7) might be adaptable to this purpose.
+@c Some material from groff_mm(7) might be adaptable to this purpose.
 @c
 @c Earlier material from @Defesc{\\n}:
 @c "This means that the value of the register is expanded in place while
@@ -13043,10 +13043,10 @@ comparisons in other programming languages.
 @cindex copy mode, and @code{\?}
 @cindex mode, copy, and @code{\?}
 @noindent
-Since comparands protected with @code{\?} are read in copy mode
-(@pxref{Copy Mode}), they need not even be valid @code{groff} syntax.
-The escape character is still lexically recognized, however, and
-consumes the next character.
+Since GNU @code{troff} reads comparands protected with @code{\?} in copy
+mode (@pxref{Copy Mode}), they need not even be valid @code{groff}
+syntax.  The escape character is still lexically recognized, however,
+and consumes the next character.
 
 @Example
 .ds a \[
@@ -13370,7 +13370,7 @@ once.@footnote{unless you redefine it}
 To prevent infinite loops, the default number of available recursion
 levels is 1,000 or somewhat less.@footnote{``somewhat less'' because
 things other than macro calls can be on the input stack}  You can
-disable this protective measure, or raise the limit, by setting the
+disable this protective measure, or alter the limit, by setting the
 @code{slimit} register.  @xref{Debugging}.
 
 As noted above, if a @code{while} body begins with a conditional block,
@@ -15239,10 +15239,10 @@ of qualifying lines enumerated in that environment.
 @Defreq {blm, [@Var{name}]}
 @cindex blank line macro (@code{blm})
 Set a blank line trap, calling the macro @var{name} when GNU
-@code{troff} encounters a blank line in an input file, instead of the
-usual behavior (@pxref{Breaking}).  A line consisting only of spaces is
-also treated as blank and subject to this trap.  If no argument is
-supplied, the default blank line behavior is (re-)established.
+@code{troff} encounters a blank line in input, instead of the usual
+behavior (@pxref{Breaking}).  A line consisting only of spaces is also
+treated as blank and subject to this trap.  If no argument is supplied,
+the default blank line behavior is (re-)established.
 @endDefreq
 
 @c ---------------------------------------------------------------------
@@ -18788,7 +18788,7 @@ Due to the obsolete jump-and-write command, the text clusters in the
 The intermediate output language of @acronym{AT&T} @code{troff} was
 first documented in @cite{A Typesetter-independent TROFF}, by Brian
 Kernighan, and by 1992 the @acronym{AT&T} @code{troff} manual was
-updated to incoroprate a description of it.
+updated to incorporate a description of it.
 
 The GNU @code{troff} intermediate output format is compatible with this
 specification except for the following features.
@@ -19444,7 +19444,7 @@ character (normally @samp{.}).  @xref{Calling Macros}.
 @appendix String Index
 
 The macro package or program with which a string is associated appears
-in brackets after the strings's name.  The formatter itself defines only
+in brackets after the string's name.  The formatter itself defines only
 one string, @code{.T}.
 
 Interpolate a string name of exactly one character@tie{}@code{x} with

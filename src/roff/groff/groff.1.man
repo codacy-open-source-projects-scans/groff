@@ -132,7 +132,7 @@ document formatting system.
 .\" and on the groff home page.
 GNU
 .I roff
-is a typesetting system that reads plain text input files that include
+is a typesetting system that reads plain text input that includes
 formatting commands to produce output in PostScript,
 PDF,
 HTML,
@@ -619,7 +619,7 @@ for input files.
 .BI \-m\~ mac
 Read macro package
 .I mac
-before input files.
+before input.
 .
 .I groff
 passes
@@ -1007,9 +1007,9 @@ A preprocessor interprets a domain-specific language that produces
 language output.
 .
 Frequently,
-such input is confined to sections or regions of a
+such input is confined to sections or regions of
 .I roff
-input file
+input
 (bracketed with macro calls specific to each preprocessor),
 which it replaces.
 .
@@ -1819,7 +1819,7 @@ and
 .
 .TP
 .I GROFF_ENCODING
-Specify the assumed character encoding of input files.
+Specify the assumed character encoding of the input.
 .
 .I groff
 passes its value as an argument to

@@ -40,40 +40,162 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .ds @mm m.tmac\"
 .
-.if (\n[.x]\n[.y] < 123) \{\
-.  ds mm-msg \*[@mm]: groff mm macros require groff 1.23 or later,\"
-.  as mm-msg " but found groff \n[.x].\n[.y]; aborting\"
-.  ab \*[mm-msg]
+.if \n[.x]\n[.y]<123 \{\
+.  ds @msg \*[@mm]: groff mm macros require groff 1.23 or later,\"
+.  as @msg " but found groff \n[.x].\n[.y]; aborting\"
+.  ab \*[@msg]
 .\}
 .
 .if d PH .nx
 .
 .mso devtag.tmac
+.
+.de @warning
+.tm \\*[@mm]:\\n[.F]:\\n[.c]: warning: \\$*
+.if r D .if \\n[D] .backtrace
+..
+.
+.\" All errors are fatal.
+.de @error
+.tm \\*[@mm]:\\n[.F]:\\n[.c]: error: \\$*
+.if r D .if \\n[D] .backtrace
+.ab
+..
+.
+.de @abort
+.tm \\*[@mm]:\\n[.F]:\\n[.c]: internal error: \\$*
+.backtrace
+.ab
+..
 .\" ######## initialize package #######
+.\"---------------------------------------------
+.\"	documented but command-line-only registers
+.\"
+.\" S and V are handled specially later.
+.
+.\" XXX: The man page says C isn't supported.  Unfinished?  Check it
+.\" against DWB.
+.nr @copy_type 0
+.if r C .nr @copy_type \n[C]
+.
+.if r D \{\
+.	if \n[D]<0 \{\
+.		@warning ignoring out-of-range D register value: \n[D]u
+.		rr D
+.	\}
+.\}
+.if !r D .nr D 0
+.
+.if r E \{\
+.	if (\n[E]<0):(\n[E]>1) \{\
+.		@warning ignoring out-of-range E register value: \n[E]
+.		rr E
+.	\}
+.\}
+.if !r E .nr E 1
+.ie \n[E] .ds @metadata-font B\"
+.el       .ds @metadata-font R\"
+.
+.if r L \{\
+.	if \n[L]<=0 \{\
+.		@warning ignoring out-of-range L register value: \n[L]u
+.		rr L
+.	\}
+.\}
+.if r L .pl \n[L]u
+.
+.if r O \{\
+.	if \n[O]<0 \{\
+.		@warning ignoring out-of-range O register value: \n[O]u
+.		rr O
+.	\}
+.\}
+.ie r O .po \n[O]u
+.el \{\
+.	ie n .po .75i
+.	el   .po .963i
+.\}
+.
+.if r W \{\
+.	if \n[W]<=0 \{\
+.		@warning ignoring out-of-range W register value: \n[W]u
+.		rr W
+.	\}
+.\}
+.ie r W .ll \n[W]u
+.el     .ll 6i
+.\"---------------------------------------------
+.\"	Configure type size and vertical spacing.  If given on the
+.\"	command line, these have already been converted to basic units.
+.if r S \{\
+.	if \n[S]<=0 \{\
+.		@warning ignoring out-of-range S register value: \n[S]z
+.		rr S
+.	\}
+.\}
+.if !r S .nr S 10
+.ie \n[S]>=1000 .ps \n[S]z/1000u
+.el             .ps \n[S]
+.nr *vs-default \n[.ps]*120/100
+.
+.if r V \{\
+.	if \n[V]<=0 \{\
+.		@warning ignoring out-of-range V register value: \n[V]u
+.		rr V
+.	\}
+.\}
+.if !r V .nr V \n[*vs-default]
+.ie \n[V]>=1000 .vs \n[V]p/1000u
+.el             .vs \n[V]
+.rr *vs-default
+.
+.nr @ps \n[.ps]
+.nr @vs \n[.v]
+.if \n[D]>1 .tm @ps=\n[@ps], @vs=\n[@vs]
+.if \n[D]>3 .tm INIT: l:\n[.l] p:\n[.p] o:\n[.o]
+.nr @pl \n[.p]
+.nr @ll \n[.l]
+.nr @cur-ll \n[@ll]
+.lt \n[@ll]u
+.nr @po \n[.o]
+.\"---------------------------------------------
+.\"	AT&T/DWB public registers and strings
+.\"	bullet string
+.ie n .ds BU \[bu]
+.el   .ds BU \s-2\[bu]\s0
 .\"	create table of contents entry for heading of level <= Cl
 .nr Cl 2
 .\"	suppress page break after TOC lists of figures, tables, ...?
 .nr Cp 0
-.\"	report debugging messages?
-.if !r D .nr D 0
 .\"	eject page after floating display?
 .nr De 0
-.\"	floating display output policy [0:5]
+.\"	floating display output policy [0..5]
+.\"	0 -> at end of section (if N=3 or N=5) or end of document
+.\"	1 -> on same page if possible, otherwise end of section/document
+.\"	2 -> one float at top of next page/column
+.\"	3 -> on same page if possible, otherwise as 2
+.\"	4 -> as many floats as fit, starting at top of next page/column
+.\"	5 -> on same page if possible, otherwise as 4
 .nr Df 5
 .\"	vertically space before and after display?
 .nr Ds 1
-.\"	eject page before headings of level <= Ej?
+.\"	eject page before headings of level <= Ej
 .nr Ej 0
-.\"	align equation labels to the left instead of the right?
-.nr Eq 0
-.\"	bullet string (for .BL)
-.ie n .ds BU \[bu]
-.el   .ds BU \s-2\[bu]\s0
 .\"	em dash string
 .ie n .ds EM " --
 .el   .ds EM \[em]
+.\"	align equation labels to the left instead of the right?
+.nr Eq 0
 .\"	multiple of Lsp to put between items of footnote text
 .nr Fs 1
+.\"	heading level counters
+.nr H1 0 1
+.nr H2 0 1
+.nr H3 0 1
+.nr H4 0 1
+.nr H5 0 1
+.nr H6 0 1
+.nr H7 0 1
 .\"	break after headings of level <= Hb
 .nr Hb 2
 .\"	center headings of level <= Hc
@@ -107,10 +229,16 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds Le LIST OF EQUATIONS
 .nr Le 0
 .\"	list indentation in ens
-.nr Li 6
+.nr Li 5
 .\"	put vertical space before list items of nesting level <= Ls
 .nr Ls 99 \" TODO: use \n[.R]; see Savannah #63587
-.\"	page numbering style [0:5]
+.\"	page numbering style [0..5]
+.\"	0 -> p. 1: header;                pp. 2 on: header
+.\"	1 -> p. 1: move header to footer; pp. 2 on: header
+.\"	2 -> p. 1: no header;             pp. 2 on: header
+.\"	3 -> p. 1: section-page;          pp. 2 on: as p. 1
+.\"	4 -> p. 1: no header;             pp. 2 on: none (unless .PH)
+.\"	5 -> p. 1: section-figure;        pp. 2 on: as p. 1
 .if !r N .nr N 0
 .\"	number paragraphs under first-level headings?
 .nr Np 0
@@ -126,76 +254,39 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"	multiple of Lsp to put between paragraphs
 .nr Ps 1
 .\"	paragraph indentation policy (for .P)
-.\"	0 == no indentation
-.\"	1 == indented by \n[Pi]
-.\"	2 == indented by \n[Pi] except after .H, .DE, or .LE
+.\"	0 -> no indentation
+.\"	1 -> indented by \n[Pi]
+.\"	2 -> indented by \n[Pi] except after .H, .HU, .DE, or .LE
 .nr Pt 0
 .\"	reference list caption
 .ds Rp REFERENCES\"
 .\"	display indentation in ens
 .nr Si 5
-.\" service mark string
-.ie t .ds Sm \v'-.4m'\s-3SM\s0\v'.4m'\"
-.el \{\
-.	ie c \[u2120] .ds Sm \[u2120]\"
-.	el            .ds Sm (SM)\"
-.\}
-.\" trade mark string
-.ie t .ds Tm \v'-.4m'\s-3TM\s0\v'.4m'\"
-.el \{\
-.	ie c \[tm] .ds Tm \[tm]\"
-.	el         .ds Tm (TM)\"
-.\}
 .\"---------------------------------------------
-.\"	documented but command-line-only registers
-.\"
-.\" S and V are handled specially later.
-.
-.\" XXX: The man page says C isn't supported.  Unfinished?  Check it
-.\" against DWB.
-.if r C .nr @copy_type \n[C]
-.
-.if !r E .nr E 1
-.ie \n[E] .ds @metadata-font B\"
-.el       .ds @metadata-font R\"
-.
-.if r L .pl \n[L]u
-.
-.ie r O .po \n[O]u
+.\"	AT&T/DWB strings that interpolate letter-like symbols
+.\" TODO: Query only the selected font (\n[.fn]) for the applicable
+.\" glyphs; falling back to a special font might result in serifed
+.\" trademark signs with a sans serif text font, for example.  We need a
+.\" new GNU troff feature for that.  See Savannah #64004.
+.\"	registered (trade mark) string
+.ie c \[u00AE] .ds Rg \[u00AE]\"
 .el \{\
-.	ie n .po .75i
-.	el   .po .963i
+.	\" This overstricken glyph looks okay with Times roman.
+.	ie t .ds Rg \Z'\s-4\h@.35m@\v@-.2m@R\s0'\s+4\[ci]\s0\"
+.	el   .ds Rg \u(R)\d\"
 .\}
-.
-.ie r W .ll \n[W]u
-.el     .ll 6i
-.\"---------------------------------------------
-.nr @copy_type 0
-.if \n[@copy_type]=4 \{\
-.	ls 2
-.	nr Pi 10
-.	nr Pt 1
+.\"	service mark string
+.ie c \[u2120] .ds Sm \[u2120]\"
+.el \{\
+.	ie t .ds Sm \v'-.4m'\s-3SM\s0\v'.4m'\"
+.	el   .ds Sm \u(SM)\d\"
 .\}
-.\"	Configure type size and vertical spacing.  If given on the
-.\"	command line, these have already been converted to basic units.
-.if !r S .nr S 10
-.ie (\n[S] >= 1000) .ps \n[S]z/1000u
-.el                 .ps \n[S]
-.nr *vs-default \n[.ps]*120/100
-.if !r V .nr V \n[*vs-default]
-.ie (\n[V] >= 1000) .vs \n[V]p/1000u
-.el                 .vs \n[V]
-.rr *vs-default
-.
-.nr @ps \n[.ps]
-.nr @vs \n[.v]
-.if \n[D]>1 .tm @ps=\n[@ps], @vs=\n[@vs]
-.if \n[D]>3 .tm INIT: l:\n[.l] p:\n[.p] o:\n[.o]
-.nr @pl \n[.p]
-.nr @ll \n[.l]
-.nr @cur-ll \n[@ll]
-.lt \n[@ll]u
-.nr @po \n[.o]
+.\"	trade mark string
+.ie c \[tm] .ds Tm \[tm]\"
+.el \{\
+.	ie t .ds Tm \v'-.4m'\s-3TM\s0\v'.4m'\"
+.	el   .ds Tm \u(TM)\d\"
+.\}
 .
 .nr @in-verbatim-region 0
 .\"---------------------------------------------
@@ -213,14 +304,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds Apptext \" empty
 .\" spacing before and after static displays (if undefined, Lsp is used)
 .\" .nr Dsp 1v
-.\" heading level counters
-.nr H1 0 1
-.nr H2 0 1
-.nr H3 0 1
-.nr H4 0 1
-.nr H5 0 1
-.nr H6 0 1
-.nr H7 0 1
+.\" more heading level counters
 .nr H8 0 1
 .nr H9 0 1
 .nr H10 0 1
@@ -254,9 +338,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds Liec Equation
 .\" caption for the table of contents
 .ds Licon CONTENTS
-.\" Put space between a list item's mark and prefix?
-.\" Flag for space between mark and prefix 1==space, 0==no space
-.\" Can also be controlled by using '.LI mark 2'
+.\" Put space between a list item's prefix and its mark?
+.\" `LI`'s second argument overrides.
 .nr Limsp 1
 .\"
 .\" Lsp controls the height of an empty line. Normally 0.5v
@@ -370,22 +453,6 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ps \\n[@ps]u
 .vs \\n[@vs]u
 ..
-.de @warning
-.tm \\*[@mm]:\\n[.F]:\\n[.c]: warning: \\$*
-.if \\n[D] .backtrace
-..
-.\" All errors are fatal.
-.de @error
-.tm \\*[@mm]:\\n[.F]:\\n[.c]: error: \\$*
-.if \\n[D] .backtrace
-.ab
-..
-.
-.de @abort
-.tm \\*[@mm]:\\n[.F]:\\n[.c]: internal error: \\$*
-.backtrace
-.ab
-..
 .de misc@toupper
 .tr aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ
 .br
@@ -428,10 +495,10 @@ http://savannah.gnu.org/bugs/?group=groff.
 .de P
 .if \\n[.$] \{\
 .	ie !\B'\\$1' \{\
-.		@warning \\$0: expected numeric argument, got '\\$1'
+.		@warning \\$0: ignoring non-numeric argument: '\\$1'
 .		shift
 .	\}
-.	el .if (\\$1 > 1) \
+.	el .if \\$1>1 \
 .		@warning \\$0: ignoring unsupported paragraph type \
 '\\$1'
 .\}
@@ -477,8 +544,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .if !r line*lp\\n[.z] .nr line*lp\\n[.z] 0
 .if !r line*ac\\n[.z] .nr line*ac\\n[.z] 0
 .ie \\n[.$] \{\
-.	if !\B'\\$1' .@error \\$0: parameter is not numeric; got '\\$1'
-.	if (\\$1 < 0) .@error \\$0: negative motion '\\$1' not supported
+.	if !\B'\\$1' .@error \\$0: argument is not numeric: '\\$1'
+.	if \\$1<0) .@error \\$0: negative motion '\\$1' not supported
 .	nr line*temp (v;\\$1)
 .\}
 .el .nr line*temp 1v
@@ -506,8 +573,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .nr misc@adjust 14
 .de SA
 .if \\n[.$] \{\
-.	if ((\\$1 < 0) : (\\$1 > 1)) .@error \\$0: invalid argument \
-'\\$1'
+.	if !\B'\\$1' .@error \\$0: argument is not numeric: '\\$1'
+.	if (\\$1<0):(\\$1>1) .@error \\$0: invalid argument: '\\$1'
 .\" XXX: ...then...
 .\"   .ad l
 .\"   .nr misc@adjust \\n[.j]
@@ -572,7 +639,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" Break here to avoid problems with new linesetting of the previous line.
 .\" Hope this doesn't break anything else :-)
 .\" Don't break if arg_4 is a '1'.
-.if \\n[D]>2 .tm PGFORM: \\$*
+.if \\n[D]>2 .tm PGFORM: \\$@
 .if ''\\$4' .br
 .if \\n[D]>3 .tm PGFORM: IN l:\\n[.l] p:\\n[.p] o:\\n[.o]
 .ie !''\\$1' \{\
@@ -927,9 +994,9 @@ numeric; got '\\$1'
 .\" Permit a document to start with EPIC.
 .if \\n[nl]<0 \&
 .ie \B'\\$1' .nr pict*w (n;\\$1)
-.el          .@error \\$0: width parameter is not numeric; got '\\$1'
+.el          .@error \\$0: width argument is not numeric: '\\$1'
 .ie \B'\\$2' .nr pict*h (v;\\$2)
-.el          .@error \\$0: height parameter is not numeric; got '\\$2'
+.el          .@error \\$0: height argument is not numeric: '\\$2'
 .\" XXX: This is kind of lame.  It's also not localized.
 .ds pict*name External picture\"
 .if !''\\$3' .ds pict*name " \\$3\"
@@ -1050,7 +1117,7 @@ numeric; got '\\$1'
 .if \\n[hd*level]=1 .nr H1h +1
 .\"
 .\" Break page before headings of level <= Ej.
-.if ((\\n[hd*level]<=\\n[Ej])&(\\n[nl]>\\n[hd*cur-bline])) .pg@next-page
+.if (\\n[hd*level]<=\\n[Ej])&(\\n[nl]>\\n[hd*cur-bline]) .pg@next-page
 .\"
 .\" increment current counter
 .nr H\\n[hd*level] +1
@@ -1338,7 +1405,7 @@ numeric; got '\\$1'
 '			sp 3
 .			ds hd*format \\g[P]
 .			af P 0
-.			ie ((\\n[P]=1)&((\\n[N]=1):(\\n[N]=2))) .sp
+.			ie (\\n[P]=1)&((\\n[N]=1):(\\n[N]=2)) .sp
 .			el .tl \\*[pg*header]
 .			af P \\*[hd*format]
 .			ie o .tl \\*[pg*odd-header]
@@ -1417,7 +1484,7 @@ numeric; got '\\$1'
 .	ds hd*format \\g[P]
 .	af P 0
 .	ie (\\n[P]=1)&(\\n[N]=1) .tl \\*[pg*header]
-.	el .tl \\*[pg*footer]
+.	el                       .tl \\*[pg*footer]
 .	af P \\*[hd*format]
 .	tl ''\\*[Pg_type!\\n[@copy_type]]''
 .\}
@@ -1933,8 +2000,8 @@ breaking page
 .\" nested DF/DE is not allowed.
 .de DF
 .if \\n[df*float] \{\
-.	ds df*msg \\$0: cannot nest floating displays; \"
-.	as df@msg use DS within DF/DE\"
+.	ds df*msg \\$0: cannot nest floating displays;\"
+.	as df*msg " use DS within DF/DE\"
 .	@error \\*[df*msg]
 .\}
 .ds ds@macro \\$0
@@ -1971,7 +2038,7 @@ breaking page
 .nr par@suppress-indentation 1	\" no indentation after displays
 .\" print float if queue is empty and the display fits into
 .\" the current page
-.if ((\\n[df*fnr]>=\\n[df*o-fnr])&(\\n[dn]<\\n[.t])) .df@print-float 1
+.if (\\n[df*fnr]>=\\n[df*o-fnr])&(\\n[dn]<\\n[.t]) .df@print-float 1
 .nr df*float 0
 ..
 .\"-------------
@@ -2249,9 +2316,7 @@ breaking page
 .nr par@suppress-indentation 1	\" no indentation after displays
 .ev
 ..
-.\"########### module list ###################
-.\" .LI text-indent mark-indent pad type [mark [LI-space [LB-space] ] ]
-.\"
+.\"########### module li ###################
 .nr li*tind 0
 .nr li*mind 0
 .nr li*pad 0
@@ -2262,9 +2327,11 @@ breaking page
 .aln :g li*lvl
 .nr li*cur-vpos 0
 .\"--------------------------
+.\" .LB text-indent mark-indent pad type [mark [LI-space [LB-space] ] ]
 .\"	the major list-begin macro.
 .\"	If type is -1, a break occurs.
 .de LB
+.if \\n[D]>2 .tm LB \\$@
 .if \\n[.$]<4 .@error \\$0: expected at least 4 arguments, got \\n[.$]
 .misc@push cind \\n[.i]
 .misc@push tind \\n[li*tind]
@@ -2301,29 +2368,71 @@ ML, RL, VL, or LB first
 .	SP (u;\\n[li*li-spc]*\\n[Lsp])
 .ne 2v
 .\"
-.ds li*c-mark \\*[li*mark] \" mark specific to this item's context
 .nr li*cnt!\\n[li*lvl] +1
-.if \\n[li*type]=1 .ds li*c-mark \\n[li*cnt!\\n[li*lvl]].
-.if \\n[li*type]=2 .ds li*c-mark \\n[li*cnt!\\n[li*lvl]])
-.if \\n[li*type]=3 .ds li*c-mark (\\n[li*cnt!\\n[li*lvl]])
-.if \\n[li*type]=4 .ds li*c-mark [\\n[li*cnt!\\n[li*lvl]]]
-.if \\n[li*type]=5 .ds li*c-mark <\\n[li*cnt!\\n[li*lvl]]>
-.if \\n[li*type]=6 .ds li*c-mark {\\n[li*cnt!\\n[li*lvl]]}
-.if \\n[.$]=1 .ds li*c-mark \\$1
-.if \\n[.$]=2 \{\
-.	ie (\\$2=2):(\\n[Limsp]=0) .ds li*c-mark \\$1\\*[li*c-mark]
-.	el .ds li*c-mark \\$1\ \\*[li*c-mark]
+.if \\n[li*type]=1 .ds li*enumerator \\n[li*cnt!\\n[li*lvl]].
+.if \\n[li*type]=2 .ds li*enumerator \\n[li*cnt!\\n[li*lvl]])
+.if \\n[li*type]=3 .ds li*enumerator (\\n[li*cnt!\\n[li*lvl]])
+.if \\n[li*type]=4 .ds li*enumerator [\\n[li*cnt!\\n[li*lvl]]]
+.if \\n[li*type]=5 .ds li*enumerator <\\n[li*cnt!\\n[li*lvl]]>
+.if \\n[li*type]=6 .ds li*enumerator {\\n[li*cnt!\\n[li*lvl]]}
+.\" Assemble (prefix, prefix padding, and) mark for this item.
+.ds li*c-mark \" empty
+.nr li*apply-prefix 0
+.nr li*pad-prefix \\n[Limsp]
+.if \\n[.$]>1 \{\
+.	ie \\n[li*type]=0 \{\
+.		\" VL and BVL use a dummy character `\&` as the "mark"
+.		\" argument to LB, which _formats_ identically to an
+.		\" empty string.  We want a comparison of string
+.		\" contents instead (otherwise the tag disappears from
+.		\" the output), hence `\?`.
+.		if !'\?\\*[li*mark]\?'' .nr li*apply-prefix 1
+.	\}
+.	el .nr li*apply-prefix 1
+.	ie \B'\\$2' .nr li*pad-prefix \\$2
+.	el \{\
+.		ds li*msg \\$0: pad-prefix argument is not numeric:\"
+.		as li*msg " '\\$2'\"
+.		@error \\*[li*msg]
+.	\}
+.	\" TODO: Ditch the following in groff 1.25.
+.	if \\$2=2 \{\
+.		ds li*msg \\$0: second argument is a Boolean;\"
+.		as li*msg " treating '2' as '0'\"
+.		@warning \\*[li*msg]
+.		rm li*msg
+.		nr li*pad-prefix 0
+.	\}
 .\}
+.if \\n[li*apply-prefix] \{\
+.	as li*c-mark \\$1\"
+.	if \\n[li*pad-prefix] .as li*c-mark \ \"
+.\}
+.rr li*pad-prefix
+.rr li*apply-prefix
+.\" If only one argument, it replaces the mark (no prefixing).
+.ie \\n[.$]=1 .ds li*c-mark \\$1\"
+.el \{\
+.	ie d li*enumerator    .as li*c-mark \\*[li*enumerator]\"
+.	el                    .as li*c-mark \\*[li*mark]\"
+.\}
+.rm li*enumerator
+.\" Determine amount of padding after the mark.
 .nr li*c-pad \\n[li*pad]
-.\"
-.\" determine where the text begins
-.if \w'\\*[li*c-mark]'>\\n[li*tind] \{\
-.	@warning \\$0: overlong mark '\\*[li*c-mark]'
-.	nr li*c-pad 2n \" force item/mark separation
+.\" Compute width of the mark plus the padding after it.
+.if \\n[li*type]>=0 \{\
+.	nr li*markpad \w'\\*[li*c-mark]'+\\n[li*c-pad]
+.	if \\n[li*markpad]>\\n[li*tind] \{\
+.		@warning \\$0: overlong mark '\\*[li*c-mark]'
+.		\" Force (minimal) item/mark separation.
+.		nr li*c-pad 1n
+.	rr li*markpad
+.	\}
 .\}
-.nr li*text-begin \\n[li*tind]>?\w@\\*[li*c-mark]@+\\n[li*c-pad]
+.\" determine where the text begins
+.nr li*text-begin \\n[li*tind]>?(\w@\\*[li*c-mark]@+\\n[li*c-pad])
 .\"
-.\" determine where the mark begin
+.\" determine where the mark begins
 .ie !\\n[li*c-pad] .nr li*mark-begin \\n[li*mind]
 .el                .nr li*mark-begin \\n[li*text-begin]-\\n[li*c-pad]-\w@\\*[li*c-mark]@
 .if !\\n[li*mark-begin] .nr li*mark-begin 0
@@ -2365,7 +2474,7 @@ and LI first
 .nr li*i 0
 .if \\n[.$] \{\
 .	ie \B'\\$1' .nr li*i \\$1
-.	el          .@error \\$0: argument not numeric: '\\n[li*i]'
+.	el          .@error \\$0: argument is not numeric: '\\$1'
 .\}
 .if \\n[li*i]>\\n[li*lvl] .@error \\$0 invalid argument: \\n[li*i] \
 exceeds depth of nested lists (\\n[li*lvl])
@@ -2373,39 +2482,55 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr par@suppress-indentation 1	\" no indentation after lists
 ..
 .\"-------------
+.\" List types `AL` and `RL` combine enumerators with punctuation, and
+.\" use register `Li` to determine text indentation.
 .de AL
+.if \\n[D]>2 .tm \\$0: \\$@
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
-.if \\n[D]>2 .tm AL $*
-.ie \\n[.$]<=1 .LB              \\n[Li] 0 2 1 "\\$1"
+.ie \\n[.$]<=1 .LB              \\n[Li] 0 1 1 "\\$1"
 .el \{\
-.	ie \\n[.$]=2 .LB        0\\$2   0 2 1 "\\$1"
+.	ie \\n[.$]=2 .LB        0\\$2   0 1 1 "\\$1"
 .	el \{\
-.		ie !'\\$2'' .LB \\$2    0 2 1 "\\$1" 0 1
-.		el          .LB \\n[Li] 0 2 1 "\\$1" 0 1
+.		ie !'\\$2'' .LB \\$2    0 1 1 "\\$1" 0 1
+.		el          .LB \\n[Li] 0 1 1 "\\$1" 0 1
 .	\}
 .\}
 ..
-.de ML
-.if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
-.if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
-.if \\n[D]>2 .tm ML $*
-.nr li*ml-width \w@\\$1@u+1n
-.if \\n[.$]<2 .LB      \\n[li*ml-width]u 0 1 0 "\\$1"
-.if \\n[.$]=2 .LB      0\\$2             0 1 0 "\\$1"
-.if \\n[.$]=3 \{\
-.	ie '\\$2'' .LB \\n[li*ml-width]u 0 1 0 "\\$1" 0 1
-.	el         .LB \\n[Li]           0 1 0 "\\$1" 0 1
+.de RL
+.if \\n[D]>2 .tm \\$0: \\$@
+.if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
+.if \\n[.$]<1 .LB      \\n[Li] 0 1 4
+.if \\n[.$]=1 .LB      0\\$1   0 1 4
+.if \\n[.$]=2 \{\
+.	ie '\\$1'' .LB \\n[Li] 0 1 4 1 0 1
+.	el         .LB 0\\$1   0 1 4 1 0 1
 .\}
 ..
+.\" List types `VL` and `BVL` set a user-specified tag (idiomatically a
+.\" word or phrase) and use register `Pi` to determine text indentation.
 .de VL
-.if \\n[D]>2 .tm VL $*
+.if \\n[D]>2 .tm \\$0: \\$@
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
-.if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
-.ie \\n[.$]<3 .LB 0\\$1 0\\$2 0 0
-.el           .LB 0\\$1 0\\$2 0 0 \& 0 1
+.ie \\n[.$]<1 .nr li*text-indent \\n[Pi]
+.el           .nr li*text-indent \\$1
+.ie \\n[.$]<3 .LB 0\\n[li*text-indent] 0\\$2 0 0
+.el           .LB 0\\n[li*text-indent] 0\\$2 0 0 \& 0 1
+.rr li*text-indent
 ..
+.\" `BVL` always breaks after the tag, so the mark cannot overset.
+.de BVL
+.if \\n[D]>2 .tm \\$0: \\$@
+.if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
+.ie \\n[.$]<1 .nr li*text-indent \\n[Pi]
+.el           .nr li*text-indent \\$1
+.ie \\n[.$]<3 .LB 0\\n[li*text-indent] 0\\$2 0 -1
+.el           .LB 0\\n[li*text-indent] 0\\$2 0 -1 \& 0 1
+.rr li*text-indent
+..
+.\" List types `BL` and `DL` use bullets and em dashes, respectively, as
+.\" the item marks, and use register `Pi` to determine text indentation.
 .de BL
-.if \\n[D]>2 .tm BL $*
+.if \\n[D]>2 .tm \\$0: \\$@
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \\*[BU]
 .if \\n[.$]=1 .LB 0\\$1 0 1 0 \\*[BU]
@@ -2415,32 +2540,34 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\}
 ..
 .de DL
-.if \\n[D]>2 .tm DL $*
+.if \\n[D]>2 .tm \\$0: \\$@
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
-.if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \[em]
-.if \\n[.$]=1 .LB 0\\$1   0 1 0 \[em]
+.if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \*[EM]
+.if \\n[.$]=1 .LB 0\\$1   0 1 0 \*[EM]
 .if \\n[.$]=2 \{\
-.	ie '\\$1'' .LB \\n[Pi] 0 1 0 \[em] 0 1
-.	el         .LB 0\\$1   0 1 0 \[em] 0 1
+.	ie '\\$1'' .LB \\n[Pi] 0 1 0 \*[EM] 0 1
+.	el         .LB 0\\$1   0 1 0 \*[EM] 0 1
 .\}
 ..
-.de RL
-.if \\n[D]>2 .tm RL $*
-.if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
-.if \\n[.$]<1 .LB      6     0 2 4
-.if \\n[.$]=1 .LB      0\\$1 0 2 4
-.if \\n[.$]=2 \{\
-.	ie '\\$1'' .LB 6     0 2 4 1 0 1
-.	el         .LB 0\\$1 0 2 4 1 0 1
-.\}
-..
-.\" Broken Variable List. As .VL but text begin on the next line
-.de BVL
-.if \\n[D]>2 .tm BVL $*
+.\" List type `ML` uses an argument for the mark measures it to
+.\" determine text indentation, ignoring both `Li` and `Pi`.
+.de ML
+.if \\n[D]>2 .tm \\$0: \\$@
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
-.ie \\n[.$]<3 .LB 0\\$1 0\\$2 0 -1
-.el           .LB 0\\$1 0\\$2 0 -1 \& 0 1
+.nr li*text-indent \w@\\$1@u+1n
+.ie \\n[.$]<2 .LB        \\n[li*text-indent]u 0 0 0 "\\$1"
+.el \{\
+.	if !\B'\\$2' \{\
+.		ds li*msg \\$0: text-indent argument is not numeric:\"
+.		as " '\\$2'\"
+.		@error \\*[li*msg]
+.	\}
+.	ie \\n[.$]=2 .LB \\$2                 0 1 0 "\\$1"
+.	el           .LB \\n[li*text-indent]u 0 0 0 "\\$1"
+.	\}
+.\}
+.rr li*text-indent
 ..
 .\" ####### module tbl #######################################
 .\" This module is copied from groff_ms and modified for mm.
@@ -2532,7 +2659,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	mk
 .	\" space down to middle of equation
 '	sp (u;(\\$1-1v)/2)
-.	ie (\\n[Eq]%2) \{\
+.	ie \\n[Eq]%2 \{\
 .		\"	label to the left
 \h'|0'\\*[eq*label]
 .	\}
@@ -2992,7 +3119,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .SP 2
 .ref@print-refs
 .if 0\\$1<1 .nr ref*nr 0 1
-.if ((\\n[ref*i]=0):(\\n[ref*i]=2)) .SK
+.if (\\n[ref*i]=0):(\\n[ref*i]=2) .SK
 ..
 .\"-----------
 .\" called by end-of-text!
@@ -3266,8 +3393,8 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if !\\n[.$]=1 .@abort expected an argument, got \\n[.$]
 .if '\\*[qrf*caller]'' .@abort qrf*caller string not initialized
 .if !\A'\\$1' \{
-.	ds qref*msg \\*[qrf*caller]: '\\$1' is not a valid roff string\"
-.	as qref*msg " name\"
+.	ds qref*msg \\*[qrf*caller]: '\\$1' is not a valid string\"
+.	as qref*msg " identifier\"
 .	@error \\*[qref*msg]
 .\}
 .ds qrf*caller \" empty
@@ -3415,7 +3542,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" IND term ...
 .de IND
 .if !d ind*file .@error \\$0: no active index; call INITI first
-.if \\n[.$]<1 .@error \\$0: expected at least 1 argument, got \\n[.$]
+.if \\n[.$]<1 .@error \\$0: expected an argument
 .if '\\$1'' .@error \\$0: cannot record empty index entry
 .if \\n[nl]<0 .@error \\$0: cannot record index entry when not on a page
 .ds ind*line \\$1

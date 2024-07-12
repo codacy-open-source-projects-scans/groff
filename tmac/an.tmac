@@ -1303,8 +1303,8 @@ contains unsupported escape sequence
 .\" Set a man page cross reference.
 .\" .MR page-topic page-section [trailing-text]
 .de1 MR
-.  if ((\\n[.$] < 2) : (\\n[.$] > 3)) \
-.    an-style-warn .\\$0 expects 2 or 3 arguments, got \\n[.$]
+.  if ((\\n[.$] < 1) : (\\n[.$] > 3)) \
+.    an-style-warn .\\$0 expects 1 to 3 arguments, got \\n[.$]
 .  ds an*url man:\\$1(\\$2)\"
 .  if (\\n[an*MR-URL-format] = 2) \
 .    ds an*url x-man-page://\\$2/\\$1\"

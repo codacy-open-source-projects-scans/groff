@@ -37,8 +37,7 @@ This file describes how to prepare 'groff' for a new release.
      (<https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/\
      master/glyphlist.txt> may be more convenient.)
 
-* Update the 'gnulib' sub-module to the latest version and the
-  corresponding required commit hash identifier in 'INSTALL.REPO'.
+* Update the 'gnulib' sub-module to the latest stable version.
 
 * Update the release version number where it is hard-coded.
   + NEWS
@@ -50,7 +49,10 @@ This file describes how to prepare 'groff' for a new release.
   a historical ChangeLog file and add it to `EXTRA_DIST` in Makefile.am.
 
 * Update in 'src/roff/groff/groff.cpp' the 'printf' that displays the
-  copyright to include the current year if it is not present.
+  copyright to include the current year if it is not present.  (If no
+  copyrightable changes to the project's code have been made in the
+  current calendar year, use the most recent year in which they have;
+  see the 'HACKING' file.)
 
 * Increment the version number by tagging the release, beta, or release
   candidate.  groff requires an explicit three-part version,

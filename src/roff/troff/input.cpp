@@ -924,7 +924,6 @@ static char get_char_for_escape_parameter(bool allow_space = false)
   int c = get_copy(0 /* nullptr */,
 		   false /* is defining */,
 		   true /* handle \E */);
-  assert(c != '\n');
   switch (c) {
   case EOF:
     copy_mode_error("end of input in escape sequence");
@@ -932,9 +931,13 @@ static char get_char_for_escape_parameter(bool allow_space = false)
   default:
     if (!is_invalid_input_char(c))
       break;
-      // fall through
+    // fall through
+  case '\n':
+    if (c == '\n')
+      input_stack::push(make_temp_iterator("\n"));
+    // fall through
   case ' ':
-    if (allow_space)
+    if (c == ' ' && allow_space)
       break;
     // fall through
   case '\t':
@@ -7843,10 +7846,11 @@ void pipe_output()
       skip_line();
     }
     else {
-      char *pc;
-      if ((pc = read_string()) == 0)
+      char *pc = read_string();
+      if (0 /* nullptr */ == pc)
 	error("can't pipe to empty command");
-      if (pipe_command) {
+      // Are we adding to an existing pipeline?
+      if (pipe_command != 0 /* nullptr */) {
 	char *s = new char[strlen(pipe_command) + strlen(pc) + 1 + 1];
 	strcpy(s, pipe_command);
 	strcat(s, "|");
@@ -7871,7 +7875,7 @@ void system_request()
   }
   else {
     char *command = read_string();
-    if (!command)
+    if (0 /* nullptr */ == command)
       error("empty command");
     else {
       system_status = system(command);

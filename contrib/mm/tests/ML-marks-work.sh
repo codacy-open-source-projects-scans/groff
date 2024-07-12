@@ -20,26 +20,46 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Regression-test Savannah #65843.
+fail=
+
+wail () {
+    echo ...FAILED >&2
+    fail=YES
+}
+
+# Unit-test ML list mark application, replacement, and prefixing.
 
 input='.SA 0
 .P
 This is an
 .I mm
-document.
-.VL 11 5
-.LI mark
-Item text.
-.LI foo
-Bar.
-.LI "oversized\ mark"
-This mark is oversized.
-But it should not overprint.
+document with an
+.B ML
+marked list.
+.ML *
+.LI
+default mark, no prefix
+.LI +
+mark replaced
+.LI + 1
+mark prefixed (with a padding space)
 .LE'
 
 output=$(echo "$input" | "$groff" -mm -Tascii -P -cbou)
 echo "$output"
+
+echo "checking ML list with 0-argument LI call" >&2
 echo "$output" \
-    | grep -q '^ *oversized mark This mark is oversized\.'
+    | grep -qx ' *\* default mark, no prefix' || wail
+
+echo "checking ML list with 1-argument LI call" >&2
+echo "$output" \
+    | grep -qx ' *+ mark replaced' || wail
+
+echo "checking ML list with 2-argument LI call" >&2
+echo "$output" \
+    | grep -qx ' *+ \* mark prefixed (with a padding space)' || wail
+
+test -z "$fail"
 
 # vim:set ai et sw=4 ts=4 tw=72:
