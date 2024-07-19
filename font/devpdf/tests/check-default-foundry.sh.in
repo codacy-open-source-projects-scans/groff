@@ -81,6 +81,8 @@ do
     test -f "$devpdf_fontbuilddir"/"$f" || wail
 done
 
+test -z "$fail" || exit
+
 if [ "$ghostscript" = no ] || [ "$ghostscript" = missing ]
 then
     echo "Ghostscript not available; skipping check for any further" \

@@ -2183,6 +2183,8 @@ void glyph_node::ascii_print(ascii_output_file *ascii)
     ascii->outs(ci->nm.contents());
 }
 
+// XXX: This and `composite_node::dump_node()` are identical.  C++
+// presumably has several different solutions for this.  Pick one.
 void glyph_node::dump_node()
 {
   unsigned char c = ci->get_ascii_code();
@@ -4279,6 +4281,7 @@ public:
   bool is_tag();
   void vertical_extent(vunits *, vunits *);
   vunits vertical_width();
+  void dump_node();
 };
 
 composite_node::composite_node(node *p, charinfo *c, tfont *t, statem *s,
@@ -4916,6 +4919,26 @@ void composite_node::tprint(troff_output_file *out)
     out->right(x);
   else
     out->right(track_kern);
+}
+
+// XXX: This and `glyph_node::dump_node()` are identical.  C++
+// presumably has several different solutions for this.  Pick one.
+void composite_node::dump_node()
+{
+  unsigned char c = ci->get_ascii_code();
+  fprintf(stderr, "{type: %s, character: ", type());
+  if (c)
+    fprintf(stderr, "\"%c\"", c);
+  else
+    fprintf(stderr, "\"\\%s\"", ci->nm.contents());
+  fputs(", ", stderr);
+  if (push_state)
+    fprintf(stderr, "push_state, ");
+  if (state)
+    state->display_state();
+  fprintf(stderr, "diversion level: %d", div_nest_level);
+  fputs("}", stderr);
+  fflush(stderr);
 }
 
 static node *make_composite_node(charinfo *s, environment *env)

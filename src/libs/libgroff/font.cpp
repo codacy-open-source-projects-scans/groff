@@ -55,7 +55,8 @@ struct font_kern_list {
   int amount;
   font_kern_list *next;
 
-  font_kern_list(glyph *, glyph *, int, font_kern_list * = 0);
+  font_kern_list(glyph *, glyph *, int,
+		 font_kern_list * = 0 /* nullptr */);
 };
 
 struct font_widths_cache {
@@ -63,7 +64,7 @@ struct font_widths_cache {
   int point_size;
   int *width;
 
-  font_widths_cache(int, int, font_widths_cache * = 0);
+  font_widths_cache(int, int, font_widths_cache * = 0 /* nullptr */);
   ~font_widths_cache();
 };
 
@@ -91,7 +92,8 @@ struct text_file {
 };
 
 text_file::text_file(FILE *p, char *s) : fp(p), path(s), lineno(0),
-  linebufsize(128), recognize_comments(true), silent(false), buf(0)
+  linebufsize(128), recognize_comments(true), silent(false),
+  buf(0 /* nullptr */)
 {
 }
 
@@ -105,9 +107,9 @@ text_file::~text_file()
 
 bool text_file::next_line()
 {
-  if (fp == 0)
+  if (0 /* nullptr */ == fp)
     return false;
-  if (buf == 0)
+  if (0 /* nullptr */ == buf)
     buf = new char[linebufsize];
   for (;;) {
     lineno++;
@@ -131,13 +133,13 @@ bool text_file::next_line()
 	  break;
       }
     }
-    if (length == 0)
+    if (0 == length)
       break;
     buf[length] = '\0';
     char *ptr = buf;
     while (csspace(*ptr))
       ptr++;
-    if (*ptr != 0 && (!recognize_comments || *ptr != '#'))
+    if (*ptr != 0 /* nullptr */ && (!recognize_comments || *ptr != '#'))
       return true;
   }
   return false;
@@ -164,7 +166,7 @@ void text_file::fatal(const char *format,
 int glyph_to_unicode(glyph *g)
 {
   const char *nm = glyph_to_name(g);
-  if (nm != 0) {
+  if (nm != 0 /* nullptr */) {
     // ASCII character?
     if (nm[0] == 'c' && nm[1] == 'h' && nm[2] == 'a' && nm[3] == 'r'
 	&& (nm[4] >= '0' && nm[4] <= '9')) {
@@ -195,7 +197,8 @@ int glyph_to_unicode(glyph *g)
     }
     // groff glyphs that map to Unicode?
     const char *unicode = glyph_name_to_unicode(nm);
-    if (unicode != 0 && strchr(unicode, '_') == 0) {
+    if ((unicode != 0 /* nullptr */)
+	&& (strchr(unicode, '_') == 0 /* nullptr */)) {
       char *ignore;
       return (int)strtol(unicode, &ignore, 16);
     }
@@ -205,10 +208,12 @@ int glyph_to_unicode(glyph *g)
 
 /* font functions */
 
-font::font(const char *s) : ligatures(0), kern_hash_table(0),
-  space_width(0), special(false), internalname(0), slant(0.0), zoom(0),
-  ch_index(0), nindices(0), ch(0), ch_used(0), ch_size(0),
-  widths_cache(0)
+font::font(const char *s) : ligatures(0),
+  kern_hash_table(0 /* nullptr */),
+  space_width(0), special(false), internalname(0 /* nullptr */),
+  slant(0.0), zoom(0), ch_index(0 /* nullptr */), nindices(0),
+  ch(0 /* nullptr */), ch_used(0), ch_size(0),
+  widths_cache(0 /* nullptr */)
 {
   name = new char[strlen(s) + 1];
   strcpy(name, s);
@@ -245,7 +250,7 @@ static int scale_round(int n, int x, int y)
 {
   assert(x >= 0 && y > 0);
   int y2 = y/2;
-  if (x == 0)
+  if (0 == x)
     return 0;
   if (n >= 0) {
     if (n <= (INT_MAX - y2) / x)
@@ -262,7 +267,7 @@ static int scale_round(int n, int x, int y)
 static int scale_round(int n, int x, int y, int z)
 {
   assert(x >= 0 && y > 0 && z > 0);
-  if (x == 0)
+  if (0 == x)
     return 0;
   if (n >= 0)
     return int((n * double(x) / double(y)) * (double(z) / 1000.0) + .5);
@@ -357,7 +362,7 @@ int font::get_width(glyph *g, int point_size)
   int idx = glyph_to_index(g);
   assert(idx >= 0);
   int real_size;
-  if (zoom == 0) // 0 means "don't zoom"
+  if (0 == zoom) // 0 means "don't zoom"
     real_size = point_size;
   else
   {
@@ -620,7 +625,7 @@ const char *font::get_image_generator()
 
 void font::alloc_ch_index(int idx)
 {
-  if (nindices == 0) {
+  if (0 == nindices) {
     nindices = 128;
     if (idx >= nindices)
       nindices = idx + 10;
@@ -644,7 +649,7 @@ void font::alloc_ch_index(int idx)
 
 void font::extend_ch()
 {
-  if (ch == 0)
+  if (0 /* nullptr */ == ch)
     ch = new font_char_metric[ch_size = 16];
   else {
     int old_ch_size = ch_size;
@@ -708,15 +713,15 @@ font *font::load_font(const char *s, bool load_header_only)
   font *f = new font(s);
   if (!f->load(load_header_only)) {
     delete f;
-    return 0;
+    return 0 /* nullptr */;
   }
   return f;
 }
 
 static char *trim_arg(char *p)
 {
-  if (0 == p)
-    return 0;
+  if (0 /* nullptr */ == p)
+    return 0 /* nullptr */;
   while (csspace(*p))
     p++;
   char *q = strchr(p, '\0');
@@ -762,7 +767,7 @@ again:
       }
     if (attempt_file_open) {
       FILE *fp = fopen(p, "r");
-      if (fp != 0) {
+      if (fp != 0 /* nullptr */) {
 	if (fgets(line, 254, fp)) {
 	  // Don't recurse on file names.
 	  attempt_file_open = false;
@@ -782,19 +787,19 @@ again:
 
 bool font::load(bool load_header_only)
 {
-  FILE *fp;
   char *path;
-  if ((fp = open_file(name, &path)) == 0)
+  FILE *fp = open_file(name, &path);
+  if (0 /* nullptr */ == fp)
     return false;
   text_file t(fp, path);
   t.silent = load_header_only;
-  char *p = 0;
+  char *p = 0 /* nullptr */;
   bool saw_name_directive = false;
   while (t.next_line()) {
     p = strtok(t.buf, WS);
     if (strcmp(p, "name") == 0) {
-      p = strtok(0, WS);
-      if (0 == p) {
+      p = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == p) {
 	t.error("'name' directive requires an argument");
 	return false;
       }
@@ -806,9 +811,9 @@ bool font::load(bool load_header_only)
       saw_name_directive = true;
     }
     else if (strcmp(p, "spacewidth") == 0) {
-      p = strtok(0, WS);
+      p = strtok(0 /* nullptr */, WS);
       int n;
-      if (0 == p) {
+      if (0 /* nullptr */ == p) {
 	t.error("missing argument to 'spacewidth' directive");
 	return false;
       }
@@ -823,9 +828,9 @@ bool font::load(bool load_header_only)
       space_width = n;
     }
     else if (strcmp(p, "slant") == 0) {
-      p = strtok(0, WS);
+      p = strtok(0 /* nullptr */, WS);
       double n;
-      if (0 == p) {
+      if (0 /* nullptr */ == p) {
 	t.error("missing argument to 'slant' directive");
 	return false;
       }
@@ -841,8 +846,8 @@ bool font::load(bool load_header_only)
     }
     else if (strcmp(p, "ligatures") == 0) {
       for (;;) {
-	p = strtok(0, WS);
-	if (0 == p || strcmp(p, "0") == 0)
+	p = strtok(0 /* nullptr */, WS);
+	if (0 /* nullptr */ == p || strcmp(p, "0") == 0)
 	  break;
 	if (strcmp(p, "ff") == 0)
 	  ligatures |= LIG_ff;
@@ -861,8 +866,8 @@ bool font::load(bool load_header_only)
       }
     }
     else if (strcmp(p, "internalname") == 0) {
-      p = strtok(0, WS);
-      if (0 == p) {
+      p = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == p) {
 	t.error("missing argument to 'internalname' directive");
 	return false;
       }
@@ -874,7 +879,7 @@ bool font::load(bool load_header_only)
     }
     else if (strcmp(p, "kernpairs") != 0 && strcmp(p, "charset") != 0) {
       char *directive = p;
-      p = strtok(0, "\n");
+      p = strtok(0 /* nullptr */, "\n");
       handle_unknown_font_command(directive, trim_arg(p), t.path,
 				  t.lineno);
     }
@@ -890,19 +895,19 @@ bool font::load(bool load_header_only)
 	return true;
       for (;;) {
 	if (!t.next_line()) {
-	  directive = 0;
+	  directive = 0 /* nullptr */;
 	  break;
 	}
 	char *c1 = strtok(t.buf, WS);
-	if (0 == c1)
+	if (0 /* nullptr */ == c1)
 	  continue;
-	char *c2 = strtok(0, WS);
-	if (0 == c2) {
+	char *c2 = strtok(0 /* nullptr */, WS);
+	if (0 /* nullptr */ == c2) {
 	  directive = c1;
 	  break;
 	}
-	p = strtok(0, WS);
-	if (0 == p) {
+	p = strtok(0 /* nullptr */, WS);
+	if (0 /* nullptr */ == p) {
 	  t.error("missing kern amount for kerning pair '%1 %2'", c1,
 		  c2);
 	  return false;
@@ -922,21 +927,21 @@ bool font::load(bool load_header_only)
       if (load_header_only)
 	return true;
       saw_charset_directive = true;
-      glyph *last_glyph = 0;
+      glyph *last_glyph = 0 /* nullptr */;
       for (;;) {
 	if (!t.next_line()) {
-	  directive = 0;
+	  directive = 0 /* nullptr */;
 	  break;
 	}
 	char *nm = strtok(t.buf, WS);
-	assert(nm != 0);
-	p = strtok(0, WS);
-	if (0 == p) {
+	assert(nm != 0 /* nullptr */);
+	p = strtok(0 /* nullptr */, WS);
+	if (0 /* nullptr */ == p) {
 	  directive = nm;
 	  break;
 	}
 	if (p[0] == '"') {
-	  if (last_glyph == 0) {
+	  if (0 /* nullptr */ == last_glyph) {
 	    t.error("the first entry ('%1') in 'charset' subsection"
 		    " cannot be an alias", nm);
 	    return false;
@@ -965,8 +970,8 @@ bool font::load(bool load_header_only)
 	    t.error("missing or invalid width for glyph '%1'", nm);
 	    return false;
 	  }
-	  p = strtok(0, WS);
-	  if (0 == p) {
+	  p = strtok(0 /* nullptr */, WS);
+	  if (0 /* nullptr */ == p) {
 	    t.error("missing character type for '%1'", nm);
 	    return false;
 	  }
@@ -981,14 +986,14 @@ bool font::load(bool load_header_only)
 	    return false;
 	  }
 	  metric.type = type;
-	  p = strtok(0, WS);
-	  if (0 == p) {
+	  p = strtok(0 /* nullptr */, WS);
+	  if (0 /* nullptr */ == p) {
 	    t.error("missing code for '%1'", nm);
 	    return false;
 	  }
 	  char *ptr;
 	  metric.code = (int)strtol(p, &ptr, 0);
-	  if (metric.code == 0 && ptr == p) {
+	  if (ptr == p) {
 	    t.error("invalid code '%1' for character '%2'", p, nm);
 	    return false;
 	  }
@@ -997,8 +1002,8 @@ bool font::load(bool load_header_only)
 	    if (w > 1)
 	      metric.width *= w;
 	  }
-	  p = strtok(0, WS);
-	  if ((0 == p) || (strcmp(p, "--") == 0)) {
+	  p = strtok(0 /* nullptr */, WS);
+	  if ((0 /* nullptr */ == p) || (strcmp(p, "--") == 0)) {
 	    metric.special_device_coding = 0;
 	  }
 	  else {
@@ -1017,7 +1022,7 @@ bool font::load(bool load_header_only)
 	  }
 	}
       }
-      if (0 == last_glyph) {
+      if (0 /* nullptr */ == last_glyph) {
 	t.error("no glyphs defined in font description");
 	return false;
       }
@@ -1071,14 +1076,14 @@ static struct {
 const char *font::load_desc()
 {
   int nfonts = 0;
-  FILE *fp;
   char *path;
-  if ((fp = open_file("DESC", &path)) == 0)
+  FILE *fp = open_file("DESC", &path);
+  if (0 /* nullptr */ == fp)
     return 0 /* nullptr */;
   text_file t(fp, path);
   while (t.next_line()) {
     char *p = strtok(t.buf, WS);
-    assert(p != 0);
+    assert(p != 0 /* nullptr */);
     bool numeric_directive_found = false;
     unsigned int idx;
     for (idx = 0; !numeric_directive_found
@@ -1086,8 +1091,8 @@ const char *font::load_desc()
       if (strcmp(table[idx].numeric_directive, p) == 0)
 	numeric_directive_found = true;
     if (numeric_directive_found) {
-      char *q = strtok(0, WS);
-      if (0 == q) {
+      char *q = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == q) {
 	t.error("missing value for directive '%1'", p);
 	return 0 /* nullptr */;
       }
@@ -1111,8 +1116,8 @@ const char *font::load_desc()
       *(table[idx-1].ptr) = val;
     }
     else if (strcmp("family", p) == 0) {
-      p = strtok(0, WS);
-      if (0 == p) {
+      p = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == p) {
 	t.error("'family' directive requires an argument");
 	return 0 /* nullptr */;
       }
@@ -1121,8 +1126,8 @@ const char *font::load_desc()
       family = tem;
     }
     else if (strcmp("fonts", p) == 0) {
-      p = strtok(0, WS);
-      if (0 == p) {
+      p = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == p) {
 	t.error("'fonts' directive requires arguments");
 	return 0 /* nullptr */;
       }
@@ -1133,8 +1138,8 @@ const char *font::load_desc()
       }
       font_name_table = (const char **)new char *[nfonts+1];
       for (int i = 0; i < nfonts; i++) {
-	p = strtok(0, WS);
-	while (0 == p) {
+	p = strtok(0 /* nullptr */, WS);
+	while (0 /* nullptr */ == p) {
 	  if (!t.next_line()) {
 	    t.error("unexpected end of file while reading font list");
 	    return 0 /* nullptr */;
@@ -1145,28 +1150,28 @@ const char *font::load_desc()
 	strcpy(temp, p);
 	font_name_table[i] = temp;
       }
-      p = strtok(0, WS);
-      if (p != 0) {
+      p = strtok(0 /* nullptr */, WS);
+      if (p != 0 /* nullptr */) {
 	t.error("font count does not match declared number of fonts"
 		" ('%1')", nfonts);
 	return 0 /* nullptr */;
       }
-      font_name_table[nfonts] = 0;
+      font_name_table[nfonts] = 0 /* nullptr */;
     }
     else if (strcmp("papersize", p) == 0) {
-      if (0 == res) {
+      if (0 /* nullptr */ == res) {
 	t.error("'res' directive must precede 'papersize' in device"
 		" description file");
 	return 0 /* nullptr */;
       }
-      p = strtok(0, WS);
-      if (0 == p) {
+      p = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == p) {
 	t.error("'papersize' directive requires an argument");
 	return 0 /* nullptr */;
       }
       bool found_paper = false;
       char *savedp = strdup(p);
-      if (0 == savedp)
+      if (0 /* nullptr */ == savedp)
 	t.fatal("memory allocation failure while processing 'papersize'"
 		" directive");
       while (p) {
@@ -1178,9 +1183,9 @@ const char *font::load_desc()
 	  found_paper = true;
 	  break;
 	}
-	p = strtok(0, WS);
+	p = strtok(0 /* nullptr */, WS);
       }
-      assert(savedp != 0);
+      assert(savedp != 0 /* nullptr */);
       if (!found_paper) {
 	t.error("unable to determine a paper format from '%1'", savedp);
 	free(savedp);
@@ -1197,8 +1202,8 @@ const char *font::load_desc()
       sizes = new int[n];
       int i = 0;
       for (;;) {
-	p = strtok(0, WS);
-	while (0 == p) {
+	p = strtok(0 /* nullptr */, WS);
+	while (0 /* nullptr */ == p) {
 	  if (!t.next_line()) {
 	    t.error("list of sizes must be terminated by '0'");
 	    return 0 /* nullptr */;
@@ -1226,7 +1231,7 @@ const char *font::load_desc()
 	  delete[] old_sizes;
 	}
 	sizes[i++] = lower;
-	if (lower == 0)
+	if (0 == lower)
 	  break;
 	sizes[i++] = upper;
       }
@@ -1243,8 +1248,8 @@ const char *font::load_desc()
 	style_table[j] = 0;
       int i = 0;
       for (;;) {
-	p = strtok(0, WS);
-	if (0 == p)
+	p = strtok(0 /* nullptr */, WS);
+	if (0 /* nullptr */ == p)
 	  break;
 	// leave room for terminating 0
 	if (i + 1 >= style_table_size) {
@@ -1269,8 +1274,8 @@ const char *font::load_desc()
     else if (strcmp("unicode", p) == 0)
       is_unicode = true;
     else if (strcmp("image_generator", p) == 0) {
-      p = strtok(0, WS);
-      if (0 == p) {
+      p = strtok(0 /* nullptr */, WS);
+      if (0 /* nullptr */ == p) {
 	t.error("'image_generator' directive requires an argument");
 	return 0 /* nullptr */;
       }
@@ -1280,25 +1285,25 @@ const char *font::load_desc()
       break;
     else if (unknown_desc_command_handler) {
       char *directive = p;
-      p = strtok(0, "\n");
+      p = strtok(0 /* nullptr */, "\n");
       (*unknown_desc_command_handler)(directive, trim_arg(p), t.path,
 				      t.lineno);
     }
   }
   t.lineno = 0;
-  if (res == 0) {
+  if (0 /* nullptr */ == res) {
     t.error("device description file missing 'res' directive");
     return 0 /* nullptr */;
   }
-  if (unitwidth == 0) {
+  if (0 == unitwidth) {
     t.error("device description file missing 'unitwidth' directive");
     return 0 /* nullptr */;
   }
-  if (font_name_table == 0) {
+  if (0 /* nullptr */ == font_name_table) {
     t.error("device description file missing 'fonts' directive");
     return 0 /* nullptr */;
   }
-  if (sizes == 0) {
+  if (0 /* nullptr */ == sizes) {
     t.error("device description file missing 'sizes' directive");
     return 0 /* nullptr */;
   }

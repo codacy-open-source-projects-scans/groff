@@ -2561,7 +2561,7 @@ If the width of the mark plus any padding
 call)
 exceeds the text indentation,
 .I "groff mm"
-warns and uses one en of padding.
+warns and uses one en of padding between the mark and the text.
 .
 A second argument
 prefixes
@@ -2569,9 +2569,6 @@ prefixes
 to the configured mark
 and conditionally puts an unbreakable space between the prefix and mark
 per the argument's Boolean value.
-.
-See register
-.BR Limsp .
 .
 .
 .TP
@@ -3793,7 +3790,9 @@ analogously configure the output of each captioned list.
 .
 .TP
 .B TE
-Table end.
+End
+.MR @g@tbl @MAN1EXT@
+table.
 .
 See
 .BR TS .
@@ -3870,12 +3869,14 @@ TPoh@argument to \fBOH\fP
 .
 .
 .TP
-.B TS \fR[\fPH\fR]\fP
-Table start.
+.BR TS\~ [ H ]
+Start
+.MR @g@tbl @MAN1EXT@
+table.
 .
 Argument \[lq]H\[rq] tells
 .I mm
-that the table has a heading.
+that the table's heading should repeat after page breaks.
 .
 See
 .BR TE ,
@@ -5074,17 +5075,6 @@ lists whose
 .I type
 argument is greater than zero
 .RB ( 5 ).
-.
-.
-.TP
-.B Limsp
-inserts a space between the prefix and the mark in lists;
-see
-.B LB
-and
-.B LI
-(Boolean-valued;
-.BR 1 ).
 .
 .
 .TP

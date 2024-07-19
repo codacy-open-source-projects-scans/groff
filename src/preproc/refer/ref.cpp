@@ -432,7 +432,7 @@ void reference::compute_sort_key()
     else if (csdigit(*sf)) {
       char *ptr;
       long l = strtol(sf, &ptr, 10);
-      if (l == 0 && ptr == sf)
+      if (ptr == sf)
 	;
       else {
 	sf = ptr;

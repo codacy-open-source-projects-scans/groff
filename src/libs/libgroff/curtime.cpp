@@ -42,8 +42,7 @@ struct tm *current_time()
     char *endptr;
     long epoch = strtol(source_date_epoch, &endptr, 10);
 
-    if ((errno == ERANGE && (epoch == LONG_MAX || epoch == LONG_MIN)) ||
-	(errno != 0 && epoch == 0))
+    if (errno == ERANGE)
       fatal("$SOURCE_DATE_EPOCH: strtol: %1", strerror(errno));
     if (endptr == source_date_epoch)
       fatal("$SOURCE_DATE_EPOCH: no digits found: '%1'", endptr);

@@ -113,6 +113,15 @@ o New parameters tunable with the GNU eqn "set" primitive, "half_space"
 
 o The new "reset" primitive restores a named parameter to its default.
 
+nroff
+-----
+
+o nroff now recognizes the -a, -D, -I, and -Z options and passes them
+  through to groff.
+
+o nroff now supports clustered options ("-tzms", for example) as groff,
+  troff, and other GNU getopt-using programs do.
+
 Macro packages
 --------------
 
@@ -284,6 +293,9 @@ o The an (man) macro package's `IP` macro no longer honors the formerly
   punctuation or a list enumerator for `IP`'s first argument, consider
   migrating to `TP`.
 
+o The an-ext.tmac macro file no longer defines `DS` and `DE` macros.  It
+  had defined them as empty (undocumently) since 2009.
+
 o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   roman, not italics (or whatever the string `doc-Pa-font` was
   configured to use).  A new string, `doc-Mt-font`, for use in
@@ -314,6 +326,9 @@ o The doc (mdoc) macro package now honors the `U` register and `MF`
 
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
+
+o The m (mm) macro package's `Limsp` register has been removed; see the
+  item about the `LI` macro below.
 
 o The m (mm) macro package's `AST` macro is deprecated, warns upon
   usage, and is slated for withdrawal in the next release.  Assign to
@@ -361,10 +376,9 @@ o The m (mm) macro package's `LI` macro now interprets its second
   argument as a Boolean indicating whether a space should separate the
   list item mark from its prefix (the first argument).  Thus, where you
   formerly specified "2" to indicate no such separation, you would now
-  use "0", matching the semantics of the `Limsp` register (which
-  configures a default prefix/mark separation policy).  "2" continues to
-  be recognized and handled as before, but prompts a warning; migrate
-  your documents.
+  use "0", matching the semantics of the former `Limsp` register.  "2"
+  continues to be recognized and handled as before, but prompts a
+  warning; migrate your documents.
 
 o The m (mm) macro package now supports the `E` register as DWB mm did.
 
@@ -389,6 +403,8 @@ o The PostScript output driver grops no longer accepts spaces as field
 
 Miscellaneous
 -------------
+
+o Building groff no longer requires the PSUtils package.
 
 o Russian language input documents using the KOI8-R encoding are now
   supported, including hyphenation patterns from the ruhyphen project

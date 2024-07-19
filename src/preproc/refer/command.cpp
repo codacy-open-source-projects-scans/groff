@@ -708,8 +708,7 @@ static int check_args(const char *types, const char *name,
       {
 	char *ptr;
 	long n = strtol(argv->s, &ptr, 10);
-	if ((n == 0 && ptr == argv->s)
-	    || *ptr != '\0') {
+	if (ptr == argv->s || *ptr != '\0') {
 	  input_stack::error("argument %1 for command '%2' must be an integer",
 			     argno + 1, name);
 	  return 0;

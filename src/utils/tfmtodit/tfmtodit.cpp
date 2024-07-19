@@ -713,10 +713,7 @@ int main(int argc, char **argv)
       {
 	char *ptr;
 	long n = strtol(optarg, &ptr, 0);
-	if ((n == 0 && ptr == optarg)
-	    || *ptr != '\0'
-	    || n < 0
-	    || n > UCHAR_MAX)
+	if (ptr == optarg || *ptr != '\0' || n < 0 || n > UCHAR_MAX)
 	  error("invalid skew character position '%1'", optarg);
 	else
 	  skewchar = (int)n;

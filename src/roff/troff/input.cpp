@@ -330,7 +330,7 @@ private:
   virtual int get_break_flag() { return 0; }
   virtual int get_location(int, const char **, int *) { return 0; }
   virtual void backtrace() {}
-  virtual int set_location(const char *, int) { return 0; }
+  virtual bool set_location(const char *, int) { return 0; }
   virtual int next_file(FILE *, const char *) { return 0; }
   virtual void shift(int) {}
   virtual int is_boundary() {return 0; }
@@ -392,7 +392,7 @@ public:
   int peek();
   int get_location(int, const char **, int *);
   void backtrace();
-  int set_location(const char *, int);
+  bool set_location(const char *, int);
   int next_file(FILE *, const char *);
   int is_file();
 };
@@ -510,16 +510,12 @@ void file_iterator::backtrace()
   errprint("backtrace: %3 '%1':%2\n", f, n, popened ? "pipe" : "file");
 }
 
-int file_iterator::set_location(const char *f, int ln)
+bool file_iterator::set_location(const char *f, int ln)
 {
-  if (f) {
+  if (f != 0 /* nullptr */)
     filename = f;
-    if (!the_output)
-      init_output();
-    the_output->put_filename(f, 0);
-  }
   lineno = ln;
-  return 1;
+  return true;
 }
 
 input_iterator nil_iterator;
@@ -536,7 +532,7 @@ public:
   static int get_break_flag();
   static int nargs();
   static int get_location(int, const char **, int *);
-  static int set_location(const char *, int);
+  static bool set_location(const char *, int);
   static void backtrace();
   static void next_file(FILE *, const char *);
   static void end_file();
@@ -804,12 +800,12 @@ void input_stack::backtrace()
     p->backtrace();
 }
 
-int input_stack::set_location(const char *filename, int lineno)
+bool input_stack::set_location(const char *filename, int lineno)
 {
   for (input_iterator *p = top; p; p = p->next)
     if (p->set_location(filename, lineno))
-      return 1;
-  return 0;
+      return true;
+  return false;
 }
 
 void input_stack::next_file(FILE *fp, const char *s)
@@ -902,8 +898,8 @@ void next_file()
   else {
     errno = 0;
     FILE *fp = include_search_path.open_file_cautious(nm.contents());
-    if (!fp)
-      error("can't open '%1': %2", nm.contents(), strerror(errno));
+    if (0 /* nullptr */ == fp)
+      error("cannot open '%1': %2", nm.contents(), strerror(errno));
     else
       input_stack::next_file(fp, nm.contents());
   }
@@ -1109,19 +1105,19 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
     case 0:
       return escape_char;
     case '"':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       while ((c = input_stack::get(0)) != '\n' && c != EOF)
 	;
       return c;
     case '#':			// Like \" but newline is ignored.
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       while ((c = input_stack::get(0)) != '\n')
 	if (c == EOF)
 	  return EOF;
       break;
     case '$':
       {
-	(void)input_stack::get(0);
+	(void) input_stack::get(0);
 	symbol s = read_escape_parameter();
 	if (!(s.is_null() || s.is_empty()))
 	  interpolate_arg(s);
@@ -1129,7 +1125,7 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
       }
     case '*':
       {
-	(void)input_stack::get(0);
+	(void) input_stack::get(0);
 	symbol s = read_escape_parameter(WITH_ARGS);
 	if (!(s.is_null() || s.is_empty())) {
 	  if (have_multiple_params) {
@@ -1142,19 +1138,19 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
 	break;
       }
     case 'a':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return '\001';
     case 'e':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_e;
     case 'E':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       if (handle_escape_E)
 	goto again;
       return ESCAPE_E;
     case 'n':
       {
-	(void)input_stack::get(0);
+	(void) input_stack::get(0);
 	int inc;
 	symbol s = read_increment_and_escape_parameter(&inc);
 	if (!(s.is_null() || s.is_empty()))
@@ -1163,85 +1159,85 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
       }
     case 'g':
       {
-	(void)input_stack::get(0);
+	(void) input_stack::get(0);
 	symbol s = read_escape_parameter();
 	if (!(s.is_null() || s.is_empty()))
 	  interpolate_number_format(s);
 	break;
       }
     case 't':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return '\t';
     case 'V':
       {
-	(void)input_stack::get(0);
+	(void) input_stack::get(0);
 	symbol s = read_escape_parameter();
 	if (!(s.is_null() || s.is_empty()))
 	  interpolate_environment_variable(s);
 	break;
       }
     case '\n':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       if (is_defining)
 	return ESCAPE_NEWLINE;
       break;
     case ' ':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_SPACE;
     case '~':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_TILDE;
     case ':':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_COLON;
     case '|':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_BAR;
     case '^':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_CIRCUMFLEX;
     case '{':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_LEFT_BRACE;
     case '}':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_RIGHT_BRACE;
     case '`':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_LEFT_QUOTE;
     case '\'':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_RIGHT_QUOTE;
     case '-':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_HYPHEN;
     case '_':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_UNDERSCORE;
     case 'c':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_c;
     case '!':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_BANG;
     case '?':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_QUESTION;
     case '&':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_AMPERSAND;
     case ')':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_RIGHT_PARENTHESIS;
     case '.':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return c;
     case '%':
-      (void)input_stack::get(0);
+      (void) input_stack::get(0);
       return ESCAPE_PERCENT;
     default:
       if (c == escape_char) {
-	(void)input_stack::get(0);
+	(void) input_stack::get(0);
 	return c;
       }
       else
@@ -1328,7 +1324,7 @@ void do_glyph_color(symbol nm)
     if (tem)
       curenv->set_glyph_color(tem);
     else
-      (void)color_dictionary.lookup(nm, new color(nm));
+      (void) color_dictionary.lookup(nm, new color(nm));
   }
 }
 
@@ -1343,7 +1339,7 @@ void do_fill_color(symbol nm)
     if (tem)
       curenv->set_fill_color(tem);
     else
-      (void)color_dictionary.lookup(nm, new color(nm));
+      (void) color_dictionary.lookup(nm, new color(nm));
   }
 }
 
@@ -1364,7 +1360,7 @@ static unsigned int get_color_element(const char *scheme, const char *col)
     // we change 0x10000 to 0xffff
     return color::MAX_COLOR_VAL;
   }
-  return (unsigned int)val;
+  return (unsigned int) val;
 }
 
 static color *read_rgb(char end = 0)
@@ -1537,7 +1533,7 @@ static void define_color()
   }
   if (col) {
     col->nm = color_name;
-    (void)color_dictionary.lookup(color_name, col);
+    (void) color_dictionary.lookup(color_name, col);
   }
   skip_line();
 }
@@ -2549,7 +2545,7 @@ bool token::is_usable_as_delimiter(bool report_error)
 
 const char *token::description()
 {
-  const size_t bufsz = sizeof "character 'x'" + 1;
+  const size_t bufsz = sizeof "character code XXX (U+XXXX)" + 1;
   static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   switch (type) {
@@ -2562,8 +2558,12 @@ const char *token::description()
       (void) snprintf(buf, bufsz, "character \"%c\"", c);
       return buf;
     }
-    else {
+    else if (c < 128) {
       (void) snprintf(buf, bufsz, "character '%c'", c);
+      return buf;
+    }
+    else {
+      (void) snprintf(buf, bufsz, "character code %d (U+%04X)", c, c);
       return buf;
     }
   case TOKEN_DUMMY:
@@ -3524,7 +3524,7 @@ void macro::append_int(int i)
     append('-');
     i = -i;
   }
-  append_unsigned((unsigned int)i);
+  append_unsigned((unsigned int) i);
 }
 
 void macro::print_size()
@@ -4136,7 +4136,7 @@ static void map_composite_character()
   if (strcmp(from_gn, to_gn) == 0)
     composite_dictionary.remove(symbol(from_gn));
   else
-    (void)composite_dictionary.lookup(symbol(from_gn), (void *)to_gn);
+    (void) composite_dictionary.lookup(symbol(from_gn), (void *)to_gn);
   skip_line();
 }
 
@@ -4345,7 +4345,7 @@ void do_define_string(define_mode mode, comp_mode comp)
     if (c == 0)
       mac.append(n);
     else
-      mac.append((unsigned char)c);
+      mac.append((unsigned char) c);
     c = get_copy(&n);
   }
   if (comp == COMP_DISABLE || comp == COMP_ENABLE)
@@ -4418,7 +4418,7 @@ void do_define_character(char_mode mode, const char *font_name)
     if (c == 0)
       m->append(n);
     else
-      m->append((unsigned char)c);
+      m->append((unsigned char) c);
     c = get_copy(&n);
   }
   m = ci->setx_macro(m, mode);
@@ -4690,10 +4690,10 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
       if (s[0] != 0) {
 	while ((d = get_copy(&n)) == ' ' || d == '\t')
 	  ;
-	if ((unsigned char)s[0] == d) {
+	if ((unsigned char) s[0] == d) {
 	  for (i = 1; s[i] != 0; i++) {
 	    d = get_copy(&n);
-	    if ((unsigned char)s[i] != d)
+	    if ((unsigned char) s[i] != d)
 	      break;
 	  }
 	}
@@ -5017,7 +5017,7 @@ void substring_request()
 	  if (c == 0)
 	    mac.append(nd);
 	  else
-	    mac.append((unsigned char)c);
+	    mac.append((unsigned char) c);
 	}
 	*m = mac;
       }
@@ -5845,7 +5845,7 @@ void line_file()
       symbol s = get_long_name();
       filename = s.contents();
     }
-    (void)input_stack::set_location(filename, n-1);
+    (void) input_stack::set_location(filename, (n - 1));
   }
   skip_line();
 }
@@ -6488,10 +6488,10 @@ int psbb_locator::parse_bounding_box(const char *context)
     //
     double x1, x2, x3, x4;
     if (sscanf(context, "%lf %lf %lf %lf", &x1, &x2, &x3, &x4) == 4) {
-      llx = (int)x1;
-      lly = (int)x2;
-      urx = (int)x3;
-      ury = (int)x4;
+      llx = (int) x1;
+      lly = (int) x2;
+      urx = (int) x3;
+      ury = (int) x4;
     }
     else {
       // ...but if we can't parse four numbers, skip over any
@@ -6898,7 +6898,7 @@ void tag()
     }
     s = "x X ";
     for (; c != '\n' && c != EOF; c = get_copy(0))
-      s += (char)c;
+      s += (char) c;
     s += '\n';
     curenv->add_node(new tag_node(s, 0));
   }
@@ -6921,7 +6921,7 @@ void taga()
     }
     s = "x X ";
     for (; c != '\n' && c != EOF; c = get_copy(0))
-      s += (char)c;
+      s += (char) c;
     s += '\n';
     curenv->add_node(new tag_node(s, 1));
   }
@@ -6977,8 +6977,8 @@ static void do_open(bool append)
     if (!filename.is_null()) {
       errno = 0;
       FILE *fp = fopen(filename.contents(), append ? "a" : "w");
-      if (!fp) {
-	error("unable to open file '%1' for %2: %3",
+      if (0 /* nullptr */ == fp) {
+	error("cannot open file '%1' for %2: %3",
 	      filename.contents(),
 	      append ? "appending" : "writing",
 	      strerror(errno));
@@ -7018,12 +7018,12 @@ static void close_request()
   symbol stream = get_name(true /* required */);
   if (!stream.is_null()) {
     FILE *fp = (FILE *)stream_dictionary.remove(stream);
-    if (!fp)
+    if (0 /* nullptr */ == fp)
       error("cannot close nonexistent stream '%1'", stream.contents());
     else {
       int status = fclose(fp);
 	if (status != 0)
-	  error("unable to close stream '%1': %2", stream.contents(),
+	  error("cannot close stream '%1': %2", stream.contents(),
 		strerror(errno));
     }
   }
@@ -7040,7 +7040,7 @@ void do_write_request(int newline)
     return;
   }
   FILE *fp = (FILE *)stream_dictionary.lookup(stream);
-  if (!fp) {
+  if (0 /* nullptr */ == fp) {
     error("no stream named '%1'", stream.contents());
     skip_line();
     return;
@@ -7076,7 +7076,7 @@ void write_macro_request()
     return;
   }
   FILE *fp = (FILE *)stream_dictionary.lookup(stream);
-  if (!fp) {
+  if (0 /* nullptr */ == fp) {
     error("no stream named '%1'", stream.contents());
     skip_line();
     return;
@@ -7110,13 +7110,13 @@ void warnscale_request()
     if (c == 'u')
       warn_scale = 1.0;
     else if (c == 'i')
-      warn_scale = (double)units_per_inch;
+      warn_scale = (double) units_per_inch;
     else if (c == 'c')
-      warn_scale = (double)units_per_inch / 2.54;
+      warn_scale = (double) units_per_inch / 2.54;
     else if (c == 'p')
-      warn_scale = (double)units_per_inch / 72.0;
+      warn_scale = (double) units_per_inch / 72.0;
     else if (c == 'P')
-      warn_scale = (double)units_per_inch / 6.0;
+      warn_scale = (double) units_per_inch / 6.0;
     else {
       warning(WARN_SCALE,
 	      "scaling unit '%1' invalid; using 'i' instead", c);
@@ -7134,7 +7134,7 @@ void spreadwarn_request()
     if (n < 0)
       n = 0;
     hunits em = curenv->get_size();
-    spread_limit = (double)n.to_units()
+    spread_limit = (double) n.to_units()
 		   / (em.is_zero() ? hresolution : em.to_units());
   }
   else
@@ -7448,7 +7448,7 @@ void define_class()
     skip_line();
     return;
   }
-  (void)char_class_dictionary.lookup(nm, ci);
+  (void) char_class_dictionary.lookup(nm, ci);
   skip_line();
 }
 
@@ -7722,7 +7722,7 @@ bool writable_lineno_reg::get_value(units *res)
 
 void writable_lineno_reg::set_value(units n)
 {
-  input_stack::set_location(0, n);
+  (void) input_stack::set_location(0, n);
 }
 
 class filename_reg : public reg {
@@ -7930,7 +7930,7 @@ void transparent_file()
   if (!filename.is_null()) {
     errno = 0;
     FILE *fp = include_search_path.open_file_cautious(filename.contents());
-    if (!fp)
+    if (0 /* nullptr */ == fp)
       error("can't open '%1': %2", filename.contents(), strerror(errno));
     else {
       int bol = 1;
@@ -8032,16 +8032,16 @@ static FILE *open_macro_package(const char *mac, char **path)
   strcpy(s1, mac);
   strcat(s1, MACRO_POSTFIX);
   FILE *fp = mac_path->open_file(s1, path);
-  if (!fp && ENOENT != errno)
-    error("unable to open macro file '%1': %2", s1, strerror(errno));
+  if ((0 /* nullptr */ == fp) && (ENOENT != errno))
+    error("cannot open macro file '%1': %2", s1, strerror(errno));
   delete[] s1;
-  if (!fp) {
+  if (0 /* nullptr */ == fp) {
     char *s2 = new char[strlen(mac) + strlen(MACRO_PREFIX) + 1];
     strcpy(s2, MACRO_PREFIX);
     strcat(s2, mac);
     fp = mac_path->open_file(s2, path);
-    if (!fp && ENOENT != errno)
-      error("unable to open macro file '%1': %2", s2, strerror(errno));
+    if ((0 /* nullptr */ == fp) && (ENOENT != errno))
+      error("cannot open macro file '%1': %2", s2, strerror(errno));
     delete[] s2;
   }
   return fp;
@@ -8051,8 +8051,9 @@ static void process_macro_package_argument(const char *mac)
 {
   char *path;
   FILE *fp = open_macro_package(mac, &path);
-  if (!fp)
-    fatal("unable to open macro file for -m argument '%1'", mac);
+  if (0 /* nullptr */ == fp)
+    fatal("cannot open macro file for -m argument '%1': %2", mac,
+	  strerror(errno));
   const char *s = symbol(path).contents();
   free(path);
   input_stack::push(new file_iterator(fp, s));
@@ -8066,12 +8067,15 @@ static void process_startup_file(const char *filename)
   search_path *orig_mac_path = mac_path;
   mac_path = &config_macro_path;
   FILE *fp = mac_path->open_file(filename, &path);
-  if (fp) {
+  if (fp != 0 /* nullptr */) {
     input_stack::push(new file_iterator(fp, symbol(path).contents()));
     free(path);
     tok.next();
     process_input_stack();
   }
+  else if (errno != ENOENT)
+    error("cannot open startup file '%1': %2", filename,
+	  strerror(errno));
   mac_path = orig_mac_path;
 }
 
@@ -8085,7 +8089,7 @@ void do_macro_source(bool quietly)
       tok.next();
     char *path;
     FILE *fp = mac_path->open_file(nm.contents(), &path);
-    if (fp) {
+    if (fp != 0 /* nullptr */) {
       input_stack::push(new file_iterator(fp, symbol(path).contents()));
       free(path);
     }
@@ -8093,7 +8097,7 @@ void do_macro_source(bool quietly)
       // Suppress diagnostic only if we're operating quietly and it's an
       // expected problem.
       if (!quietly && (ENOENT == errno))
-	warning(WARN_FILE, "can't open macro file '%1': %2",
+	warning(WARN_FILE, "cannot open macro file '%1': %2",
 		nm.contents(), strerror(errno));
     tok.next();
   }
@@ -8124,8 +8128,8 @@ static void process_input_file(const char *name)
   else {
     errno = 0;
     fp = include_search_path.open_file_cautious(name);
-    if (!fp)
-      fatal("can't open '%1': %2", name, strerror(errno));
+    if (0 /* nullptr */ == fp)
+      fatal("cannot open '%1': %2", name, strerror(errno));
   }
   input_stack::push(new file_iterator(fp, name));
   tok.next();
@@ -8398,7 +8402,7 @@ int main(int argc, char **argv)
   vresolution = font::vert;
   sizescale = font::sizescale;
   device_has_tcommand = font::has_tcommand;
-  warn_scale = (double)units_per_inch;
+  warn_scale = (double) units_per_inch;
   warn_scaling_unit = 'i';
   if (!fflag && font::family != 0 && *font::family != '\0')
     default_family = symbol(font::family);
@@ -9161,7 +9165,7 @@ charinfo *get_charinfo(symbol nm)
   if (p != 0)
     return (charinfo *)p;
   charinfo *cp = new charinfo(nm);
-  (void)charinfo_dictionary.lookup(nm, cp);
+  (void) charinfo_dictionary.lookup(nm, cp);
   return cp;
 }
 
@@ -9324,7 +9328,7 @@ bool charinfo::contains(symbol s, bool already_called)
   const char *unicode = glyph_name_to_unicode(s.contents());
   if (unicode != 0 && strchr(unicode, '_') == 0) {
     char *ignore;
-    int c = (int)strtol(unicode, &ignore, 16);
+    int c = (int) strtol(unicode, &ignore, 16);
     return contains(c, true);
   }
   else
@@ -9364,7 +9368,7 @@ charinfo *get_charinfo_by_number(int n)
     if (!ci) {
       ci = new charinfo(UNNAMED_SYMBOL);
       ci->set_number(n);
-      (void)numbered_charinfo_dictionary.lookup(ns, ci);
+      (void) numbered_charinfo_dictionary.lookup(ns, ci);
     }
     return ci;
   }

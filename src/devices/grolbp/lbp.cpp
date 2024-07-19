@@ -696,7 +696,7 @@ int main(int argc, char **argv)
       {
 	char *ptr;
 	long n = strtol(optarg, &ptr, 10);
-	if ((n <= 0) && (ptr == optarg))
+	if (ptr == optarg)
 	  error("argument for -c must be a positive integer");
 	else if (n <= 0 || n > 32767)
 	  error("out of range argument for -c");
@@ -707,10 +707,11 @@ int main(int argc, char **argv)
     case 'w':
       {
 	char *ptr;
+	errno = 0;
 	long n = strtol(optarg, &ptr, 10);
-	if (n == 0 && ptr == optarg)
+	if (ptr == optarg)
 	  error("argument for -w must be a non-negative integer");
-	else if (n < 0 || n > INT_MAX)
+	else if (errno == ERANGE || n < 0 || n > INT_MAX)
 	  error("out of range argument for -w");
 	else
 	  linewidth_factor = int(n);

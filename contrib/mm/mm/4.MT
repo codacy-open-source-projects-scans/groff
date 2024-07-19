@@ -74,7 +74,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .SP 2
 .if d cov*abstract \{\
 .	misc@ev-keep cov*ev
-.	init@reset
+.	@reset
 .	if \\n[cov*abstract-indent]>0 \{\
 .		in +\\n[cov*abstract-indent]u
 .		ll -\\n[cov*abstract-indent]u

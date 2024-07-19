@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 	  if (*++opt != '\0' && *opt != ',') {
 	    char *ptr;
 	    long n = strtol(opt, &ptr, 10);
-	    if (n == 0 && ptr == opt) {
+	    if (ptr == opt) {
 	      error("invalid integer '%1' in 'l' option argument", opt);
 	      opt = 0;
 	      break;
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 	  if (*opt != '\0') {
 	    char *ptr;
 	    long n = strtol(opt, &ptr, 10);
-	    if (n == 0 && ptr == opt) {
+	    if (ptr == opt) {
 	      error("invalid integer '%1' in 'l' option argument", opt);
 	      opt = 0;
 	      break;
@@ -330,7 +330,7 @@ int main(int argc, char **argv)
 	{
 	  char *ptr;
 	  long n = strtol(opt, &ptr, 10);
-	  if (n == 0 && ptr == opt) {
+	  if (ptr == opt) {
 	    error("invalid integer '%1' in 't' option argument", opt);
 	    opt = 0;
 	    break;

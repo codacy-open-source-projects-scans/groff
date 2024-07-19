@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020, 2022 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -22,7 +22,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 
 # Keep this list of programs in sync with GROFF_CHECK_GROHTML_PROGRAMS
 # in m4/groff.m4.
-for cmd in pnmcrop pamcut pnmtopng pnmtops psselect
+for cmd in pnmcrop pamcut pnmtopng pnmtops ps2ps
 do
     if ! command -v $cmd >/dev/null
     then
@@ -34,17 +34,17 @@ done
 fail=
 
 wail () {
-  echo ...FAILED >&2
-  fail=yes
+    echo ...FAILED >&2
+    fail=yes
 }
 
 cleanup () {
-  rm -f grohtml-[0-9]*-[12].png
-  trap - HUP INT QUIT TERM
+    rm -f grohtml-[0-9]*-[12].png
+    trap - HUP INT QUIT TERM
 }
 
 trap 'trap "" HUP INT QUIT TERM; cleanup; kill -s INT $$' \
-  HUP INT QUIT TERM
+    HUP INT QUIT TERM
 
 input='.TS
 L.
@@ -67,10 +67,27 @@ echo "$output" | grep -q '<img src="grohtml-[0-9]\+-2.png"' || wail
 
 cleanup
 
-# We can't run remaining tests if the environment doesn't support UTF-8.
-if [ "$(locale charmap)" != UTF-8 ]
+test -z "$fail" || exit
+
+give_up=
+message=
+
+# We can't run remaining tests if we can't inquire what the locale's
+# character set is.
+if ! command -v locale
 then
-    echo "environment does not support UTF-8; skipping test" >&2
+    message="no 'locale' command available"
+    give_up=yes
+# ...or if the environment doesn't support UTF-8.
+elif [ "$(locale charmap)" != UTF-8 ]
+then
+    message="environment does not support UTF-8"
+    give_up=yes
+fi
+
+if [ -n "$give_up" ]
+then
+    echo "$message; skipping test" >&2
     exit 77 # skip
 fi
 
@@ -81,14 +98,14 @@ fi
 # $PATH seems optimistic.  So use UTF-8 octal bytes directly.
 echo "checking -k -Thtml" >&2
 printf '\303\241' | "$groff" -k -Thtml | grep -qx '<p>&aacute;</p>' \
-  || wail
+    || wail
 
 # We test compatibility-mode HTML output somewhat differently since
 # preconv only emits groffish \[uXXXX] escapes for non-ASCII codepoints.
 echo "checking -C -k -Thtml" >&2
 printf "\('a" | "$groff" -C -k -Thtml | grep -qx '<p>&aacute;</p>' \
-  || wail
+    || wail
 
 test -z "$fail"
 
-# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:
+# vim:set ai et sw=4 ts=4 tw=72:

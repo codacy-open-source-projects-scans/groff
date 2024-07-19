@@ -22,7 +22,23 @@ internet at <http://www.gnu.org/licenses/gpl-2.0.txt>. */
 #include <assert.h>
 #include <math.h>
 
-bool is_prime(unsigned n)
+static bool is_prime(unsigned);
+
+unsigned ceil_prime(unsigned n)
+{
+  if (n <= 2)
+    return 2;
+
+  if (n % 2 == 0)
+    n++;
+
+  while (!is_prime(n))
+    n += 2;
+
+  return n;
+}
+
+static bool is_prime(unsigned n)
 {
   assert(n > 1);
   if (n <= 3)

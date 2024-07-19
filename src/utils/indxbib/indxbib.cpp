@@ -148,11 +148,7 @@ int main(int argc, char **argv)
       {
 	int requested_hash_table_size;
 	check_integer_arg('h', optarg, 2, &requested_hash_table_size);
-	hash_table_size = requested_hash_table_size;
-	if ((hash_table_size > 2) && (hash_table_size % 2) == 0)
-		hash_table_size++;
-	while (!is_prime(hash_table_size))
-	  hash_table_size += 2;
+	hash_table_size = ceil_prime(requested_hash_table_size);
 	if (hash_table_size != requested_hash_table_size)
 	  warning("requested hash table size %1 is not prime: using %2"
 		  " instead", optarg, hash_table_size);
@@ -342,22 +338,15 @@ static void usage(FILE *stream)
 static void check_integer_arg(char opt, const char *arg, int min, int *res)
 {
   char *ptr;
+  errno = 0;
   long n = strtol(arg, &ptr, 10);
-  if (ERANGE == errno)
-    fatal("argument to -%1 must be between %2 and %3", arg, min,
-	  INT_MAX);
-  else if (n == 0 && ptr == arg)
+  if (ptr == arg)
     fatal("argument to -%1 not an integer", opt);
-  else if (n < min)
-    fatal("argument to -%1 must not be less than %2", opt, min);
-  else {
-    if ((LONG_MAX > INT_MAX) && (n > INT_MAX))
-      fatal("argument to -%1 must be between %2 and %3", arg, min,
-	    INT_MAX);
-    else if (*ptr != '\0')
-      fatal("junk after integer argument to -%1", opt);
-    *res = static_cast<int>(n);
-  }
+  if (ERANGE == errno || n < min || n > INT_MAX)
+    fatal("argument to -%1 must be between %2 and %3", arg, min, INT_MAX);
+  if (*ptr != '\0')
+    fatal("junk after integer argument to -%1", opt);
+  *res = static_cast<int>(n);
 }
 
 static char *get_cwd()

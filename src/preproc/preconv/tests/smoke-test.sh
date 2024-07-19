@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -18,52 +18,62 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+preconv="${abs_top_builddir:-.}/preconv"
+
+fail=
+
+wail () {
+    echo ...FAILED >&2
+    fail=YES
+}
+
 # Ensure a predictable character encoding.
 export LC_ALL=C
-
-set -e
-
-preconv="${abs_top_builddir:-.}/preconv"
 
 echo "testing -e flag override of BOM detection" >&2
 printf '\376\377\0\100\0\n' \
     | "$preconv" -d -e euc-kr 2>&1 > /dev/null \
-    | grep -q "no search for coding tag"
+    | grep -q "no search for coding tag" || wail
 
 echo "testing detection of UTF-32BE BOM" >&2
 printf '\0\0\376\377\0\0\0\100\0\0\0\n' \
     | "$preconv" -d 2>&1 > /dev/null \
-    | grep -q "found BOM"
+    | grep -q "found BOM" || wail
 
 echo "testing detection of UTF-32LE BOM" >&2
 printf '\377\376\0\0\100\0\0\0\n\0\0\0' \
     | "$preconv" -d 2>&1 > /dev/null \
-    | grep -q "found BOM"
+    | grep -q "found BOM" || wail
 
 echo "testing detection of UTF-16BE BOM" >&2
 printf '\376\377\0\100\0\n' \
     | "$preconv" -d 2>&1 > /dev/null \
-    | grep -q "found BOM"
+    | grep -q "found BOM" || wail
 
 echo "testing detection of UTF-16LE BOM" >&2
 printf '\377\376\100\0\n\0' \
     | "$preconv" -d 2>&1 > /dev/null \
-    | grep -q "found BOM"
+    | grep -q "found BOM" || wail
 
 echo "testing detection of UTF-8 BOM" >&2
 printf '\357\273\277@\n' \
     | "$preconv" -d 2>&1 > /dev/null \
-    | grep -q "found BOM"
+    | grep -q "found BOM" || wail
 
 # We do not find a coding tag on piped input because it isn't seekable.
 echo "testing detection of Emacs coding tag in piped input" >&2
 printf '.\\" -*- coding: euc-kr; -*-\\n' \
     | "$preconv" -d 2>&1 >/dev/null \
-    | grep -q "no coding tag"
+    | grep -q "no coding tag" || wail
+
+test -z "$fail" || exit
 
 # We need uchardet to work to get past this point.
-echo "testing uchardet detection of encoding" >&2
-"$preconv" -v | grep -q 'with uchardet support' || exit 77
+if ! "$preconv" -v | grep -q 'with uchardet support'
+then
+    echo "preconv lacks uchardet support; skipping test" >&2
+    exit 77 # skip
+fi
 
 # Instead of using temporary files, which in all fastidiousness means
 # cleaning them up even if we're interrupted, which in turn means
@@ -72,17 +82,42 @@ echo "testing uchardet detection of encoding" >&2
 doc=contrib/mm/groff_mmse.7
 echo "testing uchardet detection on Latin-1 document $doc" >&2
 "$preconv" -d -D us-ascii 2>&1 >/dev/null $doc \
-    | grep -q 'charset: ISO-8859-1'
+    | grep -q 'charset: ISO-8859-1' || wail
 
 # uchardet can't seek on a pipe either.
 echo "testing uchardet detection on pipe (expect fallback to -D)" >&2
 printf 'Eat at the caf\351.\n' \
     | "$preconv" -d -D euc-kr 2>&1 > /dev/null \
-    | grep -q "encoding used: 'EUC-KR'"
+    | grep -q "encoding used: 'EUC-KR'" || wail
 
-# Fall back to the locale.  preconv assumes Latin-1 for C instead of
-# US-ASCII.
+test -z "$fail" || exit
+
+has_glibc=
+
+if command -v locale > /dev/null
+then
+    has_glibc=yes
+fi
+
+# Fall back to the locale.
+#
+# On glibc systems, the 'C' locale uses "ANSI_X3.4-1968" for the
+# character set, but preconv assumes Latin-1 instead of US-ASCII.
+#
+# On non-glibc systems, who knows?  But at least some use UTF-8.
+
+if [ -n "$has_glibc" ]
+then
+    charset=ISO-8859-1
+else
+    charset=UTF-8
+fi
+
 echo "testing fallback to locale setting in environment" >&2
 printf 'Eat at the caf\351.\n' \
     | "$preconv" -d 2>&1 > /dev/null \
-    | grep -q "encoding used: 'ISO-8859-1'"
+    | grep -q "encoding used: '$charset'" || wail
+
+test -z "$fail"
+
+# vim:set ai et sw=4 ts=4 tw=72:

@@ -2286,6 +2286,13 @@ is an ordinary character sequence representing a file name on the
 system.
 .\" ...limiting the file names you can express; see Savannah #64071.
 .
+GNU
+.I troff \" GNU
+does not accept tabs,
+newlines
+(line feeds),
+or spaces in file names supplied as arguments to requests.
+.
 .TPx
 .I font
 is a typeface specified as a font name,
@@ -7552,14 +7559,24 @@ vertical position trap enablement status
 .RB ( \[rs]n[.vpt] ),
 distance to the next trap
 .RB ( \[rs]n[.t] ),
+and the name of that trap
+.RB ( \[rs]n[.trap] );
+the count of lines remaining in the pending input trap
+.RB ( \[rs]n[.it] ),
+the name of the macro associated with it
+.RB ( \[rs]n[.itm] ),
+and whether that input trap honors the
+.B \[rs]c
+output line continuation escape sequence
+.RB ( \[rs]n[.itc] );
 amount of needed
 .RB ( .ne -requested)
 space that caused the most recent vertical position trap to be sprung
 .RB ( \[rs]n[.ne] ),
 amount of needed space truncated from the amount requested
-.RB ( \[rs]n[.trunc] ),
+.RB ( \[rs]n[.trunc] );
 page ejection status
-.RB ( \[rs]n[.pe] ),
+.RB ( \[rs]n[.pe] );
 and
 leading space count
 .RB ( \[rs]n[lsn] )

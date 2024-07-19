@@ -611,9 +611,7 @@ void index_search_item::read_common_words_file()
     error("can't open '%1': %2", common_words_file, strerror(errno));
     return;
   }
-  common_words_table_size = 2*header.common + 1;
-  while (!is_prime(common_words_table_size))
-    common_words_table_size += 2;
+  common_words_table_size = ceil_prime(2 * header.common);
   common_words_table = new char *[common_words_table_size];
   for (int i = 0; i < common_words_table_size; i++)
     common_words_table[i] = 0;

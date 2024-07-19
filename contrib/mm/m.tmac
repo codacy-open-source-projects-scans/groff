@@ -80,7 +80,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r D \{\
 .	if \n[D]<0 \{\
-.		@warning ignoring out-of-range D register value: \n[D]u
+.		@warning ignoring out-of-range D register value: \n[D]
 .		rr D
 .	\}
 .\}
@@ -161,8 +161,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"---------------------------------------------
 .\"	AT&T/DWB public registers and strings
 .\"	bullet string
-.ie n .ds BU \[bu]
-.el   .ds BU \s-2\[bu]\s0
+.ds BU \s-2\[bu]\s0
 .\"	create table of contents entry for heading of level <= Cl
 .nr Cl 2
 .\"	suppress page break after TOC lists of figures, tables, ...?
@@ -338,10 +337,6 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds Liec Equation
 .\" caption for the table of contents
 .ds Licon CONTENTS
-.\" Put space between a list item's prefix and its mark?
-.\" `LI`'s second argument overrides.
-.nr Limsp 1
-.\"
 .\" Lsp controls the height of an empty line. Normally 0.5v
 .\" Normally used for nroff compatibility.
 .ie t .nr Lsp 0.5v
@@ -545,7 +540,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .if !r line*ac\\n[.z] .nr line*ac\\n[.z] 0
 .ie \\n[.$] \{\
 .	if !\B'\\$1' .@error \\$0: argument is not numeric: '\\$1'
-.	if \\$1<0) .@error \\$0: negative motion '\\$1' not supported
+.	if \\$1<0 .@error \\$0: negative motion '\\$1' not supported
 .	nr line*temp (v;\\$1)
 .\}
 .el .nr line*temp 1v
@@ -2378,7 +2373,6 @@ ML, RL, VL, or LB first
 .\" Assemble (prefix, prefix padding, and) mark for this item.
 .ds li*c-mark \" empty
 .nr li*apply-prefix 0
-.nr li*pad-prefix \\n[Limsp]
 .if \\n[.$]>1 \{\
 .	ie \\n[li*type]=0 \{\
 .		\" VL and BVL use a dummy character `\&` as the "mark"
@@ -2549,8 +2543,9 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	el         .LB 0\\$1   0 1 0 \*[EM] 0 1
 .\}
 ..
-.\" List type `ML` uses an argument for the mark measures it to
-.\" determine text indentation, ignoring both `Li` and `Pi`.
+.\" List type `ML` is unlike the other canned list types, which default
+.\" their text indentations to either \n[Li] or \n[Pi]; `ML` instead
+.\" measures its mark argument to determine text indentation.
 .de ML
 .if \\n[D]>2 .tm \\$0: \\$@
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments

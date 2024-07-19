@@ -56,7 +56,7 @@ extern "C" {
 #include <stdbool.h>
 
 char *strsave(const char *s);
-bool is_prime(unsigned);
+unsigned ceil_prime(unsigned);
 double groff_hypot(double, double);
 
 #include <stdio.h>

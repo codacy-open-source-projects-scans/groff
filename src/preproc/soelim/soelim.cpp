@@ -162,7 +162,9 @@ int do_file(const char *filename)
   FILE *fp = include_search_path.open_file_cautious(filename,
 						    &file_name_in_path);
   int err = errno;
-  string whole_filename(file_name_in_path ? file_name_in_path : filename);
+  string whole_filename(filename);
+  if (strcmp(filename, "-") && file_name_in_path != 0 /* nullptr */)
+    whole_filename = file_name_in_path;
   whole_filename += '\0';
   free(file_name_in_path);
   if (fp == 0) {

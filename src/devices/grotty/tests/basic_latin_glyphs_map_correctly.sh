@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -120,18 +120,27 @@ for D in ascii latin1 utf8
 do
     if [ "$D" = "utf8" ]
     then
-        # We can't test UTF-8 if the environment doesn't support it.
-        if [ "$(locale charmap)" != UTF-8 ]
+        give_up=
+        message=
+        # We can't test UTF-8 if we can't inquire what the locale's
+        # character set is.
+        if ! command -v locale
         then
-            # If we've already seen a failure case, report it.
-            if [ -n "$fail" ]
-            then
-                exit 1 # fail
-            else
-                echo "environment does not support UTF-8;" \
-                  "skipping test" >&2
-                exit 77 # skip
-            fi
+            message="no 'locale' command available"
+            give_up=yes
+        # ...or if the environment doesn't support UTF-8.
+        elif [ "$(locale charmap)" != UTF-8 ]
+        then
+            message="environment does not support UTF-8"
+            give_up=yes
+        fi
+
+        test -z "$fail" || exit
+
+        if [ -n "$give_up" ]
+        then
+            echo "$message; skipping test" >&2
+            exit 77 # skip
         fi
     fi
 

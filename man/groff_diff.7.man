@@ -1062,6 +1062,14 @@ is interpreted even in copy mode.
 .
 .TP
 .BI \[rs]X\[aq] contents \[aq]
+GNU
+.I troff \" GNU
+transforms the argument to the device control escape sequence to avoid
+leaking to device-independent output data that are unrepresentable in
+that format.
+.
+.
+.IP
 Within
 .I contents,
 the escape sequences
@@ -1101,7 +1109,8 @@ see
 For this transformation,
 character translations and definitions are ignored.
 .
-Other escape sequences are not supported.
+.I @g@troff
+discards other escape sequences with an error diagnostic.
 .
 .
 .br
@@ -3176,20 +3185,6 @@ A leading neutral double quote in the argument is stripped,
 allowing embedded leading spaces in
 .IR contents ,
 which is read in copy mode and continues to the end of the input line.
-.
-This request can't be used before the first page has started\[em]if an
-error is reported,
-or
-.I contents
-fails to appear in
-.IR @g@troff 's
-output,
-simply insert a
-.B .br
-line before the
-.B output
-request.
-.
 .
 .TP
 .B .pev

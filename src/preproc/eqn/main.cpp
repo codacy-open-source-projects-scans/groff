@@ -447,13 +447,15 @@ int main(int argc, char **argv)
   if (want_startup_file) {
     char *path;
     FILE *fp = config_macro_path.open_file(STARTUP_FILE, &path);
-    if (fp) {
+    if (fp != 0 /* nullptr */) {
       do_file(fp, path);
       if (fclose(fp) < 0)
-	fatal("unable to close '%1': %2", STARTUP_FILE,
-	      strerror(errno));
+	fatal("cannot close '%1': %2", STARTUP_FILE, strerror(errno));
       free(path);
     }
+    else
+      error("cannot open startup file '%1': %2", STARTUP_FILE,
+	    strerror(errno));
   }
   if (optind >= argc)
     do_file(stdin, "-");
@@ -465,18 +467,17 @@ int main(int argc, char **argv)
 	errno = 0;
 	FILE *fp = fopen(argv[i], "r");
 	if (!fp)
-	  fatal("unable to open '%1': %2", argv[i], strerror(errno));
+	  fatal("cannot open '%1': %2", argv[i], strerror(errno));
 	else {
 	  do_file(fp, argv[i]);
 	  if (fclose(fp) < 0)
-	    fatal("unable to close '%1': %2", argv[i], strerror(errno));
+	    fatal("cannot close '%1': %2", argv[i], strerror(errno));
 	}
       }
   if (ferror(stdout))
     fatal("standard output stream is in an error state");
   if (fflush(stdout) < 0)
-    fatal("unable to flush standard output stream: %1",
-	  strerror(errno));
+    fatal("cannot flush standard output stream: %1", strerror(errno));
   exit(EXIT_SUCCESS);
 }
 

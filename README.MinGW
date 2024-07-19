@@ -231,10 +231,6 @@
 
          zlib-1.dll, which must be renamed to zlib.dll
 
-    4. from the psutils-<version>-bin.zip package:
-
-         psselect.exe
-
   Note that it is not necessary to install the above four packages in
   their entirety; of course, you may do so if you wish.
 

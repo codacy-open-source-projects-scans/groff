@@ -1045,18 +1045,23 @@ has already been called without a corresponding
 a break is performed.
 .
 .I keyword
-and
+and any
 .I suffix
-(if any)
 are set in bold.
 .
 If a break is required in subsequent text
-(up to another paragraphing,
+(up to a paragraphing,
 sectioning,
-or synopsis macro call),
+or
+.B .YS
+macro call),
 lines after the first are indented.
 .
-The indentation amount is the width of
+Unless the previous synopsis's indentation is reused
+(see
+.B .YS
+below),
+output lines after the first indent by the width of
 .I keyword
 plus a space,
 if that is the only argument,
@@ -1356,7 +1361,7 @@ Text may be hyperlinked to email addresses with
 or other URIs with
 .BR .UR / .UE .
 .
-Not all output devices support hyperlinking of text;
+To hyperlink text,
 terminals and pager programs must support ECMA-48 OSC\~8 escape
 sequences
 (see

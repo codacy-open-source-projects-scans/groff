@@ -110,7 +110,7 @@ static int read_uint_arg(const char **pp, unsigned *res)
   const char *start = *pp;
   // XXX use strtoul
   long n = strtol(start, (char **)pp, 10);
-  if (n == 0 && *pp == start) {
+  if (*pp == start) {
     error("not an integer");
     return 0;
   }

@@ -125,12 +125,12 @@ foo \\- a small library for converting strings to integers
 .BI TYPE\~ max );
 .YS .
 .
-.B int
+.B unsigned int
 .SY a2u (
 .B TYPE,
 .BI TYPE\~*restrict\~ n ,
 .BI const\~char\~* s ,
-.BI char\~**_Nullable\~restrict\~ endp ,
+.BI char\~**_NotNullable\~restrict\~ endp ,
 .BI int\~ base ,
 .BI TYPE\~ min ,
 .BI TYPE\~ max );
@@ -138,6 +138,9 @@ foo \\- a small library for converting strings to integers
 
 output2=$(echo "$input2" | "$groff" -rLL=80n -man -T ascii -P -cbou)
 echo "$output2"
+
+echo 'checking for indentation reuse' >&2
+echo "$output2" | grep -Eq '^ {13}char \*\*_NotNullable' || wail
 
 echo 'checking for automatic hyphenation disablement inside synopsis' \
     >&2

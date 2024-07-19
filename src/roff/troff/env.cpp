@@ -1651,7 +1651,7 @@ void number_lines()
       if (get_integer(&n, next_line_number)) {
 	next_line_number = n;
 	if (next_line_number < 0) {
-	  warning(WARN_RANGE, "negative line number");
+	  warning(WARN_RANGE, "output line number cannot be negative");
 	  next_line_number = 0;
 	}
       }
@@ -1663,7 +1663,8 @@ void number_lines()
       if (!tok.is_usable_as_delimiter()) {
 	if (get_integer(&n)) {
 	  if (n <= 0) {
-	    warning(WARN_RANGE, "negative or zero line number multiple");
+	    warning(WARN_RANGE, "output line number multiple cannot"
+		    "be nonpositive");
 	  }
 	  else
 	    curenv->line_number_multiple = n;
@@ -3944,8 +3945,9 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
   errno = 0;
   char *path = 0;
   FILE *fp = mac_path->open_file(name, &path);
-  if (fp == 0 /* nullptr */) {
-    error("can't find hyphenation patterns file '%1'", name);
+  if (0 /* nullptr */ == fp) {
+    error("cannot open hyphenation pattern file '%1': %2", name,
+	  strerror(errno));
     return;
   }
   int c = hpf_getc(fp);

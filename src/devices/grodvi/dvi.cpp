@@ -92,7 +92,7 @@ void dvi_font::handle_unknown_font_command(const char *command,
       fatal_with_file_and_line(filename, lineno,
 			       "'checksum' command requires an argument");
     checksum = int(strtol(arg, &ptr, 10));
-    if (checksum == 0 && ptr == arg) {
+    if (ptr == arg) {
       fatal_with_file_and_line(filename, lineno, "bad checksum");
     }
   }
@@ -101,7 +101,7 @@ void dvi_font::handle_unknown_font_command(const char *command,
       fatal_with_file_and_line(filename, lineno,
 			       "'designsize' command requires an argument");
     design_size = int(strtol(arg, &ptr, 10));
-    if (design_size == 0 && ptr == arg) {
+    if (ptr == arg) {
       fatal_with_file_and_line(filename, lineno, "bad design size");
     }
   }

@@ -52,14 +52,18 @@ for TTY (terminal) devices
 .\" ====================================================================
 .
 .SY @g@nroff
-.RB [ \-bcCEhikpRStUVz ]
+.RB [ \-abcCEhikpRStUVzZ ]
 .RB [ \-d\~\c
 .IR ctext ]
 .RB [ \-d\~\c
 .IB string =\c
 .IR text ]
+.RB [ \-D\~\c
+.IR fallback-input-encoding ]
+.RB [ \-I\~\c
+.IR inclusion-directory ]
 .RB [ \-K\~\c
-.IR fallback-encoding ]
+.IR input-encoding ]
 .RB [ \-m\~\c
 .IR macro-package ]
 .RB [ \-M\~\c
@@ -158,12 +162,14 @@ is implied.
 .
 .P
 The
+.BR \-a ,
 .BR \-b ,
 .BR \-c ,
 .BR \-C ,
 .BR \-d ,
 .BR \-E ,
 .BR \-i ,
+.BR \-I ,
 .BR \-m ,
 .BR \-M ,
 .BR \-n ,
@@ -201,14 +207,16 @@ and
 .IR nroff ). \" GNU
 .
 The options
+.BR \-D ,
 .BR \-k ,
 .BR \-K ,
 .BR \-p ,
 .BR \-P ,
 .BR \-R ,
 .BR \-t ,
+.BR \-S ,
 and
-.B \-S
+.B \-Z
 are documented in
 .MR groff @MAN1EXT@ .
 .

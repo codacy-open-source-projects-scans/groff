@@ -1060,7 +1060,7 @@ void do_space()
   token_buffer += '\0';
   char *ptr;
   long n = strtol(token_buffer.contents(), &ptr, 10);
-  if (n == 0 && ptr == token_buffer.contents())
+  if (ptr == token_buffer.contents())
     lex_error("invalid argument '%1' to space primitive",
 	      token_buffer.contents());
   else

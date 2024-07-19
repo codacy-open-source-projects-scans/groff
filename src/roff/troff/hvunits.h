@@ -16,7 +16,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
 class vunits {
   int n;
 public:
@@ -24,9 +23,10 @@ public:
   vunits(units);
   units to_units();
   bool is_zero();
-  vunits& operator+=(const vunits&);
-  vunits& operator-=(const vunits&);
-  friend inline vunits scale(vunits n, units x, units y); // scale n by x/y
+  vunits& operator +=(const vunits&);
+  vunits& operator -=(const vunits&);
+  // scale n by x/y
+  friend inline vunits scale(vunits n, units x, units y);
   friend inline vunits scale(vunits n, vunits x, vunits y);
   friend inline vunits operator +(const vunits&, const vunits&);
   friend inline vunits operator -(const vunits&, const vunits&);
@@ -35,16 +35,15 @@ public:
   friend inline vunits operator /(const vunits&, int);
   friend inline vunits operator *(const vunits&, int);
   friend inline vunits operator *(int, const vunits&);
-  friend inline int operator <(const vunits&, const vunits&);
-  friend inline int operator >(const vunits&, const vunits&);
-  friend inline int operator <=(const vunits&, const vunits&);
-  friend inline int operator >=(const vunits&, const vunits&);
-  friend inline int operator ==(const vunits&, const vunits&);
-  friend inline int operator !=(const vunits&, const vunits&);
+  friend inline bool operator <(const vunits&, const vunits&);
+  friend inline bool operator >(const vunits&, const vunits&);
+  friend inline bool operator <=(const vunits&, const vunits&);
+  friend inline bool operator >=(const vunits&, const vunits&);
+  friend inline bool operator ==(const vunits&, const vunits&);
+  friend inline bool operator !=(const vunits&, const vunits&);
 };
 
 extern const vunits V0;
-
 
 class hunits {
   int n;
@@ -53,9 +52,10 @@ public:
   hunits(units);
   units to_units();
   bool is_zero();
-  hunits& operator+=(const hunits&);
-  hunits& operator-=(const hunits&);
-  friend inline hunits scale(hunits n, units x, units y); // scale n by x/y
+  hunits& operator +=(const hunits&);
+  hunits& operator -=(const hunits&);
+  // scale n by x/y
+  friend inline hunits scale(hunits n, units x, units y);
   friend inline hunits scale(hunits n, double x);
   friend inline hunits operator +(const hunits&, const hunits&);
   friend inline hunits operator -(const hunits&, const hunits&);
@@ -64,12 +64,12 @@ public:
   friend inline hunits operator /(const hunits&, int);
   friend inline hunits operator *(const hunits&, int);
   friend inline hunits operator *(int, const hunits&);
-  friend inline int operator <(const hunits&, const hunits&);
-  friend inline int operator >(const hunits&, const hunits&);
-  friend inline int operator <=(const hunits&, const hunits&);
-  friend inline int operator >=(const hunits&, const hunits&);
-  friend inline int operator ==(const hunits&, const hunits&);
-  friend inline int operator !=(const hunits&, const hunits&);
+  friend inline bool operator <(const hunits&, const hunits&);
+  friend inline bool operator >(const hunits&, const hunits&);
+  friend inline bool operator <=(const hunits&, const hunits&);
+  friend inline bool operator >=(const hunits&, const hunits&);
+  friend inline bool operator ==(const hunits&, const hunits&);
+  friend inline bool operator !=(const hunits&, const hunits&);
 };
 
 extern const hunits H0;
@@ -85,7 +85,7 @@ inline vunits:: vunits() : n(0)
 
 inline units vunits::to_units()
 {
-  return n*vresolution;
+  return n * vresolution;
 }
 
 inline bool vunits::is_zero()
@@ -118,7 +118,7 @@ inline vunits operator -(const vunits & x)
 
 inline int operator /(const vunits & x, const vunits & y)
 {
-  return x.n/y.n;
+  return x.n / y.n;
 }
 
 inline vunits operator /(const vunits & x, int n)
@@ -145,44 +145,43 @@ inline vunits operator *(int n, const vunits & x)
   return r;
 }
 
-inline int operator <(const vunits & x, const vunits & y)
+inline bool operator <(const vunits & x, const vunits & y)
 {
   return x.n < y.n;
 }
 
-inline int operator >(const vunits & x, const vunits & y)
+inline bool operator >(const vunits & x, const vunits & y)
 {
   return x.n > y.n;
 }
 
-inline int operator <=(const vunits & x, const vunits & y)
+inline bool operator <=(const vunits & x, const vunits & y)
 {
   return x.n <= y.n;
 }
 
-inline int operator >=(const vunits & x, const vunits & y)
+inline bool operator >=(const vunits & x, const vunits & y)
 {
   return x.n >= y.n;
 }
 
-inline int operator ==(const vunits & x, const vunits & y)
+inline bool operator ==(const vunits & x, const vunits & y)
 {
   return x.n == y.n;
 }
 
-inline int operator !=(const vunits & x, const vunits & y)
+inline bool operator !=(const vunits & x, const vunits & y)
 {
   return x.n != y.n;
 }
 
-
-inline vunits& vunits::operator+=(const vunits & x)
+inline vunits& vunits::operator +=(const vunits & x)
 {
   n += x.n;
   return *this;
 }
 
-inline vunits& vunits::operator-=(const vunits & x)
+inline vunits& vunits::operator -=(const vunits & x)
 {
   n -= x.n;
   return *this;
@@ -194,7 +193,7 @@ inline hunits:: hunits() : n(0)
 
 inline units hunits::to_units()
 {
-  return n*hresolution;
+  return n * hresolution;
 }
 
 inline bool hunits::is_zero()
@@ -228,7 +227,7 @@ inline hunits operator -(const hunits & x)
 
 inline int operator /(const hunits & x, const hunits & y)
 {
-  return x.n/y.n;
+  return x.n / y.n;
 }
 
 inline hunits operator /(const hunits & x, int n)
@@ -255,44 +254,43 @@ inline hunits operator *(int n, const hunits & x)
   return r;
 }
 
-inline int operator <(const hunits & x, const hunits & y)
+inline bool operator <(const hunits & x, const hunits & y)
 {
   return x.n < y.n;
 }
 
-inline int operator >(const hunits & x, const hunits & y)
+inline bool operator >(const hunits & x, const hunits & y)
 {
   return x.n > y.n;
 }
 
-inline int operator <=(const hunits & x, const hunits & y)
+inline bool operator <=(const hunits & x, const hunits & y)
 {
   return x.n <= y.n;
 }
 
-inline int operator >=(const hunits & x, const hunits & y)
+inline bool operator >=(const hunits & x, const hunits & y)
 {
   return x.n >= y.n;
 }
 
-inline int operator ==(const hunits & x, const hunits & y)
+inline bool operator ==(const hunits & x, const hunits & y)
 {
   return x.n == y.n;
 }
 
-inline int operator !=(const hunits & x, const hunits & y)
+inline bool operator !=(const hunits & x, const hunits & y)
 {
   return x.n != y.n;
 }
 
-
-inline hunits& hunits::operator+=(const hunits & x)
+inline hunits& hunits::operator +=(const hunits & x)
 {
   n += x.n;
   return *this;
 }
 
-inline hunits& hunits::operator-=(const hunits & x)
+inline hunits& hunits::operator -=(const hunits & x)
 {
   n -= x.n;
   return *this;
@@ -322,13 +320,13 @@ inline vunits scale(vunits n, vunits x, vunits y)
 inline hunits scale(hunits n, double x)
 {
   hunits r;
-  r.n = int(n.n*x);
+  r.n = int(n.n * x);
   return r;
 }
 
 inline units scale(units n, double x)
 {
-  return int(n*x);
+  return int(n * x);
 }
 
 inline units points_to_units(units n)

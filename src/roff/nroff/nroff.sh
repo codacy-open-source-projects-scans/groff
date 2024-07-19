@@ -1,7 +1,7 @@
 #!/bin/sh
 # Emulate nroff with groff.
 #
-# Copyright (C) 1992-2021 Free Software Foundation, Inc.
+# Copyright (C) 1992-2024 Free Software Foundation, Inc.
 #
 # Written by James Clark, Werner Lemberg, and G. Branden Robinson.
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-prog="$0"
+prog=${0##*/}
 
 T=
 Topt=
@@ -37,6 +37,38 @@ usage="usage: $prog [-bcCEhikpRStUVz] [-d ctext] [-d string=text] \
 usage: $prog {-v | --version}
 usage: $prog --help"
 
+summary="
+Format documents with groff(1) for TTY (terminal) devices.
+See the nroff(1) manual page."
+
+# Break up option clusters into separate arguments.
+newargs=
+for arg
+do
+  thisarg=$arg
+  while :
+  do
+    case $thisarg in
+      -[abCEikpRStUzZ])
+        newargs="$newargs $thisarg"
+        break
+        ;;
+      -[abCEikpRStUzZ]*)
+        remainder=${thisarg#-?}
+        thisarg=${thisarg%%$remainder}
+        newargs="$newargs $thisarg"
+        thisarg=-$remainder
+        ;;
+      *)
+        newargs="$newargs $thisarg"
+        break
+        ;;
+    esac
+  done
+done
+
+set -- $newargs
+
 for arg
 do
   if [ -n "$is_option_argument_pending" ]
@@ -47,6 +79,20 @@ do
     continue
   fi
 
+  # groff(1) options we don't support:
+  #
+  # -e
+  # -s because of historical clash in meaning.
+  # -f because terminal devices don't support font families.
+  # -g
+  # -G
+  # -j
+  # -p because terminals don't do graphics.  (Some do, but grotty(1)
+  #    does not produce ReGIS or Sixel output.)
+  # -l
+  # -L because terminal output is not suitable for a print spooler.
+  # -N because we don't support -e.
+  # -X because gxditview(1) doesn't support terminal documents (why?).
   case $arg in
     -c)
       opts="$opts $arg -P-c" ;;
@@ -55,10 +101,10 @@ do
     -[eq] | -s*)
       # ignore these options
       ;;
-    -[dKmMnoPrTwW])
+    -[dDIKmMnoPrTwW])
       is_option_argument_pending=yes
       opts="$opts $arg" ;;
-    -[bCEikpRStUz] | -[dKMmrnoPwW]*)
+    -[abCEikpRStUzZ] | -[dDIKMmrnoPwW]*)
       opts="$opts $arg" ;;
     -T*)
       Topt=$arg ;;
@@ -77,6 +123,7 @@ do
       opts="$opts $arg" ;;
     --help)
       echo "$usage"
+      echo "$summary"
       exit 0 ;;
     --)
       shift

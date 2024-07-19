@@ -1663,7 +1663,7 @@ void ps_printer::do_mdef(char *arg, const environment *)
 {
   char *p;
   int n = (int)strtol(arg, &p, 10);
-  if (n == 0 && p == arg) {
+  if (p == arg) {
     error("first argument to X mdef must be an integer");
     return;
   }
@@ -1697,7 +1697,7 @@ void ps_printer::do_import(char *arg, const environment *env)
   while (nparms < 6) {
     char *end;
     long n = strtol(p, &end, 10);
-    if (n == 0 && end == p)
+    if (end == p)
       break;
     parms[nparms++] = int(n);
     p = end;

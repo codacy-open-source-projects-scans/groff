@@ -33,7 +33,9 @@
 .if \n(mZ>1 \
 .  nx
 .
-.\" Define this to your implementation's constant-width typeface.
+.\" Set `mC` this to your implementation's constant-width typeface.
+.\" There is no globally portable choice; `CW`, `C`, and `CR` are all
+.\" seen.  AT&T troff offers no mechanism to query font availability.
 .ds mC CW
 .if n .ds mC R
 .
@@ -49,18 +51,15 @@
 .    do nr mH \\n[.hy] \" groff extension register
 ..
 .
-.nr mS 0 \" in a synopsis (SY/YS)?
+.nr mS 0 \" reuse indentation of previous synopsis?
 .nr mE 0 \" in an example (EX/EE)?
 .
 .
-.\" Declare start of command synopsis.  Sets up hanging indentation.
+.\" Declare start of a command or function synopsis.
+.\" .SY keyword [punctuation]
 .de SY
 .  ie \\n(.$ \{\
 .    if !\\n(mS \{\
-.      mY
-.      nh
-.      nr mS 1
-.      nr mA \\n(.j
 .      nr mI \\n(.i
 .      nr mT \\n(.k+\w'\fB\\$1\fP'
 .      if \\n(.$=1 \
@@ -69,6 +68,9 @@
 .        nr mT +\w'\fB\\$2\fP'
 .    \}
 .
+.    mY
+.    nh
+.    nr mA \\n(.j
 .    ad l
 .    \" Ensure that a partially collected line exists so that the `in`
 .    \" request affects only _subsequent_ output lines.  (CSTR #54 §6)
@@ -96,14 +98,17 @@
 ..
 .
 .
-.\" End of command synopsis.
+.\" End a synopsis.  With any argument, the next `SY` call on the page
+.\" reuses the indentation computed for the one ended by this call.
+.\" .YS [argument]
 .de YS
 .  in \\n(mIu
 .  ad \\n(mA
 .  hy \\n(mH
-.  nr mS 0
 .
-.  if !\\n(.$ \{\
+.  ie \\n(.$ .nr mS 1
+.  el \{\
+.    nr mS 0
 .    rr mA
 .    rr mI
 .    rr mT
@@ -129,6 +134,7 @@
 .
 .
 .\" Start URL.
+.\" .UR url
 .if \n(.g-\n(mG \{\
 .de UR
 .  mV \\$1
@@ -137,6 +143,7 @@
 .
 .
 .\" End URL.
+.\" .UE [punctuation]
 .if \n(.g-\n(mG \{\
 .de UE
 .  mQ \\$1
@@ -145,6 +152,7 @@
 .
 .
 .\" Start email address.
+.\" .MT address
 .if \n(.g-\n(mG \{\
 .de MT
 .  mV \\$1
@@ -153,6 +161,7 @@
 .
 .
 .\" End email address.
+.\" .ME [punctuation]
 .if \n(.g-\n(mG \{\
 .de ME
 .  mQ \\$1
@@ -214,18 +223,6 @@
 .  \}
 ..
 .\}
-.
-.
-.\" Start display.
-.de DS
-.  \" XXX to be written
-..
-.
-.
-.\" End display.
-.de DE
-.  \" XXX to be written
-..
 .
 .\" Local Variables:
 .\" mode: nroff

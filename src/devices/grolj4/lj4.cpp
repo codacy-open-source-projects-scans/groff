@@ -140,7 +140,7 @@ void lj4_font::handle_unknown_font_command(const char *command,
 				 command);
       char *ptr;
       long n = strtol(arg, &ptr, 10);
-      if (n == 0 && ptr == arg)
+      if (ptr == arg)
 	fatal_with_file_and_line(filename, lineno,
 				 "'%1' command requires numeric argument",
 				 command);
@@ -662,7 +662,7 @@ int main(int argc, char **argv)
       {
 	char *ptr;
 	long n = strtol(optarg, &ptr, 10);
-	if (n == 0 && ptr == optarg)
+	if (ptr == optarg)
 	  error("argument for -c must be a positive integer");
 	else if (n <= 0 || n > 32767)
 	  error("out of range argument for -c");
@@ -674,7 +674,7 @@ int main(int argc, char **argv)
       {
 	char *ptr;
 	long n = strtol(optarg, &ptr, 10);
-	if (n == 0 && ptr == optarg)
+	if (ptr == optarg)
 	  error("argument for -w must be a non-negative integer");
 	else if (n < 0 || n > INT_MAX)
 	  error("out of range argument for -w");

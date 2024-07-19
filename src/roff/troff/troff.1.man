@@ -10,7 +10,7 @@ typesetter and document formatter
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -485,6 +485,15 @@ and
 requests,
 which are disabled by default because they allow an untrusted input
 document to write to arbitrary file names and run arbitrary commands.
+.
+(GNU
+.I troff \" GNU
+does not,
+however,
+accept tabs,
+newlines
+(line feeds),
+or spaces in file names supplied as arguments to requests.)
 .
 This option also adds the current directory to the macro package search
 path;

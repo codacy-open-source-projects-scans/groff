@@ -1,3 +1,419 @@
+2024-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* bootstrap: Resync with gnulib upstream.  Thanks to Collin Funk
+	for the suggestion.
+
+2024-07-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Trivially refactor;
+	simplify tautologus Boolean expression.
+
+2024-07-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Revise
+	diagnostic when reporting unexpected character code > 128 in
+	input.  Report only its code in decimal and Unicode-style
+	hexadecimal instead of trying to write it literally.
+
+	Continues <https://savannah.gnu.org/bugs/?65724>.
+
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/pic.ms: Reduce vertical spacing in displays only on
+	typesetters.  To that end:
+	(SS): Define new macro for starting a "small display".
+	(SE): ...and a macro for ending one.
+	Migrate use of `DS`/`DE` macros with `ps` and `vs` requests to
+	the new macros.
+
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/groff_mdoc.7.man: Manipulate type size and vertical
+	spacing only in nroff mode.
+
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Boolify.  Rename
+	`negative` to `is_negative` and demote it and `do_next` from
+	`int` to `bool`.  Assign to them with Boolean, not integer,
+	literals.
+
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_expression, get_hunits)
+	(get_number, get_integer, is_valid_term): Trivially refactor.
+	Replace `v` as the general name for any numeric quantity
+	{possibly arising from copy-and-paste operations from a
+	`vunits`-handling original} with one more suggestive of its
+	type: `h`, `u`, or `i` for horizontal, general, or integral
+	units respectively.
+
+2024-07-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/hvunits.h: Boolify.
+	(vunits:operator <, vunits::operator >, vunits::operator <=)
+	(vunits:operator >= vunits::operator ==, vunits::operator !=)
+	(hunits:operator <, hunits::operator >, hunits::operator <=)
+	(hunits:operator >= hunits::operator ==, hunits::operator !=):
+	Return `bool` instead of `int`.
+
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an-ext.tmac (DS, DE): Drop (empty) macro definitions,
+	introduced in groff 1.20 (January 2009).
+	* NEWS: Document this.  Technically, it's an interface change.
+	Any man page calling these macros (without defining them itself)
+	will prompt warnings if GNU troff is given the `-wmac` option
+	{or equivalent}.
+
+2024-03-19  Alexis <surryhill@gmail.com>
+
+	[grohtml]: Migrate from psselect(1) to ps2ps(1).
+
+	* src/preproc/html/pre-html.cpp (imageList::createPage): Do it.
+	* src/devices/grohtml/grohtml.1.man (Dependencies): Document
+	the changed runtime requirement.
+	* m4/groff.m4 (GROFF_CHECK_GROHTML_PROGRAMS):
+	* src/roff/groff/tests/html_works_with_grn_and_eqn.sh:
+	* src/roff/groff/tests/smoke-test_html_device.sh: Check for
+	existence of `ps2ps` command instead of `psselect`.
+
+	* ANNOUNCE:
+	* NEWS:
+	* README:
+	* README.MinGW: Document change in dependencies.
+
+	Fixes <https://savannah.gnu.org/bugs/?65987>.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/searchpath.cpp (is_directory): New function
+	uses stat(2) to check file name argument to see if it's a
+	directory, and returns a Boolean.
+	(search_path::open_file):
+	(search_path::open_file_cautious): Use `is_directory()` before
+	attempting to `fopen()` a file specification; fail and set
+	`errno` to `EISDIR` if it's a directory so that the caller
+	reports a useful diagnostic.
+
+	* bootstrap.conf: Add gnulib `stat` module, because the story of
+	POSIX and non-POSIX systems alike trying and failing to sensibly
+	implement the fundamental Unix file system model is a sorry tale
+	of indifference and self-owns by rock star programmers.
+	{Seriously, read the "sys/stat.h" and "stat" sections of the
+	gnulib manual.}
+
+	Fixes <https://savannah.gnu.org/bugs/?65980>.  Thanks to Dave
+	Kemper for the report.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an-ext.tmac: Fix incomplete changes to support `YS` with
+	an argument to reuse indentation of previous synopsis.  (An
+	insufficiently aggressive test case is a dangerous thing.)
+	Revise meaning of `mS` register from "are we in a synopsis?" to
+	"are we reusing the previous synopsis's indentation?"
+	(SY): Save hyphenation and adjustment modes and disable
+	automatic hyphenation if we have any arguments.
+	(YS): Set `mS` register if we have any arguments, otherwise
+	clear it.
+
+	* tmac/tests/an_HY-register-works.sh: Drop test cases on
+	"nested" synopses.  These are now ill-formed and no longer
+	supported.  See "NEWS" file.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an-ext_SY-and-YS-work.sh: Test new behavior of `YS`
+	when given an argument.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/main.cpp (main):
+	* src/roff/troff/input.cpp (process_startup_file): Throw error
+	diagnostic when a startup file cannot be opened for some reason
+	other than its nonexistence.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/grn/main.cpp (conv):
+	* src/preproc/html/pre-html.cpp (get_resolution)
+	(get_image_generator):
+	* src/roff/troff/env.cpp (hyphen_trie::read_patterns_file):
+	* src/roff/troff/input.cpp (process_macro_package_argument):
+	When failing to open a file, say why in error diagnostic.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/main.cpp (main):
+	* src/roff/troff/env.cpp (hyphen_trie::read_patterns_file):
+	* src/roff/troff/input.cpp (next_file, do_open, close_request)
+	(open_macro_package, process_macro_package_argument)
+	(do_macro_source, process_input_file): Parallelize (and shorten)
+	wording of diagnostic messages.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/font.cpp (text_file::~text_file)
+	(font::extend_ch, font::load, font::load_desc):
+	* src/libs/libgroff/searchpath.cpp
+	(search_path::open_file_cautious):
+	* src/roff/troff/env.cpp (hyphen_trie::read_patterns_file):
+	Reorder comparisons with null pointers to avoid inadvertent
+	lvalue assignment.
+
+	* src/libs/libgroff/font.cpp (text_file::next_line, scale_round)
+	(font::get_width, font::alloc_ch_index, font::load_desc): Do the
+	same for comparisons to integral zeroes.
+
+	* src/libs/libgroff/font.cpp (glyph_to_unicode): Add parentheses
+	to complex expression.
+
+	* src/libs/libgroff/searchpath.cpp (search_path::search_path)
+	(search_path::open_file, search_path::open_file_cautious)
+	* src/preproc/eqn/main.cpp (main):
+	* src/roff/troff/input.cpp (file_iterator::set_location)
+	(next_file, do_open, close_request, do_write_request)
+	(write_macro_request, transparent_file, open_macro_package)
+	(process_macro_package_argument, process_startup_file)
+	(do_macro_source, process_input_file): Explicitly compare
+	variable of pointer type to null pointer constant instead of
+	letting it pun down to a Boolean.
+
+	* src/roff/troff/input.cpp (writable_lineno_reg::set_value): Use
+	explicit void cast when ignoring function's return value.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/font.cpp (font::load, font::load_desc):
+	Reduce cleverness of assignment nested inside conditional--a
+	favorite of C obscurantists and an especially gratuitous case
+	since it was preceded by a declarator without an initializer.
+	This aligns the function with another overloaded version of
+	itself and with `font::scan_papersize()`.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (file_iterator::set_location): Stop
+	initializing the output.  Preprocessing empty documents could
+	lead to baffling results.  In groff 1.22.4 and before, you'd get
+	a blank document from some output drivers despite no evident
+	reason from the preprocessed input that this should be the case.
+	In groff 1.23.0, this happened for fewer output drivers but
+	still generated a mysterious diagnostic.
+
+	  fatal error: 'V' command invalid before first 'p' command
+
+	It turns out to be unnecessary to initialize `the_output` upon
+	encountering an `lf` request.  The spurious output aspect of the
+	problem dates back to commit e092fba4517, 6 February 2000
+	{"groff pre-1.16"}.
+
+	Fixes <https://savannah.gnu.org/bugs/?65983>.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (number_lines): Clarify diagnostics;
+	output line numbers cannot be negative, but input line numbers
+	can, in both AT&T/DWB troff and GNU troff.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify `set_location()` member function and those of
+	its derived classes.
+
+	* src/roff/troff/input.cpp (class input_iterator)
+	(class file_iterator, class input_stack)
+	(file_iterator::set_location):
+	(input_stack::set_location): Demote return type from `int` to
+	`bool`.
+	(file_iterator::set_location, input_stack::set_location): Return
+	Boolean instead of integer literals.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/soelim/soelim.cpp (do_file): Stop "normalizing"
+	an input file name of "-" to "stdin".  The other preprocessors
+	don't do that.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Tweak shell pattern for clarity.
+
+2024-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Update gnulib to stable/2024-07.
+
+	Point to 0ba13435a9362bec0ff5fd0830907b9fac723e41.
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/devices/grolbp/lbp.cpp (main): Fix range check after
+	`strtol()`.  In case INT_MAX==LONG_MAX, we need to check for
+	ERANGE to reject high values.  The test 'n > INT_MAX' would
+	never be true.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (10/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/utils/indxbib/indxbib.cpp (check_integer_arg): Collapse
+	related tests.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (09/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/utils/indxbib/indxbib.cpp (check_integer_arg): Remove dead
+	code.  The tests (LONG_MAX > INT_MAX && n > INT_MAX) and (n >
+	INT_MAX) are equivalent.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (08/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/utils/indxbib/indxbib.cpp (check_integer_arg): Clear
+	`errno` before calling `strtol()`.  Otherwise, `errno` may hold
+	`ERANGE` from before.  See strtol(3).
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (07/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/utils/indxbib/indxbib.cpp (check_integer_arg): Don't
+	`else` after [[noreturn]].
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (06/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	[libgroff,libbib,indxbib]: Add, use `ceil_prime()`.
+
+	* src/include/lib.h:
+	* src/libs/libgroff/prime.cpp (ceil_prime): Add function to get
+	the lowest prime not less than n.  While at it, fix the logic,
+	which was incorrect in the open-coded call sites, since for an
+	input of 1, it produced 3, but the first prime is 2.  A recent
+	commit started rejecting 1 earlier, so this bug was now
+	impossible to trigger, but remained there.
+
+	Also, since this is a library function, let's behave well for an
+	input of 0, which is mathematically fine, and return also the
+	first prime, 2.
+
+	* src/libs/libbib/index.cpp
+	(index_search_item::read_common_words_file):
+	* src/utils/indxbib/indxbib.cpp (main): And use it where the
+	same logic was being open-coded.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (05/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/devices/grolbp/lbp.cpp (main): Remove bogus (and
+	redundant) check.  `str == end` can only happen if strtol(3)
+	returns 0.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (04/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/devices/grodvi/dvi.cpp
+	(dvi_font::handle_unknown_font_command):
+	* src/devices/grolbp/lbp.cpp (main):
+	* src/devices/grolj4/lj4.cpp
+	(lj4_font::handle_unknown_font_command, main):
+	* src/devices/grops/ps.cpp (ps_printer::do_mdef)
+	(ps_printer::do_import):
+	* src/devices/grops/psrm.cpp (read_uint_arg):
+	* src/libs/libgroff/font.cpp (font::load):
+	* src/preproc/eqn/lex.cpp (do_space):
+	* src/preproc/pic/tex.cpp (tpic_output::command):
+	* src/preproc/refer/command.cpp (check_args):
+	* src/preproc/refer/ref.cpp (reference::compute_sort_key):
+	* src/preproc/refer/refer.cpp (main):
+	* src/utils/indxbib/indxbib.cpp (check_integer_arg):
+	* src/utils/lkbib/lkbib.cpp (main):
+	* src/utils/lookbib/lookbib.cpp (main):
+	* src/utils/tfmtodit/tfmtodit.cpp (main): Remove redundant checks
+	after strtol(3).  `str == end` can only happen if strtol(3)
+	returns 0.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (03/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/libs/libgroff/curtime.cpp (current_time): Remove dead
+	code.  strtol(3) can only report ERANGE, if the base is valid
+	{and it is}.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (02/10).
+
+2024-03-16  Alejandro Colomar <alx@kernel.org>
+
+	* src/libs/libgroff/curtime.cpp (current_time): Remove redundant
+	checks.  ERANGE can only happen if strtol(3) returns either
+	LONG_MIN or LONG_MAX.
+
+	Fixes <https://savannah.gnu.org/bugs/?65451> (01/10).
+
+2024-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[nroff]: Support argument clustering.
+
+	* src/roff/nroff/nroff.sh: Support argument clustering by
+	iterating over the argument list and declustering options that
+	can be clustered (`-abCEikpRStUzZ`).
+
+	* src/roff/nroff/tests/verbose_option_works.sh: Test it.
+
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64684>.
+
+2024-07-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Support groff `-a`, `-D`, `-I`, and
+	`-Z` options.
+
+	* src/roff/nroff/nroff.1.man:
+	* NEWS: Document it.
+
+2024-07-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Describe program briefly when invoked
+	with `--help` option.
+
+2024-07-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Define `prog` variable as only the
+	"basename" of argv[0], making diagnostic and usage messages less
+	garrulous.  See Savannah #65110.
+
+2024-07-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (class composite_node): Declare
+	`dump_node()` member function.
+	(composite_node::dump_node): Implement.
+
+2024-07-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Groff Options):
+	* man/groff.7.man (Syntax reference conventions):
+	* src/roff/troff/troff.1.man (Options): Document restriction on
+	file names used as request arguments: no spaces, tabs, or line
+	feeds.
+
+2024-07-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tests/basic_latin_glyphs_map_correctly.sh:
+	* src/roff/groff/tests/smoke-test_html_device.sh: Revise tests
+	to better handle non-glibc environments.  For example, Bionic
+	libc offers no "locale" command to query the locale's character
+	set from the shell.  When that is the case, skip the test and
+	describe the failure more accurately.  Fixes test failures on
+	Termux.
+
 2024-05-14  Dave Kemper <saint.snit@gmail.com>
 
 	* tmac/e.tmac: Add debugging advice for developers.
@@ -18,22 +434,6 @@
 	in cases where the referenced input need not come from a file.
 
 	Fixes <https://savannah.gnu.org/bugs/?65967>.
-
-2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	[grohtml]: Pass `-blank-image=pass` to pnmcrop(1) if supported
-	by the installed version of Netpbm.
-
-	* m4/groff.m4 (GROFF_PNMTOOLS_CAN_BE_QUIET): Set up an
-	Autoheader template for the C/C++ preprocessor symbol
-	`PNMCROP_PASS`.  Report the detected option (if any) as the
-	result of this configuration test.  Get the expansion into the
-	"config.h" file with `AC_DEFINE_UNQUOTED`.
-	* src/preproc/html/pre-html.cpp (imageList::createImage): Use
-	the preprocessor symbol.
-
-	Fixes <https://savannah.gnu.org/bugs/?65961>.  Thanks to Bjarni
-	Ingi Gislason for the report.
 
 2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 

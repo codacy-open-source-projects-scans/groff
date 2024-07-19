@@ -426,7 +426,7 @@ void tpic_output::command(const char *s, const char *filename, int lineno)
     else {
       char *ptr;
       int temp = (int)strtol(p, &ptr, 10);
-      if (temp == 0 && ptr == p)
+      if (ptr == p)
 	error_with_file_and_line(filename, lineno,
 				 "argument to '.ps' not an integer");
       else if (temp < 0)

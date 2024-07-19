@@ -33,7 +33,7 @@ int vresolution = 1;
 int units_per_inch;
 int sizescale;
 
-static bool is_valid_expression(units *v, int scaling_unit,
+static bool is_valid_expression(units *u, int scaling_unit,
 				bool is_parenthesized,
 				bool is_mandatory = false);
 static bool is_valid_expression_start();
@@ -133,18 +133,18 @@ bool get_vunits(vunits *res, unsigned char si, vunits prev_value)
 
 bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
 {
-  units v;
-  switch (get_incr_number(&v, si)) {
+  units h;
+  switch (get_incr_number(&h, si)) {
   case INVALID:
     return false;
   case ASSIGN:
-    *res = v;
+    *res = h;
     break;
   case INCREMENT:
-    *res = prev_value + v;
+    *res = prev_value + h;
     break;
   case DECREMENT:
-    *res = prev_value - v;
+    *res = prev_value - h;
     break;
   default:
     assert(0 == "unhandled case returned by get_incr_number()");
@@ -154,18 +154,18 @@ bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
 
 bool get_number(units *res, unsigned char si, units prev_value)
 {
-  units v;
-  switch (get_incr_number(&v, si)) {
+  units u;
+  switch (get_incr_number(&u, si)) {
   case INVALID:
     return false;
   case ASSIGN:
-    *res = v;
+    *res = u;
     break;
   case INCREMENT:
-    *res = prev_value + v;
+    *res = prev_value + u;
     break;
   case DECREMENT:
-    *res = prev_value - v;
+    *res = prev_value - u;
     break;
   default:
     assert(0 == "unhandled case returned by get_incr_number()");
@@ -175,18 +175,18 @@ bool get_number(units *res, unsigned char si, units prev_value)
 
 bool get_integer(int *res, int prev_value)
 {
-  units v;
-  switch (get_incr_number(&v, 0)) {
+  units i;
+  switch (get_incr_number(&i, 0)) {
   case INVALID:
     return false;
   case ASSIGN:
-    *res = v;
+    *res = i;
     break;
   case INCREMENT:
-    *res = prev_value + int(v);
+    *res = prev_value + int(i);
     break;
   case DECREMENT:
-    *res = prev_value - int(v);
+    *res = prev_value - int(i);
     break;
   default:
     assert(0 == "unhandled case returned by get_incr_number()");
@@ -239,14 +239,14 @@ enum { OP_LEQ = 'L', OP_GEQ = 'G', OP_MAX = 'X', OP_MIN = 'N' };
 
 #define SCALING_UNITS "icfPmnpuvMsz"
 
-static bool is_valid_term(units *v, int scaling_unit,
+static bool is_valid_term(units *u, int scaling_unit,
 			  bool is_parenthesized, bool is_mandatory);
 
-static bool is_valid_expression(units *v, int scaling_unit,
+static bool is_valid_expression(units *u, int scaling_unit,
 				bool is_parenthesized,
 				bool is_mandatory)
 {
-  int result = is_valid_term(v, scaling_unit, is_parenthesized,
+  int result = is_valid_term(u, scaling_unit, is_parenthesized,
 			     is_mandatory);
   while (result) {
     if (is_parenthesized)
@@ -292,107 +292,107 @@ static bool is_valid_expression(units *v, int scaling_unit,
     default:
       return result;
     }
-    units v2;
-    if (!is_valid_term(&v2, scaling_unit, is_parenthesized,
+    units u2;
+    if (!is_valid_term(&u2, scaling_unit, is_parenthesized,
 		       is_mandatory))
       return false;
     bool had_overflow = false;
     switch (op) {
     case '<':
-      *v = *v < v2;
+      *u = *u < u2;
       break;
     case '>':
-      *v = *v > v2;
+      *u = *u > u2;
       break;
     case OP_LEQ:
-      *v = *v <= v2;
+      *u = *u <= u2;
       break;
     case OP_GEQ:
-      *v = *v >= v2;
+      *u = *u >= u2;
       break;
     case OP_MIN:
-      if (*v > v2)
-	*v = v2;
+      if (*u > u2)
+	*u = u2;
       break;
     case OP_MAX:
-      if (*v < v2)
-	*v = v2;
+      if (*u < u2)
+	*u = u2;
       break;
     case '=':
-      *v = *v == v2;
+      *u = *u == u2;
       break;
     case '&':
-      *v = *v > 0 && v2 > 0;
+      *u = *u > 0 && u2 > 0;
       break;
     case ':':
-      *v = *v > 0 || v2 > 0;
+      *u = *u > 0 || u2 > 0;
       break;
     case '+':
-      if (v2 < 0) {
-	if (*v < INT_MIN - v2)
+      if (u2 < 0) {
+	if (*u < INT_MIN - u2)
 	  had_overflow = true;
       }
-      else if (v2 > 0) {
-	if (*v > INT_MAX - v2)
+      else if (u2 > 0) {
+	if (*u > INT_MAX - u2)
 	  had_overflow = true;
       }
       if (had_overflow) {
 	error("addition overflow");
 	return false;
       }
-      *v += v2;
+      *u += u2;
       break;
     case '-':
-      if (v2 < 0) {
-	if (*v > INT_MAX + v2)
+      if (u2 < 0) {
+	if (*u > INT_MAX + u2)
 	  had_overflow = true;
       }
-      else if (v2 > 0) {
-	if (*v < INT_MIN + v2)
+      else if (u2 > 0) {
+	if (*u < INT_MIN + u2)
 	  had_overflow = true;
       }
       if (had_overflow) {
 	error("subtraction overflow");
 	return false;
       }
-      *v -= v2;
+      *u -= u2;
       break;
     case '*':
-      if (v2 < 0) {
-	if (*v > 0) {
-	  if ((unsigned)*v > -(unsigned)INT_MIN / -(unsigned)v2)
+      if (u2 < 0) {
+	if (*u > 0) {
+	  if ((unsigned)*u > -(unsigned)INT_MIN / -(unsigned)u2)
 	    had_overflow = true;
 	}
-	else if (-(unsigned)*v > INT_MAX / -(unsigned)v2)
+	else if (-(unsigned)*u > INT_MAX / -(unsigned)u2)
 	  had_overflow = true;
       }
-      else if (v2 > 0) {
-	if (*v > 0) {
-	  if (*v > INT_MAX / v2)
+      else if (u2 > 0) {
+	if (*u > 0) {
+	  if (*u > INT_MAX / u2)
 	    had_overflow = true;
 	}
-	else if (-(unsigned)*v > -(unsigned)INT_MIN / v2)
+	else if (-(unsigned)*u > -(unsigned)INT_MIN / u2)
 	  had_overflow = true;
       }
       if (had_overflow) {
 	error("multiplication overflow");
 	return false;
       }
-      *v *= v2;
+      *u *= u2;
       break;
     case '/':
-      if (v2 == 0) {
+      if (u2 == 0) {
 	error("division by zero");
 	return false;
       }
-      *v /= v2;
+      *u /= u2;
       break;
     case '%':
-      if (v2 == 0) {
+      if (u2 == 0) {
 	error("modulus by zero");
 	return false;
       }
-      *v %= v2;
+      *u %= u2;
       break;
     default:
       assert(0 == "unhandled case of operator");
@@ -401,10 +401,10 @@ static bool is_valid_expression(units *v, int scaling_unit,
   return result;
 }
 
-static bool is_valid_term(units *v, int scaling_unit,
+static bool is_valid_term(units *u, int scaling_unit,
 			  bool is_parenthesized, bool is_mandatory)
 {
-  int negative = 0;
+  bool is_negative = false;
   for (;;)
     if (is_parenthesized && tok.is_space())
       tok.next();
@@ -412,7 +412,7 @@ static bool is_valid_term(units *v, int scaling_unit,
       tok.next();
     else if (tok.ch() == '-') {
       tok.next();
-      negative = !negative;
+      is_negative = !is_negative;
     }
     else
       break;
@@ -422,31 +422,31 @@ static bool is_valid_term(units *v, int scaling_unit,
     // | is not restricted to the outermost level
     // tbl uses this
     tok.next();
-    if (!is_valid_term(v, scaling_unit, is_parenthesized, is_mandatory))
+    if (!is_valid_term(u, scaling_unit, is_parenthesized, is_mandatory))
       return false;
     int tem;
     tem = (scaling_unit == 'v'
 	   ? curdiv->get_vertical_position().to_units()
 	   : curenv->get_input_line_position().to_units());
     if (tem >= 0) {
-      if (*v < INT_MIN + tem) {
+      if (*u < INT_MIN + tem) {
 	error("numeric overflow");
 	return false;
       }
     }
     else {
-      if (*v > INT_MAX + tem) {
+      if (*u > INT_MAX + tem) {
 	error("numeric overflow");
 	return false;
       }
     }
-    *v -= tem;
-    if (negative) {
-      if (*v == INT_MIN) {
+    *u -= tem;
+    if (is_negative) {
+      if (*u == INT_MIN) {
 	error("numeric overflow");
 	return false;
       }
-      *v = -*v;
+      *u = -*u;
     }
     return true;
   case '(':
@@ -457,7 +457,7 @@ static bool is_valid_term(units *v, int scaling_unit,
 	return false;
       warning(WARN_SYNTAX, "empty parentheses");
       tok.next();
-      *v = 0;
+      *u = 0;
       return true;
     }
     else if (c != 0 && strchr(SCALING_UNITS, c) != 0) {
@@ -476,7 +476,7 @@ static bool is_valid_term(units *v, int scaling_unit,
       scaling_unit = 0;
       tok.next();
     }
-    if (!is_valid_expression(v, scaling_unit,
+    if (!is_valid_expression(u, scaling_unit,
 			     true /* is_parenthesized */, is_mandatory))
       return false;
     tok.skip();
@@ -487,16 +487,16 @@ static bool is_valid_term(units *v, int scaling_unit,
     }
     else
       tok.next();
-    if (negative) {
-      if (*v == INT_MIN) {
+    if (is_negative) {
+      if (*u == INT_MIN) {
 	error("numeric overflow");
 	return false;
       }
-      *v = -*v;
+      *u = -*u;
     }
     return true;
   case '.':
-    *v = 0;
+    *u = 0;
     break;
   case '0':
   case '1':
@@ -508,18 +508,18 @@ static bool is_valid_term(units *v, int scaling_unit,
   case '7':
   case '8':
   case '9':
-    *v = 0;
+    *u = 0;
     do {
-      if (*v > INT_MAX/10) {
+      if (*u > INT_MAX/10) {
 	error("numeric overflow");
 	return false;
       }
-      *v *= 10;
-      if (*v > INT_MAX - (int(c) - '0')) {
+      *u *= 10;
+      if (*u > INT_MAX - (int(c) - '0')) {
 	error("numeric overflow");
 	return false;
       }
-      *v += c - '0';
+      *u += c - '0';
       tok.next();
       c = tok.ch();
     } while (csdigit(c));
@@ -533,8 +533,8 @@ static bool is_valid_term(units *v, int scaling_unit,
   case '<':
   case '=':
     warning(WARN_SYNTAX, "empty left operand to '%1' operator", c);
-    *v = 0;
-    return is_mandatory ? false : true;
+    *u = 0;
+    return !is_mandatory;
   default:
     warning(WARN_NUMBER, "expected numeric expression, got %1",
 	    tok.description());
@@ -548,16 +548,16 @@ static bool is_valid_term(units *v, int scaling_unit,
       if (!csdigit(c))
 	break;
       // we may multiply the divisor by 254 later on
-      if (divisor <= INT_MAX/2540 && *v <= (INT_MAX - 9)/10) {
-	*v *= 10;
-	*v += c - '0';
+      if (divisor <= INT_MAX/2540 && *u <= (INT_MAX - 9)/10) {
+	*u *= 10;
+	*u += c - '0';
 	divisor *= 10;
       }
       tok.next();
     }
   }
   int si = scaling_unit;
-  int do_next = 0;
+  bool do_next = false;
   if ((c = tok.ch()) != 0 && strchr(SCALING_UNITS, c) != 0) {
     switch (scaling_unit) {
     case 0:
@@ -584,41 +584,41 @@ static bool is_valid_term(units *v, int scaling_unit,
     }
     // Don't do tok.next() here because the next token might be \s,
     // which would affect the interpretation of m.
-    do_next = 1;
+    do_next = true;
   }
   switch (si) {
   case 'i':
-    *v = scale(*v, units_per_inch, divisor);
+    *u = scale(*u, units_per_inch, divisor);
     break;
   case 'c':
-    *v = scale(*v, units_per_inch*100, divisor*254);
+    *u = scale(*u, units_per_inch*100, divisor*254);
     break;
   case 0:
   case 'u':
     if (divisor != 1)
-      *v /= divisor;
+      *u /= divisor;
     break;
   case 'f':
-    *v = scale(*v, 65536, divisor);
+    *u = scale(*u, 65536, divisor);
     break;
   case 'p':
-    *v = scale(*v, units_per_inch, divisor*72);
+    *u = scale(*u, units_per_inch, divisor*72);
     break;
   case 'P':
-    *v = scale(*v, units_per_inch, divisor*6);
+    *u = scale(*u, units_per_inch, divisor*6);
     break;
   case 'm':
     {
       // Convert to hunits so that with -Tascii 'm' behaves as in nroff.
       hunits em = curenv->get_size();
-      *v = scale(*v, em.is_zero() ? hresolution : em.to_units(),
+      *u = scale(*u, em.is_zero() ? hresolution : em.to_units(),
 		 divisor);
     }
     break;
   case 'M':
     {
       hunits em = curenv->get_size();
-      *v = scale(*v, em.is_zero() ? hresolution : em.to_units(),
+      *u = scale(*u, em.is_zero() ? hresolution : em.to_units(),
 		 (divisor * 100));
     }
     break;
@@ -626,34 +626,34 @@ static bool is_valid_term(units *v, int scaling_unit,
     {
       // Convert to hunits so that with -Tascii 'n' behaves as in nroff.
       hunits en = curenv->get_size() / 2;
-      *v = scale(*v, en.is_zero() ? hresolution : en.to_units(),
+      *u = scale(*u, en.is_zero() ? hresolution : en.to_units(),
 		 divisor);
     }
     break;
   case 'v':
-    *v = scale(*v, curenv->get_vertical_spacing().to_units(), divisor);
+    *u = scale(*u, curenv->get_vertical_spacing().to_units(), divisor);
     break;
   case 's':
     while (divisor > INT_MAX/(sizescale*72)) {
       divisor /= 10;
-      *v /= 10;
+      *u /= 10;
     }
-    *v = scale(*v, units_per_inch, divisor*sizescale*72);
+    *u = scale(*u, units_per_inch, divisor*sizescale*72);
     break;
   case 'z':
-    *v = scale(*v, sizescale, divisor);
+    *u = scale(*u, sizescale, divisor);
     break;
   default:
     assert(0 == "unhandled case of scaling unit");
   }
   if (do_next)
     tok.next();
-  if (negative) {
-    if (*v == INT_MIN) {
+  if (is_negative) {
+    if (*u == INT_MIN) {
       error("numeric overflow");
       return false;
     }
-    *v = -*v;
+    *u = -*u;
   }
   return true;
 }

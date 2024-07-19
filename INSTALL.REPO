@@ -126,7 +126,8 @@ See "Uninstalling" in the 'INSTALL.extra' file.
 Rebuilding
 ----------
 
-Start over from "Building" above.
+If you have "git pull"ed since your previous build or otherwise changed
+the code, run "make distclean".  Then start over from "Building" above.
 
 
 ##### Editor settings

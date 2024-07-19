@@ -1017,8 +1017,10 @@ the following architecture keywords are defined.
 .\" PS/PDF(!).  Lists of information like this simply beg to bit-rot.
 .\" -- GBR
 .br
+.if t \{\
 .ps -2
 .vs -2
+.\}
 .Bd -ragged -offset 4n
 .No acorn26 , acorn32 , algor , alpha , amd64 , amiga , amigappc ,
 .No arc , arm , arm26 , arm32 , armish , atari , aviion ,
@@ -1033,8 +1035,10 @@ the following architecture keywords are defined.
 .No shark , socppc , solbourne , sparc , sparc64 , sun2 , sun3 ,
 .No tahoe , vax , x68k , x86_64 , xen , zaurus
 .Ed
+.if t \{\
 .vs
 .ps
+.\}
 .
 .
 .Pp

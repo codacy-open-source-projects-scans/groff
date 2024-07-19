@@ -1,3 +1,43 @@
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/4.MT (cov@print-abstract):
+	* mm/ms.cov (cov@print-title, cov@print-abstract): Migrate to
+	new name for macro--`@reset`, not `init@reset`.
+
+	Fixes <https://savannah.gnu.org/bugs/?65990>.  Problem
+	introduced by me in commit 2d31563b19b33, 22 June.  Thanks to
+	Bjarni Ingi Gislason for the report.
+
+2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (SP): Remove extraneous parenthesis in argument check.
+
+	Fixes <https://savannah.gnu.org/bugs/?65989>.  Problem
+	introduced by me in commit 5da71ef6ef, 6 July.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac ([initialization], LI): Unsupport `Limsp` register.
+	* groff_mm.7.man (Macros) <LI>
+	(Registers) <Limsp>: De-document it.
+
+2024-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/lists-indent-correctly.sh: Test `.mgm` register to gate
+	groffisms; the extensions we're exercising are in mm itself, not
+	the formatter.
+
+2024-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Drop scaling unit from diagnostic message reporting
+	dimensionless quantity.
+
+2024-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Simplify `BU` string definition by eliminating branch;
+	`\s` escape sequences are ignored in nroff mode anyway.
+
 2024-07-06  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac: Sort `BU` and `EM` string definitions in lexicographic
@@ -11,9 +51,9 @@
 
 2024-07-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* m.tmac (ML): Right-align mark within text indentation when the
-	latter is specified.  Problem introduced by me in commit
-	512b749f4e, 2 July.
+	* m.tmac (ML): Right-align mark within its indentation when a
+	text indentation is specified.  Problem introduced by me in
+	commit 512b749f4e, 2 July.
 
 	* tests/lists-indent-correctly.sh: Update test expectations.
 
@@ -93,7 +133,7 @@
 	when prefixed (with intra-mark padding), if the enumerator and
 	prefix are only one character in nroff mode (and similarly thin
 	in troff mode).  `RL` oversets under the same circumstances
-	{because two brackets "[" and "]" are wider than a dot "."}
+	{because two brackets "[" and "]" are wider than a dot "."}.
 	This change however makes the macros more consistent with each
 	other, and `RL` more consistent with DWB 3.3 mm, whose manual
 	doesn't document the macros' behavior in this much detail; I

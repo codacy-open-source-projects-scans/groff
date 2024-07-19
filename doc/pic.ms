@@ -49,6 +49,24 @@ Figure \\n[H1]-\\$1
 .  KE
 ..
 .
+.\" Start small display.
+.de SS
+.  DS
+.  if t \{\
+.    ps -1
+.    vs -1
+.  \}
+..
+.
+.\" End small display.
+.de SE
+.  if t \{\
+.    ps
+.    vs
+.  \}
+.  DE
+..
+.
 .\" Definitions end here
 .
 .
@@ -206,9 +224,7 @@ ellipse "PostScript"
 .PP
 This was produced from the following \fBpic\fP program:
 .KS
-.DS
-.ps -1
-.vs -1
+.SS
 .CW
 \&.PS
 ellipse "document";
@@ -1772,10 +1788,8 @@ appearing in the replacement text.
 .PP
 As an example of macro use, consider this:
 .KS
-.DS
+.SS
 .CW
-.ps -1
-.vs -1
 \&.PS
 # Plot a single jumper in a box, $1 is the on-off state.
 define jumper { [
@@ -1814,10 +1828,8 @@ jumperblock(1,1,0,0,1,0);
 move;
 jumperblock(1,0,1,0,1,1);
 \&.PE
-.ps
-.vs
 .R
-.DE
+.SE
 .KE
 .LP
 It yields the following:
@@ -2178,9 +2190,7 @@ center it.
 The GNU incarnation of the \fBms\fP macro package, for example, includes
 the following definitions:
 .KS
-.DS
-.ps -1
-.vs -1
+.SS
 .CW
 \&.de PS
 \&.br
@@ -2196,9 +2206,7 @@ the following definitions:
 \&.sp \e\en[DD]u+.5m
 \&..
 .R
-.DE
-.ps
-.vs
+.SE
 .KE
 .LP
 Equivalent definitions of these and of \fB.PF\fP and \fB.PY\fP are
@@ -2398,9 +2406,7 @@ Here are a few larger examples, with complete source code.
 One of our earlier examples is generated in an instructive way using a
 for loop:
 .KS
-.DS
-.ps -1
-.vs -1
+.SS
 .CW
 \&.PS
 # Draw a demonstration up left arrow with grid box overlay
@@ -2428,9 +2434,7 @@ gridarrow(2);
 undef gridarrow
 \&.PE
 .R
-.DE
-.ps
-.vs
+.SE
 .KE
 .KS
 .PS
@@ -2462,9 +2466,7 @@ undef gridarrow
 Here's an example concocted to demonstrate layout of a large,
 multiple-part pattern:
 .KS
-.DS
-.ps -1
-.vs -1
+.SS
 .CW
 \&.PS
 define filter {box ht 0.25 rad 0.125}
@@ -2529,9 +2531,7 @@ arrow from Top.D.end to Anchor.ne
 }
 \&.PE
 .R
-.DE
-.ps
-.vs
+.SE
 .KE
 .KS
 .PS
