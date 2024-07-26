@@ -239,7 +239,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" definition.)
 .if !d cov*mt-printed \{\
 .	cov@print-title subject
-.	cov@print-firm
+.	ie d AFX .AFX
+.	el       .cov@print-firm
 .	cov@print-date date
 .	cov@print-authors from
 .	cov@print-abstract \\*[Abstract]

@@ -16,6 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdckdint.h>
+
 class vunits {
   int n;
 public:
@@ -85,7 +91,10 @@ inline vunits:: vunits() : n(0)
 
 inline units vunits::to_units()
 {
-  return n * vresolution;
+  units r;
+  if (ckd_mul(&r, n, vresolution))
+    error("integer multiplication wrapped");
+  return r;
 }
 
 inline bool vunits::is_zero()
@@ -97,7 +106,8 @@ inline vunits operator +(const vunits & x, const vunits & y)
 {
   vunits r;
   r = x;
-  r.n += y.n;
+  if (ckd_add(&r.n, r.n, y.n))
+    error("integer addition wrapped");
   return r;
 }
 
@@ -105,14 +115,17 @@ inline vunits operator -(const vunits & x, const vunits & y)
 {
   vunits r;
   r = x;
-  r.n -= y.n;
+  if (ckd_sub(&r.n, r.n, y.n))
+    error("integer subtraction wrapped");
   return r;
 }
 
 inline vunits operator -(const vunits & x)
 {
   vunits r;
-  r.n = -x.n;
+  // Why?  Consider -(INT_MIN) in two's complement.
+  if (ckd_mul(&r.n, x.n, -1))
+    error("integer multiplication wrapped");
   return r;
 }
 
@@ -133,7 +146,8 @@ inline vunits operator *(const vunits & x, int n)
 {
   vunits r;
   r = x;
-  r.n *= n;
+  if (ckd_mul(&r.n, x.n, n))
+    error("integer multiplication wrapped");
   return r;
 }
 
@@ -141,7 +155,8 @@ inline vunits operator *(int n, const vunits & x)
 {
   vunits r;
   r = x;
-  r.n *= n;
+  if (ckd_mul(&r.n, n, x.n))
+    error("integer multiplication wrapped");
   return r;
 }
 
@@ -193,7 +208,10 @@ inline hunits:: hunits() : n(0)
 
 inline units hunits::to_units()
 {
-  return n * hresolution;
+  units r;
+  if (ckd_mul(&r, n, hresolution))
+    error("integer multiplication wrapped");
+  return r;
 }
 
 inline bool hunits::is_zero()
@@ -205,7 +223,8 @@ inline hunits operator +(const hunits & x, const hunits & y)
 {
   hunits r;
   r = x;
-  r.n += y.n;
+  if (ckd_add(&r.n, r.n, y.n))
+    error("integer addition wrapped");
   return r;
 }
 
@@ -213,7 +232,8 @@ inline hunits operator -(const hunits & x, const hunits & y)
 {
   hunits r;
   r = x;
-  r.n -= y.n;
+  if (ckd_sub(&r.n, r.n, y.n))
+    error("integer subtraction wrapped");
   return r;
 }
 
@@ -221,7 +241,9 @@ inline hunits operator -(const hunits & x)
 {
   hunits r;
   r = x;
-  r.n = -x.n;
+  // Why?  Consider -(INT_MIN) in two's complement.
+  if (ckd_mul(&r.n, x.n, -1))
+    error("integer subtraction wrapped");
   return r;
 }
 
@@ -242,7 +264,8 @@ inline hunits operator *(const hunits & x, int n)
 {
   hunits r;
   r = x;
-  r.n *= n;
+  if (ckd_mul(&r.n, x.n, n))
+    error("integer multiplication wrapped");
   return r;
 }
 
@@ -250,7 +273,8 @@ inline hunits operator *(int n, const hunits & x)
 {
   hunits r;
   r = x;
-  r.n *= n;
+  if (ckd_mul(&r.n, x.n, n))
+    error("integer multiplication wrapped");
   return r;
 }
 

@@ -1853,11 +1853,25 @@ void token::skip()
     next();
 }
 
-bool has_arg()
+// Specify `want_peek` if request reads the next argument in copy mode.
+bool has_arg(bool want_peek)
 {
-  while (tok.is_space())
-    tok.next();
-  return !tok.is_newline();
+  if (want_peek) {
+    int c;
+    for (;;) {
+      c = input_stack::peek();
+      if (' ' == c)
+	(void) get_copy(0 /* nullptr */);
+      else
+	break;
+    }
+    return !(('\n' == c) || (EOF == c));
+  }
+  else {
+    while (tok.is_space())
+      tok.next();
+    return !tok.is_newline();
+  }
 }
 
 void token::make_space()
@@ -2507,6 +2521,7 @@ static bool is_char_usable_as_delimiter(int c)
   case '(':
   case ')':
   case '.':
+  case '|':
     return false;
   default:
     return true;
@@ -2696,10 +2711,10 @@ symbol get_name(bool required)
 
 symbol get_long_name(bool required)
 {
-  return do_get_long_name(required, 0);
+  return do_get_long_name(required, '\0');
 }
 
-static symbol do_get_long_name(bool required, char end)
+static symbol do_get_long_name(bool required, char end_char)
 {
   while (tok.is_space())
     tok.next();
@@ -2708,7 +2723,7 @@ static symbol do_get_long_name(bool required, char end)
   int buf_size = ABUF_SIZE;
   int i = 0;
   for (;;) {
-    // If end != 0 we normally have to append a null byte
+    // If `end_char` != `\0` we normally have to append a null byte.
     if (i + 2 > buf_size) {
       if (buf == abuf) {
 	buf = new char[ABUF_SIZE*2];
@@ -2723,7 +2738,7 @@ static symbol do_get_long_name(bool required, char end)
 	delete[] old_buf;
       }
     }
-    if ((buf[i] = tok.ch()) == 0 || buf[i] == end)
+    if ((buf[i] = tok.ch()) == 0 || buf[i] == end_char)
       break;
     i++;
     tok.next();
@@ -2732,7 +2747,7 @@ static symbol do_get_long_name(bool required, char end)
     diagnose_missing_identifier(required);
     return NULL_SYMBOL;
   }
-  if (end && buf[i] == end)
+  if (end_char && buf[i] == end_char)
     buf[i+1] = '\0';
   else
     diagnose_invalid_identifier();
@@ -5672,21 +5687,13 @@ static node *do_device_control() // \X
 
 static void device_request()
 {
-  // We can't use `has_arg()` here because we want to read in copy mode.
-  int c;
-  for (;;) {
-    c = input_stack::peek();
-    if (' ' == c)
-      (void) get_copy(0 /* nullptr */);
-    else
-      break;
-  }
-  if (('\n' == c) || (EOF == c)) {
+  if (!has_arg(true /* peek; we want to read in copy mode */)) {
     warning(WARN_MISSING, "device control request expects arguments");
     skip_line();
     return;
   }
   macro mac;
+  int c;
   for (;;) {
     c = get_copy(0 /* nullptr */);
     if ('"' == c) {
@@ -5696,6 +5703,8 @@ static void device_request()
     if (c != ' ' && c != '\t')
       break;
   }
+  if (curdiv == topdiv && topdiv->before_first_page)
+    topdiv->begin_page();
   for (; c != '\n' && c != EOF; c = get_copy(0 /* nullptr */))
     mac.append(c);
   curenv->add_node(new special_node(mac));
@@ -5719,20 +5728,12 @@ static void device_macro_request()
 
 static void output_request()
 {
-  // We can't use `has_arg()` here because we want to read in copy mode.
-  int c;
-  for (;;) {
-    c = input_stack::peek();
-    if (' ' == c)
-      (void) get_copy(0 /* nullptr */);
-    else
-      break;
-  }
-  if (('\n' == c) || (EOF == c)) {
+  if (!has_arg(true /* peek; we want to read in copy mode */)) {
     warning(WARN_MISSING, "output request expects arguments");
     skip_line();
     return;
   }
+  int c;
   for (;;) {
     c = get_copy(0 /* nullptr */);
     if ('"' == c) {

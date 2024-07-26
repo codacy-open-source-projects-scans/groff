@@ -7223,8 +7223,8 @@ Some escape sequences that require parameters use delimiters.  The
 neutral apostrophe @code{'} is a popular choice and shown in this
 document.  The neutral double quote @code{"} is also commonly seen.
 Letters, numerals, and leaders can be used.  Punctuation characters
-are likely better choices, except for those defined as infix operators
-in numeric expressions; see below.
+are likely better choices, except for those defined as operators in
+numeric expressions; see below.
 
 @Example
 \l'1.5i\[bu]' \" draw 1.5 inches of bullet glyphs
@@ -7335,9 +7335,10 @@ the numerals @code{0}-@code{9} and the decimal point @code{.}
 @ifinfo
 @cindex <colon>, as delimiter
 @end ifinfo
+@cindex @code{|}, as delimiter
 @cindex @code{(}, as delimiter
 @cindex @code{)}, as delimiter
-the (single-character) operators @samp{+-/*%<>=&:()}
+the (single-character) operators @samp{+-/*%<>=&:()|}
 
 @item
 @cindex space character, as delimiter
@@ -9936,16 +9937,17 @@ with the environment (@pxref{Environments}).
 @DefreqItem {ll, @t{-}@Var{length}}
 @DefregItemx {.l}
 @DefregListEndx {.ll}
-Set the line length to @var{length}; if @var{length} is signed, adjust
-the line length by its value.  The default scaling unit is @samp{m}.  If
-not otherwise configured (see @pxref{Paper Format}), the default line
-length is 6.5@dmn{i}.
-
-If @var{length} is omitted, the line length is reset to that before the
-previous invocation of @code{ll}.  If @var{length} is negative, GNU
-@command{troff} emits a warning in category @samp{range} and sets the
-line length to the device's horizontal motion quantum; recall
-@ref{Motion Quanta}.
+Change (increase or decrease) the line length per the numeric expression
+@var{length}.  The default scaling unit is @samp{m}.  If not otherwise
+configured (see @pxref{Paper Format}), the default line length is
+6.5@dmn{i}.  If @var{length} is invalid, GNU @code{troff} emits a
+warning in category @samp{number} and ignores the request.  If
+@var{length} is nonpositive, GNU @command{troff} emits a warning in
+category @samp{range} and sets the line length to the device's
+horizontal motion quantum; recall @ref{Motion Quanta}.  The line length
+is associated with the environment (@pxref{Environments}).  If
+@var{length} is omitted, GNU @command{troff} restores the environment's
+previous line length.
 
 The effect of @code{ll} is delayed until a partially collected line (if
 it exists) is output.  In other words, it does not change a pending
@@ -9959,9 +9961,6 @@ line length that applies to the pending output line.
 Similarly to @code{.i} and @code{.in}, the difference between @code{.l}
 and @code{.ll} is that the latter takes into account whether a partially
 collected line still uses the previous length.
-
-The line length is associated with the environment
-(@pxref{Environments}).
 @endDefreq
 
 
@@ -10097,12 +10096,12 @@ The formatter permits configuration of the page length and page number.
 @cindex configuring the page length (@code{pl})
 @cindex setting the page length (@code{pl})
 Change (increase or decrease) the page length per the numeric expression
-@var{length}.  The default scaling unit is @samp{v}.  A negative
-@var{length} is valid, but an uncommon application:@: it prevents page
-location traps from being sprung,@footnote{@xref{Traps}.} and each
-output line is placed on a new page.  If @var{length} is invalid, GNU
-@code{troff} emits a warning in category @samp{number}.  If @var{length}
-is absent or invalid, @samp{11i} is assumed.
+@var{length}.  The default scaling unit is @samp{v}.  If @var{length} is
+invalid, GNU @code{troff} emits a warning in category @samp{number}.  If
+@var{length} is absent or invalid, @samp{11i} is assumed.  If
+@var{length} is nonpositive, GNU @command{troff} emits a warning in
+category @samp{range} and sets the page length to the device's vertical
+motion quantum; recall @ref{Motion Quanta}.
 
 @cindex page length register (@code{.p})
 The read-only register @samp{.p} interpolates the current page length.
@@ -10161,13 +10160,14 @@ sets a title line comprising only the left-aligned word @samp{Thesis}.
 @cindex title length, configuring (@code{lt})
 Change (increase or decrease) the line length used by titles per the
 numeric expression @var{length}.  The default scaling unit is @samp{m}.
-If @var{length} is negative, GNU emits a warning in category
-@samp{range} and treats @var{length} as @samp{0}.  If @var{length} is
+The formatter's default title length is @samp{6.5i}.  If @var{length} is
 invalid, GNU @code{troff} emits a warning in category @samp{number} and
-ignores the request.  The formatter's default title length is
-@samp{6.5i}.  With no argument, the title length is restored to the
-previous value.  The title length is is associated with the environment
-(@pxref{Environments}).
+ignores the request.  If @var{length} is nonpositive, GNU
+@command{troff} emits a warning in category @samp{range} and sets the
+title line length to the device's horizontal motion quantum; recall
+@ref{Motion Quanta}.  The title length is is associated with the
+environment (@pxref{Environments}).  If @var{length} is omitted, GNU
+@command{troff} restores the environment's previous title length.
 
 @cindex title line length register (@code{.lt})
 The read-only register @samp{.lt} interpolates the title line length.
@@ -14801,23 +14801,25 @@ there.
 A macro package might set headers and footers as follows; this example
 configures vertical margins of one inch to the body text, and one
 half-inch to the titles.  Observe the use of the no-break control
-character with @code{sp} request to position our text baselines,
-and the page number character @samp{%} used with the @code{tl} request.
+character with the @code{sp} and @code{br} requests to position our text
+baselines and prevent a partially collected line from being written
+outside the body text, and the page number character @samp{%} used with
+the @code{tl} request.
 
 @Example
 .\" hdfo.roff
 .de hd                  \" page header
 '  sp .5i
-'  tl '\\*(Ti''\\*(Da'  \" title and date strings
-'  sp .5i
+.  tl '\\*(Ti''\\*(Da'  \" title and date strings
+'  sp |1i
 ..
 .de fo                  \" page footer
-'  sp .5i
+'  sp .5i-1v
 .  tl ''%''
-.  bp
+'  bp
 ..
-.wh 0   hd             \" trap at top of the page
-.wh -1i fo             \" trap 1 inch from bottom
+.wh 0   hd              \" trap at top of the page
+.wh -1i fo              \" trap 1 inch from bottom
 @endExample
 
 To use these traps, copy the above (or load it from a file with the
@@ -16623,12 +16625,6 @@ are ignored.@footnote{They are bypassed because these parameters are not
 rendered as glyphs in the output; instead, they remain abstract
 characters---in a PDF bookmark or a URL, for example.}  The use of any
 other escape sequence in @code{\X} parameters is normally an error.
-
-A device control command issued with the @code{device} request will not
-be reflected in the output unless a partially collected line exists at
-least once in the top-level diversion (recall @ref{Diversions}).  When
-experimenting with such device controls in minimal documents, a
-@code{br} request will ensure this to be the case.
 
 @kindex use_charnames_in_special
 @cindex @file{DESC} file, and @code{use_charnames_in_special} keyword

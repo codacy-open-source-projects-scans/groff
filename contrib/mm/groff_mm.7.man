@@ -716,6 +716,36 @@ and
 .
 .
 .TP
+.B AFX
+This user-definable hook macro assumes responsibility for formatting
+the affiliated firm name defined by
+.B AF
+in memorandum types 0 and 4 and documents using the
+.I ms
+cover page style.
+.
+If not defined
+(the default),
+internally defined macros handle this task;
+see sections \[lq]Internals\[rq] and \[lq]Files\[rq] below.
+.
+Applications include setting the firm name in a different font family,
+at a larger type size,
+drawing a rule across the page,
+and including an logo image using
+.IR groff 's
+.B PDFPIC
+or
+.B PSPIC
+macros.
+.
+See
+.B MT
+and
+.BR COVER .
+.
+.
+.TP
 .BR AL \~[\c
 .IR number-format \~[ text-indent \~[\c
 .BR 1 ]]]

@@ -37,7 +37,8 @@ This file describes how to prepare 'groff' for a new release.
      (<https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/\
      master/glyphlist.txt> may be more convenient.)
 
-* Update the 'gnulib' sub-module to the latest stable version.
+* Update the 'gnulib' sub-module and 'bootstrap' script to the latest
+  stable versions.  See the 'HACKING' file for instructions.
 
 * Update the release version number where it is hard-coded.
   + NEWS

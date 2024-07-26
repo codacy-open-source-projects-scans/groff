@@ -2305,18 +2305,6 @@ is stripped to allow the embedding of
 leading spaces.
 .
 .
-.IP
-A device control command issued with the
-.B device
-request will not be reflected in the output unless a partially collected
-line exists in the top-level diversion at least once.
-.
-When experimenting with such device controls in minimal documents,
-a
-.B br
-request will ensure this to be the case.
-.
-.
 .TP
 .BI .devicem\~ name
 Write contents of macro or string
@@ -4427,6 +4415,8 @@ for passage to the
 .B ta
 request.
 .
+This is a string-valued register.
+.
 .
 .TP
 .B \[rs]n[.trap]
@@ -5398,101 +5388,6 @@ to the standard error stream.
 .
 .
 .\" ====================================================================
-.SH "Other differences"
-.\" ====================================================================
-.
-.\" TODO: Resync with the node of this name in our Texinfo manual.
-GNU
-.IR troff 's \" GNU
-features sometimes cause incompatibilities with documents written
-assuming old implementations of
-.IR troff . \" generic
-.
-Some GNU extensions to
-.I troff \" generic
-are supported by other implementations.
-.
-.
-.P
-AT&T
-.I troff \" AT&T
-discards trailing spaces from input lines,
-like GNU
-.IR troff , \" GNU
-but if it does so,
-AT&T
-.I troff \" AT&T
-also cancels end-of-sentence detection.
-.
-Use of the dummy character escape sequence
-.B \[rs]&
-is more portable.
-.
-.
-.P
-When adjusting to both margins,
-AT&T
-.I troff \" AT&T
-at first adjusts spaces starting from the right;
-GNU
-.I troff \" GNU
-begins from the left.
-.
-Both implementations adjust spaces from opposite ends on alternating
-output lines to prevent \[lq]rivers\[rq] in the text.
-.
-.
-.P
-GNU
-.I troff \" GNU
-does not always hyphenate words as AT&T
-.I troff \" AT&T
-does.
-.
-The AT&T implementation uses a set of hard-coded rules specific to
-U.S.\& English,
-while GNU
-.I troff \" GNU
-uses language-specific hyphenation pattern files derived from \*[tx].
-.
-In some versions of
-.I troff \" generic
-there was limited space to store hyphenation exceptions
-(arguments to the
-.B hw
-request);
-GNU
-.I troff \" GNU
-has no such restriction.
-.
-.
-.P
-GNU
-.I troff \" GNU
-handles the dummy character
-.B \[rs]&
-differently from AT&T
-.I troff \" AT&T
-when it is followed by the hyphenation control escape sequence
-.B \[rs]%
-at the beginning of a word.
-.
-GNU
-.I troff \" GNU
-does not regard the dummy character as \[lq]starting\[rq] the word;
-AT&T
-.I troff \" AT&T
-does.
-.
-Further,
-Heirloom Doctools
-.I troff \" Heirloom
-does not honor an explicit hyphenation point marked with
-.B \[rs]%
-after a word-initial one.
-.
-.
-.\" ====================================================================
 .SH "Compatibility mode"
 .\" ====================================================================
 .
@@ -5631,6 +5526,101 @@ because
 turns compatibility mode
 .I off
 while it interprets its argument list.
+.
+.
+.\" ====================================================================
+.SH "Other differences"
+.\" ====================================================================
+.
+.\" TODO: Resync with the node of this name in our Texinfo manual.
+GNU
+.IR troff 's \" GNU
+features sometimes cause incompatibilities with documents written
+assuming old implementations of
+.IR troff . \" generic
+.
+Some GNU extensions to
+.I troff \" generic
+are supported by other implementations.
+.
+.
+.P
+AT&T
+.I troff \" AT&T
+discards trailing spaces from input lines,
+like GNU
+.IR troff , \" GNU
+but if it does so,
+AT&T
+.I troff \" AT&T
+also cancels end-of-sentence detection.
+.
+Use of the dummy character escape sequence
+.B \[rs]&
+is more portable.
+.
+.
+.P
+When adjusting to both margins,
+AT&T
+.I troff \" AT&T
+at first adjusts spaces starting from the right;
+GNU
+.I troff \" GNU
+begins from the left.
+.
+Both implementations adjust spaces from opposite ends on alternating
+output lines to prevent \[lq]rivers\[rq] in the text.
+.
+.
+.P
+GNU
+.I troff \" GNU
+does not always hyphenate words as AT&T
+.I troff \" AT&T
+does.
+.
+The AT&T implementation uses a set of hard-coded rules specific to
+U.S.\& English,
+while GNU
+.I troff \" GNU
+uses language-specific hyphenation pattern files derived from \*[tx].
+.
+In some versions of
+.I troff \" generic
+there was limited space to store hyphenation exceptions
+(arguments to the
+.B hw
+request);
+GNU
+.I troff \" GNU
+has no such restriction.
+.
+.
+.P
+GNU
+.I troff \" GNU
+handles the dummy character
+.B \[rs]&
+differently from AT&T
+.I troff \" AT&T
+when it is followed by the hyphenation control escape sequence
+.B \[rs]%
+at the beginning of a word.
+.
+GNU
+.I troff \" GNU
+does not regard the dummy character as \[lq]starting\[rq] the word;
+AT&T
+.I troff \" AT&T
+does.
+.
+Further,
+Heirloom Doctools
+.I troff \" Heirloom
+does not honor an explicit hyphenation point marked with
+.B \[rs]%
+after a word-initial one.
 .
 .
 .P

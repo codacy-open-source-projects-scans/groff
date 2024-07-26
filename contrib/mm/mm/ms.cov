@@ -101,7 +101,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .sp |4.2c
 .cov@print-title
 .cov@print-authors
-.cov@print-firm
+.ie d AFX .AFX
+.el       .cov@print-firm
 .cov@print-abstract "\\*[Abstract]"
 .cov@print-date
 .pg@enable-top-trap

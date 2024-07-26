@@ -98,7 +98,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .if !d cov*mt-printed \{\
 .	cov@print-title
 .	cov@print-authors
-.	cov@print-firm
+.	ie d AFX .AFX
+.	el       .cov@print-firm
 .	if d cov*abstract \{\
 .		if !\n[cov*abstract-placement] .cov@print-abstract
 .	\}

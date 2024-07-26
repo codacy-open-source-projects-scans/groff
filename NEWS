@@ -22,6 +22,11 @@ o The `mso` request no longer attempts to open a macro file named, say,
   simply processes the macro search path for a file name matching the
   request argument, and succeeds or fails depending on an exact match.
 
+o GNU troff no longer accepts nonpositive page lengths.  Attempting to
+  set one with the `pl` request clamps the page length to the vertical
+  motion quantum as `ll` does with the horizontal motion quantum in AT&T
+  and GNU troffs.
+
 o The `color`, `cp`, `linetabs`, and `vpt` requests now interpret
   arguments with negative values as instructions to disable the
   corresponding feature, using the *roff integer-to-Boolean conversion
@@ -163,9 +168,9 @@ o The behavior of the an (man) package's `SY` and `YS` macros has been
   initially breaks the output line _only_ if it is encountered
   repeatedly without a preceding `YS` call.  The computed indentation of
   synopsis lines after the first now also includes the width of anything
-  on the line _before_ the synopsis, so that you can precede the `SY`
-  call with, for instance, the C language data type used for the return
-  value in a function prototype.  The `SY` macro now accepts an optional
+  already on the output line, so that you can precede the `SY` call
+  with, for instance, the C language data type used for the return value
+  in a function prototype.  The `SY` macro now accepts an optional
   second argument.  This second argument is typeset in bold, replaces
   the fixed-width space that is appended to the synopsis keyword in
   `SY`'s single-argument form, and is used in computation of the
@@ -293,8 +298,8 @@ o The an (man) macro package's `IP` macro no longer honors the formerly
   punctuation or a list enumerator for `IP`'s first argument, consider
   migrating to `TP`.
 
-o The an-ext.tmac macro file no longer defines `DS` and `DE` macros.  It
-  had defined them as empty (undocumently) since 2009.
+o The "an-ext.tmac" macro file no longer defines `DS` and `DE` macros.
+  It had defined them as empty (undocumentedly) since 2009.
 
 o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   roman, not italics (or whatever the string `doc-Pa-font` was

@@ -240,7 +240,7 @@ inline bool token::is_zero_width_break()
   return type == TOKEN_ZERO_WIDTH_BREAK;
 }
 
-bool has_arg();
+bool has_arg(bool = false /* want_peek */);
 
 // Local Variables:
 // fill-column: 72

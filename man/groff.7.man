@@ -1832,7 +1832,7 @@ the numerals 0\[en]9 and the decimal point
 .
 .IP \[bu]
 the (single-character) operators
-.B +\-/*%<>=&:()
+.B +\-/*%<>=&:()|
 .
 .
 .IP \[bu]

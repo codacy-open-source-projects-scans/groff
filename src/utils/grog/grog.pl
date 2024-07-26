@@ -3,7 +3,7 @@
 # Inspired by doctype script in Kernighan & Pike, Unix Programming
 # Environment, pp 306-8.
 
-# Copyright (C) 1993-2021 Free Software Foundation, Inc.
+# Copyright (C) 1993-2024 Free Software Foundation, Inc.
 # Written by James Clark.
 # Rewritten in Perl by Bernd Warken <groff-bernd.warken-72@web.de>.
 # Hacked up by G. Branden Robinson, 2021.
@@ -346,7 +346,6 @@ sub interpret_line {
   # What remains must be a macro name.
   my $macro = $command;
 
-  $have_seen_first_macro_call = 1;
   $score{$macro}++;
 
 
@@ -362,6 +361,9 @@ sub interpret_line {
     # TH as the first call in a document screams man(7).
     $man_score += 100;
   }
+
+  # Set this here because we start returning early from here on.
+  $have_seen_first_macro_call = 1;
 
   ##########
   # mdoc
@@ -506,13 +508,14 @@ sub infer_man_or_ms_package {
 		  'XS', 'XE', 'XA', 'TC', 'PX',
 		  'IX', 'SG');
 
-  my @macro_man = ('BR', 'IB', 'IR', 'RB', 'RI', 'P', 'TH', 'TP', 'SS',
+  my @macro_man = ('BR', 'IB', 'IR', 'RB', 'RI', 'P', 'TP', 'SS',
 		   'HP', 'PD',
 		   'AT', 'UC',
 		   'SB',
 		   'EE', 'EX',
 		   'OP',
 		   'ME', 'SY', 'YS', 'TQ', 'UR', 'UE', 'MR');
+  # TH can be used by ms, mm, me, mdoc, and mom.
   # MT is also used by mm.
 
   my @macro_man_or_ms = ('B', 'I', 'BI',

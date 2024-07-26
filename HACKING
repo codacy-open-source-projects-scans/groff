@@ -214,6 +214,26 @@ Here are some portability notes on writing automated tests.
     }
 
 
+Updating gnulib
+---------------
+
+Here's how to update the submodule, using that project's "stable-202407"
+branch as an example.  From the root of your checkout:
+
+  $ cd gnulib
+  $ git checkout -b stable-202407 --track origin/stable-202407
+  $ git pull
+  $ cd ..
+  $ editor ChangeLog # log it
+  $ git commit
+
+It's likely a good idea to update the "bootstrap" script at the same
+time (not necessarily in the same commit, however).
+
+  $ ./bootstrap --bootstrap-sync
+  $ editor ChangeLog # log it
+  $ git commit
+
 ##### Editor settings
 Local Variables:
 fill-column: 72

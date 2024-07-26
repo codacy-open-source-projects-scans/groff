@@ -1,3 +1,170 @@
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (get_vunits, get_hunits, get_number)
+	(get_integer): Align assertion error messages with function
+	names.
+
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_expression_start): Fix
+	missing space in diagnostic message.
+
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (vunits::vunits, hunits::hunits):
+	Migrate to C23 checked arithmetic macros.  Throw error if
+	addition overflows.
+
+	Fixes <https://savannah.gnu.org/bugs/?64301>.  (For real this
+	time, fingers crossed.)
+
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/arithmetic-works.sh: Add more tests.
+
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (vunits::vunits, hunits::hunits):
+	Move common subexpression to a temporary variable to prepare for
+	reuse in C23 checked artihmetic macros.
+
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Enforce minimum page length.
+
+	* src/roff/troff/div.cpp (page_length): Clamp `pl` request
+	argument to the output device's vertical resolution (similarly
+	to the way `ll` and `lt` behave).
+
+	* doc/groff.texi.in (Page Layout):
+	* NEWS: Document this.
+
+2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (line_length, title_length): Drop use
+	of needless temporary variable `minimum_length`.  Use global
+	variable `hresolution` instead of static class member variable
+	`font::hor`.  Clarify wording of warning diagnostic message when
+	{title} line length invalid.
+
+2024-07-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl (interpret_line): Fix logic error; set
+	Boolean scalar `have_seen_first_macro_call` _after_ testing it,
+	not before, avoiding its tautological truth.
+	(infer_man_or_ms_package): Drop `TH` from list of "unique"
+	man(7) macro names.  It isn't; most full-service macro packages
+	use it to manage tbl(1) headings, and we already have special
+	logic for handling it as the first call in a page anyway (where
+	it is overwhelmingly idiomatic of a man(7) document).
+
+	Fixes <https://savannah.gnu.org/bugs/?66006>.  Thanks to Morten
+	Bo Johansen for the report.
+
+2024-07-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #66006.
+
+	* src/utils/grog/tests/avoid-man-fakeout.sh: Do it.
+	* src/utils/grog/grog.am (grog_TESTS): Run test.
+
+2024-07-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (is_char_usable_as_delimiter): Reject
+	`|`.
+
+	Fixes <https://savannah.gnu.org/bugs/?66009>.
+
+2024-07-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Add test of *roff arithmetic.
+
+	* src/roff/groff/tests/arithmetic-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2024-07-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Prevent traps on overflowing integer arithmetic.
+
+	* bootstrap.conf: Add "stdckdint" to `gnulib_modules`.
+	* src/roff/troff/number.cpp: Include `config.h` and
+	`stdckdint.h` headers.
+	(get_number, get_integer, is_valid_expression): Use `ckd_add()`,
+	`ckd_sub()`, and `ckd_mul()` instead of primitive operations,
+	and throw error diagnostic if arithmetic wraps.
+	(is_valid_expression): Remove manual detection of overflow.
+	(get_vunits, get_hunits): Use `ckd_add()` (with temporary
+	variable, annotating why) instead of primitive operation, and
+	throw error diagnostic if arithmetic wraps.
+	(is_valid_term): When parsing integer literals, remove manual
+	detection of overflow, relying on `ckd_mul()` and `ckd_add()` to
+	indicate it.  When an overflowing literal is encountered, skip
+	excess digits.  This is a behavior change, albeit an esoteric
+	one; evaluation of a numeric term no longer aborts in this
+	scenario.  When applying the *roff `|` boundary-relative motion
+	operator, remove manual detection of overflow, relying on
+	`ckd_sub()` to indicate it, and store result to temporary
+	variable in case it overflows and must be discarded.  Otherwise,
+	copy temporary to the storage for the term being interpreted.
+	When negating a term, remove manual detection of negation of
+	`INT_MIN` (guaranteed to overflow in a two's complement
+	representation), relying on `ckd_mul()` to indicate it.
+
+	* src/roff/troff/hvunits.h: Include `config.h` and `stdckdint.h`
+	headers.
+	(vunits operator -, hunits operator -): Use `ckd_sub()` instead
+	of primitive operation, and throw error diagnostic if arithmetic
+	wraps.
+	(vunits::to_units, hunits::to_units): Use `ckd_mul()` instead of
+	primitive operation, and throw error diagnostic if arithmetic
+	wraps.
+	(vunits operator +, hunits operator +): Use `ckd_add()` instead
+	of primitive operation, and throw error diagnostic if arithmetic
+	wraps.
+	(vunits operator *, hunits operator *): Use `ckd_mul()` instead
+	of primitive operation, and throw error diagnostic if arithmetic
+	wraps.
+
+	Fixes <https://savannah.gnu.org/bugs/?64301>.  You had to
+	compile GNU troff with the (GCC) compiler option `-ftrapv` for
+	arithmetic to trap and cause a core dump.
+
+2024-07-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Trivially refactor
+	implementation of boundary-relative ("absolute" [sic]) motion
+	operator.  Rename `tem` to `position`, since it is the
+	horizontal or vertical drawing location to be altered.
+	Parenthesize expressions for clarity.
+
+2024-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor `has_arg()` to optionally work in copy mode.
+
+	* src/roff/troff/token.h (has_arg): Add Boolean parameter,
+	defaulting to `false`, indicating that "peeking" ahead in the
+	input stream is desired.  This is for use by requests that need
+	to read their argument(s) in copy mode.
+	* src/roff/troff/input.cpp (has_arg): Implement, moving code
+	duplicated in `device_request` and `output_request`.
+	(device_request, output_request): Drop duplicated code in favor
+	of calling `has_arg()` with `true` argument.
+
+2024-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (device_request): Honor a `device`
+	request even if it precedes any formatted output, as we do the
+	`\X` escape sequence.
+
+	Fixes <https://savannah.gnu.org/bugs/?65977>.
+
+2024-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_long_name): Call
+	`do_get_long_name()` with null character literal for parameter
+	of `char` type, rather than punning an integral zero.
+	(do_get_long_name): Rename parameter from `end` to `end_char`.
+
 2024-07-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* bootstrap: Resync with gnulib upstream.  Thanks to Collin Funk
@@ -29,7 +196,7 @@
 2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/groff_mdoc.7.man: Manipulate type size and vertical
-	spacing only in nroff mode.
+	spacing only in troff mode.
 
 2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -189,7 +356,7 @@
 	Reduce cleverness of assignment nested inside conditional--a
 	favorite of C obscurantists and an especially gratuitous case
 	since it was preceded by a declarator without an initializer.
-	This aligns the function with another overloaded version of
+	This aligns `font::load()` with another overloaded version of
 	itself and with `font::scan_papersize()`.
 
 2024-07-13  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -565,7 +732,7 @@
 
 2024-06-20  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	Regression-test Savannah #65902.
+	[grog]: Regression-test Savannah #65902.
 
 	* src/utils/grog/tests/detect-chem.sh: Do it.
 	* src/utils/grog/grog.am (grog_TESTS): Run test.
@@ -3541,15 +3708,6 @@
 	* src/roff/groff/groff.am (groff_TESTS): Run test.
 
 	Fixes <https://savannah.gnu.org/bugs/?64959>.
-
-2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* doc/groff.texi (Postprocessor Access):
-	* man/groff_diff.7.man (New requests): Clarify a point of
-	`device` request behavior; a partially collected line in the
-	top-level diversion must exist at least once.
-
-	Fixes <https://savannah.gnu.org/bugs/?65138>.
 
 2024-01-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 

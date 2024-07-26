@@ -701,9 +701,16 @@ void page_offset()
 
 void page_length()
 {
-  vunits n;
-  if (has_arg() && get_vunits(&n, 'v', topdiv->get_page_length()))
-    topdiv->set_page_length(n);
+  vunits temp;
+  if (has_arg() && get_vunits(&temp, 'v', topdiv->get_page_length())) {
+    if (temp < vresolution) {
+      warning(WARN_RANGE, "setting invalid page length %1u to device"
+			  " vertical motion quantum",
+			  temp.to_units());
+      temp = vresolution;
+    }
+    topdiv->set_page_length(temp);
+  }
   else
     topdiv->set_page_length(11*units_per_inch);
   skip_line();

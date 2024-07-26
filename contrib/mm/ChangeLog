@@ -1,3 +1,11 @@
+2024-07-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT:
+	* mm/4.MT:
+	* mm/ms.cov: Call `AFX` hook macro if defined, instead of
+	default formatting of affiliated firm.
+	* groff_mm.7.man (Macros) <AFX>: Document facility.
+
 2024-07-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mm/4.MT (cov@print-abstract):

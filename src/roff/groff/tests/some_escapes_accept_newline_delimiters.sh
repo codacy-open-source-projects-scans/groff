@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -35,7 +35,7 @@ wail () {
 input="\A
 ABC
 D
-.pl \n(nlu"
+.pl 1v>?\n(nlu"
 
 echo "checking that newline is accepted as delimiter to 'A' escape" >&2
 error=$(printf "%s\n" "$input" | "$groff" -Tascii -ww -z 2>&1)
@@ -49,7 +49,7 @@ input=".sp
 \b
 ABC
 D
-.pl \n(nlu"
+.pl 1v>?\n(nlu"
 
 echo "checking that newline is accepted as delimiter to 'b' escape" >&2
 error=$(printf "%s\n" "$input" | "$groff" -Tascii -ww -z 2>&1)
@@ -62,7 +62,7 @@ echo "$output" | grep -Fqx "B D" || wail
 input="\o
 ABC
 D
-.pl \n(nlu"
+.pl 1v>?\n(nlu"
 
 echo "checking that newline is accepted as delimiter to 'o' escape" >&2
 error=$(printf "%s\n" "$input" | "$groff" -Tascii -ww -z 2>&1)
@@ -78,7 +78,7 @@ printf "%s\n" "$output" \
 input="\w
 ABC
 D
-.pl \n(nlu"
+.pl 1v>?\n(nlu"
 
 echo "checking that newline is accepted as delimiter to 'w' escape" >&2
 error=$(printf "%s\n" "$input" | "$groff" -Tascii -ww -z 2>&1)
@@ -91,7 +91,7 @@ test "$output" = "72 D" || wail
 input="\X
 tty: link http://example.com
 D
-.pl \n(nlu"
+.pl 1v>?\n(nlu"
 
 echo "checking that newline is accepted as delimiter to 'X' escape" >&2
 error=$(printf "%s\n" "$input" | "$groff" -Tascii -ww -z 2>&1)
@@ -104,7 +104,7 @@ test "$output" = ' D' || wail
 input="\Z
 ABC
 D
-.pl \n(nlu"
+.pl 1v>?\n(nlu"
 
 echo "checking that newline is accepted as delimiter to 'Z' escape" >&2
 error=$(printf "%s\n" "$input" | "$groff" -Tascii -ww -z 2>&1)

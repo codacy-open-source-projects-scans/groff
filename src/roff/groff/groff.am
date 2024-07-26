@@ -38,6 +38,7 @@ EXTRA_DIST += src/roff/groff/groff.1.man
 groff_TESTS = \
   src/roff/groff/tests/ab_works.sh \
   src/roff/groff/tests/adjustment_works.sh \
+  src/roff/groff/tests/arithmetic-works.sh \
   src/roff/groff/tests/backslash-X-works.sh \
   src/roff/groff/tests/backslash-exclamation-early-does-not-fail.sh \
   src/roff/groff/tests/break_zero-length_output_line_sanely.sh \

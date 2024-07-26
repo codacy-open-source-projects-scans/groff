@@ -16,6 +16,11 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdckdint.h>
 
 #include "troff.h"
 #include "hvunits.h"
@@ -113,6 +118,9 @@ static incr_number_result get_incr_number(units *res, unsigned char);
 bool get_vunits(vunits *res, unsigned char si, vunits prev_value)
 {
   units v;
+  // Use a primitive temporary because having the ckd macros store to
+  // &(res->n) requires `friend` access and produces wrong results.
+  int i;
   switch (get_incr_number(&v, si)) {
   case INVALID:
     return false;
@@ -120,13 +128,17 @@ bool get_vunits(vunits *res, unsigned char si, vunits prev_value)
     *res = v;
     break;
   case INCREMENT:
-    *res = prev_value + v;
+    if (ckd_add(&i, prev_value.to_units(), v))
+      error("integer addition wrapped");
+    *res = i;
     break;
   case DECREMENT:
-    *res = prev_value - v;
+    if (ckd_sub(&i, prev_value.to_units(), v))
+      error("integer subtraction wrapped");
+    *res = i;
     break;
   default:
-    assert(0 == "unhandled case returned by get_incr_number()");
+    assert(0 == "unhandled case in get_vunits()");
   }
   return true;
 }
@@ -134,6 +146,9 @@ bool get_vunits(vunits *res, unsigned char si, vunits prev_value)
 bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
 {
   units h;
+  // Use a primitive temporary because having the ckd macros store to
+  // &(res->n) requires `friend` access and produces wrong results.
+  int i;
   switch (get_incr_number(&h, si)) {
   case INVALID:
     return false;
@@ -141,13 +156,17 @@ bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
     *res = h;
     break;
   case INCREMENT:
-    *res = prev_value + h;
+    if (ckd_add(&i, prev_value.to_units(), h))
+      error("integer addition wrapped");
+    *res = i;
     break;
   case DECREMENT:
-    *res = prev_value - h;
+    if (ckd_sub(&i, prev_value.to_units(), h))
+      error("integer subtraction wrapped");
+    *res = i;
     break;
   default:
-    assert(0 == "unhandled case returned by get_incr_number()");
+    assert(0 == "unhandled case in get_hunits()");
   }
   return true;
 }
@@ -162,13 +181,15 @@ bool get_number(units *res, unsigned char si, units prev_value)
     *res = u;
     break;
   case INCREMENT:
-    *res = prev_value + u;
+    if (ckd_add(res, prev_value, u))
+      error("integer addition wrapped");
     break;
   case DECREMENT:
-    *res = prev_value - u;
+    if (ckd_sub(res, prev_value, u))
+      error("integer subtraction wrapped");
     break;
   default:
-    assert(0 == "unhandled case returned by get_incr_number()");
+    assert(0 == "unhandled case in get_number()");
   }
   return true;
 }
@@ -183,13 +204,15 @@ bool get_integer(int *res, int prev_value)
     *res = i;
     break;
   case INCREMENT:
-    *res = prev_value + int(i);
+    if (ckd_add(res, prev_value, i))
+      error("integer addition wrapped");
     break;
   case DECREMENT:
-    *res = prev_value - int(i);
+    if (ckd_sub(res, prev_value, i))
+      error("integer subtraction wrapped");
     break;
   default:
-    assert(0 == "unhandled case returned by get_incr_number()");
+    assert(0 == "unhandled case in get_integer()");
   }
   return true;
 }
@@ -229,7 +252,7 @@ static bool is_valid_expression_start()
   }
   if (tok.is_right_brace()) {
     warning(WARN_RIGHT_BRACE, "expected numeric expression, got right"
-	    "brace escape sequence");
+	    " brace escape sequence");
     return false;
   }
   return true;
@@ -296,7 +319,6 @@ static bool is_valid_expression(units *u, int scaling_unit,
     if (!is_valid_term(&u2, scaling_unit, is_parenthesized,
 		       is_mandatory))
       return false;
-    bool had_overflow = false;
     switch (op) {
     case '<':
       *u = *u < u2;
@@ -328,57 +350,22 @@ static bool is_valid_expression(units *u, int scaling_unit,
       *u = *u > 0 || u2 > 0;
       break;
     case '+':
-      if (u2 < 0) {
-	if (*u < INT_MIN - u2)
-	  had_overflow = true;
-      }
-      else if (u2 > 0) {
-	if (*u > INT_MAX - u2)
-	  had_overflow = true;
-      }
-      if (had_overflow) {
-	error("addition overflow");
+      if (ckd_add(u, *u, u2)) {
+	error("integer addition wrapped");
 	return false;
       }
-      *u += u2;
       break;
     case '-':
-      if (u2 < 0) {
-	if (*u > INT_MAX + u2)
-	  had_overflow = true;
-      }
-      else if (u2 > 0) {
-	if (*u < INT_MIN + u2)
-	  had_overflow = true;
-      }
-      if (had_overflow) {
-	error("subtraction overflow");
+      if (ckd_sub(u, *u, u2)) {
+	error("integer subtraction wrapped");
 	return false;
       }
-      *u -= u2;
       break;
     case '*':
-      if (u2 < 0) {
-	if (*u > 0) {
-	  if ((unsigned)*u > -(unsigned)INT_MIN / -(unsigned)u2)
-	    had_overflow = true;
-	}
-	else if (-(unsigned)*u > INT_MAX / -(unsigned)u2)
-	  had_overflow = true;
-      }
-      else if (u2 > 0) {
-	if (*u > 0) {
-	  if (*u > INT_MAX / u2)
-	    had_overflow = true;
-	}
-	else if (-(unsigned)*u > -(unsigned)INT_MIN / u2)
-	  had_overflow = true;
-      }
-      if (had_overflow) {
-	error("multiplication overflow");
+      if (ckd_mul(u, *u, u2)) {
+	error("integer multiplication wrapped");
 	return false;
       }
-      *u *= u2;
       break;
     case '/':
       if (u2 == 0) {
@@ -405,6 +392,7 @@ static bool is_valid_term(units *u, int scaling_unit,
 			  bool is_parenthesized, bool is_mandatory)
 {
   bool is_negative = false;
+  bool is_overflowing = false;
   for (;;)
     if (is_parenthesized && tok.is_space())
       tok.next();
@@ -424,30 +412,18 @@ static bool is_valid_term(units *u, int scaling_unit,
     tok.next();
     if (!is_valid_term(u, scaling_unit, is_parenthesized, is_mandatory))
       return false;
-    int tem;
-    tem = (scaling_unit == 'v'
-	   ? curdiv->get_vertical_position().to_units()
-	   : curenv->get_input_line_position().to_units());
-    if (tem >= 0) {
-      if (*u < INT_MIN + tem) {
+    int tmp, position;
+    position = (scaling_unit == 'v'
+		? curdiv->get_vertical_position().to_units()
+		: curenv->get_input_line_position().to_units());
+    // We don't permit integer wraparound with this operator.
+    if (ckd_sub(&tmp, *u, position)) {
 	error("numeric overflow");
 	return false;
-      }
     }
-    else {
-      if (*u > INT_MAX + tem) {
-	error("numeric overflow");
-	return false;
-      }
-    }
-    *u -= tem;
-    if (is_negative) {
-      if (*u == INT_MIN) {
-	error("numeric overflow");
-	return false;
-      }
+    *u = tmp;
+    if (is_negative)
       *u = -*u;
-    }
     return true;
   case '(':
     tok.next();
@@ -488,11 +464,9 @@ static bool is_valid_term(units *u, int scaling_unit,
     else
       tok.next();
     if (is_negative) {
-      if (*u == INT_MIN) {
-	error("numeric overflow");
-	return false;
-      }
-      *u = -*u;
+      // Why?  Consider -(INT_MIN) in two's complement.
+      if (ckd_mul(u, *u, -1))
+	error("integer multiplication wrapped");
     }
     return true;
   case '.':
@@ -510,19 +484,18 @@ static bool is_valid_term(units *u, int scaling_unit,
   case '9':
     *u = 0;
     do {
-      if (*u > INT_MAX/10) {
-	error("numeric overflow");
-	return false;
-      }
-      *u *= 10;
-      if (*u > INT_MAX - (int(c) - '0')) {
-	error("numeric overflow");
-	return false;
-      }
-      *u += c - '0';
+      // If wrapping, don't `break`; eat and discard further digits.
+      if (!is_overflowing) {
+	  if (ckd_mul(u, *u, 10))
+	    is_overflowing = true;
+	  if (ckd_add(u, *u, c - '0'))
+	    is_overflowing = true;
+	}
       tok.next();
       c = tok.ch();
     } while (csdigit(c));
+    if (is_overflowing)
+      error("integer value wrapped");
     break;
   case '/':
   case '*':
@@ -548,7 +521,7 @@ static bool is_valid_term(units *u, int scaling_unit,
       if (!csdigit(c))
 	break;
       // we may multiply the divisor by 254 later on
-      if (divisor <= INT_MAX/2540 && *u <= (INT_MAX - 9)/10) {
+      if (divisor <= INT_MAX / 2540 && *u <= (INT_MAX - 9) / 10) {
 	*u *= 10;
 	*u += c - '0';
 	divisor *= 10;
@@ -591,7 +564,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     *u = scale(*u, units_per_inch, divisor);
     break;
   case 'c':
-    *u = scale(*u, units_per_inch*100, divisor*254);
+    *u = scale(*u, units_per_inch * 100, divisor * 254);
     break;
   case 0:
   case 'u':
@@ -602,10 +575,10 @@ static bool is_valid_term(units *u, int scaling_unit,
     *u = scale(*u, 65536, divisor);
     break;
   case 'p':
-    *u = scale(*u, units_per_inch, divisor*72);
+    *u = scale(*u, units_per_inch, divisor * 72);
     break;
   case 'P':
-    *u = scale(*u, units_per_inch, divisor*6);
+    *u = scale(*u, units_per_inch, divisor * 6);
     break;
   case 'm':
     {
@@ -634,11 +607,11 @@ static bool is_valid_term(units *u, int scaling_unit,
     *u = scale(*u, curenv->get_vertical_spacing().to_units(), divisor);
     break;
   case 's':
-    while (divisor > INT_MAX/(sizescale*72)) {
+    while (divisor > INT_MAX / (sizescale * 72)) {
       divisor /= 10;
       *u /= 10;
     }
-    *u = scale(*u, units_per_inch, divisor*sizescale*72);
+    *u = scale(*u, units_per_inch, divisor * sizescale * 72);
     break;
   case 'z':
     *u = scale(*u, sizescale, divisor);
@@ -649,11 +622,8 @@ static bool is_valid_term(units *u, int scaling_unit,
   if (do_next)
     tok.next();
   if (is_negative) {
-    if (*u == INT_MIN) {
-      error("numeric overflow");
-      return false;
-    }
-    *u = -*u;
+    if (ckd_mul(u, *u, -1))
+      error("integer multiplication wrapped");
   }
   return true;
 }
@@ -664,14 +634,15 @@ units scale(units n, units x, units y)
   if (x == 0)
     return 0;
   if (n >= 0) {
-    if (n <= INT_MAX/x)
-      return (n*x)/y;
+    if (n <= INT_MAX / x)
+      return (n * x) / y;
   }
   else {
-    if (-(unsigned)n <= -(unsigned)INT_MIN/x)
-      return (n*x)/y;
+    if (-(unsigned)n <= -(unsigned)INT_MIN / x)
+      return (n * x) / y;
   }
-  double res = n*double(x)/double(y);
+  double res = n * double(x) / double(y);
+  // We don't implement integer wraparound when scaling.
   if (res > INT_MAX) {
     error("numeric overflow");
     return INT_MAX;
@@ -685,24 +656,48 @@ units scale(units n, units x, units y)
 
 vunits::vunits(units x)
 {
-  // Don't depend on rounding direction when dividing negative integers.
   if (vresolution == 1)
     n = x;
-  else
-    n = (x < 0
-	 ? -((-x + (vresolution / 2) - 1) / vresolution)
-	 : (x + (vresolution / 2) - 1) / vresolution);
+  else {
+    // Don't depend on rounding direction when dividing neg integers.
+    int vcrement = (vresolution / 2) - 1;
+    bool is_overflowing = false;
+    if (x < 0) {
+      if (ckd_add(&n, -x, vcrement))
+	is_overflowing = true;
+      n = -n;
+    }
+    else {
+      if (ckd_add(&n, x, vcrement))
+	is_overflowing = true;
+    }
+    n /= vresolution;
+    if (is_overflowing)
+      error("integer addition wrapped");
+  }
 }
 
 hunits::hunits(units x)
 {
-  // Don't depend on rounding direction when dividing negative integers.
   if (hresolution == 1)
     n = x;
-  else
-    n = (x < 0
-	 ? -((-x + (hresolution / 2) - 1) / hresolution)
-	 : (x + (hresolution / 2) - 1) / hresolution);
+  else {
+    // Don't depend on rounding direction when dividing neg integers.
+    int hcrement = (hresolution / 2) - 1;
+    bool is_overflowing = false;
+    if (x < 0) {
+      if (ckd_add(&n, -x, hcrement))
+	is_overflowing = true;
+      n = -n;
+    }
+    else {
+      if (ckd_add(&n, x, hcrement))
+	is_overflowing = true;
+    }
+    n /= hresolution;
+    if (is_overflowing)
+      error("integer addition wrapped");
+  }
 }
 
 // Local Variables:
