@@ -704,7 +704,7 @@ void page_length()
   vunits temp;
   if (has_arg() && get_vunits(&temp, 'v', topdiv->get_page_length())) {
     if (temp < vresolution) {
-      warning(WARN_RANGE, "setting invalid page length %1u to device"
+      warning(WARN_RANGE, "setting computed page length %1u to device"
 			  " vertical motion quantum",
 			  temp.to_units());
       temp = vresolution;

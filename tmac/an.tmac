@@ -881,7 +881,6 @@ contains unsupported escape sequence
 .\" Set a paragraph with a hanging indentation.
 .\" .HP [indent]
 .de1 HP
-.  if !\\n[mS] \\*[an-deprecation-warn]\\
 .  an-break-paragraph
 .  ne (1v + 1u)
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)

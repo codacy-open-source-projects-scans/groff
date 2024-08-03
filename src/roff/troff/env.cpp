@@ -1435,7 +1435,7 @@ void line_length()
   hunits temp;
   if (has_arg() && get_hunits(&temp, 'm', curenv->line_length)) {
     if (temp < hresolution) {
-      warning(WARN_RANGE, "setting invalid line length %1u to device"
+      warning(WARN_RANGE, "setting computed line length %1u to device"
 			  " horizontal motion quantum",
 			  temp.to_units());
       temp = hresolution;
@@ -1454,7 +1454,7 @@ void title_length()
   hunits temp;
   if (has_arg() && get_hunits(&temp, 'm', curenv->title_length)) {
     if (temp < hresolution) {
-      warning(WARN_RANGE, "setting invalid title length %1u to device"
+      warning(WARN_RANGE, "setting computed title length %1u to device"
 			  " horizontal motion quantum",
 			  temp.to_units());
       temp = hresolution;

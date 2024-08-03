@@ -128,8 +128,8 @@ adds an item and
 .B LE
 ends the (nested) list.
 .
-Customized list arrangements are supported by
-.BR LB .
+.B LB
+begins a list with customizable layout parameters.
 .
 .B DS
 and
@@ -144,7 +144,7 @@ either is terminated with
 .I groff mm
 is intended to be compatible with the
 .I mm
-implementation found in the AT&T Documenter's Workbench (DWB),
+implementation found in the AT&T Documenter's Workbench (DWB) 3.3,
 with the following limitations and changes.
 .
 .
@@ -292,13 +292,15 @@ and vertical ones in vees
 (scaling unit
 .BR v ).
 .
+Use explicit scaling units for clarity and predictable behavior.
+.
 .
 .\" ====================================================================
 .SS "Document styles"
 .\" ====================================================================
 .
 .I groff mm
-offers three different frameworks for document organization.
+offers three frameworks for document organization.
 .
 .BR \%COVER /\: \%COVEND
 is a flexible means of preparing any document requiring a cover page.
@@ -593,30 +595,18 @@ for instance with
 .SH Macros
 .\" ====================================================================
 .
-Where a macro accepts an argument expressing a measurement,
-horizontal ones
-(such as indentation)
-are by default reckoned in ens,
-and vertical ones
-(such as spacing around a display)
-are reckoned in vees.
+Double-quote macro arguments that contain space characters.
 .
-Use an explicit scaling unit for clarity and predictable behavior.
-.
-.
-.P
-An explicitly empty argument may be specified with a pair of double
-quotes;
-to call a macro
-.B XX
-with an empty second argument but non-empty first and third ones,
-you could input the following.
+An explicitly empty argument may be specified
+with an empty pair of double quotes;
+for example,
+the following macro call has three arguments.
 .
 .
 .P
 .RS
 .EX
-\&.XX foo \[dq]\[dq] baz
+\&.XX \[dq]foo bar\[dq] \[dq]\[dq] baz
 .EE
 .RE
 .
@@ -627,6 +617,17 @@ this does not occur if such a macro is called when the drawing position
 is already at the top of a page
 (after a page heading,
 if any).
+.
+.
+.P
+.I Hook
+macros are undefined by default;
+.I mm
+calls them to enable customization of its behavior.
+.
+(DWB
+.I mm
+termed these \[lq]exits\[rq].)
 .
 .
 .P
@@ -717,8 +718,8 @@ and
 .
 .TP
 .B AFX
-This user-definable hook macro assumes responsibility for formatting
-the affiliated firm name defined by
+Define this hook macro to assume responsibility for formatting the
+affiliated firm name defined by
 .B AF
 in memorandum types 0 and 4 and documents using the
 .I ms
@@ -729,10 +730,10 @@ If not defined
 internally defined macros handle this task;
 see sections \[lq]Internals\[rq] and \[lq]Files\[rq] below.
 .
-Applications include setting the firm name in a different font family,
-at a larger type size,
+Applications include setting the firm name in a different font family
+or at a larger type size,
 drawing a rule across the page,
-and including an logo image using
+and including a logo image using
 .IR groff 's
 .B PDFPIC
 or
@@ -2032,22 +2033,22 @@ register.
 .IP
 .I Customizing heading behavior.
 .
-.I mm
+.B H
 calls
-.I hook
-macros to enable further customization of headings.
+.BR HX ,
+.BR HY ,
+and
+.B HZ
+hook macros to further customize headings.
 .
-(DWB
-.I mm
-termed them \[lq]exits\[rq].)
-.
-Hooks can change the heading's
+These can change the heading's
 .I mark
 (the numbered portion before any heading title),
 its vertical spacing,
 and its vertical space requirements
 (for instance,
-to require a minimum quantity of subsequent output lines).
+to require a minimum quantity of subsequent output lines on the page,
+breaking the page otherwise).
 .
 Define hook macros in expectation of the following parameters.
 .
@@ -2058,7 +2059,8 @@ is the
 argument to
 .BR H ,
 .RB or\~ 0
-for unnumbered headings (see
+for unnumbered headings
+(see
 .BR HU ).
 .
 .I actual-level
@@ -2344,7 +2346,8 @@ B@page number, tab character, heading mark
 If
 .I macro
 is specified,
-it is called for each index entry
+.I "groff mm"
+calls it for each index entry
 with the arguments given to
 .BR IND .
 .

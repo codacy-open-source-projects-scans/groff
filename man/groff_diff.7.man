@@ -2604,21 +2604,31 @@ or the default if there is none.
 .
 .
 .TP
-.BI .hcode\~ "c1 code1\~"\c
-.RI [ "c2 code2" "] .\|.\|."
+.BI .hcode\~ "dst1 src1\~"\c
+.RI [ "dst2 src2" "] .\|.\|."
 Set the hyphenation code of character
-.I c1
-to
-.IR code1 ,
-that of
-.I c2
-to
-.IR code2 ,
+.I dst1
+to that of
+.IR src1 ,
 and so on.
 .
-A hyphenation code must be an ordinary character
-(not a special character escape sequence)
-other than a digit.
+.I dst1
+must be an ordinary character
+(other than a numeral)
+or a special character,
+and
+.I src1
+must be an ordinary character
+(other than a numeral)
+or a special character
+to which a hyphenation code has already been applied.
+.
+Assigning the code of an ordinary character code to itself
+effectively creates a unique hyphenation code
+(which can then be copied to others).
+.
+.B hcode
+ignores spaces between arguments.
 .
 .
 .IP

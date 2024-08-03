@@ -1,3 +1,52 @@
+2024-07-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (HP): The `mS` extension register has changed its
+	meaning (commit f680c55d38, 13 June) such that it is no longer a
+	reliable indicator of whether the deprecation warning for this
+	macro should be suppressed, so stop suppressing a deprecation
+	warning based on its value.  In fact, stop issuing the
+	deprecation warning altogether.  (See <https://
+	lists.gnu.org/archive/html/bug-ncurses/2024-04/msg00027.html>.)
+
+2024-07-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (page_length):
+	* src/roff/troff/env.cpp (line_length, title_length): Tweak
+	diagnostic to say "computed" rather than "invalid", because
+	while the value we're complaining about _is_ invalid, it is also
+	a numeric expression that may have traveled a great distance
+	through the alimentary canal of GNU troff's arithmetic
+	evaluator, and bear little resemblance to what the user typed in
+	a source document.  Among other things, we no longer have any
+	idea what scaling units were supplied, but can report them only
+	in basic units.
+
+	Fixes <https://savannah.gnu.org/bugs/?66038>.  Thanks to Dave
+	Kemper for the report.
+
+2024-07-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Manipulating Hyphenation): Fix incorrect
+	claim and expand discussion.  A special character _can_ be an
+	argument to the `hcode` request, and this has been true for over
+	20 years (for example, in "tmac/ps.tmac").  Problem dates back
+	to commit bd66717ef7, 16 April 2001.
+
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests): Sync language with our
+	Texinfo manual, and clarify.
+
+2024-07-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (set_hyphenation_code): Restore
+	diagnostic message when attempting to assigning the hyphenation
+	code of a special character to another character (special or
+	ordinary).  Also initialize local variable much closer to where
+	we test its value, for readability.
+
+	Fixes <https://savannah.gnu.org/bugs/?66040>.  Thanks to Dave
+	Kemper for the report.
+
 2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/number.cpp (get_vunits, get_hunits, get_number)
@@ -420,14 +469,14 @@
 	ERANGE to reject high values.  The test 'n > INT_MAX' would
 	never be true.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (10/10).
+	Fixes <https://savannah.gnu.org/bugs/?65451> (6/6).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
 	* src/utils/indxbib/indxbib.cpp (check_integer_arg): Collapse
 	related tests.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (09/10).
+	Fixes <https://savannah.gnu.org/bugs/?65452> (4/4).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -435,7 +484,7 @@
 	code.  The tests (LONG_MAX > INT_MAX && n > INT_MAX) and (n >
 	INT_MAX) are equivalent.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (08/10).
+	Fixes <https://savannah.gnu.org/bugs/?65452> (3/4).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -443,14 +492,14 @@
 	`errno` before calling `strtol()`.  Otherwise, `errno` may hold
 	`ERANGE` from before.  See strtol(3).
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (07/10).
+	Fixes <https://savannah.gnu.org/bugs/?65452> (2/4).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
 	* src/utils/indxbib/indxbib.cpp (check_integer_arg): Don't
 	`else` after [[noreturn]].
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (06/10).
+	Fixes <https://savannah.gnu.org/bugs/?65452> (1/4).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -473,7 +522,7 @@
 	* src/utils/indxbib/indxbib.cpp (main): And use it where the
 	same logic was being open-coded.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (05/10).
+	Fixes <https://savannah.gnu.org/bugs/?65451> (5/6).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -481,7 +530,7 @@
 	redundant) check.  `str == end` can only happen if strtol(3)
 	returns 0.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (04/10).
+	Fixes <https://savannah.gnu.org/bugs/?65451> (4/6).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -506,7 +555,7 @@
 	after strtol(3).  `str == end` can only happen if strtol(3)
 	returns 0.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (03/10).
+	Fixes <https://savannah.gnu.org/bugs/?65451> (3/6).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -514,7 +563,7 @@
 	code.  strtol(3) can only report ERANGE, if the base is valid
 	{and it is}.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (02/10).
+	Fixes <https://savannah.gnu.org/bugs/?65451> (2/6).
 
 2024-03-16  Alejandro Colomar <alx@kernel.org>
 
@@ -522,7 +571,7 @@
 	checks.  ERANGE can only happen if strtol(3) returns either
 	LONG_MIN or LONG_MAX.
 
-	Fixes <https://savannah.gnu.org/bugs/?65451> (01/10).
+	Fixes <https://savannah.gnu.org/bugs/?65451> (1/6).
 
 2024-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 

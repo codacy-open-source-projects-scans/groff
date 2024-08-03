@@ -1357,8 +1357,8 @@ or diversion name with either of the characters \[lq][\[rq] or
 you foreclose use of the
 .MR @g@refer @MAN1EXT@
 preprocessor,
-which recognizes \[lq].[\[rq] and \[lq].]\[rq] as bibliographic
-reference delimiters.
+which recognizes input lines starting with \[lq].[\[rq] and \[lq].]\[rq]
+as bibliographic reference delimiters.
 .
 .
 .P
@@ -1686,15 +1686,16 @@ In no case can an escape sequence parameter contain a newline.
 .
 .
 .P
-If an escape character is followed by a character that does not
-identify a defined operation,
-the escape character is ignored
-(producing
-a diagnostic of the
+If an escape character is followed by a character
+that does not identify a defined operation,
+GNU
+.I troff \" GNU
+ignores the escape character
+(producing a warning in category
 .RB \[lq] escape \[rq]
-warning category,
-which is not enabled by default)
-and the following character is processed normally.
+if enabled),
+processing the next character
+as if it were not preceded by an escape character.
 .
 .
 .P
@@ -3368,15 +3369,11 @@ Change the hyphenation character
 .RI to\~ c .
 .
 .TPx
-.REQ .hcode "c1 code1 \fR[\fPc2 code2\fR] .\|.\|.\fP"
+.REQ .hcode "dst1 src1 \fR[\fPdst2 src2\fR] .\|.\|.\fP"
 Set the hyphenation code of character
-.I c1
-to
-.IR code1 ,
-that of
-.I c2
-to
-.IR code2 ,
+.I dst1
+to that of
+.IR src1 ,
 and so on.
 .
 .TPx
@@ -8448,8 +8445,7 @@ registers
 .RB ( .pnr );
 page location traps
 .RB ( .ptr );
-and a list of pending output nodes corresponding to the previous input
-line
+and a list of output nodes corresponding to the pending input line
 .RB ( .pline )
 to the standard error stream.
 .\" END Keep (roughly) parallel with groff.texi node "Debugging".

@@ -7291,15 +7291,21 @@ static void set_hyphenation_codes()
       break;
     tok.next();
     tok.skip();
-    unsigned char c = tok.ch();
     if (tok.is_newline() || tok.is_eof()) {
       error("hyphenation codes must be specified in pairs");
       break;
     }
     charinfo *ci2 = tok.get_char(true /* required */);
-    // nonsense redux
-    if (0 /* nullptr */ == ci2)
-      break;
+    unsigned char c = tok.ch();
+    if (0 == c) {
+      if (0 /* nullptr */ == ci2)
+	break;
+      if (0 == ci2->get_hyphenation_code()) {
+	error("second member of hyphenation code pair must be an"
+	      " ordinary character");
+	break;
+      }
+    }
     // TODO: What if you want to unset a hyphenation code?  Accept 0?
     if (csdigit(c)) {
       error("hyphenation code cannot be digit");

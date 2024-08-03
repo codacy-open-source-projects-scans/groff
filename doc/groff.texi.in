@@ -6633,8 +6633,8 @@ forms.
 @cindex macro names, starting with @code{[} or @code{]}, and @code{refer}
 If you begin a macro, string, or diversion name with either of the
 characters @samp{[} or @samp{]}, you foreclose use of the @code{grefer}
-preprocessor, which recognizes @samp{.[} and @samp{.]} as bibliographic
-reference delimiters.
+preprocessor, which recognizes input lines starting with @samp{.[} and
+@samp{.]} as bibliographic reference delimiters.
 
 @Defesc {\\A, @code{'}, anything, @code{'}}
 Interpolate@tie{}1 if @var{anything} is a valid identifier, and@tie{}0
@@ -7088,10 +7088,10 @@ package you use; consult its documentation to learn of ``safe''
 sequences or alternative facilities it provides to achieve the desired
 result.
 
-If an escape character is followed by a character that does not
-identify a defined operation, the escape character is ignored (producing
-a diagnostic of the @samp{escape} warning category, which is not enabled
-by default) and the following character is processed normally.
+If an escape character is followed by a character that does not identify
+a defined operation, GNU @code{troff} ignores the escape character
+(producing a warning in category @samp{escape} if enabled), processing
+the next character as if it were not preceded by an escape character.
 
 @Example
 $ groff -T ps -ww
@@ -7396,8 +7396,7 @@ We see here that in compatibility mode, the part of the argument after
 the @code{'} delimiter escapes from its context and, if nefariously
 crafted, influences the computation of the @var{wd} register's value in
 a surprising way.
-@c END Keep (roughly) parallel with subsection " Delimiters" of
-@c groff(7).
+@c END Keep (roughly) parallel with subsection "Delimiters" of groff(7).
 
 @node Comments, Registers, Formatter Instructions, GNU troff Reference
 @section Comments
@@ -7430,8 +7429,8 @@ nor between arguments.
 
 @cindex undefined request
 @cindex request, undefined
-A comment on a line by itself is treated as a blank line, because after
-eliminating the comment, that is all that remains.
+A @code{\"} comment on a line by itself is treated as a blank line,
+because after eliminating the comment, that is all that remains.
 
 @Example
 Test
@@ -7442,7 +7441,7 @@ Test
     @result{} Test
 @endExample
 
-To avoid this, it is common to combine the empty request with the
+To compensate, it is common to combine the empty request with the
 comment escape sequence as @samp{.\"}, causing the input line to be
 ignored.
 
@@ -7755,8 +7754,8 @@ To apply auto-incrementation to a register, interpolate it with
 Increment or decrement @var{ident} (one-character
 name@tie{}@var{i}, two-character name @var{id}) by the register's
 auto-incrementation value and then interpolate the new register value.
-If @var{ident} has no auto-incrementation value, interpolate as with
-@code{\n}.
+If @var{ident} has no auto-incrementation value, GNU @code{troff}
+interpolates its value without alteration.
 @endDefesc
 
 @need 1000
@@ -8965,25 +8964,32 @@ loaded at startup, or in a macro package), GNU @code{troff} won't
 automatically hyphenate at all.
 @endDefreq
 
-@Defreq {hcode, c1 code1 [c2 code2] @dots{}}
+For automatic hyphenation to work, the formatter must know which letters
+are equivalent; for example, the letter @samp{E} behaves like @samp{e};
+only the latter typically appears in hyphenation pattern files.  GNU
+@code{troff} expects characters that participate in automatic
+hyphenation to be assigned @dfn{hyphenation codes} that define these
+equivalence classes.  At startup, GNU @code{troff} assigns hyphenation
+codes to the letters @samp{a}--@samp{z}, applies the same codes to
+@samp{A}--@samp{Z} in one-to-one correspondence, and assigns a code of
+zero to all other characters.
+
+The @code{hcode} request extends this principle to letters outside the
+Unicode basic Latin alphabet; without it, words containing such letters
+won't be hyphenated properly even if the corresponding hyphenation
+patterns contain them.
+
+@Defreq {hcode, dst1 src1 [dst2 src2] @dots{}}
 @cindex hyphenation code (@code{hcode})
 @cindex code, hyphenation (@code{hcode})
-Set the hyphenation code of character @var{c1} to @var{code1}, that of
-@var{c2} to @var{code2}, and so on.  A hyphenation code must be an
-ordinary character (not a special character escape sequence) other than
-a digit or a space.  The request is ignored if given no arguments.
-
-For automatic hyphenation to work, hyphenation codes must be set up.  At
-startup, GNU @code{troff} assigns hyphenation codes to the letters
-@samp{a}--@samp{z} (mapped to themselves), to the letters
-@samp{A}--@samp{Z} (mapped to @samp{a}--@samp{z}), and zero to all other
-characters.  Normally, hyphenation patterns contain only lowercase
-letters which should be applied regardless of case.  In other words,
-they assume that the words `FOO' and `Foo' should be hyphenated exactly
-as `foo' is.  The @code{hcode} request extends this principle to letters
-outside the Unicode basic Latin alphabet; without it, words containing
-such letters won't be hyphenated properly even if the corresponding
-hyphenation patterns contain them.
+Set the hyphenation code of ordinary or special character @var{dst1} to
+that of @var{src1}, and so on.  @var{dst1} must be an ordinary character
+(other than a numeral) or a special character, and @var{src1} must be an
+ordinary character (other than a numeral) or a special character to
+which a hyphenation code has already been applied.  Assigning the code
+of an ordinary character code to itself effectively creates a unique
+hyphenation code (which can then be copied to others).  @code{hcode}
+ignores spaces between arguments.
 
 For example, the following @code{hcode} requests are necessary to assign
 hyphenation codes to the letters @samp{ÄäÖöÜüß}, needed for German.
@@ -9002,6 +9008,11 @@ umlaut@tie{}a is zero by default, just like a space.  There is a German
 hyphenation pattern that covers @w{`kinder'}, so GNU @code{troff} finds
 the hyphenation `kin-der'.  The other two hyphenation points
 (`kin-der-gär-ten') are missed.
+
+If for some reason you desire to remove a character's hyphenation code,
+use @code{hcode} to copy the code of a punctuation character to it; for
+example, @samp{.hcode ß $} assigns a hyphenation code of zero to
+@samp{ß} (unless @samp{$} has already been assigned a different one).
 @endDefreq
 
 @DefreqList {hla, [@Var{lang}]}
@@ -14801,7 +14812,7 @@ there.
 A macro package might set headers and footers as follows; this example
 configures vertical margins of one inch to the body text, and one
 half-inch to the titles.  Observe the use of the no-break control
-character with the @code{sp} and @code{br} requests to position our text
+character with the @code{sp} and @code{bp} requests to position our text
 baselines and prevent a partially collected line from being written
 outside the body text, and the page number character @samp{%} used with
 the @code{tl} request.
@@ -14821,6 +14832,19 @@ the @code{tl} request.
 .wh 0   hd              \" trap at top of the page
 .wh -1i fo              \" trap 1 inch from bottom
 @endExample
+
+@strong{Caution:@:} A word about measurements is in order.  Recall that
+the @code{sp} request vertically spaces such that the next text baseline
+(of one vee in height by definition) sets with the amount of space given
+to @code{sp}'s argument @emph{above} it.  Thus in the example above,
+when the @samp{hd} trap springs at vertical position @samp{0},
+invoking @samp{sp .5i}, we get the desired half-inch of top margin.
+With the @samp{ft} trap, we space after the body text by one half-inch
+@emph{minus one vee} to leave a half-inch bottom margin.  The footer
+title, if anything taller than a baseline rule, thus ``encroaches'' into
+the half-inch margin between the body text and the bottom margin, just
+as the header title symmetrically intruded into the half-inch of space
+between its own cap-height and that of the top of the body text.
 
 To use these traps, copy the above (or load it from a file with the
 @code{so} or @code{mso} requests), then set up the strings it uses.
@@ -17045,8 +17069,8 @@ exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
 colors, composite characters, environments, hyphenation exceptions,
-registers, page location traps, and a list of pending output nodes
-corresponding to the previous input line to the standard error stream.
+registers, page location traps, and a list of output nodes corresponding
+to the pending input line to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
