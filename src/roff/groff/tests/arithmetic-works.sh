@@ -27,7 +27,7 @@ wail () {
   fail=yes
 }
 
-# Unit-test saturating arithmetic.
+# Unit-test arithmetic.
 
 # Start with a couple of cases that proved fragile when developing it.
 #
@@ -104,12 +104,12 @@ input='.
 output=$(echo "$input" | "$groff" -T ascii)
 echo "$output"
 
-# saturating: 2147483647
+# 2147483647
 echo "checking assignment of huge value to register" >&2
 echo "$output" \
   | grep -Fqx '1: 99999999999999999999 -> 1410065407' || wail
 
-# saturating: -2147483648
+# -2147483648
 echo "checking assignment of huge negative value to register" >&2
 echo "$output" \
   | grep -Fqx '2: (-99999999999999999999) -> -1410065407' || wail
@@ -117,18 +117,18 @@ echo "$output" \
 echo "checking assignment of 2^31 - 1 to register" >&2
 echo "$output" | grep -Fqx '3: assign 2147483647 -> 2147483647' || wail
 
-# saturating: -2147483648
-echo "checking saturating incrementation of register" >&2
+# -2147483648
+echo "checking incrementation of register" >&2
 echo "$output" | grep -Fqx '4: incr 2147483647 -> -2147483648' || wail
 
 echo "checking negation of positive register" >&2
 echo "$output" | grep -Fqx '5: (-1)*2147483647 -> -2147483647' || wail
 
-echo "checking saturating decrementation of register" >&2
+echo "checking decrementation of register" >&2
 echo "$output" | grep -Fqx '6: decr -2147483648 -> -2147483648' || wail
 
-# saturating: 2147483647
-echo "checking negation of negatively saturated register" >&2
+# 2147483647
+echo "checking negation of negatively register" >&2
 echo "$output" | grep -Fqx '7: (-1)*(-2147483648) -> 0' \
   || wail
 

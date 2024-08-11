@@ -1086,11 +1086,9 @@ are converted to single space characters;
 and a self-escaped escape character is output as a backslash
 .BR \[rs] .
 .
-So that the basic Latin subset of the Unicode character set
-(that is,
-ISO\~646:1991-IRV or,
-popularly,
-\[lq]US-ASCII\[rq])
+So that the basic Latin subset of the Unicode character set\[em]\c
+that is,
+ISO\~646:1991\~IRV (US-ASCII)\[em]\c
 can be reliably encoded in
 .I contents,
 the special character escape sequences
@@ -1606,7 +1604,7 @@ and
 .I Unformat
 the diversion
 .I div
-in a way such that Unicode basic Latin (ASCII) characters,
+in a way such that Unicode basic Latin (US-ASCII) characters,
 characters translated with the
 .B trin
 request,
@@ -2623,12 +2621,16 @@ must be an ordinary character
 or a special character
 to which a hyphenation code has already been applied.
 .
-Assigning the code of an ordinary character code to itself
+Assigning the code of an ordinary character to itself
 effectively creates a unique hyphenation code
 (which can then be copied to others).
 .
 .B hcode
 ignores spaces between arguments.
+.
+If any argument is invalid,
+.B hcode
+reports an error and stops reading them.
 .
 .
 .IP
@@ -2704,7 +2706,7 @@ implies a limit of
 .
 This value is associated with the environment.
 .
-Only lines output from a given environment count towards the maximum
+Only lines output from a given environment count toward the maximum
 associated with that environment.
 .
 Hyphens resulting from
@@ -2795,7 +2797,7 @@ is recognized also.
 .
 .
 .IP \[bu]
-For backwards compatibility,
+For backward compatibility,
 if
 .B \[rs]patterns
 is missing,
@@ -3184,11 +3186,6 @@ allowing embedded leading spaces in
 .IR contents ,
 which is read in copy mode and continues to the end of the input line.
 .
-.TP
-.B .pev
-Report the state of the current environment followed by that of all
-other environments to the standard error stream.
-.
 .
 .TP
 .B .pcolor
@@ -3210,6 +3207,24 @@ the list of defined composite characters.
 .
 The \[lq]from\[rq] code point is listed first,
 followed by its \[lq]to\[rq] mapping.
+.
+.
+.TP
+.B .pev
+Report the state of the current environment followed by that of all
+other environments to the standard error stream.
+.
+.
+.TP
+.BI .phcode\~ c\~\c
+\&.\|.\|.
+Report,
+to the standard error stream,
+the hyphenation code of each ordinary or special
+.RI character\~ c .
+.
+Special characters are listed in bracketed syntax using the default
+escape character.
 .
 .
 .TP
@@ -3609,7 +3624,7 @@ is omitted,
 it is implicitly set to the largest valid value
 (the string length minus one).
 .
-Negative indices count backwards from the end of the string:
+Negative indices count backward from the end of the string:
 the last character has index\~\-1,
 the character before the last has index\~\-2,
 and so on.
@@ -4797,7 +4812,7 @@ works fine.
 .
 Use visible characters as delimiters in GNU
 .IR troff , \" GNU
-not \[lq]ASCII\[rq] controls like BEL (Control+G).
+not US-ASCII controls like BEL (Control+G).
 .
 The implementation of
 .B \[rs]$@
@@ -5385,6 +5400,8 @@ composite characters
 .RB ( pcomposite ),
 environments
 .RB ( pev ),
+hyphenation codes
+.RB ( .phcode ),
 hyphenation exceptions
 .RB ( phw ),
 registers

@@ -1,9 +1,12 @@
 #!@BASH_PROG@
-# Copyright (C) 2004-2020 Free Software Foundation, Inc.
-# Written by Mike Bianchi <MBianchi@Foveal.com <mailto:MBianchi@Foveal.com>>
+# Copyright (C) 2004-2023 Free Software Foundation, Inc.
+# Written by Mike Bianchi <MBianchi@Foveal.com>
+# Changes from May 2015 onward by the groff development team
+
 # Thanks to Peter Bray for debugging.
 
-# This file is part of the gdiffmk utility, which is part of groff.
+# This file is part of gdiffmk, which is part of groff, the GNU roff
+# typesetting system.
 
 # groff is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by

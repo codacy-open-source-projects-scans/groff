@@ -336,13 +336,12 @@ Input to GNU
 .I troff \" GNU
 is organized into lines separated by the Unix newline character
 (U+000A),
-and must be in one of two character encodings it can recognize:
-IBM code page 1047 on EBCDIC systems,
-and ISO\~Latin-1 (8859-1) otherwise.
+and must be in the character encoding it recognizes:
+ISO\~Latin-1 (8859-1).
 .
-Use of ISO\~646-1991:IRV (\[lq]US-ASCII\[rq]) or (equivalently) the
-\[lq]Basic Latin\[rq]
-subset of ISO\~10646 (\[lq]Unicode\[rq]) is recommended;
+We recommend use of ISO\~646:1991\~IRV (US-ASCII)
+or (equivalently) the Basic Latin subset
+of ISO\~10646 (Unicode);
 see
 .MR groff_char @MAN7EXT@ .
 .
@@ -1309,26 +1308,12 @@ is processed as \[lq]foobar\[rq].
 .
 .
 .P
-On a machine using the ISO 646,
-8859,
-or 10646 character encodings,
-invalid input characters are
+Invalid input characters are
 .BR 0x00 ,
 .BR 0x0B ,
 .BR 0x0D \[en] 0x1F ,
 and
 .BR 0x80 \[en] 0x9F .
-.
-On an EBCDIC host,
-they are
-.BR 0x00 \[en] 0x01 ,
-.BR 0x08 ,
-.BR 0x09 ,
-.BR 0x0B ,
-.BR 0x0D \[en] 0x14 ,
-.BR 0x17 \[en] 0x1F ,
-and
-.BR 0x30 \[en] 0x3F .
 .
 Some of these code points are used by
 .I @g@troff
@@ -3946,6 +3931,13 @@ Report the state of the current environment followed by that of all
 other environments to the standard error stream.
 .
 .TPx
+.REQ .phcode "c \fR\&.\|.\|.\&\fP"
+Report,
+to the standard error stream,
+the hyphenation code of each ordinary or special
+.RI character\~ c .
+.
+.TPx
 .REQ .phw
 Report,
 to the standard error stream,
@@ -4385,7 +4377,7 @@ and
 .IR end ,
 inclusive.
 .
-Negative indices count backwards from the end of the string.
+Negative indices count backward from the end of the string.
 .
 .TPx
 .REQ .sv
@@ -4887,7 +4879,9 @@ the underrule special character.
 .
 .TP
 .ESC %
-Control hyphenation.
+Mark a hyphenation point within a word.
+At the beginning of a word,
+prevent it from being otherwise hyphenated.
 .
 .
 .TP
@@ -5228,12 +5222,11 @@ Mark horizontal position in register with arbitrarily long
 Draw horizontal line of length
 .I N
 with character
-.B c
+.I c
 (default:
 .BR \[rs][ru] ;
 default scaling unit\~\c
 .scaleindicator m ).
-.
 .
 .
 .TP
@@ -5241,7 +5234,7 @@ default scaling unit\~\c
 Draw vertical line of length
 .I N
 with character
-.B c
+.I c
 (default:
 .BR \[rs][br] ;
 default scaling unit\~\c
@@ -6929,8 +6922,8 @@ Thus the default family can be combined with a style dynamically,
 producing a
 .I "resolved font name."
 .
-A user-specified font name that combines family and style
-(or refers to a font that is not a member of a family)
+A user-specified font name that combines family and style,
+or refers to a font that is not a member of a family,
 is already \[lq]resolved\[rq].
 .
 .
@@ -8048,11 +8041,8 @@ are converted to single space characters;
 and a self-escaped escape character is output as a backslash
 .BR \[rs] .
 .
-So that the basic Latin subset of the Unicode character set
-(that is,
-ISO\~646:1991-IRV or,
-popularly,
-\[lq]US-ASCII\[rq])
+So that the basic Latin subset of the Unicode character set,
+ISO\~646:1991\~IRV (US-ASCII),
 can be reliably encoded in device control commands,
 seven special character escape sequences
 .RB (\[lq] \[rs]\- \[rq],
@@ -8439,6 +8429,8 @@ composite characters
 .RB ( .pcomposite );
 environments
 .RB ( .pev );
+hyphenation codes
+.RB ( .phcode );
 hyphenation exceptions
 .RB ( .phw );
 registers

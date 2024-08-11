@@ -1003,8 +1003,8 @@ Vertical motion, apart from that implied by a break, is not represented.
 
 @item
 A horizontal motion of any size is represented as one space.  Adjacent
-horizontal motions are not combined.  Inter-sentence space nodes (those
-arising from the second argument to the @code{ss} request) are not
+horizontal motions are not combined.  Supplemental inter-sentence space
+(configured by the second argument to the @code{ss} request) is not
 represented.
 
 @item
@@ -1256,35 +1256,23 @@ document.
 @cindex ISO@tie{}646 output encoding
 @cindex output encoding, @acronym{ASCII}
 @cindex output encoding, ISO@tie{}646
-For typewriter-like devices using the (7-bit) @acronym{ASCII}
-(ISO@tie{}646) character set.
+For typewriter-like devices using the (7-bit) @w{ISO 646:1991 IRV}
+(US-@acronym{ASCII}) character set.
 
 @item latin1
-@cindex encoding, output, @w{Latin-1} (ISO @w{8859-1})
-@cindex @w{Latin-1} (ISO @w{8859-1}) output encoding
-@cindex ISO @w{8859-1} (@w{Latin-1}) output encoding
-@cindex output encoding, @w{Latin-1} (ISO @w{8859-1})
-For typewriter-like devices that support the @w{Latin-1}
-(ISO@tie{}@w{8859-1}) character set.
+@cindex encoding, output, @w{ISO Latin-1} (@w{8859-1})
+@cindex @w{Latin-1} (@w{ISO 8859-1}) output encoding
+@cindex @w{ISO Latin-1} (@w{8859-1}) output encoding
+@cindex output encoding, @w{ISO Latin-1} (@w{8859-1})
+For typewriter-like devices that support the @w{ISO Latin-1} (8859-1)
+character set.
 
 @item utf8
 @cindex encoding, output, @w{UTF-8}
 @cindex @w{UTF-8} output encoding
 @cindex output encoding, @w{UTF-8}
-For typewriter-like devices that use the Unicode (ISO@tie{}10646)
+For typewriter-like devices that use the @w{ISO 10646} (Unicode)
 character set with @w{UTF-8} encoding.
-
-@item cp1047
-@cindex encoding, output, @acronym{EBCDIC}
-@cindex @acronym{EBCDIC} output encoding
-@cindex output encoding, @acronym{EBCDIC}
-@cindex encoding, output, code page 1047
-@cindex code page 1047 output encoding
-@cindex output encoding, code page 1047
-@cindex IBM code page 1047 output encoding
-@cindex CCSID 1047 output encoding (EBCDIC)
-For typewriter-like devices that use the @acronym{EBCDIC} encoding IBM
-code page 1047.
 
 @item lj4
 For HP LaserJet4-compatible (or other PCL5-compatible) printers.
@@ -1308,7 +1296,7 @@ This driver consists of two parts, a preprocessor
 The predefined GNU @command{troff} string @code{.T} contains the name of
 the output device; the read-only register @code{.T} is set to@tie{}1 if
 this option is used (which is always true if @command{groff} is used to
-call GNU @command{troff}).  @xref{Built-in Registers}.
+run GNU @command{troff}).  @xref{Built-in Registers}.
 
 The postprocessor to be used for a device is specified by the
 @code{postpro} command in the device description file.  (@xref{Device
@@ -5636,34 +5624,21 @@ conversions.  Input to the GNU @code{troff} formatter itself, on the
 other hand, must be in one of two encodings it can recognize.
 
 @table @code
-@item cp1047
-@cindex encoding, input, @acronym{EBCDIC}
-@cindex @acronym{EBCDIC}, input encoding
-@cindex input encoding, @acronym{EBCDIC}
-@cindex encoding, input, code page 1047
-@cindex code page 1047, input encoding
-@cindex input encoding, code page 1047
-@cindex IBM code page 1047 input encoding
-@pindex cp1047.tmac
-The code page 1047 input encoding works only on @acronym{EBCDIC}
-platforms (and conversely, the other input encodings don't work on
-@acronym{EBCDIC} platforms).
-
 @item latin1
-@cindex encoding, input, @w{Latin-1} (ISO @w{8859-1})
-@cindex @w{Latin-1} (ISO @w{8859-1}), input encoding
-@cindex ISO @w{8859-1} (@w{Latin-1}), input encoding
-@cindex input encoding, @w{Latin-1} (ISO @w{8859-1})
+@cindex encoding, input, @w{ISO Latin-1} (@w{8859-1})
+@cindex @w{Latin-1} (@w{ISO 8859-1}) input encoding
+@cindex @w{ISO Latin-1} (@w{8859-1}) input encoding
+@cindex input encoding, @w{ISO Latin-1} (@w{8859-1})
 @pindex latin1.tmac
 ISO @w{Latin-1} is an encoding for Western European languages.
 @end table
 
 @noindent
-Any document that is encoded in ISO 646:1991 (a descendant of USAS
-@w{X3.4-1968} or ``US-ASCII''), or, equivalently, uses only code points
-from the ``C0 Controls'' and ``Basic Latin'' parts of the Unicode
-character set is also a valid ISO @w{Latin-1} document; the standards
-are interchangeable in their first 128 code points.@footnote{The
+Any document that is encoded in @w{ISO 646:1991 IRV}
+(US-@acronym{ASCII}), or, equivalently, uses only code points from the
+``C0 Controls'' and ``Basic Latin'' parts of the Unicode character set
+is also a valid ISO @w{Latin-1} document; the standards are
+interchangeable in their first 128 code points.@footnote{The
 @emph{semantics} of certain punctuation code points have gotten stricter
 with the successive standards, a cause of some frustration among man
 page writers; see @cite{groff_char@r{(7)}}.}
@@ -5687,10 +5662,10 @@ obtained via special character escape sequences; see
 @cite{groff_char@r{(7)}}.}
 
 @item latin2
-@cindex encoding, input, @w{Latin-2} (ISO @w{8859-2})
-@cindex @w{Latin-2} (ISO @w{8859-2}), input encoding
-@cindex ISO @w{8859-2} (@w{Latin-2}), input encoding
-@cindex input encoding, @w{Latin-2} (ISO @w{8859-2})
+@cindex encoding, input, @w{ISO Latin-2} (@w{8859-2})
+@cindex @w{Latin-2} (@w{ISO 8859-2}) input encoding
+@cindex @w{ISO Latin-2} (@w{8859-2}) input encoding
+@cindex input encoding, @w{ISO Latin-2} (@w{8859-2})
 @pindex latin2.tmac
 To use ISO @w{Latin-2}, an encoding for Central and Eastern European
 languages, invoke @w{@samp{.mso latin2.tmac}} at the beginning of your
@@ -5698,20 +5673,20 @@ document or supply @samp{-m latin2} as a command-line argument to
 @code{groff}.
 
 @item latin5
-@cindex encoding, input, @w{Latin-5} (ISO @w{8859-9})
-@cindex @w{Latin-5} (ISO @w{8859-9}), input encoding
-@cindex ISO @w{8859-9} (@w{Latin-5}), input encoding
-@cindex input encoding, @w{Latin-5} (ISO @w{8859-9})
+@cindex encoding, input, @w{ISO Latin-5} (@w{8859-9})
+@cindex @w{Latin-5} (@w{ISO 8859-9}) input encoding
+@cindex @w{ISO Latin-5} (@w{8859-9}) input encoding
+@cindex input encoding, @w{ISO Latin-5} (@w{8859-9})
 @pindex latin5.tmac
 To use ISO @w{Latin-5}, an encoding for the Turkish language, invoke
 @w{@samp{.mso latin5.tmac}} at the beginning of your document or
 supply @samp{-m latin5} as a command-line argument to @code{groff}.
 
 @item latin9
-@cindex encoding, input, @w{Latin-9} (ISO @w{8859-15})
-@cindex @w{Latin-9} (ISO @w{8859-15}), input encoding
-@cindex ISO @w{8859-15} (@w{Latin-9}), input encoding
-@cindex input encoding, @w{Latin-9} (ISO @w{8859-15})
+@cindex encoding, input, @w{ISO Latin-9} (@w{8859-15})
+@cindex @w{Latin-9} (@w{ISO 8859-15}) input encoding
+@cindex @w{ISO Latin-9} (@w{8859-15}) input encoding
+@cindex input encoding, @w{ISO Latin-9} (@w{8859-15})
 @pindex latin9.tmac
 ISO @w{Latin-9} succeeds @w{Latin-1}; it includes a Euro sign and better
 coverage for French.  To use this encoding, invoke @w{@samp{.mso
@@ -6574,13 +6549,9 @@ warning in category @samp{input} (@pxref{Warnings}).  They are removed
 during interpretation: an identifier @samp{foo}, followed by an invalid
 character and then @samp{bar}, is processed as @samp{foobar}.
 
-On a machine using the ISO 646, 8859, or 10646 character encodings,
-invalid input characters are @code{0x00}, @code{0x0B},
-@code{0x0D}--@code{0x1F}, and @code{0x80}--@code{0x9F}.  On an
-@acronym{EBCDIC} host, they are @code{0x00}--@code{0x01}, @code{0x08},
-@code{0x09}, @code{0x0B}, @code{0x0D}--@code{0x14},
-@code{0x17}--@code{0x1F}, and
-@code{0x30}--@code{0x3F}.@footnote{Historically, control characters like
+Invalid input characters are @code{0x00}, @code{0x0B},
+@code{0x0D}--@code{0x1F}, and
+@code{0x80}--@code{0x9F}.@footnote{Historically, control characters like
 ASCII STX, ETX, and BEL (@key{Control+B}, @key{Control+C}, and
 @key{Control+G}) have been observed in @code{roff} documents,
 particularly in macro packages employing them as delimiters with the
@@ -8800,7 +8771,7 @@ The automatic placement of hyphens in words is determined by
 @dfn{pattern files}, which are derived from @TeX{} and available for
 several languages.  These files are named @file{hyphen.@var{xx}} (for
 the patterns) and @file{hyphenex.@var{xx}} (for a list of exceptions in
-languages that require them) where @var{xx} is an ISO@tie{}639 language
+languages that require them) where @var{xx} is an @w{ISO 639} language
 code; see the table below.
 @c XXX: "den" and "det" aren't ISO 639 codes.  Is there a POSIX locale
 @c modifier for these variations, like de@alt and de@recht or similar?
@@ -8989,7 +8960,8 @@ ordinary character (other than a numeral) or a special character to
 which a hyphenation code has already been applied.  Assigning the code
 of an ordinary character code to itself effectively creates a unique
 hyphenation code (which can then be copied to others).  @code{hcode}
-ignores spaces between arguments.
+ignores spaces between arguments.  If any argument is invalid,
+@code{hcode} reports an error and stops reading them.
 
 For example, the following @code{hcode} requests are necessary to assign
 hyphenation codes to the letters @samp{ÄäÖöÜüß}, needed for German.
@@ -9013,6 +8985,9 @@ If for some reason you desire to remove a character's hyphenation code,
 use @code{hcode} to copy the code of a punctuation character to it; for
 example, @samp{.hcode ß $} assigns a hyphenation code of zero to
 @samp{ß} (unless @samp{$} has already been assigned a different one).
+
+The @code{phcode} request may be helpful to troubleshoot hyphenation
+code assignments.  @xref{Debugging}.
 @endDefreq
 
 @DefreqList {hla, [@Var{lang}]}
@@ -9280,9 +9255,8 @@ this spacing for the first paragraph in a section.
 @cindex fields, and tabs
 
 @cindex tab character encoding
-A tab character (@acronym{ISO} code point@tie{}9, @acronym{EBCDIC}
-code point@tie{}5) causes a horizontal movement to the next tab stop, if
-any.
+A tab character (code point@tie{}9) causes a horizontal movement to the
+next tab stop, if any.
 
 @Defesc {\\t, , , }
 @cindex tab character, non-interpreted (@code{\t})
@@ -9491,11 +9465,10 @@ refers to how the glyphs ``lead'' the eye across the page to the
 corresponding page number or other datum.}
 
 @cindex leader character
-A leader character (@acronym{ISO} and @acronym{EBCDIC} code
-point@tie{}1, also known as @acronym{SOH} or ``start of heading''),
-behaves similarly to a tab character:@: it moves to the next tab stop.
-The difference is that for this movement, the default fill character is
-a period @samp{.}.
+A leader character (@w{code point 1}, also known as @acronym{SOH} or
+``start of heading''), behaves similarly to a tab character:@: it moves
+to the next tab stop.  The difference is that for this movement, the
+default fill character is a period @samp{.}.
 
 @Defesc {\\a, , , }
 @cindex leader character, non-interpreted (@code{\a})
@@ -10447,8 +10420,8 @@ So that a document need not be strongly coupled to a specific font
 family, in GNU @code{troff} an output device can associate a style in
 the abstract sense with a mounting position.  Thus the default family
 can be combined with a style dynamically, producing a @dfn{resolved font
-name}.  A user-specified font name that combines family and style (or
-refers to a font that is not a member of a family) is already
+name}.  A user-specified font name that combines family and style, or
+refers to a font that is not a member of a family, is already
 ``resolved''.
 
 Fonts often have trademarked names, and even Free Software fonts can
@@ -10474,7 +10447,7 @@ document writes its first glyph.
 @cindex cell, character, attributes
 Terminals cannot change font families and lack special fonts.  They
 support style changes by overstriking, or by altering
-ISO@tie{}6429/ECMA-48 @dfn{graphic renditions} (character cell
+@w{ISO 6429}/ECMA-48 @dfn{graphic renditions} (character cell
 attributes).
 @c END Keep (roughly) parallel with section "Using fonts" of groff(7).
 
@@ -10543,8 +10516,8 @@ is looked up; if not mounted, @var{font} is sought on the file system as
 a font description file and, if located, automatically mounted at the
 next available position (see register @code{.fp} below).  If the font
 was mounted using an identifier different from its font description file
-name (see request @code{fp} below), that file name is then looked up.
-If a font description file for the resolved font name is not found, GNU
+name (see request @code{fp} below), that file name is then sought.  If a
+font description file for the resolved font name is not found, GNU
 @code{troff} emits a warning in category @samp{font} and ignores the
 request.
 
@@ -11904,15 +11877,16 @@ without actually rendering a glyph to the output.
 @cindex dummy character (@code{\&})
 @cindex character, dummy (@code{\&})
 Interpolate a dummy character, which is constitutive of output but
-invisible.@footnote{Opinions of this escape sequence's name abound.
+invisible.@footnote{Opinions of this escape sequence's best name abound.
 ``Zero-width space'' is a popular misnomer:@: @code{roff} formatters do
-not treat it like a space.  Ossanna called it a ``non-printing,
-zero-width character'', but the character causes @emph{output} even
-though it does not ``print''.  If no output line is pending, the dummy
-character starts one.  Contrast an empty input document with one
-containing only @code{\&}.  The former produces no output; the latter, a
-blank page.}  Its presence alters the interpretation context of a
-subsequent input character, and enjoys several applications.
+not treat it like a space; when filling, they do not break a line where
+@code{\&} appears.  Ossanna called it a ``non-printing, zero-width
+character'', but the character causes @emph{output} even though it does
+not ``print''.  If no output line is pending, the dummy character starts
+one.  Contrast an empty input document with one containing only
+@code{\&}.  The former produces no output; the latter, a blank page.}
+Its presence alters the interpretation context of a subsequent input
+character, and enjoys several applications.
 
 @itemize @bullet
 @item
@@ -12119,23 +12093,25 @@ The @code{\s} escape sequence supports a variety of syntax forms.
 
 @table @code
 @item \s@var{n}
-Set the type size to @var{n}@tie{}points.  @var{n}@tie{}must be a single
-digit.  If @var{n}@tie{}is 0, restore the previous size.
+Set the type size to @var{n}@tie{}scaled points.  @var{n}@tie{}must be a
+single digit.@footnote{In compatibility mode only, a non-zero @var{n}
+must be in the range 4--39.  @xref{Compatibility Mode}.}  If
+@var{n}@tie{}is 0, restore the previous size.
 
 @item \s+@var{n}
 @itemx \s-@var{n}
-Increase or decrease the type size by @var{n}@tie{}points.
+Increase or decrease the type size by @var{n}@tie{}scaled points.
 @var{n}@tie{}must be exactly one digit.
 
 @item \s(@var{nn}
-Set the type size to @var{nn}@tie{}points.  @var{nn} must be exactly two
-digits.
+Set the type size to @var{nn}@tie{}scaled points.  @var{nn} must be
+exactly two digits.
 
 @item \s+(@var{nn}
 @itemx \s-(@var{nn}
 @itemx \s(+@var{nn}
 @itemx \s(-@var{nn}
-Alter the type size in points by the two-digit value @var{nn}.
+Alter the type size in scaled points by the two-digit value @var{nn}.
 @end table
 
 @xref{Using Fractional Type Sizes}, for further syntactical forms of the
@@ -12396,8 +12372,7 @@ of a closed geometric figure.
 @DefregListEndx {.color}
 Enable or disable output of color-related device-independent output
 commands per Boolean expression @var{b}.  It is enabled by default, and
-if @var{b} is omitted.  This request modifies the formatter's internal
-state; it does not produce a token (@pxref{Gtroff Internals}).
+if @var{b} is omitted.
 
 The read-only register @code{.color} interpolates@tie{}1 if color
 support is enabled, 0@tie{}otherwise.
@@ -12446,7 +12421,7 @@ necessarily the same.  For the @code{dvi}, @code{html}, @code{pdf},
 @code{ps}, and @code{xhtml} output devices, GNU @code{troff}
 automatically loads a macro file defining many color names at startup.
 By the same mechanism, the devices supported by @code{grotty} recognize
-the eight standard ISO@tie{}6429/EMCA-48 color names.@footnote{These
+the eight standard @w{ISO 6429}/ECMA-48 color names.@footnote{These
 are known vulgarly as ``ANSI'' colors, after its X3.64 standard, now
 withdrawn.}
 
@@ -12793,7 +12768,7 @@ the expected way due to the regular naming convention for accented
 characters.  When they do not, use substrings and/or catenation.
 
 @Example
-.ds resume R\['e]sum\['e]
+.ds resume R\['e]sum\['e]\"
 \*[resume]
 .stringdown resume
 \*[resume]
@@ -12802,10 +12777,6 @@ characters.  When they do not, use substrings and/or catenation.
     @result{} Résumé résumé RÉSUMÉ
 @endExample
 @endDefreq
-
-(In practice, we would end the @code{ds} request with a comment escape
-@code{\"} to prevent space from creeping into the definition during
-source document maintenance.)
 
 @Defreq {rn, old new}
 @cindex renaming request (@code{rn})
@@ -13438,7 +13409,7 @@ definition ends with the control line @samp{..} (two dots).
 Alternatively, @var{end} identifies a macro whose call syntax at the
 start of a control line ends the definition of @var{name}; @var{end} is
 then called normally.  A macro definition must end in the same
-conditional block (if any) in which it began (@pxref{Conditional
+conditional block (if any) in which it began (recall @pxref{Conditional
 Blocks}).  Spaces or tabs are permitted after the control character in
 the line containing this ending token (either @samp{.} or
 @samp{@var{end}}), but a tab immediately after the token prevents its
@@ -14345,30 +14316,26 @@ complex drawings, these operations can be cumbersome; the preprocessors
 @code{gpic} or @code{ggrn} are typically used instead.
 
 The @code{\l} and @code{\L} escape sequences draw horizontal and
-vertical sequences of glyphs, respectively.  Even the simplest of
-output devices supports them.
+vertical sequences of glyphs, respectively.  Even the simplest of output
+devices supports them.  They require an argument specifying the length
+of the rule (line) to be drawn, optionally followed by a single ordinary
+or special character with which to draw the rule if the default is not
+desired.
+@cindex dummy character (@code{\&}), effect on @code{\l} escape sequence
+@cindex character, dummy (@code{\&}), effect on @code{\l} escape sequence
+If the character is valid in a numerical expression, put @code{\&} after
+@var{l} to disambiguate the input.
 
 @DefescList {\\l, @code{'}, l, @code{'}}
 @DefescListEnd {\\l, @code{'}, lc, @code{'}}
 @cindex drawing horizontal lines (@code{\l})
 @cindex horizontal line, drawing (@code{\l})
 @cindex line, horizontal, drawing (@code{\l})
+@cindex baseline rule special character(@code{\[ru]})
 Draw a horizontal line of length @var{l} from the drawing position.
 Rightward motion is positive.  Afterward, the drawing position is at the
-right end of the line.  The default scaling unit is @samp{m}.
-
-@cindex baseline rule special character(@code{\[ru]})
-@cindex glyph, underscore (@code{\[ru]})
-@cindex line drawing glyph
-@cindex glyph, for line drawing
-The optional second parameter@tie{}@var{c} is a character with which to
-draw the line.  The default is the baseline rule special character,
-@code{\[ru]}.
-
-@cindex dummy character (@code{\&}), effect on @code{\l} escape sequence
-@cindex character, dummy (@code{\&}), effect on @code{\l} escape sequence
-If @var{c} is a numerical expression operator or valid scaling unit, put
-@code{\&} after @var{l} to disambiguate the input.
+right end of the line.  The default scaling unit is @samp{m}.  The
+default glyph is the baseline rule special character, @code{\[ru]}.
 
 @Example
 \l'4i\&-'
@@ -14399,15 +14366,11 @@ above.
 @cindex drawing vertical lines (@code{\L})
 @cindex vertical line drawing (@code{\L})
 @cindex line, vertical, drawing (@code{\L})
-@cindex line drawing glyph
-@cindex glyph for line drawing
-@cindex box rule glyph (@code{\[br]})
-@cindex glyph, box rule (@code{\[br]})
+@cindex box rule rule special character(@code{\[br]})
 Draw a vertical line of length @var{l} from the drawing position.
 Downward motion is positive.  The default scaling unit is @samp{v}.  The
-default character is the box rule, @code{\[br]}.  As with vertical
-motion escape sequences, text processing continues where the line ends.
-@code{\L} is otherwise similar to @code{\l}.
+default glyph is the box rule, @code{\[br]}.  As with vertical motion
+escape sequences, text processing continues where the line ends.
 
 @Example
 $ nroff <<EOF
@@ -16638,14 +16601,14 @@ By contrast, within @code{\X} arguments, the escape sequences @code{\&},
 @code{\)}, @code{\%}, and @code{\:} are ignored; @code{\@key{SPC}} and
 @code{\~} are converted to single space characters; and a self-escaped
 escape character is output as a backslash @code{\}.  So that the basic
-Latin subset of the Unicode character set@footnote{that is,
-ISO@tie{}646:1991-IRV or, popularly, ``US-ASCII''} can be reliably
-encoded in device control commands, seven special character escape
-sequences (@samp{\-}, @samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]},
-@samp{\[ha]}, @samp{\[rs]}, and @samp{\[ti]}) are mapped to basic Latin
-characters; see the @cite{groff_char@r{(7)}} man page.  For this
-transformation, character translations and special character definitions
-are ignored.@footnote{They are bypassed because these parameters are not
+Latin subset of the Unicode character set@footnote{that is, @w{ISO
+646:1991 IRV} (US-@acronym{ASCII})} can be reliably encoded in device
+control commands, seven special character escape sequences (@samp{\-},
+@samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]}, @samp{\[ha]}, @samp{\[rs]},
+and @samp{\[ti]}) are mapped to basic Latin characters; see the
+@cite{groff_char@r{(7)}} man page.  For this transformation, character
+translations and special character definitions are
+ignored.@footnote{They are bypassed because these parameters are not
 rendered as glyphs in the output; instead, they remain abstract
 characters---in a PDF bookmark or a URL, for example.}  The use of any
 other escape sequence in @code{\X} parameters is normally an error.
@@ -17167,6 +17130,12 @@ characters.  The ``from'' code point is listed first, followed by its
 @cindex environments, dumping (@code{pev})
 Report the state of the current environment followed by that of all
 other environments to the standard error stream.
+@endDefreq
+
+@Defreq {phcode, c @r{@dots{}}}
+Report, to the standard error stream, the hyphenation code of each
+ordinary or special character@tie{}@var{c}.  Special characters are
+listed in bracketed syntax using the default escape character.
 @endDefreq
 
 @Defreq {phw, }
@@ -17940,8 +17909,8 @@ The other correct way, appropriate in contexts independent of the
 backslash's common use as a @code{troff} escape character---perhaps in
 discussion of character sets or other programming languages---is
 the character escape @code{\(rs} or @code{\[rs]}, for ``reverse
-solidus'', from its name in the @acronym{ECMA-6} (@acronym{ISO/IEC} 646)
-standard.@footnote{The @code{rs} special character identifier was not
+solidus'', from its name in the @acronym{ECMA}-6 and @w{ISO 10646}
+standards.@footnote{The @code{rs} special character identifier was not
 defined in @acronym{AT&T} @code{troff}'s font description files, but is
 in those of its lineal descendant, Heirloom Doctools @code{troff}, as of
 the latter's 060716 release (July 2006).}

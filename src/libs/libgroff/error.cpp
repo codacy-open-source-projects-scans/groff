@@ -96,6 +96,7 @@ static void do_error(error_type type,
 			      arg3);
 }
 
+// This function should have no callers in production builds.
 void debug(const char *format,
 	   const errarg &arg1,
 	   const errarg &arg2,
@@ -134,6 +135,7 @@ void fatal(const char *format,
 // would need to temporarily change their values and has multiple return
 // paths might prefer these to the simpler variants above.
 
+// This function should have no callers in production builds.
 void debug_with_file_and_line(const char *filename,
 			      int lineno,
 			      const char *format,

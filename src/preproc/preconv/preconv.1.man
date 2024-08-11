@@ -94,9 +94,10 @@ and sends the result to the standard output stream.
 .
 Currently,
 this means that code points in the range 0\[en]127
-(in US-ASCII,
+in
+ISO 646:1991 IRV (US-ASCII),
 ISO\~8859,
-or Unicode)
+or Unicode
 remain as-is and the remainder are converted to the
 .I groff
 special character form
@@ -195,8 +196,8 @@ unless the locale is
 \[lq]C\[rq],
 \[lq]POSIX\[rq],
 or empty,
-in which case assume Latin-1
-(ISO\~8859-1).
+in which case assume ISO\~Latin-1
+(8859-1).
 .
 .
 .PP
@@ -408,10 +409,11 @@ is ignored during comparison with the above tags.
 While
 .I \%preconv
 recognizes all of the coding tags listed above,
-it is capable on its own of interpreting only three encodings:
-Latin-1,
-code page 1047,
-and UTF-8.
+it is capable on its own of interpreting only two encodings:
+ISO\~Latin-1 and and UTF-8.
+.
+ISO\~646:1991\~IRV (US-ASCII)
+is a proper subset of both these encodings.
 .
 If
 .I iconv

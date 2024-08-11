@@ -940,7 +940,7 @@ end points are coincident.
 More About Direction Changes
 .PP
 We've already seen how to change the direction in which objects are
-composed from rightwards to downwards.
+composed from rightward to downward.
 Here are some more illustrative examples:
 .KS
 .PS
@@ -1016,7 +1016,7 @@ ellipse
 Why is this?
 Because the exit point for the current direction is already set when you
 draw the object.
-The second arrow in Figure \*[SN]2 dropped downwards from the circle's
+The second arrow in Figure \*[SN]2 dropped downward from the circle's
 attachment point for an
 object to be joined to the right.
 .PP
@@ -1055,7 +1055,7 @@ You can refer to (say) the third ellipse in the current picture with
 text string (which isn't an attribute to another object) as \fB5th
 ""\fP.
 .PP
-Objects are also numbered backwards by type from the last one.
+Objects are also numbered backward by type from the last one.
 You can say \fB2nd last box\fP to get the second-to-last box, or
 \fB3rd last ellipse\fP to get the third-to-last ellipse.
 .PP
@@ -1139,7 +1139,7 @@ Absolute Coordinates
 The simplest is absolute coordinates in inches; \fBpic\fP uses a
 Cartesian system with (0,0) at the lower left corner of the virtual
 drawing surface for each picture (that is, X\~increases to the right
-and Y\~increases upwards).
+and Y\~increases upward).
 An absolute location may always be written in the conventional form as
 two comma-separated numbers surrounded by parentheses (and this is
 recommended for clarity).
@@ -3073,8 +3073,8 @@ There are lots of different ways to specify positions:
 .PP
 As Kernighan notes, \[lq]since barbarisms like \fB1th\fP and \fB3th\fP are
 barbaric, synonyms like \fB1st\fP and \fB3rd\fP are accepted as well.\[rq]
-Objects of a given type are numbered from 1 upwards in order of
-declaration; the \fBlast\fP modifier counts backwards.
+Objects of a given type are numbered from 1 upward in order of
+declaration; the \fBlast\fP modifier counts backward.
 .PP
 The \[lq]'th\[rq] form (which allows you to select a previous object with
 an expression, as opposed to a numeric literal) is not documented in DWB's

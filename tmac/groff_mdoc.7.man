@@ -4538,7 +4538,7 @@ flag works in combination with a tag list.
 is saved before
 .Aq Ar string
 is interpreted;
-afterwards,
+afterward,
 all variables are restored again.
 .
 However,
@@ -4883,8 +4883,8 @@ String	7-bit	8-bit	UCS	Prefer	Meaning
 .
 .Pp
 Some column headings are shorthand for standardized character encodings;
-\[lq]7-bit\[rq] for ISO 646:1991 IRV (US-ASCII),
-\[lq]8-bit\[rq] for ISO 8859-1 (Latin-1) and IBM code page 1047,
+\[lq]7-bit\[rq] for ISO\~646:1991\~IRV (US-ASCII),
+\[lq]8-bit\[rq] for ISO\~Latin-1 (8859-1),
 and
 \[lq]UCS\[rq] for ISO 10646 (Unicode character set).
 .

@@ -20,9 +20,6 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# This test fails with some versions of GNU Bash, such as 3.2; the here
-# document nested within a command substitution confuses it.
-#
 # https://lists.gnu.org/archive/html/bug-bash/2017-02/msg00024.html
 
 expected="' = '"

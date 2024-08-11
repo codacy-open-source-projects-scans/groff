@@ -134,9 +134,8 @@ acceptable arguments to the
 option are
 .BR ascii ,
 .BR latin1 ,
-.BR utf8 ,
 and
-.BR cp1047 ;
+.BR utf8 ;
 any others are ignored.
 .
 If neither the

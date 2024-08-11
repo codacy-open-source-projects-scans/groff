@@ -1547,9 +1547,8 @@ file sets the default:
 .BR 1 \~on
 .BR ascii ,
 .BR latin1 ,
-.BR utf8 ,
 and
-.B cp1047
+.B utf8
 devices,
 .RB otherwise\~ 0 .
 .

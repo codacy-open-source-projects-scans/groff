@@ -3888,7 +3888,7 @@ void hyphen_trie::do_delete(void *v)
 
    . '\endinput' is recognized also.
 
-   . For backwards compatibility, if '\patterns' is missing, the
+   . For backward compatibility, if '\patterns' is missing, the
      whole file is treated as a list of hyphenation patterns (only
      recognizing '%' as the start of a comment.
 
@@ -4225,30 +4225,50 @@ void init_env_requests()
   register_dictionary.define("st", new variable_reg(&st_reg_contents));
 }
 
+// Appendix H of _The TeXbook_ is useful background for the following.
+
 void hyphenate(hyphen_list *h, unsigned flags)
 {
   if (!current_language)
     return;
   while (h) {
-    while (h && h->hyphenation_code == 0)
+    while (h && (0 == h->hyphenation_code))
       h = h->next;
     int len = 0;
-    char hbuf[WORD_MAX + 2];
-    char *buf = hbuf + 1;
+    // Locate hyphenable points within a (subset of) an input word.
+    //
+    // We first look up the word in the environment's hyphenation
+    // exceptions dictionary; its keys are C strings, so the buffer
+    // `hbuf` that holds our word needs to be null terminated and we
+    // allocate a byte for that.  If the lookup fails, we apply the
+    // hyphenation patterns, which require that the word be bracketed at
+    // each end with a dot ('.'), so we allocate two further bytes.
+    //
+    // `hbuf` can be thought of as a mapping of the letters of the input
+    // word to the hyphenation codes that correspond to each letter.
+    // The hyphenation codes are normalized; "AbBoT" becomes "abbot".
+    //
+    // We can hyphenate words longer than WORD_MAX, but WORD_MAX is the
+    // maximum size of the "window" inside a word within which we apply
+    // the hyphenation patterns to determine a break point.
+    char hbuf[WORD_MAX + 2 + 1];
+    (void) memset(hbuf, '\0', sizeof hbuf);
+    char *bufp = hbuf + 1;
     hyphen_list *tem;
     for (tem = h; tem && len < WORD_MAX; tem = tem->next) {
       if (tem->hyphenation_code != 0)
-	buf[len++] = tem->hyphenation_code;
+	bufp[len++] = tem->hyphenation_code;
       else
 	break;
     }
     hyphen_list *nexth = tem;
     if (len >= 2) {
-      // check `.hw' entries
-      buf[len] = 0;
-      unsigned char *pos
-	= (unsigned char *)current_language->exceptions.lookup(buf);
-      if (pos != 0) {
+      // Check hyphenation exceptions defined with `hw` request.
+      assert((bufp + len) < (hbuf + sizeof hbuf));
+      bufp[len] = '\0';
+      unsigned char *pos = static_cast<unsigned char *>(
+			   current_language->exceptions.lookup(bufp));
+      if (pos != 0 /* nullptr */) {
 	int j = 0;
 	int i = 1;
 	for (tem = h; tem != 0 /* nullptr */; tem = tem->next, i++)
@@ -4258,12 +4278,14 @@ void hyphenate(hyphen_list *h, unsigned flags)
 	  }
       }
       else {
-	// check `\hyphenation' entries from pattern files;
-	// such entries are marked with a trailing space
-	buf[len] = ' ';
-	buf[len + 1] = 0;
-	pos = (unsigned char *)current_language->exceptions.lookup(buf);
-	if (pos != 0) {
+	// Check `\hyphenation' entries from pattern files; such entries
+	// are marked with a trailing space.
+	assert((hbuf + len + 1) < (hbuf + sizeof hbuf));
+	bufp[len] = ' ';
+	bufp[len + 1] = '\0';
+	pos = static_cast<unsigned char *>(
+	      current_language->exceptions.lookup(bufp));
+	if (pos != 0 /* nullptr */) {
 	  int j = 0;
 	  int i = 1;
 	  tem = h;
@@ -4293,7 +4315,8 @@ void hyphenate(hyphen_list *h, unsigned flags)
 	}
 	else {
 	  hbuf[0] = hbuf[len + 1] = '.';
-	  int num[WORD_MAX + 3];
+	  int num[WORD_MAX + 2 + 1];
+	  (void) memset(num, 0, sizeof num);
 	  current_language->patterns.hyphenate(hbuf, len + 2, num);
 	  // The position of a hyphenation point gets marked with an odd
 	  // number.  Example:

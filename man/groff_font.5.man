@@ -836,7 +836,7 @@ subfield gives the width of the glyph.
 The
 .I height
 subfield gives the height of the glyph
-(upwards is positive);
+(upward is positive);
 if a glyph does not extend above the baseline,
 it should be given a zero height,
 rather than a negative height.
@@ -846,7 +846,7 @@ The
 subfield gives the depth of the glyph,
 that is,
 the distance below the baseline to which the glyph extends
-(downwards is positive);
+(downward is positive);
 if a glyph does not extend below the baseline,
 it should be given a zero depth,
 rather than a negative depth.

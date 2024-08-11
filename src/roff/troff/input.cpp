@@ -3750,8 +3750,9 @@ temp_iterator::temp_iterator(const char *s, int len)
 : base(0 /* nullptr */)
 {
   if (len > 0) {
-    base = new unsigned char[len];
-    memcpy(base, s, len);
+    base = new unsigned char[len + 1];
+    (void) memcpy(base, s, len);
+    base[len] = '\0';
     ptr = base;
     eptr = base + len;
   }
@@ -3765,7 +3766,7 @@ temp_iterator::~temp_iterator()
 
 input_iterator *make_temp_iterator(const char *s)
 {
-  if (s == 0)
+  if (0 /* nullptr */ == s)
     return new temp_iterator(s, 0);
   else {
     size_t n = strlen(s);
@@ -7278,46 +7279,101 @@ static void set_hyphenation_codes()
 {
   tok.skip();
   if (tok.is_newline() || tok.is_eof()) {
-    warning(WARN_MISSING, "hyphenation code configuration request"
-	    " expects arguments");
+    warning(WARN_MISSING, "hyphenation code assignment request expects"
+	    " arguments");
     skip_line();
     return;
   }
   while (!tok.is_newline() && !tok.is_eof()) {
-    charinfo *ci = tok.get_char(true /* required */);
-    // If we got back some nonsense like a non-character escape
-    // sequence, get_char() will have diagnosed it.
-    if (0 /* nullptr */ == ci)
+    unsigned char cdst = tok.ch();
+    if (csdigit(cdst)) {
+      error("cannot apply a hyphenation code to a numeral");
       break;
+    }
+    charinfo *cidst = tok.get_char();
+    if (0 == cdst) {
+      if (0 /* nullptr */ == cidst) {
+	error("expected ordinary or special character, got %1",
+	      tok.description());
+	break;
+      }
+    }
     tok.next();
     tok.skip();
     if (tok.is_newline() || tok.is_eof()) {
       error("hyphenation codes must be specified in pairs");
       break;
     }
-    charinfo *ci2 = tok.get_char(true /* required */);
-    unsigned char c = tok.ch();
-    if (0 == c) {
-      if (0 /* nullptr */ == ci2)
-	break;
-      if (0 == ci2->get_hyphenation_code()) {
-	error("second member of hyphenation code pair must be an"
-	      " ordinary character");
-	break;
-      }
-    }
-    // TODO: What if you want to unset a hyphenation code?  Accept 0?
-    if (csdigit(c)) {
-      error("hyphenation code cannot be digit");
+    unsigned char csrc = tok.ch();
+    if (csdigit(csrc)) {
+      error("cannot use the hyphenation code of a numeral");
       break;
     }
-    ci->set_hyphenation_code(c);
-    if (ci->get_translation()
-	&& ci->get_translation()->get_translation_input())
-      ci->get_translation()->set_hyphenation_code(c);
+    unsigned char new_code = 0;
+    charinfo *cisrc = tok.get_char();
+    if (cisrc != 0 /* nullptr */)
+      // Common case: assign destination character the hyphenation code
+      // of the source character.
+      new_code = cisrc->get_hyphenation_code();
+    if (0 == csrc) {
+      if (0 /* nullptr */ == cisrc) {
+	error("expected ordinary or special character, got %1",
+	      tok.description());
+	break;
+      }
+      new_code = cisrc->get_hyphenation_code();
+    }
+    else {
+      // If assigning a ordinary character's hyphenation code to itself,
+      // use its character code point as the value.
+      if (csrc == cdst)
+	new_code = tok.ch();
+    }
+    cidst->set_hyphenation_code(new_code);
+    if (cidst->get_translation()
+	&& cidst->get_translation()->get_translation_input())
+      cidst->get_translation()->set_hyphenation_code(new_code);
     tok.next();
     tok.skip();
   }
+  skip_line();
+}
+
+static void report_hyphenation_codes()
+{
+  tok.skip();
+  if (tok.is_newline() || tok.is_eof()) {
+    warning(WARN_MISSING, "hyphenation code report request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
+  while (!tok.is_newline() && !tok.is_eof()) {
+    unsigned char ch = tok.ch();
+    if (csdigit(ch)) {
+      error("a numeral cannot have a hyphenation code");
+      break;
+    }
+    charinfo *ci = tok.get_char();
+    if (0 == ch) {
+      // Is the argument a non-special-character escape sequence?
+      if (0 /* nullptr */ == ci) {
+	error("%1 cannot have a hyphenation code", tok.description());
+	break;
+      }
+    }
+    unsigned char code = ci->get_hyphenation_code();
+    if (ci->get_translation()
+	&& ci->get_translation()->get_translation_input())
+      code = ci->get_translation()->get_hyphenation_code();
+    if (0 == ch)
+      errprint("\\[%1]\t%2\n", ci->nm.contents(), int(code));
+    else
+      errprint("%1\t%2\n", ch, int(code));
+    tok.next();
+    tok.skip();
+  }
+  fflush(stderr);
   skip_line();
 }
 
@@ -8612,6 +8668,7 @@ void init_input_requests()
   init_request("pc", set_page_character);
   init_request("pcolor", report_color);
   init_request("pcomposite", report_composite_characters);
+  init_request("phcode", report_hyphenation_codes);
   init_request("pi", pipe_output);
   init_request("pm", print_macros);
   init_request("psbb", ps_bbox_request);
@@ -9059,6 +9116,7 @@ static void do_error(error_type type,
     cleanup_and_exit(EXIT_FAILURE);
 }
 
+// This function should have no callers in production builds.
 void debug(const char *format,
 	   const errarg &arg1,
 	   const errarg &arg2,
@@ -9146,6 +9204,7 @@ void error_with_file_and_line(const char *filename, int lineno,
   fflush(stderr);
 }
 
+// This function should have no callers in production builds.
 void debug_with_file_and_line(const char *filename,
 			      int lineno,
 			      const char *format,

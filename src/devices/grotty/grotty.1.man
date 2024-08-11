@@ -107,12 +107,7 @@ when the latter is given one of the
 .RB \[lq] \-T\~latin1 \[rq],
 or
 .RB \[lq] \-T\~utf8 \[rq]
-options on systems using ISO character encoding standards,
-or with
-.RB \[lq] \-T\~cp1047 \[rq]
-or
-.RB \[lq] \-T\~utf8 \[rq]
-on EBCDIC-based hosts.
+options.
 .
 (In this installation,
 .B @DEVICE@
@@ -482,9 +477,8 @@ describes the output device's character encoding,
 one of
 .BR ascii ,
 .BR latin1 ,
-.BR utf8 ,
 or
-.BR cp1047 .
+.BR utf8 .
 .
 .
 .TP
@@ -595,21 +589,6 @@ on device
 .
 .
 .TP
-.I @FONTDIR@/\:\%devcp1047/\:DESC
-describes the
-.B cp1047
-output device.
-.
-.
-.TP
-.IR @FONTDIR@/\:\%devcp1047/ F
-describes the font known
-.RI as\~ F
-on device
-.BR cp1047 .
-.
-.
-.TP
 .I @FONTDIR@/\:\%devlatin1/\:DESC
 describes the
 .B latin1
@@ -643,7 +622,6 @@ on device
 .I @MACRODIR@/\:tty\:.tmac
 defines macros for use with the
 .BR ascii ,
-.BR cp1047 ,
 .BR latin1 ,
 and
 .B utf8
@@ -661,15 +639,6 @@ defines fallback characters for use with
 .
 See
 .MR nroff @MAN1EXT@ .
-.
-.
-.\" XXX: The following no longer seems to be true; an inspection of the
-.\" font/*/dev*.am files suggests no evidence of it, at any rate.
-.\".P
-.\"Note that on EBCDIC hosts,
-.\"only files for the
-.\".B cp1047
-.\"device are installed.
 .
 .
 .\" ====================================================================

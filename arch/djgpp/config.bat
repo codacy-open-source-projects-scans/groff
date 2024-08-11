@@ -66,7 +66,7 @@ set OS=
 
 Rem install-sh is required by the configure script but clashes with the
 Rem various Makefile install-foo targets, so we MUST have it before the
-Rem script runs and rename it afterwards
+Rem script runs and rename it afterward
 test -f install-sh
 if not errorlevel 1 goto noren1
 test -f install-sh.sh

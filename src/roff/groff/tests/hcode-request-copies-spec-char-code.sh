@@ -20,23 +20,32 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-fail=
+# Test use of special characters as sources for hyphenation codes.
+# See Savannah #66054.  Thanks to Dave Kemper.
 
-wail () {
-  echo ...FAILED >&2
-  fail=YES
-}
+input=".
+.ec @
+.ll 1n
+r@['e]sum@['e]
+.hcode @['e] e
+r@['e]sum@['e]
+.hcode @['E] @['e]
+R@['E]SUM@['E]
+.pl @n[nl]u
+."
 
-input=".cf /dev/null"
+output=$(echo "$input" | "$groff" -a -ww -Wbreak)
+echo "$output"
 
-for device in ascii dvi html xhtml latin1 lbp lj4 pdf ps utf8 \
-              X75 X75-12 X100 X100-12
-do
-  echo "checking early 'cf' request on $device device" >&2
-  output=$(printf "%s\n" "$input" | "$groff" -T $device -Z) || wail
-  echo "$output"
-done
+# Expected output:
+#
+# <beginning of page>
+# r<'e>sum<'e>
+# r<'e><hy>
+# sum<'e>
+# R<'E><hy>
+# SUM<'E>
 
-test -z "$fail"
+echo "$output" | grep -Fqx "R<'E><hy>"
 
-# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:
+# vim:set ai et sw=4 ts=4 tw=72:

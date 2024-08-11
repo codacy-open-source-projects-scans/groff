@@ -46,9 +46,9 @@
 .\"	Emphasis (in the English sense - usually italics)
 .ds eM \fI
 .\"	Errno Style
-.ds eR \fC
+.ds eR \f(CR
 .\"	Environment Variable Style
-.ds eV \fC
+.ds eV \f(CR
 .\"	Command Line Flag Style
 .ds fL \f(CB
 .\"	Header String Style
@@ -56,7 +56,7 @@
 .\"	Interactive Command Style
 .ds iC \f(CB
 .\"	Literal Style
-.ds lI \fC
+.ds lI \f(CR
 .\"	Left Parenthesis Style
 .ds lP \fR\|(\|\fP
 .\"	Right Parenthesis Style
@@ -68,7 +68,7 @@
 .\"	Name (subject of manpage) Style
 .ds nM \f(CB
 .\"	Pathname Style
-.ds pA \fC
+.ds pA \f(CR
 .\"	Accepted punctuation string for -mdoc syntax
 .ds Pu \fR[.,:;(\^)[\^]\fR]
 .\"	Section Header Style
@@ -81,7 +81,7 @@
 .\"	Volume Title Style
 .ds Vs \fR
 .\"	Cross Reference STyle (man page only)
-.ds xR \fC
+.ds xR \f(CR
 .\"	Math *
 .tr *\(**
 .\}
@@ -136,7 +136,7 @@
 .\}
 .\"	INDENTS - Subheaders(sI), Text(Ti) between Section Headers and Subsects
 .if t \{\
-.	nr sI \w'\fC,'u*5
+.	nr sI \w'\f(CR,'u*5
 .	nr Ti \n(sIu
 .\}
 .if n \{\
@@ -265,12 +265,11 @@
 .\" Footer Margin
 .	nr Fm .5i
 .\}
-..
+.. \" pL
 .\" Adjustment mode
 .if n \{\
 .ad l
 .na
-..
 .\}
 .\" PREDEFINED STRINGS
 .if t \{\
@@ -1111,9 +1110,9 @@
 .\"
 .\" sW returns number of characters in a string
 .if t \{\
-.nr fW \w'\fC,'
+.nr fW \w'\f(CR,'
 .de sW
-.nr sW \w'\fC\\$1'
+.nr sW \w'\f(CR\\$1'
 .\}
 .if n \{\
 .nr fW \w'0'
@@ -1257,7 +1256,7 @@
 .ie "\\*(iM"Op" \{\
 .	if \\n(aO .aO
 .if t \{\
-.	if (\\n(.lu-\\n(.ku-\\n(.ou-(2*\\n(fWu))<\w'\fC\\*(f1'u .br
+.	if (\\n(.lu-\\n(.ku-\\n(.ou-(2*\\n(fWu))<\w'\f(CR\\*(f1'u .br
 .\}
 .if n \{\
 .	nr aa \w'\\*(f1'u

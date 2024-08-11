@@ -1386,11 +1386,6 @@ also known as US-ASCII.
 .
 .
 .TP
-.B cp1047
-for terminals using the IBM code page 1047 character set and encoding.
-.
-.
-.TP
 .B dvi
 for TeX DVI format.
 .
@@ -1405,8 +1400,8 @@ respectively.
 .
 .TP
 .B latin1
-for terminals using the ISO Latin-1
-(ISO 8859-1)
+for terminals using the ISO\~Latin-1
+(8859-1)
 character set and encoding.
 .
 .
@@ -1557,7 +1552,6 @@ provides
 .MR grotty @MAN1EXT@
 provides
 .BR ascii ,
-.BR cp1047 ,
 .BR latin1 ,
 and
 .BR utf8 .
@@ -2063,7 +2057,6 @@ are equivalent.
 .
 When paging output for the
 .BR ascii ,
-.BR cp1047 ,
 .BR latin1 ,
 and
 .B utf8
@@ -2076,21 +2069,6 @@ may require command-line options to correctly handle some terminal
 escape sequences;
 see
 .MR grotty @MAN1EXT@ .
-.
-.
-.P
-On EBCDIC hosts such as OS/390 Unix,
-the output devices
-.B ascii
-and
-.B latin1
-aren't available.
-.
-Conversely,
-the output device
-.B cp1047
-is not available on systems based on the ISO\~646 or ISO\~8859 character
-encoding standards.
 .
 .
 .\" ====================================================================

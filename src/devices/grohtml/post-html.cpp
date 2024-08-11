@@ -3498,7 +3498,7 @@ text_glob *html_printer::insert_tab_ts (text_glob *where)
 
 /*
  *  insert_tab_te - inserts a tab-te before the current position
- *                  (it skips backwards over .sp/.br)
+ *                  (it skips backward over .sp/.br)
  */
 
 void html_printer::insert_tab_te (void)

@@ -40,7 +40,7 @@
    variables was not changed, but internally many necessary changes
    were performed.
 
-   The main aim for this rewrite is to provide a first step towards
+   The main aim for this rewrite is to provide a first step toward
    making groff fully compatible with classical troff without pain.
 
    Bugs fixed

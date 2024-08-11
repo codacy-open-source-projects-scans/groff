@@ -27,7 +27,7 @@ wail () {
   fail=YES
 }
 
-for device in ascii cp1047 dvi html xhtml latin1 lbp lj4 pdf ps utf8 \
+for device in ascii dvi html xhtml latin1 lbp lj4 pdf ps utf8 \
               X75 X75-12 X100 X100-12
 do
   echo "checking early backslash-? escape on $device device" >&2

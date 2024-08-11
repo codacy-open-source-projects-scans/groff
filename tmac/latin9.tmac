@@ -25,7 +25,8 @@
 .char \[:Y] \N'190'
 .\} \" using -Tlatin1
 .
-.\" Translate eight-bit input characters.
+.\" Assign input character codes to groff special characters.
+.
 .\" 0xA0
 .\" char160 (no-break space) is translated on input
 .trin \[char161]\[r!]
@@ -128,11 +129,86 @@
 .trin \[char253]\['y]
 .trin \[char254]\[Tp]
 .trin \[char255]\[:y]
+.
+.\" Set up hyphenation codes for letter-like characters above.
+.\" Each small letter from ISO 8859-1 gets its own hyphenation code;
+.\" each capital letter is assigned the code of its small counterpart.
+.\" Some small letters have no capital form in the encoding.
+.
+.hcode ß ß
+.
+.hcode ¨ ¨
+.hcode ¸ ¸
+.hcode ½ ½
+.
+.hcode à à
+.hcode á á
+.hcode â â
+.hcode ã ã
+.hcode ä ä
+.hcode æ æ
+.hcode ç ç
+.hcode è è
+.hcode é é
+.hcode ê ê
+.hcode ë ë
+.hcode ì ì
+.hcode í í
+.hcode î î
+.hcode ï ï
+.hcode ð ð
+.hcode ñ ñ
+.hcode ò ò
+.hcode ó ó
+.hcode ô ô
+.hcode ö ö
+.hcode ø ø
+.hcode ú ú
+.hcode û û
+.hcode ü ü
+.hcode ý ý
+.hcode þ þ
+.hcode ÿ ÿ
+.
+.hcode ¦ ¨
+.hcode ´ ¸
+.hcode ¼ ½
+.
+.hcode À à
+.hcode Á á
+.hcode Â â
+.hcode Ã ã
+.hcode Ä ä
+.hcode Æ æ
+.hcode Ç ç
+.hcode È è
+.hcode É é
+.hcode Ê ê
+.hcode Ë ë
+.hcode Ì ì
+.hcode Í í
+.hcode Î î
+.hcode Ï ï
+.hcode Ð ð
+.hcode Ñ ñ
+.hcode Ó ó
+.hcode Ò ò
+.hcode Ô ô
+.hcode Ö ö
+.hcode Ø ø
+.hcode Ú ú
+.hcode Û û
+.hcode Ü ü
+.hcode Ý ý
+.hcode Þ þ
+.hcode ¾ ÿ
+.
 .cp \n[*groff_latin9_tmac_C]
 .do rr *groff_latin9_tmac_C
 .
 .\" Local Variables:
 .\" mode: nroff
+.\" coding: latin-9
 .\" fill-column: 72
 .\" End:
-.\" vim: set filetype=groff textwidth=72:
+.\" vim: set fileencoding=iso-8859-15 filetype=groff textwidth=72:

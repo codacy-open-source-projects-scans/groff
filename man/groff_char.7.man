@@ -75,16 +75,14 @@ an output device renders
 .I glyphs.
 .
 .IR groff 's
-input character set is restricted to that defined by the standards
-ISO Latin-1
-(ISO 8859-1)
-and CCSID \[lq]code page\[rq] 1047
-(an EBCDIC arrangement of Latin-1).
+input character set is restricted to that defined by the ISO\~Latin-1
+(ISO\~8859-1)
+standard.
 .
 For ease of document maintenance in UTF-8 environments,
-it is advisable to use only the Unicode basic Latin code points,
-a subset of all of the foregoing historically referred to as \%US-ASCII,
-.\" Yes, a subset, albeit a permutation as well in the cp1047 case.
+it is advisable to use only the Unicode basic Latin code points;
+these correspond to ISO\~646:1991\~IRV (US-ASCII),
+a subset of all of the foregoing
 which has only 94 visible,
 printable code points.
 .\" In groff, 0x20 SP is mapped to a space node, not a glyph node, and
@@ -219,30 +217,13 @@ did you get the Wehrmacht helmet or the Death Star?\e}
 .
 .
 .P
-For brevity in the remainder of this document,
-we shall refer to systems conforming to the
-ISO 646:1991 IRV,
-ISO 8859,
-or
-ISO 10646 (\[lq]Unicode\[rq])
-character encoding standards as \[lq]ISO\[rq] systems,
-and those employing IBM code page 1047 as \[lq]EBCDIC\[rq] systems.
-.
-That said,
-EBCDIC systems that support
-.I groff
-are known to also support UTF-8.
-.
-.
-.P
 While
 .I groff
 accepts eight-bit encoded input,
 not all such code points are valid as input.
 .
 .\" src/libs/libgroff/invalid.cpp
-On ISO platforms,
-character codes
+Character codes
 0,
 11,
 13\[en]31,
@@ -255,16 +236,6 @@ SOH through LF
 [Control+A to Control+J],
 and FF
 [Control+L].)
-.
-On EBCDIC platforms,
-0,
-8\[en]9,
-11,
-13\[en]20,
-23\[en]31,
-and
-48\[en]63
-are invalid.
 .
 Some of these code points are used by
 .I groff
@@ -289,8 +260,7 @@ anything in the language,
 even over one million code points in Unicode,
 can be expressed using it.
 .
-On ISO systems,
-code points in the range 33\[en]126 comprise a common set of
+Code points in the range 33\[en]126 comprise a common set of
 printable glyphs in all of the aforementioned ISO character encoding
 standards.
 .
@@ -299,11 +269,6 @@ It is this character set and
 the corresponding glyph repertoire for which AT&T
 .I troff
 was implemented.
-.
-On EBCDIC systems,
-printable characters are in the range 66\[en]201 and 203\[en]254;
-those without counterparts in the ISO range 33\[en]126 are discussed
-in the next subsection.
 .\" From this point, do not talk about numerical character assignments.
 .
 .
@@ -332,7 +297,7 @@ the U.S.\& government.
 .
 Further,
 the prevailing character encoding standard in the 1970s,
-USAS X3.4-1968 (\[lq]ASCII\[rq]),
+USAS\~X3.4-1968 (ASCII),
 deliberately supported semantic ambiguity at some code points,
 and outright substitution at several others,
 to suit the localization demands of various national standards bodies.
@@ -422,7 +387,7 @@ _
 .P
 The hyphen-minus is a particularly unfortunate case of overloading.
 .
-Its awkward name in ISO 8859 and later standards reflects the many
+Its awkward name in ISO\~8859 and later standards reflects the many
 distinguishable purposes to which it had already been put by the 1980s,
 including
 a hyphen,
@@ -545,7 +510,7 @@ falling back to basic Latin glyphs only when necessary.
 ISO 646 is a seven-bit code encoding 128 code points;
 eight-bit codes are twice the size.
 .
-ISO 8859-1 and code page 1047 allocated the additional space to what
+ISO\~Latin-1 (8859-1) allocated the additional space to what
 Unicode calls \[lq]C1 controls\[rq]
 (control characters)
 and the \[lq]Latin-1 supplement\[rq].
@@ -858,7 +823,7 @@ as ways to input \[lq]caf\['e]\[rq].
 (Due to its legacy 8-bit encoding compatibility,
 at present it also accepts
 .RB \[lq]caf \[rs][u00E9] \[rq]
-on ISO Latin-1 systems.)
+on ISO\~Latin-1 systems.)
 .
 .
 .TP

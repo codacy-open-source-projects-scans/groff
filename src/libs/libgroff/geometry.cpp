@@ -83,10 +83,10 @@ int printer::adjust_arc_center(const int *p, double *c)
   }
   else {
     // We would never reach such a point.  So instead start at the
-    // specified end point of the arc.  Go towards the specified
-    // center point until we reach a point that is equidistant between
-    // the specified start point and specified end point.  Place
-    // the center of the arc there.
+    // specified end point of the arc.  Go toward the specified center
+    // point until we reach a point that is equidistant between the
+    // specified start point and specified end point.  Place the center
+    // of the arc there.
     n = p[2]*double(x) + p[3]*double(y);
     if (n > 0) {
       double k = 1 - (double(x)*x + double(y)*y)/(2.0*n);

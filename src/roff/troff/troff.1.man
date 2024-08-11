@@ -189,11 +189,11 @@ A horizontal motion of any size is represented as one space.
 .
 Adjacent horizontal motions are not combined.
 .
-Inter-sentence space nodes
-(those arising from the second argument to the
+Supplemental inter-sentence space
+(configured by the second argument to the
 .B .ss
 request)
-are not represented.
+is not represented.
 .
 .
 .IP \[bu]

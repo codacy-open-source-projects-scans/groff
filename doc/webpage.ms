@@ -708,7 +708,7 @@ pic
 .ULS
 .LI
 int(x) now really behaves as documented: It truncates the non-integer part
-of\~x, this is, it rounds towards zero and not towards the next integer
+of\~x, this is, it rounds toward zero and not toward the next integer
 less than or equal to\~x.
 
 .LI
@@ -771,7 +771,7 @@ from Adobe's 35 core fonts as present in most Level\~2 PS printers.
 The changes are minor (most notably, the addition of the `Euro' glyph and an
 extended set of kerning values).
 
-For backwards compatibility, the old set of font definition files is still
+For backward compatibility, the old set of font definition files is still
 available; for details please read the man page of grops.
 .ULE
 .
@@ -1557,7 +1557,7 @@ They are searched after the list of fonts declared with the
 .LI
 In groff versions 1.18 and 1.18.1, \eD'f\~.\|.\|.\&' didn't move the
 current point horizontally.
-Despite of being silly, this change has been reverted for backwards
+Despite of being silly, this change has been reverted for backward
 compatibility.
 Consequently, the intermediate output command `Df' also moves the
 position horizontally again.
@@ -1975,7 +1975,7 @@ groff.texinfo.
 
 .LI
 Similar to \em and \eM, \ef[] switches back to the previous font.
-\efP (and \ef[P]) is still valid for backwards compatibility.
+\efP (and \ef[P]) is still valid for backward compatibility.
 
 .LI
 The new escape \eF is the same as `.fam'; \eF[] switches back to previous

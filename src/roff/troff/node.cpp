@@ -6432,8 +6432,8 @@ static void read_special_fonts(special_font_list **sp)
 static void set_font_specific_special_fonts()
 {
   if (!has_arg()) {
-    warning(WARN_MISSING, "font-specific special font configuration"
-	    " request expects at least one argument");
+    warning(WARN_MISSING, "font-specific special font selection request"
+	    " expects at least one argument");
     skip_line();
     return;
   }

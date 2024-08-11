@@ -35,7 +35,7 @@ input_simple='.br
 input_quoted='.br
 .output " cA'
 
-for device in ascii cp1047 dvi html xhtml latin1 lbp lj4 pdf ps utf8 \
+for device in ascii dvi html xhtml latin1 lbp lj4 pdf ps utf8 \
               X75 X75-12 X100 X100-12
 do
   echo "checking early 'output' request on $device device" >&2

@@ -8,15 +8,7 @@
 .
 .po 0
 .
-.if !'\*[.T]'utf8' \{\
-.  ie c\[pc] \
-.    tr \[bu]\[pc]
-.  el \
-.    if c\[md] \
-.      tr \[bu]\[md]
-.\}
-.
-.fchar \[bu] \z+o
+.fchar \[bu] *
 .fchar \[14] 1/4
 .fchar \[12] 1/2
 .fchar \[34] 3/4
@@ -33,9 +25,9 @@
 .fchar \[->] ->
 .fchar \[<>] <->
 .fchar \[em] --
-.fchar \[+-] +-
-.fchar \[t+-] +-
-.fchar \[-+] -+
+.fchar \[+-] +/\[-]
+.fchar \[t+-] +/\[-]
+.fchar \[-+] \[-]/+
 .fchar \[co] (C)
 .fchar \[<=] <=
 .fchar \[>=] >=

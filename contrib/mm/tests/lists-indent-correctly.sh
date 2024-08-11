@@ -160,7 +160,7 @@ o21 o22 o23 o24 o25 o26 o27 o28 o29 o30
 #         1. a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16
 #            a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30
 #
-#          o b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 b16
+#          * b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 b16
 #            b17 b18 b19 b20 b21 b22 b23 b24 b25 b26 b27 b28 b29 b30
 #
 #         -- c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16
@@ -187,7 +187,7 @@ o21 o22 o23 o24 o25 o26 o27 o28 o29 o30
 #       * 1. h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16
 #            h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30
 #
-#        * o i1 i2 i3 i4 i5 i6 i7 i8 i9 i10 i11 i12 i13 i14 i15 i16
+#        * * i1 i2 i3 i4 i5 i6 i7 i8 i9 i10 i11 i12 i13 i14 i15 i16
 #            i17 i18 i19 i20 i21 i22 i23 i24 i25 i26 i27 i28 i29 i30
 #
 #       * -- j1 j2 j3 j4 j5 j6 j7 j8 j9 j10 j11 j12 j13 j14 j15 j16
@@ -203,7 +203,7 @@ o21 o22 o23 o24 o25 o26 o27 o28 o29 o30
 #        *1. l1 l2 l3 l4 l5 l6 l7 l8 l9 l10 l11 l12 l13 l14 l15 l16
 #            l17 l18 l19 l20 l21 l22 l23 l24 l25 l26 l27 l28 l29 l30
 #
-#         *o m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16
+#         ** m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16
 #            m17 m18 m19 m20 m21 m22 m23 m24 m25 m26 m27 m28 m29 m30
 #
 #
@@ -234,7 +234,7 @@ echo "checking indentation of AL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}a17" || wail
 
 echo "checking indentation of BL list, first line" >&2
-echo "$output" | grep -Eq "^ {10}o b1" || wail
+echo "$output" | grep -Eq "^ {10}\* b1" || wail
 
 echo "checking indentation of BL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}b17" || wail
@@ -276,7 +276,7 @@ echo "checking indentation of prefixed AL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}h17" || wail
 
 echo "checking indentation of prefixed BL list, first line" >&2
-echo "$output" | grep -Eq "^ {8}\* o i1" || wail
+echo "$output" | grep -Eq "^ {8}\* \* i1" || wail
 
 echo "checking indentation of prefixed BL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}i17" || wail
@@ -300,7 +300,7 @@ echo "checking indentation of padless prefixed AL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}l17" || wail
 
 echo "checking indentation of padless prefixed BL list, first line" >&2
-echo "$output" | grep -Eq "^ {9}\*o m1" || wail
+echo "$output" | grep -Eq "^ {9}\*\* m1" || wail
 
 echo "checking indentation of padless prefixed BL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}m17" || wail

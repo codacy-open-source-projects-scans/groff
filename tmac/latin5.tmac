@@ -13,15 +13,16 @@
 .char \['y] y
 .\" Map characters that ISO Latin-5 has and Latin-1 doesn't to their
 .\" numeric code points.
-.char \[G ab] \N'208'
-.char \[g ab] \N'240'
+.char \[G ab]  \N'208'
+.char \[g ab]  \N'240'
 .char \[u0130] \N'221'
-.char \[.i] \N'253'
-.char \[S ac] \N'222'
-.char \[s ac] \N'254'
+.char \[.i]    \N'253'
+.char \[S ac]  \N'222'
+.char \[s ac]  \N'254'
 .\} \" using -Tlatin1
 .
-.\" Translate eight-bit input characters.
+.\" Assign input character codes to groff special characters.
+.
 .\" 0xA0
 .\" char160 (no-break space) is translated on input
 .trin \[char161]\[r!]
@@ -124,11 +125,85 @@
 .trin \[char253]\[.i]
 .trin \[char254]\[s ,]
 .trin \[char255]\[:y]
+.
+.\" Set up hyphenation codes for letter-like characters above.
+.\" Each small letter from ISO 8859-9 gets its own hyphenation code;
+.\" each capital letter is assigned the code of its small counterpart.
+.\" Some small letters have no capital form in the encoding.
+.
+.hcode ß ß
+.
+.hcode à à
+.hcode á á
+.hcode â â
+.hcode ã ã
+.hcode ä ä
+.hcode å å
+.hcode æ æ
+.hcode ç ç
+.hcode è è
+.hcode é é
+.hcode ê ê
+.hcode ë ë
+.hcode ì ì
+.hcode í í
+.hcode î î
+.hcode ï ï
+.hcode ð ð
+.hcode ñ ñ
+.hcode ò ò
+.hcode ó ó
+.hcode ô ô
+.hcode õ õ
+.hcode ö ö
+.hcode ø ø
+.hcode ù ù
+.hcode ú ú
+.hcode û û
+.hcode ü ü
+.hcode ý ý
+.hcode þ þ
+.
+.hcode ÿ ÿ
+.
+.hcode À à
+.hcode Á á
+.hcode Â â
+.hcode Ã ã
+.hcode Ä ä
+.hcode Å å
+.hcode Æ æ
+.hcode Ç ç
+.hcode È è
+.hcode É é
+.hcode Ê ê
+.hcode Ë ë
+.hcode Ì ì
+.hcode Í í
+.hcode Î î
+.hcode Ï ï
+.hcode Ð ð
+.hcode Ñ ñ
+.hcode Ò ò
+.hcode Ó ó
+.hcode Ô ô
+.hcode Õ õ
+.hcode Ö ö
+.hcode Ø ø
+.hcode Ù ù
+.hcode Ú ú
+.hcode Û û
+.hcode Ü ü
+.hcode Ý i \" exceptional case; move to tr.tmac if we ever get one
+.hcode I ý \" exceptional case; move to tr.tmac if we ever get one
+.hcode Þ þ
+.
 .cp \n[*groff_latin5_tmac_C]
 .do rr *groff_latin5_tmac_C
 .
 .\" Local Variables:
 .\" mode: nroff
+.\" coding: latin-5
 .\" fill-column: 72
 .\" End:
-.\" vim: set filetype=groff textwidth=72:
+.\" vim: set fileencoding=iso-8859-9 filetype=groff textwidth=72:

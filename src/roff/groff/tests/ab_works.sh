@@ -28,7 +28,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 # Keep preconv from being run.
 unset GROFF_ENCODING
 
-for d in ascii cp1047 dvi html latin1 lbp lj4 pdf ps utf8
+for d in ascii dvi html latin1 lbp lj4 pdf ps utf8
 do
   echo "verifying exit status of .ab request using $d device" >&2
   printf '.ab\n' | "$groff" -Z -T$d

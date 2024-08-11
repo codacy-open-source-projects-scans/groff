@@ -87,6 +87,9 @@ o A new request, `pcolor`, reports to the standard error stream the
 o A new request, `pcomposite`, reports to the standard error stream the
   current list of defined composite characters.
 
+o A new request, `phcode`, reports to the standard error stream the
+  hyphenation code of each ordinary or special character argument.
+
 o A new request, `phw`, reports to the standard error stream the current
   list of hyphenation exceptions.
 
@@ -405,6 +408,19 @@ o The PostScript output driver grops no longer accepts spaces as field
   in font file names, and to better align the syntax of this file with
   that used by gropdf.  The download file for grops shipped by groff has
   long used tabs rather than spaces for field separation.
+
+o The PostScript output driver's macro file "ps.tmac" no longer defines
+  fallback special characters `\[S ,]` and `\[S ,]` to simulate support
+  for what Unicode calls LATIN {CAPITAL,SMALL} LETTER S WITH COMMA
+  BELOW.  The file's definition constructed these glyphs by overstriking
+  the Basic Latin "S" (or "s") with a cedilla accent, which is regarded
+  as less orthographically acceptable than in the past.  A user's
+  document or macro file can still do exactly what "ps.tmac" used to.
+
+   .fchar \[S ,] \o'S\[ac]'
+   .hcode \[S ,]s
+   .fchar \[s ,] \o's\[ac]'
+   .hcode \[s ,]s
 
 Miscellaneous
 -------------
@@ -1525,7 +1541,7 @@ Pic
 ---
 
 o int(x) now really behaves as documented: It truncates the non-integer
-  part of x, this is, it rounds towards zero and not towards the next
+  part of x, this is, it rounds toward zero and not toward the next
   integer less than or equal to x.
 
 o Pic now supports up to 32 macro arguments (and up to 16 on EBCDIC
@@ -1566,7 +1582,7 @@ o The PS font definition files have been regenerated with newer AFM
   printers.  The changes are minor (most notably, the addition of the
   `Euro' glyph and an extended set of kerning values).
 
-  For backwards compatibility, the old set of font definition files is
+  For backward compatibility, the old set of font definition files is
   still available; for details please read the man page of grops.
 
 Grotty
@@ -2061,7 +2077,7 @@ o A new request `schar' has been added to define global fallback
 
 o In groff versions 1.18 and 1.18.1, \D'f ...' didn't move the current
   point horizontally.  Despite of being silly, this change has been
-  reverted for backwards compatibility.  Consequently, the intermediate
+  reverted for backward compatibility.  Consequently, the intermediate
   output command `Df' also moves the position horizontally again.
 
   \D'f ...' is deprecated since it depends on the horizontal motion
@@ -2345,7 +2361,7 @@ o Color support has been added to troff and pic (and to the device
   groff.texinfo.
 
 o Similar to \m and \M, \f[] switches back to the previous font.  \fP
-  (and \f[P]) is still valid for backwards compatibility.
+  (and \f[P]) is still valid for backward compatibility.
 
 o The new escape \F is the same as `.fam'; \F[] switches back to
   previous family -- \F[P] selects family `P'.
@@ -2840,7 +2856,7 @@ o The mdoc package has been completely rewritten, using the full power
   `groff_mdoc.7' replaces `groff_mdoc.samples.7'; it now completely
   documents the mdoc package.
 
-  Great care has been taken to assure backwards compatibility.  If you
+  Great care has been taken to assure backward compatibility.  If you
   encounter any abnormal results, please report them to
   bug-groff@gnu.org.  [2018 UPDATE: This address no longer accepts bug
   reports; please use the GNU Savannah bug tracker at
@@ -3046,7 +3062,7 @@ o groff now installs its data files into
   is searched before the local tmac directory.
 
 o All programs now have option `-v' to show the version number; they
-  exit immediately afterwards, following the GNU standards.
+  exit immediately afterward, following the GNU standards.
   Additionally, `--version' and `--help' have been added, doing the
   obvious actions.
 

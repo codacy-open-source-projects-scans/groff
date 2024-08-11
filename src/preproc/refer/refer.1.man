@@ -585,9 +585,9 @@ command.
 Leading and trailing spaces are significant.
 .
 If either of these is non-empty,
-the corresponding arguments to the
+the corresponding argument to the
 .B \%bracket\-label
-command are not used;
+command is not used;
 alter this behavior with the
 .B [
 and
@@ -1478,7 +1478,7 @@ special characters
 .BR \e(\[aq]a )
 count as a single letter.
 .
-Accent strings are retained but do not count towards the total.
+Accent strings are retained but do not count toward the total.
 .
 .
 .TP

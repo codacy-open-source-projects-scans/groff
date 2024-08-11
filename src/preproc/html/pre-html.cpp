@@ -701,7 +701,7 @@ void char_buffer::write_upto_newline(char_block **t, int *i,
 }
 
 /*
- *  can_see - Return true if we can see string in t->buffer[i] onwards.
+ *  can_see - Return true if we can see string in t->buffer[i] onward.
  */
 
 bool char_buffer::can_see(char_block **t, int *i, const char *str)

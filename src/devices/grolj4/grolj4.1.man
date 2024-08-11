@@ -702,7 +702,7 @@ most developers had migrated to other means of obtaining font metrics,
 and support for new TFM files was very limited.
 .
 The TFM files provided for the TrueType fonts in the LaserJet\~4000
-support only the Latin 2 (ISO 8859-2) symbol set,
+support only the ISO\~Latin-2 (8859-2) symbol set,
 and include no kerning information;
 consequently,
 they are of little value for any but the most rudimentary documents.

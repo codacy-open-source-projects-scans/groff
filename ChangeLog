@@ -1,3 +1,235 @@
+2024-08-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc-old.tmac: Migrate from font name "C" to "CR", fixing
+	warnings.
+
+	  troff:.../doc-old.tmac:...: warning: cannot select font 'C'
+
+2024-08-08  Bjarni Ingi Gislason <bjarniig@simnet.is>
+
+	* tmac/doc-old.tmac: Drop spurious dot in control line.
+
+	Fixes <https://savannah.gnu.org/bugs/?57622>.
+
+2024-08-08  Dave Kemper <saint.snit@gmail.com>
+
+	* tmac/tty.tmac: Revise fallback character for • (bullet) to
+	asterisk, affecting "ascii" and "latin1" output devices.
+
+	Fixes <https://savannah.gnu.org/bugs/?56015>.  Thanks to Jeff
+	Conrad for the report.
+
+2024-08-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tty.tmac: Revise fallback characters for ± and ∓ to
+	separate plus and minus signs with a slash, and to use actual
+	minus sign glyphs(!).
+
+	Prompted by discussion with Alex Colomar, Vincent Lefevre, and
+	Dave Kemper; see <https://lists.gnu.org/archive/html/groff/
+	2024-08/msg00016.html>.
+
+2024-08-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Implement new `phcode` request.
+
+	* src/roff/troff/input.cpp (report_hyphenation_codes): Add.
+	(init_input_requests): Wire up `phcode` request name to
+	`report_hyphenation_codes()`.
+
+	* doc/groff.texi (Manipulating Hyphenation, Debugging):
+	* man/groff.7.man (Request short reference, Debugging):
+	* man/groff_diff.7.man (New requests, Debugging):
+	* NEWS: Document it.
+
+2024-08-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (set_hyphenation_codes): Handle the
+	common case (copying the existing hyphenation code of one
+	character to another) first.  Support clearing a character's
+	hyphenation code by copying that of a character that lacks one.
+	Reorganize for clarity, and add comments.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?66054>.
+
+2024-08-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (hyphenate): Slightly refactor.
+	Reorder equality comparison to avoid inadvertent lvalue
+	assignment.  `memset()` the stack-allocated character array
+	`hbuf` with null terminators as a paranoid hedge.  Rename `buf`
+	to `bufp`, since it is a pointer and moreover used as a cursor
+	into the word that is a candidate for hyphenation.  Pointers and
+	arrays are _not_ synonymous in C/C++; see Chapter 4, _Expert C
+	Programming: Deep C Secrets_, by van der Linden (1994).  Add
+	assertions for further paranoia.  Use `static_cast` instead of
+	C-style cast on dictionary values.  `memset()` the
+	stack-allocated integer array `word` with zeroes.
+
+2024-08-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix code style nits.
+
+	* src/roff/troff/input.cpp (temp_iterator::temp_iterator):
+	Explicitly cast return value of `memcpy()` to `void`.
+	(make_temp_iterator): Reorder comparison with null pointer to
+	avoid inadvertent lvalue assignment.
+
+2024-08-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #66052 (2/2).
+
+	* src/roff/troff/input.cpp (temp_iterator::temp_iterator):
+	Prevent potential heap overreads.  Ensure that temporary
+	iterators are null-terminated when constructing them.
+
+	Fixes <https://savannah.gnu.org/bugs/?66052> (2/2).  Thanks to
+	Lukas Javorsky for identifying the problem using "SAST analyzers
+	{combination of coverity, snyk, cppcheck, gcc, clang,
+	shellcheck, unicontrol}".
+
+2024-08-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #66052 (1/2).
+
+	* src/roff/troff/env.cpp (hyphenate): Fix potential one-byte
+	stack overwrite if attempting to hyphenate a 256-letter sequence
+	within a word.  Reserve space for null terminator in `hbuf`
+	character array.  Initially, this isn't necessary because the
+	array is simply walked to normalize hyphenation codes by their
+	equivalence classes.  However, when we subsequently look up the
+	{possibly partial} word in the exception dictionaries, `hbuf`
+	{or a pointer into it} needs to be treatable as a C string, thus
+	null-terminated.  Respell already correct expression later in
+	the code to reinforce similarity.
+
+	Fixes <https://savannah.gnu.org/bugs/?66052> (1/2).  Thanks to
+	Lukas Javorsky for identifying the problem using "SAST analyzers
+	{combination of coverity, snyk, cppcheck, gcc, clang,
+	shellcheck, unicontrol}".
+
+2024-08-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (set_font_specific_special_fonts):
+	Adjust diagnostic message for clarity (and relative brevity).
+
+2024-08-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/{en,it}.tmac: Load "latin1.tmac".
+	* tmac/latin5.tmac: Add case mapping for dotless I.
+
+	Continues commit 0629380a9d, 3 August.  Thanks to Dave Kemper
+	for the discussion.
+
+2024-08-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Drop tests of "cp1047" output device.
+
+	* src/roff/groff/tests/ab_works.sh:
+	* src/roff/groff/tests/backslash-X-works.sh:
+	* src/roff/groff/tests/\
+	  backslash-exclamation-early-does-not-fail.sh:
+	* src/roff/groff/tests/cf-request-early-does-not-fail.sh:
+	* src/roff/groff/tests/device-request-works.sh:
+	* src/roff/groff/tests/output-request-works.sh: Do it.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/ps.tmac: Drop `\[S ,]` and `\[s, ]` fallback character
+	definitions and hyphenation code assignments.
+
+	* NEWS: Document this.
+
+	Thanks to Werner Lemberg for noting the issue in <https://lists.
+	gnu.org/archive/html/groff/2024-08/msg00001.html>.
+
+2024-08-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	tmac/*: Refactor hyphenation code declarations.
+
+	Move `hcode` invocations from language-specific macro files
+	{those that define a "groff locale", such as "english" or
+	"german"} to the macro files that support 8-bit character
+	encodings, because in the formatter, hyphenation codes are
+	global, not environment-specific like other hyphenation data.
+	{That design decision is worth reconsidering in the future,
+	but feels less urgent than adding UTF-8 input support to the
+	formatter, which may obviate some encoding-related issues.}
+
+	* tmac/LOCALIZATION: Relieve groff locale contributor of
+	hyphenation code definition duty.
+	* tmac/de.tmac: Move Latin-1 hyphenation code definitions from
+	here...
+	* tmac/latin1.tmac: ...to here.  Reorganize and cover _every_
+	letter glyph in ISO 8859-1, including Icelandic letters that
+	German hyphenation patterns don't require.
+	* tmac/ru.tmac: Move KOI8-R hyphenation code definitions from
+	here...
+	* tmac/koi8-r.tmac: ...to here.
+	* tmac/latin2.tmac: Define Latin-2 hyphenation codes.
+	* tmac/latin5.tmac: Define Latin-5 hyphenation codes.  Include
+	the notorious special case for the Turkish capital dotted I, and
+	annotate it for migration in the event we ever get a "tr.tmac"
+	file, because this is a language-specific case mapping, not one
+	strictly implied by the character encoding.
+	* tmac/latin9.tmac: Define Latin-9 (ISO 8859-15) hyphenation
+	codes.
+
+	Fixes <https://savannah.gnu.org/bugs/?59397>.  Thanks to Werner
+	Lemberg for the discussion in <https://lists.gnu.org/archive/
+	html/groff/2024-08/msg00001.html>.
+
+2024-07-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (set_hyphenation_codes): Accept a
+	special character as a source for hyphenation code assignment.
+
+	* doc/groff.texi.in (Manipulating Hyphenation) <hcode>:
+	* man/groff_diff.7.man (New requests) <hcode>: Document loosened
+	restriction.
+
+	Fixes <https://savannah.gnu.org/bugs/?66054>.  Thanks to Carsten
+	Kunze for the report and Dave Kemper for a test case that
+	clarified matters.
+
+2024-07-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #66054.
+
+	* src/roff/groff/tests/hcode-request-copies-spec-char-code.sh:
+	Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2024-08-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (set_hyphenation_code): Do more input
+	validation of `hcode` request arguments.  Handle case where an
+	argument is an escape sequence (but not a special character)
+	ourselves instead of delegating it to `token::get_char()`.
+	Throw errors (and stop processing arguments) when {1} the
+	destination character is a numeral; {2} the destination
+	character is a (non-special-character) escape sequence; {3} the
+	source character is a numeral; or {4} the source character is a
+	{non-special-character} escape sequence.
+
+	* doc/groff.texi.in (Manipulating Hyphenation) <hcode>:
+	* man/groff_diff.7.man (New requests) <hcode>: Document that the
+	request aborts processing its arguments upon encountering an
+	invalid one.
+
+	Continues <https://savannah.gnu.org/bugs/?66040>.  Thanks to
+	Dave Kemper for further discussion.
+
+2024-08-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Manipulating Hyphenation) <hcode>:
+	* man/groff_diff.7.man (New requests) <hcode>: Remove claim that
+	ran out ahead of ongoing code changes.  A special character that
+	has already been assigned a hyphenation code is not _yet_ a
+	valid source for another character's hyphenation code.
+
 2024-07-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an.tmac (HP): The `mS` extension register has changed its
@@ -18,8 +250,8 @@
 	through the alimentary canal of GNU troff's arithmetic
 	evaluator, and bear little resemblance to what the user typed in
 	a source document.  Among other things, we no longer have any
-	idea what scaling units were supplied, but can report them only
-	in basic units.
+	idea what scaling units were supplied, but can report
+	measurements only in basic units.
 
 	Fixes <https://savannah.gnu.org/bugs/?66038>.  Thanks to Dave
 	Kemper for the report.
@@ -39,7 +271,7 @@
 2024-07-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (set_hyphenation_code): Restore
-	diagnostic message when attempting to assigning the hyphenation
+	diagnostic message when attempting to assign the hyphenation
 	code of a special character to another character (special or
 	ordinary).  Also initialize local variable much closer to where
 	we test its value, for readability.
@@ -1034,6 +1266,8 @@
 
 	* tmac/troffrc: Simplify logic; map special character
 	`\[char160]` to `\~` unconditionally.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?65724>.
 
 2024-05-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
