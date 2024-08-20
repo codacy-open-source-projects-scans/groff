@@ -29,7 +29,7 @@ input='.nr pp 18 \\" to make troff output consistent with nroff
 Feck, vex loping bad jazz: quench my thirst.
 Feck, vex loping bad jazz: quench my thirst.
 .pp
-.n1 \\*C
+.n1 \\*C \\" we expect this to warn about a negative page offset
 Jackdaws love my big sphinx of quartz.
 Jackdaws love my big sphinx of quartz.
 Jackdaws love my big sphinx of quartz.

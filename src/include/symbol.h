@@ -29,21 +29,21 @@ class symbol {
   static size_t block_size;
   const char *s;
 public:
-  symbol(const char *p, int how = 0);
+  symbol(const char *p, int /* how */ = 0);
   symbol();
   uintptr_t hash() const;
   int operator ==(symbol) const;
   int operator !=(symbol) const;
   const char *contents() const;
-  int is_null() const;
-  int is_empty() const;
+  bool is_null() const;
+  bool is_empty() const;
 };
 
 
 extern const symbol NULL_SYMBOL;
 extern const symbol EMPTY_SYMBOL;
 
-inline symbol::symbol() : s(0)
+inline symbol::symbol() : s(0 /* nullptr */)
 {
 }
 
@@ -67,14 +67,14 @@ inline const char *symbol::contents() const
   return s;
 }
 
-inline int symbol::is_null() const
+inline bool symbol::is_null() const
 {
-  return s == 0;
+  return (0 /* nullptr */ == s);
 }
 
-inline int symbol::is_empty() const
+inline bool symbol::is_empty() const
 {
-  return s != 0 && *s == 0;
+  return ((s != 0 /*  nullptr */) && (0 /* nullptr */ == *s));
 }
 
 symbol concat(symbol, symbol);

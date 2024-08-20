@@ -13,7 +13,7 @@ typesetting
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2000-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 2000-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -109,7 +109,7 @@ and recommend further reading materials.
 .\" ====================================================================
 .
 .\" BEGIN Keep roughly parallel with groff.texi nodes "Text" through
-.\" "Tab Stops".
+.\" "Tabs and Leaders".
 .I roff
 input contains text interspersed with instructions to control the
 formatter.
@@ -380,8 +380,8 @@ when using the \[lq]tab\[rq] and \[lq]field\[rq] low-level features,
 so most users turn to the
 .MR @g@tbl @MAN1EXT@
 preprocessor to lay out tables.
-.\" END Keep roughly parallel with groff.texi nodes "Text" through "Tab
-.\" Stops".
+.\" END Keep roughly parallel with groff.texi nodes "Text" through "Tabs
+.\" and Leaders".
 .
 .
 .\" ====================================================================
@@ -532,8 +532,8 @@ A
 .I page
 is a two-dimensional structure upon which a
 .I roff
-system imposes a rectangular coordinate system with its upper left
-corner as the origin.
+system imposes a rectangular coordinate system with its its origin near
+the upper left corner.
 .
 Coordinate values are in basic units and increase down and to the right.
 Useful ones are typically positive and within numeric ranges
@@ -542,63 +542,16 @@ corresponding to the page boundaries.
 .
 .
 .P
-While the formatter
-(and,
-later,
-output driver)
-is processing a page,
-it keeps track of its
-.I drawing position,
-which is the location at which the next glyph will be written,
-from which the next motion will be measured,
-or where a geometric object will commence rendering.
+Text is arranged on a one-dimensional lattice of text baselines from the
+top to the bottom of the page.
 .
-Notionally,
-glyphs are drawn from the text baseline upward and to the right.
-.RI ( groff
-does not yet support right-to-left scripts.)
-.
-The
-.I text baseline
+A
+.I "text baseline"
 is a
 (usually invisible)
 line upon which the glyphs of a typeface are aligned.
 .
-A glyph therefore \[lq]starts\[rq] at its bottom-left corner.
-.
-If drawn at the origin,
-a typical letter glyph would lie partially or wholly off the page,
-depending on whether,
-like \[lq]g\[rq],
-it features a descender below the baseline.
-.
-.
-.P
-Such a situation is nearly always undesirable.
-.
-It is furthermore conventional not to write or draw at the extreme edges
-of the page.
-.
-Therefore the initial drawing position of a
-.I roff
-formatter is not at the origin,
-but below and to the right of it.
-.
-This rightward shift
-from the left edge is known as the
-.I page offset.
-.
-.RI ( groff 's
-terminal output devices have page offsets of zero.)
-.
-The downward shift leaves room for a text output line.
-.
-.
-.P
-Text is arranged on a one-dimensional lattice of text baselines from
-the top to the bottom of the page.
-.
-.I Vertical spacing
+.I "Vertical spacing"
 is the distance between adjacent text baselines.
 .
 Typographic tradition sets this quantity to 120% of the type size.
@@ -608,6 +561,42 @@ below the page top.
 .
 Typographers term this unit a
 .I vee.
+.
+.
+.P
+While the formatter
+(and,
+later,
+output driver)
+is processing a page,
+it keeps track of its
+.I "drawing position,"
+which is the location at which the next glyph will be written,
+from which the next motion will be measured,
+or where a geometric object will commence rendering.
+.
+Notionally,
+glyphs are drawn from the text baseline upward and to the right.
+.RI ( groff
+does not yet support right-to-left scripts.)
+.
+A glyph therefore \[lq]starts\[rq] at its bottom-left corner.
+.
+The formatter's origin is thus one vee below the page top,
+preventing a glyph from lying partially or wholly off the page.
+.
+.
+.P
+Further,
+it is conventional not to write or draw at the extreme edges of the
+page.
+.
+Typesetters configure a
+.I "page offset,"
+a rightward shift from the left edge.
+.
+.RI ( groff 's
+terminal output devices have page offsets of zero.)
 .
 .
 .P
@@ -2142,7 +2131,7 @@ before
 and
 .RB \[lq] \[aq] \[rq]
 if they are preceded by space,
-so that reflowing the input doesn't turn them into control lines.
+so that revisions to the input don't turn them into control lines.
 .
 .
 .IP \[bu]

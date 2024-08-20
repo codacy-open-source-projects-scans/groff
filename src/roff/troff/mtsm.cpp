@@ -268,7 +268,7 @@ void statem::sub_tag_ce()
 
 void statem::add_tag_ta()
 {
-  if (is_html) {
+  if (is_writing_html) {
     string s = string("");
     hunits d, l;
     enum tab_type t;
@@ -358,7 +358,7 @@ mtsm::~mtsm()
 
 void mtsm::push_state(statem *n)
 {
-  if (is_html) {
+  if (is_writing_html) {
 #if defined(DEBUGGING)
     if (want_html_debugging) {
       fprintf(stderr, "--> state %d pushed\n", n->issue_no);
@@ -371,7 +371,7 @@ void mtsm::push_state(statem *n)
 
 void mtsm::pop_state()
 {
-  if (is_html) {
+  if (is_writing_html) {
 #if defined(DEBUGGING)
     if (want_html_debugging) {
       fprintf(stderr, "--> state popped\n");
@@ -426,7 +426,7 @@ void mtsm::inherit(statem *s, int reset_bool)
 
 void mtsm::flush(FILE *fp, statem *s, string tag_list)
 {
-  if (is_html && s) {
+  if (is_writing_html && (s != 0 /* nullptr */)) {
     inherit(s, 1);
     driver->flush(fp, s);
     // Set rj, ce, ti to unknown if they were known and
@@ -510,8 +510,8 @@ int mtsm::has_changed(string_value_state t, statem *s)
 
 int mtsm::changed(statem *s)
 {
-  if (s == 0 || !is_html)
-    return 0;
+  if ((s == 0 /* nullptr */) || !is_writing_html)
+    return 0 /* nullptr */;
   s = new statem(s);
   inherit(s, 0);
   int result = has_changed(MTSM_EOL, s)

@@ -1,9 +1,19 @@
 .\" startup file for GNU troff
 .\"
+.\" This file is interpreted before any macro files specified as -m
+.\" option arguments are read.
+.\"
 .\" Use .do for any groff extensions so that this file works with -C.
 .
 .\" This is tested by pic.
 .nr 0p 0
+.
+.do de troffrc*trap
+.  do tm troffrc:\\n[.F]:\\n[.c]: text line in startup file
+..
+.
+.do blm troffrc*trap
+.do lsm troffrc*trap
 .
 .\" Load composite mappings.
 .do mso composite.tmac
@@ -25,7 +35,6 @@
 .do ds troffrc!ascii tty.tmac
 .do ds troffrc!latin1 tty.tmac
 .do ds troffrc!utf8 tty.tmac
-.do ds troffrc!cp1047 tty.tmac
 .do ds troffrc!lj4 lj4.tmac
 .do ds troffrc!lbp lbp.tmac
 .do ds troffrc!html html.tmac
@@ -42,7 +51,6 @@ troffrc!X100-12 \
 troffrc!ascii \
 troffrc!latin1 \
 troffrc!utf8 \
-troffrc!cp1047 \
 troffrc!lj4 \
 troffrc!lbp \
 troffrc!html

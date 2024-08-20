@@ -26,8 +26,7 @@
 .\}
 .\" This document doesn't require the minus sign (in Times) but we do
 .\" want a copy- and-pastable hyphen-minus.
-.ie '\*[.T]'cp1047' .char \- \N'96'
-.el                 .char \- \N'45'
+.char \- \N'45'
 .\" A very limited output device might not have a dagger glyph.
 .fchar \[dg] *
 .nr PS 11
@@ -36,8 +35,9 @@
 .nr TC-MARGIN \w'00' \" expect 2-digit page numbers at most
 .ie t .nr PI 3.5n
 .el   .nr PI 4n
-.ND September 2023
-.EH '%''September 2023'
+.ds date August 2024\"
+.ND \*[date]
+.EH '%''\*[date]'
 .EF ''''
 .OH 'Using \f[I]groff\f[] with the \f[I]ms\f[] macros''%'
 .OF ''''
@@ -251,13 +251,13 @@ cb cb
 cf(CR) l .
 Scaling unit	Description
 _
-i	inches (\[sd])
-c	centimeters
-p	points (1/72\[sd])
-P	picas (1/6\[sd])
-v	\[lq]vees\[rq]; current vertical spacing
-m	\[lq]ems\[rq]; width of an \[lq]M\[rq] in the current font
-n	\[lq]ens\[rq]; one-half em
+i	inch (\[sd])
+c	centimeter
+p	point (1/72\[sd])
+P	pica (1/6\[sd])
+v	\[lq]vee\[rq]; current vertical spacing
+m	\[lq]em\[rq]; width of an \[lq]M\[rq] in the current font
+n	\[lq]en\[rq]; one-half em
 .TE
 .
 .
@@ -1061,11 +1061,12 @@ register defines the minimum number of initial lines of any paragraph
 that must be kept together to avoid isolated lines at the bottom of a
 page.
 .
-If a new paragraph is started close to the bottom of a page,
+If a new paragraph starts close to the bottom of a page,
 and there is insufficient space to accommodate
 .CW \[rs]n[PORPHANS]
 lines before an automatic page break,
-then a page break is forced before the start of the paragraph.
+.I ms
+forces a page break before formatting the paragraph.
 .
 This is a GNU extension.
 .
@@ -1527,7 +1528,8 @@ that must be kept on the same page as the heading.
 .
 If insufficient space remains on the current page to accommodate the
 heading and this number of lines of paragraph text,
-a page break is forced before the heading is printed.
+.I ms
+forces a page break before setting the heading.
 .
 Any display macro call or
 .I tbl ,
@@ -2503,9 +2505,10 @@ T{
 \&.PF
 T}	T{
 .CW .PS
-begins a picture to be processed by the
-.I pic
-preprocessor;
+marks the start of a
+.I pic (1)
+preprocessor
+diagram;
 either of
 .CW .PE
 or
@@ -2535,11 +2538,12 @@ T{
 .br
 \&.EN
 T}	T{
-Demarcate an equation to be processed by the
+Demarcate mathematics to be processed by the
 .I eqn
 preprocessor.
 .
-The equation is centered by default;
+.I ms
+centers the equation by default;
 .I align
 can be
 .CW C ,
@@ -2552,9 +2556,12 @@ or indent it by
 .CW \[rs]n[DI] ,
 respectively.
 .
-If specified,
-.I label
-is set right-aligned.
+.I ms
+right-aligns any
+.I label .
+.
+See
+.I eqn (1).
 T}
 _
 T{
@@ -3987,8 +3994,8 @@ rather than to ignore them silently.
 .PP
 Research Tenth Edition \" possibly 9th
 Unix supported
-.B P1 /\c
-.B P2
+.CW P1 /\c
+.CW P2
 macros to bracket code examples;
 .I "groff ms"
 does not.
@@ -4130,13 +4137,13 @@ To make
 use the default page offset
 (which also specifies the left margin),
 the
-.B PO
+.CW PO
 register must stay undefined until the first
 .I ms
 macro is called.
 .
 This implies that
-.B \[rs]n[PO]
+.CW \[rs]n[PO]
 should not be used early in the document,
 unless it is changed also:
 accessing an undefined register automatically defines it.

@@ -9,7 +9,7 @@ typesetting system
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2000-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 2000-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff (GNU roff), which is a free software
 .\" project.
@@ -357,6 +357,9 @@ does the same for the new orthography
 .I en
 English.
 .
+Sets the input encoding to Latin-1 by loading
+.IR latin1.tmac .
+.
 .
 .TP
 .I es
@@ -398,6 +401,9 @@ localizes
 .IR mom ,
 and
 .IR ms .
+.
+Sets the input encoding to Latin-1 by loading
+.IR latin1.tmac .
 .
 .
 .TP
@@ -450,8 +456,23 @@ Chinese.
 .SS "Input encodings"
 .\" ====================================================================
 .
-A document that requires one of the following encodings can load a
-corresponding macro file.
+Certain macro files are responsible for translating input character
+codes above 127 decimal to appropriate GNU
+.I troff \" GNU
+escape sequences,
+and setting up hyphenation codes for
+letters their encodings define;
+typically,
+they also invoke
+.B hcode
+requests to case-fold such letters for where necessary so that they
+match hyphenation patterns.
+.
+As a rule,
+a localization file
+(documented in the previous section)
+loads one of these files;
+a document need not do so directly.
 .
 .
 .TP 8n \" "latin1" + 2n
@@ -479,8 +500,8 @@ respectively).
 .I koi8\-r
 supports the KOI8-R encoding.
 .
-KOI8-R code points in the range 0x80\[en]0x9F are not valid input on
-systems using ISO character codings natively;
+KOI8-R code points in the range 0x80\[en]0x9F are not valid input to GNU
+.IR troff ; \" GNU
 see section \[lq]Identifiers\[rq] in
 .MR groff @MAN7EXT@ .
 .

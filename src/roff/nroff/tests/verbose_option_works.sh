@@ -46,6 +46,7 @@ PATH=${abs_top_builddir:-.}:$PATH
 nroff_ver=$(nroff -v | awk 'NR == 1 {print $NF}')
 groff_ver=$(nroff -v | awk 'NR == 2 {print $NF}')
 
+# If this test is skipped, you may need to `make distclean` and rebuild.
 echo nroff: $nroff_ver >&2
 echo groff: $groff_ver >&2
 if [ "$nroff_ver" != "$groff_ver" ]

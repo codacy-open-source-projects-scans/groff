@@ -10,7 +10,7 @@ manuscript macro package for formatting documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -734,11 +734,12 @@ register defines the minimum number of initial lines of any paragraph
 that must be kept together to avoid isolated lines at the bottom of a
 page.
 .
-If a new paragraph is started close to the bottom of a page,
+If a new paragraph starts close to the bottom of a page,
 and there is insufficient space to accommodate
 .B \[rs]n[PORPHANS]
 lines before an automatic page break,
-then a page break is forced before the start of the paragraph.
+.I ms
+forces a page break before formatting the paragraph.
 .
 This is a GNU extension.
 .
@@ -1039,7 +1040,8 @@ that must be kept on the same page as the heading.
 .
 If insufficient space remains on the current page to accommodate the
 heading and this number of lines of paragraph text,
-a page break is forced before the heading is printed.
+.I ms
+forces a page break before setting the heading.
 .
 Any display macro call or
 .IR tbl ,
@@ -1544,9 +1546,10 @@ examples of its use.
 .TQ
 .B .PF
 .B .PS
-begins a picture to be processed by the
-.I pic
-preprocessor;
+marks the start of a
+.MR @g@pic @MAN1EXT@
+preprocessor
+diagram;
 either of
 .B .PE
 or
@@ -1568,11 +1571,12 @@ supplies them automatically.
 .IR label ]]
 .TQ
 .B .EN
-Demarcate an equation to be processed by the
-.I eqn
+Demarcate mathematics to be processed by the
+.I @g@eqn
 preprocessor.
 .
-The equation is centered by default;
+.I ms
+centers the equation by default;
 .I align
 can be
 .BR C ,
@@ -1584,9 +1588,12 @@ or indent it by
 .BR \[rs]n[DI] ,
 respectively.
 .
-If specified,
-.I label
-is set right-aligned.
+.I ms
+right-aligns any
+.IR label .
+.
+See
+.MR @g@eqn @MAN1EXT@ .
 .
 .
 .br

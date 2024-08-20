@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle July 2024
+@subtitle August 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -5352,9 +5352,9 @@ Macros}.}
 What if the file ends before enough words have been collected to fill an
 output line?  Or the output line is exactly full but not yet broken, and
 there is no more input?  GNU @code{troff} flushes the pending output
-line upon encountering the end of input.  Certain requests cause breaks,
-implicitly or explicitly.  This is discussed in @ref{Manipulating
-Filling and Adjustment}.
+line upon encountering the end of input.  Certain requests also cause
+breaks, implicitly or explicitly.  This is discussed in
+@ref{Manipulating Filling and Adjustment}.
 
 @c ---------------------------------------------------------------------
 
@@ -5615,13 +5615,24 @@ package can load it with the @code{mso} (``macro source'') request.
 @c (e.g., what character encodings _they_ support for output and their
 @c responsibility for converting to them) as well.
 
+@c BEGIN Keep roughly parallel with groff_tmac(5) section "Input
+@c Encodings".
 @node Input Encodings, Input Conventions, Macro Packages, Text
 @subsection Input Encodings
 
 The @command{groff} command's @option{-k} option calls the
 @command{preconv} preprocessor to perform input character encoding
 conversions.  Input to the GNU @code{troff} formatter itself, on the
-other hand, must be in one of two encodings it can recognize.
+other hand, must be in a single-byte encoding compatible with @w{ISO
+646:1991 IRV} (US-@acronym{ASCII}).
+
+Certain macro files are responsible for translating input character
+codes above 127 decimal to appropriate GNU @code{troff} escape
+sequences, and setting up hyphenation codes for letters their encodings
+define; typically, they also invoke @code{hcode} requests to case-fold
+such letters where necessary so that they match hyphenation patterns.
+As a rule, a localization file (recall @pxref{Manipulating Hyphenation})
+loads one of these files; a document need not do so directly.
 
 @table @code
 @item latin1
@@ -5654,12 +5665,11 @@ To use @w{KOI8-R}, an encoding for the Russian language, either place
 supply @samp{-m koi8-r} as a command-line argument to @code{groff}.  The
 localization file @file{ru.tmac} takes care of this automatically; see
 @ref{Manipulating Hyphenation}.@footnote{KOI8-R code points in the range
-@code{0x80}--@code{0x9F} are not valid input on systems using ISO
-character codings natively; see @ref{Identifiers}.  This should be no
-impediment to practical documents, as these KOI8-R code points do not
-encode letters, but box-drawing symbols and characters that are better
-obtained via special character escape sequences; see
-@cite{groff_char@r{(7)}}.}
+@code{0x80}--@code{0x9F} are not valid input to GNU @command{troff}; see
+@ref{Identifiers}.  This should be no impediment to practical documents,
+as these KOI8-R code points do not encode letters, but box-drawing
+symbols and characters that are better obtained via special character
+escape sequences; see @cite{groff_char@r{(7)}}.}
 
 @item latin2
 @cindex encoding, input, @w{ISO Latin-2} (@w{8859-2})
@@ -5693,6 +5703,8 @@ coverage for French.  To use this encoding, invoke @w{@samp{.mso
 latin9.tmac}} at the beginning of your document or supply
 @samp{-m latin9} as a command-line argument to @code{groff}.
 @end table
+@c END Keep roughly parallel with groff_tmac(5) section "Input
+@c Encodings".
 
 Some characters from an input encoding may not be available with a
 particular output driver, or their glyphs may not have representation in
@@ -5761,7 +5773,7 @@ followed by space, tab, or newline characters and don't end a sentence.
 
 @item
 In filled text lines, use @code{\&} before @samp{.} and @samp{'} if they
-are preceded by space, so that reflowing the input doesn't turn them
+are preceded by space, so that revisions to the input don't turn them
 into control lines.
 
 @item
@@ -5841,6 +5853,7 @@ later.
 .\" Albert Einstein, _The Meaning of Relativity_, 1922
 @endCartoucheExample
 
+@c BEGIN Keep parallel with subsection "Page geometry" of roff(7).
 @node Page Geometry, Measurements, Text, GNU troff Reference
 @section Page Geometry
 @cindex page, geometry of
@@ -5867,11 +5880,24 @@ its resolution and page dimensions (@pxref{DESC File Format}).
 
 @cindex page
 A @dfn{page} is a two-dimensional structure upon which a @code{roff}
-system imposes a rectangular coordinate system with its upper left
-corner as the origin.  Coordinate values are in basic units and increase
+system imposes a rectangular coordinate system with its origin near the
+upper left corner.  Coordinate values are in basic units and increase
 down and to the right.  Useful ones are typically positive and within
 numeric ranges corresponding to the page boundaries.
 @c You could draw an arc of a circle whose center is off the page.
+
+Text is arranged on a one-dimensional lattice of text baselines from the
+top to the bottom of the page.
+@cindex text baseline
+@cindex baseline, text
+A @dfn{text baseline} is a (usually invisible) line upon which the
+glyphs of a typeface are aligned.
+@cindex vertical spacing
+@cindex spacing, vertical
+@cindex vee
+@dfn{Vertical spacing} is the distance between adjacent text baselines.
+Typographic tradition sets this quantity to 120% of the type size.
+Typographers term this unit a @slanted{vee}.
 
 @cindex drawing position
 @cindex position, drawing
@@ -5879,36 +5905,18 @@ While the formatter (and, later, output driver) is processing a page, it
 keeps track of its @dfn{drawing position}, which is the location at
 which the next glyph will be written, from which the next motion will be
 measured, or where a geometric object will commence rendering.
-@cindex text baseline
-@cindex baseline, text
 Notionally, glyphs are drawn from the text baseline upward and to the
 right.@footnote{@code{groff} does not yet support right-to-left
-scripts.}  The @dfn{text baseline} is a (usually invisible) line upon
-which the glyphs of a typeface are aligned.  A glyph therefore
-``starts'' at its bottom-left corner.  If drawn at the origin, a typical
-letter glyph would lie partially or wholly off the page, depending on
-whether, like ``g'', it features a descender below the baseline.
+scripts.}  A glyph therefore ``starts'' at its bottom-left corner.  The
+formatter's origin is thus one vee below the page top, preventing a
+glyph from lying partially or wholly off the page.
 
 @cindex page offset
 @cindex offset, page
-Such a situation is nearly always undesirable.  It is furthermore
-conventional not to write or draw at the extreme edges of the page.
-Therefore the initial drawing position of a @code{roff} formatter is not
-at the origin, but below and to the right of it.  This rightward shift
-from the left edge is known as the @dfn{page
-offset}.@footnote{@code{groff}'s terminal output devices have page
-offsets of zero.}  The downward shift leaves room for a text output
-line.
-
-Text is arranged on a one-dimensional lattice of text baselines from the
-top to the bottom of the page.
-@cindex vertical spacing
-@cindex spacing, vertical
-@cindex vee
-@dfn{Vertical spacing} is the distance between adjacent text baselines.
-Typographic tradition sets this quantity to 120% of the type size.  The
-initial drawing position is one unit of vertical spacing below the page
-top.  Typographers term this unit a @slanted{vee}.
+Further, it is conventional not to write or draw at the extreme edges of
+the page.  Typesetters configure a @dfn{page offset}, a rightward shift
+from the left edge.@footnote{@code{groff}'s terminal output devices have
+page offsets of zero.}
 
 @cindex page break
 @cindex break, page
@@ -5930,6 +5938,7 @@ users from having to confront this difficulty by setting ``traps''
 (@pxref{Traps}); moreover, all but the simplest page layouts tend to
 have headers and footers, or at least bear vertical margins larger than
 one vee.
+@c END Keep parallel with subsection "Page geometry" of roff(7).
 
 
 @c =====================================================================
@@ -6181,6 +6190,9 @@ used for computing results depends on the host machine but is at least a
 range of ±2 billion.@footnote{If that's not enough, see the
 @cite{groff_tmac@r{(5)}} man page for the @file{62bit.tmac} macro
 package.}
+@cindex saturating arithmetic
+Arithmetic saturates rather than wrapping; if overflow would occur, GNU
+@command{troff} emits a warning in category @samp{range}.
 
 @cindex arithmetic operators
 @cindex operators, arithmetic
@@ -6200,8 +6212,12 @@ to their left and right; they are @code{+} (addition), @code{-}
 (subtraction), @code{*} (multiplication), @code{/} (truncating
 division), and @code{%} (modulus).  @dfn{Truncating division} rounds to
 the integer nearer to zero, no matter how large the fractional portion.
-Overflow and division (or modulus) by zero are errors and abort
-evaluation of a numeric expression.
+@cindex division by zero
+@cindex modulus by zero
+@cindex zero, division and modulus by
+Division and modulus by zero are errors and abort evaluation of a
+numeric expression.
+
 @cindex unary arithmetic operators
 @cindex operators, unary arithmetic
 @cindex negation
@@ -6210,7 +6226,6 @@ evaluation of a numeric expression.
 @opindex +
 @cindex @code{if} request, and the @samp{!} operator
 @cindex @code{while} request, and the @samp{!} operator
-
 Arithmetic unary operators operate on the numeric expression to their
 right; they are @code{-} (negation) and @code{+} (assertion---for
 completeness; it does nothing).  The unary minus must often be used
@@ -7239,32 +7254,6 @@ as delimiters:
 using them this way is discouraged; they can make the input confusing to
 read.
 
-@cindex @code{\A}, delimiters allowed by
-@cindex @code{\b}, delimiters allowed by
-@cindex @code{\o}, delimiters allowed by
-@cindex @code{\w}, delimiters allowed by
-@cindex @code{\X}, delimiters allowed by
-@cindex @code{\Z}, delimiters allowed by
-@cindex newline, as delimiter
-A few escape sequences,
-@code{\A},
-@code{\b},
-@code{\o},
-@code{\w},
-@code{\X},
-and @code{\Z}, accept a newline as a delimiter.  Newlines that serve
-as delimiters continue to be recognized as input line terminators.
-
-@Example
-A caf\o
-e\(aa
-in Paris
-    @result{} A café in Paris
-@endExample
-
-@noindent
-Use of newlines as delimiters in escape sequences is also discouraged.
-
 @cindex @code{\D}, delimiters allowed by
 @cindex @code{\h}, delimiters allowed by
 @cindex @code{\H}, delimiters allowed by
@@ -7278,7 +7267,9 @@ Use of newlines as delimiters in escape sequences is also discouraged.
 @cindex @code{\x}, delimiters allowed by
 Finally, the escape sequences @code{\D}, @code{\h}, @code{\H},
 @code{\l}, @code{\L}, @code{\N}, @code{\R}, @code{\s}, @code{\S},
-@code{\v}, and @code{\x} prohibit many delimiters.
+@code{\v}, and @code{\x} prohibit delimiters that are meaningful in
+numeric expressions, because they accept such expressions as (or within)
+arguments.
 
 @itemize @bullet
 @item
@@ -7943,9 +7934,11 @@ Output page selection status (Boolean-valued); see @command{groff}
 @cindex number of available registers register (@code{.R})
 @cindex registers, available number of, register (@code{.R})
 @vindex .R
-Count of available unused registers; always 10,000 in GNU
-@code{troff}.@footnote{GNU @code{troff} dynamically allocates memory for
-as many registers as required.}
+Count of available unused registers; in GNU @command{troff} this
+register always interprets the maximum representable
+integer.@footnote{GNU @command{troff} dynamically allocates memory for as
+many registers as required.}  Favor its use over numeric literals with
+many zeros or nines to indicate an arbitrary large quantity.
 
 @item \n[.T]
 @vindex .T
@@ -8382,7 +8375,7 @@ This is a small text fragment that shows the differences
 between the `.ce' and the `.ad c' requests.
 ..
 .ll 4i
-.ce 1000
+.ce \n(.R
 .FR
 .ce 0
 
@@ -8400,8 +8393,10 @@ between the `.ce' and the `.ad c' requests.
 @endExample
 
 The previous example illustrates a common idiom of turning centering on
-for a quantity of lines far in excess of what is required, and off again
-after the text to be centered.  This technique relieves humans of
+for a quantity of lines far in excess of what is required,@footnote{The
+@code{.R} register interpolates the largest value that GNU
+@command{troff} can work with.  @xref{Built-in Registers}.} and off
+again after the text to be centered.  This technique relieves humans of
 counting lines for requests that take a count of input lines as an
 argument.
 @endDefreq
@@ -8455,8 +8450,8 @@ Format}.  This request is incorrectly documented in the @acronym{AT&T}
 @code{troff} manual as using units of 1/36 em.}  (A @dfn{word space} is
 typically one-fourth to one-third em for Western scripts.)  The default
 for both parameters is@tie{}12.  Negative values are erroneous.
-@cindex inter-word spacing, minimal
-@cindex minimal inter-word spacing
+@cindex inter-word spacing, minimum
+@cindex minimum inter-word spacing
 @cindex space, between words
 The first argument is a minimum; if an output line undergoes adjustment,
 such spaces may increase in width.
@@ -8480,7 +8475,7 @@ inter-sentence space is not adjusted, but the inter-word space that
 always precedes it may be.  Further input spaces after the second, if
 present, are adjusted as normal.
 
-The read-only registers @code{.ss} and @code{.sss} hold the minimal
+The read-only registers @code{.ss} and @code{.sss} hold the minimum
 inter-word space and additional inter-sentence space amounts,
 respectively.  These parameters are part of the environment
 (@pxref{Environments}).
@@ -8544,8 +8539,9 @@ unusual words found in technical literature.  We can instruct GNU
 @c TODO: Add request `rhw`?
 @cindex hyphenation exceptions
 @Defreq {hw, word @dots{}}
-Define each @dfn{hyphenation exception} @var{word} with each hyphen `-'
-in the word indicating a hyphenation point.  For example, the request
+Define each @dfn{hyphenation exception} @var{word} comprising ordinary
+or special characters with each hyphen-minus `-' in @var{word}
+indicating a hyphenation point.  For example, the request
 
 @Example
 .hw in-sa-lub-rious alpha
@@ -8557,9 +8553,8 @@ marks potential hyphenation points in ``insalubrious'', and prevents
 ``alpha'' from being hyphenated at all.
 
 Besides the space character, any character whose hyphenation code is
-zero can be used to separate the arguments of @code{hw} (see the
-@code{hcode} request below).  In addition, this request can be used more
-than once.
+zero can be used to separate the arguments (see the @code{hcode} request
+below).
 
 @cindex @code{hw} request, and @code{hy} restrictions
 Hyphenation points specified with @code{hw} are not subject to the
@@ -8849,8 +8844,7 @@ register @samp{.hydefault}; it is associated with the environment
 
 @need 200
 @DefreqList {hpf, pattern-file}
-@DefreqItemx {hpfa, pattern-file}
-@DefreqListEndx {hpfcode, a b [c d] @dots{}}
+@DefreqListEndx {hpfa, pattern-file}
 @cindex hyphenation patterns (@code{hpf})
 @cindex patterns for hyphenation (@code{hpf})
 Read hyphenation patterns from @var{pattern-file}, which is sought
@@ -8897,18 +8891,6 @@ file is treated as a list of hyphenation patterns (except that the
 
 The @code{hpfa} request appends a file of patterns to the current list.
 
-The @code{hpfcode} request defines mapping values for character codes in
-pattern files.  It is an older mechanism no longer used by GNU
-@code{troff}'s own macro files; for its successor, see @code{hcode}
-below.  @code{hpf} or @code{hpfa} apply the mapping after reading the
-patterns but before replacing or appending to the active list of
-patterns.  Its arguments are pairs of character codes---integers from 0
-to@tie{}255.  The request maps character code@tie{}@var{a} to
-code@tie{}@var{b}, code@tie{}@var{c} to code@tie{}@var{d}, and so on.
-Character codes that would otherwise be invalid in GNU @code{troff} can
-be used.  By default, every code maps to itself except those for letters
-`A' to `Z', which map to those for `a' to `z'.
-
 @cindex localization
 @pindex troffrc
 @pindex cs.tmac
@@ -8938,12 +8920,12 @@ automatically hyphenate at all.
 For automatic hyphenation to work, the formatter must know which letters
 are equivalent; for example, the letter @samp{E} behaves like @samp{e};
 only the latter typically appears in hyphenation pattern files.  GNU
-@code{troff} expects characters that participate in automatic
+@command{troff} expects characters that participate in automatic
 hyphenation to be assigned @dfn{hyphenation codes} that define these
-equivalence classes.  At startup, GNU @code{troff} assigns hyphenation
-codes to the letters @samp{a}--@samp{z}, applies the same codes to
-@samp{A}--@samp{Z} in one-to-one correspondence, and assigns a code of
-zero to all other characters.
+equivalence classes.  At startup, GNU @command{troff} assigns
+hyphenation codes to the letters @samp{a}--@samp{z}, applies the same
+codes to @samp{A}--@samp{Z} in one-to-one correspondence, and assigns a
+code of zero to all other characters.
 
 The @code{hcode} request extends this principle to letters outside the
 Unicode basic Latin alphabet; without it, words containing such letters
@@ -8973,21 +8955,36 @@ hyphenation codes to the letters @samp{ÄäÖöÜüß}, needed for German.
 .hcode ß ß
 @endExample
 
-Without these assignments, GNU @code{troff} treats the German word
+Without these assignments, GNU @command{troff} treats the German word
 @w{`Kindergärten'} (the plural form of `kindergarten') as two words
 @w{`kinderg'} and @w{`rten'} because the hyphenation code of the
 umlaut@tie{}a is zero by default, just like a space.  There is a German
-hyphenation pattern that covers @w{`kinder'}, so GNU @code{troff} finds
-the hyphenation `kin-der'.  The other two hyphenation points
+hyphenation pattern that covers @w{`kinder'}, so GNU @command{troff}
+finds the hyphenation `kin-der'.  The other two hyphenation points
 (`kin-der-gär-ten') are missed.
 
-If for some reason you desire to remove a character's hyphenation code,
-use @code{hcode} to copy the code of a punctuation character to it; for
-example, @samp{.hcode ß $} assigns a hyphenation code of zero to
-@samp{ß} (unless @samp{$} has already been assigned a different one).
+To remove a character's hyphenation code, copy the code of a character
+with a hyphenation code value of zero to it.  For example, @samp{.hcode
+ß $} removes the hyphenation code from @samp{ß} (unless @samp{$} has
+already been assigned a different one).
 
 The @code{phcode} request may be helpful to troubleshoot hyphenation
 code assignments.  @xref{Debugging}.
+@endDefreq
+
+@Defreq {hpfcode, a b [c d] @dots{}}
+@strong{Caution:@:} This request will be withdrawn in a future
+@code{groff} release.  Use @code{hcode} instead.
+
+The @code{hpfcode} request defines mapping values for character codes in
+pattern files.  It is an older mechanism no longer used by GNU
+@command{troff}'s own macro files.  @code{hpf} or @code{hpfa} apply the
+mapping after reading the patterns but before replacing or appending to
+the active list of patterns.  Its arguments are pairs of character
+codes---integers from 0 to@tie{}255.  The request maps character
+code@tie{}@var{a} to code@tie{}@var{b}, code@tie{}@var{c} to
+code@tie{}@var{d}, and so on.  Character codes that would otherwise be
+invalid in GNU @command{troff} can be used.
 @endDefreq
 
 @DefreqList {hla, [@Var{lang}]}
@@ -9660,7 +9657,7 @@ not possible to map the space character to any other glyph; requests
 like @w{@samp{.tr aa x}} undo @w{@samp{.tr aa \&}} instead.
 
 If adjustment is enabled, it occurs in spite of the `empty' space
-character; but no minimum distance---no minimal inter-word
+character; but no minimum distance---no minimum inter-word
 space---separates words).
 
 @item
@@ -14563,7 +14560,7 @@ polygon would occlude the text.
 @cindex line thickness (@samp{\D't @dots{}'})
 @cindex thickness of lines (@samp{\D't @dots{}'})
 Set the stroke thickness of geometric objects to @var{n} basic units.  A
-zero @var{n} selects the minimal supported thickness.  A negative
+zero @var{n} selects the minimum supported thickness.  A negative
 @var{n} selects a thickness proportional to the type size; this is the
 default.
 @end table
@@ -14884,10 +14881,10 @@ caused by the @code{bp} request are not shown in the output.
 @cindex distance to next vertical position trap register (@code{.t})
 @cindex trap, distance to next vertical position, register (@code{.t})
 The read-only register @code{.t} holds the distance to the next vertical
-position trap.  If there are no traps between the current position and
+position trap.  If no such traps exist between the drawing position and
 the bottom of the page, it contains the distance to the page bottom.
 Within a diversion, in the absence of a diversion trap, this distance is
-the largest representable integer in basic units---effectively infinite.
+the maximum possible vertical position supported by the output device.
 @endDefreg
 
 @Defreq {ch, name [@Var{dist}]}
@@ -15391,7 +15388,7 @@ text has been output.
 ..
 .
 .de single-page-mode
-.  pl 99999
+.  pl \n[.R]u
 .  em adjust-page-length
 ..
 .
@@ -15435,8 +15432,8 @@ For orthogonality it is said that GNU @command{troff} is in the
 output is being ``diverted'' immediately to the output device).  The
 top-level diversion has no name.
 
-Dereferencing an undefined diversion will create an empty one of that
-name and cause a warning in category @samp{mac} to be emitted.
+Dereferencing an undefined diversion creates an empty one of that
+name and emits a warning in category @samp{mac}.
 @xref{Warnings}, regarding the enablement and suppression of warnings.
 A diversion does not exist for the purpose of testing with the @code{d}
 conditional operator until its initial definition ends (@pxref{Operators
@@ -17031,9 +17028,9 @@ or for instrumentation while troubleshooting.  The @code{ex} and
 exit codes respectively, to halt further processing when continuing
 would be fruitless.  Examine the state of the formatter with requests
 that write lists of defined names (macros, strings, and diversions),
-colors, composite characters, environments, hyphenation exceptions,
-registers, page location traps, and a list of output nodes corresponding
-to the pending input line to the standard error stream.
+colors, composite characters, environments, hyphenation codes and
+exceptions, registers, page location traps, and a list of output nodes
+corresponding to the pending input line to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, line [@Var{file}]}
@@ -17847,7 +17844,7 @@ bytes and ignores an argument to report only the sum of the sizes.
 @cindex @code{ss} request, incompatibilities with @acronym{AT&T} @code{troff}
 Unlike @acronym{AT&T} @code{troff}, GNU @code{troff} does not ignore the
 @code{ss} request if the output is a terminal device; instead, the
-values of minimal inter-word and additional inter-sentence space are
+values of minimum inter-word and additional inter-sentence space are
 each rounded down to the nearest multiple of@tie{}12.
 
 @cindex @code{bd} request, incompatibilities with @acronym{AT&T} @code{troff}
@@ -18560,8 +18557,8 @@ but GNU @code{troff} output drivers do nothing with this command.
 @item xr @var{n} @var{h} @var{v}@angles{line break}
 The @samp{r} stands for @var{resolution}.
 
-Resolution is@tie{}@var{n}, while @var{h} is the minimal horizontal
-motion, and @var{v} the minimal vertical motion possible with this
+Resolution is@tie{}@var{n}, while @var{h} is the minimum horizontal
+motion, and @var{v} the minimum vertical motion possible with this
 device; all arguments are positive integers in basic units @samp{u} per
 inch.  This is the second command of the prologue.
 

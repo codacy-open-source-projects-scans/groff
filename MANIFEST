@@ -64,7 +64,6 @@ This file summarizes the structure of the groff source distribution.
   devX75        75dpi X11 device (10 point base type size).
   devX75-12     75dpi X11 device (12 point base type size).
   devascii      Terminal device with ASCII (ISO 646) encoding.
-  devcp1047     Terminal device with EBCDIC (code page 1047) encoding.
   devdvi        TeX DVI device.
   devhtml       HTML device.
   devlatin1     Terminal device with ISO Latin-1 (8859-1) encoding.
@@ -161,23 +160,6 @@ close to the source code it describes.
 
 - Documentation for contributed components is kept in the relevant
   subdirectory of "contrib".
-
-
-4) groff language parser
-
-The "troff" program in "src/roff/troff" parses the groff input language.
-There, "input.cpp" implements the main loop and tokenizes input.  Input
-tokens are transformed into nodes (a GNU troff internal data structure)
-by "env.cpp" and "node.cpp".  Routines in the latter file generate the
-page description language from lists of nodes.
-
-
-5) page description language parser
-
-The parser for the page description language produced by troff is
-implemented in "src/libs/libdriver/input.cpp".  This is used by all
-groff output drivers written in C++.  ("gropdf", written in Perl,
-performs its own parsing.)
 
 
 ##### Editor settings

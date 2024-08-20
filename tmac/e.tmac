@@ -608,7 +608,7 @@
 .		ll -\\n(nou
 .\}
 .if !\\n(?N \
-.	po -\\n(nou
+.	@O -\\n(nou
 .nr ?n 1
 .do nr _#p \\n(.s
 .do nr _#f \\n(.f
@@ -658,7 +658,7 @@
 .		nr ?N 0
 .\}
 .	el \
-.		po +\\n(nou
+.		@O +\\n(nou
 .	nr ?n 0
 .	nr ln 0
 .\}
@@ -1131,7 +1131,11 @@
 .	xl -\\n(biu
 .\}
 .if \\n(_d=1 \
-.	ce 10000
+\{\
+.	ie \n(.g .ce \n(.R
+.	el       .ce 10000
+.\}
+.
 ..
 .
 .de @)			\" --- end keep
@@ -1239,7 +1243,8 @@
 .if "\*(.T"html" \
 \{\
 .	do nr e-EQ-ll \\n(.l
-.	ll 1000n
+.	ie \n(.g .ll 1000n \" XXX: \\n(.Ru-1n DoSes troff
+.	el       .ll 1000n
 .\}
 .do HTML-IMAGE
 .if !\\n(?e \
@@ -1318,7 +1323,8 @@
 .if "\*(.T"html" \
 \{\
 .	do nr e-TS-ll \\n(.l
-.	ll 1000n
+.	ie \n(.g .ll \\n(.Ru-1n
+.	el       .ll 1000n
 .\}
 .do HTML-IMAGE
 .@C 1
@@ -1968,7 +1974,8 @@
 .de $c			\" $$$ print chapter title
 .sz 12
 .ft 3
-.ce 1000
+.ie \n(.g .ce \n(.R
+.el       .ce 10000
 .if \\n(_M<3 \
 .	nr ch +1
 .ie \\n(_M=1 \\*(wc\~\\n(ch

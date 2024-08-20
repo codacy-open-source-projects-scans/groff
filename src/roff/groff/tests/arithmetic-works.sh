@@ -57,13 +57,13 @@ input='.
 #
 # 2: .l=1512
 #
-# 3: .l=24, .H=24
+# 3: .l=2147483640, .H=24
 #
-# 4: .p=40, .V=40
+# 4: .p=2147483640, .V=40
 #
 # The blank lines are due to the `vs` increase.
 
-output=$(echo "$input" | "$groff" -T ascii)
+output=$(echo "$input" | "$groff" -w range -T ascii)
 echo "$output"
 
 echo "checking that vertical spacing is correctly incremented" >&2
@@ -72,11 +72,47 @@ echo "$output" | grep -Fqx '1: .v=80' || wail
 echo "checking that line length is correctly incremented" >&2
 echo "$output" | grep -Fqx '2: .l=1512' || wail
 
-echo "checking that setting huge line length does not overflow" >&2
-echo "$output" | grep -Fqx '3: .l=24, .H=24' || wail
+echo "checking that setting huge line length saturates" >&2
+echo "$output" | grep -Fqx '3: .l=2147483640, .H=24' || wail
 
-echo "checking that setting huge page length does not overflow" >&2
-echo "$output" | grep -Fqx '4: .p=40, .V=40' || wail
+echo "checking that setting huge page length saturates" >&2
+echo "$output" | grep -Fqx '4: .p=2147483640, .V=40' || wail
+
+input='.
+.ec @
+.nf
+.nr a 99999999999999999999n
+.nr b (-99999999999999999999n)
+.nr c 99999999999999999999v
+.nr d (-99999999999999999999v)
+a: @na
+b: @nb
+c: @nc
+d: @nd
+.'
+
+output=$(echo "$input" | "$groff" -w range -T ascii)
+echo "$output"
+
+# The vunits and hunits constructors in src/roff/troff/number.cpp don't
+# permit INT_MIN to be assigned, as a side effect of making rounding
+# behavior sign-independent.
+
+echo "checking that assignment of large positive horizontal" \
+  "measurement saturates" >&2
+echo "$output" | grep -Fqx 'a: 2147483647' || wail
+
+echo "checking assignment of large negative horizontal" \
+  "measurement saturates" >&2
+echo "$output" | grep -Fqx 'b: -2147483647' || wail
+
+echo "checking assignment of large positive vertical" \
+  "measurement saturates" >&2
+echo "$output" | grep -Fqx 'c: 2147483647' || wail
+
+echo "checking assignment of large negative vertical" \
+  "measurement saturates" >&2
+echo "$output" | grep -Fqx 'd: -2147483647' || wail
 
 # Exercise boundary values.
 
@@ -96,28 +132,22 @@ input='.
 5: (-1)*2147483647 -> @ni
 .nr i -1
 6: decr -2147483648 -> @ni
-.nr i -2147483648
-.nr i (-1)*@ni
-7: (-1)*(-2147483648) -> @ni
 .'
 
-output=$(echo "$input" | "$groff" -T ascii)
+output=$(echo "$input" | "$groff" -w range -T ascii)
 echo "$output"
 
-# 2147483647
 echo "checking assignment of huge value to register" >&2
 echo "$output" \
-  | grep -Fqx '1: 99999999999999999999 -> 1410065407' || wail
+  | grep -Fqx '1: 99999999999999999999 -> 999999999' || wail
 
-# -2147483648
 echo "checking assignment of huge negative value to register" >&2
 echo "$output" \
-  | grep -Fqx '2: (-99999999999999999999) -> -1410065407' || wail
+  | grep -Fqx '2: (-99999999999999999999) -> -999999999' || wail
 
 echo "checking assignment of 2^31 - 1 to register" >&2
 echo "$output" | grep -Fqx '3: assign 2147483647 -> 2147483647' || wail
 
-# -2147483648
 echo "checking incrementation of register" >&2
 echo "$output" | grep -Fqx '4: incr 2147483647 -> -2147483648' || wail
 
@@ -127,10 +157,24 @@ echo "$output" | grep -Fqx '5: (-1)*2147483647 -> -2147483647' || wail
 echo "checking decrementation of register" >&2
 echo "$output" | grep -Fqx '6: decr -2147483648 -> -2147483648' || wail
 
-# 2147483647
-echo "checking negation of negatively register" >&2
-echo "$output" | grep -Fqx '7: (-1)*(-2147483648) -> 0' \
-  || wail
+# A quirk that GNU troff arithmetic has is that one cannot directly
+# assign INT_MIN to a register, because the negative sign is parsed
+# separately from the digit sequence.  (This is true even when the
+# negative sign is not intrepreted as a decrementation operator.)
+#
+# .nr a 2147483647
+# .tm a=\na
+#   a=2147483647
+# .nr a \na*-1
+# .tm a=\na
+#   a=-2147483647
+# .nr a -1
+# .tm a=\na
+#   a=-2147483648
+# .nr a \na*-1
+# troff:<standard input>:7: warning: integer value saturated
+#
+# This seems okay to GBR.
 
 test -z "$fail"
 

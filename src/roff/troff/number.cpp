@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -85,7 +85,7 @@ bool get_number_rigidly(units *res, unsigned char si)
     return false;
 }
 
-bool get_number(units *res, unsigned char si)
+bool read_measurement(units *res, unsigned char si)
 {
   if (!is_valid_expression_start())
     return false;
@@ -129,12 +129,12 @@ bool get_vunits(vunits *res, unsigned char si, vunits prev_value)
     break;
   case INCREMENT:
     if (ckd_add(&i, prev_value.to_units(), v))
-      error("integer addition wrapped");
+      warning(WARN_RANGE, "integer incrementation saturated");
     *res = i;
     break;
   case DECREMENT:
     if (ckd_sub(&i, prev_value.to_units(), v))
-      error("integer subtraction wrapped");
+      warning(WARN_RANGE, "integer decrementation saturated");
     *res = i;
     break;
   default:
@@ -157,12 +157,12 @@ bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
     break;
   case INCREMENT:
     if (ckd_add(&i, prev_value.to_units(), h))
-      error("integer addition wrapped");
+      warning(WARN_RANGE, "integer incrementation saturated");
     *res = i;
     break;
   case DECREMENT:
     if (ckd_sub(&i, prev_value.to_units(), h))
-      error("integer subtraction wrapped");
+      warning(WARN_RANGE, "integer decrementation saturated");
     *res = i;
     break;
   default:
@@ -171,7 +171,7 @@ bool get_hunits(hunits *res, unsigned char si, hunits prev_value)
   return true;
 }
 
-bool get_number(units *res, unsigned char si, units prev_value)
+bool read_measurement(units *res, unsigned char si, units prev_value)
 {
   units u;
   switch (get_incr_number(&u, si)) {
@@ -182,14 +182,14 @@ bool get_number(units *res, unsigned char si, units prev_value)
     break;
   case INCREMENT:
     if (ckd_add(res, prev_value, u))
-      error("integer addition wrapped");
+      warning(WARN_RANGE, "integer incrementation saturated");
     break;
   case DECREMENT:
     if (ckd_sub(res, prev_value, u))
-      error("integer subtraction wrapped");
+      warning(WARN_RANGE, "integer decrementation saturated");
     break;
   default:
-    assert(0 == "unhandled case in get_number()");
+    assert(0 == "unhandled case in read_measurement()");
   }
   return true;
 }
@@ -205,11 +205,11 @@ bool get_integer(int *res, int prev_value)
     break;
   case INCREMENT:
     if (ckd_add(res, prev_value, i))
-      error("integer addition wrapped");
+      warning(WARN_RANGE, "integer incrementation saturated");
     break;
   case DECREMENT:
     if (ckd_sub(res, prev_value, i))
-      error("integer subtraction wrapped");
+      warning(WARN_RANGE, "integer decrementation saturated");
     break;
   default:
     assert(0 == "unhandled case in get_integer()");
@@ -351,19 +351,19 @@ static bool is_valid_expression(units *u, int scaling_unit,
       break;
     case '+':
       if (ckd_add(u, *u, u2)) {
-	error("integer addition wrapped");
+	warning(WARN_RANGE, "integer addition saturated");
 	return false;
       }
       break;
     case '-':
       if (ckd_sub(u, *u, u2)) {
-	error("integer subtraction wrapped");
+	warning(WARN_RANGE, "integer subtraction saturated");
 	return false;
       }
       break;
     case '*':
       if (ckd_mul(u, *u, u2)) {
-	error("integer multiplication wrapped");
+	warning(WARN_RANGE, "integer multiplication saturated");
 	return false;
       }
       break;
@@ -393,6 +393,7 @@ static bool is_valid_term(units *u, int scaling_unit,
 {
   bool is_negative = false;
   bool is_overflowing = false;
+  units saved_u = 0; // for use when reading an overlong number
   for (;;)
     if (is_parenthesized && tok.is_space())
       tok.next();
@@ -416,10 +417,9 @@ static bool is_valid_term(units *u, int scaling_unit,
     position = (scaling_unit == 'v'
 		? curdiv->get_vertical_position().to_units()
 		: curenv->get_input_line_position().to_units());
-    // We don't permit integer wraparound with this operator.
     if (ckd_sub(&tmp, *u, position)) {
-	error("numeric overflow");
-	return false;
+      tmp = INT_MAX;
+      warning(WARN_RANGE, "integer value saturated");
     }
     *u = tmp;
     if (is_negative)
@@ -466,7 +466,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     if (is_negative) {
       // Why?  Consider -(INT_MIN) in two's complement.
       if (ckd_mul(u, *u, -1))
-	error("integer multiplication wrapped");
+	warning(WARN_RANGE, "integer multiplication saturated");
     }
     return true;
   case '.':
@@ -486,16 +486,19 @@ static bool is_valid_term(units *u, int scaling_unit,
     do {
       // If wrapping, don't `break`; eat and discard further digits.
       if (!is_overflowing) {
+	  saved_u = *u;
 	  if (ckd_mul(u, *u, 10))
 	    is_overflowing = true;
 	  if (ckd_add(u, *u, c - '0'))
 	    is_overflowing = true;
+	  if (is_overflowing)
+	    *u = saved_u;
 	}
       tok.next();
       c = tok.ch();
     } while (csdigit(c));
     if (is_overflowing)
-      error("integer value wrapped");
+      warning(WARN_RANGE, "integer value saturated");
     break;
   case '/':
   case '*':
@@ -623,7 +626,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     tok.next();
   if (is_negative) {
     if (ckd_mul(u, *u, -1))
-      error("integer multiplication wrapped");
+      warning(WARN_RANGE, "integer multiplication saturated");
   }
   return true;
 }
@@ -642,13 +645,12 @@ units scale(units n, units x, units y)
       return (n * x) / y;
   }
   double res = n * double(x) / double(y);
-  // We don't implement integer wraparound when scaling.
   if (res > INT_MAX) {
-    error("numeric overflow");
+    warning(WARN_RANGE, "integer value saturated");
     return INT_MAX;
   }
   else if (res < INT_MIN) {
-    error("numeric overflow");
+    warning(WARN_RANGE, "integer value saturated");
     return INT_MIN;
   }
   return int(res);
@@ -671,9 +673,17 @@ vunits::vunits(units x)
       if (ckd_add(&n, x, vcrement))
 	is_overflowing = true;
     }
+    if (is_overflowing) {
+      if (x < 0) {
+	warning(WARN_RANGE, "integer value saturated");
+	n = INT_MIN;
+      }
+      else {
+	warning(WARN_RANGE, "integer value saturated");
+	n = INT_MAX;
+      }
+    }
     n /= vresolution;
-    if (is_overflowing)
-      error("integer addition wrapped");
   }
 }
 
@@ -694,9 +704,17 @@ hunits::hunits(units x)
       if (ckd_add(&n, x, hcrement))
 	is_overflowing = true;
     }
+    if (is_overflowing) {
+      if (x < 0) {
+	warning(WARN_RANGE, "integer value saturated");
+	n = INT_MIN;
+      }
+      else {
+	warning(WARN_RANGE, "integer value saturated");
+	n = INT_MAX;
+      }
+    }
     n /= hresolution;
-    if (is_overflowing)
-      error("integer addition wrapped");
   }
 }
 

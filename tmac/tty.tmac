@@ -1,4 +1,4 @@
-.\" tty.tmac
+.\" Configure grotty(1) output devices: "ascii", "latin1", and "utf8".
 .\"
 .do nr *groff_tty_tmac_C \n[.cp]
 .cp 0
@@ -7,6 +7,9 @@
 .ta T 0.8i
 .
 .po 0
+.
+.ie '\?\*[.T]\?'\?utf8\?' .char \[em] \[em]\[em]
+.el                       .char \[em] --
 .
 .fchar \[bu] *
 .fchar \[14] 1/4
@@ -24,7 +27,6 @@
 .fchar \[<-] <-
 .fchar \[->] ->
 .fchar \[<>] <->
-.fchar \[em] --
 .fchar \[+-] +/\[-]
 .fchar \[t+-] +/\[-]
 .fchar \[-+] \[-]/+
@@ -74,11 +76,7 @@
 .defcolor cyan rgb #00ffff
 .defcolor white rgb #ffffff
 .
-.ie '\*(.T'cp1047' \
-.  mso cp1047.tmac
-.el \
-.  if !'\*(.T'ascii' \
-.    mso latin1.tmac
+.if !'\*(.T'ascii' .mso latin1.tmac
 .
 .\" If you want the character definitions in tty-char.tmac to be loaded
 .\" automatically, remove the '\"' from the next line.

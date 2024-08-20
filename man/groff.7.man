@@ -976,6 +976,12 @@ for the
 .I 62bit.tmac
 macro package.)
 .
+Arithmetic saturates rather than wrapping;
+if overflow would occur,
+.I @g@troff
+emits a warning in category
+.RB \%\[lq] range \[rq].
+.
 .
 .P
 Arithmetic infix operators perform a function on the numeric expressions
@@ -997,9 +1003,8 @@ and
 rounds to the integer nearer to zero,
 no matter how large the fractional portion.
 .
-Overflow and division
-(or modulus)
-by zero are errors and abort evaluation of a numeric expression.
+Division and modulus by zero
+are errors and abort evaluation of a numeric expression.
 .
 .
 .P
@@ -1773,23 +1778,6 @@ using them this way is discouraged;
 they can make the input confusing to read.
 .
 .
-.P
-A few escape sequences,
-.BR \[rs]A ,
-.BR \[rs]b ,
-.BR \[rs]o ,
-.BR \[rs]w ,
-.BR \[rs]X ,
-and
-.BR \[rs]Z ,
-accept a newline as a delimiter.
-.
-Newlines that serve as delimiters continue to be recognized as input
-line terminators.
-.
-Use of newlines as delimiters in escape sequences is also discouraged.
-.
-.
 .br
 .ne 2v
 .P
@@ -1807,7 +1795,10 @@ the escape sequences
 .BR \[rs]v ,
 and
 .B \[rs]x
-prohibit many delimiters.
+prohibit delimiters that are meaningful in numeric expressions,
+because they accept such expressions as
+(or within)
+arguments.
 .
 .
 .RS
@@ -2233,7 +2224,7 @@ includes all characters up to the end of the input line
 (which may be continued with
 .BI \[rs] newline\c
 ),
-to the ending delimiter for the escape sequence,
+to the closing delimiter for the escape sequence,
 or within
 .esc {
 and
@@ -3396,19 +3387,29 @@ Append hyphenation patterns from
 .
 .TPx
 .REQ .hpfcode "a b \fR[\fPc d\fR] .\|.\|.\fP"
-Define mappings for character codes in hyphenation pattern files read
-with
-.request .hpf
-and
-.request .hpfa .
+.B Caution:
+This request will be withdrawn in a future
+.I groff
+release.
+.
+Use
+.B hcode
+instead.
+.
+.
+.IP
+Define mappings for character codes in hyphenation pattern files.
 .
 .TPx
 .REQ .hw "word \fR.\|.\|.\fP"
-Define hyphenation overrides for each
-.I word;
-a hyphen
+Define each
+.I "hyphenation exception"
+.I word
+comprising ordinary or special characters with each hyphen-minus
 .RB \[lq] \- \[rq]
-indicates a hyphenation point.
+in
+.I word
+indicating a hyphenation point.
 .
 .TPx
 .REQ .hy
@@ -5759,7 +5760,7 @@ basic units.
 .
 A zero
 .I n
-selects the minimal supported thickness.
+selects the minimum supported thickness.
 .
 A negative
 .I n
@@ -5893,7 +5894,8 @@ interpreted as such when the string is interpolated.
 To achieve that effect,
 use
 .B \[rs]*
-to interpolate a macro instead.\" see @ref{Punning Names}.
+to interpolate a macro instead;
+see section \[lq]Punning names\[rq] below.
 .
 .
 .P
@@ -6049,7 +6051,7 @@ macros,
 strings,
 and diversions.
 .
-Bear in mind that the symbols
+The symbols
 .B \[rs]n[]
 are
 .I not
@@ -6270,7 +6272,7 @@ The count of lines remaining in the pending input trap.
 .
 .TP
 .REG .itc
-The pending input trap honors output line continuation
+The pending input trap honors output line continuation with
 .esc c
 (Boolean-valued).
 .
@@ -6334,7 +6336,7 @@ and
 .esc m .
 .
 The default stroke color is named
-.RB \[lq] default \[rq].
+.RB \%\[lq] default \[rq].
 .
 .TP
 .REG .M
@@ -6345,7 +6347,7 @@ and
 .esc M .
 .
 The default fill color is named
-.RB \[lq] default \[rq].
+.RB \&\[lq] default \[rq].
 .
 .TP
 .REG .n
@@ -6423,8 +6425,7 @@ Post-vertical line spacing.
 .
 .TP
 .REG .R
-Count of available unused registers;
-always 10,000 in GNU
+Maximum representable integer in GNU
 .IR troff . \" GNU
 .
 .TP
@@ -6456,7 +6457,7 @@ and
 .
 .TP
 .REG .ss
-Size of minimal inter-word space in twelfths of the space width of the
+Size of minimum inter-word space in twelfths of the space width of the
 selected font.
 .
 .TP
@@ -6479,6 +6480,17 @@ see
 .request .wh
 and
 .request .ch .
+.
+If no such traps exist between the drawing position
+and the bottom of the page,
+.I @g@troff
+interpolates the distance to the page bottom.
+.
+Within a diversion,
+in the absence of a diversion trap,
+this distance is
+the maximum possible vertical position supported by the output device.
+.
 .
 .TP
 .REG .T
@@ -7505,8 +7517,16 @@ at a given location in the current diversion
 .RB ( .dt )\[em]together,
 these are known as
 vertical position traps,
-which can be disabled and re-enabled
+which can be disabled and re\[e ad]nabled
 .RB ( .vpt ).
+.
+Setting a trap is also called
+.I planting
+one.
+.
+It is said that a trap is
+.I sprung
+if its condition is fulfilled.
 .
 .
 .P
@@ -7530,14 +7550,6 @@ or at the end of input
 .RB ( .em ).
 .
 Macros called by traps are passed no arguments.
-.
-Setting a trap is also called
-.I planting
-one.
-.
-It is said that a trap is
-.I sprung
-if its condition is fulfilled.
 .\" END Keep (roughly) parallel with groff.texi node "Traps".
 .
 .
@@ -7721,12 +7733,13 @@ The top-level diversion has no name.
 .
 .
 .P
-Dereferencing an undefined diversion will create an empty one of that
-name and cause a warning in category
-.B mac
-to be emitted.
-(see section \[lq]Warnings\[rq] in
-.MR @g@troff @MAN1EXT@ ).
+Dereferencing an undefined diversion creates an empty one of that name
+and emits a warning in category
+.BR mac .
+.
+See section \[lq]Warnings\[rq] in
+.MR @g@troff @MAN1EXT@
+regarding the enablement and suppression of warnings.
 .
 A diversion does not exist for the purpose of testing with the
 .B d
@@ -7764,8 +7777,9 @@ Call any of these macros again without an argument to end the diversion.
 Diversion requests can be nested.
 .
 The registers
-.BR .d ,
-.BR .z ,
+.B .d
+and
+.B .z
 report information about the current diversion,
 and
 .B dn

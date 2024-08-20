@@ -2123,9 +2123,9 @@ breaking page
 .in \\n[df*old-in]u
 .if \\n[df*f]=1  'in +\\n[Si]n
 .if \\n[df*f]>=2 'in 0
-.if \\n[df*f]=2  'ce 9999
+.if \\n[df*f]=2  'ce \\n[.R]
 .if \\n[df*f]=3  'in (u;(\\n[.l]-\\n[df*width!\\n[df*i]])/2)
-.if \\n[df*f]=4  'rj 9999
+.if \\n[df*f]=4  'rj \\n[.R]
 .if \\n[df*f]=5  'in (u;\\n[.l]-\\n[df*width!\\n[df*i]])
 .\"
 .\"
@@ -2295,9 +2295,9 @@ breaking page
 'in \\n[ds*old-in]u
 .if \\n[ds*format]=1  'in \\n[ds*old-in]u+\\n[Si]n
 .if \\n[ds*format]>=2 'in 0
-.if \\n[ds*format]=2  'ce 9999
+.if \\n[ds*format]=2  'ce \\n[.R]
 .if \\n[ds*format]=3  'in (u;(\\n[.l]-\\n[ds*width])/2)
-.if \\n[ds*format]=4  'rj 9999
+.if \\n[ds*format]=4  'rj \\n[.R]
 .if \\n[ds*format]=5  'in (u;\\n[.l]-\\n[ds*width])
 .\" **********
 .\"

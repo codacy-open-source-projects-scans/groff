@@ -37,6 +37,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stack>
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <errno.h> // errno
+
 // Needed for getpid() and isatty()
 #include "posix.h"
 
@@ -70,8 +76,8 @@ extern "C" const char *Version_string;
 void init_column_requests();
 #endif /* COLUMN */
 
-static node *read_draw_node();
-static void read_color_draw_node(token &);
+static node *read_drawing_command();
+static void read_drawing_command_color_arguments(token &);
 static void push_token(const token &);
 void copy_file();
 #ifdef COLUMN
@@ -81,16 +87,16 @@ void transparent_file();
 
 token tok;
 bool want_break = false;
-int class_flag = 0;
-int color_flag = 1;		// colors are on by default
-static int backtrace_flag = 0;
+bool using_character_classes = false;
+bool want_color_output = true;
+static bool want_backtraces = false;
 char *pipe_command = 0 /* nullptr */;
 charinfo *charset_table[256];
 unsigned char hpf_code_table[256];
 
 static int warning_mask = DEFAULT_WARNING_MASK;
-static int inhibit_errors = 0;
-static int ignoring = 0;
+static bool want_errors_inhibited = false;
+static bool want_input_ignored = false;
 
 static void enable_warning(const char *);
 static void disable_warning(const char *);
@@ -99,11 +105,11 @@ static int escape_char = '\\';
 static symbol end_of_input_macro_name;
 static symbol blank_line_macro_name;
 static symbol leading_spaces_macro_name;
-static int compatible_flag = 0;
-static int do_old_compatible_flag = -1;	// for .do request
+static bool want_att_compat = false;
+static int do_old_want_att_compat = -1;	// for .do request
 bool want_abstract_output = false;
-int suppress_output_flag = 0;
-int is_html = 0;
+bool want_output_suppressed = false;
+bool is_writing_html = false;
 static int suppression_level = 0;	// depth of nested \O escapes
 
 bool in_nroff_mode = false;
@@ -117,7 +123,7 @@ static bool have_formattable_input = false;
 // Consider:
 //   \f[TB]\m[red]hello\c
 //   \f[]\m[]
-static bool old_have_formattable_input = false;
+static bool have_formattable_input_on_interrupted_line = false;
 
 bool device_has_tcommand = false;	// 't' output command supported
 static bool want_unsafe_requests = false;	// be safer by default
@@ -156,7 +162,7 @@ static request_or_macro *lookup_request(symbol);
 static bool read_delimited_number(units *, unsigned char);
 static bool read_delimited_number(units *, unsigned char, units);
 static symbol do_get_long_name(bool, char);
-static int get_line_arg(units *res, unsigned char si, charinfo **cp);
+static bool get_line_arg(units *res, unsigned char si, charinfo **cp);
 static bool read_size(int *);
 static symbol get_delimited_name();
 static void init_registers();
@@ -336,8 +342,8 @@ private:
   virtual int is_boundary() {return 0; }
   virtual int is_file() { return 0; }
   virtual int is_macro() { return 0; }
-  virtual void save_compatible_flag(int) {}
-  virtual int get_compatible_flag() { return 0; }
+  virtual void set_att_compat(bool) {}
+  virtual bool get_att_compat() { return false; }
 };
 
 input_iterator::input_iterator()
@@ -547,8 +553,8 @@ public:
   static void decrease_level();
   static void clear();
   static void pop_macro();
-  static void save_compatible_flag(int);
-  static int get_compatible_flag();
+  static void set_att_compat(bool);
+  static bool get_att_compat();
   static statem *get_diversion_state();
   static void check_end_diversion(input_iterator *t);
   static int limit;
@@ -593,7 +599,7 @@ inline int input_stack::get(node **np)
 {
   int res = (top->ptr < top->eptr) ? *top->ptr++ : finish_get(np);
   if (res == '\n') {
-    old_have_formattable_input = have_formattable_input;
+    have_formattable_input_on_interrupted_line = have_formattable_input;
     have_formattable_input = false;
   }
   return res;
@@ -871,14 +877,14 @@ void input_stack::pop_macro()
     add_return_boundary();
 }
 
-inline void input_stack::save_compatible_flag(int f)
+inline void input_stack::set_att_compat(bool b)
 {
-  top->save_compatible_flag(f);
+  top->set_att_compat(b);
 }
 
-inline int input_stack::get_compatible_flag()
+inline bool input_stack::get_att_compat()
 {
-  return top->get_compatible_flag();
+  return top->get_att_compat();
 }
 
 void backtrace_request()
@@ -953,9 +959,9 @@ static symbol read_two_char_escape_parameter()
   if (buf[0] != '\0') {
     buf[1] = get_char_for_escape_parameter();
     if (buf[1] == '\0')
-      buf[0] = 0;
+      buf[0] = '\0';
     else
-      buf[2] = 0;
+      buf[2] = '\0';
   }
   return symbol(buf);
 }
@@ -968,7 +974,7 @@ static symbol read_long_escape_parameters(read_mode mode)
   int buf_size = ABUF_SIZE;
   int i = 0;
   char c;
-  int have_char = 0;
+  bool have_char = false;
   for (;;) {
     c = get_char_for_escape_parameter(have_char && mode == WITH_ARGS);
     if (c == 0) {
@@ -976,18 +982,22 @@ static symbol read_long_escape_parameters(read_mode mode)
 	delete[] buf;
       return NULL_SYMBOL;
     }
-    have_char = 1;
+    have_char = true;
     if (mode == WITH_ARGS && c == ' ')
       break;
     if (i + 2 > buf_size) {
       if (buf == abuf) {
-	buf = new char[ABUF_SIZE*2];
+	// C++03: new char[ABUF_SIZE * 2]();
+	buf = new char[ABUF_SIZE * 2];
+	(void) memset(buf, 0, (ABUF_SIZE * 2 * sizeof(char)));
 	memcpy(buf, abuf, buf_size);
-	buf_size = ABUF_SIZE*2;
+	buf_size = ABUF_SIZE * 2;
       }
       else {
 	char *old_buf = buf;
-	buf = new char[buf_size*2];
+	// C++03: new char[buf_size * 2]();
+	buf = new char[buf_size * 2];
+	(void) memset(buf, 0, (buf_size * 2 * sizeof(char)));
 	memcpy(buf, old_buf, buf_size);
 	buf_size *= 2;
 	delete[] old_buf;
@@ -1022,7 +1032,7 @@ static symbol read_escape_parameter(read_mode mode)
     return NULL_SYMBOL;
   if (c == '(')
     return read_two_char_escape_parameter();
-  if (c == '[' && !compatible_flag)
+  if (c == '[' && !want_att_compat)
     return read_long_escape_parameters(mode);
   char buf[2];
   buf[0] = c;
@@ -1047,7 +1057,7 @@ static symbol read_increment_and_escape_parameter(int *incp)
     *incp = -1;
     return read_escape_parameter();
   case '[':
-    if (!compatible_flag) {
+    if (!want_att_compat) {
       *incp = 0;
       return read_long_escape_parameters();
     }
@@ -1065,17 +1075,17 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
   for (;;) {
     int c = input_stack::get(nd);
     if (c == PUSH_GROFF_MODE) {
-      input_stack::save_compatible_flag(compatible_flag);
-      compatible_flag = 0;
+      input_stack::set_att_compat(want_att_compat);
+      want_att_compat = false;
       continue;
     }
     if (c == PUSH_COMP_MODE) {
-      input_stack::save_compatible_flag(compatible_flag);
-      compatible_flag = 1;
+      input_stack::set_att_compat(want_att_compat);
+      want_att_compat = true;
       continue;
     }
     if (c == POP_GROFFCOMP_MODE) {
-      compatible_flag = input_stack::get_compatible_flag();
+      want_att_compat = input_stack::get_att_compat();
       continue;
     }
     if (c == BEGIN_QUOTE) {
@@ -1346,7 +1356,7 @@ void do_fill_color(symbol nm)
 static unsigned int get_color_element(const char *scheme, const char *col)
 {
   units val;
-  if (!get_number(&val, 'f')) {
+  if (!read_measurement(&val, 'f')) {
     warning(WARN_COLOR, "%1 in %2 definition set to 0", col, scheme);
     tok.next();
     return 0;
@@ -1486,9 +1496,9 @@ static void activate_color()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    color_flag = (n > 0);
+    want_color_output = (n > 0);
   else
-    color_flag = 1;
+    want_color_output = true;
   skip_line();
 }
 
@@ -1554,146 +1564,160 @@ static void report_color()
   skip_line();
 }
 
-node *do_overstrike()
+node *do_overstrike() // \o
 {
-  overstrike_node *on = new overstrike_node;
+  overstrike_node *osnode = new overstrike_node;
   int start_level = input_stack::get_level();
   token start_token;
   start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */)) {
+    delete osnode;
+    return 0 /* nullptr */;
+  }
   for (;;) {
     tok.next();
-    if (tok.is_newline()) {
-      input_stack::push(make_temp_iterator("\n"));
-      break;
-    }
-    if (tok.is_eof()) {
+    if (tok.is_newline() || tok.is_eof()) {
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
       warning(WARN_DELIM, "missing closing delimiter in overstrike"
-	     " escape sequence (got %1)", tok.description());
-      // Synthesize an input line ending.
-      input_stack::push(make_temp_iterator("\n"));
+	      " escape sequence; expected %1, got %2", delimdesc,
+	      tok.description());
+      free(delimdesc);
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     if (tok.is_horizontal_space())
-      on->overstrike(tok.nd->copy());
-    else if (tok.is_unstretchable_space())
-    {
+      osnode->overstrike(tok.nd->copy());
+    else if (tok.is_unstretchable_space()) {
       node *n = new hmotion_node(curenv->get_space_width(),
 				 curenv->get_fill_color());
-      on->overstrike(n);
+      osnode->overstrike(n);
     }
     else {
       charinfo *ci = tok.get_char(true /* required */);
-      if (ci) {
+      if (ci != 0 /* nullptr */) {
 	node *n = curenv->make_char_node(ci);
-	if (n)
-	  on->overstrike(n);
+	if (n != 0 /* nullptr */)
+	  osnode->overstrike(n);
       }
     }
   }
-  return on;
+  return osnode;
 }
 
-static node *do_bracket()
+static node *do_bracket() // \b
 {
-  bracket_node *bn = new bracket_node;
+  bracket_node *bracketnode = new bracket_node;
   int start_level = input_stack::get_level();
   token start_token;
   start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */)) {
+    delete bracketnode;
+    return 0 /* nullptr */;
+  }
   for (;;) {
     tok.next();
-    if (tok.is_newline()) {
-      input_stack::push(make_temp_iterator("\n"));
-      break;
-    }
-    if (tok.is_eof()) {
+    if (tok.is_newline() || tok.is_eof()) {
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
       warning(WARN_DELIM, "missing closing delimiter in"
-	      " bracket-building escape sequence (got %1)",
-	      tok.description());
-      // Synthesize an input line ending.
-      input_stack::push(make_temp_iterator("\n"));
+	      " bracket-building escape sequence; expected %1, got"
+	      " %2", delimdesc, tok.description());
+      free(delimdesc);
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     charinfo *ci = tok.get_char(true /* required */);
-    if (ci) {
+    if (ci != 0 /* nullptr */) {
       node *n = curenv->make_char_node(ci);
-      if (n)
-	bn->bracket(n);
+      if (n != 0 /* nullptr */)
+	bracketnode->bracket(n);
     }
   }
-  return bn;
+  return bracketnode;
 }
 
-static int do_name_test()
+static const char *do_name_test() // \A
 {
   int start_level = input_stack::get_level();
   token start_token;
   start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
+    return 0 /* nullptr */;
   bool got_bad_char = false;
   bool got_some_char = false;
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      if (tok != start_token)
-	warning(WARN_DELIM, "missing closing delimiter in identifier"
-		" validation escape sequence (got %1)",
-		tok.description());
-      // Synthesize an input line ending.
-      input_stack::push(make_temp_iterator("\n"));
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
+      warning(WARN_DELIM, "missing closing delimiter in identifier"
+	      " validation escape sequence; expected %1, got %2",
+	      delimdesc, tok.description());
+      free(delimdesc);
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     if (!tok.ch())
       got_bad_char = true;
     got_some_char = true;
   }
-  return (got_some_char && !got_bad_char);
+  return (got_some_char && !got_bad_char) ? "1" : "0";
 }
 
-static int do_expr_test()
+static const char *do_expr_test() // \B
 {
   token start_token;
   start_token.next();
   int start_level = input_stack::get_level();
   if (!start_token.is_usable_as_delimiter(true /* report error */))
-    return 0;
+    return 0 /* nullptr */;
   tok.next();
   // disable all warning and error messages temporarily
   int saved_warning_mask = warning_mask;
-  int saved_inhibit_errors = inhibit_errors;
+  bool saved_want_errors_inhibited = want_errors_inhibited;
   warning_mask = 0;
-  inhibit_errors = 1;
+  want_errors_inhibited = true;
   int dummy;
-  int result = get_number_rigidly(&dummy, 'u');
+  bool result = get_number_rigidly(&dummy, 'u');
   warning_mask = saved_warning_mask;
-  inhibit_errors = saved_inhibit_errors;
+  want_errors_inhibited = saved_want_errors_inhibited;
+  // get_number_rigidly() has left `token` pointing at the input
+  // character after the end of the expression.
   if (tok == start_token && input_stack::get_level() == start_level)
-    return result;
-  // ignore everything up to the delimiter in case we aren't right there
+    return (result ? "1" : "0");
+  // There may be garbage after the expression but before the closing
+  // delimiter.  Eat it.
   for (;;) {
-    tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      warning(WARN_DELIM, "missing closing delimiter in"
-	      " expression test escape sequence (got %1)",
-	      tok.description());
-      input_stack::push(make_temp_iterator("\n"));
+      char *delimdesc = strdup(start_token.description());
+      warning(WARN_DELIM, "missing closing delimiter in numeric"
+	      " expression validation escape sequence; expected %1,"
+	      " got %2", delimdesc, tok.description());
+      free(delimdesc);
       break;
     }
+    tok.next();
     if (tok == start_token && input_stack::get_level() == start_level)
       break;
   }
-  return 0;
+  return "0";
 }
 
 #if 0
-static node *do_zero_width()
+static node *do_zero_width_output()
 {
   token start_token;
   start_token.next();
@@ -1708,7 +1732,7 @@ static node *do_zero_width()
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     tok.process();
   }
@@ -1729,31 +1753,40 @@ static node *do_zero_width()
 // It's undesirable for \Z to change environments, because then
 // \n(.w won't work as expected.
 
-static node *do_zero_width()
+static node *do_zero_width_output() // \Z
 {
   node *rev = new dummy_node;
+  node *n = 0 /* nullptr */;
   int start_level = input_stack::get_level();
   token start_token;
   start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */)) {
+    delete rev;
+    return 0 /* nullptr */;
+  }
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      if (tok != start_token)
-	warning(WARN_DELIM, "missing closing delimiter in"
-		" zero-width escape sequence (got %1)",
-		tok.description());
-      // Synthesize an input line ending.
-      input_stack::push(make_temp_iterator("\n"));
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
+      warning(WARN_DELIM, "missing closing delimiter in zero-width"
+	      " output escape sequence; expected %1, got %2", delimdesc,
+	      tok.description());
+      free(delimdesc);
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
+    // XXX: does the initial dummy node leak if this fails?
+    // TODO: Say something better than "token" in the diagnostic.
     if (!tok.add_to_zero_width_node_list(&rev))
-      error("invalid token in argument to escaped 'Z'");
+      error("invalid token in argument to zero-width output escape"
+	    " sequence");
   }
-  node *n = 0;
-  while (rev) {
+  while (rev != 0 /* nullptr */) {
     node *tem = rev;
     rev = rev->next;
     tem->next = n;
@@ -1766,7 +1799,7 @@ static node *do_zero_width()
 
 token_node *node::get_token_node()
 {
-  return 0;
+  return 0 /* nullptr */;
 }
 
 class token_node : public node {
@@ -1886,9 +1919,9 @@ void token::make_newline()
 
 void token::next()
 {
-  if (nd) {
+  if (nd != 0 /* nullptr */) {
     delete nd;
-    nd = 0;
+    nd = 0 /* nullptr */;
   }
   units x;
   for (;;) {
@@ -1904,15 +1937,15 @@ void token::next()
 	  type = TOKEN_HYPHEN_INDICATOR;
 	  return;
       case PUSH_GROFF_MODE:
-	input_stack::save_compatible_flag(compatible_flag);
-	compatible_flag = 0;
+	input_stack::set_att_compat(want_att_compat);
+	want_att_compat = false;
 	continue;
       case PUSH_COMP_MODE:
-	input_stack::save_compatible_flag(compatible_flag);
-	compatible_flag = 1;
+	input_stack::set_att_compat(want_att_compat);
+	want_att_compat = true;
 	continue;
       case POP_GROFFCOMP_MODE:
-	compatible_flag = input_stack::get_compatible_flag();
+	want_att_compat = input_stack::get_att_compat();
 	continue;
       case BEGIN_QUOTE:
 	input_stack::increase_level();
@@ -2162,16 +2195,28 @@ void token::next()
 	type = TOKEN_NODE;
 	return;
       case 'A':
-	c = '0' + do_name_test();
-	type = TOKEN_CHAR;
+	{
+	  const char *res = do_name_test();
+	  if (0 /* nullptr */ == res)
+	    break;
+	  c = *res;
+	  type = TOKEN_CHAR;
+	}
 	return;
       case 'b':
 	nd = do_bracket();
+	if (0 /* nullptr */ == nd)
+	  break;
 	type = TOKEN_NODE;
 	return;
       case 'B':
-	c = '0' + do_expr_test();
-	type = TOKEN_CHAR;
+	{
+	  const char *res = do_expr_test();
+	  if (0 /* nullptr */ == res)
+	    break;
+	  c = *res;
+	  type = TOKEN_CHAR;
+	}
 	return;
       case 'c':
 	goto ESCAPE_c;
@@ -2187,8 +2232,8 @@ void token::next()
 			      curenv->get_fill_color());
 	return;
       case 'D':
-	nd = read_draw_node();
-	if (!nd)
+	nd = read_drawing_command();
+	if (0 /* nullptr */ == nd)
 	  break;
 	type = TOKEN_NODE;
 	return;
@@ -2219,7 +2264,7 @@ void token::next()
 	  }
 	  else
 	    (void) curenv->set_font(atoi(s.contents()));
-	  if (!compatible_flag)
+	  if (!want_att_compat)
 	    have_formattable_input = true;
 	  break;
 	}
@@ -2248,7 +2293,7 @@ void token::next()
       case 'H':
 	// don't take height increments relative to previous height if
 	// in compatibility mode
-	if (!compatible_flag && curenv->get_char_height()) {
+	if (!want_att_compat && curenv->get_char_height()) {
 	  if (read_delimited_number(&x, 'z', curenv->get_char_height()))
 	    curenv->set_char_height(x);
 	}
@@ -2257,7 +2302,7 @@ void token::next()
 	      curenv->get_requested_point_size()))
 	    curenv->set_char_height(x);
 	}
-	if (!compatible_flag)
+	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
       case 'k':
@@ -2284,12 +2329,12 @@ void token::next()
 	}
       case 'm':
 	do_glyph_color(read_escape_parameter(ALLOW_EMPTY));
-	if (!compatible_flag)
+	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
       case 'M':
 	do_fill_color(read_escape_parameter(ALLOW_EMPTY));
-	if (!compatible_flag)
+	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
       case 'n':
@@ -2311,11 +2356,13 @@ void token::next()
 	return;
       case 'o':
 	nd = do_overstrike();
+	if (0 /* nullptr */ == nd)
+	  break;
 	type = TOKEN_NODE;
 	return;
       case 'O':
 	nd = do_suppress(read_escape_parameter());
-	if (!nd)
+	if (0 /* nullptr */ == nd)
 	  break;
 	type = TOKEN_NODE;
 	return;
@@ -2328,19 +2375,19 @@ void token::next()
 	return;
       case 'R':
 	do_register();
-	if (!compatible_flag)
+	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
       case 's':
 	if (read_size(&x))
 	  curenv->set_size(x);
-	if (!compatible_flag)
+	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
       case 'S':
 	if (read_delimited_number(&x, 0))
 	  curenv->set_char_slant(x);
-	if (!compatible_flag)
+	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
       case 't':
@@ -2376,7 +2423,7 @@ void token::next()
 	return;
       case 'X':
 	nd = do_device_control();
-	if (!nd)
+	if (0 /* nullptr */ == nd)
 	  break;
 	type = TOKEN_NODE;
 	return;
@@ -2404,10 +2451,10 @@ void token::next()
 	    nd = new zero_width_node(nd);
 	  else {
 	    charinfo *ci = get_char(true /* required */);
-	    if (ci == 0)
+	    if (0 /* nullptr */ == ci)
 	      break;
 	    node *gn = curenv->make_char_node(ci);
-	    if (gn == 0)
+	    if (0 /* nullptr */ == gn)
 	      break;
 	    nd = new zero_width_node(gn);
 	    type = TOKEN_NODE;
@@ -2415,8 +2462,8 @@ void token::next()
 	  return;
 	}
       case 'Z':
-	nd = do_zero_width();
-	if (nd == 0)
+	nd = do_zero_width_output();
+	if (0 /* nullptr */ == nd)
 	  break;
 	type = TOKEN_NODE;
 	return;
@@ -2427,7 +2474,7 @@ void token::next()
       case '\n':
 	break;
       case '[':
-	if (!compatible_flag) {
+	if (!want_att_compat) {
 	  symbol s = read_long_escape_parameters(WITH_ARGS);
 	  if (s.is_null() || s.is_empty())
 	    break;
@@ -2445,7 +2492,10 @@ void token::next()
 	      if (groff_gn)
 		nm = symbol(groff_gn);
 	      else {
+		// C++03: new char[strlen(gn) + 1 + 1]();
 		char *buf = new char[strlen(gn) + 1 + 1];
+		(void) memset(buf, 0,
+			      (strlen(gn) + 1 + 1) * sizeof(char));
 		strcpy(buf, "u");
 		strcat(buf, gn);
 		nm = symbol(buf);
@@ -2469,10 +2519,10 @@ void token::next()
   }
 }
 
-int token::operator==(const token &t)
+bool token::operator==(const token &t)
 {
   if (type != t.type)
-    return 0;
+    return false;
   switch (type) {
   case TOKEN_CHAR:
     return c == t.c;
@@ -2481,11 +2531,11 @@ int token::operator==(const token &t)
   case TOKEN_NUMBERED_CHAR:
     return val == t.val;
   default:
-    return 1;
+    return true;
   }
 }
 
-int token::operator!=(const token &t)
+bool token::operator!=(const token &t)
 {
   return !(*this == t);
 }
@@ -2536,13 +2586,13 @@ bool token::is_usable_as_delimiter(bool report_error)
   case TOKEN_CHAR:
     is_valid = is_char_usable_as_delimiter(c);
     if (!is_valid && report_error)
-      error("character '%1' is not allowed as a starting delimiter",
+      error("character '%1' is not allowed as a delimiter",
 	    static_cast<char>(c));
     return is_valid;
   case TOKEN_NODE:
     // the user doesn't know what a node is
     if (report_error)
-      error("missing argument or invalid starting delimiter");
+      error("missing argument or invalid delimiter");
     return false;
   case TOKEN_SPACE:
   case TOKEN_STRETCHABLE_SPACE:
@@ -2550,8 +2600,9 @@ bool token::is_usable_as_delimiter(bool report_error)
   case TOKEN_HORIZONTAL_SPACE:
   case TOKEN_TAB:
   case TOKEN_NEWLINE:
+  case TOKEN_EOF:
     if (report_error)
-      error("%1 is not allowed as a starting delimiter", description());
+      error("%1 is not allowed as a delimiter", description());
     return false;
   default:
     return true;
@@ -2647,9 +2698,9 @@ void compatible()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    compatible_flag = (n > 0);
+    want_att_compat = (n > 0);
   else
-    compatible_flag = 1;
+    want_att_compat = true;
   skip_line();
 }
 
@@ -2687,7 +2738,7 @@ static void diagnose_invalid_identifier()
 
 symbol get_name(bool required)
 {
-  if (compatible_flag) {
+  if (want_att_compat) {
     char buf[3];
     tok.skip();
     if ((buf[0] = tok.ch()) != 0) {
@@ -2726,19 +2777,23 @@ static symbol do_get_long_name(bool required, char end_char)
     // If `end_char` != `\0` we normally have to append a null byte.
     if (i + 2 > buf_size) {
       if (buf == abuf) {
-	buf = new char[ABUF_SIZE*2];
-	memcpy(buf, abuf, buf_size);
-	buf_size = ABUF_SIZE*2;
+	// C++03: new char[ABUF_SIZE * 2]();
+	buf = new char[ABUF_SIZE * 2];
+	(void) memset(buf, 0, (ABUF_SIZE * 2 * sizeof(char)));
+	memcpy(buf, abuf, (buf_size * sizeof(char)));
+	buf_size = ABUF_SIZE * 2;
       }
       else {
 	char *old_buf = buf;
-	buf = new char[buf_size*2];
-	memcpy(buf, old_buf, buf_size);
+	// C++03: new char[buf_size * 2]();
+	buf = new char[buf_size * 2];
+	(void) memset(buf, 0, (buf_size * 2 * sizeof(char)));
+	memcpy(buf, old_buf, (buf_size * sizeof(char)));
 	buf_size *= 2;
 	delete[] old_buf;
       }
     }
-    if ((buf[i] = tok.ch()) == 0 || buf[i] == end_char)
+    if ((buf[i] = tok.ch()) == '\0' || buf[i] == end_char)
       break;
     i++;
     tok.next();
@@ -2839,16 +2894,16 @@ static void trapping_blank_line()
 
 void do_request()
 {
-  assert(do_old_compatible_flag == -1);
-  do_old_compatible_flag = compatible_flag;
-  compatible_flag = 0;
+  assert(do_old_want_att_compat == -1);
+  do_old_want_att_compat = want_att_compat;
+  want_att_compat = false;
   symbol nm = get_name();
   if (nm.is_null())
     skip_line();
   else
     interpolate_macro(nm, true /* don't want next token */);
-  compatible_flag = do_old_compatible_flag;
-  do_old_compatible_flag = -1;
+  want_att_compat = do_old_want_att_compat;
+  do_old_want_att_compat = -1;
   request_or_macro *p = lookup_request(nm);
   macro *m = p->to_macro();
   if (m)
@@ -2885,12 +2940,11 @@ static int transparent_translate(int cc)
       int c = ci->get_ascii_code();
       if (c != '\0')
 	return c;
-      if (getenv("GROFF_ENABLE_TRANSPARENCY_WARNINGS")
-	  != 0 /* nullptr */)
-	error("can't translate %1 to special character '%2'"
-	      " in transparent throughput",
-	      input_char_description(cc),
-	      ci->nm.contents());
+      // TODO: When Savannah #63074 is fixed, the user will have a way
+      // to avoid this error.
+      error("cannot translate %1 to special character '%2' in"
+	    " device-independent output", input_char_description(cc),
+	    ci->nm.contents());
     }
   }
   return cc;
@@ -3046,7 +3100,7 @@ void process_input_stack()
       }
     case token::TOKEN_NEWLINE:
       {
-	if (bol && !old_have_formattable_input
+	if (bol && !have_formattable_input_on_interrupted_line
 	    && !curenv->get_prev_line_interrupted())
 	  trapping_blank_line();
 	else {
@@ -3596,7 +3650,7 @@ class string_iterator : public input_iterator {
   char_block *bp;
   int count;			// of characters remaining
   node *nd;
-  int saved_compatible_flag;
+  bool att_compat;
   int with_break;		// inherited from the caller
 protected:
   symbol nm;
@@ -3609,8 +3663,8 @@ public:
   int get_location(int, const char **, int *);
   void backtrace();
   int get_break_flag() { return with_break; }
-  void save_compatible_flag(int f) { saved_compatible_flag = f; }
-  int get_compatible_flag() { return saved_compatible_flag; }
+  void set_att_compat(bool b) { att_compat = b; }
+  bool get_att_compat() { return att_compat; }
   int is_diversion();
 };
 
@@ -3972,7 +4026,7 @@ static void decode_args(macro_iterator *mi)
       macro arg;
       int quote_input_level = 0;
       int done_tab_warning = 0;
-      arg.append(compatible_flag ? PUSH_COMP_MODE : PUSH_GROFF_MODE);
+      arg.append(want_att_compat ? PUSH_COMP_MODE : PUSH_GROFF_MODE);
       // we store discarded double quotes for \$^
       if (c == '"') {
 	arg.append(DOUBLE_QUOTE);
@@ -3981,7 +4035,7 @@ static void decode_args(macro_iterator *mi)
       }
       while (c != EOF && c != '\n' && !(c == ' ' && quote_input_level == 0)) {
 	if (quote_input_level > 0 && c == '"'
-	    && (compatible_flag
+	    && (want_att_compat
 		|| input_stack::get_level() == quote_input_level)) {
 	  arg.append(DOUBLE_QUOTE);
 	  c = get_copy(&n);
@@ -4067,7 +4121,7 @@ void macro::invoke(symbol nm, bool do_not_want_next_token)
   decode_args(mi);
   input_stack::push(mi);
   // we must delay tok.next() in case the function has been called by
-  // do_request to assure proper handling of compatible_flag
+  // do_request to assure proper handling of want_att_compat
   if (!do_not_want_next_token)
     tok.next();
 }
@@ -4377,7 +4431,7 @@ void do_define_string(define_mode mode, comp_mode comp)
 void define_string()
 {
   do_define_string(DEFINE_NORMAL,
-		   compatible_flag ? COMP_ENABLE: COMP_IGNORE);
+		   want_att_compat ? COMP_ENABLE: COMP_IGNORE);
 }
 
 void define_nocomp_string()
@@ -4388,7 +4442,7 @@ void define_nocomp_string()
 void append_string()
 {
   do_define_string(DEFINE_APPEND,
-		   compatible_flag ? COMP_ENABLE : COMP_IGNORE);
+		   want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
 void append_nocomp_string()
@@ -4715,7 +4769,7 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
 	}
       }
       if (s[i] == 0
-	  && ((i == 2 && compatible_flag)
+	  && ((i == 2 && want_att_compat)
 	      || (d = get_copy(&n)) == ' '
 	      || d == '\n')) {	// we found it
 	if (d == '\n')
@@ -4732,7 +4786,7 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
 	  *mm = mac;
 	}
 	if (term != dot_symbol) {
-	  ignoring = 0;
+	  want_input_ignored = false;
 	  interpolate_macro(term);
 	}
 	else
@@ -4779,7 +4833,7 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
 void define_macro()
 {
   do_define_macro(DEFINE_NORMAL, CALLING_NORMAL,
-		  compatible_flag ? COMP_ENABLE : COMP_IGNORE);
+		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
 void define_nocomp_macro()
@@ -4790,7 +4844,7 @@ void define_nocomp_macro()
 void define_indirect_macro()
 {
   do_define_macro(DEFINE_NORMAL, CALLING_INDIRECT,
-		  compatible_flag ? COMP_ENABLE : COMP_IGNORE);
+		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
 void define_indirect_nocomp_macro()
@@ -4801,7 +4855,7 @@ void define_indirect_nocomp_macro()
 void append_macro()
 {
   do_define_macro(DEFINE_APPEND, CALLING_NORMAL,
-		  compatible_flag ? COMP_ENABLE : COMP_IGNORE);
+		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
 void append_nocomp_macro()
@@ -4812,7 +4866,7 @@ void append_nocomp_macro()
 void append_indirect_macro()
 {
   do_define_macro(DEFINE_APPEND, CALLING_INDIRECT,
-		  compatible_flag ? COMP_ENABLE : COMP_IGNORE);
+		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
 void append_indirect_nocomp_macro()
@@ -4822,9 +4876,9 @@ void append_indirect_nocomp_macro()
 
 void ignore()
 {
-  ignoring = 1;
+  want_input_ignored = true;
   do_define_macro(DEFINE_IGNORE, CALLING_NORMAL, COMP_IGNORE);
-  ignoring = 0;
+  want_input_ignored = false;
 }
 
 void remove_macro()
@@ -4934,9 +4988,9 @@ void do_string_case_transform(case_xform_mode mode)
       break;
     else
       if (mode == STRING_DOWNCASE)
-	nc = tolower(c);
+	nc = cmlower(c);
       else
-	nc = toupper(c);
+	nc = cmupper(c);
     mac->append(nc);
   }
   request_dictionary.define(s, mac);
@@ -5072,8 +5126,8 @@ void length_request()
     ++len;
     c = get_copy(&n);
   }
-  reg *r = (reg*)register_dictionary.lookup(ret);
-  if (r)
+  reg *r = static_cast<reg *>(register_dictionary.lookup(ret));
+  if (r != 0 /* nullptr */)
     r->set_value(len);
   else
     set_register(ret, len);
@@ -5146,6 +5200,7 @@ static void interpolate_environment_variable(symbol nm)
 void interpolate_register(symbol nm, int inc)
 {
   reg *r = look_up_register(nm);
+  assert(r != 0 /* nullptr */);
   if (inc < 0)
     r->decrement();
   else if (inc > 0)
@@ -5155,8 +5210,8 @@ void interpolate_register(symbol nm, int inc)
 
 static void interpolate_number_format(symbol nm)
 {
-  reg *r = (reg *)register_dictionary.lookup(nm);
-  if (r)
+  reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
+  if (r != 0 /* nullptr */)
     input_stack::push(make_temp_iterator(r->get_format()));
 }
 
@@ -5168,9 +5223,16 @@ static bool read_delimited_number(units *n,
   start_token.next();
   if (start_token.is_usable_as_delimiter(true /* report error */)) {
     tok.next();
-    if (get_number(n, si, prev_value)) {
-      if (start_token != tok)
-	warning(WARN_DELIM, "closing delimiter does not match");
+    if (read_measurement(n, si, prev_value)) {
+      if (start_token != tok) {
+	// token::description() writes to static, class-wide storage, so
+	// we must allocate a copy of it before issuing the next
+	// diagnostic.
+	char *delimdesc = strdup(start_token.description());
+	warning(WARN_DELIM, "closing delimiter does not match;"
+		" expected %1, got %2", delimdesc, tok.description());
+	free(delimdesc);
+      }
       return true;
     }
   }
@@ -5183,24 +5245,31 @@ static bool read_delimited_number(units *n, unsigned char si)
   start_token.next();
   if (start_token.is_usable_as_delimiter(true /* report error */)) {
     tok.next();
-    if (get_number(n, si)) {
-      if (start_token != tok)
-	warning(WARN_DELIM, "closing delimiter does not match");
+    if (read_measurement(n, si)) {
+      if (start_token != tok) {
+	// token::description() writes to static, class-wide storage, so
+	// we must allocate a copy of it before issuing the next
+	// diagnostic.
+	char *delimdesc = strdup(start_token.description());
+	warning(WARN_DELIM, "closing delimiter does not match;"
+		" expected %1, got %2", delimdesc, tok.description());
+	free(delimdesc);
+      }
       return true;
     }
   }
   return false;
 }
 
-static int get_line_arg(units *n, unsigned char si, charinfo **cp)
+static bool get_line_arg(units *n, unsigned char si, charinfo **cp)
 {
   token start_token;
   start_token.next();
   int start_level = input_stack::get_level();
   if (!start_token.is_usable_as_delimiter(true /* report error */))
-    return 0;
+    return false;
   tok.next();
-  if (get_number(n, si)) {
+  if (read_measurement(n, si)) {
     if (tok.is_dummy() || tok.is_transparent_dummy())
       tok.next();
     if (!(start_token == tok
@@ -5209,11 +5278,18 @@ static int get_line_arg(units *n, unsigned char si, charinfo **cp)
       tok.next();
     }
     if (!(start_token == tok
-	  && input_stack::get_level() == start_level))
-      warning(WARN_DELIM, "closing delimiter does not match");
-    return 1;
+	  && input_stack::get_level() == start_level)) {
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
+      warning(WARN_DELIM, "closing delimiter does not match; expected"
+	      " %1, got %2", delimdesc, tok.description());
+      free(delimdesc);
+    }
+    return true;
   }
-  return 0;
+  return false;
 }
 
 static bool read_size(int *x)
@@ -5265,7 +5341,7 @@ static bool read_size(int *x)
   }
   else if (csdigit(c)) {
     val = c - '0';
-    if (compatible_flag && !inc && c != '0' && c < '4') {
+    if (want_att_compat && !inc && c != '0' && c < '4') {
       // Support legacy \sNN syntax.
       tok.next();
       c = tok.ch();
@@ -5290,7 +5366,7 @@ static bool read_size(int *x)
       inc = c == '+' ? 1 : -1;
       tok.next();
     }
-    if (!get_number(&val, 'z'))
+    if (!read_measurement(&val, 'z'))
       return false;
     if (!(start.ch() == '[' && tok.ch() == ']') && start != tok) {
       if (start.ch() == '[')
@@ -5346,7 +5422,7 @@ static symbol get_delimited_name()
     return NULL_SYMBOL;
   }
   if (start_token.is_newline()) {
-    error("can't delimit name with a newline");
+    error("a newline is not allowed to delimit a name");
     return NULL_SYMBOL;
   }
   int start_level = input_stack::get_level();
@@ -5357,13 +5433,17 @@ static symbol get_delimited_name()
   for (;;) {
     if (i + 1 > buf_size) {
       if (buf == abuf) {
-	buf = new char[ABUF_SIZE*2];
+	// C++03: new char[ABUF_SIZE * 2]();
+	buf = new char[ABUF_SIZE * 2];
+	(void) memset(buf, 0, (ABUF_SIZE * 2 * sizeof(char)));
 	memcpy(buf, abuf, buf_size);
-	buf_size = ABUF_SIZE*2;
+	buf_size = ABUF_SIZE * 2;
       }
       else {
 	char *old_buf = buf;
-	buf = new char[buf_size*2];
+	// C++03: new char[buf_size * 2]();
+	buf = new char[buf_size * 2];
+	(void) memset(buf, 0, (buf_size * 2 * sizeof(char)));
 	memcpy(buf, old_buf, buf_size);
 	buf_size *= 2;
 	delete[] old_buf;
@@ -5371,7 +5451,7 @@ static symbol get_delimited_name()
     }
     tok.next();
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     if ((buf[i] = tok.ch()) == 0) {
       error("missing delimiter (got %1)", tok.description());
@@ -5411,44 +5491,51 @@ static void do_register()
     return;
   while (tok.is_space())
     tok.next();
-  reg *r = (reg *)register_dictionary.lookup(nm);
+  reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
   int prev_value;
-  if (!r || !r->get_value(&prev_value))
+  if ((0 /* nullptr */ == r) || !r->get_value(&prev_value))
     prev_value = 0;
   int val;
-  if (!get_number(&val, 'u', prev_value))
+  if (!read_measurement(&val, 'u', prev_value))
     return;
+  // token::description() writes to static, class-wide storage, so we
+  // must allocate a copy of it before issuing the next diagnostic.
+  char *delimdesc = strdup(start_token.description());
   if (start_token != tok)
-    warning(WARN_DELIM, "closing delimiter does not match");
-  if (r)
+    warning(WARN_DELIM, "closing delimiter does not match; expected %1,"
+	    " got %2", delimdesc, tok.description());
+  free(delimdesc);
+  if (r != 0 /* nullptr */)
     r->set_value(val);
   else
     set_register(nm, val);
 }
 
-// this implements the \w escape sequence
-
-static void do_width()
+static void do_width() // \w
 {
   int start_level = input_stack::get_level();
   token start_token;
   start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
+    return;
   environment env(curenv);
   environment *oldenv = curenv;
   curenv = &env;
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
-      if (tok != start_token)
-	warning(WARN_DELIM, "missing closing delimiter in"
-		" width computation escape sequence (got %1)",
-		tok.description());
-      // Synthesize an input line ending.
-      input_stack::push(make_temp_iterator("\n"));
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
+      warning(WARN_DELIM, "missing closing delimiter in width"
+	      "computation escape sequence; expected %1, got %2",
+	      delimdesc, tok.description());
+      free(delimdesc);
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     tok.process();
   }
@@ -5481,7 +5568,7 @@ void read_title_parts(node **part, hunits *part_width)
   for (int i = 0; i < 3; i++) {
     while (!tok.is_newline() && !tok.is_eof()) {
       if (tok == start
-	  && (compatible_flag || input_stack::get_level() == start_level)) {
+	  && (want_att_compat || input_stack::get_level() == start_level)) {
 	tok.next();
 	break;
       }
@@ -5653,22 +5740,24 @@ static node *do_device_control() // \X
   int start_level = input_stack::get_level();
   token start_token;
   start_token.next();
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
+    return 0 /* nullptr */;
   macro mac;
   for (;;) {
     tok.next();
-    if (tok.is_newline()) {
-      input_stack::push(make_temp_iterator("\n"));
-      break;
-    }
-    if (tok.is_eof()) {
+    if (tok.is_newline() || tok.is_eof()) {
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
       warning(WARN_DELIM, "missing closing delimiter in device control"
-	      " escape sequence (got %1)", tok.description());
-      // Synthesize an input line ending.
-      input_stack::push(make_temp_iterator("\n"));
+	      " escape sequence; expected %1, got %2", delimdesc,
+	      tok.description());
+      free(delimdesc);
       break;
     }
     if (tok == start_token
-	&& (compatible_flag || input_stack::get_level() == start_level))
+	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     unsigned char c;
     if (tok.is_space())
@@ -5935,7 +6024,7 @@ static bool do_if_request()
   }
   bool result;
   unsigned char c = tok.ch();
-  if (compatible_flag)
+  if (want_att_compat)
     switch (c) {
     case 'F':
     case 'S':
@@ -6041,7 +6130,7 @@ static bool do_if_request()
 	  return false;
 	}
 	if (tok == delim
-	    && (compatible_flag
+	    && (want_att_compat
 	        || input_stack::get_level() == delim_level))
 	  break;
 	tok.process();
@@ -6060,7 +6149,7 @@ static bool do_if_request()
   }
   else {
     units n;
-    if (!get_number(&n, 'u')) {
+    if (!read_measurement(&n, 'u')) {
       skip_branch();
       return false;
     }
@@ -6217,7 +6306,7 @@ void do_source(bool quietly)
       // Suppress diagnostic only if we're operating quietly and it's an
       // expected problem.
       if (!(quietly && (ENOENT == errno)))
-	error("can't open '%1': %2", nm.contents(), strerror(errno));
+	error("cannot open '%1': %2", nm.contents(), strerror(errno));
     tok.next();
   }
 }
@@ -6253,16 +6342,18 @@ void pipe_source()
       while ((c = get_copy(0)) == ' ' || c == '\t')
 	;
       size_t buf_size = 24;
-      char *buf = new char[buf_size];
+      char *buf = new char[buf_size]; // C++03: new char[buf_size]();
+      (void) memset(buf, 0, (buf_size * sizeof(char)));
       size_t buf_used = 0;
       for (; c != '\n' && c != EOF; c = get_copy(0)) {
 	const char *s = asciify(c);
 	size_t slen = strlen(s);
-	if (buf_used + slen + 1> buf_size) {
+	if ((buf_used + slen + 1) > buf_size) {
 	  char *old_buf = buf;
 	  size_t old_buf_size = buf_size;
 	  buf_size *= 2;
-	  buf = new char[buf_size];
+	  buf = new char[buf_size]; // C++03: new char[buf_size]();
+	  (void) memset(buf, 0, (buf_size * sizeof(char)));
 	  memcpy(buf, old_buf, old_buf_size);
 	  delete[] old_buf;
 	}
@@ -6275,7 +6366,8 @@ void pipe_source()
       if (fp)
 	input_stack::push(new file_iterator(fp, symbol(buf).contents(), 1));
       else
-	error("can't open pipe to process '%1': %2", buf, strerror(errno));
+	error("cannot open pipe to process '%1': %2", buf,
+	      strerror(errno));
       delete[] buf;
     }
     tok.next();
@@ -6462,7 +6554,7 @@ filename(fname), llx(0), lly(0), urx(0), ury(0), lastc(EOF)
   else
     // ...but in this case, we did not successfully open any input file.
     //
-    error("can't open '%1': %2", filename, strerror(errno));
+    error("cannot open '%1': %2", filename, strerror(errno));
 
   // Irrespective of whether or not we were able to successfully acquire the
   // bounding box properties, we ALWAYS update the associated gtroff registers.
@@ -7379,6 +7471,8 @@ static void report_hyphenation_codes()
 
 void hyphenation_patterns_file_code()
 {
+  error("'hpfcode' request will be withdrawn in a future groff release;"
+        " migrate to 'hcode'");
   tok.skip();
   while (!tok.is_newline() && !tok.is_eof()) {
     int n1, n2;
@@ -7567,10 +7661,10 @@ void check_missing_character()
 
 // this is for \Z
 
-int token::add_to_zero_width_node_list(node **pp)
+bool token::add_to_zero_width_node_list(node **pp)
 {
   hunits w;
-  int s;
+  int s = 0; /* space count, possibly populated by `nspaces()` */
   node *n = 0 /* nullptr */;
   switch (type) {
   case TOKEN_CHAR:
@@ -7597,7 +7691,7 @@ int token::add_to_zero_width_node_list(node **pp)
   case TOKEN_NODE:
   case TOKEN_HORIZONTAL_SPACE:
     n = nd;
-    nd = 0;
+    nd = 0 /* nullptr */;
     break;
   case TOKEN_NUMBERED_CHAR:
     *pp = (*pp)->add_char(get_charinfo_by_number(val), curenv, &w, &s);
@@ -7628,13 +7722,13 @@ int token::add_to_zero_width_node_list(node **pp)
     n->is_escape_colon();
     break;
   default:
-    return 0;
+    return false;
   }
   if (n) {
     n->next = *pp;
     *pp = n;
   }
-  return 1;
+  return true;
 }
 
 void token::process()
@@ -7817,11 +7911,17 @@ class readonly_text_register : public reg {
   const char *s;
 public:
   readonly_text_register(const char *);
+  readonly_text_register(int);
   const char *get_string();
 };
 
 readonly_text_register::readonly_text_register(const char *p) : s(p)
 {
+}
+
+readonly_text_register::readonly_text_register(int i)
+{
+  s = strdup(i_to_a(i));
 }
 
 const char *readonly_text_register::get_string()
@@ -7870,7 +7970,8 @@ void abort_request()
 char *read_string()
 {
   int len = 256;
-  char *s = new char[len];
+  char *s = new char[len]; // C++03: new char[len]();
+  (void) memset(s, 0, (len * sizeof(char)));
   int c;
   while ((c = get_copy(0)) == ' ')
     ;
@@ -7879,7 +7980,8 @@ char *read_string()
     if (!is_invalid_input_char(c)) {
       if (i + 2 > len) {
 	char *tem = s;
-	s = new char[len*2];
+	s = new char[len * 2]; // C++03: new char[len * 2]();
+	(void) memset(s, 0, (len * 2 * sizeof(char)));
 	memcpy(s, tem, len);
 	len *= 2;
 	delete[] tem;
@@ -7892,7 +7994,7 @@ char *read_string()
   tok.next();
   if (i == 0) {
     delete[] s;
-    return 0;
+    return 0 /* nullptr */;
   }
   return s;
 }
@@ -7905,16 +8007,19 @@ void pipe_output()
   }
   else {
     if (the_output) {
-      error("can't pipe: output already started");
+      error("cannot honor pipe request: output already started");
       skip_line();
     }
     else {
       char *pc = read_string();
       if (0 /* nullptr */ == pc)
-	error("can't pipe to empty command");
+	error("cannot apply pipe request to empty command");
       // Are we adding to an existing pipeline?
       if (pipe_command != 0 /* nullptr */) {
+	// C++03: new char[strlen(pipe_command) + strlen(pc) + 1 + 1]();
 	char *s = new char[strlen(pipe_command) + strlen(pc) + 1 + 1];
+	(void) memset(s, 0, ((strlen(pipe_command) + strlen(pc) + 1 + 1)
+			     * sizeof(char)));
 	strcpy(s, pipe_command);
 	strcat(s, "|");
 	strcat(s, pc);
@@ -7994,7 +8099,8 @@ void transparent_file()
     errno = 0;
     FILE *fp = include_search_path.open_file_cautious(filename.contents());
     if (0 /* nullptr */ == fp)
-      error("can't open '%1': %2", filename.contents(), strerror(errno));
+      error("cannot open '%1': %2", filename.contents(),
+	    strerror(errno));
     else {
       int bol = 1;
       for (;;) {
@@ -8091,7 +8197,10 @@ static void parse_output_page_list(char *p)
 static FILE *open_macro_package(const char *mac, char **path)
 {
   // Try `mac`.tmac first, then tmac.`mac`.  Expect ENOENT errors.
+  // C++03: new char[strlen(mac) + strlen(MACRO_POSTFIX) + 1]();
   char *s1 = new char[strlen(mac) + strlen(MACRO_POSTFIX) + 1];
+  (void) memset(s1, 0, ((strlen(mac) + strlen(MACRO_POSTFIX) + 1)
+			* sizeof(char)));
   strcpy(s1, mac);
   strcat(s1, MACRO_POSTFIX);
   FILE *fp = mac_path->open_file(s1, path);
@@ -8099,7 +8208,10 @@ static FILE *open_macro_package(const char *mac, char **path)
     error("cannot open macro file '%1': %2", s1, strerror(errno));
   delete[] s1;
   if (0 /* nullptr */ == fp) {
+    // C++03: new char[strlen(mac) + strlen(MACRO_PREFIX) + 1]();
     char *s2 = new char[strlen(mac) + strlen(MACRO_PREFIX) + 1];
+    (void) memset(s2, 0, ((strlen(mac) + strlen(MACRO_PREFIX) + 1)
+			  * sizeof(char)));
     strcpy(s2, MACRO_PREFIX);
     strcat(s2, mac);
     fp = mac_path->open_file(s2, path);
@@ -8205,7 +8317,7 @@ static int evaluate_expression(const char *expr, units *res)
 {
   input_stack::push(make_temp_iterator(expr));
   tok.next();
-  int success = get_number(res, 'u');
+  int success = read_measurement(res, 'u');
   while (input_stack::get(0) != EOF)
     ;
   return success;
@@ -8223,7 +8335,8 @@ static void do_register_assignment(const char *s)
       set_register(buf, n);
   }
   else {
-    char *buf = new char[p - s + 1];
+    char *buf = new char[p - s + 1]; // C++03: new char[p - s + 1]();
+    (void) memset(buf, 0, ((p - s + 1) * sizeof(char)));
     memcpy(buf, s, p - s);
     buf[p - s] = 0;
     units n;
@@ -8252,7 +8365,8 @@ static void do_string_assignment(const char *s)
     set_string(buf, s + 1);
   }
   else {
-    char *buf = new char[p - s + 1];
+    char *buf = new char[p - s + 1]; // C++03: new char[p - s + 1]();
+    (void) memset(buf, 0, ((p - s + 1) * sizeof(char)));
     memcpy(buf, s, p - s);
     buf[p - s] = 0;
     set_string(buf, p + 1);
@@ -8354,13 +8468,13 @@ int main(int argc, char **argv)
     case 'T':
       device = optarg;
       tflag = 1;
-      is_html = (strcmp(device, "html") == 0);
+      is_writing_html = (strcmp(device, "html") == 0);
       break;
     case 'C':
-      compatible_flag = 1;
+      want_att_compat = true;
       // fall through
     case 'c':
-      color_flag = 0;
+      want_color_output = false;
       break;
     case 'M':
       macro_path.command_line_dir(optarg);
@@ -8374,7 +8488,7 @@ int main(int argc, char **argv)
       add_string(optarg, &macros);
       break;
     case 'E':
-      inhibit_errors = 1;
+      want_errors_inhibited = true;
       break;
     case 'R':
       no_rc = 1;
@@ -8389,13 +8503,13 @@ int main(int argc, char **argv)
       iflag = 1;
       break;
     case 'b':
-      backtrace_flag = 1;
+      want_backtraces = true;
       break;
     case 'a':
       want_abstract_output = true;
       break;
     case 'z':
-      suppress_output_flag = 1;
+      want_output_suppressed = true;
       break;
     case 'n':
       if (sscanf(optarg, "%d", &next_page_number) == 1)
@@ -8499,7 +8613,7 @@ int main(int argc, char **argv)
   init_column_requests();
 #endif /* COLUMN */
   init_node_requests();
-  register_dictionary.define(".T", new readonly_text_register(tflag ? "1" : "0"));
+  register_dictionary.define(".T", new readonly_text_register(tflag));
   init_registers();
   init_reg_requests();
   init_hyphenation_pattern_requests();
@@ -8538,14 +8652,15 @@ void warn_request()
 {
   int n;
   if (has_arg() && get_integer(&n)) {
-    if (n & ~WARN_TOTAL) {
-      warning(WARN_RANGE, "warning mask must be between 0 and %1", WARN_TOTAL);
-      n &= WARN_TOTAL;
+    if (n & ~WARN_MAX) {
+      warning(WARN_RANGE, "warning mask must be in range 0..%1",
+	      WARN_MAX);
+      n &= WARN_MAX;
     }
     warning_mask = n;
   }
   else
-    warning_mask = WARN_TOTAL;
+    warning_mask = WARN_MAX;
   skip_line();
 }
 
@@ -8562,7 +8677,7 @@ static void init_registers()
   set_register("yr", int(t->tm_year));
   set_register("$$", getpid());
   register_dictionary.define(".A",
-      new readonly_text_register(want_abstract_output ? "1" : "0"));
+      new readonly_text_register(want_abstract_output));
 }
 
 /*
@@ -8709,15 +8824,15 @@ void init_input_requests()
   init_request("writem", write_macro_request);
   register_dictionary.define(".$", new nargs_reg);
   register_dictionary.define(".br", new break_flag_reg);
-  register_dictionary.define(".C", new readonly_register(&compatible_flag));
-  register_dictionary.define(".cp", new readonly_register(&do_old_compatible_flag));
+  register_dictionary.define(".C", new readonly_boolean_register(&want_att_compat));
+  register_dictionary.define(".cp", new readonly_register(&do_old_want_att_compat));
   register_dictionary.define(".O", new variable_reg(&suppression_level));
   register_dictionary.define(".c", new lineno_reg);
-  register_dictionary.define(".color", new readonly_register(&color_flag));
+  register_dictionary.define(".color", new readonly_boolean_register(&want_color_output));
   register_dictionary.define(".F", new filename_reg);
-  register_dictionary.define(".g", new readonly_text_register("1"));
+  register_dictionary.define(".g", new readonly_text_register(1));
   register_dictionary.define(".H", new readonly_register(&hresolution));
-  register_dictionary.define(".R", new readonly_text_register("10000"));
+  register_dictionary.define(".R", new readonly_text_register(INT_MAX));
   register_dictionary.define(".U", new readonly_boolean_register(&want_unsafe_requests));
   register_dictionary.define(".V", new readonly_register(&vresolution));
   register_dictionary.define(".warn", new readonly_register(&warning_mask));
@@ -8769,8 +8884,8 @@ static request_or_macro *lookup_request(symbol nm)
 node *charinfo_to_node_list(charinfo *ci, const environment *envp)
 {
   // Don't interpret character definitions in compatible mode.
-  int old_compatible_flag = compatible_flag;
-  compatible_flag = 0;
+  int old_want_att_compat = want_att_compat;
+  want_att_compat = false;
   int previous_escape_char = escape_char;
   escape_char = '\\';
   macro *mac = ci->set_macro(0);
@@ -8791,7 +8906,8 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
     if (tok.is_eof())
       break;
     if (tok.is_newline()) {
-      error("composite character mustn't contain newline");
+      error("a newline is not allowed in a composite character"
+	    " escape sequence");
       while (!tok.is_eof())
 	tok.next();
       break;
@@ -8804,42 +8920,40 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
   ci->set_macro(mac);
   tok = old_tok;
   curenv = oldenv;
-  compatible_flag = old_compatible_flag;
+  want_att_compat = old_want_att_compat;
   escape_char = previous_escape_char;
   have_formattable_input = false;
   return n;
 }
 
-static node *read_draw_node()
+static node *read_drawing_command()
 {
   token start_token;
   start_token.next();
-  if (!start_token.is_usable_as_delimiter(true /* report error */)){
-    do {
-      tok.next();
-    } while (tok != start_token && !tok.is_newline() && !tok.is_eof());
-  }
+  if (!start_token.is_usable_as_delimiter(true /* report error */))
+    return 0 /* nullptr */;
   else {
     tok.next();
     if (tok == start_token)
-      error("missing argument");
+      warning(WARN_MISSING, "missing arguments to drawing escape"
+	      " sequence");
     else {
       unsigned char type = tok.ch();
       if (type == 'F') {
-	read_color_draw_node(start_token);
-	return 0;
+	read_drawing_command_color_arguments(start_token);
+	return 0 /* nullptr */;
       }
       tok.next();
       int maxpoints = 10;
       hvpair *point = new hvpair[maxpoints];
       int npoints = 0;
-      int no_last_v = 0;
-      bool err = false;
+      bool no_last_v = false;
+      bool had_error = false;
       int i;
       for (i = 0; tok != start_token; i++) {
 	if (i == maxpoints) {
 	  hvpair *oldpoint = point;
-	  point = new hvpair[maxpoints*2];
+	  point = new hvpair[maxpoints * 2];
 	  for (int j = 0; j < maxpoints; j++)
 	    point[j] = oldpoint[j];
 	  maxpoints *= 2;
@@ -8848,30 +8962,30 @@ static node *read_draw_node()
 	if (tok.is_newline() || tok.is_eof()) {
 	  warning(WARN_DELIM, "missing closing delimiter in drawing"
 		  " escape sequence (got %1)", tok.description());
-	  err = true;
+	  had_error = true;
 	  break;
 	}
 	if (!get_hunits(&point[i].h,
 			type == 'f' || type == 't' ? 'u' : 'm')) {
-	  err = true;
+	  had_error = true;
 	  break;
 	}
 	++npoints;
 	tok.skip();
 	point[i].v = V0;
 	if (tok == start_token) {
-	  no_last_v = 1;
+	  no_last_v = true;
 	  break;
 	}
 	if (!get_vunits(&point[i].v, 'v')) {
-	  err = false;
+	  had_error = false;
 	  break;
 	}
 	tok.skip();
       }
       while (tok != start_token && !tok.is_newline() && !tok.is_eof())
 	tok.next();
-      if (!err) {
+      if (!had_error) {
 	switch (type) {
 	case 'l':
 	  if (npoints != 1 || no_last_v) {
@@ -8924,10 +9038,10 @@ static node *read_draw_node()
       }
     }
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
-static void read_color_draw_node(token &start)
+static void read_drawing_command_color_arguments(token &start)
 {
   tok.next();
   if (tok == start) {
@@ -8993,8 +9107,8 @@ static struct {
   { "ig", WARN_IG },
   { "color", WARN_COLOR },
   { "file", WARN_FILE },
-  { "all", WARN_TOTAL & ~(WARN_DI | WARN_MAC | WARN_REG) },
-  { "w", WARN_TOTAL },
+  { "all", WARN_MAX & ~(WARN_DI | WARN_MAC | WARN_REG) },
+  { "w", WARN_MAX },
   { "default", DEFAULT_WARNING_MASK },
 };
 
@@ -9031,9 +9145,12 @@ static void copy_mode_error(const char *format,
 			    const errarg &arg2,
 			    const errarg &arg3)
 {
-  if (ignoring) {
+  if (want_input_ignored) {
     static const char prefix[] = "(in ignored input) ";
-    char *s = new char[sizeof(prefix) + strlen(format)];
+    // C++03: new char[sizeof prefix + strlen(format)]();
+    char *s = new char[sizeof prefix + strlen(format)];
+    (void) memset(s, 0, (sizeof prefix + (strlen(format)
+					  * sizeof(char))));
     strcpy(s, prefix);
     strcat(s, format);
     warning(WARN_IG, s, arg1, arg2, arg3);
@@ -9053,12 +9170,12 @@ static void do_error(error_type type,
 {
   const char *filename;
   int lineno;
-  if (inhibit_errors && type < FATAL)
+  if (want_errors_inhibited && (type < FATAL))
     return;
-  if (backtrace_flag)
+  if (want_backtraces)
     input_stack::backtrace();
   if (!get_file_line(&filename, &lineno))
-    filename = 0;
+    filename = 0 /* nullptr */;
   if (filename) {
     if (program_name)
       errprint("%1:", program_name);
@@ -9286,7 +9403,7 @@ void get_flags()
     assert(!s.is_null());
     ci->get_flags();
   }
-  class_flag = 0;
+  using_character_classes = false;
 }
 
 // Get the union of all flags affecting this charinfo.

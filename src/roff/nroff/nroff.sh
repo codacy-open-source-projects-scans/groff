@@ -38,7 +38,7 @@ usage: $prog {-v | --version}
 usage: $prog --help"
 
 summary="
-Format documents with groff(1) for TTY (terminal) devices.
+Format documents with groff(1) for terminal devices.
 See the nroff(1) manual page."
 
 # Break up option clusters into separate arguments.
@@ -148,7 +148,7 @@ fi
 
 # Determine the -T option.  Was a valid one specified?
 case "$Topt" in
-  -Tascii | -Tlatin1 | -Tutf8 | -Tcp1047)
+  -Tascii | -Tlatin1 | -Tutf8)
     T=$Topt ;;
 esac
 
@@ -157,7 +157,7 @@ if [ -z "$T" ]
 then
   Tenv=-T$GROFF_TYPESETTER
   case "$Tenv" in
-    -Tascii | -Tlatin1 | -Tutf8 | -Tcp1047)
+    -Tascii | -Tlatin1 | -Tutf8)
       T=$Tenv ;;
   esac
 fi
@@ -173,8 +173,6 @@ then
       Tloc=utf8 ;;
     ISO-8859-1 | ISO-8859-15)
       Tloc=latin1 ;;
-    IBM-1047)
-      Tloc=cp1047 ;;
     *)
       # Some old shells don't support ${FOO:-bar} expansion syntax.  We
       # should switch to it when it is safe to abandon support for them.
@@ -184,16 +182,12 @@ then
         iso_8859_1 | *.ISO-8859-1 | *.ISO8859-1 | \
         iso_8859_15 | *.ISO-8859-15 | *.ISO8859-15)
           Tloc=latin1 ;;
-        *.IBM-1047)
-          Tloc=cp1047 ;;
         *)
           case "$LESSCHARSET" in
             utf-8)
               Tloc=utf8 ;;
             latin1)
               Tloc=latin1 ;;
-            cp1047)
-              Tloc=cp1047 ;;
             *)
               Tloc=ascii ;;
           esac ;;

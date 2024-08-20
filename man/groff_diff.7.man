@@ -285,12 +285,39 @@ GNU
 .I troff \" GNU
 will not perform automatic hyphenation.
 .
+.
+.P
+For automatic hyphenation to work,
+the formatter must know which letters are equivalent;
+for example,
+the letter \[lq]E\[rq] behaves like \[lq]e\[rq];
+only the latter typically appears in hyphenation pattern files.
+.
+GNU
+.I troff \" GNU
+expects characters that participate in automatic hyphenation to be
+assigned
+.I "hyphenation codes"
+that define these equivalence classes.
+.
+At startup,
+GNU
+.I troff \" GNU
+assigns hyphenation codes to the letters \[lq]a\[rq]\[en]\[lq]z\[rq],
+applies the same codes to \[lq]A\[rq]\[en]\[lq]Z\[rq]
+in one-to-one correspondence,
+and assigns a code of zero to all other characters.
+.
+.
+.P
 The
 .B hcode
-request assigns values to character codes such that they can be handled
-consistently by the hyphenation patterns,
-for instance by treating accented letters the same as their unaccented
-counterparts.
+request extends this principle to letters
+outside the Unicode basic Latin alphabet;
+without it,
+words containing such letters
+won't be hyphenated properly
+even if the corresponding hyphenation patterns contain them.
 .
 .
 .P
@@ -786,13 +813,13 @@ but the polygon is filled.
 .
 .TP
 .BI \[rs]D\[aq]t\~ "n" \[aq]
-Set line thickness of geometric objects to
+Set line thickness of geometric objects
 .RI to\~ n
 basic units.
 .
 A zero
 .I n
-selects the minimal supported thickness.
+selects the minimum supported thickness.
 .
 A negative
 .I n
@@ -1136,7 +1163,7 @@ cannot.
 This inclusion of newlines requires an extension to the AT&T
 .I troff \" AT&T
 output format,
-and will confuse postprocessors that do not know about it.
+and confuses postprocessors that do not know about it.
 .
 .
 .TP
@@ -2810,7 +2837,7 @@ character is still recognized as the start of a comment).
 .
 .IP
 Use the
-.B hpfcode
+.B hcode
 request
 (see below)
 to map the encoding used in hyphenation pattern files to
@@ -2896,15 +2923,18 @@ of the environment.
 .TP
 .BI .hpfcode\~ "a b"\c
 .RI \~[ "c d" "] .\|.\|."
-Define mapping values for character codes in pattern files.
+.B Caution:
+This request will be withdrawn in a future
+.I groff
+release.
 .
-This is an older mechanism no longer used by
-.IR groff 's
-own macro files;
-for its successor,
-see
+Use
 .B hcode
-above.
+instead.
+.
+.
+.IP
+Define mapping values for character codes in pattern files.
 .
 .B hpf
 or
@@ -2923,8 +2953,8 @@ to
 .RI code\~ d ,
 and so on.
 .
-Character codes that would otherwise be invalid in
-.I groff
+Character codes that would otherwise be invalid in GNU
+.I troff \" GNU
 can be used.
 .
 By default,
@@ -4079,6 +4109,24 @@ and so on.
 .
 .
 .\" ====================================================================
+.SS "Altered registers"
+.\" ====================================================================
+.
+.TP
+.B \[rs]n[.R]
+Because GNU
+.I troff \" GNU
+dynamically manages register storage,
+it repurposes the
+.B .R
+register
+to interpolate the maximum integer representable in the formatter.
+.
+Favor its use over numeric literals with many zeros or nines
+to indicate an arbitrary large quantity.
+.
+.
+.\" ====================================================================
 .SS "New registers"
 .\" ====================================================================
 .
@@ -4419,7 +4467,7 @@ This is a string-valued register.
 .B \[rs]n[.ss]
 .TQ
 .B \[rs]n[.sss]
-Interpolate values of minimal inter-word space and additional
+Interpolate values of minimum inter-word space and additional
 inter-sentence space,
 respectively,
 in twelfths of the space width of the selected font.
@@ -4696,7 +4744,7 @@ Interpolate Gregorian year.
 .
 AT&T
 .IR troff 's \" AT&T
-.B \[rs][yr]
+.B \[rs]n[yr]
 interpolates the Gregorian year minus 1900.
 .
 .
@@ -5401,7 +5449,7 @@ composite characters
 environments
 .RB ( pev ),
 hyphenation codes
-.RB ( .phcode ),
+.RB ( phcode ),
 hyphenation exceptions
 .RB ( phw ),
 registers

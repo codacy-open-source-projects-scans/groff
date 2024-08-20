@@ -18,9 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "troff.h"
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
 #endif
+
+#include <errno.h> // errno
 
 #include "dictionary.h"
 #include "hvunits.h"
@@ -1037,6 +1039,7 @@ void troff_output_file::flush_tbuf()
     put(' ');
   }
   check_output_limits(hpos, vpos);
+  assert(current_size > 0);
   check_output_limits(hpos, vpos - current_size);
 
   for (int i = 0; i < tbuf_len; i++)
@@ -1263,7 +1266,7 @@ void troff_output_file::fill_color(color *col)
   if (!col || current_fill_color == col)
     return;
   current_fill_color = col;
-  if (!color_flag)
+  if (!want_color_output)
     return;
   flush_tbuf();
   do_motion();
@@ -1316,7 +1319,7 @@ void troff_output_file::glyph_color(color *col)
   if (!col || current_glyph_color == col)
     return;
   current_glyph_color = col;
-  if (!color_flag)
+  if (!want_color_output)
     return;
   flush_tbuf();
   // grotty doesn't like a color command if the vertical position is zero.
@@ -1567,7 +1570,7 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
   errno = 0;
   FILE *ifp = include_search_path.open_file_cautious(filename);
   if (ifp == 0)
-    error("can't open '%1': %2", filename, strerror(errno));
+    error("cannot open '%1': %2", filename, strerror(errno));
   else {
     int c;
     while ((c = getc(ifp)) != EOF)
@@ -1970,7 +1973,7 @@ class dbreak_node : public node {
   node *pre;
   node *post;
 public:
-  dbreak_node(node *, node *, statem *, int, node * = 0);
+  dbreak_node(node *, node *, statem *, int, node * = 0 /* nullptr */);
   ~dbreak_node();
   node *copy();
   node *merge_glyph_node(glyph_node *);
@@ -1980,8 +1983,9 @@ public:
   hunits italic_correction();
   hunits subscript_correction();
   void tprint(troff_output_file *);
-  breakpoint *get_breakpoints(hunits width, int ns, breakpoint *rest = 0,
-			      int is_inner = 0);
+  breakpoint *get_breakpoints(hunits /* width */, int /* ns */,
+			      breakpoint * /* rest */ = 0 /* nullptr */,
+			      bool /* is_inner */ = false);
   int nbreaks();
   int ends_sentence();
   void split(int, node **, node **);
@@ -2051,7 +2055,7 @@ node *glyph_node::add_self(node *n, hyphen_list **p)
     next = n;
     nn = this;
   }
-  if ((*p)->hyphen)
+  if ((*p)->is_hyphen)
     nn = nn->add_discretionary_hyphen();
   hyphen_list *pp = *p;
   *p = (*p)->next;
@@ -2864,13 +2868,13 @@ enum break_char_type {
 
 node *break_char_node::add_self(node *n, hyphen_list **p)
 {
-  int have_space_node = 0;
+  bool have_space_node = false;
   assert((*p)->hyphenation_code == 0);
   if (break_code & CAN_BREAK_BEFORE) {
-    if ((*p)->breakable || break_code & IGNORE_HCODES) {
+    if ((*p)->is_breakable || break_code & IGNORE_HCODES) {
       n = new space_node(H0, col, n);
       n->freeze_space();
-      have_space_node = 1;
+      have_space_node = true;
     }
   }
   if (!have_space_node) {
@@ -2889,7 +2893,7 @@ node *break_char_node::add_self(node *n, hyphen_list **p)
   next = n;
   n = this;
   if (break_code & CAN_BREAK_AFTER) {
-    if ((*p)->breakable || break_code & IGNORE_HCODES) {
+    if ((*p)->is_breakable || break_code & IGNORE_HCODES) {
       n = new space_node(H0, col, n);
       n->freeze_space();
     }
@@ -3408,9 +3412,9 @@ vunits vmotion_node::vertical_width()
   return n;
 }
 
-int node::set_unformat_flag()
+bool node::set_unformat_flag()
 {
-  return 1;
+  return true;
 }
 
 int node::character_type()
@@ -3672,8 +3676,8 @@ void vertical_size_node::asciify(macro *)
   delete this;
 }
 
-breakpoint *node::get_breakpoints(hunits /*width*/, int /*nspaces*/,
-				  breakpoint *rest, int /*is_inner*/)
+breakpoint *node::get_breakpoints(hunits /* width */, int /* nspaces */,
+				  breakpoint *rest, bool /* is_inner */)
 {
   return rest;
 }
@@ -3684,7 +3688,7 @@ int node::nbreaks()
 }
 
 breakpoint *space_node::get_breakpoints(hunits wd, int ns,
-					breakpoint *rest, int is_inner)
+					breakpoint *rest, bool is_inner)
 {
   if (next && next->discardable())
     return rest;
@@ -3716,19 +3720,20 @@ int space_node::nbreaks()
 static breakpoint *node_list_get_breakpoints(node *p, hunits *widthp,
 					     int ns, breakpoint *rest)
 {
-  if (p != 0) {
+  if (p != 0 /* nullptr */) {
     rest = p->get_breakpoints(*widthp,
 			      ns,
-			      node_list_get_breakpoints(p->next, widthp, ns,
-							rest),
-			      1);
+			      node_list_get_breakpoints(p->next, widthp,
+							ns, rest),
+			      true);
     *widthp += p->width();
   }
   return rest;
 }
 
 breakpoint *dbreak_node::get_breakpoints(hunits wd, int ns,
-					 breakpoint *rest, int is_inner)
+					 breakpoint *rest,
+					 bool is_inner)
 {
   breakpoint *bp = new breakpoint;
   bp->next = rest;
@@ -4178,7 +4183,7 @@ void suppress_node::tprint(troff_output_file *out)
 	else
 	  strcpy(name, image_filename);
       }
-      if (is_html) {
+      if (is_writing_html) {
 	switch (last_position) {
 	case 'c':
 	  out->start_special();
@@ -4372,7 +4377,7 @@ node *composite_node::add_self(node *nn, hyphen_list **p)
   assert(ci->get_hyphenation_code() == (*p)->hyphenation_code);
   next = nn;
   nn = this;
-  if ((*p)->hyphen)
+  if ((*p)->is_hyphen)
     nn = nn->add_discretionary_hyphen();
   hyphen_list *pp = *p;
   *p = (*p)->next;
@@ -4415,12 +4420,12 @@ width_list::width_list(width_list *w)
 }
 
 word_space_node::word_space_node(hunits d, color *c, width_list *w, node *x)
-: space_node(d, c, x), orig_width(w), unformat(0)
+: space_node(d, c, x), orig_width(w), unformat(false)
 {
 }
 
 word_space_node::word_space_node(hunits d, int s, color *c,
-				 width_list *w, int flag, statem *st,
+				 width_list *w, bool flag, statem *st,
 				 int divlevel, node *x)
 : space_node(d, s, 0, c, st, divlevel, x), orig_width(w), unformat(flag)
 {
@@ -4452,10 +4457,10 @@ node *word_space_node::copy()
 			     div_nest_level);
 }
 
-int word_space_node::set_unformat_flag()
+bool word_space_node::set_unformat_flag()
 {
-  unformat = 1;
-  return 1;
+  unformat = true;
+  return true;
 }
 
 void word_space_node::tprint(troff_output_file *out)
@@ -4505,7 +4510,8 @@ bool unbreakable_space_node::is_tag()
 }
 
 breakpoint *unbreakable_space_node::get_breakpoints(hunits, int,
-						    breakpoint *rest, int)
+						    breakpoint *rest,
+						    bool /* is_inner */)
 {
   return rest;
 }
@@ -4852,7 +4858,7 @@ void hmotion_node::tprint(troff_output_file *out)
 void space_char_hmotion_node::tprint(troff_output_file *out)
 {
   out->fill_color(col);
-  if (is_html) {
+  if (is_writing_html) {
     // we emit the space width as a negative glyph index
     out->flush_tbuf();
     out->do_motion();
@@ -5032,9 +5038,14 @@ static node *make_glyph_node(charinfo *s, environment *env,
 	}
 	else if (s->nm.contents()) {
 	  const char *nm = s->nm.contents();
-	  const char *backslash = (nm[1] == 0) ? "\\" : "";
-	  warning(WARN_CHAR, "special character '%1%2' not defined",
-		  backslash, nm);
+	  // If the contents are empty, get_char_for_escape_parameter()
+	  // should already have thrown an error.
+	  // XXX: Why are we here if the parse failed that early?
+	  if (nm[0] != '\0') {
+	    const char *backslash = (nm[1] == '\0') ? "\\" : "";
+	    warning(WARN_CHAR, "special character '%1%2' not defined",
+		    backslash, nm);
+	  }
 	}
       }
       return 0 /* nullptr */;
@@ -5231,9 +5242,9 @@ const char *vertical_size_node::type()
   return "vertical_size_node";
 }
 
-int vertical_size_node::set_unformat_flag()
+bool vertical_size_node::set_unformat_flag()
 {
-  return 0;
+  return false;
 }
 
 int vertical_size_node::force_tprint()
@@ -5257,10 +5268,10 @@ const char *hmotion_node::type()
   return "hmotion_node";
 }
 
-int hmotion_node::set_unformat_flag()
+bool hmotion_node::set_unformat_flag()
 {
-  unformat = 1;
-  return 1;
+  unformat = true;
+  return true;
 }
 
 int hmotion_node::force_tprint()
@@ -5917,7 +5928,7 @@ void unbreakable_space_node::tprint(troff_output_file *out)
 {
   out->fill_color(col);
   out->word_marker();
-  if (is_html) {
+  if (is_writing_html) {
     // we emit the space width as a negative glyph index
     out->flush_tbuf();
     out->do_motion();
@@ -6627,7 +6638,8 @@ static void embolden_font()
 	else {
 	  int f = finfo2.position;
 	  units offset;
-	  if (has_arg() && get_number(&offset, 'u') && offset >= 1)
+	  if (has_arg()
+	      && read_measurement(&offset, 'u') && offset >= 1)
 	    font_table[f]->set_conditional_bold(n, hunits(offset - 1));
 	  else
 	    font_table[f]->conditional_unbold(n);
@@ -6636,7 +6648,7 @@ static void embolden_font()
       else {
 	// A numeric second argument must be an emboldening amount.
 	units offset;
-	if (get_number(&offset, 'u') && offset >= 1)
+	if (read_measurement(&offset, 'u') && offset >= 1)
 	  font_table[n]->set_bold(hunits(offset - 1));
 	else
 	  font_table[n]->unbold();
@@ -6714,9 +6726,9 @@ static void configure_track_kerning()
     int n = finfo.position, min_s, max_s;
     hunits min_a, max_a;
     if (has_arg()
-	&& get_number(&min_s, 'z')
+	&& read_measurement(&min_s, 'z')
 	&& get_hunits(&min_a, 'p')
-	&& get_number(&max_s, 'z')
+	&& read_measurement(&max_s, 'z')
 	&& get_hunits(&max_a, 'p')) {
       track_kerning_function tk(min_s, min_a, max_s, max_a);
       font_table[n]->set_track_kern(tk);
@@ -6744,7 +6756,7 @@ static void constantly_space_font()
     if (!has_arg() || !get_integer(&x))
       font_table[n]->set_constant_space(CONSTANT_SPACE_NONE);
     else {
-      if (!has_arg() || !get_number(&y, 'z'))
+      if (!has_arg() || !read_measurement(&y, 'z'))
 	font_table[n]->set_constant_space(CONSTANT_SPACE_RELATIVE, x);
       else
 	font_table[n]->set_constant_space(CONSTANT_SPACE_ABSOLUTE,
@@ -6786,7 +6798,7 @@ static void set_soft_hyphen_character()
 
 void init_output()
 {
-  if (suppress_output_flag)
+  if (want_output_suppressed)
     the_output = new suppress_output_file;
   else if (want_abstract_output)
     the_output = new ascii_output_file;

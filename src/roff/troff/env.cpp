@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
+#include <errno.h> // errno
 #include <math.h> // ceil()
 
 symbol default_family("T");
@@ -236,13 +237,13 @@ int compare_ranges(const void *p1, const void *p2)
 void font_size::init_size_table(int *sizes)
 {
   nranges = 0;
-  while (sizes[nranges*2] != 0)
+  while (sizes[nranges * 2] != 0)
     nranges++;
   assert(nranges > 0);
   size_table = new size_range[nranges];
   for (int i = 0; i < nranges; i++) {
-    size_table[i].min = sizes[i*2];
-    size_table[i].max = sizes[i*2 + 1];
+    size_table[i].min = sizes[i * 2];
+    size_table[i].max = sizes[i * 2 + 1];
   }
   qsort(size_table, nranges, sizeof(size_range), compare_ranges);
 }
@@ -1304,7 +1305,9 @@ void family_change()
 void point_size()
 {
   int n;
-  if (has_arg() && get_number(&n, 'z', curenv->get_requested_point_size())) {
+  if (has_arg()
+      && read_measurement(&n, 'z', curenv->get_requested_point_size()))
+  {
     if (n <= 0)
       n = 1;
     curenv->set_size(n);
@@ -1317,7 +1320,8 @@ void point_size()
 void override_sizes()
 {
   int n = 16;
-  int *sizes = new int[n];
+  int *sizes = new int[n]; // C++03: new int[n]();
+  (void) memset(sizes, 0, (n * sizeof(int)));
   int i = 0;
   char *buf = read_string();
   if (!buf)
@@ -1336,13 +1340,14 @@ void override_sizes()
 	break;
       // fall through
     default:
-      warning(WARN_RANGE, "bad size range '%1'", p);
+      warning(WARN_RANGE, "invalid size range '%1'", p);
       return;
     }
     if (i + 2 > n) {
       int *old_sizes = sizes;
-      sizes = new int[n*2];
-      memcpy(sizes, old_sizes, n*sizeof(int));
+      sizes = new int[n * 2]; // C++03: new int[n * 2]();
+      (void) memset(sizes, 0, (n * 2 * sizeof(int)));
+      memcpy(sizes, old_sizes, (n * sizeof(int)));
       n *= 2;
       delete[] old_sizes;
     }
@@ -1838,7 +1843,7 @@ void environment::newline()
   }
   input_line_start = line == 0 /* nullptr */ ? H0 : width_total;
   if (to_be_output) {
-    if (is_html && !fill) {
+    if (is_writing_html && !fill) {
       curdiv->modified_tag.incl(MTSM_EOL);
       if (suppress_next_eol)
 	suppress_next_eol = false;
@@ -2107,9 +2112,9 @@ void environment::hyphenate_line(bool must_break_here)
     // this is for characters like hyphen and emdash
     int prev_code = 0;
     for (hyphen_list *h = sl; h; h = h->next) {
-      h->breakable = (prev_code != 0
-		      && h->next != 0 /* nullptr */
-		      && h->next->hyphenation_code != 0);
+      h->is_breakable = (prev_code != 0
+			 && h->next != 0 /* nullptr */
+			 && h->next->hyphenation_code != 0);
       prev_code = h->hyphenation_code;
     }
   }
@@ -2336,7 +2341,7 @@ void environment::final_break()
 
 node *environment::make_tag(const char *nm, int i)
 {
-  if (is_html) {
+  if (is_writing_html) {
     /*
      * need to emit tag for post-grohtml
      * but we check to see whether we can emit specials
@@ -2386,7 +2391,7 @@ void environment::dump_node_list()
 
 statem *environment::construct_state(bool has_only_eol)
 {
-  if (is_html) {
+  if (is_writing_html) {
     statem *s = new statem();
     if (!has_only_eol) {
       s->add_tag(MTSM_IN, indent);
@@ -2417,7 +2422,7 @@ statem *environment::construct_state(bool has_only_eol)
 void environment::construct_format_state(node *nd, bool was_centered,
 					 int filling)
 {
-  if (is_html) {
+  if (is_writing_html) {
     // find first glyph node which has a state.
     while (nd != 0 /* nullptr */ && nd->state == 0 /* nullptr */)
       nd = nd->next;
@@ -2447,7 +2452,7 @@ void environment::construct_format_state(node *nd, bool was_centered,
 
 void environment::construct_new_line_state(node *nd)
 {
-  if (is_html) {
+  if (is_writing_html) {
     // find first glyph node which has a state.
     while (nd != 0 /* nullptr */ && nd->state == 0 /* nullptr */)
       nd = nd->next;
@@ -2762,7 +2767,8 @@ const char *tab_stops::to_string()
     if (buf)
       delete[] buf;
     buf_size = need;
-    buf = new char[buf_size];
+    buf = new char[buf_size]; // C++03: new char[buf_size]();
+    (void) memset(buf, 0, buf_size * sizeof(char));
   }
   char *ptr = buf;
   for (p = initial_list; p; p = p->next) {
@@ -3645,7 +3651,7 @@ static void add_hyphenation_exceptions()
     while (i < WORD_MAX && !tok.is_space() && !tok.is_newline()
 	   && !tok.is_eof()) {
       charinfo *ci = tok.get_char(true /* required */);
-      if (ci == 0) {
+      if (0 /* nullptr */ == ci) {
 	skip_line();
 	return;
       }
@@ -3656,18 +3662,20 @@ static void add_hyphenation_exceptions()
       }
       else {
 	unsigned char c = ci->get_hyphenation_code();
-	if (c == 0)
+	if (0 == c)
 	  break;
 	buf[i++] = c;
       }
     }
     if (i > 0) {
       pos[npos] = 0;
-      buf[i] = 0;
+      buf[i] = '\0';
+      // C++03: new unsigned char[npos + 1]();
       unsigned char *tem = new unsigned char[npos + 1];
+      (void) memset(tem, 0, ((npos + 1) * sizeof(unsigned char)));
       memcpy(tem, pos, npos + 1);
-      tem = (unsigned char *)current_language->exceptions.lookup(symbol(buf),
-								 tem);
+      tem = static_cast<unsigned char *>
+	    (current_language->exceptions.lookup(symbol(buf), tem));
       if (tem)
 	delete[] tem;
     }
@@ -3684,7 +3692,7 @@ static void print_hyphenation_exceptions()
   // character in a word except the last.  The word may have a trailing
   // space; see `hyphen_trie::read_patterns_file()`.
   const size_t bufsz = WORD_MAX * 2;
-  char wordbuf[bufsz];
+  char wordbuf[bufsz]; // need to `errprint()` it, so not `unsigned`
   while (iter.get(&entry, reinterpret_cast<void **>(&hypoint))) {
     assert(!entry.is_null());
     assert(hypoint != 0 /* nullptr */);
@@ -3823,11 +3831,13 @@ void hyphen_trie::insert_hyphenation(dictionary *ex, const char *pat,
   }
   if (i > 0) {
     pos[npos] = 0;
-    buf[i] = 0;
+    buf[i] = '\0';
+    // C++03: new unsigned char[npos + 1]();
     unsigned char *tem = new unsigned char[npos + 1];
+    (void) memset(tem, 0, ((npos + 1) * sizeof(unsigned char)));
     memcpy(tem, pos, npos + 1);
-    tem = (unsigned char *)ex->lookup(symbol(buf), tem);
-    if (tem)
+    tem = static_cast<unsigned char *>(ex->lookup(symbol(buf), tem));
+    if (0 /* nullptr */ == tem)
       delete[] tem;
   }
 }
@@ -4273,7 +4283,7 @@ void hyphenate(hyphen_list *h, unsigned flags)
 	int i = 1;
 	for (tem = h; tem != 0 /* nullptr */; tem = tem->next, i++)
 	  if (pos[j] == i) {
-	    tem->hyphen = 1;
+	    tem->is_hyphen = true;
 	    j++;
 	  }
       }
@@ -4291,14 +4301,14 @@ void hyphenate(hyphen_list *h, unsigned flags)
 	  tem = h;
 	  if (pos[j] == i) {
 	    if (flags & HYPHEN_FIRST_CHAR)
-	      tem->hyphen = 1;
+	      tem->is_hyphen = true;
 	    j++;
 	  }
 	  tem = tem->next;
 	  i++;
 	  if (pos[j] == i) {
 	    if (!(flags & HYPHEN_NOT_FIRST_CHARS))
-	      tem->hyphen = 1;
+	      tem->is_hyphen = true;
 	    j++;
 	  }
 	  tem = tem->next;
@@ -4309,7 +4319,7 @@ void hyphenate(hyphen_list *h, unsigned flags)
 	    --len;
 	  for (; i < len && tem; tem = tem->next, i++)
 	    if (pos[j] == i) {
-	      tem->hyphen = 1;
+	      tem->is_hyphen = true;
 	      j++;
 	    }
 	}
@@ -4334,7 +4344,7 @@ void hyphenate(hyphen_list *h, unsigned flags)
 	  int i;
 	  for (i = 2, tem = h; i < len && tem; tem = tem->next, i++)
 	    if (num[i] & 1)
-	      tem->hyphen = 1;
+	      tem->is_hyphen = true;
 	}
       }
     }

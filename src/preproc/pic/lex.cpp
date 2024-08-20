@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -29,13 +28,8 @@ PTABLE(char) macro_table;
 
 // First character of the range representing $1-$<MAX_ARG>.
 // All of them must be invalid input characters.
-#ifndef IS_EBCDIC_HOST
 #define ARG1 0x80
 #define MAX_ARG 32
-#else
-#define ARG1 0x30
-#define MAX_ARG 16
-#endif
 
 class macro_input : public input {
   char *s;
@@ -2037,3 +2031,8 @@ void yyerror(const char *s)
   }
 }
 
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

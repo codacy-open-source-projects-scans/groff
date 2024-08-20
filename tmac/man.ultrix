@@ -48,7 +48,7 @@
 ..
 .if t .ig
 .de HB
-.ie \\n[.$] .ul 999
+.ie \\n[.$] .ul \\n[.R]
 .el .ul
 \\$*
 ..

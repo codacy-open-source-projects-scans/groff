@@ -50,9 +50,9 @@ static vunits needed_space;
 
 diversion::diversion(symbol s)
 : prev(0), nm(s), vertical_position(V0), high_water_mark(V0),
-  any_chars_added(0), no_space_mode(0), needs_push(0), saved_seen_break(0),
-  saved_seen_space(0), saved_seen_eol(0), saved_suppress_next_eol(0),
-  marked_place(V0)
+  any_chars_added(0), no_space_mode(0), needs_push(0),
+  saved_seen_break(0), saved_seen_space(0), saved_seen_eol(0),
+  saved_suppress_next_eol(0), marked_place(V0)
 {
 }
 
@@ -173,7 +173,8 @@ void diversion::need(vunits n)
 }
 
 macro_diversion::macro_diversion(symbol s, int append)
-: diversion(s), max_width(H0)
+: diversion(s), max_width(H0), diversion_trap(0 /* nullptr */),
+  diversion_trap_pos(0)
 {
 #if 0
   if (append) {
@@ -241,13 +242,20 @@ macro_diversion::~macro_diversion()
   dn_reg_contents = vertical_position.to_units();
 }
 
+static int DIVERSION_LENGTH_MAX = INT_MAX;
+
 vunits macro_diversion::distance_to_next_trap()
 {
-  if (!diversion_trap.is_null() && diversion_trap_pos > vertical_position)
-    return diversion_trap_pos - vertical_position;
+  vunits distance = 0;
+  if (!diversion_trap.is_null()
+      && (diversion_trap_pos > vertical_position))
+    distance = diversion_trap_pos - vertical_position;
   else
-    // Subtract vresolution so that vunits::vunits does not overflow.
-    return vunits(INT_MAX - vresolution);
+    // Do the (saturating) arithmetic ourselves to avoid an error
+    // diagnostic from constructor in number.cpp.
+    distance = units(DIVERSION_LENGTH_MAX / vresolution);
+  assert(distance >= 0);
+  return distance;
 }
 
 const char *macro_diversion::get_next_trap_name()
@@ -295,6 +303,17 @@ void macro_diversion::output(node *nd, int retain_size,
   if (width > max_width)
     max_width = width;
   vunits x = v.pre + v.pre_extra + v.post + v.post_extra;
+  int new_vpos = 0;
+  int vpos = vertical_position.to_units();
+  int lineht = x.to_units();
+  bool overflow = false;
+  if (ckd_add(&new_vpos, vpos, lineht))
+    overflow = true;
+  else if (new_vpos > DIVERSION_LENGTH_MAX)
+    overflow = true;
+  if (overflow)
+    fatal("diversion overflow (vertical position: %1u,"
+	  " next line height: %2u)", vpos, lineht);
   if (vertical_position_traps_flag
       && !diversion_trap.is_null() && diversion_trap_pos > vertical_position
       && diversion_trap_pos <= vertical_position + x) {
@@ -460,10 +479,9 @@ void top_level_diversion::transparent_output(unsigned char c)
 
 void top_level_diversion::transparent_output(node * /*n*/)
 {
-  // TODO: Restore this diagnostic when Savannah #65371 is fixed;
-  // perhaps suggest use of \[uXXXX] notation.
-  if (getenv("GROFF_ENABLE_TRANSPARENCY_WARNINGS") != 0 /* nullptr */)
-    error("can't transparently output node at top level");
+  // TODO: When Savannah #63074 is fixed, the user will have a way to
+  // avoid this error.
+  error("cannot write a node to device-independent output");
 }
 
 // Implement the internals of `.cf`.
@@ -655,9 +673,10 @@ void continue_page_eject()
 {
   if (topdiv->get_ejecting()) {
     if (curdiv != topdiv)
-      error("can't continue page ejection because of current diversion");
+      error("cannot continue page ejection while diverting output");
     else if (!vertical_position_traps_flag)
-      error("can't continue page ejection because vertical position traps disabled");
+      error("cannot continue page ejection while vertical position"
+	    " traps disabled");
     else {
       push_page_ejector();
       topdiv->space(topdiv->get_page_length(), 1);
@@ -911,12 +930,12 @@ void macro_diversion::clear_diversion_trap()
 
 void top_level_diversion::set_diversion_trap(symbol, vunits)
 {
-  error("can't set diversion trap when no current diversion");
+  error("cannot set diversion trap when not diverting output");
 }
 
 void top_level_diversion::clear_diversion_trap()
 {
-  error("can't clear diversion trap when no current diversion");
+  error("cannot clear diversion trap when not diverting output");
 }
 
 void diversion_trap()

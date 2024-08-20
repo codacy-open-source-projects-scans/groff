@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <vector>
 #include <utility>
 
-extern int class_flag;	// set if there was a call to '.class'
+extern bool using_character_classes;	// if `.class` is invoked
 extern void get_flags();
 
 class macro;
@@ -117,70 +117,70 @@ charinfo *get_charinfo_by_number(int);
 
 inline int charinfo::overlaps_horizontally()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & OVERLAPS_HORIZONTALLY;
 }
 
 inline int charinfo::overlaps_vertically()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & OVERLAPS_VERTICALLY;
 }
 
 inline int charinfo::can_break_before()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & BREAK_BEFORE;
 }
 
 inline int charinfo::can_break_after()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & BREAK_AFTER;
 }
 
 inline int charinfo::ends_sentence()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & ENDS_SENTENCE;
 }
 
 inline int charinfo::transparent()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & TRANSPARENT;
 }
 
 inline int charinfo::ignore_hcodes()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & IGNORE_HCODES;
 }
 
 inline int charinfo::prohibit_break_before()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & DONT_BREAK_BEFORE;
 }
 
 inline int charinfo::prohibit_break_after()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & DONT_BREAK_AFTER;
 }
 
 inline int charinfo::inter_char_space()
 {
-  if (class_flag)
+  if (using_character_classes)
     ::get_flags();
   return flags & INTER_CHAR_SPACE;
 }
@@ -276,7 +276,7 @@ inline symbol *charinfo::get_symbol()
 
 inline void charinfo::add_to_class(int c)
 {
-  class_flag = 1;
+  using_character_classes = true;
   // TODO ranges cumbersome for single characters?
   ranges.push_back(std::pair<int, int>(c, c));
 }
@@ -284,13 +284,13 @@ inline void charinfo::add_to_class(int c)
 inline void charinfo::add_to_class(int lo,
 				   int hi)
 {
-  class_flag = 1;
+  using_character_classes = true;
   ranges.push_back(std::pair<int, int>(lo, hi));
 }
 
 inline void charinfo::add_to_class(charinfo *ci)
 {
-  class_flag = 1;
+  using_character_classes = true;
   nested_classes.push_back(ci);
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -28,32 +28,32 @@ class token {
   int val;
   units dim;
   enum token_type {
-    TOKEN_BACKSPACE,
+    TOKEN_BACKSPACE,		// ^H
     TOKEN_BEGIN_TRAP,
-    TOKEN_CHAR,			// a normal printing character
-    TOKEN_DUMMY,		// \&
+    TOKEN_CHAR,			// ordinary character
+    TOKEN_DUMMY,		// dummy character: \&
     TOKEN_EMPTY,		// this is the initial value
     TOKEN_END_TRAP,
     TOKEN_ESCAPE,		// \e
-    TOKEN_HYPHEN_INDICATOR,
+    TOKEN_HYPHEN_INDICATOR,	// \%
     TOKEN_INTERRUPT,		// \c
     TOKEN_ITALIC_CORRECTION,	// \/
     TOKEN_LEADER,		// ^A
-    TOKEN_LEFT_BRACE,
-    TOKEN_MARK_INPUT,		// \k -- 'nm' is the name of the register
-    TOKEN_NEWLINE,		// newline
+    TOKEN_LEFT_BRACE,		// \{
+    TOKEN_MARK_INPUT,		// \k
+    TOKEN_NEWLINE,		// ^J
     TOKEN_NODE,
-    TOKEN_NUMBERED_CHAR,
+    TOKEN_NUMBERED_CHAR,	// \N
     TOKEN_PAGE_EJECTOR,
     TOKEN_REQUEST,
-    TOKEN_RIGHT_BRACE,
+    TOKEN_RIGHT_BRACE,		// \}
     TOKEN_SPACE,		// ' ' -- ordinary space
-    TOKEN_SPECIAL,		// a special character -- \' \` \- \(xx \[xxx]
+    TOKEN_SPECIAL,		// special character
     TOKEN_SPREAD,		// \p -- break and spread output line
     TOKEN_STRETCHABLE_SPACE,	// \~
     TOKEN_UNSTRETCHABLE_SPACE,	// '\ '
-    TOKEN_HORIZONTAL_SPACE,	// \|, \^, \0, \h
-    TOKEN_TAB,			// tab
+    TOKEN_HORIZONTAL_SPACE,	// horizontal motion: \|, \^, \0, \h
+    TOKEN_TAB,			// ^I
     TOKEN_TRANSPARENT,		// \!
     TOKEN_TRANSPARENT_DUMMY,	// \)
     TOKEN_ZERO_WIDTH_BREAK,	// \:
@@ -67,7 +67,7 @@ public:
   void next();
   void process();
   void skip();
-  int nspaces();		// 1 if space, 0 otherwise
+  int nspaces();		// is_space() as integer
   bool is_eof();
   bool is_space();
   bool is_stretchable_space();
@@ -79,7 +79,7 @@ public:
   bool is_tab();
   bool is_leader();
   bool is_backspace();
-  bool is_usable_as_delimiter(bool = false);
+  bool is_usable_as_delimiter(bool /* report_error */ = false);
   bool is_dummy();
   bool is_transparent_dummy();
   bool is_transparent();
@@ -88,11 +88,11 @@ public:
   bool is_page_ejector();
   bool is_hyphen_indicator();
   bool is_zero_width_break();
-  int operator==(const token &); // need this for delimiters, and for conditions
-  int operator!=(const token &); // ditto
+  bool operator==(const token &); // for delimiters & conditional exprs
+  bool operator!=(const token &); // ditto
   unsigned char ch();
-  charinfo *get_char(bool = false);
-  int add_to_zero_width_node_list(node **);
+  charinfo *get_char(bool /* required */ = false);
+  bool add_to_zero_width_node_list(node **);
   void make_space();
   void make_newline();
   const char *description();
@@ -103,8 +103,8 @@ public:
 
 extern token tok;		// the current token
 
-extern symbol get_name(bool = false);
-extern symbol get_long_name(bool = false);
+extern symbol get_name(bool /* required */ = false);
+extern symbol get_long_name(bool /* required */ = false);
 extern charinfo *get_optional_char();
 extern char *read_string();
 extern void check_missing_character();
@@ -118,17 +118,19 @@ enum char_mode {
   CHAR_SPECIAL
 };
 
-extern void do_define_character(char_mode, const char * = 0);
+extern void do_define_character(char_mode,
+			const char * /* font_name */ = 0 /* nullptr */);
 
 class hunits;
 extern void read_title_parts(node **part, hunits *part_width);
 
 extern bool get_number_rigidly(units *result, unsigned char si);
 
-extern bool get_number(units *result, unsigned char si);
+extern bool read_measurement(units *result, unsigned char si);
 extern bool get_integer(int *result);
 
-extern bool get_number(units *result, unsigned char si, units prev_value);
+extern bool read_measurement(units *result, unsigned char si,
+			     units prev_value);
 extern bool get_integer(int *result, int prev_value);
 
 extern void interpolate_register(symbol, int);
@@ -187,7 +189,7 @@ inline bool token::is_page_ejector()
 
 inline unsigned char token::ch()
 {
-  return type == TOKEN_CHAR ? c : 0;
+  return type == TOKEN_CHAR ? c : '\0';
 }
 
 inline bool token::is_eof()
@@ -240,7 +242,7 @@ inline bool token::is_zero_width_break()
   return type == TOKEN_ZERO_WIDTH_BREAK;
 }
 
-bool has_arg(bool = false /* want_peek */);
+bool has_arg(bool /* want_peek */ = false);
 
 // Local Variables:
 // fill-column: 72

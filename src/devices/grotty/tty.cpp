@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
      OSC 8 support by G. Branden Robinson
 
@@ -78,15 +78,9 @@ enum {
 static unsigned char bold_underline_mode_option = BOLD_MODE|UNDERLINE_MODE;
 static unsigned char bold_underline_mode;
 
-#ifndef IS_EBCDIC_HOST
 #define CSI "\033["
 #define OSC8 "\033]8"
 #define ST "\033\\"
-#else
-#define CSI "\047["
-#define OSC8 "\047]8"
-#define ST "\047\\"
-#endif
 
 // SGR handling (ISO 6429)
 #define SGR_BOLD CSI "1m"

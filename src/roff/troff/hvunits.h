@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -93,7 +93,7 @@ inline units vunits::to_units()
 {
   units r;
   if (ckd_mul(&r, n, vresolution))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 
@@ -107,7 +107,7 @@ inline vunits operator +(const vunits & x, const vunits & y)
   vunits r;
   r = x;
   if (ckd_add(&r.n, r.n, y.n))
-    error("integer addition wrapped");
+    warning(WARN_RANGE, "integer addition saturated");
   return r;
 }
 
@@ -116,7 +116,7 @@ inline vunits operator -(const vunits & x, const vunits & y)
   vunits r;
   r = x;
   if (ckd_sub(&r.n, r.n, y.n))
-    error("integer subtraction wrapped");
+    warning(WARN_RANGE, "integer subtraction saturated");
   return r;
 }
 
@@ -125,7 +125,7 @@ inline vunits operator -(const vunits & x)
   vunits r;
   // Why?  Consider -(INT_MIN) in two's complement.
   if (ckd_mul(&r.n, x.n, -1))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 
@@ -147,7 +147,7 @@ inline vunits operator *(const vunits & x, int n)
   vunits r;
   r = x;
   if (ckd_mul(&r.n, x.n, n))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 
@@ -156,7 +156,7 @@ inline vunits operator *(int n, const vunits & x)
   vunits r;
   r = x;
   if (ckd_mul(&r.n, n, x.n))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 
@@ -210,7 +210,7 @@ inline units hunits::to_units()
 {
   units r;
   if (ckd_mul(&r, n, hresolution))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 
@@ -224,7 +224,7 @@ inline hunits operator +(const hunits & x, const hunits & y)
   hunits r;
   r = x;
   if (ckd_add(&r.n, r.n, y.n))
-    error("integer addition wrapped");
+    warning(WARN_RANGE, "integer addition saturated");
   return r;
 }
 
@@ -233,7 +233,7 @@ inline hunits operator -(const hunits & x, const hunits & y)
   hunits r;
   r = x;
   if (ckd_sub(&r.n, r.n, y.n))
-    error("integer subtraction wrapped");
+    warning(WARN_RANGE, "integer subtraction saturated");
   return r;
 }
 
@@ -243,7 +243,7 @@ inline hunits operator -(const hunits & x)
   r = x;
   // Why?  Consider -(INT_MIN) in two's complement.
   if (ckd_mul(&r.n, x.n, -1))
-    error("integer subtraction wrapped");
+    warning(WARN_RANGE, "integer subtraction saturated");
   return r;
 }
 
@@ -265,7 +265,7 @@ inline hunits operator *(const hunits & x, int n)
   hunits r;
   r = x;
   if (ckd_mul(&r.n, x.n, n))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 
@@ -274,7 +274,7 @@ inline hunits operator *(int n, const hunits & x)
   hunits r;
   r = x;
   if (ckd_mul(&r.n, x.n, n))
-    error("integer multiplication wrapped");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 

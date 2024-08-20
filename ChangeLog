@@ -1,3 +1,845 @@
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devcp1047/*: Recursively delete.
+	* Makefile.am: Stop including the Automake file therein.
+	* MANIFEST: De-document.
+	* NEWS: Note withdrawal of "cp1047" device support.
+
+	Fixes <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/cp1047.tmac: Delete.
+
+	* tmac/tmac.am (TMACNORMALFILES): Stop shipping it.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Drop support for "cp1047" output
+	device.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Drop support for "cp1047" output device.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac: Drop support for "cp1047" output device.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/eqnrc: Drop eqn(1) support for "cp1047" output device.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/fallbacks.tmac:
+	* tmac/troffrc:
+	* tmac/tty.tmac: Drop "cp1047" output device support.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_EBCDIC, GROFF_OS390): Drop macros.
+	* configure.ac: Stop using them.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grops, grotty, libgroff, pic]: Drop EBCDIC support.
+
+	* src/devices/grops/psrm.cpp:
+	* src/devices/grotty/tty.cpp:
+	* src/libs/libgroff/invalid.cpp:
+	* src/preproc/pic/lex.cpp: Do it.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.h: Drop input character definitions for
+	CCSID (code page) 1047 (EBCDIC).
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65724>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Revise `\A` and `\B` escape
+	sequences to no longer interpolate anything (not even "0" for
+	"false") if they lexically don't even get as far as an opening
+	delimiter; in such a case they are invalid.
+	(do_name_test, do_expr_test): Do it.  Change return type from
+	`bool` to a pointer to a constant `char`.  Return null pointer
+	if there is no delimiter.  Otherwise return string instead of
+	Boolean literals.
+	(token::next): Handle null pointer returns from these functions.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_overstrike, do_bracket)
+	(do_device_control): Stop pushing a newline onto the input stack
+	when encountering one; this character can no longer serve double
+	duty as a delimiter and a formattable newline.
+	(do_overstrike, do_bracket, do_name_test, do_expr_test)
+	(do_zero_width_output, do_width, do_device_control): Similarly
+	when finishing up with a delimited escape sequence with a
+	malformed ending.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #66113 (misleading `\B` diagnostic).
+
+	* src/roff/troff/input.cpp (do_expr_test): Advance the input
+	token pointer at the end of the endless for loop, not the
+	beginning, since `get_number_rigidly()` already left it at the
+	next input character to be processed.  (Most parameterized
+	escape sequence reading functions don't call an input reading
+	function before entering this sort of loop, so they correctly
+	advance the token pointer _first_.)
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #63142 (newlines as delims).
+
+	Withdraw support for newlines as escape sequence delimiters.
+	Only a few (6) supported this, and the rationale behind it is
+	unknown.  DWB 3.3 troff didn't behave this way in any case.
+
+	* src/roff/troff/input.cpp (do_overstrike, do_bracket)
+	(do_name_test, do_zero_width_output, do_width)
+	(do_device_control): Do it.  As a bonus, check starting
+	delimters for these escape sequences (`\[obAZwX]`) for validity
+	in general.
+	(do_overstrike, do_bracket, do_zero_width_output): When
+	returning early, delete the `new` node we just allocated to
+	avoid leaking memory.
+	(token:next): Be prepared for the `\b` and `\o` escape sequences
+	to return a null pointer (if the sequence doesn't even validly
+	get off the ground), as `\Z` and `\X` already do.
+
+	* src/roff/groff/tests/\
+	some_escapes_accept_newline_delimiters.sh: Delete.
+	* src/roff/groff/groff.am (groff_TESTS): Drop test.
+
+	* doc/groff.texi.in (Delimiters):
+	* man/groff.7.man (Delimiters):
+	* NEWS: De-document support for newlines as delimiters.
+
+	Fixes <https://savannah.gnu.org/bugs/?63142>.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::is_usable_as_delimiter):
+	Generalize diagnostics.  Anything that's invalid as a "starting"
+	delimiter is invalid as an ending one, too.  Also our
+	terminology has been poorly paired; we say "closing" delimiter
+	but not "opening" for its counterpart.  This fixes that.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::is_usable_as_delimiter):
+	Reject end-of-file as the starting delimiter for an escape
+	sequence.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (make_glyph_node): Don't throw a
+	warning if `get_char_for_escape_parameter()` in "input.cpp"
+	already threw an error for the same input token.  Also compare
+	array elements of `const char` type to character, not integer,
+	literals.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify and rename `compatible_flag`, demoting it from
+	`int` to `bool` and calling it `want_att_compat`.  Initialize
+	and assign to it using Boolean, not integer, literals.
+
+	* src/roff/troff/input.cpp (read_escape_parameter)
+	(read_increment_and_escape_parameter, get_copy, do_overstrike)
+	(do_bracket, do_name_test, do_zero_width_output, token::next)
+	(compatible, diagnose_invalid_identifier, do_request)
+	(decode_args, do_define_string, define_nocomp_string)
+	(do_define_macro, define_nocomp_macro, append_nocomp_macro)
+	(read_size, get_delimited_name, read_title_parts)
+	(do_device_control, do_if_request, main, init_input_requests)
+	(lookup_request, charinfo_to_node_list): Do it.
+
+	(class string_iterator): Boolify and rename
+	`saved_compatible_flag` to `att_compat`.  Rename and retype
+	member functions.
+
+	(class input_iterator, class_string_iterator): Rename and retype
+	member functions.
+	`save_compatible_flag()` -> `set_att_compat()`
+	`get_compatible_flag()` -> `get_att_compat()`
+	The former now takes a `bool` argument instead of an `int`, and
+	the latter returns a `bool` instead of an `int`.
+	(input_stack::set_att_compat, input_stack::get_att_compat):
+	Update implementations accordingly.
+	(get_copy, token::next): Update call sites.
+
+	(init_input_requests): Back the `.C` register with object of
+	type `readonly_boolean_register` instead of `readonly_register`.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify and rename `ignoring`, demoting it from
+	`int` to `bool` and calling it `want_input_ignored`.  Initialize
+	and assign to it using Boolean, not integer, literals.
+
+	* src/roff/troff/input.cpp (do_define_macro)
+	(append_indirect_nocomp_macro, copy_mode_error): Do it.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify and rename `inhibit_errors`, demoting it from
+	`int` to `bool` and calling it `want_errors_inhibited`.
+	Initialize and assign to it using Boolean, not integer,
+	literals.
+
+	* src/roff/troff/input.cpp (do_expr_test, main, do_error): Do
+	it.
+	(do_expr_test): Similarly boolify and rename local variable
+	`saved_inhibit_errors` -> `saved_want_errors_inhibited`.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify and rename `backtrace_flag`, demoting it from
+	`int` to `bool` and calling it `want_backtraces`.  Initialize
+	and assign to it using Boolean, not integer, literals.
+
+	* src/roff/troff/input.cpp (main, do_error): Do it.
+
+2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify and rename `class_flag`, demoting it from `int`
+	to `bool` and calling it `using_character_classes`.  Initialize
+	and assign to it using Boolean, not integer, literals.
+
+	* src/roff/troff/charinfo.h
+	(charinfo::overlaps_horizontally, charinfo::overlaps_vertically)
+	(charinfo::can_break_before, charinfo::can_break_after)
+	(charinfo::ends_sentence, charinfo::transparent)
+	(charinfo::ignore_hcodes)
+	(charinfo::prohibit_break_before)
+	(charinfo::prohibit_break_after)
+	(charinfo::inter_char_space, charinfo::add_to_class):
+	* src/roff/troff/input.cpp (get_flags): Do it.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(do_zero_width): Rename this...
+	(do_zero_width_output): ...to this.
+	(token::next): Update call site.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_zero_width): Tweak `\Z`
+	diagnostic output.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_drawing_command): Trivially
+	refactor.  Boolify local variable `no_last_v`.  Rename local
+	variable `err` to `had_error`.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_drawing_command): Demote
+	diagnostic thrown on empty drawing command escape sequence
+	argument list from error to warning in "missing" category.  I
+	can imagine someone programmatically constructing a string to be
+	passed to a `\D` escape sequence; such a string might be empty.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_drawing_command): Handle
+	an invalid delimiter in a drawing command escape sequence `\D`
+	the same as every other escape sequence that recognizes a
+	restricted set of delimiters (`\h`, `\H`, `\l`, `\L`, `\N`,
+	`\R`, `\s`, `\S`, `\v`, and `\x`): stop parsing immediately
+	instead of consuming and discarding input until encountering a
+	matching invalid delimiter, newline, or EOF.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	confusingly named functions that interpret *roff language input,
+	not "nodes", a family of _groff_ class objects.
+	(read_draw_node): Rename this...
+	(read_drawing_command): ...to this.
+	(read_color_draw_node): Rename this...
+	(read_drawing_command_color_arguments): ...to this.
+
+2024-08-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (macro_diversion::macro_diversion):
+	Handle member variables `diversion_trap` and
+	`diversion_trap_post` in constructor's initializer list, for
+	clarity and to ensure that they don't contain garbage.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/e.tmac (@M, $c): If the formatter is GNU troff,
+	use value of its `.R` register instead of "10000" to indicate an
+	arbitrary large integer.
+	(EQ): Same, but in commented form; a formatter DoS attack is
+	otherwise revealed.
+	(TS): Similar; set line length to `.R` basic units minus 1n to
+	avoid saturation warnings on output devices with a non-unit
+	horizontal motion quantum.
+	* tmac/html-end.tmac: Set page length to `.R` basic units minus
+	1v to avoid saturation warnings on output devices with a
+	non-unit vertical motion quantum (as the "html" device has).
+	* tmac/man.ultrix (HB): Use value of `.R` register instead of
+	"999" to indicate an arbitrary large integer.
+	* tmac/psfig.tmac (F+):
+	* tmac/s.tmac (cov*tl-au-print, ID, par@TL, par@AU, par@AI): Use
+	value of `.R` register instead of "9999" to indicate an
+	arbitrary large integer.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (init_input_requests): Initialize
+	`.R` read-only register to `INT_MAX` instead of 10000.
+
+	* doc/groff.texi.in (Built-in Registers):
+	* man/groff.7.man (Read-only registers):
+	* man/groff_diff.7.man (Altered registers): Document it.
+
+	* doc/groff.texi.in (Manipulating Filling and Adjustment)
+	(End-of-input Traps): Apply it to examples.
+
+	Fixes <https://savannah.gnu.org/bugs/?63587>.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Support construction of read-only
+	registers from integers.
+	(class readonly_text_register): Declare constructor taking `int`
+	argument.
+	(readonly_text_register::readonly_text_register): Add it.
+	(main): Use it to initialize `.T` register.
+	(init_registers): Use it to initialize `.A` register.
+	(init_input_requests): Use it to initialize `.g` register and
+	`.R` registers.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.
+	(do_overstrike): Rename local variable `on` to `osnode`.
+	(do_bracket): Rename local variable `bn` to `bracketnode`.
+	(do_expr_test): Demote return type from `int` to `bool`, and
+	return Boolean, not integer, literals.
+	(do_zero_width): Move declaration and initialization of `n`
+	local unaccountably far from its point of use to prepare for
+	shoveling of most of this function's body into a `for` loop,
+	required by forthcoming fix for Savannah #63142.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: When throwing a warning diagnostic about a mismatched
+	escape sequence delimiter, say what what we were expecting and
+	what we got instead.
+
+	* src/roff/troff/input.cpp (do_overstrike, do_bracket)
+	(do_name_test, do_zero_width, do_width, do_device_control)
+	(read_delimited_number, get_line_arg, do_register)
+	(do_expr_test):
+	* src/roff/troff/reg.cpp (inline_define_register [0]): Do it.
+
+	Fixes <https://savannah.gnu.org/bugs/?63202>.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_name_test): Fix buglet in
+	handling of newline as delimiter for the `\A`, `\w`, and `\Z`
+	escape sequences.  An invalid C++ conditional resulted
+	in a newline being interpreted both as the delimiter and as an
+	input token, spuriously putting a space on the output.  Drop
+	subsequent tautologous conditional: `tok != start_token` will
+	always evaluate true because `tok.is_eof()` is true and
+	`start_token` cannot be an EOF.
+
+	Before:
+
+	$ printf 'foo\A\naz\nbar\n' | groff -a
+	<beginning of page>
+	foo1 bar
+
+	After:
+
+	$ printf 'foo\A\naz\nbar\n' | ./build/test-groff -a
+	<beginning of page>
+	foo1bar
+
+	* src/roff/groff/tests/\
+	some_escapes_accept_newline_delimiters.sh: Update test
+	expectations.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (interpolate_register): Add assertion
+	to blow up on null pointer dereference.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix code style nits.
+
+	* src/roff/troff/input.cpp (length_request)
+	(interpolate_number_format, do_register): Use `static_cast`
+	instead of C-style cast on dictionary values.
+	(do_overstrike, do_bracket, do_zero_width, token::next)
+	(length_request, interpolate_number_format, do_register):
+	Explicitly compare variable of pointer type to null pointer
+	constant instead of letting it pun down to a Boolean.
+	(do_register, token::next): Reorder equality comparison to avoid
+	inadvertent lvalue assignment.
+	(do_error): Add parentheses to complex expression.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Slightly refactor; boolify a static function.
+
+	* src/roff/troff/input.cpp (get_line_arg): Demote return type
+	from `int` to `bool`.  Return Boolean, not integer, literals.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (define_register): Warn when garbage
+	encountered in numeric expression argument to `nr` request.
+
+	Fixes <https://savannah.gnu.org/bugs/?64240>.
+
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_number()` to
+	`read_measurement()`.  Part of the idea here is to use the verb
+	"read" to suggest that the function advances the token pointer
+	through the input stream (and it does).  Another part is to
+	reduce confusion, since the class `charinfo` has an unrelated
+	member function `get_number()`.
+
+	* src/roff/troff/token.h (get_number):
+	* src/roff/troff/number.cpp (get_number): Rename this...
+	* src/roff/troff/token.h (read_measurement):
+	* src/roff/troff/number.cpp (read_measurement): ...to this.
+
+	* src/roff/troff/number.cpp (read_measurement): Update
+	self-reference in assertion message.
+
+	* src/roff/troff/env.cpp (point_size):
+	* src/roff/troff/input.cpp (get_color_element)
+	(read_delimited_number, get_line_arg, read_size, do_register)
+	(do_if_request, evaluate_expression):
+	* src/roff/troff/node.cpp (embolden_font)
+	(configure_track_kerning, constantly_space_font):
+	* src/roff/troff/reg.cpp (define_register)
+	(inline_define_register [0]): Update call sites.
+
+2024-08-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Page Location Traps): Correct erroneous
+	claim; the `.t` register does not interpolate the maximum
+	representable integer in a diversion when there is no pending
+	diversion trap if the output device does not have a vertical
+	resolution of "1" ("ps" does; "utf8" doesn't).
+
+	Problem introduced by me in commit 18697e757c, 22 November 2020.
+	Thanks to Dave Kemper for the discussion in Savannah #63587.
+
+2024-08-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): When reading an
+	overlong integer literal, save the value corresponding to the
+	longest valid digit sequence, and use that if overflow occurs.
+	(scale): Demote "numeric overflow" errors to "integer value
+	saturated" warnings in category "range".
+
+	* src/roff/troff/hvunits.h (vunits::to_units)
+	(class vunits: operator +, operator -, operator *):
+	(hunits::to_units)
+	(class hunits: operator +, operator -, operator *):
+	* src/roff/troff/number.cpp (vunits::vunits, hunits::hunits):
+	Impose saturating arithmetic on overflowing operations.  Demote
+	overflow from error, throwing warning in "range" category if
+	overflow would occur, and describe integer result as "saturated"
+	rather than "wrapped".
+
+	* src/roff/groff/tests/arithmetic-works.sh: Enable warnings in
+	"range" category.  Update test expectations.  Drop check of
+	operation that is no longer meaningful with refactored
+	arithmetic parsing.
+
+	* doc/groff.texi.in (Numeric Expressions):
+	* man/groff.7.man (Numeric expressions):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?66001>.
+
+2024-08-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (get_vunits, get_hunts, get_number)
+	(get_integer): Clarify diagnostic when integer arithmetic wraps.
+
+2024-08-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix code style nits.
+
+	* src/roff/troff/reg.cpp (number_value_to_ascii): Add
+	parentheses to complex expressions.
+	(number_value_to_ascii): Assign character, not integer, literal
+	to element of array of `char` type.
+	(inline_define_register [0], define_register, set_register)
+	(look_up_register, alter_format): Use `static_cast` instead of
+	C-style cast on dictionary values.
+	(inline_define_register [0], define_register, set_register)
+	(look_up_register, alter_format): Reorder equality comparisons
+	to avoid inadvertent lvalue assignment.
+
+2024-08-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Clear array memory when allocating it from the heap.
+	Prompted by Lukas Javorsky's static-analysis-driven report in
+	Savannah #66081.
+
+	* src/roff/troff/env.cpp (override_sizes, tab_stops::to_string)
+	(add_hyphenation_exceptions, hyphen_trie::insert_hyphenation):
+	* src/roff/troff/input.cpp (read_long_escape_parameters)
+	(token::next, do_get_long_name, get_delimited_name, pipe_source)
+	(read_string, pipe_output, open_macro_package)
+	(do_register_assignment, do_string_assignment, copy_mode_error):
+	Do it.
+
+2024-08-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix code style nits.
+
+	* src/roff/troff/env.cpp (override_sizes): Add parentheses to
+	complex expressions.
+	(add_hyphenation_exceptions): Reorder equality comparisons to
+	avoid inadvertent lvalue assignment.
+	(add_hyphenation_exceptions, hyphen_trie::insert_hyphenation):
+	Use `static_cast` instead of C-style cast on dictionary values.
+
+	* src/roff/troff/env.cpp (add_hyphenation_exceptions)
+	(hyphen_trie::insert_hyphenation):
+	* src/roff/troff/input.cpp (read_two_char_escape_parameter)
+	(do_get_long_name): Assign character, not integer, literal to
+	element of array of `char` type.
+
+	* src/roff/troff/input.cpp (read_long_escape_parameters): Demote
+	local variable `have_char` from `int` to `bool` and assign to it
+	with Boolean, not integer, literals.
+
+	* src/roff/troff/input.cpp (do_get_long_name): Explcitly
+	express size of array element type in argument to `memcpy()`.
+
+2024-08-14  Lukas Javorsky <ljavorsk@redhat.com>
+
+	* src/roff/troff/env.cpp (override_sizes): Zero out
+	heap-allocated memory prior to use.  If `strtok()` returns a
+	null pointer, we break early from the `for` loop before
+	populating it.  The only other case where we break out of the
+	loop is when `lower` is 0, and we do so only after adding this 0
+	to `sizes`.  Since this memory is then passed to
+	`font_size::init_size_table()`, which uses a zero integer to
+	detect the end of the list, we could then access uninitialized
+	memory.  [The user is not required to supply a zero argument to
+	the `sizes` request.  I also revised the patch to use memset(3)
+	instead of (an empty) value initializer, which is a C++03
+	feature.  --GBR]
+
+	Fixes <https://savannah.gnu.org/bugs/?66081>.
+
+2024-08-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (override_sizes): Refer to size range
+	as "invalid", not "bad", in warning diagnostic.
+
+2024-08-14  Lukas Javorsky <ljavorsk@redhat.com>
+
+	* src/roff/troff/input.cpp (token::add_to_zero_width_node_list):
+	Initialize stack-allocated variable that is not populated by all
+	paths through this function.
+
+	Fixes <https://savannah.gnu.org/bugs/?66079>.
+
+2024-08-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Slightly refactor: boolify.
+
+	* src/roff/troff/node.h (struct hyphen_list): Demote `hyphen`
+	member from `unsigned char` to `bool` and rename it to
+	`is_hyphen'.
+	(hyphen_list::hyphen_list): Migrate struct initializer list to
+	new name and Boolean literal.
+	* src/roff/troff/env.cpp (hyphenate): Update assignments to use
+	new name and Boolean, not integer, literals.
+	* src/roff/troff/node.cpp (glyph_node::add_self)
+	(composite_node::add_self): Update comparisons to use new name.
+
+	* src/roff/troff/node.h (struct hyphen_list): Boolify. Demote
+	`breakable` member from `unsigned char` to `bool` and rename it
+	to `is_breakable'.
+	(hyphen_list::hyphen_list): Migrate struct initializer list to
+	new name and Boolean literal.
+	* src/roff/troff/env.cpp (environment::hyphenate_line):
+	* src/roff/troff/node.cpp (break_char_node::add_self): Update
+	comparisons.
+
+	* src/roff/troff/node.cpp (break_char_node::add_self): Demote
+	`have_space_node` local variable from `int` to `bool`.
+
+	* src/roff/troff/node.h (struct node, class hmotion_node):
+	Boolify.  Demote member function `set_unformat_flag()` and
+	member variable `unformat` from `int` to `bool`.  These could
+	use renaming, but `make_unformattable()` and `is_unformattable`
+	would be terribly misleading.
+	* src/roff/troff/node.cpp (node::set_unformat_flag)
+	(word_space_node::set_unformat_flag)
+	(vertical_size_node::set_unformat_flag)
+	(hmotion_node::set_unformat_flag): Demote return type and use
+	Boolean literals for assignments and return values.
+	(word_space_node::word_space_node): Use Boolean literal in
+	constructor's initializer list.
+	(word_space_node::word_space_node): Update data type in
+	constructor's argument list.
+
+	* src/roff/troff/node.h (class hmotion_node): Demote `was_tab`
+	member from `unsigned char` to `bool`.  Use Boolean literals for
+	it in constructors' initializer lists.
+
+	* src/roff/troff/node.h (struct node): Demote `is_inner`
+	argument from `int` to `bool` and assign to it using Boolean,
+	not integer, literals.
+
+2024-08-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (token:ch): Return character instead
+	of integer literal for this inline function of `(unsigned) char`
+	type.
+
+2024-08-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify remaining `token` class member functions that
+	need it.
+
+	* src/roff/troff/token.h (class token): Demote declarations of
+	`operator==`, `operator!=`, `add_to_zero_width_node_list`.
+	* src/roff/troff/input.cpp (token::operator==)
+	(token::operator!=, token::add_to_zero_width_node_list): Do it.
+
+2024-08-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Throw diagnostic in event of a diversion's contents
+	overflowing its maximum vertical position.  We can't do anything
+	sensible in this case, so make it a fatal error.  (It's also
+	more likely that your host environment will exhaust memory
+	available to the `troff` process before encountering this
+	problem.)
+
+	* src/roff/troff/div.cpp: New constant symbol
+	`DIVERSION_LENGTH_MAX` defines the maximum permissible vertical
+	size of a diversion in basic units.  Presently, it is `INT_MAX`.
+	(macro_diversion::distance_to_next_trap): When there is no
+	diversion trap, or its position has already been passed, report
+	the distance to `DIVERSION_LENGTH_MAX` (rather than `INT_MAX`)
+	divided by the vertical resolution.
+	(macro_diversion::output): Check for overflow when incrementing
+	vertical position upon writing out a line, and emit fatal error
+	diagnostic if it occurs.
+
+	Fixes <https://savannah.gnu.org/bugs/?64229>.  Thanks to Dave
+	Kemper for the discussion.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/e.tmac (n1, n2): Invoke the renamed `po` request
+	directly, not our wrapper for it.
+
+	Fixes a latent issue with saturating arithmetic.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp
+	(macro_diversion::distance_to_next_trap): Return a value
+	quantized to the vertical resolution of the output device.  Add
+	an `assert()` for a paranoia's sake, since there is an integer
+	arithmetic land mine here.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/arithmetic-works.sh: Add more test cases.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (troff_output_file::flush_tbuf): Add
+	assertion: the type size should be positive.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/symbol.h (class symbol): Boolify `is_null()` and
+	`is_empty()` member functions.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Rename `WARN_TOTAL` symbol to `WARN_MAX` for
+	consistency with other GNU troff enumerated types.
+
+	* src/roff/troff/troff.h:
+	* src/roff/troff/input.cpp: Do it.
+
+	* src/roff/troff/input.cpp (warn_request): Clarify warning
+	diagnostic.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp
+	(top_level_diversion::transparent_output, continue_page_eject)
+	(top_level_diversion::set_diversion_trap)
+	(top_level_diversion::clear_diversion_trap):
+	* src/roff/troff/input.cpp (transparent_translate)
+	(get_delimited_name, do_source, pipe_source, pipe_output,
+	transparent_file, charinfo_to_node_list):
+	* src/roff/troff/node.cpp (troff_output_file::really_copy_file):
+	* src/roff/troff/reg.cpp (reg::increment, reg::decrement)
+	(reg::set_increment, reg::alter_format, reg::set_value): Clarify
+	error diagnostics, and stop using contractions in wording.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp
+	(top_level_diversion::transparent_output):
+	* src/roff/troff/input.cpp (transparent_translate): Drop
+	`GROFF_ENABLE_TRANSPARENCY_WARNINGS` environment variable
+	kludge.  The underlying problems are better understood now and
+	giving the user tools to fix them is on the horizon.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Drop Autoconf-guarded inclusion of
+	<unistd.h>.  Jugding by the groff 1.16 change log this appears
+	to have to do with the use of wait(2)-related macros, but
+	dropping it doesn't break a glibc-based build, and our
+	"src/include/nonposix.h" header has the same guarded inclusion,
+	so we should still get it on unusual systems.  If a build breaks
+	due to this change, we should document the specific symbol(s) we
+	need and/or rely on gnulib for them.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Replace club with scalpel when including standard C
+	library header files.
+
+	* src/roff/troff/troff.h: Drop standard C library header file
+	inclusions altogether.  This exhibited an old style of writing C
+	{and C++?} where your multi-translation unit program would have
+	an overarching header file, included by all your *.c files, and
+	into which you stuffed all of your libc header file dependencies
+	without documenting which symbols you actually needed or where.
+	This tended to lead to excessive inclusion, and that tendency
+	bore out here.  On a glibc-based system, GNU troff doesn't need
+	4 of the 6 headers formerly #included here at all.  And we now
+	use gnulib to help us with portability, which was not the case
+	in 1989.
+
+	* src/roff/troff/env.cpp:
+	* src/roff/troff/input.cpp:
+	* src/roff/troff/node.cpp: Include <errno.h> and annotate why.
+	* src/roff/troff/reg.cpp: Include <assert.h> and annotate why.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_string_case_transform): Use
+	libgroff's `cmupper()` and `cmlower()` functions instead of
+	going directly to the standard C library's `to{upp,low}er()`.
+
+2024-08-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/troff.h: Slightly refactor; boolify and rename
+	some global `int`s.
+	- `suppress_output_flag` -> `want_output_suppressed`
+	- `color_flag` -> `want_color_output`
+	- `is_html` -> `is_writing_html`
+	* src/roff/troff/env.cpp (environment::newline)
+	(environment::make_tag, environment::construct_state)
+	(environment::construct_format_state)
+	(environment::construct_new_line_state):
+	* src/roff/troff/input.cpp ([top level], main):
+	* src/roff/troff/mtsm.cpp (statem:add_tag_ta, mtsm::push_state)
+	(mtsm::pop_state, mtsm::flush, mtsm:changed):
+	* src/roff/troff/node.cpp (suppress_node::tprint)
+	(space_char_hmotion_node::tprint)
+	(unbreakable_space_node::tprint): Migrate `is_html`.
+	* src/roff/troff/input.cpp ([top level], activate_color, main):
+	(init_input_requests):
+	* src/roff/troff/node.cpp (troff_output_file::fill_color)
+	(troff_output_file::glyph_color): Migrate `color_flag`.
+	* src/roff/troff/input.cpp (init_input_requests): Use
+	`readonly_boolean_register` class to expose `want_color_output`
+	to documents, not `readonly_register`.
+	* src/roff/troff/input.cpp ([top level], main):
+	* src/roff/troff/node.cpp (init_output): Migrate
+	`suppress_output_flag`.
+
+2024-08-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (hyphenation_patterns_file_code):
+	Throw error warning of future withdrawal.
+
+	* doc/groff.texi.in (Manipulating Hyphenation):
+	* man/groff_diff.7.man (New requests):
+	* man/groff.7.man (Request short reference):
+	* NEWS: Document deprecation.
+
+2024-08-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tty.tmac: Revise fallback character for `\[em]` on UTF-8
+	device to make it more like a true em dash, taking up two
+	character cells.
+
+2024-08-09  Dave Kemper <saint.snit@gmail.com>
+
+	* tmac/andoc.tmac: Annotate "unnecessary" control lines.
+
+	Fixes <https://savannah.gnu.org/bugs/?62826>.
+
+2024-08-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/troffrc: Define macro `troffrc*trap` to throw a
+	diagnostic message complaining of a text line in a startup file.
+	Make it the blank line and leading space macro.
+	* tmac/troffrc-end: Clear blank line and leading space macros.
+	Delete `troffrc*trap`.
+
+	Inspired by an Arch Linux blunder <https://gitlab.archlinux.org/
+	archlinux/packaging/packages/groff/-/commit/
+	db8623565d8e14d4c9c5c3a67e1c8647c34e3d48>.  I've made similar
+	ones myself.
+
+2024-08-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (input_stack::get)
+	(process_input_stack): Trivially refactor.  Rename global
+	`old_have_formattable_input` to
+	`have_formattable_input_on_interrupted_line`.  Yes, this
+	identifier is as long as your arm, but it has a highly
+	specialized purpose and needs to be intelligible in context.
+
 2024-08-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/doc-old.tmac: Migrate from font name "C" to "CR", fixing
@@ -41,6 +883,8 @@
 	* man/groff.7.man (Request short reference, Debugging):
 	* man/groff_diff.7.man (New requests, Debugging):
 	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?66069>.
 
 2024-08-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -137,7 +981,7 @@
 
 2024-08-03  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* tmac/ps.tmac: Drop `\[S ,]` and `\[s, ]` fallback character
+	* tmac/ps.tmac: Drop `\[S ,]` and `\[s ,]` fallback character
 	definitions and hyphenation code assignments.
 
 	* NEWS: Document this.

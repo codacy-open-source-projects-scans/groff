@@ -114,8 +114,6 @@ x trailer
 V2640
 x stop'
 
-# TODO: Test cp1047 when we have access to a host environment using it.
-
 for D in ascii latin1 utf8
 do
     if [ "$D" = "utf8" ]

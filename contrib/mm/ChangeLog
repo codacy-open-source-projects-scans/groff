@@ -1,3 +1,9 @@
+2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ds@output-float, ds@end): Use value of GNU troff `.R`
+	register instead of "9999" to indicate an arbitrary large
+	integer.
+
 2024-07-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mm/0.MT:

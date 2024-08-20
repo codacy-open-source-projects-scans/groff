@@ -1429,51 +1429,6 @@ AC_DEFUN([GROFF_LIBC],
    AC_SUBST([LIBC])])
 
 
-# Check for EBCDIC -- stolen from the OS390 Unix LYNX port
-
-AC_DEFUN([GROFF_EBCDIC],
-  [AC_MSG_CHECKING([whether character set is EBCDIC])
-   AC_COMPILE_IFELSE([
-       AC_LANG_PROGRAM([[
-
-/* Treat any failure as ASCII for compatibility with existing art.
-   Use compile-time rather than run-time tests for cross-compiler
-   tolerance. */
-#if '0' != 240
-make an error "Character set is not EBCDIC"
-#endif
-
-       ]])
-     ],
-     [groff_cv_ebcdic="yes"
-      TTYDEVDIRS="font/devcp1047"
-      AC_MSG_RESULT([yes])
-      AC_DEFINE(IS_EBCDIC_HOST, 1,
-	[Define if the host's encoding is EBCDIC.])],
-     [groff_cv_ebcdic="no"
-     TTYDEVDIRS="font/devascii font/devlatin1"
-     OTHERDEVDIRS="font/devlj4 font/devlbp"
-     AC_MSG_RESULT([no])])
-   AC_SUBST([TTYDEVDIRS])
-   AC_SUBST([OTHERDEVDIRS])])
-
-
-# Check for OS/390 Unix.  We test for EBCDIC also -- the Linux port (with
-# gcc) to OS/390 uses ASCII internally.
-
-AC_DEFUN([GROFF_OS390],
-  [if test "$groff_cv_ebcdic" = "yes"; then
-     AC_MSG_CHECKING([for OS/390 Unix])
-     case `uname` in
-     OS/390)
-       CFLAGS="$CFLAGS -D_ALL_SOURCE"
-       AC_MSG_RESULT([yes]) ;;
-     *)
-       AC_MSG_RESULT([no]) ;;
-     esac
-   fi])
-
-
 # Check whether Windows scripts like 'afmtodit.cmd' should be installed.
 
 AC_DEFUN([GROFF_CMD_FILES],

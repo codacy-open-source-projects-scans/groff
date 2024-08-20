@@ -101,18 +101,11 @@ SH_SEP=@PATH_SEPARATOR@
 # `DEVICE' is the default device.
 DEVICE=ps
 
-# XDEVIDIRS
-# `XDEVDIRS' is either `font/devX{75,100}{,-12}' or empty.
-
-# XPROGDIRS
-# `XPROGDIRS' is either `src/devices/xditview src/utils/xtotroff' or empty.
+# XPROGDIRS `XPROGDIRS' is either `src/devices/xditview
+# src/utils/xtotroff' or empty.
 
 # XLIBDIRS
 # `XLIBDIRS' is either `src/libs/libxutil' or empty.
-
-# `TTYDEVDIRS' is either `font/devascii font/devlatin1' (for
-# ASCII) or `font/devcp1047' (for EBCDIC) plus font/devutf8.
-TTYDEVDIRS=@TTYDEVDIRS@ font/devutf8
 
 # OTHERDEVDIRS
 # `OTHERDEVDIRS' is either `font/devlj4 font/devlbp' (for ASCII) or
@@ -319,7 +312,6 @@ man7dir=$(manroot)/man$(man7ext)
 # config.h might set the following defines:
 #
 # WORDS_BIGENDIAN		if your target platform is big-endian
-# IS_EBCDIC_HOST		if the host's encoding is EBCDIC
 #
 # HAVE_DIRECT_H		if you have <direct.h>
 # HAVE_DIRENT_H		if you have <dirent.h>
@@ -631,7 +623,6 @@ include $(top_srcdir)/font/devX100-12/devX100-12.am
 include $(top_srcdir)/font/devX75/devX75.am
 include $(top_srcdir)/font/devX75-12/devX75-12.am
 include $(top_srcdir)/font/devascii/devascii.am
-include $(top_srcdir)/font/devcp1047/devcp1047.am
 include $(top_srcdir)/font/devdvi/devdvi.am
 include $(top_srcdir)/font/devhtml/devhtml.am
 include $(top_srcdir)/font/devlatin1/devlatin1.am

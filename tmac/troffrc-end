@@ -1,6 +1,7 @@
 .\" final startup file for GNU troff
 .\"
-.\" This file is parsed after all -m file arguments have been read.
+.\" This file is interpreted after all macro files specified as -m
+.\" option arguments have been read.
 .\"
 .\" Use .do for any groff extensions so that this file works with -C.
 .
@@ -26,6 +27,10 @@
 .do if !d EQN-HTML-IMAGE-INLINE  .do ds EQN-HTML-IMAGE-INLINE \" empty
 .do if !d EQN-HTML-DO-IMAGE      .do ds EQN-HTML-DO-IMAGE \" empty
 .do if !d EQN-HTML-IMAGE-END     .do ds EQN-HTML-IMAGE-END \" empty
+.
+.do blm
+.do lsm
+.do rm troffrc*trap
 .
 .\" Local Variables:
 .\" mode: nroff

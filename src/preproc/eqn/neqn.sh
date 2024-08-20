@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 # 
@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/gpl-2.0.txt>.
 
 # Provision of this shell script should not be taken to imply that use of
-# GNU eqn with groff -Tascii|-Tlatin1|-Tutf8|-Tcp1047 is supported.
+# GNU eqn with groff -Tascii|-Tlatin1|-Tutf8 is supported.
 
 @GROFF_BIN_PATH_SETUP@
 PATH="$GROFF_RUNTIME$PATH"

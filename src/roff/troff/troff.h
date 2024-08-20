@@ -18,17 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "lib.h"
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include "color.h"
 #include "device.h"
 #include "searchpath.h"
@@ -40,9 +29,9 @@ extern units scale(units n, units x, units y); // scale n by x/y
 extern units units_per_inch;
 
 extern bool want_abstract_output;
-extern int suppress_output_flag;
-extern int color_flag;
-extern int is_html;
+extern bool want_output_suppressed;
+extern bool want_color_output;
+extern bool is_writing_html;
 extern bool in_nroff_mode;
 
 extern bool device_has_tcommand;
@@ -79,10 +68,10 @@ enum warning_type {
   WARN_IG =  01000000,
   WARN_COLOR = 02000000,
   WARN_FILE = 04000000
-  // change WARN_TOTAL if you add more warning types
+  // change WARN_MAX if you add more warning types
 };
 
-const int WARN_TOTAL = 07777777;
+const int WARN_MAX = 07777777;
 
 int warning(warning_type, const char *,
 	    const errarg & = empty_errarg,

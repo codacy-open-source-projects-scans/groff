@@ -6,7 +6,7 @@
 
 This file contains advice on developing and contributing to groff.  It
 assumes that developers will install the 'git' revision control
-system and build groff using the instructions in 'INSTALL.repo'.
+system and build groff using the instructions in 'INSTALL.REPO'.
 Familiarize yourself with the structure of the source tree by studying
 its 'MANIFEST' file at the top level.
 
@@ -233,6 +233,29 @@ time (not necessarily in the same commit, however).
   $ ./bootstrap --bootstrap-sync
   $ editor ChangeLog # log it
   $ git commit
+
+
+Theory of operation
+-------------------
+
+groff language parser
+.....................
+
+The "troff" program in "src/roff/troff" parses the groff input language.
+There, "input.cpp" implements the main loop and tokenizes input.  Input
+tokens are transformed into nodes (a GNU troff internal data structure)
+by "env.cpp" and "node.cpp".  Routines in the latter file generate the
+page description language from lists of nodes.
+
+
+page description language parser
+................................
+
+The parser for the page description language produced by troff is
+implemented in "src/libs/libdriver/input.cpp".  This is used by all
+groff output drivers written in C++.  ("gropdf", written in Perl,
+performs its own parsing.)
+
 
 ##### Editor settings
 Local Variables:
