@@ -945,7 +945,7 @@ static char get_char_for_escape_parameter(bool allow_space = false)
   case '\t':
   case '\001':
   case '\b':
-    copy_mode_error("%1 is not allowed in an escape sequence parameter",
+    copy_mode_error("%1 is not allowed in an escape sequence argument",
 		    input_char_description(c));
     return '\0';
   }
@@ -1013,7 +1013,7 @@ static symbol read_long_escape_parameters(read_mode mode)
   if (buf == abuf) {
     if (i == 0) {
       if (mode != ALLOW_EMPTY)
-	copy_mode_error("empty escape name");
+	copy_mode_error("empty escape sequence argument in copy mode");
       return EMPTY_SYMBOL;
     }
     return symbol(abuf);
@@ -1781,10 +1781,9 @@ static node *do_zero_width_output() // \Z
 	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     // XXX: does the initial dummy node leak if this fails?
-    // TODO: Say something better than "token" in the diagnostic.
     if (!tok.add_to_zero_width_node_list(&rev))
-      error("invalid token in argument to zero-width output escape"
-	    " sequence");
+      error("%1 is not allowed in a zero-width output escape"
+	    " sequence argument", tok.description());
   }
   while (rev != 0 /* nullptr */) {
     node *tem = rev;
@@ -3450,20 +3449,20 @@ macro::~macro()
 }
 
 macro::macro()
-: is_a_diversion(0), is_a_string(1)
+: is_a_diversion(false), is_a_string(true)
 {
   if (!input_stack::get_location(1, &filename, &lineno)) {
     filename = 0 /* nullptr */;
     lineno = 0 /* nullptr */;
   }
   len = 0;
-  empty_macro = 1;
+  is_empty_macro = true;
   p = 0; /* nullptr */
 }
 
 macro::macro(const macro &m)
 : filename(m.filename), lineno(m.lineno), len(m.len),
-  empty_macro(m.empty_macro), is_a_diversion(m.is_a_diversion),
+  is_empty_macro(m.is_empty_macro), is_a_diversion(m.is_a_diversion),
   is_a_string(m.is_a_string), p(m.p)
 {
   if (p != 0 /* nullptr */)
@@ -3478,24 +3477,25 @@ macro::macro(int is_div)
     lineno = 0 /* nullptr */;
   }
   len = 0;
-  empty_macro = 1;
-  is_a_string = 1;
+  is_empty_macro = true;
+  // A macro is a string until it contains a newline.
+  is_a_string = true;
   p = 0 /* nullptr */;
 }
 
-int macro::is_diversion()
+bool macro::is_diversion()
 {
   return is_a_diversion;
 }
 
-int macro::is_string()
+bool macro::is_string()
 {
   return is_a_string;
 }
 
 void macro::clear_string_flag()
 {
-  is_a_string = 0;
+  is_a_string = false;
 }
 
 macro &macro::operator=(const macro &m)
@@ -3509,7 +3509,7 @@ macro &macro::operator=(const macro &m)
   filename = m.filename;
   lineno = m.lineno;
   len = m.len;
-  empty_macro = m.empty_macro;
+  is_empty_macro = m.is_empty_macro;
   is_a_diversion = m.is_a_diversion;
   is_a_string = m.is_a_string;
   return *this;
@@ -3529,7 +3529,7 @@ void macro::append(unsigned char c)
   p->cl.append(c);
   ++len;
   if (c != PUSH_GROFF_MODE && c != PUSH_COMP_MODE && c != POP_GROFFCOMP_MODE)
-    empty_macro = 0;
+    is_empty_macro = false;
 }
 
 void macro::set(unsigned char c, int offset)
@@ -3555,7 +3555,7 @@ void macro::append_str(const char *s)
   int i = 0;
 
   if (s) {
-    while (s[i] != (char)0) {
+    while (s[i] != '\0') {
       append(s[i]);
       i++;
     }
@@ -3576,7 +3576,7 @@ void macro::append(node *n)
   p->cl.append(0);
   p->nl.append(n);
   ++len;
-  empty_macro = 0;
+  is_empty_macro = false;
 }
 
 void macro::append_unsigned(unsigned int i)
@@ -3992,7 +3992,7 @@ static void interpolate_macro(symbol nm, bool do_not_want_next_token)
       r = (request_or_macro *)request_dictionary.lookup(symbol(buf));
       if (r) {
 	macro *m = r->to_macro();
-	if (!m || !m->empty())
+	if (!m || !m->is_empty())
 	  warned = warning(WARN_SPACE,
 			   "macro '%1' not defined "
 			   "(possibly missing space after '%2')",
@@ -4131,9 +4131,9 @@ macro *macro::to_macro()
   return this;
 }
 
-int macro::empty()
+bool macro::is_empty()
 {
-  return empty_macro == 1;
+  return (is_empty_macro == true);
 }
 
 macro_iterator::macro_iterator(symbol s, macro &m, const char *how_called,
@@ -4155,7 +4155,7 @@ macro_iterator::macro_iterator() : args(0), argc(0), with_break(want_break)
 
 macro_iterator::~macro_iterator()
 {
-  while (args != 0) {
+  while (args != 0 /* nullptr */) {
     arg_list *tem = args;
     args = args->next;
     delete tem;
@@ -4174,7 +4174,7 @@ static void map_composite_character()
     return;
   }
   const char *from_gn = glyph_name_to_unicode(from.contents());
-  if (!from_gn) {
+  if (0 /* nullptr */ == from_gn) {
     from_gn = valid_unicode_code_sequence(from.contents());
     if (0 /* nullptr */ == from_gn) {
       error("invalid composite glyph name '%1'", from.contents());
@@ -4192,7 +4192,7 @@ static void map_composite_character()
     return;
   }
   const char *to_gn = glyph_name_to_unicode(to.contents());
-  if (!to_gn) {
+  if (0 /* nullptr */ == to_gn) {
     to_gn = valid_unicode_code_sequence(to.contents());
     if (0 /* nullptr */ == to_gn) {
       error("invalid composite glyph name '%1'", to.contents());
@@ -4216,7 +4216,7 @@ static symbol composite_glyph_name(symbol nm)
   decode_string_args(mi);
   input_stack::push(mi);
   const char *gn = glyph_name_to_unicode(nm.contents());
-  if (!gn) {
+  if (0 /* nullptr */ == gn) {
     gn = valid_unicode_code_sequence(nm.contents());
     if (0 /* nullptr */ == gn) {
       error("invalid base glyph '%1' in composite glyph name", nm.contents());
@@ -4237,7 +4237,7 @@ static symbol composite_glyph_name(symbol nm)
 	gl += c;
     gl += '\0';
     const char *u = glyph_name_to_unicode(gl.contents());
-    if (!u) {
+    if (0 /* nullptr */ == u) {
       u = valid_unicode_code_sequence(gl.contents());
       if (0 /* nullptr */ == u) {
 	error("invalid component '%1' in composite glyph name",
@@ -4566,7 +4566,7 @@ static void interpolate_arg(symbol nm)
 {
   const char *s = nm.contents();
   if (!s || *s == '\0')
-    copy_mode_error("missing positional argument number");
+    copy_mode_error("missing positional argument number in copy mode");
   else if (s[1] == 0 && csdigit(s[0]))
     input_stack::push(input_stack::get_arg(s[0] - '0'));
   else if (s[0] == '*' && s[1] == '\0') {
@@ -4640,7 +4640,8 @@ static void interpolate_arg(symbol nm)
 	is_printable = false;
     }
     if (!is_valid) {
-      const char msg[] = "invalid positional argument number";
+      const char msg[] = "invalid positional argument number in copy"
+			 " mode";
       if (is_printable)
 	copy_mode_error("%1 '%2'", msg, s);
       else
@@ -4924,8 +4925,10 @@ void chop_macro()
     macro *m = p->to_macro();
     if (!m)
       error("cannot chop request '%1'", s.contents());
-    else if (m->empty())
-      error("cannot chop empty object '%1'", s.contents());
+    else if (m->is_empty())
+      error("cannot chop empty %1 '%2'",
+	    (m->is_diversion() ? "diversion" : "macro or string"),
+	    s.contents());
     else {
       int have_restore = 0;
       // We have to check for additional save/restore pairs which could
@@ -5454,7 +5457,14 @@ static symbol get_delimited_name()
 	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     if ((buf[i] = tok.ch()) == 0) {
-      error("missing delimiter (got %1)", tok.description());
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start_token.description());
+      if (start_token != tok)
+	error("closing delimiter does not match; expected %1, got %2",
+	      delimdesc, tok.description());
+      free(delimdesc);
       if (buf != abuf)
 	delete[] buf;
       return NULL_SYMBOL;
@@ -5666,12 +5676,59 @@ static node *do_non_interpreted()
   return new non_interpreted_node(mac);
 }
 
+// This is a helper function for `encode_character_for_device_output()`.
+static void encode_special_character_for_device_output(macro *mac)
+{
+  const char *sc;
+  if (font::use_charnames_in_special) {
+    charinfo *ci = tok.get_char(true /* required */);
+    sc = ci->get_symbol()->contents();
+  }
+  else
+    sc = tok.get_char()->get_symbol()->contents();
+  if (strcmp("-", sc) == 0)
+    mac->append('-');
+  else if (strcmp("aq", sc) == 0)
+    mac->append('\'');
+  else if (strcmp("dq", sc) == 0)
+    mac->append('"');
+  else if (strcmp("ga", sc) == 0)
+    mac->append('`');
+  else if (strcmp("ha", sc) == 0)
+    mac->append('^');
+  else if (strcmp("rs", sc) == 0)
+    mac->append('\\');
+  else if (strcmp("ti", sc) == 0)
+    mac->append('~');
+  else {
+    if (font::use_charnames_in_special) {
+      if (sc[0] != '\0') {
+	mac->append('\\');
+	mac->append('[');
+	int i = 0;
+	while (sc[i] != '\0') {
+	  mac->append(sc[i]);
+	  i++;
+	}
+	mac->append(']');
+      }
+      else
+	error("special character '%1' is unusable within a device"
+	      " control escape sequence", sc);
+    }
+    else
+      error("special character '%1' cannot be used within a device"
+	    " control escape sequence", sc);
+  }
+}
+
 // In troff output, we translate the escape character to '\', but it is
 // up to the postprocessor to interpret it as such.  (This mostly
 // matters for device control commands.)
-static void encode_char_for_device_output(macro *mac, const char c)
+static void encode_character_for_device_output(macro *mac, const char c)
 {
   if ('\0' == c) {
+    // It's a special token, not a character we can write as-is.
     if (tok.is_stretchable_space()
 	     || tok.is_unstretchable_space())
       mac->append(' ');
@@ -5680,49 +5737,8 @@ static void encode_char_for_device_output(macro *mac, const char c)
 	     || tok.is_dummy()
 	     || tok.is_transparent_dummy())
       /* do nothing */;
-    else if (tok.is_special()) {
-      const char *sc;
-      if (font::use_charnames_in_special) {
-	charinfo *ci = tok.get_char(true /* required */);
-	sc = ci->get_symbol()->contents();
-      }
-      else
-	sc = tok.get_char()->get_symbol()->contents();
-      if (strcmp("-", sc) == 0)
-	mac->append('-');
-      else if (strcmp("aq", sc) == 0)
-	mac->append('\'');
-      else if (strcmp("dq", sc) == 0)
-	mac->append('"');
-      else if (strcmp("ga", sc) == 0)
-	mac->append('`');
-      else if (strcmp("ha", sc) == 0)
-	mac->append('^');
-      else if (strcmp("rs", sc) == 0)
-	mac->append('\\');
-      else if (strcmp("ti", sc) == 0)
-	mac->append('~');
-      else {
-	if (font::use_charnames_in_special) {
-	  if (sc[0] != (char)0) {
-	    mac->append('\\');
-	    mac->append('[');
-	    int i = 0;
-	    while (sc[i] != (char)0) {
-	      mac->append(sc[i]);
-	      i++;
-	    }
-	    mac->append(']');
-	  }
-	  else
-	    error("special character '%1' cannot be used within a"
-	          " device control escape sequence", sc);
-	}
-	else
-	  error("special character '%1' cannot be used within a device"
-		" control escape sequence", sc);
-      }
-    }
+    else if (tok.is_special())
+      encode_special_character_for_device_output(mac);
     else
       error("%1 is invalid within device control escape sequence",
 	    tok.description());
@@ -5770,7 +5786,7 @@ static node *do_device_control() // \X
       c = '\b';
     else
       c = tok.ch();
-    encode_char_for_device_output(&mac, c);
+    encode_character_for_device_output(&mac, c);
   }
   return new special_node(mac);
 }
@@ -5795,7 +5811,11 @@ static void device_request()
   }
   if (curdiv == topdiv && topdiv->before_first_page)
     topdiv->begin_page();
-  for (; c != '\n' && c != EOF; c = get_copy(0 /* nullptr */))
+  // Null characters can correspond to node types like vmotion_node that
+  // are unrepresentable in a device control command, and got scrubbed
+  // by `asciify`.
+  for (; c != '\0' && c != '\n' && c != EOF;
+       c = get_copy(0 /* nullptr */))
     mac.append(c);
   curenv->add_node(new special_node(mac));
   tok.next();
@@ -5845,7 +5865,7 @@ static node *do_suppress(symbol nm)
 {
   if (nm.is_null() || nm.is_empty()) {
     error("output suppression escape sequence requires an argument");
-    return 0;
+    return 0 /* nullptr */;
   }
   const char *s = nm.contents();
   switch (*s) {
@@ -5875,10 +5895,10 @@ static node *do_suppress(symbol nm)
     {
       s++;			// move over '5'
       char position = *s;
-      if (*s == (char)0) {
-	error("missing position and filename in output suppression"
+      if (*s == '\0') {
+	error("missing position and file name in output suppression"
 	      " escape sequence");
-	return 0;
+	return 0 /* nullptr */;
       }
       if (!(position == 'l'
 	    || position == 'r'
@@ -6112,6 +6132,7 @@ static bool do_if_request()
   else if (tok.is_space())
     result = false;
   else if (tok.is_usable_as_delimiter()) {
+    // Perform (formatted) output comparison.
     token delim = tok;
     int delim_level = input_stack::get_level();
     environment env1(curenv);
@@ -6123,8 +6144,14 @@ static bool do_if_request()
       for (;;) {
 	tok.next();
 	if (tok.is_newline() || tok.is_eof()) {
+	  // token::description() writes to static, class-wide storage,
+	  // so we must allocate a copy of it before issuing the next
+	  // diagnostic.
+	  char *delimdesc = strdup(delim.description());
 	  warning(WARN_DELIM, "missing closing delimiter in output"
-		  " comparison operator (got %1)", tok.description());
+		  " comparison operator; expected %1, got %2",
+		  delimdesc, tok.description());
+	  free(delimdesc);
 	  tok.next();
 	  curenv = oldenv;
 	  return false;
@@ -7252,18 +7279,18 @@ static void init_charset_table()
   charset_table['.']->set_flags(charinfo::ENDS_SENTENCE);
   charset_table['?']->set_flags(charinfo::ENDS_SENTENCE);
   charset_table['!']->set_flags(charinfo::ENDS_SENTENCE);
-  charset_table['-']->set_flags(charinfo::BREAK_AFTER);
-  charset_table['"']->set_flags(charinfo::TRANSPARENT);
-  charset_table['\'']->set_flags(charinfo::TRANSPARENT);
-  charset_table[')']->set_flags(charinfo::TRANSPARENT);
-  charset_table[']']->set_flags(charinfo::TRANSPARENT);
-  charset_table['*']->set_flags(charinfo::TRANSPARENT);
-  get_charinfo(symbol("dg"))->set_flags(charinfo::TRANSPARENT);
-  get_charinfo(symbol("dd"))->set_flags(charinfo::TRANSPARENT);
-  get_charinfo(symbol("rq"))->set_flags(charinfo::TRANSPARENT);
-  get_charinfo(symbol("cq"))->set_flags(charinfo::TRANSPARENT);
-  get_charinfo(symbol("em"))->set_flags(charinfo::BREAK_AFTER);
-  get_charinfo(symbol("hy"))->set_flags(charinfo::BREAK_AFTER);
+  charset_table['-']->set_flags(charinfo::ALLOWS_BREAK_AFTER);
+  charset_table['"']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  charset_table['\'']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  charset_table[')']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  charset_table[']']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  charset_table['*']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  get_charinfo(symbol("dg"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  get_charinfo(symbol("dd"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  get_charinfo(symbol("rq"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  get_charinfo(symbol("cq"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  get_charinfo(symbol("em"))->set_flags(charinfo::ALLOWS_BREAK_AFTER);
+  get_charinfo(symbol("hy"))->set_flags(charinfo::ALLOWS_BREAK_AFTER);
   get_charinfo(symbol("ul"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
   get_charinfo(symbol("rn"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
   get_charinfo(symbol("radicalex"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
@@ -7423,7 +7450,7 @@ static void set_hyphenation_codes()
     }
     cidst->set_hyphenation_code(new_code);
     if (cidst->get_translation()
-	&& cidst->get_translation()->get_translation_input())
+	&& cidst->get_translation()->is_translatable_as_input())
       cidst->get_translation()->set_hyphenation_code(new_code);
     tok.next();
     tok.skip();
@@ -7456,7 +7483,7 @@ static void report_hyphenation_codes()
     }
     unsigned char code = ci->get_hyphenation_code();
     if (ci->get_translation()
-	&& ci->get_translation()->get_translation_input())
+	&& ci->get_translation()->is_translatable_as_input())
       code = ci->get_translation()->get_hyphenation_code();
     if (0 == ch)
       errprint("\\[%1]\t%2\n", ci->nm.contents(), int(code));
@@ -8907,7 +8934,7 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
       break;
     if (tok.is_newline()) {
       error("a newline is not allowed in a composite character"
-	    " escape sequence");
+	    " escape sequence argument");
       while (!tok.is_eof())
 	tok.next();
       break;
@@ -8960,8 +8987,14 @@ static node *read_drawing_command()
 	  delete[] oldpoint;
 	}
 	if (tok.is_newline() || tok.is_eof()) {
+	  // token::description() writes to static, class-wide storage,
+	  // so we must allocate a copy of it before issuing the next
+	  // diagnostic.
+	  char *delimdesc = strdup(start_token.description());
 	  warning(WARN_DELIM, "missing closing delimiter in drawing"
-		  " escape sequence (got %1)", tok.description());
+		  " escape sequence; expected %1, got %2", delimdesc,
+		  tok.description());
+	  free(delimdesc);
 	  had_error = true;
 	  break;
 	}
@@ -9073,8 +9106,14 @@ static void read_drawing_command_color_arguments(token &start)
     curenv->set_fill_color(col);
   while (tok != start) {
     if (tok.is_newline() || tok.is_eof()) {
+      // token::description() writes to static, class-wide storage, so
+      // we must allocate a copy of it before issuing the next
+      // diagnostic.
+      char *delimdesc = strdup(start.description());
       warning(WARN_DELIM, "missing closing delimiter in color space"
-	      " drawing escape sequence (got %1)", tok.description());
+	      " drawing escape sequence; expected %1, got %2",
+	      delimdesc, tok.description());
+      free(delimdesc);
       input_stack::push(make_temp_iterator("\n"));
       break;
     }
@@ -9355,10 +9394,11 @@ charinfo *get_charinfo(symbol nm)
 int charinfo::next_index = 0;
 
 charinfo::charinfo(symbol s)
-: translation(0), mac(0), special_translation(TRANSLATE_NONE),
-  hyphenation_code(0), flags(0), ascii_code(0), asciify_code(0),
-  not_found(0), transparent_translate(1), translate_input(0),
-  mode(CHAR_NORMAL), nm(s)
+: translation(0 /* nullptr */), mac(0 /* nullptr */),
+  special_translation(TRANSLATE_NONE), hyphenation_code(0),
+  flags(0), ascii_code(0), asciify_code(0),
+  is_not_found(false), is_transparently_translatable(true),
+  translatable_as_input(false), mode(CHAR_NORMAL), nm(s)
 {
   index = next_index++;
   number = -1;
@@ -9387,10 +9427,10 @@ void charinfo::set_translation(charinfo *ci, int tt, int ti)
       ci->set_asciify_code(asciify_code);
     else if (ascii_code != 0)
       ci->set_asciify_code(ascii_code);
-    ci->set_translation_input();
+    ci->make_translatable_as_input();
   }
   special_translation = TRANSLATE_NONE;
-  transparent_translate = tt;
+  is_transparently_translatable = tt;
 }
 
 // Recompute flags for all entries in the charinfo dictionary.
@@ -9429,7 +9469,7 @@ void charinfo::set_special_translation(int c, int tt)
 {
   special_translation = c;
   translation = 0;
-  transparent_translate = tt;
+  is_transparently_translatable = tt;
 }
 
 void charinfo::set_ascii_code(unsigned char c)
@@ -9509,7 +9549,7 @@ bool charinfo::contains(symbol s, bool already_called)
     return false;
   }
   const char *unicode = glyph_name_to_unicode(s.contents());
-  if (unicode != 0 && strchr(unicode, '_') == 0) {
+  if (unicode != 0 /* nullptr */ && strchr(unicode, '_') == 0) {
     char *ignore;
     int c = (int) strtol(unicode, &ignore, 16);
     return contains(c, true);

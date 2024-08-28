@@ -65,7 +65,22 @@ const char *decompose_unicode(const char *);
 //
 // Return a pointer to the second character in the string (skipping the
 // leading 'u') if successful, and a null pointer otherwise.
-const char *valid_unicode_code_sequence(const char *);
+//
+// If given a second argument, store a diagnostic message there if the
+// above rules are not satisfied.
+const char *valid_unicode_code_sequence(const char *,
+  char * /* errbuf */ = 0 /* nullptr */);
+
+// valid_unicode_code_sequence() writes to an error message buffer.
+const size_t ERRBUFSZ = 256;
+
+// Track the length of the longest Unicode special character identifier
+// that `glyph_name_to_unicode` might return.
+const size_t UNIBUFSZ = sizeof "u10FFFF"; // see glyphuni.cpp
+
+// Track the length of the longest special character identifier that
+// `unicode_to_glyph_name` might return.
+const size_t GLYPHBUFSZ = sizeof "bracketrighttp"; // see uniglyph.cpp
 
 // Local Variables:
 // fill-column: 72

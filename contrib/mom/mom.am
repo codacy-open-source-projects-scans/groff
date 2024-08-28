@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2020 Free Software Foundation, Inc.
+# Copyright (C) 2002-2024 Free Software Foundation, Inc.
 #      Written by Werner Lemberg <wl@gnu.org>
 #      Automake migration by Bertrand Garrigues
 #        <bertrand.garrigues@laposte.net>
@@ -27,7 +27,8 @@ MOMPDFMOM = \
   GROFF_COMMAND_PREFIX= \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
   PDFMOM_BIN_PATH="$(top_builddir)" \
-  $(PDFMOMBIN) $(FFLAG) $(MFLAG) -M$(mom_srcdir) -K utf8 -p -e -t
+  $(PDFMOMBIN) $(FFLAG) $(MFLAG) -M$(mom_srcdir) -K utf8 -p -e -t \
+  -wall -b
 
 man7_MANS += contrib/mom/groff_mom.7
 

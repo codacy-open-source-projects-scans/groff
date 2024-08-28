@@ -223,6 +223,7 @@ unshift(@ARGV,split(' ',$ENV{GROPDF_OPTIONS})) if exists($ENV{GROPDF_OPTIONS});
 
 my $gotzlib=0;
 my $gotinline=0;
+my $gotexif=0;
 
 my $rc = eval
 {
@@ -278,6 +279,20 @@ EOC
 if($rc)
 {
     $gotinline=1;
+}
+
+$rc = eval
+{
+#     require Image::ExifTool;
+#     Image::ExifTool->import();
+    require Image::Magick;
+    Image::Magick->import();
+    1;
+};
+
+if($rc)
+{
+    $gotexif=1;
 }
 
 my %cfg;
@@ -1657,16 +1672,84 @@ sub do_x
 		my $hgt=GetPoints($xprm[5]||-1);
 		my $ll=GetPoints($xprm[6]||0);
 		my $mat=[1,0,0,1,0,0];
+		my $imgtype='PDF';
+		my $info;
+		my $image;
+
+		my ($FD,$FDnm)=OpenInc($fil);
+
+		if (!defined($FD))
+		{
+		    Warn("failed to open image file '$FDnm'");
+		    return;
+		}
 
 		if (!exists($incfil{$fil}))
 		{
-		    $incfil{$fil}=LoadPDF($fil,$mat,$wid,$hgt,"pdfpic");
+		    if ($gotexif)
+		    {
+			binmode $FD;
+
+			$image = Image::Magick->new;
+			my $x = $image->Read(file => $FD);
+			Warn("Image '$FDnm': $x"), return if "$x";
+			$imgtype=$image->Get('magick');
+			$info->{ImageWidth}=$image->Get('width');
+			$info->{ImageHeight}=$image->Get('height');
+			$info->{ColorComponents}=
+			    ($image->Get('colorspace') eq 'Gray')?1:3;
+		    }
+		    else
+		    {
+			my $dim=`( identify $FDnm 2>/dev/null || file $FDnm )`;
+			$dim=~m/(?:(?:[,=A-Z]|JP2) (?<w>\d+)\s*x\s*(?<h>\d+))|(?:height=(?<h>\d+).+width=(?<w>\d+))/;
+
+			$info->{ImageWidth}=$+{w};
+			$info->{ImageHeight}=$+{h};
+
+			if ($dim=~m/JPEG \d+x|JFIF/)
+			{
+			    $imgtype='JPEG';
+			    $info->{ColorComponents}=3;
+
+			    if ($dim=~m/Gray|components 1/)
+			    {
+				$info->{ColorComponents}=1;
+			    }
+			}
+			elsif ($dim=~m/JP2 \d+x/)
+			{
+			    $imgtype='JP2';
+			}
+		    }
+
+		    if ($imgtype eq 'PDF')
+		    {
+			$incfil{$fil}=LoadPDF($FD,$FDnm,$mat,$wid,$hgt,"pdfpic");
+		    }
+		    elsif ($imgtype eq 'JPEG')
+		    {
+			$incfil{$fil}=LoadJPEG($FD,$FDnm,$info);
+		    }
+		    elsif ($imgtype eq 'JP2')
+		    {
+			$incfil{$fil}=LoadJP2($FD,$FDnm,$info);
+		    }
+		    else
+		    {
+			$incfil{$fil}=LoadMagick($image,$FDnm,$info);
+		    }
+
+		    return if !defined($incfil{$fil});
+		    $incfil{$fil}->[2]=$imgtype;
 		}
 
 		if (defined($incfil{$fil}))
 		{
 		    IsGraphic();
 		    my $bbox=$incfil{$fil}->[1];
+		    $imgtype=$incfil{$fil}->[2];
+		    Warn("Failed to extract width x height for '$FDnm'"),return if !defined($bbox->[2]) or !defined($bbox->[3]);
 		    $wid=($bbox->[2]-$bbox->[0]) if $wid <= 0;
 		    my $xscale=d3($wid/($bbox->[2]-$bbox->[0]));
 		    my $yscale=d3(($hgt<=0)?$xscale:($hgt/($bbox->[3]-$bbox->[1])));
@@ -1683,6 +1766,21 @@ sub do_x
 		    elsif ($flag eq '-R' and $ll > $wid)
 		    {
 			$xpos+=$ll-$wid;
+		    }
+
+		    if ($imgtype ne 'PDF')
+		    {
+			if ($rot)
+			{
+			    $xscale*=$bbox->[3];
+			    $yscale*=$bbox->[2];
+			}
+			else
+			{
+			    $xscale*=$bbox->[2];
+			    $yscale*=$bbox->[3];
+			}
+
 		    }
 
 		    $ypos+=$hgt;
@@ -2342,7 +2440,8 @@ sub OpenInc
 
 sub LoadPDF
 {
-    my $pdfnm=shift;
+    my $PD=shift;
+    my $PDnm=shift;
     my $mat=shift;
     my $wid=shift;
     my $hgt=shift;
@@ -2356,15 +2455,14 @@ sub LoadPDF
     my $adj=0;
     my $keepsep=$/;
 
-    my ($PD,$PDnm)=OpenInc($pdfnm);
+    seek($PD,0,0);
+    my $hdr=<$PD>;
 
-    if (!defined($PD))
+    if ($hdr!~m/^%PDF/)
     {
-	Warn("failed to open PDF '$pdfnm'");
+	Warn("'$PDnm' does not appear to be a pdf file");
 	return undef;
     }
-
-    my $hdr=<$PD>;
 
     $/="\r",$adj=1 if (length($hdr) > 10);
 
@@ -2411,7 +2509,7 @@ sub LoadPDF
 	    }
 	    else
 	    {
-		Warn("parsing PDF '$pdfnm' failed");
+		Warn("parsing PDF '$PDnm' failed");
 		return undef;
 	    }
 	}
@@ -2545,6 +2643,115 @@ sub LoadPDF
 
     $/=$keepsep;
     return([$xonm,$BBox] );
+}
+
+sub LoadJPEG
+{
+    my $JP=shift;
+    my $JPnm=shift;
+    my $info=shift;
+    my $BBox=[0,0,$info->{ImageWidth},$info->{ImageHeight}];
+
+    local $/=undef;
+
+    seek($JP,0,0);
+
+    my $strm=<$JP>;
+    close($JP);
+
+    my $xobj=++$objct;
+    my $xonm="XO$xobj";
+    my $cs=($info->{ColorComponents}==1)?'/DeviceGray':'/DeviceRGB';
+    $pages->{'Resources'}->{'XObject'}->{$xonm}=BuildObj($xobj,{'Type' => '/XObject', 'Width' => $BBox->[2], 'Height' => $BBox->[3], 'ColorSpace' => $cs, 'BitsPerComponent' => $info->{BitsPerSample}||8, 'Subtype' => '/Image', 'Length' => length($strm), 'Filter' => '/DCTDecode'});
+    $obj[$xobj]->{STREAM}=$strm;
+    return([$xonm,$BBox]);
+}
+
+sub LoadJP2
+{
+    my $JP=shift;
+    my $JPnm=shift;
+    my $info=shift;
+    my $BBox=[0,0,$info->{ImageWidth},$info->{ImageHeight}];
+
+    local $/=undef;
+
+    seek($JP,0,0);
+
+    my $strm=<$JP>;
+    close($JP);
+
+    my $xobj=++$objct;
+    my $xonm="XO$xobj";
+    $pages->{'Resources'}->{'XObject'}->{$xonm}=BuildObj($xobj,{'Type' => '/XObject', 'Width' => $BBox->[2], 'Height' => $BBox->[3],  'Subtype' => '/Image', 'Length' => length($strm), 'SMaskInData' => 1, 'Filter' => '/JPXDecode'});
+    $obj[$xobj]->{STREAM}=$strm;
+    return([$xonm,$BBox]);
+}
+
+sub LoadMagick
+{
+    my $image=shift;
+    my $JPnm=shift;
+    my $info=shift;
+
+#     my $e=$image->Get('endian');
+#     print STDERR "En: '$JPnm' $e\n";
+#     $image->Set(endian => 'MSB') if $e eq 'Undefined';
+
+    my $BPC;
+    $BPC=$image->Get('depth');
+    $BPC=$info->{BitDepth} if ($info and exists($info->{BitDepth}) and $info->{BitDepth} != $BPC);
+#    $image->Set(depth => 8), $BPC=8 if $BPC==16;
+
+    my $BBox=[0,0,$image->Get('width'),$image->Get('height')];
+    my $alpha;
+
+    if ($image->Get('matte'))
+    {
+	$alpha=$image->Clone();
+	$alpha->Separate(channel => 'Alpha');
+	my $v=$alpha->Get('version');
+	$v=$1 if $v=~m/^ImageMagick (\d+\.\d+)/;
+	$alpha->Negate(channel => 'All') if $v < 7;
+	$alpha->Set(magick => 'gray');
+    }
+
+    my $cs=$image->Get('colorspace');
+    $cs='RGB' if $cs eq 'sRGB';
+    my $x = $image->Set(alpha => 'off', magick => $cs);
+    Warn("Image '$JPnm': $x"), return if "$x";
+    my @blobs = $image->ImageToBlob();
+    Warn("Image '$JPnm': More than 1 image") if $#blobs > 0;
+    $blobs[0]=pack('v*', unpack('n*', $blobs[0])) if $BPC==16;
+    $blobs[0]=pack('V*', unpack('N*', $blobs[0])) if $BPC==32;
+
+    my $xobj=++$objct;
+    my $xonm="XO$xobj";
+
+    if ($cs=~m/^(Gray|RGB|CMYK)$/)
+    {
+	$cs="/Device$cs";
+    }
+    else
+    {
+	Warn("Image '$JPnm' unknown ColourSpace '$cs'");
+	return;
+    }
+
+    $pages->{'Resources'}->{'XObject'}->{$xonm}=BuildObj($xobj,{'Type' => '/XObject', 'Width' => $BBox->[2], 'Height' => $BBox->[3], 'ColorSpace' => $cs, 'BitsPerComponent' => $BPC, 'Subtype' => '/Image', 'Interpolate' => 'false', 'Length' => length($blobs[0])});
+    $obj[$xobj]->{STREAM}=$blobs[0];
+
+    if ($alpha)
+    {
+	$#blobs=-1;
+	$alpha->Set(depth => 8);
+	$BPC=8;
+	@blobs = $alpha->ImageToBlob();
+	$obj[$xobj]->{DATA}->{SMask}=BuildObj(++$objct,{'Type' => '/XObject', 'Width' => $BBox->[2], 'Height' => $BBox->[3], 'ColorSpace' => '/DeviceGray', 'BitsPerComponent' => $BPC, 'Subtype' => '/Image', 'Length' => length($blobs[0])});
+	$obj[$objct]->{STREAM}=$blobs[0];
+    }
+
+    return([$xonm,$BBox]);
 }
 
 sub ObjMerge

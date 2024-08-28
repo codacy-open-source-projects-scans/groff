@@ -28,6 +28,14 @@ Portability notes:
   template function in src/include/lib.h instead of `sizeof` and
   dividing.
 
+* C++98 lacks value initialization for array types.
+
+  https://cplusplus.github.io/CWG/issues/178.html
+
+  Use `memset()` after allocating an array from the stack or the heap
+  unless you are sure that every path through subsequent logic
+  determines the contents of every array element.
+
 
 Automake
 --------

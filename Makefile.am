@@ -101,7 +101,8 @@ SH_SEP=@PATH_SEPARATOR@
 # `DEVICE' is the default device.
 DEVICE=ps
 
-# XPROGDIRS `XPROGDIRS' is either `src/devices/xditview
+# XPROGDIRS
+# `XPROGDIRS' is either `src/devices/xditview
 # src/utils/xtotroff' or empty.
 
 # XLIBDIRS

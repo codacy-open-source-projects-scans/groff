@@ -934,9 +934,7 @@ that take the same arguments and behave equivalently.
 .TP
 .BI "\[rs]X\[aq]pdf: pdfpic\~" file\~\c
 .IR "alignment width height line-length" \[aq]
-Place an image of the specified
-.I width
-containing the PDF drawing from file
+Place an image from file
 .I file
 of desired
 .I width
@@ -965,13 +963,31 @@ If
 is specified as zero then the width is scaled in proportion to the
 height.
 .
-.\" .IP
-.\" See
-.\" .BR groff_tmac (@MAN7EXT@)
-.\" for a description of the
-.\" .B PSPIC
-.\" macro which provides a convenient high-level interface for inclusion
-.\" of PostScript graphics.
+If both
+.I width
+and
+.I height
+are non-zero the image is scaled to \[oq]best fit\[cq].
+.
+.IP
+Three elements control which type of image files you can now embed into a -T pdf produced file. If you have perlmagick installed, if you have the program "identify" installed (part of ImageMagick), if you have the program "file" installed, or if you have none of these. Here's a table showing the different possibilities:-
+.TS
+allbox  centre;
+Cb Cb Cb Cb Cb
+L C C C C.
+	none	file	identify	perlmagick
+\&.pdf	\[OK]	\[OK]	\[OK]	\[OK]
+\&.jpg	\[u2717]	\[OK]	\[OK]	\[OK]
+\&.jp2	\[u2717]	\[u2717]	\[OK]	\[OK]
+other	\[u2717]	\[u2717]	\[u2717]	\[OK]
+.TE
+.IP
+See
+.MR groff_tmac @MAN5EXT@
+for a description of the
+.B PDFPIC
+macro which provides a convenient high-level interface for inclusion
+of various graphics files.
 .
 .TP
 .B \[rs]X\[aq]pdf: xrev\[aq]

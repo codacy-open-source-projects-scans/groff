@@ -51,12 +51,12 @@
 .fchar \[u2167] VIII
 .fchar \[u2168] IX
 .fchar \[u2169] X
-.fchar \[u216a] XI
-.fchar \[u216b] XII
-.fchar \[u216c] L
-.fchar \[u216d] C
-.fchar \[u216e] D
-.fchar \[u216f] M
+.fchar \[u216A] XI
+.fchar \[u216B] XII
+.fchar \[u216C] L
+.fchar \[u216D] C
+.fchar \[u216E] D
+.fchar \[u216F] M
 .fchar \[u2170] i
 .fchar \[u2171] ii
 .fchar \[u2172] iii
@@ -67,12 +67,86 @@
 .fchar \[u2177] viii
 .fchar \[u2178] ix
 .fchar \[u2179] x
-.fchar \[u217a] xi
-.fchar \[u217b] xii
-.fchar \[u217c] l
-.fchar \[u217d] c
-.fchar \[u217e] d
-.fchar \[u217f] m
+.fchar \[u217A] xi
+.fchar \[u217B] xii
+.fchar \[u217C] l
+.fchar \[u217D] c
+.fchar \[u217E] d
+.fchar \[u217F] m
+.
+.\" Fallbacks for "ascii" device
+.\"
+.\" If these glyphs are missing on any other output device, that's a
+.\" problem we want to report to the user via diagnostics.
+.if '\?\*[.T]\?'\?ascii\?' \{\
+.  fchar \['A] \z\[aa]A
+.  fchar \['C] \z\[aa]C
+.  fchar \['E] \z\[aa]E
+.  fchar \['I] \z\[aa]I
+.  fchar \['O] \z\[aa]O
+.  fchar \['U] \z\[aa]U
+.  fchar \['Y] \z\[aa]Y
+.  fchar \['a] \z\[aa]a
+.  fchar \['c] \z\[aa]c
+.  fchar \['e] \z\[aa]e
+.  fchar \['i] \z\[aa]i
+.  fchar \['o] \z\[aa]o
+.  fchar \['u] \z\[aa]u
+.  fchar \['y] \z\[aa]y
+.
+.  fchar \[:A] \z\[ad]A
+.  fchar \[:E] \z\[ad]E
+.  fchar \[:I] \z\[ad]I
+.  fchar \[:O] \z\[ad]O
+.  fchar \[:U] \z\[ad]U
+.  fchar \[:Y] \z\[ad]Y
+.  fchar \[:a] \z\[ad]a
+.  fchar \[:e] \z\[ad]e
+.  fchar \[:i] \z\[ad]i
+.  fchar \[:o] \z\[ad]o
+.  fchar \[:u] \z\[ad]u
+.  fchar \[:y] \z\[ad]y
+.
+.  fchar \[^A] \z\[a^]A
+.  fchar \[^E] \z\[a^]E
+.  fchar \[^I] \z\[a^]I
+.  fchar \[^O] \z\[a^]O
+.  fchar \[^U] \z\[a^]U
+.  fchar \[^a] \z\[a^]a
+.  fchar \[^e] \z\[a^]e
+.  fchar \[^i] \z\[a^]i
+.  fchar \[^o] \z\[a^]o
+.  fchar \[^u] \z\[a^]u
+.
+.  fchar \[`A] \z\[ag]A
+.  fchar \[`E] \z\[ag]E
+.  fchar \[`I] \z\[ag]I
+.  fchar \[`O] \z\[ag]O
+.  fchar \[`U] \z\[ag]U
+.  fchar \[`a] \z\[ag]a
+.  fchar \[`e] \z\[ag]e
+.  fchar \[`i] \z\[ag]i
+.  fchar \[`o] \z\[ag]o
+.  fchar \[`u] \z\[ag]u
+.
+.  fchar \[~A] \z\[a~]A
+.  fchar \[~N] \z\[a~]N
+.  fchar \[~O] \z\[a~]O
+.  fchar \[~a] \z\[a~]a
+.  fchar \[~n] \z\[a~]n
+.  fchar \[~o] \z\[a~]o
+.
+.  fchar \[vS] \z\[ah]S
+.  fchar \[vs] \z\[ah]s
+.  fchar \[vZ] \z\[ah]Z
+.  fchar \[vz] \z\[ah]z
+.
+.  fchar \[,C] \z\[ac]C
+.  fchar \[,c] \z\[ac]c
+.
+.  fchar \[oA] \z\[ao]A
+.  fchar \[oa] \z\[ao]a
+.\}
 .
 .\" Fonts often lack precomposed glyphs for accented Latin letters that
 .\" were not defined in ISO 8859-1 (Latin-1).
@@ -91,7 +165,7 @@
 .fchar \[C aa] \z\[aa]C
 .fchar \[C ah] \z\[ah]C
 .fchar \[D ah] \z\[ah]D
-.fchar \[u110] \z-D\" capital letter d with stroke
+.fchar \[u0110] \z-D\" capital letter d with stroke
 .fchar \[E ah] \z\[ah]E
 .fchar \[E ho] \z\[ho]E
 .fchar \[/L]   \z/L
@@ -118,7 +192,7 @@
 .fchar \[c aa] \z\[aa]c
 .fchar \[c ah] \z\[ah]c
 .fchar \[d ah] \z\[ah]d
-.fchar \[u110] \z-d\" small letter d with stroke
+.fchar \[u0111] \z-d\" small letter d with stroke
 .fchar \[e ah] \z\[ah]e
 .fchar \[e ho] \z\[ho]e
 .fchar \[/l]   \z/l

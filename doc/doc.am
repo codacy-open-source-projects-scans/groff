@@ -279,7 +279,7 @@ doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
   $(DOC_GMP_COVER_PAGE) \
   eqn pic tbl pdfmom \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC) font/devps/freeeuro.pfa
-	$(GROFF_V)$(DOC_PDFMOM) -pet -mandoc -dHF=HB -rC1 \
+	$(GROFF_V)$(DOC_PDFMOM) -K latin-1 -pet -mandoc -dHF=HB -rC1 \
 	  -rCHECKSTYLE=3 -Tpdf -P-e \
 	  $(DOC_GMP_COVER_PAGE) \
 	  $(GROFF_MAN_PAGES1) \
@@ -288,7 +288,7 @@ doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
 
 doc/groff-man-pages.utf8.txt: $(GROFF_MAN_PAGES_ALL) eqn pic tbl \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC)
-	$(GROFF_V)$(DOC_GROFF) -pet -Tutf8 -mandoc \
+	$(GROFF_V)$(DOC_GROFF) -K latin-1 -pet -Tutf8 -mandoc \
 	  -rCHECKSTYLE=3 $(GROFF_MAN_PAGES1) \
 	  $(tmac_srcdir)/sv.tmac $(GROFF_MAN_PAGES2) \
 	  $(tmac_srcdir)/en.tmac $(GROFF_MAN_PAGES3) > $@

@@ -23,6 +23,10 @@ the Subject line or you risk my spam filters nuking your message.
 
 Version 2.6_c
 =============
+First line of columns after first falling one line lower than column
+top.
+---Fixed---
+
 Prevailing quad not always being restored after exiting lists.
 ---Fixed---
 

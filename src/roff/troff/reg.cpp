@@ -423,7 +423,8 @@ void alter_format()
   else if (tok.is_newline() || tok.is_eof())
     warning(WARN_MISSING, "missing register format");
   else
-    error("invalid register format (got %1)", tok.description());
+    error("invalid register format; expected 'i', 'I', 'a', 'A',"
+          " or decimal digits, got %1", tok.description());
   skip_line();
 }
 

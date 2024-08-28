@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -45,9 +45,9 @@ class macro : public request_or_macro {
   const char *filename;		// where was it defined?
   int lineno;
   int len;
-  int empty_macro;
-  int is_a_diversion;
-  int is_a_string;		// if it contains no newline
+  bool is_empty_macro;
+  bool is_a_diversion;
+  bool is_a_string;		// if it contains no newline
 public:
   macro_header *p;
   macro();
@@ -66,9 +66,9 @@ public:
   void invoke(symbol, bool);
   macro *to_macro();
   void print_size();
-  int empty();
-  int is_diversion();
-  int is_string();
+  bool is_empty();
+  bool is_diversion();
+  bool is_string();
   void clear_string_flag();
   friend class string_iterator;
   friend void chop_macro();

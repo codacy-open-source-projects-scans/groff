@@ -74,16 +74,18 @@
 .\" when the string they populate is later interpolated.
 .eo
 .de pdfpic@get-image-dimensions
-.  ds pdfpic*command pdfinfo \$1
+.  ds pdfpic*command pdfinfo \$1 2>/dev/null \"
 .  eo
-.  as pdfpic*command " | tr -d '\\000'
-.  as pdfpic*command " | sed -n -e '/Page  *size:/
-.  as pdfpic*command s/Page  *size:  *\\([0-9.]*\\)  *x  *\([0-9.]*\\).*$/
-.  as pdfpic*command . \\\\R@pdfpic*width  (p;\\1)@
-.  as pdfpic*command " \\\\R@pdfpic*height (p;\\2)@
-.  as pdfpic*command /p'
+.  as pdfpic*command  | perl -ne 'print qq(. \\\\R\@pdfpic*width $+{w}p@ \\\\R\@pdfpic*height $+{h}p\@) if m/Page\s+size:\s+(?<w>[\d.]+)\sx\s(?<h>[\d.]+)/si;'
 .  ec
 .  pso \*[pdfpic*command]
+.  if !r pdfpic*width \{\
+.    ds pdfpic*command ( identify \$1 2>/dev/null || file \$1 ) \"
+.    eo
+.    as pdfpic*command  | perl -ne 'print qq(. \\\\R\@pdfpic*width $+{w}p@ \\\\R\@pdfpic*height $+{h}p\@),qq(\\n) if m/(?:(?:[,=A-Z]|JP2) (?<w>\d+)\s*x\s*(?<h>\d+))|(?:height=(?<h>\d+).+width=(?<w>\d+))/;'
+.    ec
+.    pso \*[pdfpic*command]
+.  \}
 .  rm pdfpic*command
 ..
 .ec
@@ -138,14 +140,6 @@
 .  \}
 .  br
 .
-.  ds pdfpic*file-extension \\$1\"
-.  substring pdfpic*file-extension -4
-.  stringdown pdfpic*file-extension
-.  if !'\\*[pdfpic*file-extension]'.pdf' \{\
-.    pdfpic@error '\\$1' lacks a '.pdf' extension; skipping
-.    return
-.  \}
-.
 .  \" Ensure the file exists and is readable.
 .  \"
 .  \" This test is subject to a time-of-check-to-time-of-use (TOCTTOU)
@@ -159,6 +153,14 @@
 .
 .  \" if driver is not gropdf, convert image to .eps
 .  if \\n[pdfpic*do-conversion] \{\
+.    ds pdfpic*file-extension \\$1\"
+.    substring pdfpic*file-extension -4
+.    stringdown pdfpic*file-extension
+.    if !'\\*[pdfpic*file-extension]'.pdf' \{\
+.      pdfpic@error '\\$1' lacks a '.pdf' extension; skipping
+.      return
+.    \}
+.
 .    ds pdfpic*file-name-base \\$1
 .    substring pdfpic*file-name-base 0 -5
 .

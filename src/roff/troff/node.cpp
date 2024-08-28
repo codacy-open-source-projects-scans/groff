@@ -1079,7 +1079,7 @@ void troff_output_file::put_char_width(charinfo *ci, tfont *tf,
     flush_tbuf();
     do_motion();
     check_charinfo(tf, ci);
-    if (ci->numbered()) {
+    if (ci->is_numbered()) {
       put('N');
       put(ci->get_number());
     }
@@ -1156,7 +1156,7 @@ void troff_output_file::put_char(charinfo *ci, tfont *tf,
     fill_color(fcol);
     flush_tbuf();
     do_motion();
-    if (ci->numbered()) {
+    if (ci->is_numbered()) {
       put('N');
       put(ci->get_number());
     }
@@ -1857,10 +1857,9 @@ int charinfo_node::ends_sentence()
 {
   if (ci->ends_sentence())
     return 1;
-  else if (ci->transparent())
+  else if (ci->is_transparent_to_end_of_sentence())
     return 2;
-  else
-    return 0;
+  return 0;
 }
 
 int charinfo_node::overlaps_horizontally()
@@ -2857,30 +2856,33 @@ int break_char_node::ends_sentence()
   return ch->ends_sentence();
 }
 
+// Keep these symbol names in sync with the superset used in an
+// anonymous `enum` in "charinfo.h".
 enum break_char_type {
-  CAN_BREAK_BEFORE = 0x01,
-  CAN_BREAK_AFTER = 0x02,
-  IGNORE_HCODES = 0x04,
-  PROHIBIT_BREAK_BEFORE = 0x08,
-  PROHIBIT_BREAK_AFTER = 0x10,
-  INTER_CHAR_SPACE = 0x20
+  ALLOWS_BREAK_BEFORE = 0x01,
+  ALLOWS_BREAK_AFTER = 0x02,
+  IGNORES_SURROUNDING_HYPHENATION_CODES = 0x04,
+  PROHIBITS_BREAK_BEFORE = 0x08,
+  PROHIBITS_BREAK_AFTER = 0x10,
+  IS_INTERWORD_SPACE = 0x20
 };
 
 node *break_char_node::add_self(node *n, hyphen_list **p)
 {
   bool have_space_node = false;
   assert((*p)->hyphenation_code == 0);
-  if (break_code & CAN_BREAK_BEFORE) {
-    if ((*p)->is_breakable || break_code & IGNORE_HCODES) {
+  if (break_code & ALLOWS_BREAK_BEFORE) {
+    if (((*p)->is_breakable)
+	|| (break_code & IGNORES_SURROUNDING_HYPHENATION_CODES)) {
       n = new space_node(H0, col, n);
       n->freeze_space();
       have_space_node = true;
     }
   }
   if (!have_space_node) {
-    if (prev_break_code & INTER_CHAR_SPACE
-	|| prev_break_code & PROHIBIT_BREAK_AFTER) {
-      if (break_code & PROHIBIT_BREAK_BEFORE)
+    if ((prev_break_code & IS_INTERWORD_SPACE)
+	|| (prev_break_code & PROHIBITS_BREAK_AFTER)) {
+      if (break_code & PROHIBITS_BREAK_BEFORE)
 	// stretchable zero-width space not implemented yet
 	;
       else {
@@ -2892,8 +2894,9 @@ node *break_char_node::add_self(node *n, hyphen_list **p)
   }
   next = n;
   n = this;
-  if (break_code & CAN_BREAK_AFTER) {
-    if ((*p)->is_breakable || break_code & IGNORE_HCODES) {
+  if (break_code & ALLOWS_BREAK_AFTER) {
+    if (((*p)->is_breakable)
+	|| (break_code & IGNORES_SURROUNDING_HYPHENATION_CODES)) {
       n = new space_node(H0, col, n);
       n->freeze_space();
     }
@@ -4981,7 +4984,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
     macro *mac = s->get_macro();
     if ((mac != 0 /* nullptr */) && s->is_fallback())
       return make_composite_node(s, env);
-    if (s->numbered()) {
+    if (s->is_numbered()) {
       if (want_warnings)
 	warning(WARN_CHAR, "character code %1 not defined in current"
 		" font", s->get_number());
@@ -5040,7 +5043,6 @@ static node *make_glyph_node(charinfo *s, environment *env,
 	  const char *nm = s->nm.contents();
 	  // If the contents are empty, get_char_for_escape_parameter()
 	  // should already have thrown an error.
-	  // XXX: Why are we here if the parse failed that early?
 	  if (nm[0] != '\0') {
 	    const char *backslash = (nm[1] == '\0') ? "\\" : "";
 	    warning(WARN_CHAR, "special character '%1%2' not defined",
@@ -5165,18 +5167,18 @@ node *node::add_char(charinfo *ci, environment *env,
     }
   }
   int break_code = 0;
-  if (ci->can_break_before())
-    break_code = CAN_BREAK_BEFORE;
-  if (ci->can_break_after())
-    break_code |= CAN_BREAK_AFTER;
-  if (ci->ignore_hcodes())
-    break_code |= IGNORE_HCODES;
-  if (ci->prohibit_break_before())
-    break_code = PROHIBIT_BREAK_BEFORE;
-  if (ci->prohibit_break_after())
-    break_code |= PROHIBIT_BREAK_AFTER;
-  if (ci->inter_char_space())
-    break_code |= INTER_CHAR_SPACE;
+  if (ci->allows_break_before())
+    break_code = ALLOWS_BREAK_BEFORE;
+  if (ci->allows_break_after())
+    break_code |= ALLOWS_BREAK_AFTER;
+  if (ci->ignores_surrounding_hyphenation_codes())
+    break_code |= IGNORES_SURROUNDING_HYPHENATION_CODES;
+  if (ci->prohibits_break_before())
+    break_code = PROHIBITS_BREAK_BEFORE;
+  if (ci->prohibits_break_after())
+    break_code |= PROHIBITS_BREAK_AFTER;
+  if (ci->is_interword_space())
+    break_code |= IS_INTERWORD_SPACE;
   if (break_code) {
     node *next1 = res->next;
     res->next = 0;

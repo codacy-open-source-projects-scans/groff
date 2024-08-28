@@ -140,7 +140,7 @@ void widow_control_request();
 #endif /* WIDOW_CONTROL */
 
 class environment {
-  bool dummy;			// dummy environment used for \w
+  bool is_dummy_env;			// dummy environment used for \w
   hunits prev_line_length;
   hunits line_length;
   hunits prev_title_length;
@@ -158,7 +158,7 @@ class environment {
   int space_size;		// in 36ths of an em
   int sentence_space_size;	// same but for spaces at the end of sentences
   int adjust_mode;
-  bool fill;
+  bool is_filling;
   bool line_interrupted;
   int prev_line_interrupted;	// three-valued Boolean :-|
   int centered_line_count;
@@ -200,8 +200,8 @@ class environment {
   int field_spaces;
   int tab_field_spaces;
   bool tab_precedes_field;
-  bool discarding;
-  bool spreading;		// set by \p
+  bool is_discarding;
+  bool is_spreading;		// set by \p
   unsigned margin_character_flags;
   node *margin_character_node;
   hunits margin_character_distance;
@@ -268,7 +268,7 @@ public:
   statem *construct_state(bool has_only_eol);
   void print_env();
   void copy(const environment *);
-  bool is_dummy() { return dummy; }
+  bool is_dummy() { return is_dummy_env; }
   bool is_empty();
   bool is_composite() { return composite; }
   void set_composite() { composite = true; }
@@ -342,7 +342,7 @@ public:
   void set_char_slant(int);
   void set_input_line_position(hunits);	// used by \n(hp
   void interrupt();
-  void spread() { spreading = true; }
+  void spread() { is_spreading = true; }
   void possibly_break_line(bool /* must_break_here */ = false,
 			   bool /* must_adjust */ = false);
   void do_break(bool /* want_adjustment */ = false);	// .br, .brp

@@ -1,3 +1,10 @@
+2024-08-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* om.am: Add `-b` and `-wall` options to `MOMPDFMOM` macro so as
+	to run the formatter with these flags.  mom(7) is not
+	`-ww`-clean, but is _nearly_ `-wall`-clean, and backtraces are
+	helpful.
+
 2024-04-12  Deri James <deri@chuzzlewit.myzen.co.uk>
 
 	* om.tmac: Switch to using Branden's linear search so that we

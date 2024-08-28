@@ -27,6 +27,13 @@ o The `mso` request no longer attempts to open a macro file named, say,
   simply processes the macro search path for a file name matching the
   request argument, and succeeds or fails depending on an exact match.
 
+  If you desire this functionality for portability (keeping in mind that
+  `mso` is itself a groff extension), consider the following.
+
+    .\" Load the ms package, whatever it might be named.
+    .msoquiet s.tmac
+    .if !d LP .msoquiet tmac.s
+
 o GNU troff no longer accepts nonpositive page lengths.  Attempting to
   set one with the `pl` request clamps the page length to the vertical
   motion quantum as `ll` does with the horizontal motion quantum in AT&T
@@ -171,6 +178,12 @@ o Hyperlink support is now enabled by default on PDF and terminal
   commented code for disabling it are in the "man.local" and
   "mdoc.local" files.
 
+o The `PDFPIC` macro implemented in the "pdfpic.tmac" macro file now
+  uses identify(1) (from ImageMagick/GraphicsMagick) and file(1), if
+  available, to attempt to determine the dimensions of an image to be
+  embedded in a PDF document.  See also the item regarding gropdf(1)
+  below.  Thanks to Deri James.
+
 o The an (man) package now supports use of its hyperlink macros (`UR`,
   `UE`, `MT`, and `ME`) as paragraph tags (that is, on the next line
   after a `TP` macro call).  Use of the `MR` man page cross reference
@@ -274,13 +287,13 @@ o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   can still instruct groff to format for any desired line length by
   setting the `LL` register on {g,n,t}roff's command line.
 
-o The an (man) and doc (mdoc) macro packages now use slightly different
-  vertical margins to align more closely with the traditional
-  implementations of these packages.  Per man(7) in the AT&T Unix System
-  III manual (June 1980), the text area was 6.5 by 10 inches (on
-  typesetters).  When formatting for terminals with continuous rendering
-  disabled (by default, it is enabled), the page footer now sets 1 line
-  higher than before.
+o The an (man) and doc (mdoc) macro packages use slightly different
+  vertical margins than previously, to align more closely with the
+  traditional implementations of these packages.  Per man(7) in the AT&T
+  Unix System III manual (June 1980), the text area was 6.5 by 10 inches
+  (on typesetters).  When formatting for terminals with continuous
+  rendering disabled (by default, it is enabled), the page footer now
+  sets 1 line higher than before.
 
 o The an (man) and doc (mdoc) macro packages have added additional
   registers `BP`, `PO`, and `TS` for user configuration of man page
@@ -313,8 +326,9 @@ o The an (man) macro package's `IP` macro no longer honors the formerly
   punctuation or a list enumerator for `IP`'s first argument, consider
   migrating to `TP`.
 
-o The "an-ext.tmac" macro file no longer defines `DS` and `DE` macros.
-  It had defined them as empty (undocumentedly) since 2009.
+o The "an-ext.tmac" macro file, loaded automatically by the an (man)
+  macro package, no longer defines `DS` and `DE` macros.  It had defined
+  them as empty (undocumentedly) since 2009.
 
 o The doc (mdoc) macro package's `Mt` macro now sets its argument in
   roman, not italics (or whatever the string `doc-Pa-font` was
@@ -347,12 +361,12 @@ o The doc (mdoc) macro package now honors the `U` register and `MF`
 o The new macro file "koi8-r.tmac" supports the KOI8-R character
   encoding, which supports the new Russian locale for groff.
 
-o The m (mm) macro package's `Limsp` (a GNU extension) register has been
+o The m (mm) macro package's `Limsp` register (a GNU extension) has been
   removed; see the item regarding the `LI` macro below.
 
-o The m (mm) macro package's `AST` macro is deprecated, warns upon
-  usage, and is slated for withdrawal in the next release.  Assign to
-  the new string `Abstract` instead.
+o The m (mm) macro package's `AST` macro (a GNU extension) is
+  deprecated, warns upon usage, and is slated for withdrawal in the next
+  release.  Assign to the new string `Abstract` instead.
 
 o The m (mm) macro package's `EPIC` macro (a GNU extension) now
   interprets its "width" argument in ens by default, and its "height"
@@ -438,6 +452,11 @@ o The PostScript output driver's macro file "ps.tmac" no longer defines
    .hcode \[S ,]s
    .fchar \[s ,] \o's\[ac]'
    .hcode \[s ,]s
+
+o gropdf(1), the PDF output driver, now allows embedding of JFIF/JPEG
+  and JPEG 2000 image file formats.  If PerlMagick is installed, many
+  more image file formats, including PNG, PAM, and GIF can be embedded.
+  See also the item regarding `PDFPIC` above.  Thanks to Deri James.
 
 Miscellaneous
 -------------

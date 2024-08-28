@@ -42,8 +42,8 @@ echo "$output"
 echo "checking that title with escaped hyphen-minus is preserved" >&2
 echo "$output" | grep -q '^f-b(1)' || wail
 
-pattern='Bletcherous Glorfinking Dungrndel H2022-04-08Greebstank 2.21'
-pattern="$pattern              f-b(1)" # 14 spaces
+pattern='Bletcherous Glorfinking Dungrundel 2022-04-08 Greebstank 2.21'
+pattern="$pattern             f-b(1)" # 13 spaces
 echo "checking for insanely long 4th TH argument" >&2
 echo "$output" | grep -Fqx "$pattern" || wail
 

@@ -647,20 +647,48 @@ file when formatting for a typesetter
 .I pdfpic
 provides a single macro,
 .BR PDFPIC ,
-to include a PDF graphic in a document using features of the
-.B pdf
-output driver.
-.
-For other output devices,
-.B PDFPIC
-calls
-.BR PSPIC ,
-with which it shares an interface
-(see below).
-.
-This macro file is normally loaded at startup by the
-.I troffrc
-file.
+it operates in two modes.
+If it is not used with the pdf output driver -T
+.IR pdf ,
+the given
+.I file
+must be a pdf and it relies on the external program
+.MR pdftops 1
+to convert the pdf to an encapsulated postscript file
+and calls the
+.B PSPIC
+macro with which it shares an interface.
+If output is to a pdf it calls
+.BR "\[rs]X\[aq]pdf: pdfpic" \~.\|.\|. \[aq]
+(see
+.MR gropdf @MAN1EXT@ )
+and the given
+.I file
+can be a pdf or any graphic format supported by
+.IR gropdf .
+.IP
+Since this macro needs to discover the actual width and
+height of the image (in order to check if there is sufficient
+room on the page) there are dependencies on external programs
+shown in this table:-
+.TS
+allbox  centre;
+Cb Cb Cb Cb
+L C C C.
+	pdfinfo	file	identify
+\&.pdf	\[OK]	\[OK]	\[OK]
+\&.jpg	\[u2717]	\[OK]	\[OK]
+\&.jp2	\[u2717]	\[u2717]	\[OK]
+other	\[u2717]	\[u2717]	\[OK]
+.TE
+.IP
+To include \[oq]other\[cq] (e.g. png/pam/gif) image formats the
+perlmagick modules must be installed as well, they are used by
+.I gropdf
+to embed the graphic. They are not needed for the other 3 types.
+.IP
+If the required programs are not available, the file is treated as
+a pdf, so will likely fail if it is not a pdf.
 .
 .
 .TP

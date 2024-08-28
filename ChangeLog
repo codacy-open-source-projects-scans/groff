@@ -1,3 +1,412 @@
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.h: Trivially refactor `environment` class.
+	Rename (private) member variables.
+	`dummy` -> `is_dummy_env`
+	`fill` -> `is_filling`
+	`spreading` -> `is_spreading`
+	`discarding` -> `is_discarding`
+	* src/roff/troff/env.cpp (environment::add_char)
+	(environment::add_node, environment::space_newline)
+	(environment::space, environment::environment)
+	(environment::copy, environment::get_fill, fill, no_fill)
+	(environment::interrupt, environment::newline)
+	(environment::output_line, environment::start_line)
+	(environment::possibly_break_line)
+	(environment::dump_troff_state, environment::do_break)
+	(title, environment::print_env): Migrate to new names.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp
+	(encode_special_character_for_device_output): New helper
+	function takes over much of the tedium of
+	`encode_character_for_device_output()`, for maintainability.
+	(encode_char_for_device_output): Rename this...
+	(encode_character_for_device_output): ...to this.  Use the new
+	helper function when necessary.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_long_escape_parameters)
+	(interpolate_arg, encode_char_for_device_output): Clarify error
+	diagnostics.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/fallbacks.tmac: Spell fallbacks for Unicode special
+	character escape sequences correctly, using four hexadecimal
+	digits at minimum.  Problem introduced by me in commit
+	81aa7b77c0, 10 October 2022.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/fallbacks.tmac: Spell fallbacks for Unicode special
+	character escape sequences correctly, using uppercase
+	hexadecimal digits.  Problem dates back to commit 48a13daf13, 24
+	May 2012.
+
+2024-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/unicode.h: Declare new constants `UNIBUFSZ` and
+	`GLYPHBUFSZ` to help callers of `glyph_name_to_unicode()` and
+	`unicode_to_glyph_name()` allocate sufficient memory to hold any
+	returned special character identifiers.
+
+2024-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Modify `valid_unicode_code_sequence()` function to
+	take optional second parameter, a pointer to a character buffer
+	in which an error message is stored if the character sequence in
+	the first argument is invalid.  Declare new constant `ERRBUFSZ`
+	to help any caller allocate sufficient memory to hold any such
+	generated message.
+
+	* src/include/unicode.h:
+	* src/libs/libgroff/unicode.cpp (valid_unicode_code_sequence):
+	Do it.  Also squawk about use of lowercase hexadecimal digits in
+	Unicode special character identifiers, as these are invalid in
+	groff.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (encode_char_for_device_output)
+	(macro::append_str, do_suppress): Trivially refactor.  Compare
+	`char` array elements to character literals rather than an
+	integer literal with a C-style typecast to `char`.
+
+	(macro_iterator::~macro_iterator, map_composite_character)
+	(composite_glyph_name, charinfo::contains): Explicitly compare
+	variable of pointer type to null pointer constant instead of
+	letting it pun down to a Boolean.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Further refactor `charinfo` class.
+
+	* src/roff/troff/charinfo.h (class charinfo): Rename enumeration
+	constants.
+	`BREAK_BEFORE`      -> `ALLOWS_BREAK_BEFORE`
+	`BREAK_AFTER`       -> `ALLOWS_BREAK_AFTER`
+	`TRANSPARENT`       -> `IS_TRANSPARENT_TO_END_OF_SENTENCE`
+	`IGNORE_HCODES`     -> `IGNORES_SURROUNDING_HYPHENATION_CODES`
+	`DONT_BREAK_BEFORE` -> `PROHIBITS_BREAK_BEFORE`
+	`DONT_BREAK_AFTER`  -> `PROHIBITS_BREAK_AFTER`
+	`INTER_CHAR_SPACE`  -> `IS_INTERWORD_SPACE`
+	Rename member functions.
+	`can_break_before()` -> `allows_break_before()`
+	`can_break_after()` -> `allows_break_after()`
+	`transparent()` -> `is_transparent()`
+	`ignore_hcodes()` -> `ignores_surrounding_hyphenation_codes()`
+	`prohibit_break_before()` -> `prohibits_break_before()`
+	`prohibit_break_after()` -> `prohibits_break_after()`
+	`inter_char_space()` -> `is_interword_space()`
+	`numbered()` -> `is_numbered()`
+	Demote the return types of the foregoing and `ends_sentence()`,
+	`overlaps_vertically()`, `overlaps_horizontally()`,
+	`first_time_not_found()`, `is_normal()`, `is_fallback()`, and
+	`is_special()` from `int` to `bool`.  Update inline definitions.
+	Parenthesize complex `return` expressions.
+	* src/roff/troff/input.cpp (init_charset_table): Migrate to new
+	enumeration constants.
+	* src/roff/troff/node.cpp: Rename constants in `enum`
+	`break_char_type` to match those in "charinfo.h".
+	(troff_output_file::put_char_width, troff_output_file::put_char)
+	(charinfo_node::ends_sentence, break_char_node::add_self)
+	(make_glyph_node, node::add_char): Migrate to new enumeration
+	constant and member function names.
+
+2024-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Boolify `charinfo` class, renaming
+	member functions and variables and demoting their (return) types
+	from `int` to `bool`.  Use Boolean, not integer, literals in
+	initializers and assignments.
+
+	* src/roff/troff/charinfo.h:
+	* src/roff/troff/input.cpp: Do it.
+	`not_found` -> `is_not_found`
+	`transparent_translate` -> `is_transparently_translatable`
+	`translate_input` -> `translatable_as_input`
+	`set_translation_input()` -> `make_translatable_as_input()`
+	`get_translation_input()` -> `is_translatable_as_input()`
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (charinfo_node::ends_sentence): Fix
+	compiler warning.
+
+	warning: control reaches end of non-void function
+	[-Wreturn-type]
+
+	Not the most penetrating exhibit of control flow analysis.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[mdoc]: Check for correct and diagnostic-free behavior of
+	`Rs`/`Re`-related macros such as `doc-reference-title-name`,
+	`doc-city-name`, and `doc-date`.
+
+	* tmac/tests/doc_Rs-works.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/fallbacks.tmac: Define fallbacks for all special
+	characters in "Accented characters" section of groff_char(7) for
+	"ascii" output device.
+	* tmac/tests/an_do-not-abbreviate-escape-using-TH-arguments.sh:
+	Update test expectations.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devascii/R.proto: Map `ad` (dieresis accent) special
+	charcter as yet another alias of `"` on the ASCII output device.
+
+2024-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (chop_macro): Clarify diagnostic.
+	Say whether the argument being operated on is a "diversion" or a
+	"macro or string", rather then the vague term "object", which is
+	otherwise little-used in *roff discussions.
+
+2024-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Boolify `macro` class, renaming
+	member functions and variables and demoting their (return) types
+	from `int` to `bool`.
+
+	* src/roff/troff/request.h:
+	* src/roff/troff/input.cpp: Do it.
+	`empty_macro` -> `is_empty_macro`
+	`is_a_diversion`
+	`is_a_string`
+	`empty()` -> `is_empty()`
+	`is_diversion()`
+	`is_string()`
+
+	* src/roff/troff/input.cpp (macro::macro)
+	(macro::clear_string_flag, macro::append, macro::is_empty): Use
+	Boolean, not integer, literals in initializers and assignments.
+
+2024-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (device_request): Don't write null
+	characters to device control command commands (`x X` in
+	device-independent output).  These can occur if one interpolates
+	a diversion into the argument of a `device` request.
+
+2024-08-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdfbookmark): Trivially refactor.  Rename
+	`pdf:cleaned` string to `pdf:title` to reflect (1) its use in
+	the emitted PDF device control command and (2) the fact that it
+	is no longer sanitized by emitting it into a diversion and
+	invoking `asciify` on that diversion.
+
+2024-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/pdf.tmac (pdfclean): Drop unused macro.
+
+2024-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_WCOREFLAG): Include <stdlib.h> header file
+	in test program, since it calls exit(3).  Thanks to Eli Schwartz
+	for noting the problem.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?65762>.
+
+2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (doc/groff-man-pages.pdf)
+	(doc/groff-man-pages.utf8.txt): Run groff with "-K latin-1"
+	option to avoid (harmless) error when formatting
+	"groff_mmse.7".  Prompted by discussion with Deri in Savannah
+	#66122.
+
+	Fixes:
+
+	troff:contrib/mm/groff_mmse.7:172: error: cannot translate
+	character code 229 to special character 'oa' in
+	device-independent output
+
+2024-08-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Make compatible with ImageMagick (IM) < 7.0.
+
+	Peter Schaffter discovered some problems with recent changes to
+	gropdf and the `PDFPIC` macro: they were not fully compatible
+	with ImageMagick 6.9, which he was using.  See <https://lists.
+	gnu.org/archive/html/groff/2024-08/msg00044.html>.
+
+	* src/devices/gropdf/gropdf.pl: One difference in IM 6 is that
+	an alpha channel of all zeroes meant the image was opaque, but
+	in 7 it is reversed and means the image is wholly transparent.
+
+	This change is documented here:-
+
+	<http://www.imagemagick.org/script/porting.php#alpha>
+
+	"Alpha
+
+	We support alpha now, previously opacity.  With alpha, a value
+	of 0 means that the pixel does not have any coverage information
+	and is transparent; i.e. there was no color contribution from
+	any geometry because the geometry did not overlap this pixel.  A
+	value of QuantumRange means that the pixel is opaque because the
+	geometry completely overlapped the pixel.  As a consequence, in
+	version 7, the PixelInfo structure member alpha has replaced the
+	previous opacity member.  Another consequence is the alpha part
+	of an sRGB value in hexadecimal notation is now reversed (e.g.
+	#0000 is fully transparent)."
+
+	This is now handled by gropdf.
+
+	There was an undocumented (I thought it came as part of
+	perlmagick--it doesn't) dependency on the module
+	Image::ExifTool.  This is no longer used by gropdf, so not
+	required.
+
+	* tmac/pdfpic.tmac: Another issue was that identify(1) sometimes
+	reports PDF sizes that do not match the page size--it seems to
+	be attempting to report the size of the image embedded in the
+	PDF.  pdfinfo(1) is thus now used first on files, which
+	consistently reports the page size.  This imposes a slight time
+	penalty since non-PDF files endure a (failed) pdfinfo run.
+
+2024-08-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Handle preconv better.
+
+	If preconv is used, it should also be run when generating
+	forward references.
+
+	* src/devices/gropdf/pdfmom.pl: Add preconv (if requested)
+	to the pre-run that generates the `pdf:bm` strings.
+
+2024-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devps/ZDR: Regenerate.
+
+2024-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devps/ZD: Regenerate using updated dingbats.map.
+
+	Fixes <https://savannah.gnu.org/bugs/?63018>.  Thanks to Deri
+	James and Dave Kemper for (extensive) consultation.
+
+2024-04-29  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* font/devps/generate/dingbats.map: Update to map many more
+	Unicode code points to Zapf Dingbats glyphs.
+
+2024-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/afmtodit/afmtodit.pl: Improve information written to
+	generated font description files in comments.  Name the AFM and
+	map files used.  Report any options specified on the command
+	line.  The idea is to make it easier for future (and current)
+	maintainers to update such files because years pass between
+	occurrences, and institutional memory is, if not lost, laborious
+	to dredge up.  This practice might also assist users in
+	producing groff description files for their own fonts.  Also
+	write out a glyph's corresponding Unicode code point in the
+	comment field only if one is defined.  Otherwise we get a
+	comment marker followed by a tab and a newline, which Git marks
+	in radioactive red.
+
+	Begins addressing <https://savannah.gnu.org/bugs/?65697>.
+
+2024-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/afmtodit/afmtodit.pl: Define `prog` scalar as only
+	the "basename" of argv[0], making diagnostic and usage messages
+	less garrulous; see Savannah #65110.  Add new `opt_w` scalar to
+	separate it from existing `space_width` scalar so that we can
+	report the options we were invoked with in a comment in the
+	generated file.  Reorganize scalar representation of version
+	information: new `groff_version`, which is populated at build
+	time, new `short_version` which is `groff_version` stripped of
+	any Git revision and partial hash information; new
+	`version_stub` which holds the prefixed information identifying
+	the program and project; new `output_version` which holds the
+	stub and the short version; and existing `afmtodit_version`,
+	which holds the stub and the (full) groff version.  Write
+	`output_version` instead of `afmtodit_version` to the generated
+	file.  Update call sites of `croak` and new `whine` subroutines
+	to use `&` sigil and omit trailing newline.
+	(croak): Assume responsibility for writing a newline at the end
+	of the message.
+	(whine): New subroutine throws a diagnostic marked "warning".
+	Perl's `warn` output is ugly and not structured like other groff
+	diagnostics.  Give it responsibility for emitting the name of
+	the program.
+
+2024-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::add_char): Declare local
+	variable closer to point of use.  It's also a dead store, but
+	demanded by our internal API.  (See `node::add_char()` in
+	"node.cpp".)  Prompted by a report by Lukas Javorsky involving
+	use of "SAST analyzers {combination of coverity, snyk, cppcheck,
+	gcc, clang, shellcheck, unicontrol}".
+
+	Also see <https://savannah.gnu.org/bugs/?66079>.
+
+2024-08-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_delimited_name, do_if_request)
+	(read_drawing_command, read_drawing_command_color_arguments):
+	When complaining of mismatched or missing closing delimiter,
+	report the identity of the delimiter we were expecting.
+	* src/roff/troff/reg.cpp (alter_format): When complaining of
+	invalid register format, list the valid ones.
+
+2024-08-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Adjust and parallelize diagnostic
+	message language.
+	(get_char_for_escape_parameter): Say "argument", not
+	"parameter".
+	(do_zero_width_output): Identify the invalid token.
+	(do_zero_width_output, charinfo_to_node_list): Characterize
+	invalid token more precisely as part of the escape sequence's
+	_argument_.
+
+2024-08-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* NEWS: Add items for Deri's just-committed new features.
+
+2024-06-22  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[gropdf]: Add support for embedding bit-mapped images to a
+	generated pdf.
+
+	Currently gropdf supports the inclusion of pdf files as separate
+	images, now many other image formats are supported. The pdf
+	standard requires programs which process pdfs to handle embedded
+	jpegs, and from version 1.5 jpeg2000 images are handled natively
+	as well. (Current gropdf produces pdfs which conform to version
+	1.7).
+
+	The pdf standard supports a raw format with separate channels
+	{RGB/CMYK/Grey} in 8/16/32 bit formats. This is used for other
+	image formats. If there is a transparency channel it is
+	converted to an 8-bit soft mask for the image.
+
+	* src/devices/devpdf/gropdf.pl: add code to \X'pdf: pdfpic' to
+	handle other image types, not just pdfs.
+
+	* man/groff_tmac.5.man: document changes to PDFPIC macro.
+
+	* src/devices/devpdf/gropdf.1.man: explain use of
+	\X'pdf: pdfpic ...'
+
+	* tmac/pdfpic.tmac: expand the PDFPIC macro to handle multiple
+	image formats, not just embedding pdfs.
+
+	Fixes <https://savannah.gnu.org/bugs/?66114>.
+
 2024-08-19  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* font/devcp1047/*: Recursively delete.
@@ -121,12 +530,12 @@
 	(do_device_control): Do it.  As a bonus, check starting
 	delimters for these escape sequences (`\[obAZwX]`) for validity
 	in general.
-	(do_overstrike, do_bracket, do_zero_width_output): When
-	returning early, delete the `new` node we just allocated to
-	avoid leaking memory.
+	(do_overstrike, do_bracket, do_zero_width_output): Avoid leaking
+	memory when returning early; delete the `new` node we just
+	allocated.
 	(token:next): Be prepared for the `\b` and `\o` escape sequences
 	to return a null pointer (if the sequence doesn't even validly
-	get off the ground), as `\Z` and `\X` already do.
+	get off the ground), as handlers for `\Z` and `\X` already are.
 
 	* src/roff/groff/tests/\
 	some_escapes_accept_newline_delimiters.sh: Delete.
@@ -334,8 +743,8 @@
 	(readonly_text_register::readonly_text_register): Add it.
 	(main): Use it to initialize `.T` register.
 	(init_registers): Use it to initialize `.A` register.
-	(init_input_requests): Use it to initialize `.g` register and
-	`.R` registers.
+	(init_input_requests): Use it to initialize `.g` and `.R`
+	registers.
 
 2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -3026,8 +3435,8 @@
 
 	Support UTF-16-encoded PDF bookmarks.
 
-	* utils/afmtodit/afmtodit.pl: Generate comment field holding the
-	UTF-16 code for each groff character.
+	* src/utils/afmtodit/afmtodit.pl: Generate comment field holding
+	the UTF-16 code for each groff character.
 
 	* font/devps/AB:
 	* font/devps/ABI:

@@ -207,6 +207,7 @@ tmac_TESTS = \
   tmac/tests/doc_Mt-works.sh \
   tmac/tests/doc_Nm-works.sh \
   tmac/tests/doc_P-register-works.sh \
+  tmac/tests/doc_Rs-works.sh \
   tmac/tests/doc_TS-do-not-keep-tables-when-cR-set.sh \
   tmac/tests/doc_X-register-works.sh \
   tmac/tests/doc_Xr-works.sh \

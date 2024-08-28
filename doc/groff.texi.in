@@ -7209,8 +7209,8 @@ Some escape sequences that require parameters use delimiters.  The
 neutral apostrophe @code{'} is a popular choice and shown in this
 document.  The neutral double quote @code{"} is also commonly seen.
 Letters, numerals, and leaders can be used.  Punctuation characters
-are likely better choices, except for those defined as operators in
-numeric expressions; see below.
+are likely better choices, except for those meaningful in numeric
+expressions; see below.
 
 @Example
 \l'1.5i\[bu]' \" draw 1.5 inches of bullet glyphs
@@ -7935,7 +7935,7 @@ Output page selection status (Boolean-valued); see @command{groff}
 @cindex registers, available number of, register (@code{.R})
 @vindex .R
 Count of available unused registers; in GNU @command{troff} this
-register always interprets the maximum representable
+register always interpolates the maximum representable
 integer.@footnote{GNU @command{troff} dynamically allocates memory for as
 many registers as required.}  Favor its use over numeric literals with
 many zeros or nines to indicate an arbitrary large quantity.

@@ -44,7 +44,7 @@ do
   echo "$output" | grep -q 'x * X *ps: nop' || wail
 
   echo "checking that Unicode escape sequence is preserved on $device" \
-       " device" >&2
+       "device" >&2
   output=$(printf "%s\n" "$input_special" | "$groff" -T $device -Z) \
     || wail
   echo "$output"

@@ -27,7 +27,8 @@ wail() {
     fail=yes
 }
 
-input='.TH foo 1 2022-11-22 "groff test suite"
+input='.
+.TH foo 1 2022-11-22 "groff test suite"
 .SH Name
 foo \- frobnicate a bar
 .SH Description
@@ -38,7 +39,8 @@ figure 1
 .
 Or
 .UR http://\:bar\:.example\:.com
-.UE .'
+.UE .
+.'
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU0)
 echo "$output"
@@ -63,7 +65,8 @@ echo "checking formatting of web URI with no link text" \
     "(ascii device; hyperlinks enabled)" >&2
 echo "$output" | grep -Fq 'Or http://bar.example.com.' || wail
 
-html_input='.TH foo 1 2022-12-04 "groff test suite"
+html_input='.
+.TH foo 1 2022-12-04 "groff test suite"
 .SH Name
 foo \- frobnicate a bar
 .SH "See also"
@@ -71,7 +74,8 @@ For our SOSP presentation,
 check our
 .UR https://\:example\:.com
 website
-.UE .'
+.UE .
+.'
 
 output=$(printf "%s\n" "$html_input" | "$groff" -man -Thtml)
 echo "$output"

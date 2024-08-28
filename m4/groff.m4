@@ -942,6 +942,7 @@ AC_DEFUN([GROFF_WCOREFLAG],
    AC_RUN_IFELSE([
        AC_LANG_PROGRAM([[
 
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 

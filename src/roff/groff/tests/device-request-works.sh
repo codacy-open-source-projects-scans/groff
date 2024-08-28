@@ -27,14 +27,9 @@ wail () {
   fail=YES
 }
 
-# A break request is necessary to create a partially collected line in
-# the top-level diversion.
+input_plain='.device ps: nop'
 
-input_plain='.device ps: nop
-.br'
-
-input_quoted='.device " ps: nop
-.br'
+input_quoted='.device " ps: nop'
 
 # We need to portably get a backslash into the string, and we can't
 # change the escape character because despite appearances, this notation

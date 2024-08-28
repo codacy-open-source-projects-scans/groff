@@ -1733,7 +1733,7 @@ numerals,
 and leaders can be used.
 .
 Punctuation characters are likely better choices,
-except for those defined as infix operators in numeric expressions;
+except for those meaningful in numeric expressions;
 see below.
 .
 .
@@ -1756,8 +1756,8 @@ as delimiters:
 .BR \[rs]! ,
 .BR \[rs]? ,
 .BR \[rs]) ,
-.BR \[rs]/ ,
-.BR \[rs], ,
+.BR \[rs]\|/ ,
+.BR \[rs], \^,
 .BR \[rs]& ,
 .BR \[rs]: ,
 .BR \[rs]\[ti] ,

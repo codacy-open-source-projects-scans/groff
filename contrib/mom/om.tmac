@@ -2409,11 +2409,11 @@ end
 .       ds COND \
 \R'#PT_SIZE_IN_UNITS \En[.ps]'\
 \R'#CONDENSE 1'\
-\R'#COND_WIDTH (\En[#PT_SIZE_IN_UNITS]u*\E*[$COND_PERCENT]u)/100'\
-\Es[\En[#COND_WIDTH]u]\EH'\En[#PT_SIZE_IN_UNITS]u'
+\R'#COND_WIDTH (\En[#PT_SIZE_IN_UNITS]*\E*[$COND_PERCENT])/100'\
+\s[\En[#COND_WIDTH]u]\H'\En[#PT_SIZE_IN_UNITS]u'
 .       ds COND_FOR_SUP \
-\R'#COND_WIDTH (\En[#SUP_PT_SIZE]u*\E*[$COND_PERCENT]u)/100'\
-\Es[\En[#COND_WIDTH]u]\H'\En[#SUP_PT_SIZE]u'
+\R'#COND_WIDTH (\En[#SUP_PT_SIZE]*\E*[$COND_PERCENT])/100'\
+\s[\En[#COND_WIDTH]u]\H'\En[#SUP_PT_SIZE]u'
 .    \}
 .    if '\\$0'EXTEND' \{\
 .       ds $EXT_PERCENT \\$1
@@ -2424,18 +2424,18 @@ end
 .       ds EXT \
 \R'#PT_SIZE_IN_UNITS \En[.ps]'\
 \R'#EXTEND 1'\
-\R'#EXT_WIDTH (\En[#PT_SIZE_IN_UNITS]u*\E*[$EXT_PERCENT]u)/100'\
-\Es[\En[#EXT_WIDTH]u]\EH'\En[#PT_SIZE_IN_UNITS]u'
+\R'#EXT_WIDTH (\En[#PT_SIZE_IN_UNITS]*\E*[$EXT_PERCENT])/100'\
+\s[\En[#EXT_WIDTH]u]\H'\En[#PT_SIZE_IN_UNITS]u'
 .       ds EXT_FOR_SUP \
-\R'#EXT_WIDTH (\En[#SUP_PT_SIZE]u*\E*[$EXT_PERCENT]u)/100'\
-\Es[\En[#EXT_WIDTH]u]\H'\En[#EXT_PT_SIZE]u'
+\R'#EXT_WIDTH (\En[#SUP_PT_SIZE]*\E*[$EXT_PERCENT])/100'\
+\s[\En[#EXT_WIDTH]u]\H'\En[#EXT_PT_SIZE]u'
 .    \}
 .END
 \#
 .ds CONDX \
-\ER'#CONDENSE 0'\Es[0]\R'#PT_SIZE_IN_UNITS \En[.ps]'\H'\En[#PT_SIZE_IN_UNITS]u'
+\R'#CONDENSE 0'\s[0]\R'#PT_SIZE_IN_UNITS \En[.ps]'\H'\En[#PT_SIZE_IN_UNITS]u'
 .ds EXTX  \
-\ER'#EXTEND   0'\Es[0]\R'#PT_SIZE_IN_UNITS \En[.ps]'\H'\En[#PT_SIZE_IN_UNITS]u'
+\R'#EXTEND 0'\s[0]\R'#PT_SIZE_IN_UNITS \En[.ps]'\H'\En[#PT_SIZE_IN_UNITS]u'
 \#
 \# +++PAD LINES+++ (insert space)
 \#
@@ -4910,7 +4910,7 @@ y\R'#DESCENDER \\n[.cdp]'
 .    ds $AUTHOR \\*[$AUTHOR_1]
 .    substring $AUTHORS 0 -2
 .    ds PDF_AUTHORS \\*[$AUTHORS]
-.    pdfmomclean PDF_AUTHORS
+.    if '\\*[.T]'ps' .pdfmomclean PDF_AUTHORS
 .    nop \!x X ps:exec [/Author (\\*[PDF_AUTHORS]) /DOCINFO pdfmark
 .END
 .
@@ -8206,7 +8206,6 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .       if \\n[#ADVANCE_FROM_TOP]=0 \
 .          if \\n[#DOC_HEADER]=1 \
 .             if !\\n[#DOCHEADER_NO_SHIM] .SHIM_1
-.    if \\n[#COLUMNS] .mk dc
 .    FAMILY \\*[$DOC_FAM]
 .    QUAD \\*[$DOC_QUAD]
 .    CLEANUP_DEFAULTS
@@ -8258,6 +8257,7 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .       if !\\n[#ADVANCE_FROM_TOP] .sp -1
 .       pdfpagenumbering \\*[$PDF_PN_FORMAT] . \\n[#PDF_PN]
 .    \}
+.    if \\n[#COLUMNS] .mk dc
 .END
 \#
 .MAC RR_ADVANCE_FROM_TOP END
@@ -10238,7 +10238,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          ds pdfbx-cap-adj \\*[$CAP_HEIGHT]
 .          ps
 .          sp |\\n[t]u-\\n[#LEAD_AT_FOOTER]u
-.          sp (\\*[wt\\n[stack]]/2)u+\\*[pdfbx-cap-adj]+\\*[gap\\n[stack]]u
+.          sp (\\*[wt\\n[stack]]/2u)+\\*[pdfbx-cap-adj]+\\*[gap\\n[stack]]u
 .          ch FOOTER \\n[#VFP\\n[stack]]u
 .       \}
 .    \}
@@ -10604,9 +10604,9 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .             if \\n[#BIBLIOGRAPHY] .sp |\\n[bc]u-\\n[#BIB_LEAD]u
 .          \}
 .          el \{\
-.            vs \\n[#LEAD_AT_FOOTER]u
-.            rt \\n[dc]u
-.            nr flex-spaces 0
+.             vs \\n[#LEAD_AT_FOOTER]u
+.             rt \\n[dc]u
+.             nr flex-spaces 0
 .          \}
 .          if d page-\\n%@\\n[#COL_NUM] \{\
 .             rr #NO_FLEX
@@ -23532,13 +23532,13 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .          el .nr LEVEL_REQ \\n[CURRENT_LEVEL]
 .       \}
 .       ds PDF_TX \\$*
-.       pdfmomclean PDF_TX
 .       nr PDF_LEV (\\n[LEVEL_REQ]*\\n[#PDF_BOOKMARKS_OPEN])
 .       ie '\\*[.T]'ps' \{\
 .           if !'\\*[PDF_NM]'' \{\
 .              pdfhref M -N \\*[PDF_NM2] -- \\*[PDF_TX]
 .              if !dpdf:href.map .tm gropdf-info:href \\*[PDF_NM2] \\*[PDF_TX]
 .           \}
+.           pdfmomclean PDF_TX
 .           pdfbookmark \\n[PDF_LEV] \\*[PDF_TX]
 .       \}
 .       el .pdfbookmark \\*[PDF_NM] \\n[PDF_LEV] \\$*
@@ -23559,7 +23559,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 \#
 .MAC PDF_TITLE END
 .    ds pdftitle \\$*
-.    pdfmomclean pdftitle
+.    if '\\*[.T]'ps' .pdfmomclean pdftitle
 .    nop \!x X ps:exec [/Title (\\*[pdftitle]) /DOCINFO pdfmark
 .END
 \#
@@ -24438,7 +24438,8 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .   if !\\n[#QUOTE]=2 \
 .     if !\\n[#EPIGRAPH]=2 \
 .       IBX CLEAR
-.   if \\n[#IR_ACTIVE] .nr pdfbx-pre-ll \\n[#L_LENGTH]
+.   if \\n[#IR_ACTIVE]:\\n[#IBR_ACTIVE] \
+.      nr pdfbx-pre-ll \\n[#L_LENGTH]
 .   rr pdfbx-clear 
 . \}
 .\" See if box fits

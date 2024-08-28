@@ -296,12 +296,11 @@ void leader_character()
 
 void environment::add_char(charinfo *ci)
 {
-  int s;
   node *gc_np = 0 /* nullptr */;
   if (line_interrupted)
     ;
   // don't allow fields in dummy environments
-  else if (ci == field_delimiter_char && !dummy) {
+  else if (ci == field_delimiter_char && !is_dummy_env) {
     if (has_current_field)
       wrap_up_field();
     else
@@ -312,8 +311,11 @@ void environment::add_char(charinfo *ci)
   else if (current_tab != TAB_NONE) {
     if (tab_contents == 0 /* nullptr */)
       tab_contents = new line_start_node;
-    if (ci != hyphen_indicator_char)
-      tab_contents = tab_contents->add_char(ci, this, &tab_width, &s, &gc_np);
+    if (ci != hyphen_indicator_char) {
+      int s;
+      tab_contents = tab_contents->add_char(ci, this, &tab_width, &s,
+					    &gc_np);
+    }
     else
       tab_contents = tab_contents->add_discretionary_hyphen();
   }
@@ -376,11 +378,13 @@ void environment::add_node(node *nd)
   }
   else {
     if (line == 0 /* nullptr */) {
-      if (discarding && nd->discardable()) {
+      if (is_discarding && nd->discardable()) {
 	// XXX possibly: input_line_start -= nd->width();
 	delete nd;
 	return;
       }
+      // XXX: Should this really be done for device "special" nodes--"x"
+      // commands?
       start_line();
     }
     width_total += nd->width();
@@ -482,8 +486,8 @@ void environment::space_newline()
     return;
   }
   add_node(new word_space_node(x, get_fill_color(), w));
-  possibly_break_line(false, spreading);
-  spreading = false;
+  possibly_break_line(false, is_spreading);
+  is_spreading = false;
 }
 
 void environment::space()
@@ -518,8 +522,8 @@ void environment::space(hunits space_width, hunits sentence_space_width)
 			       get_fill_color(),
 			       new width_list(space_width,
 					      sentence_space_width)));
-  possibly_break_line(false, spreading);
-  spreading = false;
+  possibly_break_line(false, is_spreading);
+  is_spreading = false;
 }
 
 static node *do_underline_special(bool do_underline_spaces)
@@ -684,7 +688,7 @@ void environment::set_fill_color(color *c)
 }
 
 environment::environment(symbol nm)
-: dummy(false),
+: is_dummy_env(false),
   prev_line_length((units_per_inch*13)/2),
   line_length((units_per_inch*13)/2),
   prev_title_length((units_per_inch*13)/2),
@@ -698,7 +702,7 @@ environment::environment(symbol nm)
   space_size(12),
   sentence_space_size(12),
   adjust_mode(ADJUST_BOTH),
-  fill(true),
+  is_filling(true),
   line_interrupted(false),
   prev_line_interrupted(0),
   centered_line_count(0),
@@ -728,8 +732,8 @@ environment::environment(symbol nm)
   tab_char(0),
   leader_char(charset_table['.']),
   has_current_field(false),
-  discarding(false),
-  spreading(false),
+  is_discarding(false),
+  is_spreading(false),
   margin_character_flags(0),
   margin_character_node(0),
   margin_character_distance(points_to_units(10)),
@@ -774,7 +778,7 @@ environment::environment(symbol nm)
 }
 
 environment::environment(const environment *e)
-: dummy(true),
+: is_dummy_env(true),
   prev_line_length(e->prev_line_length),
   line_length(e->line_length),
   prev_title_length(e->prev_title_length),
@@ -792,7 +796,7 @@ environment::environment(const environment *e)
   space_size(e->space_size),
   sentence_space_size(e->sentence_space_size),
   adjust_mode(e->adjust_mode),
-  fill(e->fill),
+  is_filling(e->is_filling),
   line_interrupted(false),
   prev_line_interrupted(0),
   centered_line_count(0),
@@ -822,8 +826,8 @@ environment::environment(const environment *e)
   tab_char(e->tab_char),
   leader_char(e->leader_char),
   has_current_field(false),
-  discarding(false),
-  spreading(false),
+  is_discarding(false),
+  is_spreading(false),
   margin_character_flags(e->margin_character_flags),
   margin_character_node(e->margin_character_node),
   margin_character_distance(e->margin_character_distance),
@@ -874,7 +878,7 @@ void environment::copy(const environment *e)
   space_size = e->space_size;
   sentence_space_size = e->sentence_space_size;
   adjust_mode = e->adjust_mode;
-  fill = e->fill;
+  is_filling = e->is_filling;
   line_interrupted = false;
   prev_line_interrupted = 0;
   centered_line_count = 0;
@@ -900,10 +904,10 @@ void environment::copy(const environment *e)
   control_character = e->control_character;
   no_break_control_character = e->no_break_control_character;
   hyphen_indicator_char = e->hyphen_indicator_char;
-  spreading = false;
+  is_spreading = false;
   line = 0 /* nullptr */;
   pending_lines = 0 /* nullptr */;
-  discarding = false;
+  is_discarding = false;
   tabs = e->tabs;
   using_line_tabs = e->using_line_tabs;
   current_tab = TAB_NONE;
@@ -923,7 +927,7 @@ void environment::copy(const environment *e)
   hyphenation_mode_default = e->hyphenation_mode_default;
   fontno = e->fontno;
   prev_fontno = e->prev_fontno;
-  dummy = e->dummy;
+  is_dummy_env = e->is_dummy_env;
   family = e->family;
   prev_family = e->prev_family;
   leader_node = 0 /* nullptr */;
@@ -1046,7 +1050,7 @@ unsigned environment::get_adjust_mode()
 
 int environment::get_fill()
 {
-  return fill;
+  return is_filling;
 }
 
 hunits environment::get_indent()
@@ -1386,7 +1390,7 @@ void fill()
     tok.next();
   if (want_break)
     curenv->do_break();
-  curenv->fill = true;
+  curenv->is_filling = true;
   tok.next();
 }
 
@@ -1396,7 +1400,7 @@ void no_fill()
     tok.next();
   if (want_break)
     curenv->do_break();
-  curenv->fill = false;
+  curenv->is_filling = false;
   curenv->suppress_next_eol = true;
   tok.next();
 }
@@ -1774,7 +1778,7 @@ void hyphen_line_max_request()
 
 void environment::interrupt()
 {
-  if (!dummy) {
+  if (!is_dummy_env) {
     add_node(new transparent_dummy_node);
     line_interrupted = true;
   }
@@ -1808,7 +1812,7 @@ void environment::newline()
   node *to_be_output = 0 /* nullptr */;
   hunits to_be_output_width;
   prev_line_interrupted = 0;
-  if (dummy)
+  if (is_dummy_env)
     space_newline();
   else if (line_interrupted) {
     line_interrupted = false;
@@ -1834,7 +1838,7 @@ void environment::newline()
     to_be_output_width = width_total;
     line = 0 /* nullptr */;
   }
-  else if (fill)
+  else if (is_filling)
     space_newline();
   else {
     to_be_output = line;
@@ -1843,7 +1847,7 @@ void environment::newline()
   }
   input_line_start = line == 0 /* nullptr */ ? H0 : width_total;
   if (to_be_output) {
-    if (is_writing_html && !fill) {
+    if (is_writing_html && !is_filling) {
       curdiv->modified_tag.incl(MTSM_EOL);
       if (suppress_next_eol)
 	suppress_next_eol = false;
@@ -1920,14 +1924,14 @@ void environment::output_line(node *nd, hunits width, bool was_centered)
     width += w;
     ++next_line_number;
   }
-  output(nn, !fill, vertical_spacing, total_post_vertical_spacing(), width,
-	 was_centered);
+  output(nn, !is_filling, vertical_spacing,
+	 total_post_vertical_spacing(), width, was_centered);
 }
 
 void environment::start_line()
 {
   assert(line == 0 /* nullptr */);
-  discarding = false;
+  is_discarding = false;
   line = new line_start_node;
   if (have_temporary_indent) {
     saved_indent = temporary_indent;
@@ -2192,7 +2196,8 @@ void environment::possibly_break_line(bool must_break_here,
 				      bool must_adjust)
 {
   bool was_centered = centered_line_count > 0;
-  if (!fill || (current_tab != TAB_NONE) || has_current_field || dummy)
+  if (!is_filling || (current_tab != TAB_NONE) || has_current_field
+      || is_dummy_env)
     return;
   while (line != 0 /* nullptr */
 	 && (must_adjust
@@ -2267,10 +2272,10 @@ void environment::possibly_break_line(bool must_break_here,
 	width_total += tem->width();
 	space_total += tem->nspaces();
       }
-      discarding = false;
+      is_discarding = false;
     }
     else {
-      discarding = true;
+      is_discarding = true;
       to_be_discarded = line;
       line = 0 /* nullptr */;
     }
@@ -2373,12 +2378,13 @@ void environment::dump_troff_state()
 	  curenv->centered_line_count);
   fprintf(stderr, SPACES "register 'll' = %d\n",
 	  curenv->line_length.to_units());
-  fprintf(stderr, SPACES "%sfilling\n", curenv->fill ? "" : "not ");
+  fprintf(stderr, SPACES "%sfilling\n",
+	  curenv->is_filling ? "" : "not ");
   fprintf(stderr, SPACES "page offset 'po' = %d\n",
 	  topdiv->get_page_offset().to_units());
   fprintf(stderr, SPACES "seen_break = %d\n", curenv->seen_break);
   fprintf(stderr, SPACES "seen_space = %d\n", curenv->seen_space);
-  fprintf(stderr, SPACES "discarding = %d\n", curenv->discarding);
+  fprintf(stderr, SPACES "is_discarding = %d\n", curenv->is_discarding);
   fflush(stderr);
 #undef SPACES
 }
@@ -2493,13 +2499,13 @@ void environment::do_break(bool want_adjustment)
     line = line->next;
     delete tem;
   }
-  discarding = false;
+  is_discarding = false;
   input_line_start = H0;
   if (line != 0 /* nullptr */) {
-    if (fill) {
+    if (is_filling) {
       switch (adjust_mode) {
       case ADJUST_CENTER:
-	saved_indent += (target_text_length - width_total)/2;
+	saved_indent += (target_text_length - width_total) / 2;
 	was_centered = true;
 	break;
       case ADJUST_RIGHT:
@@ -2603,8 +2609,10 @@ void title()
     tem->next = nd;
     nd = tem;
   }
-  curenv->output_title(nd, !curenv->fill, curenv->vertical_spacing,
-		       curenv->total_post_vertical_spacing(), length_title);
+  curenv->output_title(nd, !curenv->is_filling,
+		       curenv->vertical_spacing,
+		       curenv->total_post_vertical_spacing(),
+		       length_title);
   curenv->hyphen_line_count = 0;
   tok.next();
 }
@@ -3426,7 +3434,7 @@ void environment::print_env()
 	   sentence_space_size);
   errprint("  previous line interrupted/continued: %1\n",
 	   prev_line_interrupted ? "yes" : "no");
-  errprint("  filling: %1\n", fill ? "on" : "off");
+  errprint("  filling: %1\n", is_filling ? "on" : "off");
   errprint("  alignment/adjustment: %1\n",
 	   adjust_mode == ADJUST_LEFT
 	     ? "left"
@@ -3481,7 +3489,7 @@ void environment::print_env()
   errprint("  computing tab stops from: %1\n",
 	   using_line_tabs ? "output line start (\"line tabs\")"
 	     : "input line start");
-  errprint("  forcing adjustment: %1\n", spreading ? "yes" : "no");
+  errprint("  forcing adjustment: %1\n", is_spreading ? "yes" : "no");
   if (margin_character_node != 0 /* nullptr */) {
     errprint("  margin character flags: %1\n",
 	     margin_character_flags == MARGIN_CHARACTER_ON

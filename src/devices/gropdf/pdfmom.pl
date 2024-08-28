@@ -159,11 +159,11 @@ if ($dev eq 'pdf')
 {
     if ($mom)
     {
-        system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $mom $preconv - $cmdstring $zflg");
+        system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $mom $preconv - $cmdstring $zflg");
     }
     else
     {
-        system("groff -Tpdf -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv - $cmdstring $zflg");
+        system("groff -Tpdf $preconv -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv - $cmdstring $zflg");
     }
 }
 elsif ($dev eq 'ps')
