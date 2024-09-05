@@ -108,7 +108,8 @@ GNU
 .I troff \" GNU
 transforms
 .MR groff @MAN7EXT@
-language input into the device-independent output format described in
+language input into the device-independent page description language
+detailed in
 .MR groff_out @MAN5EXT@ ;
 .I @g@troff
 is thus the heart of the GNU
@@ -586,7 +587,8 @@ This category is enabled by default.
 .
 .TP
 .BR char "\t1"
-No mounted font defines a glyph for the requested character.
+No mounted font defines a glyph for the requested character,
+or input could not be encoded for device-independent output.
 .
 This category is enabled by default.
 .
@@ -677,7 +679,8 @@ at most one warning is given for each.
 .
 .
 .IP
-This warning is also emitted upon an attempt to move an unplanted trap
+.I @g@troff
+also uses this category to warn of an attempt to move an unplanted trap
 macro.
 .
 In such cases,

@@ -21,12 +21,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#
-# usage:
-#
-#   make-afmtodit-tables \
-#     UnicodeData.txt version-string glyphlist.txt > afmtodit.in
-#
 # 'UnicodeData.txt' is the central database file from the Unicode
 # standard.  Unfortunately, it doesn't contain a version number, which
 # must be thus provided manually as an additional parameter.
@@ -34,7 +28,6 @@
 # 'glyphlist.txt' holds the Adobe Glyph List (AGL).
 #
 # This program needs a C preprocessor.
-#
 
 if [ $# -ne 3 ]
 then

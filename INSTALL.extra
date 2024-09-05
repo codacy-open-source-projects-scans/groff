@@ -86,9 +86,7 @@ directories used by the 'make install' command are in locations that
 require administrative access for writing.  You can 'configure' groff
 with options like '--prefix' that select an alternative directory that
 is writable by the user conducting the build.  Type './configure --help'
-from the groff source tree for documentation of relevant options.  See
-"Evaluation" below for instructions on viewing this man page without
-having groff installed.
+from the groff source tree for documentation of relevant options.
 
 
 Non-POSIX Platforms
@@ -233,8 +231,8 @@ please submit a ticket using the 'BUG-REPORT' file as a template.
 Uninstalling
 ============
 
-If you are dissatisfied with groff, or to prepare for a new installation
-from source, you can uninstall it to ensure that no stale files persist
+If you are dissatisfied with groff, or to prepare for a new
+installation, you can uninstall it to ensure that no stale files persist
 on the system.  Run the command 'sudo make uninstall'.  (If you
 successfully used 'make install', simply run 'make uninstall'.)  At a
 minimum, some directories not particular to groff, like 'bin' and

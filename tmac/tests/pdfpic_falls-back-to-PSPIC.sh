@@ -49,7 +49,8 @@ test -z "$artifact_dir" && exit 77 # skip
 
 if [ -e "$gnu_pdf" ]
 then
-    echo "temporary output file '$gnu_pdf' already exists" >&2
+    echo "temporary output file '$gnu_pdf' already exists; skipping" \
+        "test" >&2
     exit 77 # skip
 fi
 

@@ -44,7 +44,7 @@ static int last_post_line_extra_space = 0; // needed for \n(.a
 static int nl_reg_contents = -1;
 static int dl_reg_contents = 0;
 static int dn_reg_contents = 0;
-static int vertical_position_traps_flag = 1;
+static bool honor_vertical_position_traps = true;
 static vunits truncated_space;
 static vunits needed_space;
 
@@ -314,9 +314,10 @@ void macro_diversion::output(node *nd, int retain_size,
   if (overflow)
     fatal("diversion overflow (vertical position: %1u,"
 	  " next line height: %2u)", vpos, lineht);
-  if (vertical_position_traps_flag
-      && !diversion_trap.is_null() && diversion_trap_pos > vertical_position
-      && diversion_trap_pos <= vertical_position + x) {
+  if (honor_vertical_position_traps
+      && !diversion_trap.is_null()
+      && (diversion_trap_pos > vertical_position)
+      && (diversion_trap_pos <= vertical_position + x)) {
     vunits trunc = vertical_position + x - diversion_trap_pos;
     if (trunc > v.post)
       trunc = v.post;
@@ -335,7 +336,7 @@ void macro_diversion::output(node *nd, int retain_size,
 
 void macro_diversion::space(vunits n, int)
 {
-  if (vertical_position_traps_flag
+  if (honor_vertical_position_traps
       && !diversion_trap.is_null() && diversion_trap_pos > vertical_position
       && diversion_trap_pos <= vertical_position + n) {
     truncated_space = vertical_position + n - diversion_trap_pos;
@@ -437,24 +438,27 @@ void top_level_diversion::output(node *nd, int retain_size,
   vertical_position += v.post_extra;
   if (vertical_position > high_water_mark)
     high_water_mark = vertical_position;
-  if (vertical_position_traps_flag && vertical_position >= page_length)
+  if (honor_vertical_position_traps && vertical_position >= page_length)
     begin_page();
-  else if (vertical_position_traps_flag
-	   && next_trap != 0 && vertical_position >= next_trap_pos) {
+  else if (honor_vertical_position_traps
+	   && (next_trap != 0 /* nullptr */)
+	   && (vertical_position >= next_trap_pos)) {
     nl_reg_contents = vertical_position.to_units();
     truncated_space = v.post;
     spring_trap(next_trap->nm);
   }
   else if (v.post > V0) {
     vertical_position += v.post;
-    if (vertical_position_traps_flag
-	&& next_trap != 0 && vertical_position >= next_trap_pos) {
+    if (honor_vertical_position_traps
+	&& (next_trap != 0 /* nullptr */)
+	&& (vertical_position >= next_trap_pos)) {
       truncated_space = vertical_position - next_trap_pos;
       vertical_position = next_trap_pos;
       nl_reg_contents = vertical_position.to_units();
       spring_trap(next_trap->nm);
     }
-    else if (vertical_position_traps_flag && vertical_position >= page_length)
+    else if (honor_vertical_position_traps
+	     && (vertical_position >= page_length))
       begin_page();
     else
       nl_reg_contents = vertical_position.to_units();
@@ -512,7 +516,9 @@ void top_level_diversion::space(vunits n, int forced)
   if (curenv->get_vertical_spacing().to_units())
     curenv->seen_space += n.to_units()
 			  / curenv->get_vertical_spacing().to_units();
-  if (vertical_position_traps_flag && next_trap != 0 && y >= next_trap_pos) {
+  if (honor_vertical_position_traps
+      && (next_trap != 0 /* nullptr */)
+      && (y >= next_trap_pos)) {
     vertical_position = next_trap_pos;
     nl_reg_contents = vertical_position.to_units();
     truncated_space = y - vertical_position;
@@ -522,7 +528,8 @@ void top_level_diversion::space(vunits n, int forced)
     vertical_position = V0;
     nl_reg_contents = vertical_position.to_units();
   }
-  else if (vertical_position_traps_flag && y >= page_length && n >= V0)
+  else if (honor_vertical_position_traps
+	   && (y >= page_length && n >= V0))
     begin_page(y - page_length);
   else {
     vertical_position = y;
@@ -659,8 +666,8 @@ bool top_level_diversion::begin_page(vunits n)
     the_output->begin_page(page_number, page_length);
   before_first_page = 0;
   nl_reg_contents = vertical_position.to_units();
-  if ((vertical_position_traps_flag && next_trap != 0 /* nullptr */)
-      && next_trap_pos == V0) {
+  if ((honor_vertical_position_traps && (next_trap != 0 /* nullptr */))
+      && (next_trap_pos == V0)) {
     truncated_space = n;
     spring_trap(next_trap->nm);
     return true;
@@ -674,7 +681,7 @@ void continue_page_eject()
   if (topdiv->get_ejecting()) {
     if (curdiv != topdiv)
       error("cannot continue page ejection while diverting output");
-    else if (!vertical_position_traps_flag)
+    else if (!honor_vertical_position_traps)
       error("cannot continue page ejection while vertical position"
 	    " traps disabled");
     else {
@@ -1011,9 +1018,9 @@ void vertical_position_traps()
 {
   int n;
   if (has_arg() && get_integer(&n))
-    vertical_position_traps_flag = (n > 0);
+    honor_vertical_position_traps = (n > 0);
   else
-    vertical_position_traps_flag = 1;
+    honor_vertical_position_traps = true;
   skip_line();
 }
 
@@ -1267,7 +1274,7 @@ void init_div_requests()
   register_dictionary.define(".trunc",
       new constant_vunits_reg(&truncated_space));
   register_dictionary.define(".vpt",
-      new readonly_register(&vertical_position_traps_flag));
+      new readonly_boolean_register(&honor_vertical_position_traps));
   register_dictionary.define(".z", new diversion_name_reg);
   register_dictionary.define("dl", new variable_reg(&dl_reg_contents));
   register_dictionary.define("dn", new variable_reg(&dn_reg_contents));

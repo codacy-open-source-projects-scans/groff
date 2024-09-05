@@ -305,9 +305,16 @@ bool variable_reg::get_value(units *res)
   return true;
 }
 
-void define_register()
+void define_register_request()
 {
-  symbol nm = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "register definition request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
+  symbol nm = get_name();
+  assert(nm != 0 /* nullptr */);
   if (nm.is_null()) {
     skip_line();
     return;
@@ -317,6 +324,12 @@ void define_register()
   units prev_value;
   if ((0 /* nullptr */ == r) || !r->get_value(&prev_value))
     prev_value = 0;
+  if (!has_arg()) {
+    warning(WARN_MISSING, "register definition request expects"
+	    " a numeric expression as second argument");
+    skip_line();
+    return;
+  }
   if (read_measurement(&v, 'u', prev_value)) {
     if (0 /* nullptr */ == r) {
       r = new number_reg;
@@ -385,10 +398,10 @@ void set_register(symbol nm, units n)
   r->set_value(n);
 }
 
-reg *look_up_register(symbol nm)
+reg *look_up_register(symbol nm, bool suppress_creation)
 {
   reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
-  if (0 /* nullptr */ == r) {
+  if ((0 /* nullptr */ == r) && !suppress_creation) {
     warning(WARN_REG, "register '%1' not defined", nm.contents());
     r = new number_reg;
     register_dictionary.define(nm, r);
@@ -396,13 +409,16 @@ reg *look_up_register(symbol nm)
   return r;
 }
 
-void alter_format()
+void assign_register_format_request()
 {
-  symbol nm = get_name(true /* required */);
-  if (nm.is_null()) {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "register interpolation format assignment"
+	    " request expects arguments");
     skip_line();
     return;
   }
+  symbol nm = get_name();
+  assert(nm != 0 /* nullptr */);
   reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
   if (0 /* nullptr */ == r) {
     r = new number_reg;
@@ -421,15 +437,21 @@ void alter_format()
   else if (c == 'i' || c == 'I' || c == 'a' || c == 'A')
     r->alter_format(c);
   else if (tok.is_newline() || tok.is_eof())
-    warning(WARN_MISSING, "missing register format");
+    warning(WARN_MISSING, "register interpolation format assignment"
+	    " request register format as second argument");
   else
     error("invalid register format; expected 'i', 'I', 'a', 'A',"
           " or decimal digits, got %1", tok.description());
   skip_line();
 }
 
-void remove_reg()
+void remove_register_request()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "register removal request expects arguments");
+    skip_line();
+    return;
+  }
   for (;;) {
     symbol s = get_name();
     if (s.is_null())
@@ -439,12 +461,22 @@ void remove_reg()
   skip_line();
 }
 
-void alias_reg()
+void alias_register_request()
 {
-  symbol s1 = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "register aliasing request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
+  symbol s1 = get_name();
+  assert(s1 != 0 /* nullptr */);
   if (!s1.is_null()) {
-    symbol s2 = get_name(true /* required */);
-    if (!s2.is_null()) {
+    symbol s2 = get_name();
+    if (s2.is_null())
+      warning(WARN_MISSING, "register aliasing request expects"
+	      " identifier of existing register as second argument");
+    else {
       if (!register_dictionary.alias(s1, s2))
 	error("cannot alias undefined register '%1'", s2.contents());
     }
@@ -452,29 +484,56 @@ void alias_reg()
   skip_line();
 }
 
-void rename_reg()
+void rename_register_request()
 {
-  symbol s1 = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "register renaming request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
+  symbol s1 = get_name();
   if (!s1.is_null()) {
-    symbol s2 = get_name(true /* required */);
-    if (!s2.is_null())
+    symbol s2 = get_name();
+    if (s2.is_null())
+      warning(WARN_MISSING, "register renaming request exepects new"
+	      " identifier as second argument");
+    else
       register_dictionary.rename(s1, s2);
   }
   skip_line();
 }
 
-void print_registers()
+static void dump_register(symbol *id, reg *r)
 {
-  object_dictionary_iterator iter(register_dictionary);
+  errprint("%1\t", id->contents());
+  const char *value = r->get_string();
+  if (value)
+    errprint("%1", value);
+  const char *format = r->get_format();
+  if (format)
+    errprint("\t\%1", format);
+  errprint("\n");
+}
+
+void dump_register_request()
+{
   reg *r;
-  symbol s;
-  while (iter.get(&s, (object **)&r)) {
-    assert(!s.is_null());
-    errprint("%1\t", s.contents());
-    const char *p = r->get_string();
-    if (p)
-      errprint(p);
-    errprint("\n");
+  symbol identifier;
+  if (has_arg()) {
+    do {
+      identifier = get_name();
+      r = look_up_register(identifier, true /* suppress creation */);
+      if (r != 0 /* nullptr */)
+	dump_register(&identifier, r);
+    } while (has_arg());
+  }
+  else {
+    object_dictionary_iterator iter(register_dictionary);
+    while (iter.get(&identifier, reinterpret_cast<object **>(&r))) {
+      assert(!identifier.is_null());
+      dump_register(&identifier, r);
+    }
   }
   fflush(stderr);
   skip_line();
@@ -482,12 +541,12 @@ void print_registers()
 
 void init_reg_requests()
 {
-  init_request("rr", remove_reg);
-  init_request("nr", define_register);
-  init_request("af", alter_format);
-  init_request("aln", alias_reg);
-  init_request("rnn", rename_reg);
-  init_request("pnr", print_registers);
+  init_request("rr", remove_register_request);
+  init_request("nr", define_register_request);
+  init_request("af", assign_register_format_request);
+  init_request("aln", alias_register_request);
+  init_request("rnn", rename_register_request);
+  init_request("pnr", dump_register_request);
 }
 
 // Local Variables:

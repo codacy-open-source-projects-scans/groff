@@ -20,7 +20,7 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-Version 2.6_c
+Version 2.6_d
 -------------
 Antoine de St-Exupéry asserted that elegance in engineering is
 achieved not when there is nothing left to add, but when there is
@@ -53,7 +53,7 @@ extensions, and float management).
 .if (\n[.x]\n[.y] < 118) \
 .   ab [mom]: You need GNU troff version 1.18 or higher to run this version of mom.
 \# Mom version
-.ds version 2.6_c
+.ds version 2.6_d
 .if dVERSION \{\
 .   ab [mom]: Version \*[version]
 .\}
@@ -545,7 +545,7 @@ end
 .    \}
 .END
 \#
-.FALLBACK_FONT CR ABORT
+.if !n .FALLBACK_FONT CR ABORT
 \#
 \# FAMILY
 \# ------
@@ -4324,6 +4324,7 @@ y\R'#DESCENDER \\n[.cdp]'
 .          nr #IGNORE_COLUMNS 1
 .          nr #RULE_WEIGHT 500
 .          char \[em] --
+.          char \[en] \~\[mi]\~
 .          tr `'
 .          tr \[lq]"
 .          tr \[rq]"
@@ -4397,12 +4398,14 @@ y\R'#DESCENDER \\n[.cdp]'
 \#
 .MAC TYPEWRITER_FAMILY END
 .    ds $TYPEWRITER_FAM \\$1
+.    TYPEWRITER
 .END
 \#
 .ALIAS TYPEWRITER_FAM TYPEWRITER_FAMILY
 \#
 .MAC TYPEWRITER_SIZE END
 .    ds $TYPEWRITER_PS \\$1
+.    TYPEWRITER
 .END
 \#
 .MAC TYPEWRITER END
@@ -23705,22 +23708,26 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 \# ---------
 \# *Arguments:
 \#   [ -L -| -R | -C | -I <indent> ] \
-\#     <image file> <width> <height> \
+\#     <image file> [ <width> <height> ] \
 \#     [ SCALE <factor> ] [ ADJUST +|-<vertical shift> ] [ TARGET <pdf target> ] \
 \#     [ NO_SHIM ] [ NO_FLEX ]
 \# *Function:
-\#   Allows embedding of PDF images with the same arguments as PSPIC
-\#   plus SCALE and ADJUST options.
+\#   Embeds images in PDF files.
 \# *Notes:
-\#   <image file> <width> <height> are required.
+\#   <image file> must be in a format known to imagemagick.
+\#   If run in unsafe mode, <width> and <height> are not required.
+\#   In safe mode, the dimensions must be given.
 \#
 .MAC PDF_IMAGE END
-.    if \\n[#DOCS]=1 \
-.       ie \\n[#PP]=0 .PP
-.       el .br
+.    if \\n[.u] .nr #FILLED 1
+.    nf
 .    if !'\\n[.z]'FLOAT*DIV' \{\
 .       nr pdf-img:float 1
 .       FLOAT
+.    \}
+.    if \\n[#FILLED] \{\
+.       fi
+.       rr #FILLED
 .    \}
 .    PDF_TARGET fig:\\n+[lists*target]
 .    nr float*img 1
@@ -23743,18 +23750,26 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .       shift
 .    \}
 .    ds pdf-img:file \\$1
-.    ds pdf-img@file \\$1
-.    substring pdf-img@file -1 -3
-.    if !'\\*[pdf-img@file]'pdf' \{\
-.       tm1 "[mom]: Image file '\\*[pdf-img:file]' at line \\n[.c] not found, or not a PDF image.
-.       ab   [mom]: Aborting '\\n[.F]' at \\$0, line \\n[.c].
+.    CHECK_IMAGE_FORMAT \\*[pdf-img:file]
+.    ie \\n[.U] \{\
+.       ie \B'\\$2' \{\
+.          nr pdf-img:width \\$2
+.          nr pdf-img:depth \\$3
+.          shift 3
+.       \}
+.       el \{\
+.          pdfpic@get-image-dimensions \\*[pdf-img:file]
+.          nr pdf-img:width \\n[pdfpic*width]
+.          nr pdf-img:depth \\n[pdfpic*height]
+.          shift 1
+.       \}
 .    \}
-.    nr pdf-img:width \\$2
-.    nr pdf-img:depth \\$3
-.    shift 3
-.    nr loop-counter \\n[#NUM_ARGS]
-.    nr loop-count 0 1
-.    while \\n+[loop-count]<=\\n[loop-counter] \{\
+.    el \{\
+.       nr pdf-img:width \\$2
+.       nr pdf-img:depth \\$3
+.       shift 3
+.    \}
+.    while \\n[.$] \{\
 .       if '\\$1'SCALE' \{\
 .          shift
 .          nr pdf-img:scale \\$1
@@ -23763,9 +23778,9 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .          nr pdf-img:depth \\n[pdf-img:depth]*\\n[pdf-img:scale]/100
 .       \}
 .       if '\\$1'ADJUST' \{\
-.         shift
-.         ds pdf-img:adj \\$1
-.         shift
+.          shift
+.          ds pdf-img:adj \\$1
+.          shift
 .       \}
 .       if '\\$1'FRAME' \{\
 .          nr pdf-img:frame 1
@@ -23834,7 +23849,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .    \}
 .    if r IMG \{\
 .       if \\n[pdfbx-top] \
-.         rt
+.          rt
 .       sp (\\*[wt\\n[stack]]/2u)+\\*[gap\\n[stack]]u
 .       nr img*pdfbx 1
 .    \}
@@ -23872,7 +23887,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .          nr pdf-img*caption-top-lead-diff \\n[lead-pre-caption]-\\n[.v]
 .          if r pdfbx-top \{\
 .             SIZESPECS
-.           rt
+.             rt
 .             sp \\n[pdf-img*caption-top-lead-diff]u
 .             sp (\\*[wt\\n[stack]])+\\*[gap\\n[stack]]u+\\*[$CAP_HEIGHT]
 .             rr pdfbx-top
@@ -24014,6 +24029,27 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .             if !\\n[pdf-img*no-flex] .FLEX
 .    \}
 .    PDF_IMAGE_CLEAN
+.END
+\#
+.MAC CHECK_IMAGE_FORMAT END
+.    ds pdf-img@file \\$1
+.    substring pdf-img@file -1 -3
+.    if !'\\*[pdf-img@file]'bmp' \
+.    if !'\\*[pdf-img@file]'eps' \
+.    if !'\\*[pdf-img@file]'exr' \
+.    if !'\\*[pdf-img@file]'gif' \
+.    if !'\\*[pdf-img@file]'iff' \
+.    if !'\\*[pdf-img@file]'jp2' \
+.    if !'\\*[pdf-img@file]'jpg' \
+.    if !'\\*[pdf-img@file]'pam' \
+.    if !'\\*[pdf-img@file]'pdf' \
+.    if !'\\*[pdf-img@file]'peg' \
+.    if !'\\*[pdf-img@file]'png' \
+.    if !'\\*[pdf-img@file]'tif' \{\
+.       tm1 "[mom]: Image file '\\*[pdf-img:file]' at line \\n[.c] not found,
+.       tm1 "       or not a recognized image format.
+.       ab   [mom]: Aborting '\\n[.F]' at PDF_IMAGE, line \\n[.c].
+.    \}
 .END
 \#
 \# PDF_IMAGE_FRAME

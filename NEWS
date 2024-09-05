@@ -42,16 +42,19 @@ o GNU troff no longer accepts nonpositive page lengths.  Attempting to
 o GNU troff no longer accepts a newline as a delimiter for the
   parameterized escape sequences `\A`, `\b`, `\o`, `\w`, `\X`, and `\Z`.
 
-o The `color`, `cp`, `linetabs`, and `vpt` requests now interpret
-  arguments with negative values as instructions to disable the
-  corresponding feature, using the *roff integer-to-Boolean conversion
-  idiom instead of the C/C++ one.  Thus, if you invoke these requests
-  with a register interpolation as an argument, the outcome agrees with
-  an `if` test of the register's value.
+o The `color`, `cp`, `kern`, `linetabs`, and `vpt` requests now
+  interpret arguments with negative values as instructions to disable
+  the corresponding feature, using the *roff integer-to-Boolean
+  conversion idiom instead of the C/C++ one.  Thus, if you invoke these
+  requests with a register interpolation as an argument, the outcome
+  agrees with an `if` test of the register's value.
 
 o GNU troff now implements saturating rather than wrapping integer
   arithmetic.  Where before overflow would cause an error diagnostic,
   the formatter now emits a warning diagnostic in the "range" category.
+
+o The `pnr` request now additionally reports the interpolation format of
+  each register.
 
 o The formatter no longer reports warnings in the "el" category.  There
   was only one; it threw a warning diagnostic if enabled (which it was
@@ -85,8 +88,8 @@ o A new request, `hydefault`, and read-only register, `.hydefault`,
   the previous value; for GNU troff this was not an appropriate value
   for the English hyphenation patterns.  (For example, "alibi" would
   break as "ali-bi" instead of "al-ibi" after this argumentless `hy`
-  invocation.)  With updates to groff's localization files, the
-  foregoing input now works as desired.
+  invocation.)  With updates to groff's localization files accompanying
+  this release, the foregoing input now works as desired.
 
 o A new read-only, string-valued register, `.trap`, interpolates the
   name of the next vertical position trap that will be sprung.
@@ -115,6 +118,10 @@ o A new request, `phw`, reports to the standard error stream the current
 o A new request, `pline`, reports to the standard error stream the list
   of output nodes (an internal data structure) corresponding to
   the pending output line.  The list is empty if no such nodes exist.
+
+o The `pnr` request now accepts arguments; each is treated as
+  identifying a register, and its properties reported to the standard
+  error stream.
 
 o The `hla` request, when invoked with no arguments, now clears the
   hyphenation language, disabling automatic hyphenation.
@@ -489,6 +496,7 @@ o If groff programs have their current time overridden by the
   the "system programmer" camp as described in the release notes for
   1.23.0, so it is easier to defend time-zone-invariant output to them.
   In all other cases, the current time remains displayed in local time.
+  Thanks to Colin Watson.
 
 o grog(1) no longer supports the `--ligatures` and `--run` options.
   Simulate the former (which was specific to the "pdf" output device)

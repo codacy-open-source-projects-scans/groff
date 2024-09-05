@@ -480,8 +480,8 @@
 	(cov@print-firm): Return early if no firm name defined.  Use
 	`sp` request instead of `MOVE` macro; we can't call `SP` because
 	this motion is negative (upward).  Align firm name left instead
-	of right.  Set firm name in Helvetica roman if Helvetica family
-	is available; in nroff mode, use bold.  Use `nop` to maintain
+	of right.  Set firm name in sans serif family `H` if it is
+	available; in nroff mode, use bold.  Use `nop` to maintain
 	logical indentation when formatting output.
 	(cov@print-abstract):  Favor font selection requests over escape
 	sequences.

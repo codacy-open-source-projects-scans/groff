@@ -2,7 +2,7 @@
 #
 # make-uniuni -- script for creating the file uniuni.cpp
 #
-# Copyright (C) 2005-2020 Free Software Foundation, Inc.
+# Copyright (C) 2005-2024 Free Software Foundation, Inc.
 #      Written by Werner Lemberg <wl@gnu.org>
 #
 # This file is part of groff.
@@ -20,25 +20,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#
-# usage:
-#
-#   make-uniuni <version-string> < UnicodeData.txt > uniuni.cpp
-#
-# 'UnicodeData.txt' is the central database file from the Unicode standard.
-# Unfortunately, it doesn't contain a version number which must be thus
-# provided manually as a parameter to the filter.
+# 'UnicodeData.txt' is the central database file from the Unicode
+# standard.  Unfortunately, it doesn't contain a version number which
+# must be thus provided manually as a parameter to the filter.
 #
 # This program needs a C preprocessor.
-#
 
-CPP=cpp
+progname=${0##*/}
 
-prog="$0"
-
-if test $# -ne 1; then
-  echo "usage: $0 <version-string> < UnicodeData.txt > uniuni.cpp"
-  exit 1
+if [ $# -ne 1 ]
+then
+  echo "usage: $progname UNICODE-VERSION-STRING < UnicodeData.txt" \
+    "> uniuni.cpp"
+  exit 2
 fi
 
 version_string="$1"
@@ -60,7 +54,7 @@ cat $$1 \
 | sed -e 's/^\([^;]*\);.*$/\1 u\1/' >> $$2
 
 # Run C preprocessor to recursively decompose.
-$CPP $$2 $$3
+"${CPP:-cpp}" $$2 $$3
 
 # Convert it back to original format.
 cat $$3 \
@@ -73,8 +67,7 @@ cat $$3 \
 
 # Write preamble.
 cat <<END
-// -*- C++ -*-
-/* Copyright (C) 2002-2014  Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024  Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
 This file is part of groff.
@@ -111,7 +104,8 @@ implement_ptable(unicode_decompose)
 
 PTABLE(unicode_decompose) unicode_decompose_table;
 
-// the first digit in the composite string gives the number of composites
+// The first digit in the composite string gives the number of
+// characters in the decomposed sequence of simple characters.
 
 struct S {
   const char *key;
@@ -139,11 +133,9 @@ static struct unicode_decompose_init {
 
 unicode_decompose_init::unicode_decompose_init()
 {
-  for (unsigned int i = 0;
-       i < sizeof(unicode_decompose_list)/sizeof(unicode_decompose_list[0]);
-       i++) {
+  for (size_t i = 0; i < array_length(unicode_decompose_list); i++) {
     unicode_decompose *dec = new unicode_decompose[1];
-    dec->value = (char *)unicode_decompose_list[i].value;
+    dec->value = const_cast<char *>(unicode_decompose_list[i].value);
     unicode_decompose_table.define(unicode_decompose_list[i].key, dec);
   }
 }
@@ -153,10 +145,18 @@ const char *decompose_unicode(const char *s)
   unicode_decompose *result = unicode_decompose_table.lookup(s);
   return result ? result->value : 0;
 }
-END
 
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:
+END
 
 # Remove temporary files.
 rm $$1 $$2 $$3 $$4
 
-# EOF
+# Local Variables:
+# fill-column: 72
+# End:
+# vim: set textwidth=72:

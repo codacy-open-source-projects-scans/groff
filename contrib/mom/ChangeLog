@@ -1,7 +1,25 @@
+2024-09-01
+
+	* om.tmac: version 2.6_d; incorporates changes to gropdf/pdfpic
+	that permit inclusion of images in formats other than pdf into
+	PDF documents.
+
+	The tarball on mom's download page will remain pinned at
+	2.6_c pending release of groff 1.24.
+
+2024-08-26
+
+	* om.tmac: Fix first line of columns after first falling one
+	line lower than column top.  Incorporate Deri James' patch to
+	remove 'can't transparently embed...' messages.  Initialize
+	pdfbx-pre-ll register for #IBR in BoxStart.
+
+	Fixes <https://savannah.gnu.org/bugs/?66122>.
+
 2024-08-22  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* om.am: Add `-b` and `-wall` options to `MOMPDFMOM` macro so as
-	to run the formatter with these flags.  mom(7) is not
+	* mom.am: Add `-b` and `-wall` options to `MOMPDFMOM` macro so
+	as to run the formatter with these flags.  mom(7) is not
 	`-ww`-clean, but is _nearly_ `-wall`-clean, and backtraces are
 	helpful.
 

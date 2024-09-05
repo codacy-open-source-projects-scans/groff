@@ -743,7 +743,7 @@ The
 .B \-R
 option prevents recognition of these lines.
 .
-When a
+When
 .I @g@refer
 encounters a
 .B .R1

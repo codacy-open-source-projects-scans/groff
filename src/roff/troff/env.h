@@ -36,6 +36,7 @@ public:
   int operator==(font_size);
   int operator!=(font_size);
   static void init_size_table(int *sizes);
+  static void dump_size_table();
 };
 
 inline font_size::font_size() : p(0)
@@ -115,7 +116,7 @@ void line_spacing();
 void line_length();
 void indent();
 void temporary_indent();
-void do_underline(bool);
+void configure_underlining(bool);
 void do_input_trap(bool);
 void set_tabs();
 void margin_character();
@@ -386,7 +387,7 @@ public:
   friend void line_length();
   friend void indent();
   friend void temporary_indent();
-  friend void do_underline(bool);
+  friend void configure_underlining(bool);
   friend void do_input_trap(bool);
   friend void set_tabs();
   friend void margin_character();

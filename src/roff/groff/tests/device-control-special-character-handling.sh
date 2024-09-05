@@ -27,12 +27,14 @@ wail () {
   fail=YES
 }
 
-input='.nf
-\X#bogus1: esc \%man-beast\[u1F63C]\\[u1F00] -\[aq]\[dq]\[ga]\[ha]\[rs]\[ti]#
-.device bogus1: req \%man-beast\[u1F63C]\\[u1F00] -\[aq]\[dq]\[ga]\[ha]\[rs]\[ti]
+input='.
+.nf
+\X#bogus1: esc \%\[u1F63C]\\[u1F00]\-\[`a]#
+.device bogus1: req \%\[u1F63C]\\[u1F00]\-\[`a]
 .ec @
-@X#bogus2: esc @%man-beast@[u1F63C]@@[u1F00] -@[aq]@[dq]@[ga]@[ha]@[rs]@[ti]#
-.device bogus2: req @%man-beast@[u1F63C]@@[u1F00] -@[aq]@[dq]@[ga]@[ha]@[rs]@[ti]'
+@X#bogus2: esc @%@[u1F63C]@@[u1F00]@-@[`a]#
+.device bogus2: req @%@[u1F63C]@@[u1F00]@-@[`a]
+.'
 
 output=$(printf '%s\n' "$input" | "$groff" -T ps -Z 2> /dev/null \
   | grep '^x X')
@@ -41,37 +43,78 @@ error=$(printf '%s\n' "$input" | "$groff" -T ps -Z 2>&1 > /dev/null)
 echo "$output"
 echo "$error"
 
+# Expected:
+#
+# x X bogus1: esc \[u1F63C]\[u1F00]-\[u00E0]
+# x X bogus1: req @%\[u1F63C]\[u1F00]@-\[`a]
+# x X bogus2: esc \[u1F63C]\[u1F00]-\[u00E0]
+# x X bogus2: req @%@[u1F63C]@[u1F00]@-@[`a]
+
 echo "checking X escape sequence, default escape character" >&2
-# x X bogus1: esc man-beast\[u1F00] -'"`^\~
 echo "$output" \
-  | grep -qx 'x X bogus1: esc man-beast\\\[u1F00\] -'"'"'"`^\\~' \
-  || wail
+  | grep -Fqx 'x X bogus1: esc \[u1F63C]\[u1F00]-\[u00E0]' || wail
 
 #echo "checking device request, default escape character" >&2
-## x X bogus1: req man-beast\[u1F00] -'"`^\~
 #echo "$output" \
-#  | grep -qx 'x X bogus1: req man-beast\\\[u1F00\] -'"'"'"`^\\~' \
+#  | grep -qx 'x X bogus1: req \\\[u1F00\] -'"'"'"`^\\~' \
 #  || wail
 
 echo "checking X escape sequence, alternate escape character" >&2
-# x X bogus2: esc man-beast\[u1F00] -'"`^\~
 echo "$output" \
-  | grep -qx 'x X bogus2: esc man-beast\\\[u1F00\] -'"'"'"`^\\~' \
-  || wail
+  | grep -Fqx 'x X bogus2: esc \[u1F63C]\[u1F00]-\[u00E0]' || wail
 
 #echo "checking device request, alternate escape character" >&2
-## x X bogus2: req man-beast\[u1F00] -'"`^\~
 #echo "$output" \
-#  | grep -qx 'x X bogus2: req man-beast\\\[u1F00\] -'"'"'"`^\\~' \
+#  | grep -qx 'x X bogus2: req \\\[u1F00\] -'"'"'"`^\\~' \
 #  || wail
 
-echo "checking for errors on unsupported special character escapes" >&2
-#for lineno in 2 3 5 6
-#do
-#  echo "$error" \
-#    | grep -q 'troff:.*:'$lineno':.* invalid.*device control command' \
-#    || wail
-#done
+input='.
+.nf
+\X#bogus3: \[dq]\[sh]\[Do]\[aq]\[sl]\[at]#
+\X#bogus4: \[lB]\[rs]\[rB]\[ha]#
+\X#bogus5: \[lC]\[ba]\[or]\[rC]\[ti]#
+.\"device bogus3: \[dq]\[sh]\[Do]\[aq]\[sl]\[at]
+.\"device bogus4: \[lB]\[rs]\[rB]\[ha]
+.\"device bogus5: \[lC]\[ba]\[or]\[rC]\[ti]
+.'
+
+# Expected:
+#
+# x X bogus3: "#$'/@
+# x X bogus4: [\]^
+# x X bogus5: {||}~
+
+output=$(printf '%s\n' "$input" | "$groff" -T ps -Z 2> /dev/null \
+  | grep '^x X')
+echo "$output"
+
+echo "checking X escape sequence, conversions to basic Latin (1/3)" >&2
+echo "$output" | grep -Fqx 'x X bogus3: "#$'"'"'/@' || wail
+
+echo "checking X escape sequence, conversions to basic Latin (2/3)" >&2
+echo "$output" | grep -Fqx 'x X bogus4: [\]^' || wail
+
+echo "checking X escape sequence, conversions to basic Latin (3/3)" >&2
+echo "$output" | grep -Fqx 'x X bogus5: {||}~' || wail
+
+input='.
+.nf
+\X#bogus6: '"'"'-^`~#
+.\"device bogus6: '"'"'-^`~
+.'
+
+# Expected:
+#
+# x X bogus6: \[u2019]\[u2010]\[u0302]\[u0300]\[u0303]
+
+output=$(printf '%s\n' "$input" | "$groff" -T ps -Z 2> /dev/null \
+  | grep '^x X')
+echo "$output"
+
+echo "checking X escape sequence, conversions from basic Latin" >&2
+echo "$output" \
+  | grep -Fqx 'x X bogus6: \[u2019]\[u2010]\[u0302]\[u0300]\[u0303]' \
+  || wail
 
 test -z "$fail"
 

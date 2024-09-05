@@ -44,11 +44,6 @@ FDL in the main directory of the groff source package.
 <ul class="no-enumerator" style="margin-left: -1em;">
   <li><a href="#images-intro">Inserting images and graphics</a>
   <ul>
-    <li><a href="#converting">Image conversion and file processing</a>
-    <ul style="margin-left: -1em">
-      <li><a href="#pdf">PDF</a></li>
-      <li><a href="#eps">EPS</a></li>
-    </ul></li>
     <li><a href="#pdf-image">The PDF_IMAGE macro</a>
     <ul style="margin-left: -1em">
       <li><a href="#pdf-image-frame">PDF_IMAGE_FRAME</a>&mdash;set parameters for image frames</li>
@@ -125,72 +120,30 @@ FDL in the main directory of the groff source package.
 <h2 id="images-intro" class="docs">Inserting images and graphics</h2>
 
 <p>
-In order to include images in mom documents, the images must be in
-either PDF (.pdf) or EPS (.eps) format.  Each format requires its own
-macro, but both take the same arguments, and in the same order.
-</p>
-
-<p>
-Please note that there are differences in the way the files
-containing PDF and EPS images must be processed, hence documents may
-not contain a mix.
+Mom's macro for embedding images in PDF files, PDF_IMAGE, accepts
+all common image formats except EPS (.eps), which requires
+conversion to something else (pdf, jpg, png...) for use in PDF
+documents.  Use the <b>convert</b> utility from the imagemagick
+suite of tools:
+<br/>
+<span class="pre-in-pp">
+  convert &lt;image&gt;.eps &lt;image&gt;.pdf
+</span>
+If the output is to PostScript, no conversion is necessary and the
+<a href="#pspic">PSPIC</a>
+macro must be used rather than PDF_IMAGE.
 </p>
 
 <h3 id="converting" class="docs">Image conversion and file processing</h3>
 
 <p>
-When your image files are not in PDF or EPS format&mdash;jpgs,
-for example&mdash;you must convert them before including them in
-a mom document.  Any utility for converting images may used.  The
-ImageMagick suite of programmes, present on most GNU/Linux
-systems, contains <b>convert</b>, which is simple and effective.
-</p>
-
-<h4 id="pdf" class="docs">PDF</h4>
-
-<p>
-Assuming a jpg image, conversion to PDF is done like this:
-<br/>
-<span class="pre-in-pp">
-  convert &lt;image&gt;.jpg &lt;image&gt;.pdf
-</span>
-Any image type supported by <b>convert</b> may be converted this
-way.
-</p>
-
-<p>
-Mom files containing PDF images must be processed using
-groff&#8217;s pdf driver.  Use of
+Mom files containing images in any format other than eps must be
+processed using groff&#8217;s pdf driver.  Use of
 <a href="using.html#pdfmom" style="font-weight: bold">pdfmom</a>
 is strongly recommended, which natively invokes the pdf driver.
 <br/>
 <span class="pre-in-pp">
   pdfmom doc.mom &gt; doc.pdf
-</span>
-</p>
-
-<h4 id="eps" class="docs">EPS</h4>
-
-<p>
-Assuming a jpg image, conversion to EPS is done like this:
-<br/>
-<span class="pre-in-pp">
-  convert &lt;image&gt;.jpg &lt;image&gt;.eps
-</span>
-Any image type supported by <b>convert</b> may be converted this
-way.  There have been reports of trouble with PostScript level 2
-images, so don&#8217;t save your images in this format.
-</p>
-
-<p>
-Mom files containing EPS images must be processed using
-groff&#8217;s postscript driver.  Use of
-<a href="using.html#pdfmom" style="font-weight: bold">pdfmom</a>,
-which can be told to use the postscript driver, is strongly
-recommended.
-<br/>
-<span class="pre-in-pp">
-  pdfmom -Tps doc.mom &gt; doc.pdf
 </span>
 </p>
 
@@ -205,7 +158,7 @@ Macro: <b>PDF_IMAGE</b> \
 <br/>
 <kbd class="macro-args">[ -L | -C | -R | -I &lt;indent&gt; ] \
 <br/>
-&lt;pdf image file&gt; &lt;width&gt; &lt;height&gt; [ SCALE &lt;factor&gt; ] \
+&lt;image file&gt; [ &lt;width&gt; &lt;height&gt; ] [ SCALE &lt;factor&gt; ] \
 <br/>
 [ ADJUST +|-&lt;vertical adjustment&gt; ] [ NO_SHIM ] [ NO_FLEX ] \
 <br/>
@@ -228,30 +181,27 @@ require a
 </p>
 
 <div class="box-tip">
-<p class="tip">
+<p class="tip-top">
 <span class="note">Note:</span>
-Mom files with embedded PDF images must be processed with
-pdfmom&nbsp;doc.mom&nbsp;&gt;&nbsp;doc.pdf.  Arguments may be broken
-into several lines using the &#8220;line-continued&#8221; backslash
-(<b>\</b>), as shown above.
+Originally created for embedding pdf images&mdash;hence the
+name&mdash;PDF_IMAGE accepts image files of <i>any</i> type: pdf,
+jpg, jp2, png, pam, gif, tiff...  If output is to PostScript,
+image files must be converted to Encapsulated PostScript (eps) and
+embedded using
+<a href="#pspic">PSPIC</a>.
+<p class="tip-bottom">
+<span class="note">Dependencies:</span>
+For image types other than pdf, imagemagick and perlmagick must be
+installed.
 </p>
 </div>
-
-<p>
-Unlike
-<a href="#pspic">PSPIC</a>,
-which it resembles, PDF_IMAGE requires that the pdf image&#8217;s
-dimensions (the bounding box,
-<a href="#bounding-box">see below</a>)
-be supplied each time it&#8217;s called.
-</p>
 
 <p>
 The first optional argument tells mom how to align the image
 horizontally, with <kbd>-L</kbd>, <kbd>-C</kbd>, and <kbd>-R</kbd>
 standing for left, centre and right respectively.  If you need more
 precise placement, the <kbd>-I</kbd> argument allows you to give an
-indent from the left margin.  Thus, to indent a PDF image 6
+indent from the left margin.  Thus, to indent an image 6
 <a href="definitions.html#picaspoints">picas</a>
 from the left margin
 <br/>
@@ -262,29 +212,34 @@ If you omit the first argument, the image will be centred.
 </p>
 
 <p>
-<kbd>&lt;pdf image&gt;</kbd> must be in PDF format, with a .pdf
-extension.  If it is not, mom will abort with a message.  See
-<a href="#pdf">here</a>
-for instructions on converting image formats to PDF.
+<kbd>&lt;image&gt;</kbd> must be in a format recognized by
+imagemagick and have a corresponding filename extension.  If it is
+not, mom will abort with a message.
 </p>
 
 <p id="bounding-box">
 <kbd>&lt;width&gt;</kbd> and <kbd>&lt;height&gt;</kbd> are the
-dimensions of the image&#8217;s bounding box.  The most reliable way
-of getting the bounding box is with the utility, <strong>pdfinfo</strong>:
+dimensions of the image&#8217;s bounding box.  If you invoke
+pdfmom or groff in &#8220;unsafe mode&#8221; (by passing them the
+<kbd>-U</kbd> option), you may omit <kbd>&lt;width&gt;</kbd> and
+<kbd>&lt;height&gt;</kbd>.  If you invoke either in safe mode (no
+<kbd>-U</kbd> flag), the dimensions must be supplied.  They can be
+obtained by using the <strong>identify</strong> utility (part of the
+imagemagick suite of tools):
 <br/>
 <span class="pre-in-pp">
-  pdfinfo &lt;image.pdf&gt; | grep "Page *size"
+  identify -verbose &lt;image file&gt; | grep "Geometry:"
 </span>
 This will spit out a line that looks like this:
 <br/>
 <span class="pre-in-pp">
-  Page size:      width x height pts
+  Geometry: &lt;width&gt;x&lt;height&gt;+0+0
 </span>
-<kbd>pts</kbd> means
+The values for width and height are in
 <a href="definitions.html#picaspoints">points</a>,
-therefore the unit of measure appended to <kbd>&lt;width&gt;</kbd>
-and <kbd>&lt;height&gt;</kbd> must be <kbd>p</kbd>.
+therefore the unit of measure appended to PDF_IMAGE's
+<kbd>&lt;width&gt;</kbd> and <kbd>&lt;height&gt;</kbd> arguments
+must be <kbd>p</kbd>.
 </p>
 
 <p>
@@ -326,7 +281,7 @@ page.
 <p class="tip-bottom">
 The solution is to introduce <i>negative</i> space before the image
 so that it displays on the page, then lower it to the bottom margin
-with PDF_IMAGE&#8217;s ADJUST argument.
+with PDF_IMAGE&#8217;s <kbd>ADJUST</kbd> argument.
 </p>
 </div>
 
@@ -422,7 +377,7 @@ is enabled and the document is processed with
 the target name can be used to generate the target&#8217;s label
 number in running text if it is entered as a groff string, i.e. of the
 form <kbd><span class="nobr">\*[name]</span></kbd>.  For example, if you create
-a target named &#8220;foo&#8221; for a pdf image whose autolabel
+a target named &#8220;foo&#8221; for an image whose autolabel
 number would be 3, entering
 <br/>
 <span class="pre-in-pp">
@@ -436,10 +391,10 @@ link &#8220;Figure 5.3&#8221;.
 </p>
 
 <div class="box-tip">
-<p class="tip-top">
+<p class="tip">
 <span class="note">Note: Version 2.0-c change</span>
 <br/>
-Mom now treats all pdf images identically to
+Mom treats all images embedded with PDF_IMAGE as
 <a href="#floats-intro">floats</a>,
 which is to say that if an image doesn&#8217;t fit on the output
 page, she will defer it to the top of the next page while continuing
@@ -452,11 +407,6 @@ that do not fit, if any, are output in order immediately after the
 first.
 </p>
 
-<p class="tip-bottom">
-Prior to 2.0-c, it was recommended that images be wrapped inside
-<a href="#float">FLOAT</a>,
-but this is now no longer required, and should, in fact, be avoided.
-</p>
 </div>
 
 <!-- -PDF_IMAGE_FRAME- -->
@@ -501,9 +451,10 @@ or
 </p>
 
 <p>
-The default inset is 6 <a
-href="definitions.html#picaspoints">points</a>, the default rule
-weight is .5 (points), and the default colour is black.
+The default inset is 6
+<a href="definitions.html#picaspoints">points</a>,
+the default rule weight is .5 (points), and the default colour is
+black.
 </p>
 
 <!-- -PSPIC- -->
@@ -513,8 +464,14 @@ weight is .5 (points), and the default colour is black.
 </div>
 
 <div class="box-macro-args">
-Macro: <b>PSPIC</b> <kbd class="macro-args">[ -L | -R | -I &lt;n&gt; ] &lt;file&gt; [ width [ height ] ]</kbd>
+Macro: <b>PSPIC</b> <kbd class="macro-args">[ -L | -R | -I &lt;n&gt;
+] &lt;file&gt; [ &lt;width&gt; [ &lt;height&gt; ] ]</kbd>
 </div>
+
+<p>
+Images in files destined for PostScript output must be in .eps
+format and require using PSPIC rather than PDF_IMAGE.
+</p>
 
 <p>
 PSPIC is not actually part of mom, but rather a macro included with
@@ -527,12 +484,15 @@ modifications for clarity.
 <h3 id="groff-tmac" class="docs" style="margin-top: .5em;">From <span style="text-transform: none">groff_tmac</span></h3>
 <p style="margin-top: .5em; margin-bottom: .5em;">
 <kbd>&lt;file&gt;</kbd> is the name of the file containing the
-image; <kbd>width</kbd> and <kbd>height</kbd> give the desired
-width and height of the image as you wish it to appear within the
-document.  The width and height arguments may have
+image; <kbd>&lt;width&gt;</kbd> and <kbd>&lt;height&gt;</kbd> give
+the desired width and height of the image as you wish it to appear
+within the document.  If neither a width nor a height argument is
+specified, the image’s natural width (as given in the file’s
+bounding box) or the current line length is used as the width,
+whichever is smaller.  The width and height arguments may have
 <a href="definitions.html#unitofmeasure">units of measure</a>
-attached; the default unit of measure is <kbd>i</kbd>.  PSPIC will
-scale the graphic uniformly in the x and y directions so that
+attached; the default unit of measure is <kbd>i</kbd>.  PSPIC always
+scales the graphic uniformly in the x and y directions so that
 it is no more than <kbd>width</kbd> wide and <kbd>height</kbd>
 high.  By default, the graphic will be horizontally centred.  The
 <kbd>-L</kbd> and <kbd>-R</kbd> options cause the graphic to be
@@ -777,8 +737,10 @@ the indent prior to inputting the float and re-enable it afterward.
 <div class="box-tip">
 <p class="tip">
 <span class="note">Note:</span>
-Mom treats <b>pic</b> pre-processor directives and pdf images as
-floats so it is not necessary to wrap them inside FLOAT unless
+Mom treats <b>pic</b> pre-processor directives and images embedded
+with
+<a href="#pdf-image">PDF_IMAGE</a>
+as floats so it is not necessary to wrap them inside FLOAT unless
 additional material is included in what is floated.
 </p>
 </div>
@@ -905,7 +867,7 @@ linked to from other places in the file (with PDF_LINK; see
 </p>
 
 <p>
-Floats cannot be autolabelled, so unlike pdf images and
+Floats cannot be autolabelled, so unlike embedded images and
 pre-processor material, the target name cannot be used as a string
 to generate the target&#8217;s label number in running text.  Label
 numbers for floats must be entered explicitly running text, however
@@ -915,7 +877,6 @@ See
 <a href="#reserved-label-strings">Reserved variables for
 labels</a>.
 </p>
-
 
 <div class="box-tip">
 <p class="tip-top">
@@ -945,7 +906,7 @@ within the float.
 
 <p>
 Labelling and captioning of tables (<b>tbl</b>), equations
-(<b>eq</b>), diagrams (<b>pic</b>) and pdf images
+(<b>eq</b>), diagrams (<b>pic</b>) and embedded images
 (<a href="#pdf-image">PDF_IMAGE</a>)
 are handled by the macros that initiate them, regardless of whether
 they&#8217;re wrapped inside a float.  However, since a float may
@@ -957,7 +918,7 @@ and/or caption to the float itself.
 <p class="tip">
 <span class="important">Important:</span>
 Always use the native labelling/captioning facilities for
-preprocessor output and pdf images rather than labelling the
+preprocessor output and embedded images rather than labelling the
 containing float, if any.
 </p>
 </div>
@@ -1119,7 +1080,7 @@ the prefix is stripped from the label when it appears in
 the List.  Thus, if you have invoked <kbd>.AUTOLABEL_PIC</kbd>,
 <br/>
 <span class="pre-in-pp">
-  .LABEL "Fig. 1.1."
+  .LABEL "Fig. 1.1." \
    CAPTION "Caption for label \
    TO_LIST FIGURES
 </span>
@@ -1195,9 +1156,11 @@ floats need to go to a uniquely named &#8220;List of ...&#8221;.
 
 <p class="tip-bottom">
 Suppose, for example, your document contains figures (e.g.
-<b>pic</b> output or pdf-images) and tables, and you need a
-&#8220;List of Examples&#8221; for floats labelled &#8220;Example
-n.n&#8221;.  By changing the default title string for
+<b>pic</b> output or images embedded with
+<a href="#pdf-image">PDF_IMAGE</a>)
+and tables, and you need a &#8220;List of Examples&#8221; for floats
+labelled &#8220;Example n.n&#8221;.  By changing the default title
+string for
 <a href="#lists-macros">LIST_OF_EQUATIONS</a>
 to &#8220;List of Examples&#8221;, you may include the float in your
 List of Examples with
@@ -2370,7 +2333,7 @@ a
 
 <p>
 Mom includes facilities for adding captions and labels to figures,
-tables, equations, and pdf images, including auto-labelling.  If
+tables, equations, and embedded images, including auto-labelling.  If
 Lists of Figures, Tables, and Equations are desired, captions (if
 any) and labels (if any) are collected and output in the Lists with
 the appropriate page number.
@@ -2385,7 +2348,7 @@ writing, it is usual to provide both.
 
 <p>
 By default, mom sets captions above figures (i.e. <b>pic</b> output and
-pdf images) and tables.  This behaviour may be modified with the
+embedded images) and tables.  This behaviour may be modified with the
 macro
 <a href="#caption-after-label">CAPTION_AFTER_LABEL</a>.
 Equations always have their captions set underneath.  All aspects of
@@ -2450,7 +2413,7 @@ would disable autolabelling of images.
 By default, when <b>AUTOLABEL</b> is enabled, the label numbers are
 prefixed, and, in the case of equations, suffixed, with strings such
 that they appear for tables as &#8220;Table&nbsp;&lt;n&gt;&#8221;, for
-<b>pic</b> diagrams and pdf images as &#8220;Fig.&nbsp;&lt;n&gt;&#8221;,
+<b>pic</b> diagrams and embedded images as &#8220;Fig.&nbsp;&lt;n&gt;&#8221;,
 and for equations as &#8220;Eq.&nbsp;(&lt;n&gt;)&#8221;.
 </p>
 
@@ -2459,8 +2422,8 @@ You can use <kbd>PREFIX&nbsp;&lt;"string"&gt;</kbd> to change what
 comes before the automatic numbering.  For example, if you are
 including musical excerpts in your document, MLA style requires that
 they be labelled &#8220;Ex.&nbsp;&lt;n&gt;&#8221;.  Since musical
-excerpts are likely to be scanned images (in pdf format, don&#8217;t
-forget), you have to change the prefix string for pdf images:
+excerpts are likely to be scanned images, you have to change the
+prefix string images:
 <br/>
 <span class="pre-in-pp">
   .AUTOLABEL_IMAGES \
@@ -2526,18 +2489,18 @@ Macro: <b>SET_AUTOLABEL</b> <kbd class="macro-args">FIG | TBL | PIC | EQN &lt;n&
 
 <p>
 You may sometimes need to set or reset the autolabel number for a
-particular type of pre-processor or for PDF images.  This is likely
-to occur if you are using
+particular type of pre-processor or for embedded images.  This is
+likely to occur if you are using
 <a href="#float">FLOAT</a>
 in conjunction with the <kbd>TO_LIST</kbd> argument.
 </p>
 
 <p>
-For example, if your document has Figures (PDF images, pic diagrams)
-and you want your tables to be labelled as Figures as well, you have
-to wrap the tables inside a float and label the float manually as
-&#8220;Fig.&nbsp;n&#8221;, sending it to the List of Figures with
-<kbd>TO_LIST FIGURES</kbd>.
+For example, if your document has Figures (embedded images, pic
+diagrams) and you want your tables to be labelled as Figures as
+well, you have to wrap the tables inside a float and label the float
+manually as &#8220;Fig.&nbsp;n&#8221;, sending it to the List of
+Figures with <kbd>TO_LIST FIGURES</kbd>.
 </p>
 
 <p>
@@ -2563,7 +2526,7 @@ Macro: <b>CAPTION_AFTER_LABEL</b> <kbd class="macro-args">IMG | PIC | TBL | ALL 
 
 <p>
 By default, mom sets captions above figures (<b>pic</b> output
-and pdf images) and tables; labels are always underneath.
+and embedded images) and tables; labels are always underneath.
 </p>
 
 <p>
@@ -2581,7 +2544,7 @@ would enable captions after labels globally, while a subsequent
 <span class="pre-in-pp">
   .CAPTION_AFTER_LABEL IMG OFF
 </span>
-would disable captions after labels for pdf images only.
+would disable captions after labels for embedded images only.
 <kbd>OFF</kbd> can be anything you like (<kbd>X</kbd>,
 <kbd>NO</kbd>, etc).
 </p>

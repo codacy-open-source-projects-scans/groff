@@ -1,4 +1,4 @@
-.\" Define device-independent fallbacks for unavailable glyphs.
+.\" Define fallbacks for unavailable glyphs.
 .\"
 .\" These are designed such that "troffrc" loads them early, after
 .\" composite glyph setup but before any device-specific fallbacks.
@@ -35,7 +35,7 @@
 .\"   next unless (defined ($u) && $u >= 0x2160 && $u <= 0x217F);
 .\"   if (/^\s+#\s+([[:xdigit:][:blank:]]+)(\s.*)?$/) {
 .\"     ## NB: may make sense to map to \[uXXXX]'s instead
-.\"     printf (".fchar \\[u%04x] %s\n", $u,
+.\"     printf (".fchar \\[u%04X] %s\n", $u,
 .\"             pack ("U*", map { oct ("0x" . $_); } split (/ /, $1)));
 .\"     $u = undef;
 .\"   }
@@ -73,80 +73,6 @@
 .fchar \[u217D] c
 .fchar \[u217E] d
 .fchar \[u217F] m
-.
-.\" Fallbacks for "ascii" device
-.\"
-.\" If these glyphs are missing on any other output device, that's a
-.\" problem we want to report to the user via diagnostics.
-.if '\?\*[.T]\?'\?ascii\?' \{\
-.  fchar \['A] \z\[aa]A
-.  fchar \['C] \z\[aa]C
-.  fchar \['E] \z\[aa]E
-.  fchar \['I] \z\[aa]I
-.  fchar \['O] \z\[aa]O
-.  fchar \['U] \z\[aa]U
-.  fchar \['Y] \z\[aa]Y
-.  fchar \['a] \z\[aa]a
-.  fchar \['c] \z\[aa]c
-.  fchar \['e] \z\[aa]e
-.  fchar \['i] \z\[aa]i
-.  fchar \['o] \z\[aa]o
-.  fchar \['u] \z\[aa]u
-.  fchar \['y] \z\[aa]y
-.
-.  fchar \[:A] \z\[ad]A
-.  fchar \[:E] \z\[ad]E
-.  fchar \[:I] \z\[ad]I
-.  fchar \[:O] \z\[ad]O
-.  fchar \[:U] \z\[ad]U
-.  fchar \[:Y] \z\[ad]Y
-.  fchar \[:a] \z\[ad]a
-.  fchar \[:e] \z\[ad]e
-.  fchar \[:i] \z\[ad]i
-.  fchar \[:o] \z\[ad]o
-.  fchar \[:u] \z\[ad]u
-.  fchar \[:y] \z\[ad]y
-.
-.  fchar \[^A] \z\[a^]A
-.  fchar \[^E] \z\[a^]E
-.  fchar \[^I] \z\[a^]I
-.  fchar \[^O] \z\[a^]O
-.  fchar \[^U] \z\[a^]U
-.  fchar \[^a] \z\[a^]a
-.  fchar \[^e] \z\[a^]e
-.  fchar \[^i] \z\[a^]i
-.  fchar \[^o] \z\[a^]o
-.  fchar \[^u] \z\[a^]u
-.
-.  fchar \[`A] \z\[ag]A
-.  fchar \[`E] \z\[ag]E
-.  fchar \[`I] \z\[ag]I
-.  fchar \[`O] \z\[ag]O
-.  fchar \[`U] \z\[ag]U
-.  fchar \[`a] \z\[ag]a
-.  fchar \[`e] \z\[ag]e
-.  fchar \[`i] \z\[ag]i
-.  fchar \[`o] \z\[ag]o
-.  fchar \[`u] \z\[ag]u
-.
-.  fchar \[~A] \z\[a~]A
-.  fchar \[~N] \z\[a~]N
-.  fchar \[~O] \z\[a~]O
-.  fchar \[~a] \z\[a~]a
-.  fchar \[~n] \z\[a~]n
-.  fchar \[~o] \z\[a~]o
-.
-.  fchar \[vS] \z\[ah]S
-.  fchar \[vs] \z\[ah]s
-.  fchar \[vZ] \z\[ah]Z
-.  fchar \[vz] \z\[ah]z
-.
-.  fchar \[,C] \z\[ac]C
-.  fchar \[,c] \z\[ac]c
-.
-.  fchar \[oA] \z\[ao]A
-.  fchar \[oa] \z\[ao]a
-.\}
 .
 .\" Fonts often lack precomposed glyphs for accented Latin letters that
 .\" were not defined in ISO 8859-1 (Latin-1).

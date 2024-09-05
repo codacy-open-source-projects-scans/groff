@@ -1087,55 +1087,85 @@ as returned by
 is interpreted even in copy mode.
 .
 .
+.\" TODO: When we get this giant headache generalized and adapted to the
+.\" `\!` escape sequence and `device`, `output`, `cf`, and `trf`
+.\" requests, move this discussion into a dedicated subsection above.
 .TP
 .BI \[rs]X\[aq] contents \[aq]
-GNU
-.I troff \" GNU
-transforms the argument to the device control escape sequence to avoid
-leaking to device-independent output data that are unrepresentable in
-that format.
-.
-.
-.IP
-Within
-.I contents,
-the escape sequences
-.BR \[rs]& ,
-.BR \[rs]) ,
-.BR \[rs]% ,
-and
-.B \[rs]:
-are ignored;
-.BI \[rs] space
-and
-.B \[rs]\[ti]
-are converted to single space characters;
-and a self-escaped escape character is output as a backslash
-.BR \[rs] .
-.
-So that the basic Latin subset of the Unicode character set\[em]\c
-that is,
-ISO\~646:1991\~IRV (US-ASCII)\[em]\c
-can be reliably encoded in
-.I contents,
-the special character escape sequences
-.BR \[rs]\- ,
-.BR \[rs][aq] ,
-.BR \[rs][dq] ,
-.BR \[rs][ga] ,
-.BR \[rs][ha] ,
-.BR \[rs][rs] ,
-and
-.B \[rs][ti]
-are mapped to basic Latin characters;
-see
+The
+.I groff
+special character repertoire is unknown to output drivers outside of
+glyphs named in a device's fonts,
+and even then they may not possess complete coverage of the names
+documented in
 .MR groff_char @MAN7EXT@ .
 .
-For this transformation,
+Further,
+escape sequences that produce horizontal or vertical motions,
+hyphenation breaks,
+or that are dummy characters may appear in strings
+or be converted to nodes,
+particularly in diversions. \" (@pxref{Gtroff Internals})
+.
+These are not representable when interpolated directly into
+device-independent output,
+as might be done when writing out tag names for PDF bookmarks,
+which can appear in a viewer's navigation pane.
+.
+.
+.\" XXX: Force paragraph spacing here.  I know--it's terrible.  And
+.\" unnecessary once we get this giant discussion moved to its own
+.\" (sub)section.
+.sp \n[PD]u
+.\"IP
+So that documents or macro packages do not have to laboriously
+\[lq]sanitize\[rq] strings destined for interpolation
+in device control commands,
+this escape sequence
+.\" XXX: and soon other things
+performs certain transformations on its argument.
+.
+For these transformations,
 character translations and definitions are ignored.
 .
-.I @g@troff
-discards other escape sequences with an error diagnostic.
+.
+.sp \n[PD]u
+.\"IP
+GNU
+.I troff \" GNU
+converts several ordinary characters that typeset as non-basic Latin
+code points to code points outside that range so that they are used
+consistently whether they are formatted as glyphs or used in a device
+control command argument.
+.
+These ordinary characters are
+.RB \[lq]\| \[aq] \|\[rq],
+.RB \[lq]\| \- \|\[rq],
+.RB \[lq]\| \[ha] \|\[rq],
+.RB \[lq]\| \[ga] \|\[rq],
+and
+.RB \[lq]\| \[ti] \|\[rq];
+others are written as-is.
+.
+.
+.sp \n[PD]u
+.\"IP
+Special characters that typeset as Unicode basic Latin characters
+are translated to basic Latin characters accordingly.
+.
+So that any Unicode code point can be represented in device extension
+commands,
+for example in an author's name in document metadata
+or as a usefully named bookmark or hyperlink anchor,
+GNU
+.I troff \" GNU
+maps other special characters to Unicode special character notation.
+.
+Special characters without a Unicode representation,
+and escape sequences that do not interpolate a sequence
+of ordinary and/or special characters,
+produce warnings in category
+.RB \[lq] char \[rq].
 .
 .
 .br
@@ -1170,10 +1200,9 @@ and confuses postprocessors that do not know about it.
 .BI \[rs]Z\[aq] anything \[aq]
 Save the drawing position,
 format
-.IR anything ,
+.I anything
+(except tabs and leaders),
 then restore it.
-.
-Tabs and leaders in the argument are ignored with an error diagnostic.
 .
 .
 .TP
@@ -1324,7 +1353,7 @@ overlaps the bottom of the left parenthesis,
 which is ugly.
 .
 Inserting
-.B \[rs],
+.B \[rs]\^,
 between them
 .if t \{\
 .  nop produces
@@ -1391,13 +1420,20 @@ if you want to embed newlines in a diversion.
 Unlike
 .BR \[rs]! ,
 .B \[rs]?\&
-is interpreted even in copy mode.
+is interpreted even in copy mode,
+and
+.I anything
+in the top-level diversion
+is not sent to device-independent output.
 .
 .
 .TP
 .BI \[rs][ char ]
 Typeset the special character
 .IR char .
+.
+See
+.MR groff_char @MAN7EXT@ .
 .
 .
 .TP
@@ -1636,7 +1672,7 @@ characters translated with the
 .B trin
 request,
 space characters,
-and some escape sequences,
+and some escape sequences
 that were formatted in the diversion
 .I div
 are treated like ordinary input characters when
@@ -1797,7 +1833,7 @@ or two spaces.
 .
 Initially,
 characters
-.RB \[lq] .?! \[rq]
+.RB \[lq] .?!\& \[rq]
 have this property.
 .
 .
@@ -2070,8 +2106,6 @@ Define a character class
 comprising the characters or range expressions
 .I c.
 .
-.
-.IP
 A class thus defined can then be referred to in lieu of listing all the
 characters within it.
 .
@@ -2080,13 +2114,10 @@ only the
 .B cflags
 request can handle references to character classes.
 .
-.
-.IP
 In the request's simplest form,
 each
 .I c
-is a character
-(or special character).
+is an ordinary or special character.
 .
 .
 .IP
@@ -2192,7 +2223,7 @@ See
 Skip the remainder of a
 .RB \[lq] while \[rq]
 loop's body,
-immediately starting the next iteration.
+immediately retesting its conditional expression.
 .
 See
 .BR break .
@@ -2380,10 +2411,11 @@ requests.
 .IR contents ]
 As
 .BR ds ,
-but compatibility mode is disabled while
-.I name
-is interpreted:
-a \[lq]compatibility save\[rq] token is inserted at the beginning of
+but GNU
+.I troff \" GNU
+disables AT&T compatibility mode while interpreting
+.IR name :
+it inserts a \[lq]compatibility save\[rq] token at the beginning of
 .IR contents ,
 and a \[lq]compatibility restore\[rq] token after it.
 .
@@ -2453,6 +2485,10 @@ the count of consecutive hyphenated lines
 .RE
 .
 .
+.IP
+Copying an environment to itself discards the foregoing data.
+.
+.
 .TP
 .BR .fam\~ [\c
 .IR fml ]
@@ -2497,9 +2533,9 @@ This test happens before special fonts are searched.
 .
 .TP
 .BR .fcolor\~ [\c
-.IR color ]
+.IR col ]
 Set the fill color to
-.IR color ,
+.IR col ,
 or,
 without an argument,
 restore the previous stroke color,
@@ -2619,9 +2655,9 @@ not an abstract style or mounting position.
 .
 .TP
 .BR .gcolor\~ [\c
-.IR color ]
+.IR col ]
 Set the stroke color to
-.IR color ,
+.IR col ,
 or,
 without an argument,
 restore the previous stroke color,
@@ -2658,34 +2694,6 @@ ignores spaces between arguments.
 If any argument is invalid,
 .B hcode
 reports an error and stops reading them.
-.
-.
-.IP
-For automatic hyphenation to work,
-hyphenation codes must be set up.
-.
-At startup,
-.I groff
-assigns hyphenation codes to the letters \[lq]a\[en]z\[rq]
-(mapped to themselves),
-to the letters \[lq]A\[en]Z\[rq]
-(mapped to \[lq]a\[en]z\[rq]),
-and zero to all other characters.
-.
-Normally,
-hyphenation patterns contain only lowercase letters which should be
-applied regardless of case.
-.
-In other words,
-they assume that the words \[lq]ABBOT\[rq] and \[lq]Abbot\[rq] should be
-hyphenated exactly as \[lq]abbot\[rq] is.
-.
-.B hcode
-extends this principle to letters outside the Unicode basic Latin
-alphabet;
-without it,
-words containing such letters won't be hyphenated properly even if the
-corresponding hyphenation patterns contain them.
 .
 .
 .TP
@@ -2749,12 +2757,7 @@ Read hyphenation patterns from
 .
 This file is sought in the same way that macro files are with the
 .B mso
-request or the
-.BI \-m name
-command-line option to
-.MR groff @MAN1EXT@
-and
-.MR @g@troff @MAN1EXT@ .
+request.
 .
 .
 .IP
@@ -2975,6 +2978,17 @@ this mode is selected.
 .
 The hyphenation mode default is associated with the environment.
 .
+The formatter's default is
+.B 1
+for AT&T
+.I troff \" AT&T
+compatiblity.
+.
+.I groff
+locale files generally set a more appropriate one;
+see
+.MR groff_tmac @MAN5EXT@ .
+.
 .
 .TP
 .BR .hym\~ [\c
@@ -3022,7 +3036,7 @@ The default scaling unit
 .RB is\~\[lq] m \[rq].
 .
 The hyphenation space adjustment threshold is associated with the
-current environment.
+environment.
 .
 A negative argument resets the hyphenation space adjustment threshold to
 zero,
@@ -3040,20 +3054,23 @@ escape sequence are not applied to the line count.
 .
 .
 .TP
-.BI .kern\~ n
-If
-.I n
-is non-zero or missing,
-enable pairwise kerning
-(the default),
-otherwise disable it.
+.BR .kern\~ [\c
+.IR b ]
+Enable or disable pairwise kerning of glyphs in the environment per
+Boolean expression
+.IR b .
+.
+It is enabled by default,
+and if
+.I b
+is omitted.
 .
 .
 .TP
 .BI .length\~ "reg anything"
 Compute the number of characters in
 .I anything
-and return the count in the register
+and store the count in the register
 .IR reg .
 .
 If
@@ -3061,8 +3078,11 @@ If
 doesn't exist,
 it is created.
 .
+GNU
+.I troff \" GNU
+reads
 .I anything
-is read in copy mode.
+in copy mode.
 .
 .
 .TP
@@ -3086,29 +3106,41 @@ line.
 .TP
 .BR .lsm\~ [\c
 .IR name ]
-Set the leading space macro (trap) to
-.IR name .
-.
-If there are leading space characters on an input line,
+Set a leading space trap,
+calling the macro
 .I name
-is invoked in lieu of the usual
-.I roff
-behavior;
-the leading spaces are removed.
+when GNU
+.I troff \" GNU
+encounters leading spaces on a text line;
+the implicit line break that normally happens in this case
+is suppressed.
 .
-The count of leading spaces on an input line is stored in
-.BR \[rs]n[lsn] ,
-and the amount of corresponding horizontal motion in
-.BR \[rs]n[lss] ,
+The formatter stores the count of leading spaces on text line
+in register
+.BR lsn ,
+and the amount of corresponding horizontal motion
+in register
+in register
+.BR lss ,
 irrespective of whether a leading space trap is set.
 .
 When it is,
-the leading spaces are removed from the input line,
-and no motion is produced before calling
+GNU
+.I troff \" GNU
+removes the leading spaces from the input line
+and produces no motion before calling
 .IR name .
 .
+.
+.IP
 If no argument is supplied,
-the default leading space behavior is (re-)established.
+GNU
+.I troff \" GNU
+re\[e ad]stablishes the default handling of leading spaces on text lines
+(breaking the line when filling,
+and formatting a horizontal motion of
+.B \[rs]n[lsn]
+word spaces).
 .
 .
 .TP
@@ -3144,7 +3176,8 @@ does not exist.
 .
 .
 .TP
-.BI .nop \~anything
+.BR .nop \~[\c
+.IR anything ]
 Interpret
 .I anything
 as if it were an input line.
@@ -3161,7 +3194,7 @@ Unlike
 it cannot govern conditional blocks.
 .
 Its application is to maintain consistent indentation within macro
-definitions even when producing text lines.
+definitions even when formatting output.
 .
 .
 .TP
@@ -3201,7 +3234,9 @@ append to it instead of truncating it.
 .
 .
 .TP
-.BI .output\~ contents
+.BR .output \~[
+.RI [ \[dq] ]\c
+.IR contents ]
 Emit
 .I contents
 directly to
@@ -3287,9 +3322,16 @@ The list is empty if there are none.
 .
 .
 .TP
-.B .pnr
-Write the names and values of all currently defined registers to the
-standard error stream.
+.BR .pnr \~[\c
+.IR reg \~.\|.\|.]
+Report the name,
+value,
+and assigned format of each register
+.IR reg ,
+or,
+without arguments,
+those of all defined registers,
+to the standard error stream.
 .
 .
 .TP
@@ -3502,7 +3544,7 @@ are considered when assigning the soft hyphen character.
 .
 .TP
 .BI .shift\~ n
-In a macro,
+In a macro definition,
 shift the arguments by
 .I n
 positions:
@@ -3564,7 +3606,7 @@ as special,
 searching it for glyphs not found in the selected font.
 .
 Without arguments,
-.RB \[lq] \%special \[dq]
+.RB \[lq] \%special \[rq]
 empties this list of special fonts.
 .
 .
@@ -3572,7 +3614,7 @@ empties this list of special fonts.
 .BR .spreadwarn\~ [\c
 .IR limit ]
 Emit a
-.B break
+.RB \[lq] break \[rq]
 warning if the additional space inserted for each space between words in
 an output line adjusted to both margins with
 .RB \[lq] .ad\~b \[rq]
@@ -3596,11 +3638,9 @@ is 3\~m.
 .IP
 For example,
 .RB \[lq] ".spreadwarn 0.2m" \[rq]
-causes a warning if
-.B break
-warnings are not suppressed and
+warns if
 .I @g@troff
-must add 0.2\~m or more for each inter-word space in a line.
+must add 0.2\~m or more to each inter-word space in a line.
 .
 .
 .TP
@@ -3648,16 +3688,16 @@ inclusively.
 .
 The first character in the string has index\~0.
 .
-If
-.I end
-is omitted,
-it is implicitly set to the largest valid value
-(the string length minus one).
-.
 Negative indices count backward from the end of the string:
 the last character has index\~\-1,
 the character before the last has index\~\-2,
 and so on.
+.
+If
+.I end
+is omitted,
+.B \-1
+is implied.
 .
 .
 .TP
@@ -3665,30 +3705,30 @@ and so on.
 Enable track kerning for font\~\c
 .IR f .
 When the current font is\~\c
-.I f
+.IR f ,
 the width of every glyph is increased by an amount between
 .I n1
 and
 .IR n2 ;
 when the current type size is less than or equal to
-.I s1
+.IR s1 ,
 the width is increased by
 .IR n1 ;
 when it is greater than or equal to
-.I s2
+.IR s2 ,
 the width is increased by
 .IR n2 ;
 when the type size is greater than or equal to
 .I s1
 and less than or equal to
-.I s2
+.IR s2 ,
 the increase in width is a linear function of the type size.
 .
 .
 .TP
 .BR .tm1\~ [\c
 .RI [ \[dq] ]\c
-.IR contents ]
+.IR message ]
 As
 .BR tm ,
 but recognizes and strips a leading neutral double quote,
@@ -3697,7 +3737,9 @@ allowing embedded leading spaces in
 .
 .
 .TP
-.BI .tmc\~ message
+.BR .tmc\~ [\c
+.RI [ \[dq] ]\c
+.IR message ]
 As
 .B tm1
 request,
@@ -3801,8 +3843,6 @@ and if
 .I b
 is omitted.
 .
-.
-.IP
 Vertical position traps are those set by the
 .BR ch ,
 .BR wh ,
@@ -4086,6 +4126,11 @@ tab stop.
 This is the idiomatic way to specify tab stops at equal intervals in
 .IR groff .
 .
+GNU
+.IR troff 's \" GNU
+startup value is
+.RB \[lq] "T 0.5i" \[rq].
+.
 .
 .IP
 The syntax summary above instructs
@@ -4139,7 +4184,7 @@ Their names often correspond to the requests that affect them.
 .
 .TP 13n \" "\n[.height]" + 2n
 .B \[rs]n[.br]
-Within a macro call,
+Within a macro definition,
 interpolate\~1
 if the macro is called with the \[lq]normal\[rq] control character
 (\[lq].\[rq] by default),
@@ -4152,7 +4197,9 @@ Using this register outside of a macro definition makes no sense.
 .
 .TP
 .B \[rs]n[.C]
-Interpolate 1\~if compatibility mode is in effect,
+Interpolate 1\~if AT&T
+.I troff \" AT&T
+compatibility mode is in effect,
 0\~otherwise.
 .
 See
@@ -4168,7 +4215,8 @@ It is positive if the glyph extends below the baseline.
 .
 .TP
 .B \[rs]n[.ce]
-Interpolate number of input lines remaining to be centered.
+Interpolate number of input lines remaining to be centered
+in the environment.
 .
 .
 .TP
@@ -4180,7 +4228,7 @@ It is positive if the glyph extends above the baseline.
 .
 .TP
 .B \[rs]n[.color]
-Interpolate 1\~if colors are enabled,
+Interpolate 1\~if color output is enabled,
 0\~otherwise.
 .
 .
@@ -4214,14 +4262,14 @@ This is a string-valued register.
 .
 .TP
 .B \[rs]n[.fam]
-Interpolate name of default font family.
+Interpolate name of the environment's default font family.
 .
 This is a string-valued register.
 .
 .
 .TP
 .B \[rs]n[.fn]
-Interpolate resolved name of the selected font.
+Interpolate resolved name of the font selected in the environment.
 .
 This is a string-valued register.
 .
@@ -4246,7 +4294,7 @@ is the formatter.
 .
 .TP
 .B \[rs]n[.height]
-Interpolate font height.
+Interpolate height of the environment's selected font.
 .
 See
 .BR \[rs]H .
@@ -4293,34 +4341,36 @@ Interpolate hyphenation space adjustment threshold of the environment.
 .
 .TP
 .B \[rs]n[.in]
-Interpolate indentation amount applicable to the pending output line.
+Interpolate indentation amount applicable to the output line pending
+in the environment.
 .
 .
 .TP
 .B \[rs]n[.int]
-Interpolate\~1 if the most recently formatted text was interrupted
-(ended with
+Interpolate\~1 if the text most recently formatted in the environment
+was \[lq]interrupted\[rq] or continued with
 .BR \[rs]c ),
 0\~otherwise.
 .
 .
 .TP
 .B \[rs]n[.it]
-Interpolate the count of lines remaining in any pending input trap.
+Interpolate the count of lines remaining in the environment's
+pending input trap.
 .
 .
 .TP
 .B \[rs]n[.itc]
-Interpolate\~1 if the pending input trap honors the output line
-continuation escape sequence
+Interpolate\~1 if the environment's pending input trap honors
+the output line continuation escape sequence
 .RB ( \[rs]c ),
 0\~otherwise.
 .
 .
 .TP
 .B \[rs]n[.itm]
-Interpolate the name of the macro associated with the pending input
-trap.
+Interpolate the name of the macro associated with the environment's
+pending input trap.
 .
 This is a string-valued register.
 .
@@ -4338,18 +4388,19 @@ Interpolate ligature mode.
 .
 .TP
 .B \[rs]n[.linetabs]
-Interpolate\~1 if line-tabs mode is enabled,
+Interpolate\~1 if line-tabs mode is enabled the environment,
 0\~otherwise.
 .
 .
 .TP
 .B \[rs]n[.ll]
-Interpolate line length applicable to the pending output line.
+Interpolate line length applicable to the environment's
+pending output line.
 .
 .
 .TP
 .B \[rs]n[.lt]
-Interpolate title line length.
+Interpolate the environment's title line length.
 .
 .
 .TP
@@ -4378,15 +4429,15 @@ See
 .
 .TP
 .B \[rs]n[.nm]
-Interpolate\~1 if output line numbering is enabled
+Interpolate\~1 if output line numbering is enabled in the environment
 (even if temporarily suppressed),
 0\~otherwise.
 .
 .
 .TP
 .B \[rs]n[.nn]
-Interpolate count of output lines remaining to have numbering
-suppressed.
+Interpolate count of output lines remaining in the environment
+to have numbering suppressed.
 .
 .
 .TP
@@ -4429,27 +4480,29 @@ or that of the current page plus\~1).
 .
 .TP
 .B \[rs]n[.ps]
-Interpolate type size in scaled points.
+Interpolate the environment's type size in scaled points.
 .
 .
 .TP
 .B \[rs]n[.psr]
-Interpolate most recently requested type size in scaled points.
+Interpolate the environment's most recently requested type size
+in scaled points.
 .
 .
 .TP
 .B \[rs]n[.pvs]
-Interpolate post-vertical line spacing amount.
+Interpolate the environment's post-vertical line spacing amount.
 .
 .
 .TP
 .B \[rs]n[.rj]
-Interpolate number of input lines remaining to be right-aligned.
+Interpolate number of input lines remaining to be right-aligned
+in the environment.
 .
 .
 .TP
 .B \[rs]n[.slant]
-Interpolate font slant.
+Interpolate slant in degrees of the environment's selected font.
 .
 See
 .BR \[rs]S .
@@ -4457,8 +4510,8 @@ See
 .
 .TP
 .B \[rs]n[.sr]
-Interpolate most recently requested type size in points as a decimal
-fraction.
+Interpolate the environment's most recently requested type size
+in points as a decimal fraction.
 .
 This is a string-valued register.
 .
@@ -4467,15 +4520,15 @@ This is a string-valued register.
 .B \[rs]n[.ss]
 .TQ
 .B \[rs]n[.sss]
-Interpolate values of minimum inter-word space and additional
-inter-sentence space,
+Interpolate values of the environment's minimum inter-word space
+and additional inter-sentence space,
 respectively,
 in twelfths of the space width of the selected font.
 .
 .
 .TP
 .B \[rs]n[.sty]
-Interpolate selected abstract font style,
+Interpolate the environment's selected abstract font style,
 if any.
 .
 This is a string-valued register.
@@ -4483,8 +4536,9 @@ This is a string-valued register.
 .
 .TP
 .B \[rs]n[.tabs]
-Interpolate representation of the tab stop settings in a form suitable
-for passage to the
+Interpolate the environment's tab stop settings
+(if any)
+in a form suitable for passage to the
 .B ta
 request.
 .
@@ -4493,8 +4547,8 @@ This is a string-valued register.
 .
 .TP
 .B \[rs]n[.trap]
-Interpolate the name of the next vertical position trap that will be
-sprung.
+Interpolate the name of the next vertical position trap
+after the vertical drawing position.
 .
 This is a string-valued register.
 .
@@ -4589,7 +4643,7 @@ contains\~0.
 .
 .TP
 .B \[rs]n[.zoom]
-Interpolate magnification of font,
+Interpolate magnification of the environment's selected font,
 in thousandths,
 or\~0 if magnification unused.
 .

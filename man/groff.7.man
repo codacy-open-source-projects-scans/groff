@@ -2827,9 +2827,10 @@ is a combining component in a composite character.
 .
 .TPx
 .REQ .continue
-Finish the current iteration of a
-.request .while
-loop.
+Skip the remainder of a
+.RB \[lq] while \[rq]
+loop's body,
+immediately retesting its conditional expression.
 .
 .TPx
 .REQ .cp
@@ -3101,6 +3102,12 @@ Restore escape character saved with
 Save the escape character.
 .
 .TPx
+.REQ .el
+Interpolate a newline if the conditional expression of the corresponding
+.request .ie
+request was false.
+.
+.TPx
 .REQ .el anything
 Interpret
 .I anything
@@ -3108,6 +3115,10 @@ as if it were an input line if the conditional expression of the
 corresponding
 .request .ie
 request was false.
+.
+.TPx
+.REQ .em
+Unset end-of-input macro.
 .
 .TPx
 .REQ .em mac
@@ -3189,12 +3200,13 @@ lacks a glyph for
 .
 .TPx
 .REQ .fcolor
-Restore previous fill color.
+Restore previous fill color,
+or the default if there is none.
 .
 .TPx
 .REQ .fcolor color
 Select
-.I color
+.I col
 as the fill color.
 .
 .TPx
@@ -3307,8 +3319,6 @@ to
 .IR f2 .
 .
 .TPx
-.REQ .fzoom font
-.TQ
 .REQ .fzoom font\~\f[B]0\f[]
 Stop magnifying
 .IR font .
@@ -3325,12 +3335,13 @@ a multiplier of the current type size in thousandths
 .
 .TPx
 .REQ .gcolor
-Restore previous stroke color.
+Restore previous stroke color,
+or the default if there is none.
 .
 .TPx
-.REQ .gcolor color
+.REQ .gcolor col
 Select
-.I color
+.I col
 as the stroke color.
 .
 .TPx
@@ -3365,7 +3376,8 @@ Set the hyphenation language to
 .TPx
 .REQ .hlm
 Set the consecutive automatically hyphenated line limit to
-.BR \-1 ,
+.B \-1
+(the default),
 meaning \[lq]no limit\[rq].
 .
 .TPx
@@ -3467,6 +3479,15 @@ to each inter-word space
 .scaleindicator m ).
 .
 .TPx
+.REQ .ie cond-expr
+Interpolate a newline if
+.I cond-expr
+is true,
+otherwise skip to a corresponding
+.request .el
+request.
+.
+.TPx
 .REQ .ie "cond-expr anything"
 If
 .I cond-expr
@@ -3477,6 +3498,12 @@ as if it were an input line,
 otherwise skip to a corresponding
 .request .el
 request.
+.
+.TPx
+.REQ .if cond-expr
+Interpolate a newline if
+.I cond-expr
+is true.
 .
 .TPx
 .REQ .if "cond-expr anything"
@@ -3558,12 +3585,10 @@ escape sequence are not counted.
 Enable pairwise kerning.
 .
 .TPx
-.REQ .kern n
-If
-.I n
-is zero,
-disable pairwise kerning,
-otherwise enable it.
+.REQ .kern b
+Enable or disable pairwise kerning
+per Boolean expression
+.IR b .
 .
 .TPx
 .REQ .lc
@@ -3578,7 +3603,7 @@ Set leader repetition character
 .
 .TPx
 .REQ .length "reg anything"
-Compute the number of characters of
+Compute the number of characters in
 .I anything
 and store the count
 in the register
@@ -3600,7 +3625,6 @@ expression
 .REQ .lf n
 Set number of next input line to
 .IR n .
-.\" XXX: negative values accepted; check AT&T troff
 .
 .TPx
 .REQ .lf "n file-name"
@@ -3608,6 +3632,11 @@ Set number of next input line to
 .I n
 and report input file name as
 .IR file-name .
+.
+.TPx
+.REQ .lg
+Enable ligature mode
+.BR 1 .
 .
 .TPx
 .REQ .lg m
@@ -3799,6 +3828,10 @@ If
 .IR n =0,
 cancel suppression.
 .\" XXX: negative values accepted; check AT&T troff
+.
+.TPx
+.REQ .nop
+Interpolate a newline.
 .
 .TPx
 .REQ .nop anything
@@ -4007,8 +4040,18 @@ Set next page number.
 .
 .TPx
 .REQ .pnr
-Report the names and contents of all defined registers to the standard
-error stream.
+Report the names,
+contents,
+and assigned formats
+of all defined registers to the standard error stream.
+.
+.TPx
+.REQ .pnr "reg \fR\&.\|.\|.\&\fP"
+Report the name,
+value,
+and assigned format of each register
+.I reg
+to the standard error stream.
 .
 .TPx
 .REQ .po
@@ -4090,8 +4133,16 @@ or
 request.
 .
 .TPx
-.REQ .rd prompt
-Read insertion.
+.REQ .rd
+Read insertion from standard input stream,
+ringing terminal bell as prompt.
+.
+.TPx
+.REQ .rd message
+Read insertion from standard input stream,
+writing
+.I message
+to standard error stream as prompt.
 .
 .TPx
 .REQ .return
@@ -4416,6 +4467,10 @@ Unsafe request;
 disabled by default.
 .
 .TPx
+.REQ .ta
+Clear tab stops.
+.
+.TPx
 .REQ .ta "n1 n2 \fR\&.\|.\|.\&\fP n\fRn\fP \f[B]T\f[] r1 r2 \
 \fR\&.\|.\|.\&\fP r\fRn\fP"
 Set tabs at positions
@@ -4492,11 +4547,20 @@ Enable track kerning for
 Format three-part title.
 .
 .TPx
+.REQ .tm
+Write a newline to the standard error stream.
+.
+.TPx
 .REQ .tm message
 Write
 .I message,
 followed by a newline,
 to the standard error stream.
+.
+.TPx
+.REQ .tm1
+As
+.request .tm .
 .
 .TPx
 .REQ .tm1 message
@@ -4505,6 +4569,10 @@ As
 but recognizes and strips a leading neutral double quote,
 allowing embedded leading spaces in
 .IR message .
+.
+.TPx
+.REQ .tmc
+No operation.
 .
 .TPx
 .REQ .tmc message
@@ -4664,6 +4732,12 @@ as page location trap at
 (default scaling unit\~\c
 .scaleindicator v ),
 removing any visible trap already there.
+.
+.TPx
+.REQ .while cond-expr
+Interpolate newlines unless and until
+.I cond-expr
+evaluates false.
 .
 .TPx
 .REQ .while "cond-expr anything"
@@ -4989,15 +5063,15 @@ End conditional input.
 .\" ========= longer escape names =========
 .
 .TP
-.ESC ( gl
-Interpolate glyph with two-character name
-.IR gl .
+.ESC ( sc
+Interpolate glyph of special character with two-character identifier
+.IR sc .
 .
 .
 .TP
-.ESC[] "" glyph
-Interpolate glyph with name
-.I glyph
+.ESC[] "" spchar
+Interpolate glyph of special character with identifier
+.I spchar
 (of arbitrary length).
 .
 .
@@ -5528,43 +5602,85 @@ Write
 .I contents
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
-Within
-.IR anything ,
-the escape sequences
-.BR \[rs]& ,
-.BR \[rs]) ,
-.BR \[rs]% ,
-and
-.B \[rs]:
-are ignored;
-.BI \[rs] space
-and
-.B \[rs]\[ti]
-are converted to single space characters;
-and
-.B \[rs]\[rs]
-has its escape character stripped.
-.
-So that the basic Latin subset of the Unicode character
-set can be reliably encoded in
-.I anything,
-the special character escape sequences
-.BR \[rs]\- ,
-.BR \[rs][aq] ,
-.BR \[rs][dq] ,
-.BR \[rs][ga] ,
-.BR \[rs][ha] ,
-.BR \[rs][rs] ,
-and
-.B \[rs][ti]
-are mapped to basic Latin characters;
-see
+The
+.I groff
+special character repertoire is unknown to output drivers outside of
+glyphs named in a device's fonts,
+and even then they may not possess complete coverage of the names
+documented in
 .MR groff_char @MAN7EXT@ .
 .
-For this transformation,
-character translations and special character definitions are ignored.
+Further,
+escape sequences that produce horizontal or vertical motions,
+hyphenation breaks,
+or that are dummy characters may appear in strings
+or be converted to nodes,
+particularly in diversions. \" (@pxref{Gtroff Internals})
+.
+These are not representable when interpolated directly into
+device-independent output,
+as might be done when writing out tag names for PDF bookmarks,
+which can appear in a viewer's navigation pane.
+.
+.
+.\" XXX: Force paragraph spacing here.  I know--it's terrible.  And
+.\" unnecessary once we get this giant discussion moved to its own
+.\" (sub)section.
+.if t .sp 0.4v
+.if n .sp 1v
+.\"IP
+So that documents or macro packages do not have to laboriously
+\[lq]sanitize\[rq] strings destined for interpolation
+in device control commands,
+this escape sequence
+.\" XXX: and soon other things
+performs certain transformations on its argument.
+.
+For these transformations,
+character translations and definitions are ignored.
+.
+.
+.if t .sp 0.4v
+.if n .sp 1v
+.\"IP
+GNU
+.I troff \" GNU
+converts several ordinary characters that typeset as non-basic Latin
+code points to code points outside that range so that they are used
+consistently whether they are formatted as glyphs or used in a device
+control command argument.
+.
+These ordinary characters are
+.RB \[lq]\| \[aq] \|\[rq],
+.RB \[lq]\| \- \|\[rq],
+.RB \[lq]\| \[ha] \|\[rq],
+.RB \[lq]\| \[ga] \|\[rq],
+and
+.RB \[lq]\| \[ti] \|\[rq];
+others are written as-is.
+.
+.
+.if t .sp 0.4v
+.if n .sp 1v
+.\"IP
+Special characters that typeset as Unicode basic Latin characters
+are translated to basic Latin characters accordingly.
+.
+So that any Unicode code point can be represented in device extension
+commands,
+for example in an author's name in document metadata
+or as a usefully named bookmark or hyperlink anchor,
+GNU
+.I troff \" GNU
+maps other special characters to Unicode special character notation.
+.
+Special characters without a Unicode representation,
+and escape sequences that do not interpolate a sequence
+of ordinary and/or special characters,
+produce warnings in category
+.RB \[lq] char \[rq].
 .
 .TP
 .ESC Y n
@@ -6105,8 +6221,8 @@ see
 .
 .TP
 .REG .br
-The normal control character was used to call the currently interpolated
-macro (Boolean-valued).
+The normal control character was used to call the macro being
+interpreted (Boolean-valued).
 .
 .TP
 .REG .c
@@ -6118,7 +6234,9 @@ and
 .
 .TP
 .REG .C
-Compatibility mode is enabled (Boolean-valued);
+AT&T
+.I troff \" AT&T
+compatibility mode is enabled (Boolean-valued);
 see
 .request .cp .
 .
@@ -6135,7 +6253,7 @@ positive if glyph extends below the baseline.
 .
 .TP
 .REG .ce
-Count of output lines remaining to be centered.
+Count of output lines remaining to be centered in the environment.
 .
 .TP
 .REG .cht
@@ -6185,11 +6303,11 @@ see
 .
 .TP
 .REG .fam
-Name of default font family (string-valued).
+Name of the environment's default font family (string-valued).
 .
 .TP
 .REG .fn
-Resolved name of selected font (string-valued);
+Resolved name of font selected in the environment(string-valued);
 see
 .request .ft
 and
@@ -6215,7 +6333,7 @@ Horizontal motion quantum of output device in basic units.
 .
 .TP
 .REG .height
-Font height;
+Height of the environment's selected font;
 see
 .esc H .
 .
@@ -6250,29 +6368,32 @@ Hyphenation space adjustment threshold in environment.
 .
 .TP
 .REG .i
-Indentation amount;
+Environment's indentation amount;
 see
 .request .in .
 .
 .TP
 .REG .in
-Indentation amount applicable to the pending output line;
+Indentation amount applicable to the output line pending
+in the environment;
 see
 .request .ti .
 .
 .TP
 .REG .int
-Previous output line was \[lq]interrupted\[rq] or continued with
+The text most recently formatted in the environment
+was \[lq]interrupted\[rq] or continued with
 .esc c
 (Boolean-valued).
 .
 .TP
 .REG .it
-The count of lines remaining in the pending input trap.
+The count of lines remaining in the environment's pending input trap.
 .
 .TP
 .REG .itc
-The pending input trap honors output line continuation with
+The environment's pending input trap honors output line continuation
+with
 .esc c
 (Boolean-valued).
 .
@@ -6283,7 +6404,7 @@ Name of the macro associated with the pending input trap
 .
 .TP
 .REG .j
-Adjustment mode encoded as an integer;
+The environment's adjustment mode encoded as an integer;
 see
 .request .ad
 and
@@ -6293,7 +6414,7 @@ Do not interpret or perform arithmetic on its value.
 .
 .TP
 .REG .k
-Horizontal drawing position relative to indentation.
+The environment's horizontal drawing position relative to indentation.
 .
 .TP
 .REG .kern
@@ -6317,15 +6438,15 @@ Ligature mode.
 .
 .TP
 .REG .linetabs
-Line-tabs mode is enabled (Boolean-valued).
+Line-tabs mode is enabled in the environment (Boolean-valued).
 .
 .TP
 .REG .ll
-Line length applicable to the pending output line.
+Line length applicable to the environment's pending output line.
 .
 .TP
 .REG .lt
-Title length.
+Environment's title line length.
 .
 .TP
 .REG .m
@@ -6363,11 +6484,12 @@ also see
 .
 .TP
 .REG .nm
-Output line numbering is enabled (Boolean-valued).
+Output line numbering is enabled in the environment (Boolean-valued).
 .
 .TP
 .REG .nn
-Count of output lines remaining to have numbering suppressed.
+Count of output lines remaining in the environment
+to have numbering suppressed.
 .
 .TP
 .REG .ns
@@ -6409,11 +6531,11 @@ Number of the next page.
 .
 .TP
 .REG .ps
-Type size in scaled points.
+The environment's type size in scaled points.
 .
 .TP
 .REG .psr
-Most recently requested type size in scaled points;
+The environment's most recently requested type size in scaled points;
 see
 .request .ps
 and
@@ -6421,7 +6543,7 @@ and
 .
 .TP
 .REG .pvs
-Post-vertical line spacing.
+The environment's post-vertical line spacing.
 .
 .TP
 .REG .R
@@ -6430,11 +6552,12 @@ Maximum representable integer in GNU
 .
 .TP
 .REG .rj
-Count of lines remaining to be right-aligned.
+Count of lines remaining to be right-aligned in the environment.
 .
 .TP
 .REG .s
-Type size in points as a decimal fraction (string-valued);
+The environment's type size in points as a decimal fraction
+(string-valued);
 see
 .request .ps
 and
@@ -6442,13 +6565,14 @@ and
 .
 .TP
 .REG .slant
-Slant of font in degrees;
+Slant in degrees of the environment's selected font;
 see
 .esc S .
 .
 .TP
 .REG .sr
-Most recently requested type size in points as a decimal fraction
+The environment's most recently requested type size
+in points as a decimal fraction
 (string-valued);
 see
 .request .ps
@@ -6457,17 +6581,17 @@ and
 .
 .TP
 .REG .ss
-Size of minimum inter-word space in twelfths of the space width of the
-selected font.
+Size of the environment's minimum inter-word space
+in twelfths of the space width of the selected font.
 .
 .TP
 .REG .sss
-Size of additional inter-sentence space in twelfths of the space width
-of the selected font.
+Size of the environment's additional inter-sentence space
+in twelfths of the space width of the selected font.
 .
 .TP
 .REG .sty
-Selected abstract style (string-valued);
+The environment's selected abstract style (string-valued);
 see
 .request .ft
 and
@@ -6502,13 +6626,16 @@ option.
 .
 .TP
 .REG .tabs
-Representation of tab settings suitable for use as argument to
+The environment's tab stop settings
+(if any)
+suitable for use as argument to
 .request .ta
 (string-valued).
 .
 .TP
 .REG .trap
-Name of the next vertical position trap that will be sprung
+Name of the next vertical position trap
+after the vertical drawing position.
 (string-valued);
 see
 .request .wh ,
@@ -6530,7 +6657,7 @@ also see
 .
 .TP
 .REG .u
-Filling is enabled (Boolean-valued);
+Filling is enabled in the environment (Boolean-valued);
 see
 .request .fi
 and
@@ -6546,7 +6673,7 @@ option.
 .
 .TP
 .REG .v
-Vertical line spacing;
+The environment's vertical line spacing;
 see
 .request .vs .
 .
@@ -6592,7 +6719,7 @@ Empty if output is directed to the top-level diversion.
 .
 .TP
 .REG .zoom
-Zoom multiplier of current font
+Magnification of the environment's selected font
 (in thousandths;
 zero if no magnification);
 see
@@ -7100,7 +7227,8 @@ and then apply or lift restrictions relative to that basis.
 .
 .TP
 .B 2
-disables hyphenation of the last word on a page.
+disables hyphenation of the last word on a page or column,
+even for explicitly hyphenated words.
 .
 (Hyphenation is prevented if the next page location trap is closer to
 the vertical drawing position than the next text baseline would be.
@@ -8037,88 +8165,6 @@ device control command
 .
 The interpretation of such parameters is determined by the output driver
 or other postprocessor.
-.
-.
-.P
-Within a device control command,
-the escape sequences
-.BR \[rs]& ,
-.BR \[rs]) ,
-.BR \[rs]% ,
-and
-.B \[rs]:
-are ignored;
-.BI \[rs] space
-and
-.B \[rs]\[ti]
-are converted to single space characters;
-and a self-escaped escape character is output as a backslash
-.BR \[rs] .
-.
-So that the basic Latin subset of the Unicode character set,
-ISO\~646:1991\~IRV (US-ASCII),
-can be reliably encoded in device control commands,
-seven special character escape sequences
-.RB (\[lq] \[rs]\- \[rq],
-.RB \[lq] \[rs][aq] \[rq],
-.RB \[lq] \[rs][dq] \[rq],
-.RB \[lq] \[rs][ga] \[rq],
-.RB \[lq] \[rs][ha] \[rq],
-.RB \[lq] \[rs][rs] \[rq],
-and
-.RB \[lq] \[rs][ti] \[rq])
-are mapped to basic Latin characters;
-see
-.MR groff_char @MAN7EXT@ .
-.
-For this transformation,
-character translations and special character definitions are
-ignored.
-.
-(They are bypassed because these parameters are not rendered as glyphs
-in the output;
-instead,
-they remain abstract characters\[em]in a PDF bookmark or a URL,
-for example.)
-.
-.
-.P
-Escape sequences other than the foregoing in device control command
-may be ignored,
-or produce an error.
-.
-.
-.P
-A device control command issued with the
-.RB \[lq] device \[rq]
-request will not be reflected in the output unless a partially collected
-line exists at least once in the top-level diversion
-(recall section \[lq]Diversions\[rq] above).
-.
-When experimenting with such device controls in minimal documents,
-a
-.B br
-request
-will ensure this to be the case.
-.
-.
-.P
-If the
-.B use_charnames_in_special
-directive appears in the output device's
-.I DESC
-file,
-the use of special character escape sequences is
-.I not
-an error;
-they are simply output verbatim
-(with the exception of the seven mapped to Unicode basic Latin
-characters,
-discussed above).
-.
-.B use_charnames_in_special
-is currently employed only by
-.MR grohtml @MAN1EXT@ .
 .
 .
 .P

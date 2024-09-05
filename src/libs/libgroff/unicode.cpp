@@ -57,6 +57,7 @@ const char *valid_unicode_code_sequence(const char *u, char *errbuf)
       }
       else {
 	assert(0 == "unhandled hexadecimal digit character");
+	return 0 /* nullptr */;
       }
       // biggest Unicode value is U+10FFFF
       if (val > 0x10FFFF) {
@@ -81,7 +82,7 @@ const char *valid_unicode_code_sequence(const char *u, char *errbuf)
     if (width < 4) {
       if (errbuf != 0 /* nullptr */)
 	snprintf(errbuf, ERRBUFSZ, "Unicode special character sequence"
-		 " must be exactly 4 to 6 digits\n");
+		 " must be 4..6 digits\n");
       return 0 /* nullptr */;
     }
     else if ((width > 4) && ('0' == *u)) {

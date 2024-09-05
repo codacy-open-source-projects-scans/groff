@@ -8718,10 +8718,11 @@ restrictions relative to that basis.
 
 @table @code
 @item 2
-disables hyphenation of the last word on a page,@footnote{Hyphenation is
-prevented if the next page location trap is closer to the vertical
-drawing position than the next text baseline would be.  @xref{Page
-Location Traps}.} even for explicitly hyphenated words.
+disables hyphenation of the last word on a page or
+column,@footnote{Hyphenation is prevented if the next page location trap
+is closer to the vertical drawing position than the next text baseline
+would be.  @xref{Page Location Traps}.} even for explicitly hyphenated
+words.
 
 @item 4
 disables hyphenation before the last two characters of a word.
@@ -9267,10 +9268,10 @@ Interpolate a tab in copy mode; see @ref{Copy Mode}.
 @DefreqList {ta, [[@Var{n1} @Var{n2} @dots{} @Var{nn} ]@t{T} @Var{r1}@
  @Var{r2} @dots{} @Var{rn}]}
 @DefregListEndx {.tabs}
-Change tab stop positions.  This request takes a series of tab
-specifiers as arguments (optionally divided into two groups with the
-letter @samp{T}) that indicate where each tab stop is to be, overriding
-any previous settings.  The default scaling unit is @samp{m}.  Invoking
+Set tab stop positions.  This request takes a series of tab specifiers
+as arguments (optionally divided into two groups with the letter
+@samp{T}) that indicate where each tab stop is to be, overriding any
+previous settings.  The default scaling unit is @samp{m}.  Invoking
 @code{ta} without arguments removes all tab stops.
 @cindex default tab stops
 @cindex tab stops, default
@@ -11776,10 +11777,11 @@ Monospaced (typewriter-like) fonts and terminals don't use kerning.
 @cindex activating kerning (@code{kern})
 @cindex kerning, activating (@code{kern})
 @cindex kerning enabled register (@code{.kern})
-Switch kerning on or off.  If the parameter is non-zero or missing,
-enable pairwise kerning, otherwise disable it.  The read-only register
-@code{.kern} is set to@tie{}1 if pairwise kerning is enabled,
-0@tie{}otherwise.
+Enable or disable pairwise kerning of glyphs in the environment per
+@var{b}.  It is enabled by default, and if @var{b} is omitted.
+
+The read-only register @code{.kern} interpolates@tie{}1 if pairwise
+kerning is enabled, 0@tie{}otherwise.
 
 @cindex dummy character (@code{\&}), effect on kerning
 @cindex character, dummy (@code{\&}), effect on kerning
@@ -12422,12 +12424,14 @@ the eight standard @w{ISO 6429}/ECMA-48 color names.@footnote{These
 are known vulgarly as ``ANSI'' colors, after its X3.64 standard, now
 withdrawn.}
 
-@DefreqList {gcolor, [@Var{color}]}
+@DefreqList {gcolor, [@Var{col}]}
 @DefescItemx {\\m, , c, }
 @DefescItem {\\m, (, co, }
-@DefescItem {\\m, [, color, ]}
+@DefescItem {\\m, [, col, ]}
 @DefregListEndx {.m}
-Set the stroke color to @var{color}.
+Set the stroke color.  The escape sequence @code{\m[]} restores the
+previous stroke color, or the default if there is none, as does a
+@code{gcolor} request without an argument.
 
 @Example
 .gcolor red
@@ -12436,9 +12440,6 @@ The next words
 \m[red]are in red\m[]
 and these words are in the previous color.
 @endExample
-
-The escape sequence @code{\m[]} restores the previous stroke color, as
-does a @code{gcolor} request without an argument.
 
 @cindex stroke color name register (@code{.m})
 @cindex name, stroke color, register (@code{.m})
@@ -12460,14 +12461,15 @@ when writing a margin character as follows (@pxref{Miscellaneous}).
 @endExample
 @endDefesc
 
-@DefreqList {fcolor, [@Var{color}]}
+@DefreqList {fcolor, [@Var{col}]}
 @DefescItemx {\\M, , c, }
 @DefescItem {\\M, (, co, }
-@DefescItem {\\M, [, color, ]}
+@DefescItem {\\M, [, col, ]}
 @DefregListEndx {.M}
 Set the fill color for objects drawn with @code{\D'@dots{}'} escape
 sequences.  The escape sequence @code{\M[]} restores the previous fill
-color, as does an @code{fcolor} request without an argument.
+color, or the default if there is none, as does an @code{fcolor} request
+without an argument.
 
 @cindex @code{\M} escape sequence, untokenized on input
 @cindex untokenized escape sequence, @code{\M}
@@ -12713,7 +12715,7 @@ can be manipulated through renaming, removal, and aliasing (@code{rn},
 @cindex mode, copy, and @code{length} request
 Compute the number of characters of @var{anything} and store the count
 in the register @var{reg}.  If @var{reg} doesn't exist, it is created.
-@var{anything} is read in copy mode.
+GNU @command{troff} reads @var{anything} in copy mode.
 
 @Example
 .ds xxx abcd\h'3i'efgh
@@ -13103,11 +13105,12 @@ tanker
 @endExample
 @endDefreq
 
-@Defreq {nop, anything}
-Interpret @var{anything} as if it were an input line.  This is similar
-to @samp{.if@tie{}1}.  @code{nop} is not really ``no operation''; its
-argument @emph{is} processed---unconditionally.  It can be used to cause
-text lines to share indentation with surrounding control lines.
+@Defreq {nop, [@Var{anything}]}
+Interpret @var{anything} as if it were an input line.  @code{nop}
+resembles @samp{.if 1}; it puts a break on the output if @code{anything}
+is empty.  Unlike @code{if}, it cannot govern conditional blocks.  Its
+application is to maintain consistent indentation within macro
+definitions even when formatting output.
 
 @Example
 .als real-MAC MAC
@@ -13376,8 +13379,8 @@ typographical break or the @code{br} request.
 @endDefreq
 
 @Defreq {continue, }
-Skip the remainder of a @code{while} loop's body, immediately starting
-the next iteration.
+Skip the remainder of a @code{while} loop's body, immediately retesting
+its conditional expression.
 @endDefreq
 
 
@@ -15246,16 +15249,18 @@ the default blank line behavior is (re-)established.
 @DefregListEndx {lss}
 @cindex leading spaces macro (@code{lsm})
 Set a leading space trap, calling the macro @var{name} when GNU
-@code{troff} encounters leading spaces in an input line; the implicit
-line break that normally happens in this case is suppressed.  If no
-argument is supplied, the default leading space behavior is
-(re-)established (@pxref{Breaking}).
-
-The count of leading spaces on an input line is stored in register
+@command{troff} encounters leading spaces on a text line; the implicit
+line break that normally happens in this case is suppressed.  The
+formatter stores the count of leading spaces on text line in register
 @code{lsn}, and the amount of corresponding horizontal motion in
 register @code{lss}, irrespective of whether a leading space trap is
-set.  When it is, the leading spaces are removed from the input line,
-and no motion is produced before calling @var{name}.
+set.  When it is, GNU @command{troff} removes the leading spaces from
+the input line and produces no motion before calling @var{name}.
+
+If no argument is supplied, GNU @command{troff} reëstablishes the
+default handling of leading spaces on text lines (breaking the line when
+filling, and formatting a horizontal motion of @samp{\n[lsn]} word
+spaces).
 
 @c XXX The following discussion does not seem to be correct; leading
 @c space traps don't "see" _any_ tokens.  Nothing on the line is
@@ -15721,13 +15726,14 @@ the output device, filtering out @var{contents} again.
 @cindex diversion, unformatting (@code{asciify})
 @cindex @code{trin} request, and @code{asciify}
 @dfn{Unformat} the diversion @var{div} in a way such that Unicode basic
-Latin (@acronym{ASCII}) characters, characters translated with the
-@code{trin} request, space characters, and some escape sequences, that
+Latin (US-@acronym{ASCII}) characters, characters translated with the
+@code{trin} request, space characters, and some escape sequences that
 were formatted and diverted into @var{div} are treated like ordinary
 input characters when @var{div} is interpolated.  Doing so can be useful
-in conjunction with the @code{writem} request.  @code{asciify} can be
-also used for gross hacks; for example, the following sets
-register@tie{}@code{n} to@tie{}1.
+in conjunction with the @code{writem} request.
+
+@code{asciify} can be also used for gross hacks; for example, the
+following sets register@tie{}@code{n} to@tie{}1.
 
 @Example
 .tr @@.
@@ -16052,6 +16058,8 @@ the activation status of line numbering (which can be reactivated with
 @item
 the count of consecutive hyphenated lines (set to zero).
 @end itemize
+
+Copying an environment to itself discards the foregoing data.
 @endDefreq
 
 @DefregList {.w}
@@ -16585,6 +16593,9 @@ The @code{device} request strips a leading neutral double quote from
 The @code{device} request processes its arguments in copy mode
 (@pxref{Copy Mode}).  An initial neutral double quote in @var{contents}
 is stripped to allow embedding of leading spaces.
+
+@cindex nodes, in device control commands
+@cindex special characters, in device control commands
 @cindex @code{\&}, in device control commands
 @cindex @code{\)}, in device control commands
 @cindex @code{\%}, in device control commands
@@ -16594,31 +16605,41 @@ is stripped to allow embedding of leading spaces.
 @ifinfo
 @cindex @code{\@r{<colon>}}, in device control commands
 @end ifinfo
-By contrast, within @code{\X} arguments, the escape sequences @code{\&},
-@code{\)}, @code{\%}, and @code{\:} are ignored; @code{\@key{SPC}} and
-@code{\~} are converted to single space characters; and a self-escaped
-escape character is output as a backslash @code{\}.  So that the basic
-Latin subset of the Unicode character set@footnote{that is, @w{ISO
-646:1991 IRV} (US-@acronym{ASCII})} can be reliably encoded in device
-control commands, seven special character escape sequences (@samp{\-},
-@samp{\[aq]}, @samp{\[dq]}, @samp{\[ga]}, @samp{\[ha]}, @samp{\[rs]},
-and @samp{\[ti]}) are mapped to basic Latin characters; see the
-@cite{groff_char@r{(7)}} man page.  For this transformation, character
-translations and special character definitions are
-ignored.@footnote{They are bypassed because these parameters are not
-rendered as glyphs in the output; instead, they remain abstract
-characters---in a PDF bookmark or a URL, for example.}  The use of any
-other escape sequence in @code{\X} parameters is normally an error.
+The @code{groff} special character repertoire is unknown to output
+drivers outside of glyphs named in a device's fonts, and even then they
+may not possess complete coverage of the names documented in the
+@cite{groff_char@r{(7)}} man page.  Further, escape sequences that
+produce horizontal or vertical motions, hyphenation breaks, or that are
+dummy characters may appear in strings or be converted to nodes,
+particularly in diversions (@pxref{Gtroff Internals}).  These are not
+representable when interpolated directly into device-independent output,
+as might be done when writing out tag names for PDF bookmarks, which can
+appear in a viewer's navigation pane.
 
-@kindex use_charnames_in_special
-@cindex @file{DESC} file, and @code{use_charnames_in_special} keyword
-@cindex @code{\X}, and special characters
-If the @code{use_charnames_in_special} directive appears in the output
-device's @file{DESC} file, the use of special character escape sequences
-is @emph{not} an error; they are simply output verbatim (with the
-exception of the seven mapped to Unicode basic Latin characters,
-discussed above).  @code{use_charnames_in_special} is currently employed
-only by @code{grohtml}.
+So that documents or macro packages do not have to laboriously
+``sanitize'' strings destined for interpolation in device control
+commands, the @code{\X} escape sequence
+@c XXX: and soon other things
+performs certain transformations on its argument.  For these
+transformations, character translations and definitions are ignored.
+
+GNU @command{troff} converts several ordinary characters that typeset as
+non-basic Latin code points to code points outside that range so that
+they are used consistently whether they are formatted as glyphs or used
+in a device control command argument.  These ordinary characters are
+@samp{'}, @samp{-}, @samp{^}, @samp{`}, and @samp{~}; others are written
+as-is.
+
+Special characters that typeset as Unicode basic Latin characters are
+translated to basic Latin characters accordingly.  So that any Unicode
+code point can be represented in device extension commands, for example
+in an author's name in document metadata or as a usefully named bookmark
+or hyperlink anchor, GNU @command{troff} maps other special characters
+to Unicode special character notation.  @xref{Using Symbols}.
+
+Special characters without a Unicode representation, and escape
+sequences that do not interpolate a sequence of ordinary and/or special
+characters, produce warnings in category @samp{char}.
 @endDefesc
 
 GNU @command{troff} also permits the interpolation of macro contents
@@ -17164,10 +17185,11 @@ Report, to the standard error stream, the names of all defined macros,
 strings, and diversions with their sizes in bytes.
 @endDefreq
 
-@Defreq {pnr, }
+@Defreq {pnr, [@Var{reg} @r{@dots{}}]}
 @cindex dumping registers (@code{pnr})
 @cindex registers, dumping (@code{pnr})
-Report the names and contents of all defined registers to the standard
+Report the name, value, and assigned format of each register @var{reg},
+or, without arguments, those of all defined registers, to the standard
 error stream.
 @endDefreq
 
@@ -17327,8 +17349,9 @@ circumstances.
 @table @samp
 @item char
 @itemx 1
-No mounted font defines a glyph for the requested character.  This
-category is enabled by default.
+No mounted font defines a glyph for the requested character, or input
+could not be encoded for device-independent output.  This category is
+enabled by default.
 
 @item number
 @itemx 2
@@ -17395,9 +17418,10 @@ An undefined string, macro, or diversion was used.  When such an object
 is dereferenced, an empty one of that name is automatically created.
 So, unless it is later deleted, at most one warning is given for each.
 
-This warning is also emitted upon an attempt to move an unplanted trap
-macro (@pxref{Page Location Traps}).  In such cases, the unplanted macro
-is @emph{not} dereferenced, so it is not created if it does not exist.
+GNU @command{troff} also uses this category to warn of an attempt to
+move an unplanted trap macro (@pxref{Page Location Traps}).  In such
+cases, the unplanted macro is @emph{not} dereferenced, so it is not
+created if it does not exist.
 
 @item reg
 @itemx 1024
@@ -19038,6 +19062,7 @@ whose type size is @var{n}@tie{}scaled points.
 Make the font handling module always return unscaled character widths.
 The @code{grohtml} driver uses this directive.
 
+@c XXX: Savannah #63074 is trying to make this obsolescent.
 @item use_charnames_in_special
 @kindex use_charnames_in_special
 GNU @code{troff} should encode special characters inside device control

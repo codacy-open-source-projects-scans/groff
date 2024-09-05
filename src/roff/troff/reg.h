@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -76,7 +76,7 @@ extern void set_register(symbol nm, units n);
 extern void check_output_limits(int x, int y);
 extern void reset_output_registers();
 
-extern reg *look_up_register(symbol);
+extern reg *look_up_register(symbol, bool suppress_creation = false);
 #if 0
 void inline_define_register();
 #endif

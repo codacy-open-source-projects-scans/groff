@@ -23,10 +23,10 @@ This file describes how to prepare 'groff' for a new release.
   The make(1) target "maintainer-font-descriptions" produces these font
   descriptions.
 
-* Retrieve current versions of UnicodeData.txt[1] and the Adobe Glyph
+* Retrieve current versions of 'UnicodeData.txt'[1] and the Adobe Glyph
   List (AGL)[2], and use them with
-  src/utils/afmtodit/make-afmtodit-tables to update
-  src/utils/afmtodit/afmtodit.tables.
+  'src/utils/afmtodit/make-afmtodit-tables' to update
+  'src/utils/afmtodit/afmtodit.tables'.
 
   [1] E.g., <https://www.unicode.org/Public/15.0.0/ucd/UnicodeData.txt>.
       Check for the latest _released_ version of Unicode at the time.
@@ -36,6 +36,10 @@ This file describes how to prepare 'groff' for a new release.
 
      (<https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/\
      master/glyphlist.txt> may be more convenient.)
+
+* Use the same 'UnicodeData.txt' file as input to
+  'src/libs/libgroff/make-uniuni' to regenerate
+  'src/libs/libgroff/uniuni.cpp'.
 
 * Update the 'gnulib' sub-module and 'bootstrap' script to the latest
   stable versions.  See the 'HACKING' file for instructions.

@@ -54,16 +54,10 @@
 .  rr pdfpic*desired-height
 ..
 .
-.\" Get image dimensions.  The `tr` command to strip null bytes is
-.\" distasteful, but its necessity is imposed on us.  See
-.\" <https://gitlab.freedesktop.org/poppler/poppler/-/issues/776>.
+.\" Get image dimensions.
 .\"
 .\" The following is a circus of portability and escaping constraints.
-.\" See <https://savannah.gnu.org/bugs/index.php?64061>.  Modify it
-.\" only with great caution and after testing with a variety of seds.
-.\" (See the "HACKING" file in groff's source distribution.)  Keep in
-.\" mind that the argument(s) to `sy` are assembled into a C string
-.\" and then passed to system(3), which invokes "sh -c" on the string.
+.\" See <https://savannah.gnu.org/bugs/index.php?64061>.
 .\"
 .\" We therefore shut off roff's escape mechanism _twice_: once while
 .\" defining the macro, and once while interpreting part of it, to

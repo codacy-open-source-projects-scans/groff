@@ -20,25 +20,9 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Regression-test Savannah #63194.  Use of '-man -mec -Tdvi' should not
-# make the italic font unavailable in ordinary text.
-#
-# The per mille sign is available only in the EC fonts, so if we
-# failed to switch them in, we'll get an undefined special character
-# warning.
+echo "checking that 'pi' request works" >&2
+output=$(printf '.pi sed s/^/#/\nhello\n' | "$groff" -UZ)
+echo "$output"
+echo "$output" | grep -Eqx '^#t *hello'
 
-input=$(
-  printf '.TH foo 1 2022-10-10 "groff test suite"\n';
-  printf '.SH N\\['"'"'E]V \\f[BI]groff\\f[] \\fBGNU\\fP\n';
-  printf 'foo \\- \\[%%0]\\fIgroff\n';
-)
-
-# Verify that this command produced no diagnostics.
-
-output=$(printf "%s\n" "$input" | "$groff" -m an -m ec -T dvi -z 2>&1 \
-    | grep -v ': debug:')
-test -n "$output" && echo "$output"
-
-test -z "$output"
-
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:

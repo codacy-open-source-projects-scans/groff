@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -20,29 +20,22 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-DOC='.pl 1v
-A
-.do if 1 \n[.cp] \" Get initial compatibility state (depends on -C).
-B
-.do if 1 \n[.cp] \" Did observing the state change it?
-.cp 1
-C
-.do if 1 \n[.cp] \" Saved compatibility state should be 1 now.
-.cp 0
-D
-.do if 1 \n[.cp] \" Verify 1->0 transition.
-.cp 1
-E
-.do if 1 \n[.cp] \" Verify 0->1 transition.
-.cp 0
-F
-.if !\n[.C] \n[.cp] \" Outside of .do context, should return -1.
-'
+fail=
 
-set -e
+wail () {
+  echo ...FAILED >&2
+  fail=YES
+}
 
-printf "%s" "$DOC" | "$groff" -Tascii \
-    | grep -x "A 0 B 0 C 1 D 0 E 1 F -1"
+for esc in '\\h@1m@' '\\[nonexistent]' '\\[u0FF]'
+do
+  printf "checking that escape sequence '%s' produces a warning\n" \
+    "$esc" >&2
+  error=$(printf "\\X'$esc'\n" | "$groff" -W w -w char -z 2>&1)
+  echo "$error"
+  echo "$error" | grep -q 'warning:' || fail
+done
 
-printf "%s" "$DOC" | "$groff" -C -Tascii \
-    | grep -x "A 1 B 1 C 1 D 0 E 1 F -1"
+test -z "$fail"
+
+# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -51,7 +51,8 @@ wail () {
 output=$(printf "%s" "$input" | "$groff" -rU0 -man -Tascii -P-cbou)
 echo "$output"
 error=$(printf "%s" "$input" \
-    | "$groff" -rU0 -man -Tascii -P-cbou -ww -z 2>&1)
+    | "$groff" -rU0 -man -Tascii -P-cbou -ww -z 2>&1 \
+    | grep -v ': debug:')
 
 echo "testing that no diagnostic messages are produced" >&2
 test -z "$error" || wail

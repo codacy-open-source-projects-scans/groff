@@ -49,7 +49,6 @@ do
   check_char - - "minus sign" $device
   check_char '[aq]' "'" "neutral apostrophe" $device
   check_char '[dq]' '"' "double quote" $device
-  check_char '[ga]' '`' "grave accent" $device
   check_char '[ha]' ^ "caret/hat" $device
   check_char '[rs]' '\' "reverse solidus/backslash" $device
   check_char '[ti]' '~' "tilde" $device

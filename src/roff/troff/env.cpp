@@ -248,6 +248,30 @@ void font_size::init_size_table(int *sizes)
   qsort(size_table, nranges, sizeof(size_range), compare_ranges);
 }
 
+void font_size::dump_size_table()
+{
+  int lo, hi;
+  errprint("  valid type size table for selected font: ");
+  if (nranges == 0)
+    errprint(" empty!");
+  else {
+    bool need_comma = false;
+    for (int i = 0; i < nranges; i++) {
+      lo = size_table[i].min;
+      hi = size_table[i].max;
+      if (need_comma)
+	errprint(", ");
+      if (lo == hi)
+	errprint("%1s", lo);
+      else
+	errprint("%1s-%2s", lo, hi);
+      need_comma = true;
+    }
+  }
+  errprint("\n");
+  fflush(stderr);
+}
+
 font_size::font_size(int sp)
 {
   for (int i = 0; i < nranges; i++) {
@@ -383,8 +407,6 @@ void environment::add_node(node *nd)
 	delete nd;
 	return;
       }
-      // XXX: Should this really be done for device "special" nodes--"x"
-      // commands?
       start_line();
     }
     width_total += nd->width();
@@ -481,7 +503,7 @@ void environment::space_newline()
   width_list *w = new width_list(sw, ssw);
   if (node_list_ends_sentence(line) == 1)
     w->next = new width_list(sw, ssw);
-  if (line != 0 /* nullptr */ && line->merge_space(x, sw, ssw)) {
+  if (line != 0 /* nullptr */ && line->did_space_merge(x, sw, ssw)) {
     width_total += x;
     return;
   }
@@ -509,12 +531,12 @@ void environment::space(hunits space_width, hunits sentence_space_width)
   if (p && p->nspaces() == 1 && p->width() == x
       && node_list_ends_sentence(p->next) == 1) {
     hunits xx = translate_space_to_dummy ? H0 : sentence_space_width;
-    if (p->merge_space(xx, space_width, sentence_space_width)) {
+    if (p->did_space_merge(xx, space_width, sentence_space_width)) {
       *tp += xx;
       return;
     }
   }
-  if (p && p->merge_space(x, space_width, sentence_space_width)) {
+  if (p && p->did_space_merge(x, space_width, sentence_space_width)) {
     *tp += x;
     return;
   }
@@ -526,11 +548,11 @@ void environment::space(hunits space_width, hunits sentence_space_width)
   is_spreading = false;
 }
 
-static node *do_underline_special(bool do_underline_spaces)
+static node *configure_space_underlining(bool b)
 {
   macro m;
   m.append_str("x u ");
-  m.append(do_underline_spaces ? '1' : '0');
+  m.append(b ? '1' : '0');
   return new special_node(m, 1);
 }
 
@@ -561,9 +583,9 @@ bool environment::set_font(symbol nm)
   }
   if (underline_spaces && fontno != prev_fontno) {
     if (fontno == get_underline_fontno())
-      add_node(do_underline_special(true));
+      add_node(configure_space_underlining(true));
     if (prev_fontno == get_underline_fontno())
-      add_node(do_underline_special(false));
+      add_node(configure_space_underlining(false));
   }
   return true;
 }
@@ -1301,6 +1323,10 @@ static void select_font()
 
 void family_change()
 {
+  if (in_nroff_mode) {
+    skip_line();
+    return;
+  }
   symbol s = get_name();
   curenv->set_family(s);
   skip_line();
@@ -1323,6 +1349,12 @@ void point_size()
 
 void override_sizes()
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "available font sizes override request"
+	    " expects at least one argument");
+    skip_line();
+    return;
+  }
   int n = 16;
   int *sizes = new int[n]; // C++03: new int[n]();
   (void) memset(sizes, 0, (n * sizeof(int)));
@@ -1569,7 +1601,7 @@ void temporary_indent()
   tok.next();
 }
 
-void do_underline(bool want_spaces_underlined)
+void configure_underlining(bool want_spaces_underlined)
 {
   int n;
   if (!has_arg() || !get_integer(&n))
@@ -1580,7 +1612,7 @@ void do_underline(bool want_spaces_underlined)
       curenv->fontno = curenv->pre_underline_fontno;
       if (want_spaces_underlined) {
 	curenv->underline_spaces = false;
-	curenv->add_node(do_underline_special(false));
+	curenv->add_node(configure_space_underlining(false));
       }
     }
     curenv->underlined_line_count = 0;
@@ -1591,7 +1623,7 @@ void do_underline(bool want_spaces_underlined)
     curenv->fontno = get_underline_fontno();
     if (want_spaces_underlined) {
       curenv->underline_spaces = true;
-      curenv->add_node(do_underline_special(true));
+      curenv->add_node(configure_space_underlining(true));
     }
   }
   skip_line();
@@ -1599,12 +1631,12 @@ void do_underline(bool want_spaces_underlined)
 
 void continuous_underline()
 {
-  do_underline(true /* want spaces underlined */);
+  configure_underlining(true /* underline spaces */);
 }
 
 void underline()
 {
-  do_underline(false /* want spaces underlined */);
+  configure_underlining(false /* underline spaces */);
 }
 
 void margin_character()
@@ -1793,7 +1825,7 @@ void environment::newline()
       fontno = pre_underline_fontno;
       if (underline_spaces) {
 	underline_spaces = false;
-	add_node(do_underline_special(false));
+	add_node(configure_space_underlining(false));
       }
     }
   }
@@ -2003,22 +2035,25 @@ breakpoint *environment::choose_breakpoint()
 	  }
 	  if (best_bp_fits
 	      // Decide whether to use the hyphenated breakpoint.
-	      && (hyphen_line_max < 0
-		  // Only choose the hyphenated breakpoint if it would not
-		  // exceed the maximum number of consecutive hyphenated
-		  // lines.
-		  || hyphen_line_count + 1 <= hyphen_line_max)
-	      && !(adjust_mode == ADJUST_BOTH
+	      && ((hyphen_line_max < 0)
+		  // Only choose the hyphenated breakpoint if it would
+		  // not exceed the maximum number of consecutive
+		  // hyphenated lines.
+		  || (hyphen_line_count + 1 <= hyphen_line_max))
+	      && !((adjust_mode == ADJUST_BOTH)
 		   // Don't choose the hyphenated breakpoint if the line
 		   // can be justified by adding no more than
 		   // hyphenation_space to any word space.
 		   ? (bp->nspaces > 0
-		      && (((target_text_length - bp->width
-			    + (bp->nspaces - 1)*hresolution)/bp->nspaces)
+		      && ((((target_text_length - bp->width)
+			    + ((bp->nspaces - 1) * hresolution)
+			       / bp->nspaces))
 			  <= hyphenation_space))
 		   // Don't choose the hyphenated breakpoint if the line
-		   // is no more than hyphenation_margin short.
-		   : target_text_length - bp->width <= hyphenation_margin)) {
+		   // is no more than hyphenation_margin short of the
+		   // line length.
+		   : ((target_text_length - bp->width)
+		      <= hyphenation_margin))) {
 	    delete bp;
 	    return best_bp;
 	  }
@@ -2556,6 +2591,12 @@ static void break_with_adjustment()
 
 void title()
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "title line request expects a delimited"
+	    " argument");
+    skip_line();
+    return;
+  }
   if (curdiv == topdiv && topdiv->before_first_page) {
     handle_initial_title();
     return;
@@ -3419,6 +3460,7 @@ void environment::print_env()
     errprint("  previous requested type size: %1s\n",
 	     prev_requested_size);
     errprint("  requested type size: %1s\n", requested_size);
+    font_size::dump_size_table();
   }
   errprint("  previous font selection: %1 ('%2')\n", prev_fontno,
 	   get_font_name(prev_fontno, this).contents());
@@ -4249,8 +4291,8 @@ void hyphenate(hyphen_list *h, unsigned flags)
 {
   if (!current_language)
     return;
-  while (h) {
-    while (h && (0 == h->hyphenation_code))
+  while (h != 0 /* nullptr */) {
+    while ((h != 0 /* nullptr */) && (0 == h->hyphenation_code))
       h = h->next;
     int len = 0;
     // Locate hyphenable points within a (subset of) an input word.

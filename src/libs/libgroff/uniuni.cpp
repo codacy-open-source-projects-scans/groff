@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024  Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
 This file is part of groff.
@@ -18,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 // This code has been algorithmically derived from the file
-// UnicodeData.txt, version 7.0.0, available from unicode.org,
-// on 2014-12-16.
+// UnicodeData.txt, version 15.1.0, available from unicode.org,
+// on 2024-08-29.
 
 #include "lib.h"
 #include "stringclass.h"
@@ -36,7 +35,8 @@ implement_ptable(unicode_decompose)
 
 PTABLE(unicode_decompose) unicode_decompose_table;
 
-// the first digit in the composite string gives the number of composites
+// The first digit in the composite string gives the number of
+// characters in the decomposed sequence of simple characters.
 
 struct S {
   const char *key;
@@ -1547,6 +1547,7 @@ struct S {
   { "114BE", "2114B9_114BD" },
   { "115BA", "2115B8_115AF" },
   { "115BB", "2115B9_115AF" },
+  { "11938", "211935_11930" },
   { "1D15E", "21D157_1D165" },
   { "1D15F", "21D158_1D165" },
   { "1D160", "31D158_1D165_1D16E" },
@@ -2112,11 +2113,9 @@ static struct unicode_decompose_init {
 
 unicode_decompose_init::unicode_decompose_init()
 {
-  for (unsigned int i = 0;
-       i < sizeof(unicode_decompose_list)/sizeof(unicode_decompose_list[0]);
-       i++) {
+  for (size_t i = 0; i < array_length(unicode_decompose_list); i++) {
     unicode_decompose *dec = new unicode_decompose[1];
-    dec->value = (char *)unicode_decompose_list[i].value;
+    dec->value = const_cast<char *>(unicode_decompose_list[i].value);
     unicode_decompose_table.define(unicode_decompose_list[i].key, dec);
   }
 }
@@ -2126,3 +2125,9 @@ const char *decompose_unicode(const char *s)
   unicode_decompose *result = unicode_decompose_table.lookup(s);
   return result ? result->value : 0;
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

@@ -106,7 +106,6 @@ static symbol end_of_input_macro_name;
 static symbol blank_line_macro_name;
 static symbol leading_spaces_macro_name;
 static bool want_att_compat = false;
-static int do_old_want_att_compat = -1;	// for .do request
 bool want_abstract_output = false;
 bool want_output_suppressed = false;
 bool is_writing_html = false;
@@ -314,11 +313,11 @@ struct arg_list;
 class input_iterator {
 public:
   input_iterator();
-  input_iterator(int is_div);
+  input_iterator(bool /* is_div */);
   virtual ~input_iterator() {}
   int get(node **);
   friend class input_stack;
-  int is_diversion;
+  bool is_diversion;
   statem *diversion_state;
 protected:
   const unsigned char *ptr;
@@ -327,31 +326,33 @@ protected:
 private:
   virtual int fill(node **);
   virtual int peek();
-  virtual int has_args() { return 0; }
+  virtual bool has_args() { return false; }
   virtual int nargs() { return 0; }
-  virtual input_iterator *get_arg(int) { return 0; }
-  virtual arg_list *get_arg_list() { return 0; }
+  virtual input_iterator *get_arg(int) { return 0 /* nullptr */; }
+  virtual arg_list *get_arg_list() { return 0 /* nullptr */; }
   virtual symbol get_macro_name() { return NULL_SYMBOL; }
-  virtual int space_follows_arg(int) { return 0; }
+  virtual bool space_follows_arg(int) { return false; }
   virtual int get_break_flag() { return 0; }
-  virtual int get_location(int, const char **, int *) { return 0; }
+  virtual bool get_location(bool /* allow_macro */,
+			    const char ** /* filep */,
+			    int * /* linep */) { return false; }
   virtual void backtrace() {}
-  virtual bool set_location(const char *, int) { return 0; }
-  virtual int next_file(FILE *, const char *) { return 0; }
+  virtual bool set_location(const char *, int) { return false; }
+  virtual bool next_file(FILE *, const char *) { return false; }
   virtual void shift(int) {}
-  virtual int is_boundary() {return 0; }
-  virtual int is_file() { return 0; }
-  virtual int is_macro() { return 0; }
+  virtual int is_boundary() {return 0; } // three-valued Boolean :-|
+  virtual bool is_file() { return false; }
+  virtual bool is_macro() { return false; }
   virtual void set_att_compat(bool) {}
   virtual bool get_att_compat() { return false; }
 };
 
 input_iterator::input_iterator()
-: is_diversion(0), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
+: is_diversion(false), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
 {
 }
 
-input_iterator::input_iterator(int is_div)
+input_iterator::input_iterator(bool is_div)
 : is_diversion(is_div), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
 {
 }
@@ -385,9 +386,9 @@ class file_iterator : public input_iterator {
   FILE *fp;
   int lineno;
   const char *filename;
-  int popened;
-  int newline_flag;
-  int seen_escape;
+  bool was_popened;
+  bool seen_newline;
+  bool seen_escape;
   enum { BUF_SIZE = 512 };
   unsigned char buf[BUF_SIZE];
   void close();
@@ -396,16 +397,17 @@ public:
   ~file_iterator();
   int fill(node **);
   int peek();
-  int get_location(int, const char **, int *);
+  bool get_location(bool /* allow_macro */, const char ** /* filep */,
+		    int * /* linep */);
   void backtrace();
   bool set_location(const char *, int);
-  int next_file(FILE *, const char *);
-  int is_file();
+  bool next_file(FILE *, const char *);
+  bool is_file() { return true; }
 };
 
 file_iterator::file_iterator(FILE *f, const char *fn, int po)
-: fp(f), lineno(1), filename(fn), popened(po),
-  newline_flag(0), seen_escape(0)
+: fp(f), lineno(1), filename(fn), was_popened(po),
+  seen_newline(false), seen_escape(false)
 {
   if ((font::use_charnames_in_special) && (fn != 0 /* nullptr */)) {
     if (!the_output)
@@ -423,36 +425,31 @@ void file_iterator::close()
 {
   if (fp == stdin)
     clearerr(stdin);
-  else if (popened)
+  else if (was_popened)
     pclose(fp);
   else
     fclose(fp);
 }
 
-int file_iterator::is_file()
-{
-  return 1;
-}
-
-int file_iterator::next_file(FILE *f, const char *s)
+bool file_iterator::next_file(FILE *f, const char *s)
 {
   close();
   filename = s;
   fp = f;
   lineno = 1;
-  newline_flag = 0;
-  seen_escape = 0;
-  popened = 0;
-  ptr = 0;
-  eptr = 0;
-  return 1;
+  seen_newline = false;
+  seen_escape = false;
+  was_popened = false;
+  ptr = 0 /* nullptr */;
+  eptr = 0 /* nullptr */;
+  return true;
 }
 
 int file_iterator::fill(node **)
 {
-  if (newline_flag)
+  if (seen_newline)
     lineno++;
-  newline_flag = 0;
+  seen_newline = false;
   unsigned char *p = buf;
   ptr = p;
   unsigned char *e = p + BUF_SIZE;
@@ -465,8 +462,8 @@ int file_iterator::fill(node **)
     else {
       *p++ = c;
       if (c == '\n') {
-	seen_escape = 0;
-	newline_flag = 1;
+	seen_escape = false;
+	seen_newline = true;
 	break;
       }
       seen_escape = (c == '\\');
@@ -494,8 +491,8 @@ int file_iterator::peek()
   return c;
 }
 
-int file_iterator::get_location(int /*allow_macro*/,
-				const char **filenamep, int *linenop)
+bool file_iterator::get_location(bool /*allow_macro*/,
+				 const char **filenamep, int *linenop)
 {
   *linenop = lineno;
   if (filename != 0 && strcmp(filename, "-") == 0)
@@ -510,10 +507,11 @@ void file_iterator::backtrace()
   const char *f;
   int n;
   // Get side effect of filename rewrite if stdin.
-  (void) get_location(0, &f, &n);
+  (void) get_location(false /* allow macro */, &f, &n);
   if (program_name)
     fprintf(stderr, "%s: ", program_name);
-  errprint("backtrace: %3 '%1':%2\n", f, n, popened ? "pipe" : "file");
+  errprint("backtrace: %3 '%1':%2\n", f, n,
+	   was_popened ? "pipe" : "file");
 }
 
 bool file_iterator::set_location(const char *f, int ln)
@@ -534,10 +532,12 @@ public:
   static input_iterator *get_arg(int);
   static arg_list *get_arg_list();
   static symbol get_macro_name();
-  static int space_follows_arg(int);
+  static bool space_follows_arg(int);
   static int get_break_flag();
   static int nargs();
-  static int get_location(int, const char **, int *);
+  static bool get_location(bool /* allow_macro */,
+			   const char ** /* filep */,
+			   int * /* linep */);
   static bool set_location(const char *, int);
   static void backtrace();
   static void next_file(FILE *, const char *);
@@ -728,8 +728,8 @@ statem *get_diversion_state()
 
 statem *input_stack::get_diversion_state()
 {
-  if (0 == diversion_state)
-    return 0;
+  if (0 /* nullptr */ == diversion_state)
+    return 0 /* nullptr */;
   else
     return new statem(diversion_state);
 }
@@ -737,37 +737,37 @@ statem *input_stack::get_diversion_state()
 input_iterator *input_stack::get_arg(int i)
 {
   input_iterator *p;
-  for (p = top; p != 0; p = p->next)
+  for (p = top; p != 0 /* nullptr */; p = p->next)
     if (p->has_args())
       return p->get_arg(i);
-  return 0;
+  return 0 /* nullptr */;
 }
 
 arg_list *input_stack::get_arg_list()
 {
   input_iterator *p;
-  for (p = top; p != 0; p = p->next)
+  for (p = top; p != 0 /* nullptr */; p = p->next)
     if (p->has_args())
       return p->get_arg_list();
-  return 0;
+  return 0 /* nullptr */;
 }
 
 symbol input_stack::get_macro_name()
 {
   input_iterator *p;
-  for (p = top; p != 0; p = p->next)
+  for (p = top; p != 0 /* nullptr */; p = p->next)
     if (p->has_args())
       return p->get_macro_name();
   return NULL_SYMBOL;
 }
 
-int input_stack::space_follows_arg(int i)
+bool input_stack::space_follows_arg(int i)
 {
   input_iterator *p;
-  for (p = top; p != 0; p = p->next)
+  for (p = top; p != 0 /* nullptr */; p = p->next)
     if (p->has_args())
       return p->space_follows_arg(i);
-  return 0;
+  return false;
 }
 
 int input_stack::get_break_flag()
@@ -786,18 +786,19 @@ void input_stack::shift(int n)
 
 int input_stack::nargs()
 {
-  for (input_iterator *p =top; p != 0; p = p->next)
+  for (input_iterator *p =top; p != 0 /* nullptr */; p = p->next)
     if (p->has_args())
       return p->nargs();
   return 0;
 }
 
-int input_stack::get_location(int allow_macro, const char **filenamep, int *linenop)
+bool input_stack::get_location(bool allow_macro, const char **filenamep,
+			      int *linenop)
 {
   for (input_iterator *p = top; p; p = p->next)
     if (p->get_location(allow_macro, filenamep, linenop))
-      return 1;
-  return 0;
+      return true;
+  return false;
 }
 
 void input_stack::backtrace()
@@ -828,7 +829,9 @@ void input_stack::next_file(FILE *fp, const char *s)
 
 void input_stack::end_file()
 {
-  for (input_iterator **pp = &top; *pp != &nil_iterator; pp = &(*pp)->next)
+  for (input_iterator **pp = &top;
+       *pp != &nil_iterator;
+       pp = &(*pp)->next)
     if ((*pp)->is_file()) {
       input_iterator *tem = *pp;
       check_end_diversion(tem);
@@ -859,7 +862,7 @@ void input_stack::clear()
 void input_stack::pop_macro()
 {
   int nboundaries = 0;
-  int is_macro = 0;
+  bool is_macro = false;
   do {
     if (top->next == &nil_iterator)
       break;
@@ -1013,6 +1016,8 @@ static symbol read_long_escape_parameters(read_mode mode)
   if (buf == abuf) {
     if (i == 0) {
       if (mode != ALLOW_EMPTY)
+	// XXX: `.device \[]` passes through as-is but `\X \[]` doesn't,
+	// landing here.  Implement almost-but-not-quite-copy-mode?
 	copy_mode_error("empty escape sequence argument in copy mode");
       return EMPTY_SYMBOL;
     }
@@ -1264,7 +1269,7 @@ public:
   int interpret(macro *);
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
 };
 
@@ -1278,9 +1283,9 @@ const char *non_interpreted_char_node::type()
   return "non_interpreted_char_node";
 }
 
-int non_interpreted_char_node::force_tprint()
+bool non_interpreted_char_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool non_interpreted_char_node::is_tag()
@@ -1504,13 +1509,14 @@ static void activate_color()
 
 static void define_color()
 {
-  symbol color_name = get_long_name();
-  if (color_name.is_null()) {
-    warning(WARN_MISSING, "missing identifier in color definition"
-	    " request");
+  if (!has_arg()) {
+    warning(WARN_MISSING, "color definition request expects arguments");
     skip_line();
     return;
   }
+  symbol color_name = get_long_name();
+  // Testing has_arg() should have ensured this.
+  assert(color_name != 0 /* nullptr */);
   if (color_name == default_symbol) {
     warning(WARN_COLOR, "default color cannot be redefined");
     skip_line();
@@ -1809,7 +1815,7 @@ public:
   token_node *get_token_node();
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
 };
 
@@ -1837,9 +1843,9 @@ const char *token_node::type()
   return "token_node";
 }
 
-int token_node::force_tprint()
+bool token_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool token_node::is_tag()
@@ -1885,9 +1891,14 @@ void token::skip()
     next();
 }
 
-// Specify `want_peek` if request reads the next argument in copy mode.
+// Specify `want_peek` if request reads the next argument in copy mode,
+// or otherwise must interpret it specially, as when reading a
+// conditional expression (`if`, `ie`, `while`), or expecting a
+// delimited argument (`tl`).
 bool has_arg(bool want_peek)
 {
+  if (tok.is_newline())
+    return false;
   if (want_peek) {
     int c;
     for (;;) {
@@ -2891,18 +2902,26 @@ static void trapping_blank_line()
     blank_line();
 }
 
+std::stack<bool> want_att_compat_stack;
+
 void do_request()
 {
-  assert(do_old_want_att_compat == -1);
-  do_old_want_att_compat = want_att_compat;
+  if (!has_arg()) {
+    warning(WARN_MISSING, "compatibility mode interpretation request"
+	    " expects a request or macro as argument");
+    skip_line();
+    return;
+  }
+  want_att_compat_stack.push(want_att_compat);
   want_att_compat = false;
   symbol nm = get_name();
   if (nm.is_null())
     skip_line();
   else
     interpolate_macro(nm, true /* don't want next token */);
-  want_att_compat = do_old_want_att_compat;
-  do_old_want_att_compat = -1;
+  assert(!want_att_compat_stack.empty());
+  want_att_compat = want_att_compat_stack.top();
+  want_att_compat_stack.pop();
   request_or_macro *p = lookup_request(nm);
   macro *m = p->to_macro();
   if (m)
@@ -3451,7 +3470,8 @@ macro::~macro()
 macro::macro()
 : is_a_diversion(false), is_a_string(true)
 {
-  if (!input_stack::get_location(1, &filename, &lineno)) {
+  if (!input_stack::get_location(true /* allow macro */, &filename,
+				 &lineno)) {
     filename = 0 /* nullptr */;
     lineno = 0 /* nullptr */;
   }
@@ -3469,10 +3489,11 @@ macro::macro(const macro &m)
     p->count++;
 }
 
-macro::macro(int is_div)
+macro::macro(bool is_div)
 : is_a_diversion(is_div)
 {
-  if (!input_stack::get_location(1, &filename, &lineno)) {
+  if (!input_stack::get_location(true /* allow macro */, &filename,
+				 &lineno)) {
     filename = 0 /* nullptr */;
     lineno = 0 /* nullptr */;
   }
@@ -3645,7 +3666,7 @@ void print_macros()
 class string_iterator : public input_iterator {
   macro mac;
   const char *how_invoked;
-  int newline_flag;
+  bool seen_newline;
   int lineno;
   char_block *bp;
   int count;			// of characters remaining
@@ -3660,17 +3681,19 @@ public:
 		  symbol = NULL_SYMBOL);
   int fill(node **);
   int peek();
-  int get_location(int, const char **, int *);
+  bool get_location(bool /* allow_macro */, const char ** /* filep */,
+		    int * /* linep */);
   void backtrace();
   int get_break_flag() { return with_break; }
   void set_att_compat(bool b) { att_compat = b; }
   bool get_att_compat() { return att_compat; }
-  int is_diversion();
+  bool is_diversion();
 };
 
-string_iterator::string_iterator(const macro &m, const char *p, symbol s)
-: input_iterator(m.is_a_diversion), mac(m), how_invoked(p), newline_flag(0),
-  lineno(1), nm(s)
+string_iterator::string_iterator(const macro &m, const char *p,
+    symbol s)
+: input_iterator(m.is_a_diversion), mac(m), how_invoked(p),
+  seen_newline(false), lineno(1), nm(s)
 {
   count = mac.len;
   if (count != 0) {
@@ -3688,26 +3711,26 @@ string_iterator::string_iterator(const macro &m, const char *p, symbol s)
 
 string_iterator::string_iterator()
 {
-  bp = 0;
-  nd = 0;
-  ptr = eptr = 0;
-  newline_flag = 0;
-  how_invoked = 0;
+  bp = 0 /* nullptr */;
+  nd = 0 /* nullptr */;
+  ptr = eptr = 0 /* nullptr */;
+  seen_newline = false;
+  how_invoked = 0 /* nullptr */;
   lineno = 1;
   count = 0;
   with_break = input_stack::get_break_flag();
 }
 
-int string_iterator::is_diversion()
+bool string_iterator::is_diversion()
 {
   return mac.is_diversion();
 }
 
 int string_iterator::fill(node **np)
 {
-  if (newline_flag)
+  if (seen_newline)
     lineno++;
-  newline_flag = 0;
+  seen_newline = false;
   if (count <= 0)
     return EOF;
   const unsigned char *p = eptr;
@@ -3735,7 +3758,7 @@ int string_iterator::fill(node **np)
   while (p < e) {
     unsigned char c = *p;
     if (c == '\n' || c == ESCAPE_NEWLINE) {
-      newline_flag = 1;
+      seen_newline = true;
       p++;
       break;
     }
@@ -3759,16 +3782,16 @@ int string_iterator::peek()
   return *p;
 }
 
-int string_iterator::get_location(int allow_macro,
-				  const char **filep, int *linep)
+bool string_iterator::get_location(bool allow_macro,
+				   const char **filep, int *linep)
 {
   if (!allow_macro)
-    return 0;
-  if (mac.filename == 0)
-    return 0;
+    return false;
+  if (0 /* nullptr */ == mac.filename)
+    return false;
   *filep = mac.filename;
   *linep = mac.lineno + lineno - 1;
-  return 1;
+  return true;
 }
 
 void string_iterator::backtrace()
@@ -3832,19 +3855,20 @@ input_iterator *make_temp_iterator(const char *s)
 
 struct arg_list {
   macro mac;
-  int space_follows;
+  bool space_follows;
   arg_list *next;
-  arg_list(const macro &, int);
+  arg_list(const macro &, bool);
   arg_list(const arg_list *);
   ~arg_list();
 };
 
-arg_list::arg_list(const macro &m, int s) : mac(m), space_follows(s), next(0)
+arg_list::arg_list(const macro &m, bool b)
+: mac(m), space_follows(b), next(0 /* nullptr */)
 {
 }
 
 arg_list::arg_list(const arg_list *al)
-: next(0)
+: next(0 /* nullptr */)
 {
   mac = al->mac;
   space_follows = al->space_follows;
@@ -3866,20 +3890,22 @@ class macro_iterator : public string_iterator {
   int argc;
   int with_break;		// whether called as .foo or 'foo
 public:
-  macro_iterator(symbol, macro &, const char * = "macro", int = 0);
+  macro_iterator(symbol, macro &,
+		 const char * /* how_called */ = "macro",
+		 bool /* want_arguments_initialized */ = false);
   macro_iterator();
   ~macro_iterator();
-  int has_args() { return 1; }
+  bool has_args() { return true; }
   input_iterator *get_arg(int);
   arg_list *get_arg_list();
   symbol get_macro_name();
-  int space_follows_arg(int);
+  bool space_follows_arg(int);
   int get_break_flag() { return with_break; }
   int nargs() { return argc; }
   void add_arg(const macro &, int);
   void shift(int);
-  int is_macro() { return 1; }
-  int is_diversion();
+  bool is_macro() { return true; }
+  bool is_diversion();
 };
 
 input_iterator *macro_iterator::get_arg(int i)
@@ -3895,7 +3921,7 @@ input_iterator *macro_iterator::get_arg(int i)
     return new string_iterator(p->mac);
   }
   else
-    return 0;
+    return 0 /* nullptr */;
 }
 
 arg_list *macro_iterator::get_arg_list()
@@ -3908,18 +3934,18 @@ symbol macro_iterator::get_macro_name()
   return nm;
 }
 
-int macro_iterator::space_follows_arg(int i)
+bool macro_iterator::space_follows_arg(int i)
 {
-  if (i > 0 && i <= argc) {
+  if ((i > 0) && (i <= argc)) {
     arg_list *p = args;
     for (int j = 1; j < i; j++) {
-      assert(p != 0);
+      assert(p != 0 /* nullptr */);
       p = p->next;
     }
     return p->space_follows;
   }
   else
-    return 0;
+    return false;
 }
 
 void macro_iterator::add_arg(const macro &m, int s)
@@ -4136,11 +4162,13 @@ bool macro::is_empty()
   return (is_empty_macro == true);
 }
 
-macro_iterator::macro_iterator(symbol s, macro &m, const char *how_called,
-			       int init_args)
-: string_iterator(m, how_called, s), args(0), argc(0), with_break(want_break)
+macro_iterator::macro_iterator(symbol s, macro &m,
+			       const char *how_called,
+			       bool want_arguments_initialized)
+: string_iterator(m, how_called, s), args(0 /* nullptr */), argc(0),
+  with_break(want_break)
 {
-  if (init_args) {
+  if (want_arguments_initialized) {
     arg_list *al = input_stack::get_arg_list();
     if (al) {
       args = new arg_list(al);
@@ -4149,7 +4177,8 @@ macro_iterator::macro_iterator(symbol s, macro &m, const char *how_called,
   }
 }
 
-macro_iterator::macro_iterator() : args(0), argc(0), with_break(want_break)
+macro_iterator::macro_iterator()
+: args(0 /* nullptr */), argc(0), with_break(want_break)
 {
 }
 
@@ -4725,8 +4754,10 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
     tok.next();
   const char *start_filename;
   int start_lineno;
-  int have_start_location = input_stack::get_location(0, &start_filename,
-						      &start_lineno);
+  bool have_start_location
+    = input_stack::get_location(false /* allow_macro */,
+				&start_filename,
+				&start_lineno);
   node *n;
   // doing this here makes the line numbers come out right
   int c = get_copy(&n, true /* is defining*/);
@@ -5139,11 +5170,17 @@ void length_request()
 
 void asciify_macro()
 {
-  symbol s = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "diversion asciification request expects a"
+	    " diversion identifier as argument");
+    skip_line();
+    return;
+  }
+  symbol s = get_name();
   if (!s.is_null()) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
-    if (!m)
+    if (0 /* nullptr */ == m)
       error("cannot asciify request '%1'", s.contents());
     else {
       macro am;
@@ -5166,7 +5203,13 @@ void asciify_macro()
 
 void unformat_macro()
 {
-  symbol s = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "diversion unformatting request expects a"
+	    " diversion identifier as argument");
+    skip_line();
+    return;
+  }
+  symbol s = get_name();
   if (!s.is_null()) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
@@ -5605,7 +5648,7 @@ public:
   int ends_sentence();
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
 };
 
@@ -5628,9 +5671,9 @@ const char *non_interpreted_node::type()
   return "non_interpreted_node";
 }
 
-int non_interpreted_node::force_tprint()
+bool non_interpreted_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool non_interpreted_node::is_tag()
@@ -5685,19 +5728,37 @@ static void encode_special_character_for_device_output(macro *mac)
     sc = ci->get_symbol()->contents();
   }
   else
-    sc = tok.get_char()->get_symbol()->contents();
+    sc = tok.get_char(true /* required */)->get_symbol()->contents();
   if (strcmp("-", sc) == 0)
     mac->append('-');
-  else if (strcmp("aq", sc) == 0)
-    mac->append('\'');
   else if (strcmp("dq", sc) == 0)
     mac->append('"');
-  else if (strcmp("ga", sc) == 0)
-    mac->append('`');
-  else if (strcmp("ha", sc) == 0)
-    mac->append('^');
+  else if (strcmp("sh", sc) == 0)
+    mac->append('#');
+  else if (strcmp("Do", sc) == 0)
+    mac->append('$');
+  else if (strcmp("aq", sc) == 0)
+    mac->append('\'');
+  else if (strcmp("sl", sc) == 0)
+    mac->append('/');
+  else if (strcmp("at", sc) == 0)
+    mac->append('@');
+  else if (strcmp("lB", sc) == 0)
+    mac->append('[');
   else if (strcmp("rs", sc) == 0)
     mac->append('\\');
+  else if (strcmp("rB", sc) == 0)
+    mac->append(']');
+  else if (strcmp("ha", sc) == 0)
+    mac->append('^');
+  else if (strcmp("lC", sc) == 0)
+    mac->append('{');
+  else if (strcmp("ba", sc) == 0)
+    mac->append('|');
+  else if (strcmp("or", sc) == 0)
+    mac->append('|');
+  else if (strcmp("rC", sc) == 0)
+    mac->append('}');
   else if (strcmp("ti", sc) == 0)
     mac->append('~');
   else {
@@ -5712,13 +5773,40 @@ static void encode_special_character_for_device_output(macro *mac)
 	}
 	mac->append(']');
       }
-      else
-	error("special character '%1' is unusable within a device"
-	      " control escape sequence", sc);
     }
-    else
-      error("special character '%1' cannot be used within a device"
-	    " control escape sequence", sc);
+    else {
+      char errbuf[ERRBUFSZ];
+      const size_t unibufsz = UNIBUFSZ + 1 /* '\0' */;
+      char character[unibufsz];
+      (void) memset(errbuf, '\0', ERRBUFSZ);
+      (void) memset(character, '\0', UNIBUFSZ);
+      // If looks like something other than an attempt at a Unicode
+      // special character escape sequence already, try to convert it
+      // into one.  Output drivers don't (and shouldn't) know anything
+      // about a troff formatter's special character identifiers.
+      if ((strlen(sc) < 3) || (sc[0] != 'u')) {
+	const char *un = glyph_name_to_unicode(sc);
+	if (un != 0 /* nullptr */)
+	  strncpy(character, un, unibufsz);
+	else {
+	  warning(WARN_CHAR, "special character '%1' is not encodable"
+	       " in device-independent output", sc);
+	  return;
+	}
+      }
+      else {
+	const char *un = valid_unicode_code_sequence(sc, errbuf);
+	if (0 /* nullptr */ == un) {
+	  warning(WARN_CHAR, "special character '%1' is not encodable"
+	       " in device-independent output: %2", sc, errbuf);
+	  return;
+	}
+	strncpy(character, un, unibufsz);
+      }
+      mac->append_str("\\[u");
+      mac->append_str(character);
+      mac->append(']');
+    }
   }
 }
 
@@ -5740,11 +5828,26 @@ static void encode_character_for_device_output(macro *mac, const char c)
     else if (tok.is_special())
       encode_special_character_for_device_output(mac);
     else
-      error("%1 is invalid within device control escape sequence",
-	    tok.description());
+      warning(WARN_CHAR, "%1 is not encodable in device-independent"
+	      " output", tok.description());
   }
   else {
-    if (c == escape_char)
+    // We want to represent ordinary characters that normally map to
+    // non-basic Latin code points in a way that is compatible with how
+    // they're typeset, to avoid confusion when these characters are
+    // used in ways that are ultimately visible, as in tag names for PDF
+    // bookmarks, which can appear in a viewer's navigation pane.
+    if ('\'' == c)
+      mac->append_str("\\[u2019]");
+    else if ('-' == c)
+      mac->append_str("\\[u2010]");
+    else if ('^' == c)
+      mac->append_str("\\[u0302]");
+    else if ('`' == c)
+      mac->append_str("\\[u0300]");
+    else if ('~' == c)
+      mac->append_str("\\[u0303]");
+    else if (c == escape_char)
       mac->append('\\');
     else
       mac->append(c);
@@ -5778,12 +5881,15 @@ static node *do_device_control() // \X
     unsigned char c;
     if (tok.is_space())
       c = ' ';
-    else if (tok.is_tab())
-      c = '\t';
-    else if (tok.is_leader())
-      c = '\001';
-    else if (tok.is_backspace())
-      c = '\b';
+    // TODO: Stop silently ignoring these when we have a string
+    // iterator for users and can externalize "sanitization" operations.
+    // See <https://savannah.gnu.org/bugs/?62264>.
+    else if (tok.is_hyphen_indicator())
+      continue;
+    else if (tok.is_dummy())
+      continue;
+    else if (tok.is_zero_width_break())
+      continue;
     else
       c = tok.ch();
     encode_character_for_device_output(&mac, c);
@@ -5794,7 +5900,7 @@ static node *do_device_control() // \X
 static void device_request()
 {
   if (!has_arg(true /* peek; we want to read in copy mode */)) {
-    warning(WARN_MISSING, "device control request expects arguments");
+    warning(WARN_MISSING, "device control request expects an argument");
     skip_line();
     return;
   }
@@ -5944,7 +6050,8 @@ void special_node::tprint(troff_output_file *out)
 
 int get_file_line(const char **filename, int *lineno)
 {
-  return input_stack::get_location(0, filename, lineno);
+  return input_stack::get_location(false /* allow macro */, filename,
+				   lineno);
 }
 
 void line_file()
@@ -6231,7 +6338,11 @@ static bool want_loop_break = false;
 
 static void while_request()
 {
-  // We can't use `has_arg()` here.  XXX: Figure out why.
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "while loop request expects arguments");
+    skip_line();
+    return;
+  }
   macro mac;
   bool is_char_escaped = false;
   int level = 0;
@@ -6358,7 +6469,7 @@ void source_quietly()
 void pipe_source()
 {
   if (!want_unsafe_requests) {
-    error("'pso' request is not allowed in safer mode");
+    error("piped command source request is not allowed in safer mode");
     skip_line();
   }
   else {
@@ -7117,7 +7228,7 @@ static void do_open(bool append)
 static void open_request()
 {
   if (!want_unsafe_requests) {
-    error("'open' request is not allowed in safer mode");
+    error("file opening request is not allowed in safer mode");
     skip_line();
   }
   else
@@ -7127,7 +7238,7 @@ static void open_request()
 static void opena_request()
 {
   if (!want_unsafe_requests) {
-    error("'opena' request is not allowed in safer mode");
+    error("file appending request is not allowed in safer mode");
     skip_line();
   }
   else
@@ -7226,25 +7337,29 @@ void write_macro_request()
 
 void warnscale_request()
 {
-  if (has_arg()) {
-    char c = tok.ch();
-    if (c == 'u')
-      warn_scale = 1.0;
-    else if (c == 'i')
-      warn_scale = (double) units_per_inch;
-    else if (c == 'c')
-      warn_scale = (double) units_per_inch / 2.54;
-    else if (c == 'p')
-      warn_scale = (double) units_per_inch / 72.0;
-    else if (c == 'P')
-      warn_scale = (double) units_per_inch / 6.0;
-    else {
-      warning(WARN_SCALE,
-	      "scaling unit '%1' invalid; using 'i' instead", c);
-      c = 'i';
-    }
-    warn_scaling_unit = c;
+  if (!has_arg()) {
+    warning(WARN_MISSING, "warning scaling unit configuration request"
+	    " expects a scaling unit argument");
+    skip_line();
+    return;
   }
+  char c = tok.ch();
+  if (c == 'u')
+    warn_scale = 1.0;
+  else if (c == 'i')
+    warn_scale = (double) units_per_inch;
+  else if (c == 'c')
+    warn_scale = (double) units_per_inch / 2.54;
+  else if (c == 'p')
+    warn_scale = (double) units_per_inch / 72.0;
+  else if (c == 'P')
+    warn_scale = (double) units_per_inch / 6.0;
+  else {
+    warning(WARN_SCALE,
+	    "scaling unit '%1' invalid; using 'i' instead", c);
+    c = 'i';
+  }
+  warn_scaling_unit = c;
   skip_line();
 }
 
@@ -7357,17 +7472,35 @@ static void do_translate(int translate_transparent, int translate_input)
 
 void translate()
 {
-  do_translate(1, 0);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "character translation request expects"
+	    " sequence of character pairs as argument");
+    skip_line();
+    return;
+  }
+  do_translate(1 /* transparent */, 0 /* input */);
 }
 
 void translate_no_transparent()
 {
-  do_translate(0, 0);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "character non-diversion translation request"
+	    " expects sequence of character pairs as argument");
+    skip_line();
+    return;
+  }
+  do_translate(0 /* transparent */, 0 /* input */);
 }
 
 void translate_input()
 {
-  do_translate(1, 1);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "character non-asciification translation"
+	    " request expects sequence of character pairs as argument");
+    skip_line();
+    return;
+  }
+  do_translate(1 /* transparent */, 1 /* input */);
 }
 
 static void set_character_flags()
@@ -7498,8 +7631,8 @@ static void report_hyphenation_codes()
 
 void hyphenation_patterns_file_code()
 {
-  error("'hpfcode' request will be withdrawn in a future groff release;"
-        " migrate to 'hcode'");
+  error("hyphenation pattern file code assignment request will be"
+	" withdrawn in a future groff release; migrate to 'hcode'");
   tok.skip();
   while (!tok.is_newline() && !tok.is_eof()) {
     int n1, n2;
@@ -7878,7 +8011,7 @@ const char *lineno_reg::get_string()
 {
   int line;
   const char *file;
-  if (!input_stack::get_location(0, &file, &line))
+  if (!input_stack::get_location(false /* allow macro */, &file, &line))
     line = 0;
   return i_to_a(line);
 }
@@ -7898,7 +8031,7 @@ bool writable_lineno_reg::get_value(units *res)
 {
   int line;
   const char *file;
-  if (!input_stack::get_location(0, &file, &line))
+  if (!input_stack::get_location(false /* allow macro */, &file, &line))
     return false;
   *res = line;
   return true;
@@ -7918,10 +8051,10 @@ const char *filename_reg::get_string()
 {
   int line;
   const char *file;
-  if (input_stack::get_location(0, &file, &line))
+  if (input_stack::get_location(false /* allow macro */, &file, &line))
     return file;
   else
-    return 0;
+    return 0 /* nullptr */;
 }
 
 class break_flag_reg : public reg {
@@ -7932,6 +8065,17 @@ public:
 const char *break_flag_reg::get_string()
 {
   return i_to_a(input_stack::get_break_flag());
+}
+
+class enclosing_want_att_compat_reg : public reg {
+public:
+  const char *get_string();
+};
+
+const char *enclosing_want_att_compat_reg::get_string()
+{
+  return i_to_a(want_att_compat_stack.empty() ? 0
+		: want_att_compat_stack.top());
 }
 
 class readonly_text_register : public reg {
@@ -8028,8 +8172,15 @@ char *read_string()
 
 void pipe_output()
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "device-independent output piping request"
+	    " expects a system command as argument");
+    skip_line();
+    return;
+  }
   if (!want_unsafe_requests) {
-    error("'pi' request is not allowed in safer mode");
+    error("device-independent output piping request is not allowed in"
+	  " safer mode");
     skip_line();
   }
   else {
@@ -8039,6 +8190,8 @@ void pipe_output()
     }
     else {
       char *pc = read_string();
+      // This shouldn't happen thanks to `has_arg()` above.
+      assert(pc != 0 /* nullptr */);
       if (0 /* nullptr */ == pc)
 	error("cannot apply pipe request to empty command");
       // Are we adding to an existing pipeline?
@@ -8064,12 +8217,21 @@ static int system_status;
 
 void system_request()
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "system command execution request expects a"
+	    " system command as argument");
+    skip_line();
+    return;
+  }
   if (!want_unsafe_requests) {
-    error("'sy' request is not allowed in safer mode");
+    error("system command execution request is not allowed in safer"
+	  " mode");
     skip_line();
   }
   else {
     char *command = read_string();
+    // This shouldn't happen thanks to `has_arg()` above.
+    assert(command != 0 /* nullptr */);
     if (0 /* nullptr */ == command)
       error("empty command");
     else {
@@ -8081,6 +8243,12 @@ void system_request()
 
 void copy_file()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "file throughput request expects a file name"
+	    " as argument");
+    skip_line();
+    return;
+  }
   if (curdiv == topdiv && topdiv->before_first_page) {
     handle_initial_request(COPY_FILE_REQUEST);
     return;
@@ -8099,6 +8267,12 @@ void copy_file()
 
 void vjustify()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "vertical adjustment request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   if (curdiv == topdiv && topdiv->before_first_page) {
     handle_initial_request(VJUSTIFY_REQUEST);
     return;
@@ -8113,6 +8287,12 @@ void vjustify()
 
 void transparent_file()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "transparent file throughput request expects"
+	    " a file name as argument");
+    skip_line();
+    return;
+  }
   if (curdiv == topdiv && topdiv->before_first_page) {
     handle_initial_request(TRANSPARENT_FILE_REQUEST);
     return;
@@ -8435,6 +8615,17 @@ void usage(FILE *stream, const char *prog)
 "usage: %s {-v | --version}\n"
 "usage: %s {-h | --help}\n",
 	  prog, prog, prog);
+  if (stdout == stream) {
+    fputs(
+"\n"
+"GNU troff transforms groff(7) language input into the device‐"
+"independent page description language detailed in groff_out(5); it is"
+"the heart of the GNU roff document formatting system.  Many people"
+"prefer to use the groff(1) command, a front end that also runs"
+"preprocessors and output drivers in the appropriate order and with"
+"appropriate options.  See the troff(1) manual page.\n",
+	  stream);
+  }
 }
 
 int main(int argc, char **argv)
@@ -8446,11 +8637,11 @@ int main(int argc, char **argv)
   string_list *macros = 0 /* nullptr */;
   string_list *register_assignments = 0 /* nullptr */;
   string_list *string_assignments = 0 /* nullptr */;
-  int iflag = 0;
-  int tflag = 0;
-  int fflag = 0;
-  int nflag = 0;
-  int no_rc = 0;		// don't process troffrc and troffrc-end
+  bool want_stdin_read_last = false;
+  bool have_explicit_device_argument = false;
+  bool have_explicit_default_family = false;
+  bool have_explicit_first_page_number = false;
+  bool want_startup_macro_files_skipped = false;
   int next_page_number = 0;	// pacify compiler
   opterr = 0;
   hresolution = vresolution = 1;
@@ -8494,7 +8685,7 @@ int main(int argc, char **argv)
       break;
     case 'T':
       device = optarg;
-      tflag = 1;
+      have_explicit_device_argument = true;
       is_writing_html = (strcmp(device, "html") == 0);
       break;
     case 'C':
@@ -8518,7 +8709,7 @@ int main(int argc, char **argv)
       want_errors_inhibited = true;
       break;
     case 'R':
-      no_rc = 1;
+      want_startup_macro_files_skipped = true;
       break;
     case 'w':
       enable_warning(optarg);
@@ -8527,7 +8718,7 @@ int main(int argc, char **argv)
       disable_warning(optarg);
       break;
     case 'i':
-      iflag = 1;
+      want_stdin_read_last = true;
       break;
     case 'b':
       want_backtraces = true;
@@ -8540,7 +8731,7 @@ int main(int argc, char **argv)
       break;
     case 'n':
       if (sscanf(optarg, "%d", &next_page_number) == 1)
-	nflag++;
+	have_explicit_first_page_number = true;
       else
 	error("bad page number");
       break;
@@ -8567,7 +8758,7 @@ int main(int argc, char **argv)
       break;
     case 'f':
       default_family = symbol(optarg);
-      fflag = 1;
+      have_explicit_default_family = true;
       break;
     case 'q':
     case 's':
@@ -8608,7 +8799,8 @@ int main(int argc, char **argv)
   device_has_tcommand = font::has_tcommand;
   warn_scale = (double) units_per_inch;
   warn_scaling_unit = 'i';
-  if (!fflag && font::family != 0 && *font::family != '\0')
+  if (!have_explicit_default_family && (font::family != 0 /* nullptr */)
+      && *font::family != '\0')
     default_family = symbol(font::family);
   font_size::init_size_table(font::sizes);
   int i;
@@ -8631,7 +8823,7 @@ int main(int argc, char **argv)
 		" file for device '%2'", font::font_name_table[i],
 		device);
   curdiv = topdiv = new top_level_diversion;
-  if (nflag)
+  if (have_explicit_first_page_number)
     topdiv->set_next_page_number(next_page_number);
   init_input_requests();
   init_env_requests();
@@ -8640,7 +8832,8 @@ int main(int argc, char **argv)
   init_column_requests();
 #endif /* COLUMN */
   init_node_requests();
-  register_dictionary.define(".T", new readonly_text_register(tflag));
+  register_dictionary.define(".T",
+      new readonly_boolean_register(&have_explicit_device_argument));
   init_registers();
   init_reg_requests();
   init_hyphenation_pattern_requests();
@@ -8657,7 +8850,7 @@ int main(int argc, char **argv)
     register_assignments = register_assignments->next;
     delete tem;
   }
-  if (!no_rc)
+  if (!want_startup_macro_files_skipped)
     process_startup_file(INITIAL_STARTUP_FILE);
   while (macros) {
     process_macro_package_argument(macros->s);
@@ -8665,11 +8858,11 @@ int main(int argc, char **argv)
     macros = macros->next;
     delete tem;
   }
-  if (!no_rc)
+  if (!want_startup_macro_files_skipped)
     process_startup_file(FINAL_STARTUP_FILE);
   for (i = optind; i < argc; i++)
     process_input_file(argv[i]);
-  if (optind >= argc || iflag)
+  if (optind >= argc || want_stdin_read_last)
     process_input_file("-");
   exit_troff();
   return 0;			// not reached
@@ -8852,7 +9045,7 @@ void init_input_requests()
   register_dictionary.define(".$", new nargs_reg);
   register_dictionary.define(".br", new break_flag_reg);
   register_dictionary.define(".C", new readonly_boolean_register(&want_att_compat));
-  register_dictionary.define(".cp", new readonly_register(&do_old_want_att_compat));
+  register_dictionary.define(".cp", new enclosing_want_att_compat_reg);
   register_dictionary.define(".O", new variable_reg(&suppression_level));
   register_dictionary.define(".c", new lineno_reg);
   register_dictionary.define(".color", new readonly_boolean_register(&want_color_output));

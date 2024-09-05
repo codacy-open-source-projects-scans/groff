@@ -93,8 +93,8 @@ struct special_font_list {
 };
 
 special_font_list *global_special_fonts;
-static int global_ligature_mode = 1;
-static int global_kern_mode = 1;
+static int global_ligature_mode = 1; // three-valued Boolean :-|
+static bool global_kern_mode = true;
 
 class track_kerning_function {
   int non_zero;
@@ -790,7 +790,7 @@ class troff_output_file : public real_output_file {
   units vpos;
   units output_vpos;
   units output_hpos;
-  int force_motion;
+  bool must_update_drawing_position;
   int current_size;
   int current_slant;
   int current_height;
@@ -804,7 +804,7 @@ class troff_output_file : public real_output_file {
   char tbuf[TBUF_SIZE];
   int tbuf_len;
   int tbuf_kern;
-  int begun_page;
+  bool has_page_begun;
   int cur_div_level;
   string tag_list;
   void do_motion();
@@ -824,7 +824,9 @@ public:
   void right(hunits);
   void down(vunits);
   void moveto(hunits, vunits);
-  void start_special(tfont *, color *, color *, int = 0);
+  void start_special(tfont * /* tf */,
+		     color * /* gcol */, color * /* fcol */,
+		     bool /* omit_command_prefix */ = false);
   void start_special();
   void special_char(unsigned char c);
   void end_special();
@@ -883,15 +885,16 @@ inline void troff_output_file::put(unsigned int i)
   put_string(ui_to_a(i), fp);
 }
 
-void troff_output_file::start_special(tfont *tf, color *gcol, color *fcol,
-				      int no_init_string)
+void troff_output_file::start_special(tfont *tf, color *gcol,
+				      color *fcol,
+				      bool omit_command_prefix)
 {
   set_font(tf);
   glyph_color(gcol);
   fill_color(fcol);
   flush_tbuf();
   do_motion();
-  if (!no_init_string)
+  if (!omit_command_prefix)
     put("x X ");
 }
 
@@ -938,11 +941,11 @@ void troff_output_file::really_print_line(hunits x, vunits y, node *n,
       cur_div_level = n->div_nest_level;
     }
     // Now check whether the state has changed.
-    if ((is_on() || n->force_tprint())
+    if ((is_on() || n->causes_tprint())
 	&& (state.changed(n->state) || n->is_tag() || n->is_special)) {
       flush_tbuf();
       do_motion();
-      force_motion = 1;
+      must_update_drawing_position = true;
       flush();
       state.flush(fp, n->state, tag_list);
       tag_list = string("");
@@ -952,10 +955,10 @@ void troff_output_file::really_print_line(hunits x, vunits y, node *n,
     n = n->next;
   }
   flush_tbuf();
-  // This ensures that transparent throughput will have a more predictable
-  // position.
+  // Ensure that transparent throughput (.output, \!) has a more
+  // predictable position.
   do_motion();
-  force_motion = 1;
+  must_update_drawing_position = true;
   hpos = 0;
   put('n');
   put(before.to_units());
@@ -983,7 +986,7 @@ inline void troff_output_file::down(vunits n)
 
 void troff_output_file::do_motion()
 {
-  if (force_motion) {
+  if (must_update_drawing_position) {
     put('V');
     put(vpos);
     put('\n');
@@ -1019,7 +1022,7 @@ void troff_output_file::do_motion()
   }
   output_vpos = vpos;
   output_hpos = hpos;
-  force_motion = 0;
+  must_update_drawing_position = false;
 }
 
 void troff_output_file::flush_tbuf()
@@ -1126,9 +1129,9 @@ void troff_output_file::put_char_width(charinfo *ci, tfont *tf,
     if (vpos == output_vpos
 	&& (!gcol || gcol == current_glyph_color)
 	&& (!fcol || fcol == current_fill_color)
-	&& n > 0 && n < 100 && !force_motion) {
-      put(char(n/10 + '0'));
-      put(char(n%10 + '0'));
+	&& (n > 0) && (n < 100) && !must_update_drawing_position) {
+      put(char(n / 10 + '0'));
+      put(char(n % 10 + '0'));
       put(c);
       output_hpos = hpos;
     }
@@ -1511,7 +1514,7 @@ void troff_output_file::draw(char code, hvpair *point, int npoints,
 void troff_output_file::really_on()
 {
   flush_tbuf();
-  force_motion = 1;
+  must_update_drawing_position = true;
   do_motion();
 }
 
@@ -1535,7 +1538,7 @@ void troff_output_file::really_put_filename(const char *filename, int po)
 void troff_output_file::really_begin_page(int pageno, vunits page_length)
 {
   flush_tbuf();
-  if (begun_page) {
+  if (has_page_begun) {
     if (page_length > V0) {
       put('V');
       put(page_length.to_units());
@@ -1543,7 +1546,7 @@ void troff_output_file::really_begin_page(int pageno, vunits page_length)
     }
   }
   else
-    begun_page = 1;
+    has_page_begun = true;
   current_tfont = 0;
   current_font_number = -1;
   current_size = 0;
@@ -1553,7 +1556,7 @@ void troff_output_file::really_begin_page(int pageno, vunits page_length)
   vpos = 0;
   output_hpos = 0;
   output_vpos = 0;
-  force_motion = 1;
+  must_update_drawing_position = true;
   for (int i = 0; i < nfont_positions; i++)
     font_position[i] = NULL_SYMBOL;
   put('p');
@@ -1577,7 +1580,7 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
       put(char(c));
     fclose(ifp);
   }
-  force_motion = 1;
+  must_update_drawing_position = true;
   current_size = 0;
   current_tfont = 0;
   current_font_number = -1;
@@ -1609,8 +1612,8 @@ void troff_output_file::trailer(vunits page_length)
 
 troff_output_file::troff_output_file()
 : current_slant(0), current_height(0), current_fill_color(0),
-  current_glyph_color(0), nfont_positions(10), tbuf_len(0), begun_page(0),
-  cur_div_level(0)
+  current_glyph_color(0), nfont_positions(10), tbuf_len(0),
+  has_page_begun(false), cur_div_level(0)
 {
   font_position = new symbol[nfont_positions];
   put("x T ");
@@ -1910,7 +1913,7 @@ public:
   int character_type();
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
   void dump_node();
 };
@@ -1935,7 +1938,7 @@ public:
   void asciify(macro *);
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
 };
 
@@ -1962,7 +1965,7 @@ public:
   void asciify(macro *);
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
   void vertical_extent(vunits *, vunits *);
 };
@@ -1993,7 +1996,7 @@ public:
   void asciify(macro *);
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
   void dump_node();
 };
@@ -2430,7 +2433,7 @@ public:
   node *copy();
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
   hyphenation_type get_hyphenation_type();
 };
@@ -2454,9 +2457,9 @@ const char *hyphen_inhibitor_node::type()
   return "hyphen_inhibitor_node";
 }
 
-int hyphen_inhibitor_node::force_tprint()
+bool hyphen_inhibitor_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool hyphen_inhibitor_node::is_tag()
@@ -2533,9 +2536,9 @@ node *node::last_char_node()
   return 0;
 }
 
-int node::force_tprint()
+bool node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool node::is_tag()
@@ -2659,7 +2662,7 @@ public:
   hunits skew();
   node *add_self(node *, hyphen_list **);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
 };
 
@@ -2803,7 +2806,7 @@ public:
   tfont *get_tfont();
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
   int get_break_code();
 };
@@ -3213,9 +3216,9 @@ int node::nspaces()
   return 0;
 }
 
-int node::merge_space(hunits, hunits, hunits)
+bool node::did_space_merge(hunits, hunits, hunits)
 {
-  return 0;
+  return false;
 }
 
 
@@ -3241,9 +3244,9 @@ node *space_node::copy()
   return new space_node(n, set, was_escape_colon, col, state, div_nest_level);
 }
 
-int space_node::force_tprint()
+bool space_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool space_node::is_tag()
@@ -3256,10 +3259,10 @@ int space_node::nspaces()
   return set ? 0 : 1;
 }
 
-int space_node::merge_space(hunits h, hunits, hunits)
+bool space_node::did_space_merge(hunits h, hunits, hunits)
 {
   n += h;
-  return 1;
+  return true;
 }
 
 hunits space_node::width()
@@ -3883,8 +3886,8 @@ int node::interpret(macro *)
   return 0;
 }
 
-special_node::special_node(const macro &m, int n)
-: mac(m), no_init_string(n)
+special_node::special_node(const macro &m, bool b)
+: mac(m), lacks_command_prefix(b)
 {
   font_size fs = curenv->get_font_size();
   int char_height = curenv->get_char_height();
@@ -3901,20 +3904,21 @@ special_node::special_node(const macro &m, int n)
 special_node::special_node(const macro &m, tfont *t,
 			   color *gc, color *fc,
 			   statem *s, int divlevel,
-			   int n)
+			   bool b)
 : node(0, s, divlevel), mac(m), tf(t), gcol(gc), fcol(fc),
-  no_init_string(n)
+  lacks_command_prefix(b)
 {
   is_special = 1;
 }
 
 bool special_node::is_same_as(node *n)
 {
-  return mac == ((special_node *)n)->mac
-	 && tf == ((special_node *)n)->tf
-	 && gcol == ((special_node *)n)->gcol
-	 && fcol == ((special_node *)n)->fcol
-	 && no_init_string == ((special_node *)n)->no_init_string;
+  return ((mac == static_cast<special_node *>(n)->mac)
+	  && (tf == static_cast<special_node *>(n)->tf)
+	  && (gcol == static_cast<special_node *>(n)->gcol)
+	  && (fcol == static_cast<special_node *>(n)->fcol)
+	  && (lacks_command_prefix
+	      == static_cast<special_node *>(n)->lacks_command_prefix));
 }
 
 const char *special_node::type()
@@ -3927,9 +3931,9 @@ int special_node::ends_sentence()
   return 2;
 }
 
-int special_node::force_tprint()
+bool special_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool special_node::is_tag()
@@ -3940,12 +3944,12 @@ bool special_node::is_tag()
 node *special_node::copy()
 {
   return new special_node(mac, tf, gcol, fcol, state, div_nest_level,
-			  no_init_string);
+			  lacks_command_prefix);
 }
 
 void special_node::tprint_start(troff_output_file *out)
 {
-  out->start_special(tf, gcol, fcol, no_init_string);
+  out->start_special(tf, gcol, fcol, lacks_command_prefix);
 }
 
 void special_node::tprint_char(troff_output_file *out, unsigned char c)
@@ -4049,7 +4053,7 @@ const char *tag_node::type()
   return "tag_node";
 }
 
-int tag_node::force_tprint()
+bool tag_node::causes_tprint()
 {
   return !delayed;
 }
@@ -4248,7 +4252,7 @@ void suppress_node::tprint(troff_output_file *out)
   } // is_on
 }
 
-int suppress_node::force_tprint()
+bool suppress_node::causes_tprint()
 {
   return is_on;
 }
@@ -4285,7 +4289,7 @@ public:
   tfont *get_tfont();
   bool is_same_as(node *);
   const char *type();
-  int force_tprint();
+  bool causes_tprint();
   bool is_tag();
   void vertical_extent(vunits *, vunits *);
   vunits vertical_width();
@@ -4473,7 +4477,7 @@ void word_space_node::tprint(troff_output_file *out)
   out->right(n);
 }
 
-int word_space_node::merge_space(hunits h, hunits sw, hunits ssw)
+bool word_space_node::did_space_merge(hunits h, hunits sw, hunits ssw)
 {
   n += h;
   assert(orig_width != 0);
@@ -4481,7 +4485,7 @@ int word_space_node::merge_space(hunits h, hunits sw, hunits ssw)
   for (; w->next; w = w->next)
     ;
   w->next = new width_list(sw, ssw);
-  return 1;
+  return true;
 }
 
 unbreakable_space_node::unbreakable_space_node(hunits d, color *c, node *x)
@@ -4502,9 +4506,9 @@ node *unbreakable_space_node::copy()
   return new unbreakable_space_node(n, set, col, state, div_nest_level);
 }
 
-int unbreakable_space_node::force_tprint()
+bool unbreakable_space_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool unbreakable_space_node::is_tag()
@@ -4529,9 +4533,9 @@ void unbreakable_space_node::split(int, node **, node **)
   assert(0 == "unbreakable_space_node::split() unimplemented");
 }
 
-int unbreakable_space_node::merge_space(hunits, hunits, hunits)
+bool unbreakable_space_node::did_space_merge(hunits, hunits, hunits)
 {
-  return 0;
+  return false;
 }
 
 hvpair::hvpair()
@@ -4573,9 +4577,9 @@ const char *draw_node::type()
   return "draw_node";
 }
 
-int draw_node::force_tprint()
+bool draw_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool draw_node::is_tag()
@@ -5224,9 +5228,9 @@ const char *extra_size_node::type()
   return "extra_size_node";
 }
 
-int extra_size_node::force_tprint()
+bool extra_size_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool extra_size_node::is_tag()
@@ -5249,9 +5253,9 @@ bool vertical_size_node::set_unformat_flag()
   return false;
 }
 
-int vertical_size_node::force_tprint()
+bool vertical_size_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool vertical_size_node::is_tag()
@@ -5276,9 +5280,9 @@ bool hmotion_node::set_unformat_flag()
   return true;
 }
 
-int hmotion_node::force_tprint()
+bool hmotion_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool hmotion_node::is_tag()
@@ -5311,9 +5315,9 @@ const char *space_char_hmotion_node::type()
   return "space_char_hmotion_node";
 }
 
-int space_char_hmotion_node::force_tprint()
+bool space_char_hmotion_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool space_char_hmotion_node::is_tag()
@@ -5347,9 +5351,9 @@ const char *vmotion_node::type()
   return "vmotion_node";
 }
 
-int vmotion_node::force_tprint()
+bool vmotion_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool vmotion_node::is_tag()
@@ -5368,9 +5372,9 @@ const char *hline_node::type()
   return "hline_node";
 }
 
-int hline_node::force_tprint()
+bool hline_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool hline_node::is_tag()
@@ -5389,9 +5393,9 @@ const char *vline_node::type()
   return "vline_node";
 }
 
-int vline_node::force_tprint()
+bool vline_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool vline_node::is_tag()
@@ -5409,9 +5413,9 @@ const char *dummy_node::type()
   return "dummy_node";
 }
 
-int dummy_node::force_tprint()
+bool dummy_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool dummy_node::is_tag()
@@ -5429,9 +5433,9 @@ const char *transparent_dummy_node::type()
   return "transparent_dummy_node";
 }
 
-int transparent_dummy_node::force_tprint()
+bool transparent_dummy_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool transparent_dummy_node::is_tag()
@@ -5454,9 +5458,9 @@ const char *zero_width_node::type()
   return "zero_width_node";
 }
 
-int zero_width_node::force_tprint()
+bool zero_width_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool zero_width_node::is_tag()
@@ -5475,9 +5479,9 @@ const char *italic_corrected_node::type()
   return "italic_corrected_node";
 }
 
-int italic_corrected_node::force_tprint()
+bool italic_corrected_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool italic_corrected_node::is_tag()
@@ -5547,9 +5551,9 @@ const char *left_italic_corrected_node::type()
   return "left_italic_corrected_node";
 }
 
-int left_italic_corrected_node::force_tprint()
+bool left_italic_corrected_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool left_italic_corrected_node::is_tag()
@@ -5667,9 +5671,9 @@ const char *overstrike_node::type()
   return "overstrike_node";
 }
 
-int overstrike_node::force_tprint()
+bool overstrike_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool overstrike_node::is_tag()
@@ -5701,9 +5705,9 @@ const char *bracket_node::type()
   return "bracket_node";
 }
 
-int bracket_node::force_tprint()
+bool bracket_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool bracket_node::is_tag()
@@ -5722,9 +5726,9 @@ const char *composite_node::type()
   return "composite_node";
 }
 
-int composite_node::force_tprint()
+bool composite_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool composite_node::is_tag()
@@ -5745,9 +5749,9 @@ const char *glyph_node::type()
   return "glyph_node";
 }
 
-int glyph_node::force_tprint()
+bool glyph_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool glyph_node::is_tag()
@@ -5767,9 +5771,9 @@ const char *ligature_node::type()
   return "ligature_node";
 }
 
-int ligature_node::force_tprint()
+bool ligature_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool ligature_node::is_tag()
@@ -5789,9 +5793,9 @@ const char *kern_pair_node::type()
   return "kern_pair_node";
 }
 
-int kern_pair_node::force_tprint()
+bool kern_pair_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool kern_pair_node::is_tag()
@@ -5811,9 +5815,9 @@ const char *dbreak_node::type()
   return "dbreak_node";
 }
 
-int dbreak_node::force_tprint()
+bool dbreak_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool dbreak_node::is_tag()
@@ -5857,9 +5861,9 @@ const char *break_char_node::type()
   return "break_char_node";
 }
 
-int break_char_node::force_tprint()
+bool break_char_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool break_char_node::is_tag()
@@ -5882,9 +5886,9 @@ const char *line_start_node::type()
   return "line_start_node";
 }
 
-int line_start_node::force_tprint()
+bool line_start_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool line_start_node::is_tag()
@@ -5916,9 +5920,9 @@ const char *word_space_node::type()
   return "word_space_node";
 }
 
-int word_space_node::force_tprint()
+bool word_space_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool word_space_node::is_tag()
@@ -5977,9 +5981,9 @@ const char *diverted_space_node::type()
   return "diverted_space_node";
 }
 
-int diverted_space_node::force_tprint()
+bool diverted_space_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool diverted_space_node::is_tag()
@@ -5997,9 +6001,9 @@ const char *diverted_copy_file_node::type()
   return "diverted_copy_file_node";
 }
 
-int diverted_copy_file_node::force_tprint()
+bool diverted_copy_file_node::causes_tprint()
 {
-  return 0;
+  return false;
 }
 
 bool diverted_copy_file_node::is_tag()
@@ -6132,8 +6136,8 @@ static bool is_nonnegative_integer(const char *str)
 static void translate_font()
 {
   if (!(has_arg())) {
-    warning(WARN_MISSING, "one or two font names expected in font"
-	    " translation request");
+    warning(WARN_MISSING, "font translation request expects one or two"
+	    " font name arguments");
     skip_line();
     return;
   }
@@ -6290,7 +6294,7 @@ static void associate_style_with_font_position()
     else {
       if (!has_arg())
 	warning(WARN_MISSING, "abstract style configuration request"
-		" expects a second argument");
+		" expects a style name as second argument");
       else {
 	symbol internal_name = get_name(true /* required */);
 	if (!internal_name.is_null())
@@ -6468,8 +6472,7 @@ static void set_special_fonts()
 static void zoom_font()
 {
   if (!(has_arg())) {
-    warning(WARN_MISSING, "font name expected in zoom factor setting"
-	    " request");
+    warning(WARN_MISSING, "font zoom factor request expects arguments");
     skip_line();
     return;
   }
@@ -6483,8 +6486,8 @@ static void zoom_font()
     return;
   }
   if (!(has_arg())) {
-    warning(WARN_MISSING, "zoom factor expected in zoom factor setting"
-	    " request");
+    warning(WARN_MISSING, "font zoom factor request expects zoom factor"
+	    " argument");
     skip_line();
     return;
   }
@@ -6620,45 +6623,49 @@ hunits env_narrow_space_width(environment *env)
 
 static void embolden_font()
 {
+  if (!(has_arg())) {
+    warning(WARN_MISSING, "emboldening request expects arguments");
+    skip_line();
+    return;
+  }
   if (in_nroff_mode) {
     skip_line();
     return;
   }
   font_lookup_info finfo;
-  if (!(has_arg()))
-    warning(WARN_MISSING, "font name or position expected in"
-	    " emboldening request");
-  else if (!has_font(&finfo))
+  if (!has_font(&finfo)) {
     font_lookup_error(finfo, "for emboldening");
-  else {
-    int n = finfo.position;
-    if (has_arg()) {
-      if (tok.is_usable_as_delimiter()) {
-	font_lookup_info finfo2;
-	if (!has_font(&finfo2))
-	  font_lookup_error(finfo2, "for conditional emboldening");
-	else {
-	  int f = finfo2.position;
-	  units offset;
-	  if (has_arg()
-	      && read_measurement(&offset, 'u') && offset >= 1)
-	    font_table[f]->set_conditional_bold(n, hunits(offset - 1));
-	  else
-	    font_table[f]->conditional_unbold(n);
-	}
-      }
-      else {
-	// A numeric second argument must be an emboldening amount.
-	units offset;
-	if (read_measurement(&offset, 'u') && offset >= 1)
-	  font_table[n]->set_bold(hunits(offset - 1));
-	else
-	  font_table[n]->unbold();
-      }
-    }
-    else
-      font_table[n]->unbold();
+    skip_line();
+    return;
   }
+  int n = finfo.position;
+  if (has_arg()) {
+    if (tok.is_usable_as_delimiter()) {
+      font_lookup_info finfo2;
+      if (!has_font(&finfo2)) {
+	font_lookup_error(finfo2, "for conditional emboldening");
+	skip_line();
+	return;
+      }
+      int f = finfo2.position;
+      units offset;
+      if (has_arg()
+	  && read_measurement(&offset, 'u') && offset >= 1)
+	font_table[f]->set_conditional_bold(n, hunits(offset - 1));
+      else
+	font_table[f]->conditional_unbold(n);
+    }
+    else {
+      // A numeric second argument must be an emboldening amount.
+      units offset;
+      if (read_measurement(&offset, 'u') && offset >= 1)
+	font_table[n]->set_bold(hunits(offset - 1));
+      else
+	font_table[n]->unbold();
+    }
+  }
+  else
+    font_table[n]->unbold();
   skip_line();
 }
 
@@ -6784,9 +6791,9 @@ static void set_kerning_mode()
 {
   int k;
   if (has_arg() && get_integer(&k))
-    global_kern_mode = k != 0;
+    global_kern_mode = (k > 0);
   else
-    global_kern_mode = 1;
+    global_kern_mode = true;
   skip_line();
 }
 
@@ -6851,9 +6858,9 @@ void init_node_requests()
   register_dictionary.define(".fp",
 			     new next_available_font_position_reg);
   register_dictionary.define(".kern",
-			     new readonly_register(&global_kern_mode));
+      new readonly_boolean_register(&global_kern_mode));
   register_dictionary.define(".lg",
-			     new readonly_register(&global_ligature_mode));
+      new readonly_register(&global_ligature_mode));
   register_dictionary.define(".P", new printing_reg);
   soft_hyphen_char = get_charinfo(HYPHEN_SYMBOL);
 }

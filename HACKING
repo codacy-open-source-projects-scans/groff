@@ -233,6 +233,7 @@ branch as an example.  From the root of your checkout:
   $ git pull
   $ cd ..
   $ editor ChangeLog # log it
+  $ git add ChangeLog
   $ git commit
 
 It's likely a good idea to update the "bootstrap" script at the same
@@ -240,6 +241,7 @@ time (not necessarily in the same commit, however).
 
   $ ./bootstrap --bootstrap-sync
   $ editor ChangeLog # log it
+  $ git add ChangeLog
   $ git commit
 
 

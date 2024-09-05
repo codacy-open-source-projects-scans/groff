@@ -53,7 +53,7 @@ public:
   macro();
   ~macro();
   macro(const macro &);
-  macro(int);
+  macro(bool /* is_div */);
   macro &operator=(const macro &);
   void append(unsigned char);
   void append(node *);
