@@ -534,15 +534,24 @@ static bool is_valid_term(units *u, int scaling_unit,
   }
   int si = scaling_unit;
   bool do_next = false;
-  if ((c = tok.ch()) != 0 && strchr(SCALING_UNITS, c) != 0) {
+  if (((c = tok.ch()) != 0)
+      && (strchr(SCALING_UNITS, c) != 0 /* nullptr */)) {
     switch (scaling_unit) {
     case 0:
       warning(WARN_SCALE, "scaling unit invalid in context");
       break;
-    case 'z':
-      if (c != 'u' && c != 'z') {
+    case 'f':
+      if (c != 'f') {
 	warning(WARN_SCALE, "'%1' scaling unit invalid in context;"
-		" convert to 'z' or 'u'", c);
+		" use 'f'", c);
+	break;
+      }
+      si = c;
+      break;
+    case 'z':
+      if (c != 'u' && c != 'z' && c != 'p' && c != 's') {
+	warning(WARN_SCALE, "'%1' scaling unit invalid in context;"
+		" use 'z', 'p', 's', or 'u'", c);
 	break;
       }
       si = c;
@@ -559,7 +568,7 @@ static bool is_valid_term(units *u, int scaling_unit,
       break;
     }
     // Don't do tok.next() here because the next token might be \s,
-    // which would affect the interpretation of m.
+    // which would affect the interpretation of 'm'.
     do_next = true;
   }
   switch (si) {

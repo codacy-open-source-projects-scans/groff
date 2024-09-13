@@ -336,7 +336,7 @@ and in
 .RB \[lq] "\[rs]X\[aq]ps: file\[aq]" \[rq],
 and
 .RB \[lq] "\[rs]X\[aq]pdf: pdfpic\[aq]" \[rq]
-device control escape sequences).
+device extension escape sequences).
 .
 .B \-I
 may be specified more than once;

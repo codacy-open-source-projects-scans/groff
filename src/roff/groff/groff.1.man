@@ -9,7 +9,7 @@ document formatting system
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -479,9 +479,9 @@ Operate in unsafe mode.
 passes the
 .B \-U
 option to
-.I @g@pic
+.MR @g@pic @MAN1EXT@
 and
-.IR @g@troff .
+.MR @g@troff @MAN1EXT@ .
 .
 .
 .TP
@@ -696,7 +696,7 @@ output drivers
 (or \[lq]postprocessors\[rq]),
 and a suite of utilities,
 with the formatter program
-.I @g@troff
+.MR @g@troff @MAN1EXT@
 at its heart.
 .
 See
@@ -745,7 +745,7 @@ Hello, world!
 .
 .P
 We used a
-.I sed
+.MR sed 1
 command only to eliminate the 65 blank lines that would otherwise flood
 the terminal screen.
 .

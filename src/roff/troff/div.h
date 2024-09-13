@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,12 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-void do_divert(int append, int boxing);
+void do_divert(bool /* appending */, bool /* boxing */);
 void end_diversions();
 void page_offset();
 
 class diversion {
-  friend void do_divert(int append, int boxing);
+  friend void do_divert(bool /* appending */, bool /* boxing */);
   friend void end_diversions();
   diversion *prev;
   node *saved_line;
@@ -29,28 +29,27 @@ class diversion {
   int saved_space_total;
   hunits saved_saved_indent;
   hunits saved_target_text_length;
-  int saved_prev_line_interrupted;
+  int saved_prev_line_interrupted; // three-valued Boolean :-|
 protected:
   symbol nm;
   vunits vertical_position;
   vunits high_water_mark;
 public:
-  int any_chars_added;
-  int no_space_mode;
-  int needs_push;
-  int saved_seen_break;
-  int saved_seen_space;
-  int saved_seen_eol;
-  int saved_suppress_next_eol;
+  bool is_in_no_space_mode;
+  bool saved_seen_break; // XXX: nilpotent?
+  bool saved_seen_space; // XXX: nilpotent?
+  bool saved_seen_eol; // XXX: nilpotent?
+  bool saved_suppress_next_eol; // XXX: nilpotent?
   state_set modified_tag;
   vunits marked_place;
   diversion(symbol s = NULL_SYMBOL);
   virtual ~diversion();
-  virtual void output(node *nd, int retain_size, vunits vs, vunits post_vs,
-		      hunits width) = 0;
+  virtual void output(node * /* nd */, bool /* retain_size */,
+		      vunits /* vs */, vunits /* post_vs */,
+		      hunits /* width */) = 0;
   virtual void transparent_output(unsigned char) = 0;
   virtual void transparent_output(node *) = 0;
-  virtual void space(vunits distance, int forced = 0) = 0;
+  virtual void space(vunits distance, bool /* forcing */ = 0) = 0;
 #ifdef COLUMN
   virtual void vjustify(symbol) = 0;
 #endif /* COLUMN */
@@ -63,7 +62,7 @@ public:
   virtual void set_diversion_trap(symbol, vunits) = 0;
   virtual void clear_diversion_trap() = 0;
   virtual void copy_file(const char *filename) = 0;
-  virtual int is_diversion() = 0;
+  virtual bool is_diversion() = 0;
 };
 
 class macro;
@@ -74,13 +73,13 @@ class macro_diversion : public diversion {
   symbol diversion_trap;
   vunits diversion_trap_pos;
 public:
-  macro_diversion(symbol, int);
+  macro_diversion(symbol, bool /* appending */);
   ~macro_diversion();
-  void output(node *nd, int retain_size, vunits vs, vunits post_vs,
-	      hunits width);
+  void output(node * /* nd */, bool /* retain_size */, vunits /* vs */,
+	      vunits /* post_vs */, hunits /* width */);
   void transparent_output(unsigned char);
   void transparent_output(node *);
-  void space(vunits distance, int forced = 0);
+  void space(vunits distance, bool /* forcing */ = 0);
 #ifdef COLUMN
   void vjustify(symbol);
 #endif /* COLUMN */
@@ -89,7 +88,7 @@ public:
   void set_diversion_trap(symbol, vunits);
   void clear_diversion_trap();
   void copy_file(const char *filename);
-  int is_diversion() { return 1; }
+  bool is_diversion() { return true; }
 };
 
 struct trap {
@@ -110,17 +109,17 @@ class top_level_diversion : public diversion {
   hunits page_offset;
   trap *page_trap_list;
   trap *find_next_trap(vunits *);
-  int have_next_page_number;
+  bool overriding_next_page_number;
   int next_page_number;
-  int ejecting_page;		// Is the current page being ejected?
+  bool ejecting_page;
 public:
-  int before_first_page;
+  int before_first_page_status; // three-valued Boolean :-|
   top_level_diversion();
-  void output(node *nd, int retain_size, vunits vs, vunits post_vs,
-	      hunits width);
+  void output(node * /* nd */, bool /* retain_size */, vunits /* vs */,
+	      vunits /* post_vs */, hunits /* width */);
   void transparent_output(unsigned char);
   void transparent_output(node *);
-  void space(vunits distance, int forced = 0);
+  void space(vunits distance, bool /* forcing */ = false);
 #ifdef COLUMN
   void vjustify(symbol);
 #endif /* COLUMN */
@@ -141,13 +140,13 @@ public:
   void set_next_page_number(int);
   void set_page_length(vunits);
   void copy_file(const char *filename);
-  int get_ejecting() { return ejecting_page; }
-  void set_ejecting() { ejecting_page = 1; }
+  bool get_ejecting() { return ejecting_page; }
+  void set_ejecting() { ejecting_page = true; }
   friend void page_offset();
   void set_diversion_trap(symbol, vunits);
   void clear_diversion_trap();
   void set_last_page() { last_page_count = page_count; }
-  int is_diversion() { return 0; }
+  bool is_diversion() { return false; }
 };
 
 extern top_level_diversion *topdiv;

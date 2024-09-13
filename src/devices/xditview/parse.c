@@ -152,12 +152,12 @@ ParseInput(register DviWidget dw)
 			HorizontalGoto(dw, 0);
 			break;
 		case 'F':       /* input files */
-		case '+':	/* continuation of X device control */
+		case '+':	/* continuation of X device extension */
 		case 'm':	/* color */
 		case '#':	/* comment */
 			GetLine(dw, NULL, 0);
 			break;
-		case 'x':	/* device control */
+		case 'x':	/* device extension */
 			ParseDeviceControl(dw);
 			break;
 		case EOF:

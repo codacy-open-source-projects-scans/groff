@@ -420,7 +420,7 @@ inline void unget_char(const Char);
 void parse_color_command(color *);
 				// color sub(sub)commands m and DF
 void parse_D_command(void);	// graphical subcommands
-bool parse_x_command(void);	// device controller subcommands
+bool parse_x_command(void);	// device control commands
 
 
 /**********************************************************************
@@ -1740,7 +1740,7 @@ do_file(const char *filename)
 	fatal_command(command);
       current_env->hpos = (EnvInt) get_integer_arg();
       break;
-    case 'm':			// m: glyph color
+    case 'm':			// m: stroke color
       parse_color_command(current_env->col);
       pr->change_color(current_env);
       break;
@@ -1812,7 +1812,7 @@ do_file(const char *filename)
       break;
     case 'w':			// w: inform about paddable space
       break;
-    case 'x':			// device controlling commands
+    case 'x':			// device control commands
       stopped = parse_x_command();
       break;
     default:

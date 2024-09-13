@@ -1358,7 +1358,7 @@ are best presented with
 .
 Text may be hyperlinked to email addresses with
 .BR .MT / .ME
-or other URIs with
+or other sorts of URI with
 .BR .UR / .UE .
 .
 To hyperlink text,
@@ -1433,7 +1433,7 @@ rendering them can result in jarring adjustment or variations in line
 length,
 or
 .I @g@troff
-warnings when a hyperlink is longer than an output line.
+warnings when one is longer than an output line.
 .
 The application of non-printing break point escape sequences
 .B \e:
@@ -1466,8 +1466,8 @@ and number signs in HTTP(S) URIs.
 _endif()dnl
 The formatter removes
 .B \e:
-escape sequences from hyperlinks when supplying device control commands
-to output drivers.
+escape sequences from hyperlinks when supplying device extension command
+arguments to output drivers.
 .
 .
 .TP
@@ -1645,7 +1645,8 @@ call is followed immediately by hyperlinking macros
 or
 .BR .MT / .ME ,
 and the device doesn't support hyperlinking,
-the hyperlink is set at the beginning of the indented paragraph,
+the package sets the link target at the beginning
+of the indented paragraph,
 not as part of the tag.
 .
 .
@@ -1662,7 +1663,7 @@ offering only
 .RB \~( .I ),
 and roman.
 .
-Italic text is usually set underscored instead on terminals.
+Italic text may instead render underscored on terminals.
 .
 .B .SM
 sets text at a smaller type size,
@@ -2430,7 +2431,7 @@ hyphenation when setting arguments to
 .
 .RS
 .EX
-have_MR=$(echo .pm | troff \-man 2>&1 | grep MR)
+have_MR=$(echo .pm | troff \-man 2>&1 | grep \(aqMR[[:space:]]\(aq)
 if [ \-n "$have_MR" ]
 then
   sed \(aq/@DEFINE_MR@/d\(aq myprog.man.in > myprog.man
@@ -2701,13 +2702,16 @@ or Documenter's Workbench
 .B \e&
 Dummy character.
 .
-Insert at the beginning of an input line to prevent a dot or apostrophe
+Prefix an input line with it
+to prevent a dot or apostrophe
 from being interpreted as beginning a
 .I roff
 control line.
 .
-Append to an end-of-sentence punctuation sequence to keep it from being
-recognized as such.
+Append
+.B \e&
+to an end-of-sentence punctuation sequence
+to keep it from being recognized as such.
 .
 .
 .TP
@@ -3757,8 +3761,8 @@ Any valid argument to
 If the
 .B MF
 string ends in \[lq]I\[rq],
-it is assumed to be an oblique typeface,
-and italic corrections are applied before and after man page topics and
+the package assumes it to be an oblique typeface,
+and applies italic corrections before and after man page topics and
 identifiers.
 .
 .

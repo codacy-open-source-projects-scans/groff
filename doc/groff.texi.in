@@ -464,7 +464,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle August 2024
+@subtitle September 2024
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -1094,7 +1094,7 @@ requests.
 @item
 Output drivers may search for files; for instance, @command{grops} looks
 for files named in @samp{\X'ps: import @r{@dots{}}'}, @samp{\X'ps: file
-@r{@dots{}}'}, and @samp{\X'pdf: pdfpic @r{@dots{}}'} device control
+@r{@dots{}}'}, and @samp{\X'pdf: pdfpic @r{@dots{}}'} device extension
 escape sequences.
 @end itemize
 
@@ -7368,19 +7368,22 @@ One of the most common forms of escape sequence is the
 comment.@footnote{This claim may be more aspirational than descriptive.}
 
 @Defesc {\\", , , }
-Start a comment.  Everything up to the next newline is ignored.
+Start a comment; read everything up to the next newline in copy mode
+(@pxref{Copy Mode}) and discard it.
 @cindex @code{\"}, interpretation in copy mode
-@code{\"} is interpreted even in copy mode, to discard the comment
-(@pxref{Copy Mode}).
+@code{\"} is interpreted even in copy mode.
 
-This may sound simple, but it can be tricky to keep the comments from
-interfering with the appearance of the output.
+It can be tricky to keep the comments from interfering with the
+appearance of the output.
 @cindex @code{ds}, @code{ds1} requests, and comments
 @cindex @code{as}, @code{as1} requests, and comments
 If the escape sequence is to the right of some text or a request, that
-portion of the line is ignored, but spaces preceding it are processed
-normally by GNU @code{troff}.  This affects only the @code{ds} and
-@code{as} requests and their variants.
+portion of the line is ignored, but GNU @command{troff} processes spaces
+preceding it normally.  This affects requests that read the remainder of
+the control line as a single argument, including @code{ds}, @code{as},
+@code{tm}, and @code{char}; their variants; as well as @code{ab},
+@code{device}, @code{length}, @code{output}, @code{pi}, @code{pso},
+@code{rd}, @code{sy}, @code{write}, and @code{writec}.
 
 @cindex tabs, before comments
 @cindex comments, lining up with tabs
@@ -7415,12 +7418,12 @@ macro (namely @samp{''}).
 @endDefesc
 
 @Defesc {\\#, , , }
-Start a comment; everything up to and including the next newline is
-ignored.  This @code{groff} extension was introduced to avoid the
-problems described above.
+Start a whole-line comment; read everything up to and including the next
+newline in copy mode (@pxref{Copy Mode}) and discard it.  GNU
+@command{troff} introduced this extension to avoid the problems
+described above.
 @cindex @code{\#}, interpretation in copy mode
-@code{\#} is interpreted even in copy mode, to discard the comment
-(@pxref{Copy Mode}).
+@code{\#} is interpreted even in copy mode.
 
 @Example
 Test
@@ -8941,7 +8944,7 @@ that of @var{src1}, and so on.  @var{dst1} must be an ordinary character
 (other than a numeral) or a special character, and @var{src1} must be an
 ordinary character (other than a numeral) or a special character to
 which a hyphenation code has already been applied.  Assigning the code
-of an ordinary character code to itself effectively creates a unique
+of an ordinary character to itself effectively creates a unique
 hyphenation code (which can then be copied to others).  @code{hcode}
 ignores spaces between arguments.  If any argument is invalid,
 @code{hcode} reports an error and stops reading them.
@@ -12287,17 +12290,36 @@ This read-only register interpolates the type size in scaled points; it
 is associated with the environment (@pxref{Environments}).
 @endDefreg
 
-It makes no sense to use the @samp{z} scaling unit in a numeric
-expression whose default scaling unit is neither @samp{u} nor @samp{z},
-so GNU @code{troff} disallows this.  Similarly, it is nonsensical to use
-a scaling unit other than @samp{z} or @samp{u} in a numeric expression
-whose default scaling unit is @samp{z}, and so GNU @code{troff}
-disallows this as well.
-
 Another GNU @code{troff} scaling unit, @samp{s}, multiplies by the
 number of basic units in a scaled point.  Thus, @samp{\n[.ps]s} is equal
 to @samp{1m} by definition.  Do not confuse the @samp{s} and @samp{z}
 scaling units.
+
+@Example
+.tm device=\*[.T]
+.tm A: .s=\n[.s]z, .ps=\n[.ps]s
+.ps 10.5
+.tm B: .s=\n[.s]z, .ps=\n[.ps]s
+.ps 12.3p
+.tm C: .s=\n[.s]z, .ps=\n[.ps]s
+.ps 8.1z
+.tm D: .s=\n[.s]z, .ps=\n[.ps]s
+.ps 10500s
+.tm E: .s=\n[.s]z, .ps=\n[.ps]s
+    @result{} device=ps
+    @result{} A: .s=10z, .ps=10000s
+    @result{} B: .s=10.5z, .ps=10500s
+    @result{} C: .s=12.3z, .ps=12300s
+    @result{} D: .s=8.1z, .ps=8100s
+    @result{} E: .s=10.5z, .ps=10500s
+@endExample
+
+It makes no sense to use the @samp{z} scaling unit in a numeric
+expression whose default scaling unit is neither @samp{u} nor @samp{z},
+so GNU @code{troff} disallows this.  Similarly, it is nonsensical to use
+scaling units other than @samp{p}, @samp{s}, @samp{z}, or @samp{u} in a
+numeric expression whose default scaling unit is@tie{}@samp{z}, and so
+GNU @code{troff} disallows those as well.
 @c END Keep (roughly) parallel with subsection "Fractional type sizes
 @c and new scaling units" of groff_diff(7).
 
@@ -15251,9 +15273,9 @@ the default blank line behavior is (re-)established.
 Set a leading space trap, calling the macro @var{name} when GNU
 @command{troff} encounters leading spaces on a text line; the implicit
 line break that normally happens in this case is suppressed.  The
-formatter stores the count of leading spaces on text line in register
-@code{lsn}, and the amount of corresponding horizontal motion in
-register @code{lss}, irrespective of whether a leading space trap is
+formatter stores the count of leading spaces on the text line in
+register @code{lsn}, and the amount of corresponding horizontal motion
+in register @code{lss}, irrespective of whether a leading space trap is
 set.  When it is, GNU @command{troff} removes the leading spaces from
 the input line and produces no motion before calling @var{name}.
 
@@ -16580,7 +16602,7 @@ each output driver's man page, such as @cite{gropdf@r{(1)}},
 @DefreqList {device, [@code{"}]@Var{contents}}
 @DefescListEndx {\\X, @code{'}, contents @r{@dots{}}, @code{'}}
 Embed @var{contents} into GNU @command{troff} output as parameters to an
-@w{@samp{x X}} device control command.@footnote{@xref{gtroff Output}.}
+@w{@samp{x X}} device extension command.@footnote{@xref{gtroff Output}.}
 The interpretation of such parameters is determined by the output driver
 or other postprocessor.
 
@@ -16594,16 +16616,16 @@ The @code{device} request processes its arguments in copy mode
 (@pxref{Copy Mode}).  An initial neutral double quote in @var{contents}
 is stripped to allow embedding of leading spaces.
 
-@cindex nodes, in device control commands
-@cindex special characters, in device control commands
-@cindex @code{\&}, in device control commands
-@cindex @code{\)}, in device control commands
-@cindex @code{\%}, in device control commands
+@cindex nodes, in device extension commands
+@cindex special characters, in device extension commands
+@cindex @code{\&}, in device extension commands
+@cindex @code{\)}, in device extension commands
+@cindex @code{\%}, in device extension commands
 @ifnotinfo
-@cindex @code{\:}, in device control commands
+@cindex @code{\:}, in device extension commands
 @end ifnotinfo
 @ifinfo
-@cindex @code{\@r{<colon>}}, in device control commands
+@cindex @code{\@r{<colon>}}, in device extension commands
 @end ifinfo
 The @code{groff} special character repertoire is unknown to output
 drivers outside of glyphs named in a device's fonts, and even then they
@@ -16617,7 +16639,7 @@ as might be done when writing out tag names for PDF bookmarks, which can
 appear in a viewer's navigation pane.
 
 So that documents or macro packages do not have to laboriously
-``sanitize'' strings destined for interpolation in device control
+``sanitize'' strings destined for interpolation in device extension
 commands, the @code{\X} escape sequence
 @c XXX: and soon other things
 performs certain transformations on its argument.  For these
@@ -16626,7 +16648,7 @@ transformations, character translations and definitions are ignored.
 GNU @command{troff} converts several ordinary characters that typeset as
 non-basic Latin code points to code points outside that range so that
 they are used consistently whether they are formatted as glyphs or used
-in a device control command argument.  These ordinary characters are
+in a device extension command argument.  These ordinary characters are
 @samp{'}, @samp{-}, @samp{^}, @samp{`}, and @samp{~}; others are written
 as-is.
 
@@ -16643,7 +16665,7 @@ characters, produce warnings in category @samp{char}.
 @endDefesc
 
 GNU @command{troff} also permits the interpolation of macro contents
-as a device control command.
+as a device extension command.
 
 @DefreqList {devicem, name}
 @DefescItemx {\\Y, , n, }
@@ -17054,14 +17076,14 @@ exceptions, registers, page location traps, and a list of output nodes
 corresponding to the pending input line to the standard error stream.
 @c END Keep parallel with section "Debugging" of groff(7).
 
-@Defreq {lf, line [@Var{file}]}
+@Defreq {lf, line [@Var{name}]}
 @pindex soelim
 @cindex multi-file documents
 @cindex documents, multi-file
 @cindex assign input line number request (@code{lf})
 @cindex input line number, assignment, request (@code{lf})
 @cindex number, input line, assignment request (@code{lf})
-Set the input line number (and, optionally, the file name) GNU
+Set the input line number (and, optionally, the name) GNU
 @code{troff} shall use for error and warning messages.  @var{line} is
 the input line number of the @emph{next} line.  Without an argument, the
 request is ignored.
@@ -17188,9 +17210,9 @@ strings, and diversions with their sizes in bytes.
 @Defreq {pnr, [@Var{reg} @r{@dots{}}]}
 @cindex dumping registers (@code{pnr})
 @cindex registers, dumping (@code{pnr})
-Report the name, value, and assigned format of each register @var{reg},
-or, without arguments, those of all defined registers, to the standard
-error stream.
+Report the name and value and, if the value is numeric, the assigned
+format of each register @var{reg}, or, without arguments, those of all
+defined registers, to the standard error stream.
 @endDefreq
 
 @Defreq {ptr, }
@@ -17199,8 +17221,9 @@ error stream.
 @cindex traps, page location, dumping (@code{ptr})
 @cindex traps, page location, listing (@code{ptr})
 Report the names and positions of all page location traps to the
-standard error stream.  Empty slots in the list, where a trap has been
-planted but subsequently (re)moved, are printed as well.
+standard error stream.  GNU @command{troff} reports empty slots in the
+list, where a trap had been planted but subsequently (re)moved, because
+they can affect the visibility of subsequently planted traps.
 @c "because they can affect the priority of subsequently planted traps."
 @c XXX Is that right?  It's useful to print the empty slots, I think,
 @c but a trap planted in an "empty" slot with .wh will become active.
@@ -18086,14 +18109,14 @@ fortunately, in @command{gtroff}'s intermediate output, every command
 with at least one argument is followed by a line break, thus providing
 excellent readability.
 
-The other commands---those for drawing and device controlling---have a
-more complicated structure; some recognize long command names, and some
-take a variable number of arguments.  So all @samp{D} and @samp{x}
-commands were designed to request a syntactical line break after their
-last argument.  Only one command, @w{@samp{x X}}, has an argument that
-can span several input lines; all other commands must have all of
-their arguments on the same line as the command, i.e., the arguments may
-not be split by a line break.
+The other commands---those for drawing and device control---have a more
+complicated structure; some recognize long command names, and some take
+a variable number of arguments.  So all @samp{D} and @samp{x} commands
+were designed to request a syntactical line break after their last
+argument.  Only one command, @w{@samp{x X}}, has an argument that can
+span several input lines; all other commands must have all of their
+arguments on the same line as the command, i.e., the arguments may not
+be split by a line break.
 
 Empty lines (these are lines containing only space and/or a comment),
 can occur everywhere.  They are just ignored.
@@ -19065,9 +19088,9 @@ The @code{grohtml} driver uses this directive.
 @c XXX: Savannah #63074 is trying to make this obsolescent.
 @item use_charnames_in_special
 @kindex use_charnames_in_special
-GNU @code{troff} should encode special characters inside device control
-commands; see @ref{Postprocessor Access}.  The @code{grohtml} driver
-uses this directive.
+GNU @code{troff} should encode special characters in arguments to device
+extension commands; see @ref{Postprocessor Access}.  The @code{grohtml}
+driver uses this directive.
 
 @item vert @var{n}
 @kindex vert

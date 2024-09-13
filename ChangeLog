@@ -1,3 +1,626 @@
+2024-09-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.  Move
+	responsibility for skipping the rest of the input line...
+	(open_file): ...from this internal helper function...
+	(open_request, opena_request): ...to these handler functions,
+	for better symmetry with other request handlers.
+
+2024-09-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_open): The `write` request, an
+	"unsafe mode" feature has been broken for a week.  (As,
+	possibly, have others that write to streams.)  Revert
+	`static_cast` operators to C-style casts, which seem to be
+	necessary (sometimes) with groff's bespoke, pre-STL `dictionary`
+	class implementation.  Unfortunately, when static casts fail,
+	they fail silently, happily handing back null pointers that you
+	might not notice right away.  Fixes problem introduced by me in
+	commit 3bb13e4752, 4 September.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (source_request)
+	(source_quietly_request, pipe_source_request, open_request)
+	(opena_request, close_request, macro_source_request)
+	(macro_source_quietly_request, ps_bbox_request): Check for
+	arguments: if none are present, throw warning in category
+	"missing" and skip the remainder of the input line.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(do_open): Rename this...
+	(open_file): ...to this.
+	(open_request, opena_request): Update call sites.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	request-handling functions to append `_request` to their names.
+	  `source`               -> `source_request`
+	  `source_quietly`       -> `source_quietly_request`
+	  `pipe_source`          -> `pipe_source_request`
+	  `macro_source`         -> `macro_source_request`
+	  `macro_source_quietly` -> `macro_source_quietly_request`
+	(init_input_requests): Migrate to new names.
+	(open_request, opena_request): Clarify error diagnostics.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/soelim/soelim.1.man (Description):
+	* src/roff/groff/groff.1.man (groff-specific options, Usage)
+	(Getting started): Hyperlink man page cross references on first
+	occurrences.
+
+	Fixes <https://savannah.gnu.org/bugs/?66103>.  Thanks to Helge
+	Kreutzmann and the manpage-l10n project for the report.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/html/pre-html.cpp (html_system): Improve report of
+	failing system(3) commands and fix code style nits.  Use
+	standard constant symbol `STDOUT_FILENO` in favor of a "1"
+	literal.  Parenthesize complex expressions.  Recast diagnostic
+	message.  Stop misreporting the `int` return value of `system()`
+	as the command's "(exit) status".  The integer _encodes_ the
+	exit status in its lowest seven bits.  Distinguish the cases of
+	the command exiting with a failing status, being signalled, and
+	being stopped, using standard POSIX macros; see wait(2).
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/html/pre-html.cpp (imageList::createPage)
+	(imageList::createImage): Drop trailing newline from commands
+	constructed for passage to system(3).  They (a) are unnecessary
+	and (b) make diagnostics repellently ugly.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/html/pre-html.cpp: Improve diagnostic message
+	handling.
+	(html_system)
+	(imageList::createPage)
+	(imageList::createImage)
+	(set_redirection)
+	(save_and_redirect)
+	(print_args [DEBUGGING]): Prefix output to standard error stream
+	with name of program.
+	(html_system [DEBUGGING])
+	(imageList::createPage [DEBUGGING])
+	(imageList::createImage [DEBUGGING])
+	(print_args [DEBUGGING]): Prefix output to standard error stream
+	with "debug:" message severity tag.
+	(main): Assign to `program_name` global variable before emitting
+	first diagnostic ([CAPTURE_MODE]), and convert that diagnostic
+	to use it.
+
+2024-09-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/html/pre-html.cpp (dump_args): "`#if 0` out"
+	function with no call sites.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor; rename variables
+	to better suggest their data types.
+	  `suppress_start_page` -> `suppression_starting_page_number`
+	(suppress_node::tprint):
+	  `current_page` -> `page_number`
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (indent, temporary_indent): Report
+	amount of computed indentation when warning of negative value.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp
+	(possibly_handle_first_page_transition): Boolify.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class top_level_diversion): Rename
+	`before_first_page` to `before_first_page_status` to emphasize
+	its non-Boolean nature.
+	* src/roff/troff/div.cpp
+	(top_level_diversion::top_level_diversion): Migrate constructor.
+	* src/roff/troff/div.cpp (top_level_diversion::output)
+	(top_level_diversion::transparent_output)
+	(top_level_diversion::copy_file)
+	(top_level_diversion::space)
+	(top_level_diversion::begin_page)
+	(vertical_position_reg::get_value)
+	(vertical_position_reg::get_string)
+	(nl_reg::get_string):
+	* src/roff/troff/env.cpp (environment::make_tag)
+	(environment::do_break, title):
+	* src/roff/troff/input.cpp
+	(possibly_handle_first_page_transition, device_request)
+	(copy_file, transparent_file): Explicitly compare to integer
+	literal instead of punning to Boolean.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class top_level_diversion): Boolify
+	member variable `ejecting_page`, migrating trivial accessor and
+	mutator.
+	* src/roff/troff/div.cpp
+	(top_level_diversion::top_level_diversion): Migrate constructor.
+	(top_level_diversion::begin_page): Migrate.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class top_level_diversion): Boolify and
+	rename member variable: `have_next_page_number` ->
+	`overriding_next_page_number`.
+	* src/roff/troff/div.cpp (top_level_diversion::begin_page)
+	(top_level_diversion::set_next_page_number)
+	(top_level_diversion::get_next_page_number): Migrate.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class diversion, class macro_diversion)
+	(class top_level_diversion): Boolify trivial member function
+	`is_diversion()`.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class diversion, class macro_diversion)
+	(class top_level_diversion): Boolify and rename `space()` member
+	function argument, demoting `forced` from `int` to `bool`, and
+	renaming it `forcing`, for symmetry with `appending` and
+	`boxing`.
+	* src/roff/troff/div.cpp (macro_diversion::space)
+	(top_level_diversion::space, continue_page_eject)
+	(save_vertical_space, output_saved_vertical_space):
+	* src/roff/troff/input.cpp (exit_troff): Migrate.
+
+2024-09-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class diversion, class macro_diversion)
+	(class top_level_diversion): Boolify `output()` member function
+	argument, demoting `retain_size` from `int` to `bool`.
+	* src/roff/troff/div.cpp (macro_diversion::output)
+	(top_level_diversion::output): Boolify at definition sites.
+	This variable seems to be coupled to `suppress_filling` in
+	"env.cpp".
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (do_divert): Boolify function arguments.
+	Comment formal argument names as a compromise with the
+	Stroustrup-style C++ used in most of groff.
+	* src/roff/troff/div.h (class diversion):
+	* src/roff/troff/env.h (class environment): Update friend
+	declarations.
+	* src/roff/troff/div.h (class macro_diversion): Similarly
+	boolify and rename constructor argument.
+	* src/roff/troff/div.cpp (do_divert, divert, divert_append, box,
+	box_append): Boolify function arguments.  Rename `append` to
+	`appending`, to match the existing `boxing`.
+	(macro_diversion::macro_diversion): Similarly boolify and rename
+	constructor argument.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (begin_page): Boolify local variable
+	`got_arg`.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class diversion): Boolify member
+	variables that cache values of Boolean member variables of
+	`environment` class.  Mark them as possibly nilpotent; when I
+	experimentally deleted each of them, no automated tests failed,
+	and even Peter's fearfully complex mom(7) documents looked fine.
+	Possibly a task for groff 1.25.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class diversion): Boolify and rename
+	member variable `no_space_mode` to `is_in_no_space_mode`.
+	* src/roff/troff/div.cpp (diversion::diversion): Use new name
+	and construct with Boolean, not integer, literal.
+	(macro_diversion::output, top_level_diversion::output)
+	(top_level_diversion::copy_file, top_level_diversion::space)
+	(begin_page, space_request, blank_line)
+	(no_space_mode_reg::get_value, no_space_mode::get_string):
+	Migrate to new name and assign to with Boolean, not integer,
+	literal.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (class diversion): Drop unused member
+	variables `any_chars_added` and `needs_push`.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (macro_diversion::macro_diversion):
+	Boolify argument to `macro` object constructor, using Boolean
+	instead of integer literal.  Continues commit 7c5b8e5d4a, 27
+	August.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (macro_diversion::macro_diversion)
+	(page_number): Use C++ `static_cast` operator instead of C-style
+	type cast.
+	(top_level_diversion::find_next_trap)
+	(top_level_diversion::add_trap): Parenthesize complex
+	expressions.
+	(page_number, vertical_position_traps): Zero-initialize
+	stack-allocated integer.
+	(macro_diversion::macro_diversion)
+	(top_level_diversion::find_next_trap)
+	(top_level_diversion::add_trap, page_number): Reorder equality
+	comparisons to avoid inadvertent lvalue assignment.
+
+2024-09-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (troff_output_file::fill_color):
+	Explicitly compare variable of pointer type to null pointer
+	literal instead of letting it pun down to a Boolean.
+	(glyph_node::add_self)
+	(dbreak_node::merge_glyph_node):
+	(kern_pair_node::merge_glyph_node):
+	(kern_pair_node::add_discretionary_hyphen): Reorder equality
+	comparisons to avoid inadvertent lvalue assignment.
+	(kern_pair_node::merge_glyph_node): Chain assignments as is done
+	in the rest of this file.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (print_env): Improve environment
+	report.  Don't report two items of stale data about a completed
+	line, and describe them more intelligibly.  Say "text length"
+	rather than "total width"; the former is what is compared to the
+	already reported "target text length".  Clarify "total number of
+	spaces" as "number of adjustable spaces"; that's what's really
+	counted.  Relocate report of "target text length" to more
+	follow "text length" and "number of adjustable spaces" to make
+	their relationship more obvious.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment_copy, space_size):
+	Check for arguments: if none are present, throw warning in
+	category "missing" and skip the remainder of the input line.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment_copy): Use C++
+	`static_cast` operator instead of C-style type cast.  Explicitly
+	compare variable of pointer type to null pointer constant
+	instead of letting it pun down to a Boolean.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::output_line): Resize
+	stack-allocated character buffer to use constant defined by
+	libgroff for formatting unsigned `int`s as strings.  Use
+	sprintf(3)'s 'u' conversion, not 'd', for output line number,
+	which cannot be negative.  Explicitly discard return value of
+	sprintf(3).
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (class troff_output_file):
+	Drop `tf` and `gcol` arguments from declaration, because...
+	(troff_output_file::start_device_extension): Cease output of
+	commands to update the font, stroke color, and drawing position.
+	Drop now-unused `tf` and `gcol` arguments.
+	(device_extension_node::tprint_start): Drop `tf` and `gcol`
+	arguments from call site.
+
+	* tmac/tests/an_MR-works.sh: Update test expectations.  The
+	expected commands shift location by two lines, but the output
+	still behaves as desired.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp
+	(troff_output_file::start_device_extension): Call `flush_tbuf()`
+	before any other function that may write to device-independent
+	output.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp
+	(troff_output_file::start_device_extension): Stop calling
+	`do_motion()` in argumentless version, which is called only when
+	writing HTML (specifically, when inlining images).  It seemed to
+	accomplish nothing.  No tests fail and "pic.html", a document
+	with many images, continues to render fine.  In
+	device-independent output, a pair of absolute positioning
+	commands ('H' and 'V') moves to a redundant place, but the HTML
+	produces is identical (except for a date stamp in a comment).
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/token.h (class token): Rename enumeration
+	constant from `TOKEN_SPECIAL` to `TOKEN_SPECIAL_CHAR`.  Rename
+	member function declaration from `is_special()` to
+	`is_special_character()`.  Tokens can represent multiple types
+	of formatter objects (at least three of which, "special
+	characters", "special fonts", and "special nodes", have member
+	functions named `is_special()`, and which have little to do with
+	each other).
+	(token::is_special): Rename this...
+	(token::is_special_character): ...to this.
+
+	* src/roff/troff/input.cpp (token::next, token:operator==)
+	(token::description, token::get_char)
+	(token::add_to_zero_width_node_list, token::process): Use new
+	enumeration constant.
+	(encode_character_for_device_output): Update `is_special()`
+	call site.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Migrate to "device extension [command]" terminology.
+
+	* src/devices/grodvi/grodvi.1.man:
+	* src/devices/gropdf/gropdf.1.man:
+	* src/devices/grops/grops.1.man:
+	* src/devices/grotty/grotty.1.man: Do it.
+
+	* tmac/tests/an_MR-works.sh: Update test output.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor and reform terminology.  Call `\X`
+	escape sequence and `device` request device _extension_
+	instructions.  There is already, in groff, a device command
+	'x u' that configures underlining of spaces (and which is
+	implemented only by grotty(1)).  A dusty corner, to be sure, but
+	we could support others in the future, and further, the new term
+	indicates the fact that `\X` and `device` produce arguments only
+	for 'x X' "sub"-commands--this has always been the case and for
+	`\X` it was true even in Kernighan troff.
+
+	* src/roff/troff/input.cpp (do_device_control): Rename this...
+	(do_device_extension): ...to this.
+	(do_device_extension, device_request): Migrate diagnostic
+	messages.
+
+	* src/roff/troff/troff.1.man (Options): Migrate terminology.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Rename `special_node` class to `device_extension_node`.
+
+	* src/roff/troff/node.h (class special_node): Rename this...
+	(class device_extension_node): ...to this.  Rename constructors.
+
+	* src/roff/troff/node.cpp
+	(device_extension_node::device_extension_node): Rename
+	constructors.
+
+	(special_node::is_same_as): Rename this...
+	(device_extension_node::is_same_as): ...to this.
+
+	(special_node::type): Rename this...
+	(device_extension_node::type): ...to this.  Update return
+	string.
+
+	(special_node::ends_sentence): Rename this...
+	(device_extension_node::ends_sentence): ...to this.
+
+	(special_node::causes_tprint): Rename this...
+	(device_extension_node::causes_tprint): ...to this.
+
+	(special_node::is_tag): Rename this...
+	(device_extension_node::is_tag): ...to this.
+
+	(special_node::copy): Rename this...
+	(device_extension_node::copy): ...to this.
+
+	(special_node::tprint_start): Rename this...
+	(device_extension_node::tprint_start): ...to this.
+
+	(special_node::tprint_char): Rename this...
+	(device_extension_node::tprint_char): ...to this.
+
+	(special_node::tprint_end): Rename this...
+	(device_extension_node::tprint_end): ...to this.
+
+	(special_node::get_tfont): Rename this...
+	(device_extension_node::get_tfont): ...to this.
+
+	* src/roff/troff/env.cpp (configure_space_underlining)
+	(environment::make_tag):
+	* src/roff/troff/input.cpp (token::next, do_device_control)
+	(device_request, device_macro_request): Update constructor
+	calls.
+
+	* src/roff/troff/input.cpp (special_node::tprint): Rename
+	this...
+	(device_extension_node::tprint): ...to this.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (flush_output): Rename this...
+	(flush_request): ...to this.  Also declare it `static` since it
+	has no callers external to the translation unit.
+	(init_div_requests): Update request initialization.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (class troff_output_file): Trivially
+	refactor.  Rename member functions declarations.
+	  `start_special` -> `start_device_extension`
+	  `special_char` -> `write_device_extension_char`
+	  `end_special` -> `end_device_extension`
+	(troff_output_file::start_special): Rename this...
+	(troff_output_file::start_device_extension): ...to this.
+	(troff_output_file::special_char): Rename this...
+	(troff_output_file::write_device_extension_char): ...to this.
+	(troff_output_file::end_special): Rename this...
+	(troff_output_file::end_device_extension): ...to this.
+	(special_node::tprint_start, special_char::tprint_char)
+	(special_node::tprint_end, suppress_node::put)
+	(suppress_node::tprint): Update call sites.
+
+2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (class troff_output_file): Declare new
+	`flush` member function.
+	(troff_output_file::flush): New member function calls
+	`flush_tbuf()` and calls `real_output_file`'s own `flush` member
+	function.
+
+2024-09-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (dump_register): Report assigned format
+	of register only if it is not string-valued.
+
+	* doc/groff.texi.in (Debugging):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Update documentation.
+
+2024-09-02  Sven Schober <sv3sch@gmail.com>
+
+	[man]: Handle discrepant `pdf{images,totext}`.
+
+	There are at least two different implementation variants for
+	pdfimages and pdftotext out there: poppler's and
+	xpdfreader.com's.
+
+	* tmac/tests/an_UR-works.sh: Cope with minute syntax differences
+	between these implementations in test case.
+
+	Fixes <https://savannah.gnu.org/bugs/?66155> (1/2).
+
+2024-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next)
+	(map_composite_character, composite_glyph_name): Use new
+	`errbuf` argument of libgroff's `valid_unicode_code_sequence()`
+	to return information about how the input Unicode special
+	character identifier was defective.
+
+2024-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next)
+	(map_composite_character, composite_glyph_name): Slightly
+	refactor.  Introduce temporaries for brevity.
+
+2024-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (font_size::dump_size_table): Fix
+	thinko: report scaling unit as 'z', not 's'.
+	* src/roff/groff/tests/sizes-request-works.sh: Update test
+	expectations.
+
+	Continues commit f574a96f58, 3 September.
+
+2024-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Update usage message, noting support
+	for options -[aDIZ].
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_open): Fix code style nits.
+	Use C++ `static_cast` operator instead of C-style type casts.
+	Emit error diagnostic if `fclose()` fails.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am: Revise and update internal documentation.
+
+	Fixes <https://savannah.gnu.org/bugs/?64913>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (usage): Break lines in usage
+	message.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (usage): De-document `-h` as synonym
+	for `--help`.  That's not true for GNU troff.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor, renaming internal symbols matching
+	`glyph_color` to `stroke_color`; the latter is what our
+	documentation uses, and the glyph color is applied to things
+	other than glyphs--the outlines of geometric figures.
+
+	* src/roff/troff/env.h (class environment): Rename member
+	variables and functions in declarations.
+	  `glyph_color` -> `stroke_color`
+	  `prev_glyph_color` -> `prev_stroke_color`
+	  `get_glyph_color` -> `get_stroke_color`
+	  `get_prev_glyph_color` -> `get_prev_stroke_color`
+	  `set_glyph_color` -> `set_stroke_color`
+
+	* src/roff/troff/env.cpp: Migrate.  Update member function
+	definitions accordingly.
+	(environment::environment): Update constructors.
+	(environment::copy): Update back end of `evc` (_not_ a copy
+	constructor).
+	(glyph_color_change): Rename this...
+	(stroke_color_change): ...to this.
+	(title, environment::get_stroke_color_string): Update accesses
+	to member variables.
+	(init_env_requests): Wire up `gcolor` request to
+	`stroke_color_change()`.  Wire up `.m` register to
+	`get_stroke_color_string()`.
+
+	* src/roff/troff/input.h: Migrate declaration.
+	(do_glyph_color): Rename this...
+	(do_stroke_color): ...to this.
+
+	* src/roff/troff/input.cpp: Migrate.
+	(do_stroke_color): Use new member function name
+	`set_stroke_color()`.
+	(token::next): Wire up `\m` escape sequence to
+	`do_stroke_color()`.
+	(read_drawing_command): Construct node using
+	`get_stroke_color()`.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (assign_register_format_request):
+	Align wording of error diagnostic with warnings thrown by same
+	function.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Reject scaling
+	units other than `f` in contexts where `f` is expected
+	{dimensionless values in the unit interval expressing the
+	magnitude of a color channel}.
+
+	Fixes <https://savannah.gnu.org/bugs/?60955>.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Accept `p` and `s`
+	scaling units in expressions where `z` is accepted.  Also fix
+	code style nit: parenthesize complex expressions.
+
+	* doc/groff.texi.in (Using Fractional Type Sizes):
+	* man/groff_diff.7.man (Fractional type sizes and new scaling
+	units):
+	* NEWS: Document this.
+
+	* doc/groff.texi.in (Using Fractional Type Sizes): Add example.
+
+	Fixes <https://savannah.gnu.org/bugs/?66150>.
+
+2024-09-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (point_size, override_sizes): Ignore
+	request in nroff mode, like `fam`.
+
 2024-09-03  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/env.cpp (override_sizes): Fix regression
@@ -318,7 +941,7 @@
 	* src/roff/troff/input.cpp (has_arg): Improve and slightly
 	optimize; return `false` immediately if the current token is a
 	newline.  This is more responsive when running interactively,
-	particuarly with the new support for "peeking" ahead in the
+	particularly with the new support for "peeking" ahead in the
 	input stream by requests that read their arguments in copy mode
 	{and in some other cases}.
 
@@ -335,22 +958,6 @@
 
 	* src/roff/troff/env.cpp (environment::choose_breakpoint): Fix
 	code style nit: parenthesize complex expressions.
-
-2024-08-30  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* src/roff/troff/input.cpp (encode_character_for_device_output):
-	In device-independent output, represent ordinary characters that
-	normally map to non-basic Latin code points ('-^`~) in a way
-	that is compatible with how they're typeset, to avoid confusion
-	when these characters are used in ways that are ultimately
-	visible, as in tag names for PDF bookmarks, which can appear in
-	a viewer's navigation pane.
-
-	* src/roff/groff/tests/\
-	device-control-special-character-handling.sh: Test conversions
-	of basic Latin input characters to Unicode code points.
-
-	Continues fixing Savannah #63074.
 
 2024-08-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 

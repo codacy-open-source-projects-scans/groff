@@ -9,7 +9,7 @@ output driver for typewriter-like (terminal) devices
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -286,13 +286,16 @@ There is therefore no need to filter its output through
 .
 .
 .\" ====================================================================
-.SS "Device control commands"
+.SS "Device extension commands"
 .\" ====================================================================
 .
-.I grotty
-supports a device control command accessed with the
-.RB \%\[lq] device \[rq]
-request or
+.I grops
+recognizes a device extension command produced by the
+.I groff
+request
+.B \%device
+or
+.I roff
 .B \[rs]X
 escape sequence.
 .

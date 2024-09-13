@@ -95,8 +95,24 @@ then
     exit 77 # skip
 fi
 
-output=$(printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU0 \
+# At least two different implementations of pdftotext exist; if we don't
+# have the poppler version, assume it's xpdfreader.com's.
+have_poppler_pdftotext=yes
+if pdftotext -v 2>&1 | grep -q xpdfreader
+then
+  have_poppler_pdftotext=
+fi
+
+if [ -n "$have_poppler_pdftotext" ]
+then
+  output=$(printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU0 \
     | pdftotext - -)
+else
+  tmp_file=$(mktemp)
+  printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU0 > "$tmp_file"
+  output=$(pdftotext "$tmp_file" -)
+  rm "$tmp_file"
+fi
 echo "$output"
 
 echo "checking formatting of web URI with link text" \
@@ -110,8 +126,16 @@ echo "checking formatting of web URI with no link text" \
 # expected: Or 〈http://bar.example.com〉.
 echo "$output" | grep -q 'Or .*http://bar.example.com.*\.' || wail
 
-output=$(printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU1 \
+if [ -n "$have_poppler_pdftotext" ]
+then
+  output=$(printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU1 \
     | pdftotext - -)
+else
+  tmp_file=$(mktemp)
+  printf "%s\n" "$input" | "$groff" -Tpdf -P-d -man -rU1 > "$tmp_file"
+  output=$(pdftotext "$tmp_file" -)
+  rm "$tmp_file"
+fi
 echo "$output"
 
 echo "checking formatting of web URI with link text" \

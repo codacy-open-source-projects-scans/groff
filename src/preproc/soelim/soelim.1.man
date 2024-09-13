@@ -300,7 +300,7 @@ files sourced with
 are normally read
 .I only
 by the formatter,
-.IR @g@troff .
+.MR @g@troff @MAN1EXT@ .
 .
 .I @g@soelim
 is

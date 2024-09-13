@@ -1,4 +1,4 @@
-# Copyright (C) 1989-2023 Free Software Foundation, Inc.
+# Copyright (C) 1989-2024 Free Software Foundation, Inc.
 # Original Makefile.in written by James Clark (jjc@jclark.com)
 # Migrated to Automake by Bertrand Garrigues
 #
@@ -20,232 +20,195 @@
 # Makefile.am
 #
 
-# The variables that are listed in the following comments will be
-# automatically set by automake in the generated Makefile.in
+# Variables listed in the following comments, but not set, will be
+# automatically set by Automake in the generated Makefile.in file.
 
 # SHELL
-
 # PACKAGE_TARNAME
-
 # srcdir
-
 # top_srcdir
-
 # VPATH
-
 # top_builddir
 
-# HOST
-# `HOST' is the canonical host specification,
-#    CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM
-# or
-#    CPU_TYPE-MANUFACTURER-KERNEL-OPERATING_SYSTEM
-
-# `RT_SEP' is the operating system's native PATH SEPARATOR CHAR, which
-# is to be used in runtime PATHs compiled into groff executables.
+# 'RT_SEP' is the target system's native path element separator, used
+# in runtime PATHs compiled into groff executables.
 RT_SEP=@GROFF_PATH_SEPARATOR@
 
-# `SH_SEP' is a alternative PATH SEPARATOR CHAR, to be used in shell
-# scripts and makefile rules; it may be the same as `RT_SEP', but,
+# 'SH_SEP' is a alternative path separator character used in shell
+# scripts and Makefile rules; it may be the same as 'RT_SEP', but,
 # particularly in some Microsoft environments, it may differ.
 SH_SEP=@PATH_SEPARATOR@
 
-# GLIBC2
-# `GLIBC21' is yes if the host operating system uses GNU libc 2.1 or newer,
-# otherwise no.
+# 'GLIBC21' is "yes" if the host operating system uses GNU libc 2.1 or
+# newer, otherwise "no".
 
+# 'ALT_GHOSTSCRIPT_PROGS' specifies a list of alternative names to be
+# tried if 'GHOSTSCRIPT' cannot be found at run time.
+# XXX: only pdfmark.am uses this
 
-# VERSION is set by automake, based on what is passed to AC_INIT.
-
-# PAGE
-# Define `page' to be letter if your PostScript printer uses 8.5x11
-# paper (USA) and define it to be A4, if it uses A4 paper (rest of the
-# world).
-
-# GHOSTSCRIPT
-# The name of the ghostscript program. Normally, gs, on GNU/Linux
-# but it might be different on MS-DOS/MS-WIN32 systems.
-
-# ALT_GHOSTSCRIPT_PROGS
-# `ALT_GHOSTSCRIPT_PROGS' specifies a list alternative names,
-# which can be tried if `GHOSTSCRIPT' cannot be found at run time.
-
-# ALT_AWK_PROGS
-# Similarly, `ALT_AWK_PROGS' specifies a list of alternative names,
+# 'ALT_AWK_PROGS' similarly specifies a list of alternative names,
 # which can be tried at run time, to identify the awk program.
+# XXX: only pdfmark.am uses this
 
 # BROKEN_SPOOLER_FLAGS
+#
 # Normally the Postscript driver, grops, produces output that conforms
 # to version 3.0 of the Adobe Document Structuring Conventions.
 # Unfortunately some spoolers and previewers can't handle such output.
 # The BROKEN_SPOOLER_FLAGS variable tells grops what it should do to
 # make its output acceptable to such programs.  This variable controls
 # only the default behaviour of grops; the behaviour can be changed at
-# runtime by the grops -b option (and so by groff -P-b).
+# runtime by the grops '-b' option (and so by 'groff -P-b').
+#
 # Use a value of 0 if your spoolers and previewers are able to handle
 # conforming PostScript correctly.
+#
 # Add 1 if no %%{Begin,End}DocumentSetup comments should be generated;
 # this is needed for early versions of TranScript that get confused by
 # anything between the %%EndProlog line and the first %%Page: comment.
-# Add 2 if lines in included files beginning with %! should be
-# stripped out; this is needed for the OpenWindows 2.0 pageview previewer.
-# Add 4 if %%Page, %%Trailer and %%EndProlog comments should be
-# stripped out of included files; this is needed for spoolers that
-# don't understand the %%{Begin,End}Document comments. I suspect this
+#
+# Add 2 if lines in included files beginning with %! should be stripped
+# out; this is needed for the OpenWindows 2.0 pageview previewer.
+#
+# Add 4 if %%Page, %%Trailer and %%EndProlog comments should be stripped
+# out of included files; this is needed for spoolers that don't
+# understand the %%{Begin,End}Document comments.  I suspect this
 # includes early versions of TranScript.
-# Add 8 if the first line of the PostScript output should be %!PS-Adobe-2.0
-# rather than %!PS-Adobe-3.0; this is needed when using Sun's Newsprint
-# with a printer that requires page reversal.
+#
+# Add 8 if the first line of the PostScript output should be
+# %!PS-Adobe-2.0 rather than %!PS-Adobe-3.0; this is needed when using
+# Sun's Newsprint with a printer that requires page reversal.
 
-
-# `DEVICE' is the default device.
+# 'DEVICE' is the default output device.
 DEVICE=ps
 
-# XPROGDIRS
-# `XPROGDIRS' is either `src/devices/xditview
-# src/utils/xtotroff' or empty.
+# 'XPROGDIRS' is either "src/devices/xditview src/utils/xtotroff" or
+# empty.
 
-# XLIBDIRS
-# `XLIBDIRS' is either `src/libs/libxutil' or empty.
+# 'XLIBDIRS' is either `src/libs/libxutil' or empty.
 
-# OTHERDEVDIRS
-# `OTHERDEVDIRS' is either `font/devlj4 font/devlbp' (for ASCII) or
-# empty (for EBCDIC).
+# 'PSPRINT' is the command to use for printing a PostScript file,
+# for example 'lpr'.
 
-# PSPRINT
-# `PSPRINT' is the command to use for printing a PostScript file,
-# for example `lpr'.
-
-# DVIPRINT
-# `DVIPRINT' is the command to use for printing a TeX dvi file,
+# 'DVIPRINT' is the command to use for printing a TeX dvi file,
 # for example `lpr -d'.
 
-# g
-# Prefix for names of programs that have Unix counterparts.
-# For example, if `g' is `g' then troff will be installed as
-# gtroff.  This doesn't affect programs like grops or groff that have
-# no Unix counterparts.  Note that the groff versions of eqn and tbl
-# will not work with Unix troff.
+# 'g' is the prefix for names of programs that have Unix counterparts.
+# For example, if 'g' is "g" then troff will be installed as gtroff.
+# This doesn't affect programs like grops or groff that have no Unix
+# counterparts.  The groff versions of eqn and tbl do not work with Unix
+# troff.
 
-# prefix
-# exec_prefix
-# Common prefix for installation directories.
-# Used in definitions of exec_prefix, datasubdir, fontpath, manroot.
-# This must already exist when you do make install.
+# 'prefix' is a common prefix for installation directories.  It is used
+# in definitions of 'exec_prefix', 'datasubdir', 'fontpath', 'manroot'.
 
-# bindir
-# `bindir' says where to install executables.
+# 'bindir' says where to install executables.
 
-# libdir
-# `libdir' says where to install platform-dependent data.
+# 'libdir' says where to install platform-dependent data.
 
-# libprogramdir
-# `libprogramdir' is $(libdir)/groff
+# 'libprogramdir' is "$(libdir)/groff".
 
-# `datasubdir' says where to install platform-independent data files.
 # datadir
 # datarootdir
 dataprogramdir=$(datadir)/groff
+
+# 'datasubdir' says where to install platform-independent data files.
 datasubdir=$(dataprogramdir)/$(SHORT_VERSION)
 
-# infodir
-# `infodir' says where to install info files.
+# 'infodir' says where to install info files.
 
-# docdir
-# `docdir' says where to install documentation files.  The default
+# 'docdir' says where to install documentation files.  The default
 # location is ${datarootdir}/doc/${PACKAGE}, but we add the version
 docdir=$(datarootdir)/doc/${PACKAGE}-$(SHORT_VERSION)
 
-# `exampledir' says where to install example files.
+# 'exampledir' says where to install example files.
 exampledir=$(docdir)/examples
 
-# `htmldocdir' says where to install documentation in HTML format.
+# 'htmldocdir' says where to install documentation in HTML format.
 htmldocdir=$(docdir)/html
 
-# `pdfdocdir' says where to install documentation in PDF format.
+# 'pdfdocdir' says where to install documentation in PDF format.
 pdfdocdir=$(docdir)/pdf
 
-# `fontdir' says where to install dev*/*.
+# 'fontdir' says where to install dev*/*.
 fontdir=$(datasubdir)/font
 
-# `oldfontdir' says where to install old font sets (as dev*/*).
+# 'oldfontdir' says where to install old font sets (as dev*/*).
 oldfontdir=$(datasubdir)/oldfont
 
-# `localfontdir' says where local fonts will be installed (as dev*/*).
+# 'localfontdir' says where local fonts will be installed (as dev*/*).
 localfontdir=$(dataprogramdir)/site-font
 
-# `legacyfontdir' is for compatibility with AT&T/DWB troff.
+# 'legacyfontdir' is for compatibility with AT&T/DWB troff.
 legacyfontdir=/usr/lib/font
 
-# `fontpath' says where to look for dev*/*.
+# 'fontpath' says where to look for dev*/*.
 fontpath=$(localfontdir)$(RT_SEP)$(fontdir)$(RT_SEP)$(legacyfontdir)
 
-# `tmacdir' says where to install macros.
+# 'tmacdir' says where to install macros.
 tmacdir=$(datasubdir)/tmac
 
-# `systemtmacdir' says where to install platform-dependent macros.
+# 'systemtmacdir' says where to install platform-dependent macros.
 systemtmacdir=$(libprogramdir)/site-tmac
 
-# `localtmacdir' says where local files will be installed.
+# 'localtmacdir' says where local files will be installed.
 localtmacdir=$(dataprogramdir)/site-tmac
 
-# appdefdir
-# `appdefdir' says where to install the application defaults file for
+# 'appdefdir' says where to install the application defaults file for
 # gxditview.
 
 # glilypond_dir
 # gpinyin_dir
 
-# `tmacpath' says where to look for macro files.
-# The current directory will be prepended in unsafe mode only; the home
-# directory will be always added.
-# `troffrc' and `troffrc-end' (and `eqnrc') are searched neither in the
-# current nor in the home directory.
+# 'tmacpath' says where to look for macro files.  The current directory
+# is prepended at run time in unsafe mode only; the user's home
+# directory is always added.  "troffrc" and "troffrc-end" (and "eqnrc")
+# are sought neither in the current nor in the home directory.
 tmacpath=$(systemtmacdir)$(RT_SEP)$(localtmacdir)$(RT_SEP)$(tmacdir)
 
-# sys_tmac_prefix
-# `sys_tmac_prefix' is prefix (if any) for system macro packages.
+# 'sys_tmac_prefix' is prefix (if any) for system macro packages.
 
-# pnmtops_nosetpage
-# `pnmtops_nosetpage' is the command to be run to generate an eps
+# 'pnmtops_nosetpage' is the command to be run to generate an eps
 # file.  Some versions of pnmtops provide the -nosetpage option.
 # We detect this and use it if present.
 
-# tmac_wrap
-# `tmac_wrap' is list of system macro packages that should be made
-# available to groff by creating a corresponding macro package
-# in the groff macro directory that references the system macro
-# package.
+# 'tmac_wrap' is list of system macro packages that should be made
+# available to groff by creating a corresponding macro package in the
+# groff macro directory that references the system macro package.
 
-# compatibility_wrappers
-# (groff compatibility wrappers for vendor-provided non-GNU macro sets)
+# 'compatibility_wrappers' controls the creation and installation of
+# compatibility wrappers for vendor-provided, non-GNU macro packages
+# named in 'tmac_wrap'.
 #
-# `compatibility_wrappers' controls the creation and installation of
-# compatibility wrappers for the macro sets named in `tmac_wrap'.
 # Its value must be one of:
-#   `yes'    install compatibility wrappers as the original macro set name
-#            (that is, the default implementation of that macro set), and
-#            install the groff implementation with a prefix (usually g).
-#   `no'     do not install compatibility wrappers; only install the groff
-#            implementation of each macro set.
-#   `manual' install the compatibility wrappers as `<macro>-os' and install
-#            the groff implementation of each macro set as the default
-#            implementation of that macro set.
+#   "yes"    install compatibility wrappers as the original macro
+#            package name (that is, the default implementation of that
+#            macro package), and install the groff implementation with a
+#            prefix (usually "g").
+#   "no"     do not install compatibility wrappers, but only the groff
+#            implementation of each macro package.
+#   "manual" install the compatibility wrappers as "<package>-os" and
+#            the groff implementation of each package as the default
+#            implementation of that package.
 
 # Don't make this empty.
 wrapper_suffix_default="-os"
 
-wrapper_suffix=`if test $(compatibility_wrappers) = manual; then echo $(wrapper_suffix_default); fi`
+wrapper_suffix=\
+  `if test $(compatibility_wrappers) = manual; then \
+     echo $(wrapper_suffix_default); \
+   fi`
 
-# When `compatibility_wrappers' is `yes', if there is a groff implementation
-# of a macro set listed in $(tmac_wrap), then the groff implementation will be
-# installed with a prefix of $(tmac_prefix) via the collision detection
-# variables $(tmac_m_prefix), $(tmac_s_prefix), and $(tmac_an_prefix).
+# When 'compatibility_wrappers' is "yes", if there is a groff
+# implementation of a macro package listed in $(tmac_wrap), then the
+# groff implementation will be installed with a prefix of $(tmac_prefix)
+# via the collision detection variables $(tmac_m_prefix),
+# $(tmac_s_prefix), and $(tmac_an_prefix).
 
 # Don't make this empty.
 tmac_prefix=g
 
-# The groff -mm macros will be available as -m$(tmac_m_prefix)m.
+# The groff mm macros will be available as -m$(tmac_m_prefix)m.
 tmac_m_prefix=\
  `if test $(compatibility_wrappers) = yes; then \
     for i in $(tmac_wrap) ""; do \
@@ -253,7 +216,7 @@ tmac_m_prefix=\
     done; \
   fi`
 
-# The groff -ms macros will be available as -m$(tmac_s_prefix)s.
+# The groff ms macros will be available as -m$(tmac_s_prefix)s.
 tmac_s_prefix=\
  `if test $(compatibility_wrappers) = yes; then \
     for i in $(tmac_wrap) ""; do \
@@ -261,7 +224,7 @@ tmac_s_prefix=\
     done; \
   fi`
 
-# The groff -man macros will be available as -m$(tmac_an_prefix)an.
+# The groff man macros will be available as -m$(tmac_an_prefix)an.
 tmac_an_prefix=\
  `if test $(compatibility_wrappers) = yes; then \
     for i in $(tmac_wrap) ""; do \
@@ -281,36 +244,38 @@ indexdir=/usr/dict/papers
 # The filename (without suffix) of the default index for refer.
 indexname=Ind
 
-# common_words_file is a file containing a list of common words.
-# If your system provides /usr/lib/eign it will be copied onto this,
-# otherwise the supplied eign file will be used.
+# list of common words not suitable for bibliographic keyword searches.
+# If your system provides "/usr/lib/eign", it is copied to this
+# location; otherwise groff's eign file is used.
 common_words_file=$(datasubdir)/eign
 
 # mandir
-# `manroot' is the root of the man page directory tree.
+
+# 'manroot' is the root of the man page directory tree.
 manroot=$(mandir)
 
-# `man1ext' is the man section for user commands.
+# 'man1ext' is the man section for user commands.
 man1ext=1
 man1dir=$(manroot)/man$(man1ext)
 
-# `man5ext' is the man section for file formats.
+# 'man5ext' is the man section for file formats.
 man5ext=5
 man5dir=$(manroot)/man$(man5ext)
 
-# `man7ext' is the man section for macros.
+# 'man7ext' is the man section for macro packages and general topics.
 man7ext=7
 man7dir=$(manroot)/man$(man7ext)
 
-# Windows `.cmd' files
+# Windows '.cmd' files
 # make_winscripts
 # make_install_winscripts
 # make_uninstall_winscripts
 
-# All the previous installation directories, when used, are prefixed with
-# $(DESTDIR) during install and uninstall, to support staged installations.
+# All the previous installation directories, when used, are prefixed
+# with $(DESTDIR) during install and uninstall to support staged
+# installations.
 
-# config.h might set the following defines:
+# config.h might set the following C/C++ #defines:
 #
 # WORDS_BIGENDIAN		if your target platform is big-endian
 #
@@ -371,10 +336,10 @@ man7dir=$(manroot)/man$(man7ext)
 #				vfprintf()
 #
 # HAVE_DECL_GETC_UNLOCKED	if you have getc_unlocked()
-# HAVE_DECL_SYS_SIGLIST	if you have sys_siglist[]
+# HAVE_DECL_SYS_SIGLIST		if you have sys_siglist[]
 #
-# HAVE_STRUCT_EXCEPTION	if <math.h> defines struct exception
-# HAVE_SYS_NERR		if you have sysnerr in <errno.h> or <stdio.h>
+# HAVE_STRUCT_EXCEPTION		if <math.h> defines struct exception
+# HAVE_SYS_NERR			if you have sysnerr in <errno.h> or <stdio.h>
 # HAVE_SYS_ERRLIST		if you have sys_errlist in <errno.h> or
 #				<stdio.h>
 # ICONV_CONST=const		if declaration of iconv() needs const
@@ -387,8 +352,8 @@ man7dir=$(manroot)/man$(man7ext)
 #				produced for a process that was terminated
 #				by a signal
 #
-# HAVE_WORKING_O_NOATIME      define if <fcntl.h>'s O_NOATIME flag works
-# HAVE_WORKING_O_NOFOLLOW     define if <fcntl.h>'s O_NOFOLLOW flag works
+# HAVE_WORKING_O_NOATIME	define if <fcntl.h>'s O_NOATIME flag works
+# HAVE_WORKING_O_NOFOLLOW	define if <fcntl.h>'s O_NOFOLLOW flag works
 #
 # uintmax_t=<value>		define to `unsigned long' or `unsigned long
 #				long' if <inttypes.h> does not exist
@@ -402,10 +367,9 @@ man7dir=$(manroot)/man$(man7ext)
 #   {fmod,getcwd,mkstemp,putenv,strcasecmp,
 #    strerror,strncasecmp,strtol}.$(OBJEXT)
 #
-# LIBOBJS
-# in LIBOBJS if your C library is missing the corresponding function.
+# in 'LIBOBJS' if your C library is missing the corresponding function.
 
-# `CCC' is the compiler for C++ (.cpp) files.
+# 'CCC' is the compiler for C++ (.cpp) files.
 CCC=@CXX@
 # CC
 # CFLAGS
@@ -476,7 +440,7 @@ AM_CPPFLAGS = \
   -I$(top_builddir)/src/include \
   -I$(top_builddir)/lib
 
-# Define a custom string for rules that call groff in make's silence mode.
+# Define a string for rules that call groff in make's silent mode.
 GROFF_V = $(GROFF_V_@AM_V@)
 GROFF_V_ = $(GROFF_V_@AM_DEFAULT_V@)
 GROFF_V_0 = @echo "  GROFF   " $@;
@@ -522,13 +486,13 @@ AM_TESTS_ENVIRONMENT = \
 # NAMEPREFIX if an existing non-GNU troff system was detected.
 #
 # This is done by the m4 macro GROFF_G that checks for the presence of
-# GNU Troff built-in \n[.g] macro. If a Unix Troff binary was
+# GNU Troff built-in \n[.g] register.  If a Unix Troff binary was
 # detected, the following programs and scripts names will have a 'g'
 # prefix: chem, tbl, eqn, neqn, pic, soelim, grn, refer, lookbib,
-# troff, nroff. Also, PROG_PREFIX will be set to 'g' in the generated
+# troff, nroff.  Also, PROG_PREFIX will be set to 'g' in the generated
 # header defs.h so that these programs could be called correctly.
 #
-# prefixexecbindir is used to temporary install these programs. They
+# prefixexecbindir is used to temporary install these programs.  They
 # are then moved to bindir during the install-exec-hook.  Same thing
 # for the scripts.
 NAMEPREFIX=$(g)
@@ -584,8 +548,8 @@ MAJOR_VERSION = `echo $(VERSION) | cut -d . -f 1`
 MINOR_VERSION = `echo $(VERSION) | cut -d . -f 2`
 REVISION      = `echo $(VERSION) | cut -d . -f 3`
 
-# Non-recursive makefile system. See Automake manual '7.3 An
-# Alternative Approach to Subdirectories'. We use a single Makefile.am
+# Non-recursive makefile system.  See Automake manual '7.3 An
+# Alternative Approach to Subdirectories'.  We use a single Makefile.am
 # that includes other .am files, rather than using SUBDIRS.  Note that
 # relative paths in the following .am files are relative to the top
 # source directory.
@@ -670,13 +634,14 @@ include $(top_srcdir)/src/utils/tfmtodit/tfmtodit.am
 include $(top_srcdir)/src/utils/xtotroff/xtotroff.am
 include $(top_srcdir)/tmac/tmac.am
 
-# Adding defs.h to BUILT_SOURCES will ensure that it will be built on
-# make all or make check before all other targets. However, if another
-# target is built from a clean build tree, (for example make groff)
-# the files in BUILT_SOURCES will not be built first. That is why
-# additional dependencies were added in the .am files that list
-# objects that use defs (for example in groff.am:
-# src/roff/groff/groff.$(OBJEXT): defs.h)
+# Adding defs.h to 'BUILT_SOURCES' ensures that it is built by "make
+# all" or "make check" before all other targets.  However, if another
+# target is built from a clean build tree, for example "make groff", the
+# files in 'BUILT_SOURCES' are not built first.  That is why additional
+# dependencies were added in the .am files that list objects that use
+# defs (for example in groff.am:
+# src/roff/groff/groff.$(OBJEXT): defs.h
+# ).
 BUILT_SOURCES += defs.h
 
 .DELETE_ON_ERROR:
@@ -776,7 +741,7 @@ uninstall_groffdirs:
 	  rmdir $(DESTDIR)$(docdir); \
 	fi
 
-# Uninstall program that have a 'g' prefix
+# Uninstall programs that have a 'g' prefix.
 uninstall-hook: uninstall_binaries_with_prefix
 uninstall_binaries_with_prefix:
 if USEPROGRAMPREFIX
@@ -787,7 +752,7 @@ if USEPROGRAMPREFIX
 	fi
 endif
 
-# Other files that should be present in the distribution tarball.
+# Other files that should be present in the distribution archive.
 EXTRA_DIST += \
   bootstrap \
   bootstrap.conf \
@@ -827,7 +792,7 @@ MOSTLYCLEANFILES += $(prefixexecbin_SCRIPTS) $(bin_SCRIPTS) \
 
 # Suffix rule to build .1, .5 and .7 files from .1.man, .5.man and
 # .7.man files.  The brackets around the @ are used to prevent the
-# substitution of the variable by automake.
+# substitution of the variable by Automake.
 #
 # The sed script transforms - to \-, ~ to \(ti, and so forth, (with an
 # extra layer of backslashes--see below) so that Makefile variables
@@ -897,7 +862,7 @@ SUFFIXES += .man
 	     $< \
 	     >$@
 
-# Version files - see script 'build-aux/git-version-gen'
+# Version files - see script "build-aux/git-version-gen".
 EXTRA_DIST += $(top_srcdir)/.version
 BUILT_SOURCES += $(top_srcdir)/.version
 $(top_srcdir)/.version:

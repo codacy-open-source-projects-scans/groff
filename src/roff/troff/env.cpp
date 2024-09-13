@@ -262,9 +262,9 @@ void font_size::dump_size_table()
       if (need_comma)
 	errprint(", ");
       if (lo == hi)
-	errprint("%1s", lo);
+	errprint("%1z", lo);
       else
-	errprint("%1s-%2s", lo, hi);
+	errprint("%1z-%2z", lo, hi);
       need_comma = true;
     }
   }
@@ -553,7 +553,7 @@ static node *configure_space_underlining(bool b)
   macro m;
   m.append_str("x u ");
   m.append(b ? '1' : '0');
-  return new special_node(m, 1);
+  return new device_extension_node(m, 1);
 }
 
 bool environment::set_font(symbol nm)
@@ -673,14 +673,14 @@ void environment::set_char_slant(int n)
   char_slant = n;
 }
 
-color *environment::get_prev_glyph_color()
+color *environment::get_prev_stroke_color()
 {
-  return prev_glyph_color;
+  return prev_stroke_color;
 }
 
-color *environment::get_glyph_color()
+color *environment::get_stroke_color()
 {
-  return glyph_color;
+  return stroke_color;
 }
 
 color *environment::get_prev_fill_color()
@@ -693,12 +693,12 @@ color *environment::get_fill_color()
   return fill_color;
 }
 
-void environment::set_glyph_color(color *c)
+void environment::set_stroke_color(color *c)
 {
   if (line_interrupted)
     return;
-  curenv->prev_glyph_color = curenv->glyph_color;
-  curenv->glyph_color = c;
+  curenv->prev_stroke_color = curenv->stroke_color;
+  curenv->stroke_color = c;
 }
 
 void environment::set_fill_color(color *c)
@@ -775,8 +775,8 @@ environment::environment(symbol nm)
 #ifdef WIDOW_CONTROL
   want_widow_control(false),
 #endif /* WIDOW_CONTROL */
-  glyph_color(&default_color),
-  prev_glyph_color(&default_color),
+  stroke_color(&default_color),
+  prev_stroke_color(&default_color),
   fill_color(&default_color),
   prev_fill_color(&default_color),
   control_character('.'),
@@ -869,8 +869,8 @@ environment::environment(const environment *e)
 #ifdef WIDOW_CONTROL
   want_widow_control(e->want_widow_control),
 #endif /* WIDOW_CONTROL */
-  glyph_color(e->glyph_color),
-  prev_glyph_color(e->prev_glyph_color),
+  stroke_color(e->stroke_color),
+  prev_stroke_color(e->prev_stroke_color),
   fill_color(e->fill_color),
   prev_fill_color(e->prev_fill_color),
   control_character(e->control_character),
@@ -961,8 +961,8 @@ void environment::copy(const environment *e)
   hyphenation_space = e->hyphenation_space;
   hyphenation_margin = e->hyphenation_margin;
   composite = false;
-  glyph_color= e->glyph_color;
-  prev_glyph_color = e->prev_glyph_color;
+  stroke_color= e->stroke_color;
+  prev_stroke_color = e->prev_stroke_color;
   fill_color = e->fill_color;
   prev_fill_color = e->prev_fill_color;
 }
@@ -1252,20 +1252,22 @@ void environment_switch()
 
 void environment_copy()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "environment copy request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   environment *e = 0 /* nullptr */;
   tok.skip();
   symbol nm = get_long_name();
-  if (nm.is_null()) {
-    error("no environment specified to copy from");
-  }
-  else {
-    e = (environment *)env_dictionary.lookup(nm);
-  if (e)
+  assert(nm != 0 /* nullptr */);
+  e = static_cast<environment *>(env_dictionary.lookup(nm));
+  if (e != 0 /* nullptr */)
     curenv->copy(e);
   else
     error("cannot copy from nonexistent environment '%1'",
 	  nm.contents());
-  }
   skip_line();
 }
 
@@ -1279,13 +1281,13 @@ void fill_color_change()
   skip_line();
 }
 
-void glyph_color_change()
+void stroke_color_change()
 {
   symbol s = get_name();
   if (s.is_null())
-    curenv->set_glyph_color(curenv->get_prev_glyph_color());
+    curenv->set_stroke_color(curenv->get_prev_stroke_color());
   else
-    do_glyph_color(s);
+    do_stroke_color(s);
   skip_line();
 }
 
@@ -1334,6 +1336,10 @@ void family_change()
 
 void point_size()
 {
+  if (in_nroff_mode) {
+    skip_line();
+    return;
+  }
   int n;
   if (has_arg()
       && read_measurement(&n, 'z', curenv->get_requested_point_size()))
@@ -1352,6 +1358,10 @@ void override_sizes()
   if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "available font sizes override request"
 	    " expects at least one argument");
+    skip_line();
+    return;
+  }
+  if (in_nroff_mode) {
     skip_line();
     return;
   }
@@ -1398,6 +1408,12 @@ void override_sizes()
 
 void space_size()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "space size configuration request expects"
+	    " at least one argument");
+    skip_line();
+    return;
+  }
   int n;
   if (get_integer(&n)) {
     if (n < 0)
@@ -1513,7 +1529,7 @@ void vertical_spacing()
   vunits temp;
   if (has_arg() && get_vunits(&temp, 'p', curenv->vertical_spacing)) {
     if (temp < V0) {
-      warning(WARN_RANGE, "vertical spacing must not be negative");
+      warning(WARN_RANGE, "vertical spacing must be nonnegative");
       temp = vresolution;
     }
   }
@@ -1527,10 +1543,10 @@ void vertical_spacing()
 void post_vertical_spacing()
 {
   vunits temp;
-  if (has_arg() && get_vunits(&temp, 'p', curenv->post_vertical_spacing)) {
+  if (has_arg() && get_vunits(&temp, 'p',
+			      curenv->post_vertical_spacing)) {
     if (temp < V0) {
-      warning(WARN_RANGE,
-	      "post vertical spacing must be greater than or equal to 0");
+      warning(WARN_RANGE, "post-vertical spacing must be nonnegative");
       temp = V0;
     }
   }
@@ -1562,7 +1578,8 @@ void indent()
   hunits temp;
   if (has_arg() && get_hunits(&temp, 'm', curenv->indent)) {
     if (temp < H0) {
-      warning(WARN_RANGE, "indent cannot be negative");
+      warning(WARN_RANGE, "treating %1u indentation as zero",
+	      temp.to_units());
       temp = H0;
     }
   }
@@ -1590,7 +1607,8 @@ void temporary_indent()
   if (want_break)
     curenv->do_break();
   if (temp < H0) {
-    warning(WARN_RANGE, "total indent cannot be negative");
+    warning(WARN_RANGE, "treating total indentation %1u as zero",
+	    temp.to_units());
     temp = H0;
   }
   if (is_valid) {
@@ -1901,7 +1919,8 @@ void environment::output_line(node *nd, hunits width, bool was_centered)
 {
   prev_text_length = width;
   if (margin_character_flags) {
-    hunits d = line_length + margin_character_distance - saved_indent - width;
+    hunits d = line_length + margin_character_distance - saved_indent
+	       - width;
     if (d > 0) {
       nd = new hmotion_node(d, get_fill_color(), nd);
       width += d;
@@ -1932,17 +1951,19 @@ void environment::output_line(node *nd, hunits width, bool was_centered)
     --no_number_count;
   else if (numbering_nodes) {
     hunits w = (line_number_digit_width
-		*(3+line_number_indent+number_text_separation));
-    if (next_line_number % line_number_multiple != 0)
+		* (3 + line_number_indent + number_text_separation));
+    if ((next_line_number % line_number_multiple) != 0)
       nn = new hmotion_node(w, get_fill_color(), nn);
     else {
       hunits x = w;
-      nn = new hmotion_node(number_text_separation * line_number_digit_width,
+      nn = new hmotion_node(number_text_separation
+			    * line_number_digit_width,
 			    get_fill_color(), nn);
       x -= number_text_separation*line_number_digit_width;
-      char buf[30];
-      sprintf(buf, "%3d", next_line_number);
-      for (char *p = strchr(buf, '\0') - 1; p >= buf && *p != ' '; --p) {
+      char buf[UINT_DIGITS];
+      (void) sprintf(buf, "%3u", next_line_number);
+      for (char *p = strchr(buf, '\0') - 1; p >= buf && *p != ' '; --p)
+      {
 	node *gn = numbering_nodes;
 	for (int count = *p - '0'; count > 0; count--)
 	  gn = gn->next;
@@ -2205,9 +2226,8 @@ static void distribute_space(node *nd, int nspaces,
   // add space until we run out, which might happen before the end of
   // the line.  To achieve uniform typographical grayness and avoid
   // rivers, we switch the end from which space is initially distributed
-  // with each line requiring it, unless compelled to reverse it.  The
-  // node list's natural ordering is in the direction of text flow, so
-  // we distribute space initially from the left, unlike AT&T troff.
+  // with each line requiring it, unless compelled to reverse it.  We
+  // distribute space initially from the left, unlike AT&T troff.
   static bool do_reverse_node_list = false;
   if (force_reverse_node_list || do_reverse_node_list)
     nd = node_list_reverse(nd);
@@ -2386,9 +2406,8 @@ node *environment::make_tag(const char *nm, int i)
      * need to emit tag for post-grohtml
      * but we check to see whether we can emit specials
      */
-    if (curdiv == topdiv && topdiv->before_first_page)
+    if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0))
       topdiv->begin_page();
-
     macro m;
     m.append_str("devtag:");
     for (const char *p = nm; *p; p++)
@@ -2396,7 +2415,7 @@ node *environment::make_tag(const char *nm, int i)
 	m.append(*p);
     m.append(' ');
     m.append_int(i);
-    return new special_node(m);
+    return new device_extension_node(m);
   }
   return 0 /* nullptr */;
 }
@@ -2513,7 +2532,7 @@ extern int global_diverted_space;
 void environment::do_break(bool want_adjustment)
 {
   bool was_centered = false;
-  if (curdiv == topdiv && topdiv->before_first_page) {
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0)) {
     topdiv->begin_page();
     return;
   }
@@ -2597,7 +2616,7 @@ void title()
     skip_line();
     return;
   }
-  if (curdiv == topdiv && topdiv->before_first_page) {
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0)) {
     handle_initial_title();
     return;
   }
@@ -2617,8 +2636,8 @@ void title()
   curenv->char_slant = env.char_slant;
   curenv->fontno = env.fontno;
   curenv->prev_fontno = env.prev_fontno;
-  curenv->glyph_color = env.glyph_color;
-  curenv->prev_glyph_color = env.prev_glyph_color;
+  curenv->stroke_color = env.stroke_color;
+  curenv->prev_stroke_color = env.prev_stroke_color;
   curenv->fill_color = env.fill_color;
   curenv->prev_fill_color = env.prev_fill_color;
   node *nd = 0 /* nullptr */;
@@ -3347,9 +3366,9 @@ const char *environment::get_font_family_string()
   return family->nm.contents();
 }
 
-const char *environment::get_glyph_color_string()
+const char *environment::get_stroke_color_string()
 {
-  return glyph_color->nm.contents();
+  return stroke_color->nm.contents();
 }
 
 const char *environment::get_fill_color_string()
@@ -3506,8 +3525,6 @@ void environment::print_env()
   errprint("  temporary indentation pending: %1\n",
 	   have_temporary_indent ? "yes" : "no");
   errprint("  total indentation: %1u\n", saved_indent.to_units());
-  errprint("  target text length: %1u\n",
-	   target_text_length.to_units());
   if (underlined_line_count > 0) {
     errprint("  lines remaining to underline: %1\n",
 	     underlined_line_count);
@@ -3525,8 +3542,12 @@ void environment::print_env()
   }
   errprint("  previous text length: %1u\n",
 	   prev_text_length.to_units());
-  errprint("  total width: %1u\n", width_total.to_units());
-  errprint("  total number of spaces: %1\n", space_total);
+  if (line != 0 /* nullptr */) {
+    errprint("  text length: %1u\n", width_total.to_units());
+    errprint("  number of adjustable spaces: %1\n", space_total);
+  }
+  errprint("  target text length: %1u\n",
+	   target_text_length.to_units());
   errprint("  input line start: %1u\n", input_line_start.to_units());
   errprint("  computing tab stops from: %1\n",
 	   using_line_tabs ? "output line start (\"line tabs\")"
@@ -4186,7 +4207,7 @@ void init_env_requests()
   init_request("fi", fill);
   init_request("fcolor", fill_color_change);
   init_request("ft", select_font);
-  init_request("gcolor", glyph_color_change);
+  init_request("gcolor", stroke_color_change);
   init_request("hc", hyphen_char);
   init_request("hla", select_hyphenation_language);
   init_request("hlm", hyphen_line_max_request);
@@ -4255,7 +4276,7 @@ void init_env_requests()
   init_hunits_env_reg(".l", get_line_length);
   init_hunits_env_reg(".ll", get_saved_line_length);
   init_string_env_reg(".M", get_fill_color_string);
-  init_string_env_reg(".m", get_glyph_color_string);
+  init_string_env_reg(".m", get_stroke_color_string);
   init_hunits_env_reg(".n", get_prev_text_length);
   init_int_env_reg(".nm", get_numbering_nodes);
   init_int_env_reg(".nn", get_no_number_count);

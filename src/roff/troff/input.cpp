@@ -1309,9 +1309,10 @@ int non_interpreted_char_node::interpret(macro *mac)
   return 1;
 }
 
+// forward declarations
 static void do_width();
 static node *do_non_interpreted();
-static node *do_device_control();
+static node *do_device_extension();
 static node *do_suppress(symbol nm);
 static void do_register();
 
@@ -1328,22 +1329,22 @@ static color *lookup_color(symbol nm)
   return c;
 }
 
-void do_glyph_color(symbol nm)
+void do_stroke_color(symbol nm) // \m
 {
   if (nm.is_null())
     return;
   if (nm.is_empty())
-    curenv->set_glyph_color(curenv->get_prev_glyph_color());
+    curenv->set_stroke_color(curenv->get_prev_stroke_color());
   else {
     color *tem = lookup_color(nm);
     if (tem)
-      curenv->set_glyph_color(tem);
+      curenv->set_stroke_color(tem);
     else
       (void) color_dictionary.lookup(nm, new color(nm));
   }
 }
 
-void do_fill_color(symbol nm)
+void do_fill_color(symbol nm) // \M
 {
   if (nm.is_null())
     return;
@@ -2036,22 +2037,22 @@ void token::next()
 	return;
       case ESCAPE_LEFT_QUOTE:
       ESCAPE_LEFT_QUOTE:
-	type = TOKEN_SPECIAL;
+	type = TOKEN_SPECIAL_CHAR;
 	nm = symbol("ga");
 	return;
       case ESCAPE_RIGHT_QUOTE:
       ESCAPE_RIGHT_QUOTE:
-	type = TOKEN_SPECIAL;
+	type = TOKEN_SPECIAL_CHAR;
 	nm = symbol("aa");
 	return;
       case ESCAPE_HYPHEN:
       ESCAPE_HYPHEN:
-	type = TOKEN_SPECIAL;
+	type = TOKEN_SPECIAL_CHAR;
 	nm = symbol("-");
 	return;
       case ESCAPE_UNDERSCORE:
       ESCAPE_UNDERSCORE:
-	type = TOKEN_SPECIAL;
+	type = TOKEN_SPECIAL_CHAR;
 	nm = symbol("ul");
 	return;
       case ESCAPE_c:
@@ -2119,7 +2120,7 @@ void token::next()
       switch (cc) {
       case '(':
 	nm = read_two_char_escape_parameter();
-	type = TOKEN_SPECIAL;
+	type = TOKEN_SPECIAL_CHAR;
 	return;
       case EOF:
 	type = TOKEN_EOF;
@@ -2234,7 +2235,7 @@ void token::next()
 	nm = get_delimited_name();
 	if (nm.is_null())
 	  break;
-	type = TOKEN_SPECIAL;
+	type = TOKEN_SPECIAL_CHAR;
 	return;
       case 'd':
 	type = TOKEN_NODE;
@@ -2338,7 +2339,7 @@ void token::next()
 	  return;
 	}
       case 'm':
-	do_glyph_color(read_escape_parameter(ALLOW_EMPTY));
+	do_stroke_color(read_escape_parameter(ALLOW_EMPTY));
 	if (!want_att_compat)
 	  have_formattable_input = true;
 	break;
@@ -2432,7 +2433,7 @@ void token::next()
 	nd = new extra_size_node(x);
 	return;
       case 'X':
-	nd = do_device_control();
+	nd = do_device_extension();
 	if (0 /* nullptr */ == nd)
 	  break;
 	type = TOKEN_NODE;
@@ -2450,7 +2451,7 @@ void token::next()
 		  s.contents());
 	    break;
 	  }
-	  nd = new special_node(*m);
+	  nd = new device_extension_node(*m);
 	  type = TOKEN_NODE;
 	  return;
 	}
@@ -2493,7 +2494,17 @@ void token::next()
 	    nm = composite_glyph_name(s);
 	  }
 	  else {
-	    const char *gn = valid_unicode_code_sequence(s.contents());
+	    char errbuf[ERRBUFSZ];
+	    const char *sc = s.contents();
+	    const char *gn = 0 /* nullptr */;
+	    if ((strlen(sc) > 2) && (sc[0] == 'u')) {
+	      gn = valid_unicode_code_sequence(sc, errbuf);
+	      if (0 /* nullptr */ == gn) {
+		error("special character '%1' is invalid: %2", sc,
+		      errbuf);
+		break;
+	      }
+	    }
 	    if (gn != 0 /* nullptr */) {
 	      const char *gn_decomposed = decompose_unicode(gn);
 	      if (gn_decomposed)
@@ -2513,9 +2524,9 @@ void token::next()
 	      }
 	    }
 	    else
-	      nm = symbol(s.contents());
+	      nm = symbol(sc);
 	  }
-	  type = TOKEN_SPECIAL;
+	  type = TOKEN_SPECIAL_CHAR;
 	  return;
 	}
 	goto handle_ordinary_char;
@@ -2536,7 +2547,7 @@ bool token::operator==(const token &t)
   switch (type) {
   case TOKEN_CHAR:
     return c == t.c;
-  case TOKEN_SPECIAL:
+  case TOKEN_SPECIAL_CHAR:
     return nm == t.nm;
   case TOKEN_NUMBERED_CHAR:
     return val == t.val;
@@ -2552,7 +2563,7 @@ bool token::operator!=(const token &t)
 
 // Is the character usable as a delimiter?
 //
-// This is used directly only by `do_device_control()`, because it is
+// This is used directly only by `do_device_extension()`, because it is
 // the only escape sequence that reads its argument in copy mode (so it
 // doesn't tokenize it) and accepts a user-specified delimiter.
 static bool is_char_usable_as_delimiter(int c)
@@ -2668,7 +2679,7 @@ const char *token::description()
     return "an escaped '}'";
   case TOKEN_SPACE:
     return "a space";
-  case TOKEN_SPECIAL:
+  case TOKEN_SPECIAL_CHAR:
     return "a special character";
   case TOKEN_SPREAD:
     return "an escaped 'p'";
@@ -2843,13 +2854,13 @@ void exit_troff()
     topdiv->set_ejecting();
     static unsigned char buf[2] = { LAST_PAGE_EJECTOR, '\0' };
     input_stack::push(make_temp_iterator((char *)buf));
-    topdiv->space(topdiv->get_page_length(), 1);
+    topdiv->space(topdiv->get_page_length(), true /* forcing */);
     tok.next();
     process_input_stack();
     seen_last_page_ejector = 1;	// should be set already
     topdiv->set_ejecting();
     push_page_ejector();
-    topdiv->space(topdiv->get_page_length(), 1);
+    topdiv->space(topdiv->get_page_length(), true /* forcing */);
     tok.next();
     process_input_stack();
   }
@@ -2928,14 +2939,15 @@ void do_request()
     tok.next();
 }
 
-inline int possibly_handle_first_page_transition()
+inline bool possibly_handle_first_page_transition()
 {
-  if (topdiv->before_first_page && curdiv == topdiv && !curenv->is_dummy()) {
+  if ((topdiv->before_first_page_status > 0) && (curdiv == topdiv)
+      && !curenv->is_dummy()) {
     handle_first_page_transition();
-    return 1;
+    return true;
   }
   else
-    return 0;
+    return false;
 }
 
 static int transparent_translate(int cc)
@@ -2970,7 +2982,7 @@ static int transparent_translate(int cc)
 
 int node::reread(int *)
 {
-  return 0;
+  return 0 /* nullptr */;
 }
 
 int global_diverted_space = 0;
@@ -4197,16 +4209,18 @@ static void map_composite_character()
 {
   symbol from = get_name();
   if (from.is_null()) {
-    warning(WARN_MISSING, "composite character request expects"
+    warning(WARN_MISSING, "composite character mapping request expects"
 	    " arguments");
     skip_line();
     return;
   }
-  const char *from_gn = glyph_name_to_unicode(from.contents());
+  const char *fc = from.contents();
+  const char *from_gn = glyph_name_to_unicode(fc);
+  char errbuf[ERRBUFSZ];
   if (0 /* nullptr */ == from_gn) {
-    from_gn = valid_unicode_code_sequence(from.contents());
+    from_gn = valid_unicode_code_sequence(fc, errbuf);
     if (0 /* nullptr */ == from_gn) {
-      error("invalid composite glyph name '%1'", from.contents());
+      error("invalid composite glyph name '%1': %2", fc, errbuf);
       skip_line();
       return;
     }
@@ -4220,11 +4234,12 @@ static void map_composite_character()
     skip_line();
     return;
   }
-  const char *to_gn = glyph_name_to_unicode(to.contents());
+  const char *tc = to.contents();
+  const char *to_gn = glyph_name_to_unicode(tc);
   if (0 /* nullptr */ == to_gn) {
-    to_gn = valid_unicode_code_sequence(to.contents());
+    to_gn = valid_unicode_code_sequence(tc, errbuf);
     if (0 /* nullptr */ == to_gn) {
-      error("invalid composite glyph name '%1'", to.contents());
+      error("invalid composite glyph name '%1': %2", tc, errbuf);
       skip_line();
       return;
     }
@@ -4235,7 +4250,7 @@ static void map_composite_character()
   if (strcmp(from_gn, to_gn) == 0)
     composite_dictionary.remove(symbol(from_gn));
   else
-    (void) composite_dictionary.lookup(symbol(from_gn), (void *)to_gn);
+    (void) composite_dictionary.lookup(symbol(from_gn), (void *) to_gn);
   skip_line();
 }
 
@@ -4244,11 +4259,12 @@ static symbol composite_glyph_name(symbol nm)
   macro_iterator *mi = new macro_iterator();
   decode_string_args(mi);
   input_stack::push(mi);
-  const char *gn = glyph_name_to_unicode(nm.contents());
+  const char *nc = nm.contents();
+  const char *gn = glyph_name_to_unicode(nc);
   if (0 /* nullptr */ == gn) {
-    gn = valid_unicode_code_sequence(nm.contents());
+    gn = valid_unicode_code_sequence(nc);
     if (0 /* nullptr */ == gn) {
-      error("invalid base glyph '%1' in composite glyph name", nm.contents());
+      error("invalid base glyph '%1' in composite glyph name", nc);
       return EMPTY_SYMBOL;
     }
   }
@@ -4265,12 +4281,12 @@ static symbol composite_glyph_name(symbol nm)
       if (c != DOUBLE_QUOTE)
 	gl += c;
     gl += '\0';
-    const char *u = glyph_name_to_unicode(gl.contents());
+    const char *gc = gl.contents();
+    const char *u = glyph_name_to_unicode(gc);
     if (0 /* nullptr */ == u) {
-      u = valid_unicode_code_sequence(gl.contents());
+      u = valid_unicode_code_sequence(gc);
       if (0 /* nullptr */ == u) {
-	error("invalid component '%1' in composite glyph name",
-	      gl.contents());
+	error("invalid component '%1' in composite glyph name", gc);
 	return EMPTY_SYMBOL;
       }
     }
@@ -4549,7 +4565,7 @@ static void remove_character()
       charinfo *ci = tok.get_char(true /* required */);
       if (!ci)
 	break;
-      macro *m = ci->set_macro(0);
+      macro *m = ci->set_macro(0 /* nullptr */);
       if (m)
 	delete m;
     }
@@ -5530,9 +5546,7 @@ static symbol get_delimited_name()
   }
 }
 
-// Implement \R
-
-static void do_register()
+static void do_register() // \R
 {
   token start_token;
   start_token.next();
@@ -5582,7 +5596,7 @@ static void do_width() // \w
       // diagnostic.
       char *delimdesc = strdup(start_token.description());
       warning(WARN_DELIM, "missing closing delimiter in width"
-	      "computation escape sequence; expected %1, got %2",
+	      " computation escape sequence; expected %1, got %2",
 	      delimdesc, tok.description());
       free(delimdesc);
       break;
@@ -5702,7 +5716,7 @@ int non_interpreted_node::interpret(macro *m)
   return 1;
 }
 
-static node *do_non_interpreted()
+static node *do_non_interpreted() // \?
 {
   node *n;
   int c;
@@ -5812,7 +5826,7 @@ static void encode_special_character_for_device_output(macro *mac)
 
 // In troff output, we translate the escape character to '\', but it is
 // up to the postprocessor to interpret it as such.  (This mostly
-// matters for device control commands.)
+// matters for device extension commands.)
 static void encode_character_for_device_output(macro *mac, const char c)
 {
   if ('\0' == c) {
@@ -5825,36 +5839,21 @@ static void encode_character_for_device_output(macro *mac, const char c)
 	     || tok.is_dummy()
 	     || tok.is_transparent_dummy())
       /* do nothing */;
-    else if (tok.is_special())
+    else if (tok.is_special_character())
       encode_special_character_for_device_output(mac);
     else
       warning(WARN_CHAR, "%1 is not encodable in device-independent"
 	      " output", tok.description());
   }
   else {
-    // We want to represent ordinary characters that normally map to
-    // non-basic Latin code points in a way that is compatible with how
-    // they're typeset, to avoid confusion when these characters are
-    // used in ways that are ultimately visible, as in tag names for PDF
-    // bookmarks, which can appear in a viewer's navigation pane.
-    if ('\'' == c)
-      mac->append_str("\\[u2019]");
-    else if ('-' == c)
-      mac->append_str("\\[u2010]");
-    else if ('^' == c)
-      mac->append_str("\\[u0302]");
-    else if ('`' == c)
-      mac->append_str("\\[u0300]");
-    else if ('~' == c)
-      mac->append_str("\\[u0303]");
-    else if (c == escape_char)
+    if (c == escape_char)
       mac->append('\\');
     else
       mac->append(c);
   }
 }
 
-static node *do_device_control() // \X
+static node *do_device_extension() // \X
 {
   int start_level = input_stack::get_level();
   token start_token;
@@ -5869,9 +5868,9 @@ static node *do_device_control() // \X
       // we must allocate a copy of it before issuing the next
       // diagnostic.
       char *delimdesc = strdup(start_token.description());
-      warning(WARN_DELIM, "missing closing delimiter in device control"
-	      " escape sequence; expected %1, got %2", delimdesc,
-	      tok.description());
+      warning(WARN_DELIM, "missing closing delimiter in device"
+	      " extension escape sequence; expected %1, got %2",
+	      delimdesc, tok.description());
       free(delimdesc);
       break;
     }
@@ -5894,13 +5893,14 @@ static node *do_device_control() // \X
       c = tok.ch();
     encode_character_for_device_output(&mac, c);
   }
-  return new special_node(mac);
+  return new device_extension_node(mac);
 }
 
 static void device_request()
 {
   if (!has_arg(true /* peek; we want to read in copy mode */)) {
-    warning(WARN_MISSING, "device control request expects an argument");
+    warning(WARN_MISSING, "device extension request expects an"
+	    " argument");
     skip_line();
     return;
   }
@@ -5915,15 +5915,15 @@ static void device_request()
     if (c != ' ' && c != '\t')
       break;
   }
-  if (curdiv == topdiv && topdiv->before_first_page)
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0))
     topdiv->begin_page();
   // Null characters can correspond to node types like vmotion_node that
-  // are unrepresentable in a device control command, and got scrubbed
+  // are unrepresentable in a device extension command, and got scrubbed
   // by `asciify`.
   for (; c != '\0' && c != '\n' && c != EOF;
        c = get_copy(0 /* nullptr */))
     mac.append(c);
-  curenv->add_node(new special_node(mac));
+  curenv->add_node(new device_extension_node(mac));
   tok.next();
 }
 
@@ -5934,7 +5934,7 @@ static void device_macro_request()
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
     if (m)
-      curenv->add_node(new special_node(*m));
+      curenv->add_node(new device_extension_node(*m));
     else
       error("cannot interpolate '%1' to device-independent output;"
 	    " it is a request, not a macro", s.contents());
@@ -5967,7 +5967,7 @@ static void output_request()
 
 extern int image_no;		// from node.cpp
 
-static node *do_suppress(symbol nm)
+static node *do_suppress(symbol nm) // \O
 {
   if (nm.is_null() || nm.is_empty()) {
     error("output suppression escape sequence requires an argument");
@@ -6034,7 +6034,7 @@ static node *do_suppress(symbol nm)
   return 0;
 }
 
-void special_node::tprint(troff_output_file *out)
+void device_extension_node::tprint(troff_output_file *out)
 {
   tprint_start(out);
   string_iterator iter(mac);
@@ -6449,25 +6449,36 @@ void do_source(bool quietly)
   }
 }
 
-// .so
-
-void source()
+void source_request() // .so
 {
-  do_source(false /* not quietly*/ );
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "file sourcing request expects an argument");
+    skip_line();
+    return;
+  }
+  do_source(false /* quietly */ );
 }
 
-// .soquiet: like .so, but silently ignore files that can't be opened
-// due to their nonexistence
-
-void source_quietly()
+// like .so, but silently ignore files that can't be opened due to their
+// nonexistence
+void source_quietly_request() // .soquiet
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "quiet file sourcing request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   do_source(true /* quietly */ );
 }
 
-// like .so but use popen()
-
-void pipe_source()
+void pipe_source_request() // .pso
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "pipe sourcing request expects arguments");
+    skip_line();
+    return;
+  }
   if (!want_unsafe_requests) {
     error("piped command source request is not allowed in safer mode");
     skip_line();
@@ -6955,12 +6966,14 @@ inline int psbb_locator::skip_to_trailer(void)
   return 0;
 }
 
-// ps_bbox_request()
-//
-// Handle the .psbb request.
-//
-void ps_bbox_request()
+void ps_bbox_request() // .psbb
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "PostScript file bounding box extraction"
+	    " request expects an argument");
+    skip_line();
+    return;
+  }
   // Parse input line, to extract file name.
   //
   symbol nm = get_long_name(true /* required */);
@@ -7201,52 +7214,69 @@ void terminal_continue()
 
 dictionary stream_dictionary(20);
 
-static void do_open(bool append)
+static void open_file(bool appending)
 {
   symbol stream = get_name(true /* required */);
   if (!stream.is_null()) {
     symbol filename = get_long_name(true /* required */);
     if (!filename.is_null()) {
       errno = 0;
-      FILE *fp = fopen(filename.contents(), append ? "a" : "w");
+      FILE *fp = fopen(filename.contents(), appending ? "a" : "w");
       if (0 /* nullptr */ == fp) {
 	error("cannot open file '%1' for %2: %3",
 	      filename.contents(),
-	      append ? "appending" : "writing",
+	      appending ? "appending" : "writing",
 	      strerror(errno));
 	fp = (FILE *)stream_dictionary.remove(stream);
       }
       else
 	fp = (FILE *)stream_dictionary.lookup(stream, fp);
-      if (fp)
-	fclose(fp);
+      if (fp != 0 /* nullptr */ && (fclose(fp) != 0))
+	error("cannot close file '%1': %2", filename.contents(),
+	      strerror(errno));
     }
   }
-  skip_line();
 }
 
-static void open_request()
+static void open_request() // .open
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "file writing request expects arguments");
+    skip_line();
+    return;
+  }
   if (!want_unsafe_requests) {
-    error("file opening request is not allowed in safer mode");
+    error("file writing request is not allowed in safer mode");
     skip_line();
   }
   else
-    do_open(false /* don't append */);
+    open_file(false /* appending */);
+  skip_line();
 }
 
-static void opena_request()
+static void opena_request() // .opena
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "file appending request expects arguments");
+    skip_line();
+    return;
+  }
   if (!want_unsafe_requests) {
     error("file appending request is not allowed in safer mode");
     skip_line();
   }
   else
-    do_open(true /* append */);
+    open_file(true /* appending */);
+  skip_line();
 }
 
-static void close_request()
+static void close_request() // .close
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "stream closing request expects an argument");
+    skip_line();
+    return;
+  }
   symbol stream = get_name(true /* required */);
   if (!stream.is_null()) {
     FILE *fp = (FILE *)stream_dictionary.remove(stream);
@@ -7773,7 +7803,7 @@ charinfo *token::get_char(bool required)
 {
   if (type == TOKEN_CHAR)
     return charset_table[c];
-  if (type == TOKEN_SPECIAL)
+  if (type == TOKEN_SPECIAL_CHAR)
     return get_charinfo(nm);
   if (type == TOKEN_NUMBERED_CHAR)
     return get_charinfo_by_number(val);
@@ -7862,7 +7892,7 @@ bool token::add_to_zero_width_node_list(node **pp)
     n = new hmotion_node(curenv->get_space_width(),
 			 curenv->get_fill_color());
     break;
-  case TOKEN_SPECIAL:
+  case TOKEN_SPECIAL_CHAR:
     *pp = (*pp)->add_char(get_charinfo(nm), curenv, &w, &s);
     break;
   case TOKEN_STRETCHABLE_SPACE:
@@ -7957,7 +7987,7 @@ void token::process()
   case TOKEN_SPACE:
     curenv->space();
     break;
-  case TOKEN_SPECIAL:
+  case TOKEN_SPECIAL_CHAR:
     curenv->add_char(get_charinfo(nm));
     break;
   case TOKEN_SPREAD:
@@ -8249,7 +8279,7 @@ void copy_file()
     skip_line();
     return;
   }
-  if (curdiv == topdiv && topdiv->before_first_page) {
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0)) {
     handle_initial_request(COPY_FILE_REQUEST);
     return;
   }
@@ -8293,7 +8323,7 @@ void transparent_file()
     skip_line();
     return;
   }
-  if (curdiv == topdiv && topdiv->before_first_page) {
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0)) {
     handle_initial_request(TRANSPARENT_FILE_REQUEST);
     return;
   }
@@ -8485,18 +8515,27 @@ void do_macro_source(bool quietly)
   }
 }
 
-// .mso
-
-void macro_source()
+void macro_source_request() // .mso
 {
-  do_macro_source(false /* not quietly (if WARN_FILE enabled) */ );
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "macro file sourcing request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
+  do_macro_source(false /* quietly */ );
 }
 
-// .msoquiet: like .mso, but silently ignore files that can't be opened
-// due to their nonexistence
-
-void macro_source_quietly()
+// like .mso, but silently ignore files that can't be opened due to
+// their nonexistence
+void macro_source_quietly_request() // .msoquiet
 {
+  if (!has_arg(true /* peek */)) {
+    warning(WARN_MISSING, "quiet macro file sourcing request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   do_macro_source(true /* quietly */ );
 }
 
@@ -8613,17 +8652,17 @@ void usage(FILE *stream, const char *prog)
 " [-T output-device] [-w warning-category] [-W warning-category]"
 " [file ...]\n"
 "usage: %s {-v | --version}\n"
-"usage: %s {-h | --help}\n",
+"usage: %s --help\n",
 	  prog, prog, prog);
   if (stdout == stream) {
     fputs(
 "\n"
-"GNU troff transforms groff(7) language input into the device‐"
-"independent page description language detailed in groff_out(5); it is"
-"the heart of the GNU roff document formatting system.  Many people"
-"prefer to use the groff(1) command, a front end that also runs"
-"preprocessors and output drivers in the appropriate order and with"
-"appropriate options.  See the troff(1) manual page.\n",
+"GNU troff transforms groff(7) language input into the device‐\n"
+"independent page description language detailed in groff_out(5); it\n"
+"is the heart of the GNU roff document formatting system.  Many\n"
+"people prefer to use the groff(1) command, a front end that also\n"
+"runs preprocessors and output drivers in the appropriate order and\n"
+"with appropriate options.  See the troff(1) manual page.\n",
 	  stream);
   }
 }
@@ -8992,8 +9031,8 @@ void init_input_requests()
   init_request("length", length_request);
   init_request("lf", line_file);
   init_request("lsm", leading_spaces_macro);
-  init_request("mso", macro_source);
-  init_request("msoquiet", macro_source_quietly);
+  init_request("mso", macro_source_request);
+  init_request("msoquiet", macro_source_quietly_request);
   init_request("nop", nop_request);
   init_request("nroff", nroff_request);
   init_request("nx", next_file);
@@ -9007,7 +9046,7 @@ void init_input_requests()
   init_request("pi", pipe_output);
   init_request("pm", print_macros);
   init_request("psbb", ps_bbox_request);
-  init_request("pso", pipe_source);
+  init_request("pso", pipe_source_request);
   init_request("rchar", remove_character);
   init_request("rd", read_request);
   init_request("return", return_macro_request);
@@ -9015,8 +9054,8 @@ void init_input_requests()
   init_request("rn", rename_macro);
   init_request("schar", define_special_character);
   init_request("shift", shift);
-  init_request("so", source);
-  init_request("soquiet", source_quietly);
+  init_request("so", source_request);
+  init_request("soquiet", source_quietly_request);
   init_request("spreadwarn", spreadwarn_request);
   init_request("stringdown", stringdown_request);
   init_request("stringup", stringup_request);
@@ -9108,8 +9147,8 @@ node *charinfo_to_node_list(charinfo *ci, const environment *envp)
   want_att_compat = false;
   int previous_escape_char = escape_char;
   escape_char = '\\';
-  macro *mac = ci->set_macro(0);
-  assert(mac != 0);
+  macro *mac = ci->set_macro(0 /* nullptr */);
+  assert(mac != 0 /* nullptr */);
   environment *oldenv = curenv;
   environment env(envp);
   curenv = &env;
@@ -9254,7 +9293,7 @@ static node *read_drawing_command()
 	}
 	draw_node *dn = new draw_node(type, point, npoints,
 				      curenv->get_font_size(),
-				      curenv->get_glyph_color(),
+				      curenv->get_stroke_color(),
 				      curenv->get_fill_color());
 	delete[] point;
 	return dn;

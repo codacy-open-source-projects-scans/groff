@@ -223,8 +223,8 @@ class environment {
 #ifdef WIDOW_CONTROL
   bool want_widow_control;
 #endif /* WIDOW_CONTROL */
-  color *glyph_color;
-  color *prev_glyph_color;
+  color *stroke_color;
+  color *prev_stroke_color;
   color *fill_color;
   color *prev_fill_color;
   unsigned char control_character;
@@ -326,10 +326,10 @@ public:
   int get_no_number_count();
   int get_prev_line_interrupted() { return prev_line_interrupted; }
   color *get_fill_color();
-  color *get_glyph_color();
-  color *get_prev_glyph_color();
+  color *get_stroke_color();
+  color *get_prev_stroke_color();
   color *get_prev_fill_color();
-  void set_glyph_color(color *c);
+  void set_stroke_color(color *c);
   void set_fill_color(color *c);
   node *make_char_node(charinfo *);
   node *extract_output_line();
@@ -358,7 +358,7 @@ public:
   void space();
   void space(hunits, hunits);
   void space_newline();
-  const char *get_glyph_color_string();
+  const char *get_stroke_color_string();
   const char *get_fill_color_string();
   const char *get_font_family_string();
   const char *get_font_name_string();
@@ -411,8 +411,7 @@ public:
 #ifdef WIDOW_CONTROL
   friend void widow_control_request();
 #endif /* WIDOW_CONTROL */
-
-  friend void do_divert(int append, int boxing);
+  friend void do_divert(bool /* appending */, bool /* boxing */);
 };
 
 extern environment *curenv;

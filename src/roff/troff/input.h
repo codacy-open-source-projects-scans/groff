@@ -63,7 +63,7 @@ const int DOUBLE_QUOTE = 0216;
 const int INPUT_NO_BREAK_SPACE = 0240;
 const int INPUT_SOFT_HYPHEN= 0255;
 
-extern void do_glyph_color(symbol);
+extern void do_stroke_color(symbol);
 extern void do_fill_color(symbol);
 
 extern bool suppress_push;

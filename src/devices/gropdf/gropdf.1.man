@@ -185,7 +185,7 @@ Search the directory
 .I dir
 for files named in
 .B \[rs]X\[aq]pdf: pdfpic\[aq]
-device control commands.
+device extension commands.
 .
 .B \-I
 may be specified more than once;
@@ -687,7 +687,7 @@ the \[lq]hand pointing left\[rq] glyph
 is available nevertheless,
 since it is defined using the
 .B \[rs]X\[aq]pdf: xrev\[aq]
-device control command
+device extension command
 (see below).
 .
 Most glyphs in these fonts are unnamed and must be accessed using
@@ -703,15 +703,15 @@ file.
 .
 .
 .\" ====================================================================
-. SS "Device control commands"
+. SS "Device extension commands"
 .\" ====================================================================
 .
 .I gropdf
-supports many device control functions,
+supports many device extensions,
 accessed with the
 .I groff
 request
-.B device
+.B \%device
 or
 .I roff
 .B \[rs]X
@@ -719,7 +719,7 @@ escape sequence.
 .
 First,
 it
-understands many of the device control commands supported by
+understands many of the device extensions supported by
 .MR grops 1 .
 .
 .
@@ -891,7 +891,7 @@ tags are silently ignored.
 .
 .LP
 .I gropdf
-also recognizes a device control command used by the DVI driver.
+also recognizes a device extension used by the DVI driver.
 .
 .
 .TP
@@ -922,7 +922,7 @@ option.
 .
 .LP
 .I gropdf
-supports several more device control features using the
+supports several more device extensions using the
 .B pdf:
 tag.
 .
@@ -1032,7 +1032,7 @@ otherwise any text output by the trap will be marked as part of the hot
 spot.
 .
 To prevent this error,
-place these device control commands or their corresponding
+place these device extension escape sequences or their corresponding
 convenience macros
 .B \%.pdfmarksuspend
 and
@@ -1499,7 +1499,8 @@ support macros in
 .I pdf\.tmac
 define the convenience macros described above.
 .
-Some features have no direct device control command counterpart.
+Some features have no direct device extension escape sequence
+counterpart.
 .
 .
 .\" pdfhref

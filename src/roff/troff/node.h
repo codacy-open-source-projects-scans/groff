@@ -106,7 +106,7 @@ struct node {
 
   virtual node *merge_glyph_node(glyph_node *);
   virtual tfont *get_tfont();
-  virtual color *get_glyph_color();
+  virtual color *get_stroke_color();
   virtual color *get_fill_color();
   virtual void tprint(troff_output_file *);
   virtual void zero_width_tprint(troff_output_file *);
@@ -540,7 +540,7 @@ public:
   bool is_tag();
 };
 
-class special_node : public node {
+class device_extension_node : public node {
   macro mac;
   tfont *tf;
   color *gcol;
@@ -550,11 +550,12 @@ class special_node : public node {
   void tprint_char(troff_output_file *, unsigned char);
   void tprint_end(troff_output_file *);
 public:
-  special_node(const macro & /* m */,
-	       bool /* lacks_command_prefix */ = false);
-  special_node(const macro & /* m */, tfont * /* tf */,
-	       color * /* gcol */, color * /* fcol */, statem * /* s */,
-	       int divlevel, bool /* lacks_command_prefix */ = false);
+  device_extension_node(const macro & /* m */,
+			bool /* lacks_command_prefix */ = false);
+  device_extension_node(const macro & /* m */, tfont * /* tf */,
+			color * /* gcol */, color * /* fcol */,
+			statem * /* s */, int divlevel,
+			bool /* lacks_command_prefix */ = false);
   node *copy();
   void tprint(troff_output_file *);
   bool is_same_as(node *);

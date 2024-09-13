@@ -9,7 +9,7 @@ output driver for TeX DVI format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020, 2022 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -190,7 +190,7 @@ By design,
 the DVI format doesn't care about the physical dimensions of the output
 medium.
 .
-See subsection \[lq]Device control commands\[rq] below.
+See subsection \[lq]Device extension commands\[rq] below.
 .
 .
 .\" ====================================================================
@@ -348,7 +348,7 @@ does not set up automatic hyphenation codes.
 .
 .
 .\" ====================================================================
-. SS "Device control commands"
+. SS "Device extension commands"
 .\" ====================================================================
 .
 .I grodvi
@@ -367,11 +367,11 @@ special is output.
 .
 .P
 .I grodvi
-supports one device control function,
+supports one device extension,
 accessed with the
 .I groff
 request
-.B device
+.B \%device
 or
 .I roff
 .B \[rs]X
@@ -406,7 +406,7 @@ option.
 .
 .P
 The parameter(s) to
-.B device
+.B \%device
 and
 .B \[rs]X
 are translated to the same DVI file instructions as would be produced by

@@ -430,14 +430,17 @@ so GNU
 disallows this.
 .
 Similarly,
-it is nonsensical to use a scaling unit other
-.RB than\~\[lq] z \[rq]
-.RB or\~\[lq] u \[rq]
+it is nonsensical to use scaling units other than
+.RB \[lq] p \[rq],
+.RB \[lq] s \[rq],
+.RB \[lq] z \[rq],
+or
+.RB \[lq] u \[rq],
 in a numeric expression whose default scaling unit
 .RB is\~\[lq] z \[rq],
-so GNU
-.I troff
-disallows this as well.
+and so GNU
+.I troff \" GNU
+disallows those as well.
 .
 .
 .br
@@ -1120,7 +1123,7 @@ which can appear in a viewer's navigation pane.
 .\"IP
 So that documents or macro packages do not have to laboriously
 \[lq]sanitize\[rq] strings destined for interpolation
-in device control commands,
+in device extension commands,
 this escape sequence
 .\" XXX: and soon other things
 performs certain transformations on its argument.
@@ -1176,7 +1179,7 @@ produce warnings in category
 .BI \[rs]Y( ma
 .TQ
 .BI \[rs]Y[ mac ]
-Interpolate a macro as a device control command.
+Interpolate a macro as a device extension command.
 .
 This is similar to
 .BI \[rs]X\[aq]\[rs]*[ mac ]\[aq]\f[R],
@@ -1207,9 +1210,8 @@ then restore it.
 .
 .TP
 .B \[rs]#
-Ignore everything up to and including the next newline.
-.
-This escape sequence is interpreted even in copy mode.
+Read everything up to and including the next newline in copy mode and
+discard it.
 .
 .B \[rs]#
 is like
@@ -2353,7 +2355,7 @@ Write
 read in copy mode,
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 A leading neutral double quote in
 .I anything
@@ -2367,7 +2369,7 @@ Write contents of macro or string
 .I name
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 .
 .TP
@@ -3115,11 +3117,10 @@ encounters leading spaces on a text line;
 the implicit line break that normally happens in this case
 is suppressed.
 .
-The formatter stores the count of leading spaces on text line
+The formatter stores the count of leading spaces on the text line
 in register
 .BR lsn ,
 and the amount of corresponding horizontal motion
-in register
 in register
 .BR lss ,
 irrespective of whether a leading space trap is set.
@@ -3234,8 +3235,7 @@ append to it instead of truncating it.
 .
 .
 .TP
-.BR .output \~[
-.RI [ \[dq] ]\c
+.BR .output \~[[ \[dq] ]\c
 .IR contents ]
 Emit
 .I contents
@@ -3324,9 +3324,9 @@ The list is empty if there are none.
 .TP
 .BR .pnr \~[\c
 .IR reg \~.\|.\|.]
-Report the name,
-value,
-and assigned format of each register
+Report the name and value and,
+if the value is numeric,
+the assigned format of each register
 .IR reg ,
 or,
 without arguments,
@@ -3376,7 +3376,11 @@ except that input comes from the standard output stream of
 Report the names and vertical positions of all page location traps
 to the standard error stream.
 .
-Empty slots in the list are shown as well,
+GNU
+.I troff \" GNU
+reports empty slots in the list,
+where a trap had been planted
+but subsequently (re)moved,
 because they can affect the visibility of subsequently planted traps.
 .
 .

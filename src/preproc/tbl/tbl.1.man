@@ -1573,6 +1573,17 @@ interpret the uninterpreted leader escape sequence
 .SH Limitations
 .\" ====================================================================
 .
+In table entries,
+do not use
+.I roff
+escape sequences that read to the end of the line,
+like
+.B \[rs]\[dq]
+or
+.B \[rs]!\& .
+.
+.
+.P
 Multi-page tables,
 if boxed and/or if you want their column headings repeated after page
 breaks,

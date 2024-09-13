@@ -304,9 +304,9 @@ every command with at least one argument is followed by a line break,
 thus providing excellent readability.
 .
 .P
-The other commands \[em] those for drawing and device controlling \[em]
-have a more complicated structure; some recognize long command names,
-and some take a variable number of arguments.
+The other commands\[em]those for drawing and device control\[em]have a
+more complicated structure; some recognize long command names, and some
+take a variable number of arguments.
 .
 So all
 .B D

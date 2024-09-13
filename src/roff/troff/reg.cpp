@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -440,8 +440,9 @@ void assign_register_format_request()
     warning(WARN_MISSING, "register interpolation format assignment"
 	    " request register format as second argument");
   else
-    error("invalid register format; expected 'i', 'I', 'a', 'A',"
-          " or decimal digits, got %1", tok.description());
+    error("register interpolation format assignment request expects"
+	  " 'i', 'I', 'a', 'A', or decimal digits, got %1",
+	  tok.description());
   skip_line();
 }
 
@@ -506,13 +507,19 @@ void rename_register_request()
 
 static void dump_register(symbol *id, reg *r)
 {
+  int n;
   errprint("%1\t", id->contents());
-  const char *value = r->get_string();
-  if (value)
-    errprint("%1", value);
-  const char *format = r->get_format();
-  if (format)
-    errprint("\t\%1", format);
+  if (r->get_value(&n)) {
+    errprint("%1", n);
+    const char *f = r->get_format();
+    assert(f != 0 /* nullptr */);
+    if (f != 0 /* nullptr*/)
+      errprint("\t\%1", f);
+  }
+  else {
+    const char *s = r->get_string();
+    errprint("%1", s);
+  }
   errprint("\n");
 }
 

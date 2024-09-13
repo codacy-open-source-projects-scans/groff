@@ -2480,7 +2480,8 @@ its contents are lost unless already aliased.
 Append to macro
 .I mac
 until encountering
-.RB \[lq] .\|.\& \[rq].
+.RB \[lq] .\|.\& \[rq]
+at the start of a control line in the current conditional block.
 .
 .TPx
 .REQ .am "mac end-mac"
@@ -2816,8 +2817,13 @@ commands per Boolean expression
 .IR b .
 .
 .TPx
+.REQ .composite c
+Remove composite character mapping for character
+.I c.
+.
+.TPx
 .REQ .composite "c1 c2"
-Map ordinary or special character
+Map character
 .I c1
 to
 .I c2
@@ -2848,14 +2854,29 @@ compatibility mode per Boolean expression
 .IR b .
 .
 .TPx
-.REQ .cs "font n m"
-Set constant character width mode for
-.I font
-to
+.REQ .cs f
+Disable constant-width glyping spacing mode for font
+.I f.
+.
+.TPx
+.REQ .cs "f n"
+Enable constant-width glyping spacing mode for font
+.I f
+at
 .IR n /36
-ems with em
-.IR m .
-.\" XXX: m parameter needs more explanation.
+ems.
+.
+.TPx
+.REQ .cs "f n p"
+Enable constant-width glyping spacing mode for
+.I font
+at
+.IR n /36
+ems,
+as if one em equals
+one em equals
+.I p
+scaled points.
 .
 .TPx
 .REQ .cu
@@ -3001,7 +3022,7 @@ Write
 read in copy mode,
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 A leading neutral double quote is stripped to allow embedding of
 leading spaces.
@@ -3012,7 +3033,7 @@ Write contents of macro or string
 .I name
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 .TPx
 .REQ .di
@@ -3204,7 +3225,7 @@ Restore previous fill color,
 or the default if there is none.
 .
 .TPx
-.REQ .fcolor color
+.REQ .fcolor col
 Select
 .I col
 as the fill color.
@@ -3627,11 +3648,11 @@ Set number of next input line to
 .IR n .
 .
 .TPx
-.REQ .lf "n file-name"
+.REQ .lf "n f"
 Set number of next input line to
 .I n
 and report input file name as
-.IR file-name .
+.IR f .
 .
 .TPx
 .REQ .lg
@@ -3711,7 +3732,8 @@ Cease writing margin character.
 .REQ .mc c
 Begin writing margin
 .RI character\~ c
-to the right of each output line.
+to the right of each output line at a distance of
+.scalednumber 10 p .
 .
 .TPx
 .REQ .mc "c d"
@@ -3800,7 +3822,8 @@ number the next output line
 .I \[+-]N,
 writing numbers every
 .I m
-lines,
+lines
+(default 1),
 with
 .I s
 numeral widths
@@ -3992,11 +4015,9 @@ are suffixed with a tab and asterisk
 .RB ( * ).
 .
 .TPx
-.REQ .pi program
+.REQ .pi command
 Pipe output to
-.I program
-.RI ( nroff
-only).
+.IR command .
 .
 Unsafe request;
 disabled by default.
@@ -4042,15 +4063,16 @@ Set next page number.
 .REQ .pnr
 Report the names,
 contents,
-and assigned formats
-of all defined registers to the standard error stream.
+and
+(as applicable)
+assigned formats of all defined registers to the standard error stream.
 .
 .TPx
 .REQ .pnr "reg \fR\&.\|.\|.\&\fP"
-Report the name,
-value,
-and assigned format of each register
-.I reg
+Report the name and value and,
+if the value is numeric,
+the assigned format of each register
+.IR reg ,
 to the standard error stream.
 .
 .TPx
@@ -4401,15 +4423,15 @@ of the selected font's
 parameter.
 .
 .TPx
-.REQ .stringdown stringvar
+.REQ .stringdown str
 Replace each byte in the string named
-.I stringvar
+.I str
 with its lowercase version.
 .
 .TPx
-.REQ .stringup stringvar
+.REQ .stringup str
 Replace each byte in the string named
-.I stringvar
+.I str
 with its uppercase version.
 .
 .TPx
@@ -4833,13 +4855,14 @@ Texinfo manual.
 .TP
 .ESC \[dq]
 Comment;
-ignore everything up to the next newline.
+read everything up to the next newline in copy mode and discard it.
 .
 .
 .TP
 .ESC #
-Comment;
-ignore everything up to and including the next newline.
+Whole-line comment;
+read everything up to and including the next newline in copy mode and
+discard it.
 .
 .
 .\" ========= strings =========
@@ -4961,14 +4984,16 @@ prevent it from being otherwise hyphenated.
 .
 .TP
 .ESC !
-Transparent line.
+Transparent throughput.
 .
-The remainder of the input line is interpreted
-(1) when the current diversion is read;
+Read everything up to the next newline in copy mode and ignore it,
+but pass it through to
+(1) an enclosing diversion,
 or
-(2) if in the top-level diversion,
-by the postprocessor
-(if any).
+(2) if appearing in the top-level diversion,
+GNU
+.I troff \" GNU
+output.
 .
 .
 .TP
@@ -5633,7 +5658,7 @@ which can appear in a viewer's navigation pane.
 .\"IP
 So that documents or macro packages do not have to laboriously
 \[lq]sanitize\[rq] strings destined for interpolation
-in device control commands,
+in device extension commands,
 this escape sequence
 .\" XXX: and soon other things
 performs certain transformations on its argument.
@@ -5688,7 +5713,7 @@ Write contents of macro or string
 .I n
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 .TP
 .ESC Y( nm
@@ -5696,7 +5721,7 @@ Write contents of macro or string
 .I nm
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 .TP
 .ESC[] Y name
@@ -5704,7 +5729,7 @@ Write contents of macro or string
 .I name
 to
 .I @g@troff
-output as a device control command.
+output as a device extension command.
 .
 .TP
 .ESC z c
@@ -8159,7 +8184,7 @@ escape sequence embed their arguments into GNU
 .I troff \" GNU
 output as parameters to an
 .RB \[lq] "x X" \[rq]
-device control command
+device extension command
 (see
 .MR groff_out @MAN5EXT@ ).
 .
@@ -8170,7 +8195,7 @@ or other postprocessor.
 .P
 GNU
 .I troff \" GNU
-also permits the interpolation of macro contents as a device control
+also permits the interpolation of macro contents as a device extension
 command.
 .
 The

@@ -22,7 +22,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 fail=
 
 # Confirm translation of a groff special character escape sequence to a
-# basic Latin character when used in a device control escape sequence.
+# basic Latin character when used in a device extension escape sequence.
 #
 # $1 is the special character escape _without_ the leading backslash.
 # $2 is the expected output character _shell-quoted as necessary_.
@@ -44,7 +44,7 @@ check_char () {
   printf '\n' >&2
 }
 
-for device in utf8 html
+for device in pdf utf8 html
 do
   check_char - - "minus sign" $device
   check_char '[aq]' "'" "neutral apostrophe" $device

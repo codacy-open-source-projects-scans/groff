@@ -1,3 +1,46 @@
+2024-09-02  Sven Schober <sv3sch@gmail.com>
+
+	* examples/test-mom.sh.in: Handle discrepant
+	`pdf{images,totext}`.  There are at least two different
+	implementation variants for pdfimages and pdftotext out there:
+	poppler's and xpdfreader.com's.  Cope with minute syntax
+	differences between these implementations in test case.
+
+	Fixes <https://savannah.gnu.org/bugs/?66155> (2/2).
+
+2024-09-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/test-mom.sh.in: Tweak shell style.  Favor `[` command
+	over `test` in conditional commands.  Stop quoting string
+	literals that are pure alphanumeric character sequences.  Favor
+	`$()` command substitution syntax over "backticks"; the groff
+	1.23.0 release, with 100+ test scripts using the former syntax,
+	established that every platform of interest to us supports it.
+	Exit with status 1, not 255, on test failure.  The latter is not
+	good practice per POSIX[1]--shells use the eighth bit of the
+	exit status to indicate that a signal was received.  Rename
+	variables for clarity.  Use AWK more idiomatically and frugally
+	of the process table; it's perfectly capable of "grep"ping.  Use
+	Bourne style for control structures, not pseudo-C.  More
+	carefully quote variables with contents not under our control.
+	Report number of images found, instead of misreporting any value
+	less than two as zero ("no images").  Exit with status 2 on
+	failure to locate input files.  Quote file name in diagnostic
+	message to make an empty value obvious.  Make failure output
+	messages more closely resemble others in groff.
+	(check_has_images): Prepare for patch by Sven Schober.
+	Poppler's pdfimages program writes out a header.  Strip that
+	header from its output before counting lines.  Consequently make
+	test of line count more precise.
+
+	[1] https://pubs.opengroup.org/onlinepubs/9799919799/utilities/\
+	V3_chap02.html#tag_19_08_02
+
+2024-09-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am: Rename generated test file.  It's pretty confusing to
+	have "test-mom.sh.in" produce "tests-mom.sh" (note the plural).
+
 2024-09-01
 
 	* om.tmac: version 2.6_d; incorporates changes to gropdf/pdfpic

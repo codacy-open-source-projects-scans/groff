@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2018-2020 Free Software Foundation, Inc.
+# Copyright (C) 2018-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -22,7 +22,7 @@ builddir="@abs_top_builddir@"
 have_urw_fonts="@groff_have_urw_fonts@"
 examplesdir="$builddir/contrib/mom/examples"
 ret=0
-list="
+examples="
   letter.pdf
   mom-pdf.pdf
   mon_premier_doc.pdf
@@ -33,7 +33,8 @@ list="
   copyright-default.pdf
   "
 
-if test "$have_urw_fonts" != "yes"; then
+if [ "$have_urw_fonts" != yes ]
+then
     echo "URW fonts needed to generate mom examples; skipping test" >&2
     exit 77 # skip
 fi
@@ -47,33 +48,50 @@ do
     fi
 done
 
-# $1: pdf file
+# At least two different implementations of pdfimages exist, poppler and
+# xpdfreader.com.  The latter uses a slightly different input and output
+# syntax; detect and cope with it.
+image_root=
+if pdfimages -v 2>&1 | grep -q xpdfreader
+then
+  image_root=1
+fi
+
+# $1: PDF file
 # $2: expected number of pages
 check_number_pages()
 {
-    echo "Checking number of pages of $1"
-    n_pages=`pdfinfo $1  | grep Pages | awk '{ print $2}'`
-    if test "$n_pages" != "$2"; then
-       echo "  Error: expected $2 pages, found $n_pages pages"
-       ret=255
+    echo "Checking number of pages in $1"
+    page_count=$(pdfinfo "$1" | awk '/Pages/ { print $2}')
+    if [ "$page_count" != "$2" ]
+    then
+       echo "...FAILED: expected $2 pages, found $page_count"
+       ret=1
     fi
 }
 
-# $1 pdf file
+# $1: PDF file
+# $2: expected number of images
 check_has_images()
 {
-    echo "Checking if $1 has images"
-    n_lines=`pdfimages -list $1 | wc -l `
-    if test $n_lines -le 2; then
-        echo " no images found"
-        ret=255
+    echo "Checking whether $1 has images"
+    image_list=$(pdfimages -list "$1" $image_root)
+    echo "$image_list"
+    # Strip header out of poppler pdfimages output.
+    image_count=$(echo "$image_list" | sed -n '1,/^---/d;p' | wc -l)
+    if [ "$image_count" -ne "$2" ]
+    then
+        echo "...FAILED: expected $2 images, found $image_count"
+        ret=1
     fi
 }
 
-for k in $list; do
-    if ! test -f $examplesdir/$k; then
-        echo "File $k not found"
-        exit 255
+for k in $examples
+do
+    if ! [ -f "$examplesdir"/$k ]
+    then
+        echo "File '$k' not found"
+        exit 2
     fi
 done
 
@@ -86,8 +104,8 @@ check_number_pages "$examplesdir/typesetting.pdf" 3
 check_number_pages "$examplesdir/copyright-chapter.pdf" 5
 check_number_pages "$examplesdir/copyright-default.pdf" 5
 
-check_has_images "$examplesdir/typesetting.pdf"
-check_has_images "$examplesdir/slide-demo.pdf"
+check_has_images "$examplesdir/typesetting.pdf" 2
+check_has_images "$examplesdir/slide-demo.pdf" 2
 
 exit $ret
 

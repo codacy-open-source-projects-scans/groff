@@ -371,25 +371,39 @@ void html_system(const char *s, int redirect_stdout)
 {
 #if defined(DEBUGGING)
   if (debugging) {
-    fprintf(stderr, "executing: ");
+    fprintf(stderr, "%s: debug: executing: ", program_name);
     fwrite(s, sizeof(char), strlen(s), stderr);
     fflush(stderr);
   }
 #endif
   {
-    int saved_stdout = dup(1);
+    int saved_stdout = dup(STDOUT_FILENO);
     int fdnull = open(NULL_DEV, O_WRONLY|O_BINARY, 0666);
-    if (redirect_stdout && saved_stdout > 1 && fdnull > 1)
-      dup2(fdnull, 1);
+    if (redirect_stdout && (saved_stdout > STDOUT_FILENO)
+	&& (fdnull > STDOUT_FILENO))
+      dup2(fdnull, STDOUT_FILENO);
     if (fdnull >= 0)
       close(fdnull);
     int status = system(s);
     if (redirect_stdout)
-      dup2(saved_stdout, 1);
-    if (status == -1)
-      fprintf(stderr, "Calling '%s' failed\n", s);
-    else if (status)
-      fprintf(stderr, "Calling '%s' returned status %d\n", s, status);
+      dup2(saved_stdout, STDOUT_FILENO);
+    if (-1 == status)
+      fprintf(stderr, "%s: unable to execute command '%s': %s\n",
+	      program_name, s, strerror(errno));
+    else if (status > 0) {
+      if (WIFEXITED(status))
+	fprintf(stderr, "%s: command '%s' returned status %d\n",
+		program_name, s, WEXITSTATUS(status));
+      else if (WIFSIGNALED(status))
+	fprintf(stderr, "%s: command '%s' exited by signal: %s\n",
+		program_name, s, strsignal(WTERMSIG(status)));
+      else if (WIFSTOPPED(status))
+	fprintf(stderr, "%s: command '%s' stopped: %s\n",
+		program_name, s, strsignal(WSTOPSIG(status)));
+      else
+	fprintf(stderr, "%s: command '%s' exited abnormally\n",
+		program_name, s);
+    }
     close(saved_stdout);
   }
 }
@@ -915,10 +929,11 @@ int imageList::createPage(int pageno)
 
 #if defined(DEBUGGING)
   if (debugging)
-    fprintf(stderr, "creating page %d\n", pageno);
+    fprintf(stderr, "%s: debug: creating page %d\n", program_name,
+	    pageno);
 #endif
 
-  s = make_string("ps2ps -sPageList=%d %s %s\n",
+  s = make_string("ps2ps -sPageList=%d %s %s",
 		   pageno, psFileName, psPageName);
   html_system(s, 1);
   assert(strlen(image_gen) > 0);
@@ -927,7 +942,7 @@ int imageList::createPage(int pageno)
 		  "-dDEVICEHEIGHTPOINTS=792 "
 		  "-dDEVICEWIDTHPOINTS=%d -dFIXEDMEDIA=true "
 		  "-sDEVICE=%s -r%d %s "
-		  "-sOutputFile=%s %s -\n",
+		  "-sOutputFile=%s %s -",
 		  image_gen,
 		  EXE_EXT,
 		  (getMaxX(pageno) * image_res) / postscriptRes,
@@ -1009,7 +1024,7 @@ void imageList::createImage(imageItem *i)
       s = make_string("pamcut%s %d %d %d %d < %s "
 		      "| pnmcrop%s " PNMTOOLS_QUIET
 		      "| pnmtopng%s " PNMTOOLS_QUIET " %s"
-		      "> %s\n",
+		      "> %s",
 		      EXE_EXT,
 		      x1, y1, x2 - x1 + 1, y2 - y1 + 1,
 		      imagePageName,
@@ -1021,15 +1036,16 @@ void imageList::createImage(imageItem *i)
       free(s);
     }
     else {
-      fprintf(stderr, "failed to generate image of page %d\n",
-	      i->pageNo);
+      fprintf(stderr, "%s: failed to generate image of page %d\n",
+	      program_name, i->pageNo);
       fflush(stderr);
     }
 #if defined(DEBUGGING)
   }
   else {
     if (debugging) {
-      fprintf(stderr, "ignoring image as x1 coord is -1\n");
+      fprintf(stderr, "%s: debug: ignoring image as x1 coord is -1\n"
+	      program_name);
       fflush(stderr);
     }
 #endif
@@ -1126,10 +1142,12 @@ static void set_redirection(int was, int willbe)
     // Otherwise attempt the specified redirection.
     if (dup2(willbe, was) < 0) {
       // Redirection failed, so issue diagnostic and bail out.
-      fprintf(stderr, "failed to replace fd=%d with %d\n", was, willbe);
+      fprintf(stderr, "%s: unable to replace fd=%d with %d",
+	      program_name, was, willbe);
       if (willbe == STDOUT_FILENO)
 	fprintf(stderr,
-		"likely that stdout should be opened before %d\n", was);
+		"; likely that stdout should be opened before %d", was);
+      fputc('\n', stderr);
       sys_fatal("dup2");
     }
 
@@ -1156,7 +1174,8 @@ static int save_and_redirect(int was, int willbe)
   // handle for 'was'.
   int saved = dup(was);
   if (saved < 0) {
-    fprintf(stderr, "unable to get duplicate handle for %d\n", was);
+    fprintf(stderr, "%s: unable to get duplicate file descriptor for"
+	    " %d\n", program_name, was);
     sys_fatal("dup");
   }
 
@@ -1252,6 +1271,7 @@ char **addRegDef(int argc, char *argv[], const char *numReg)
   return new_argv;
 }
 
+#if 0
 /*
  *  dump_args - Display the argument list.
  */
@@ -1263,6 +1283,7 @@ void dump_args(int argc, char *argv[])
     fprintf(stderr, " %s", argv[i]);
   fprintf(stderr, "\n");
 }
+#endif
 
 /*
  *  print_args - Print arguments as if issued on the command line.
@@ -1273,10 +1294,10 @@ void dump_args(int argc, char *argv[])
 void print_args(int argc, char *argv[])
 {
   if (debugging) {
-    fprintf(stderr, "executing: ");
+    fprintf(stderr, "%s: debug: executing: ", program_name);
     for (int i = 0; i < argc; i++)
       fprintf(stderr, "%s ", argv[i]);
-    fprintf(stderr, "\n");
+    fputc('\n', stderr);
   }
 }
 
@@ -1770,8 +1791,10 @@ static void cleanup(void)
 
 int main(int argc, char **argv)
 {
+  program_name = argv[0];
 #ifdef CAPTURE_MODE
-  fprintf(stderr, "%s: invoked with %d arguments ...\n", argv[0], argc);
+  fprintf(stderr, "%s: invoked with %d arguments ...\n", program_name,
+	  argc);
   for (int i = 0; i < argc; i++)
     fprintf(stderr, "%2d: %s\n", i, argv[i]);
   FILE *dump = fopen(DEBUG_FILE("pre-html-data"), "wb");
@@ -1782,7 +1805,6 @@ int main(int argc, char **argv)
   }
   exit(EXIT_FAILURE);
 #endif /* CAPTURE_MODE */
-  program_name = argv[0];
   if (atexit(&cleanup) != 0)
     sys_fatal("atexit");
   int operand_index = scanArguments(argc, argv);

@@ -882,7 +882,7 @@ See
 .I sboxes
 offers an interface to the
 .RB \[lq] "pdf: background" \[rq]
-device control command supported by
+device extension command supported by
 .MR gropdf @MAN1EXT@ .
 .
 Using this package,

@@ -28,7 +28,7 @@ opts=
 dry_run=
 is_option_argument_pending=
 
-usage="usage: $prog [-bcCEhikpRStUVz] [-d ctext] [-d string=text] \
+usage="usage: $prog [-abcCDEhiIkpRStUVzZ] [-d ctext] [-d string=text] \
 [-K fallback-encoding] [-m macro-package] [-M macro-directory] \
 [-n page-number] [-o page-list] [-P postprocessor-argument] \
 [-r cnumeric-expression] [-r register=numeric-expression] \
@@ -38,8 +38,8 @@ usage: $prog {-v | --version}
 usage: $prog --help"
 
 summary="
-Format documents with groff(1) for terminal devices.
-See the nroff(1) manual page."
+Format documents for terminal devices with groff(1).  See the nroff(1)
+manual page."
 
 # Break up option clusters into separate arguments.
 newargs=

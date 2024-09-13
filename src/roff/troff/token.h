@@ -48,7 +48,7 @@ class token {
     TOKEN_REQUEST,
     TOKEN_RIGHT_BRACE,		// \}
     TOKEN_SPACE,		// ' ' -- ordinary space
-    TOKEN_SPECIAL,		// special character
+    TOKEN_SPECIAL_CHAR,	// \(, \[
     TOKEN_SPREAD,		// \p -- break and spread output line
     TOKEN_STRETCHABLE_SPACE,	// \~
     TOKEN_UNSTRETCHABLE_SPACE,	// '\ '
@@ -74,7 +74,7 @@ public:
   bool is_unstretchable_space();
   bool is_horizontal_space();
   bool is_white_space();
-  bool is_special();
+  bool is_special_character();
   bool is_newline();
   bool is_tab();
   bool is_leader();
@@ -162,9 +162,9 @@ inline bool token::is_horizontal_space()
   return type == TOKEN_HORIZONTAL_SPACE;
 }
 
-inline bool token::is_special()
+inline bool token::is_special_character()
 {
-  return type == TOKEN_SPECIAL;
+  return type == TOKEN_SPECIAL_CHAR;
 }
 
 inline int token::nspaces()

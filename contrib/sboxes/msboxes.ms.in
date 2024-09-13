@@ -45,7 +45,7 @@ the PDF output driver for the
 document formatting system,
 allows coloured rectangles to be placed beneath any output created by
 .I groff .
-The extension can be accessed via a device control escape sequence
+The extension can be accessed via a device extension escape sequence
 .Lt "\[rs]X\[aq]pdf: background" \~.\|.\|.\|\c
 .Lt \[aq]
 or a convenience macro

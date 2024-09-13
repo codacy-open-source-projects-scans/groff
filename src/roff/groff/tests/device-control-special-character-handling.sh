@@ -29,11 +29,11 @@ wail () {
 
 input='.
 .nf
-\X#bogus1: esc \%\[u1F63C]\\[u1F00]\-\[`a]#
-.device bogus1: req \%\[u1F63C]\\[u1F00]\-\[`a]
+\X#bogus1: esc \%to-do\[u1F63C]\\[u1F00]\-\[`a]#
+.device bogus1: req \%to-do\[u1F63C]\\[u1F00]\-\[`a]
 .ec @
-@X#bogus2: esc @%@[u1F63C]@@[u1F00]@-@[`a]#
-.device bogus2: req @%@[u1F63C]@@[u1F00]@-@[`a]
+@X#bogus2: esc @%to-do@[u1F63C]@@[u1F00]@-@[`a]#
+.device bogus2: req @%to-do@[u1F63C]@@[u1F00]@-@[`a]
 .'
 
 output=$(printf '%s\n' "$input" | "$groff" -T ps -Z 2> /dev/null \
@@ -45,27 +45,27 @@ echo "$error"
 
 # Expected:
 #
-# x X bogus1: esc \[u1F63C]\[u1F00]-\[u00E0]
-# x X bogus1: req @%\[u1F63C]\[u1F00]@-\[`a]
-# x X bogus2: esc \[u1F63C]\[u1F00]-\[u00E0]
-# x X bogus2: req @%@[u1F63C]@[u1F00]@-@[`a]
+# x X bogus1: esc to-do\[u1F63C]\[u1F00]-\[u00E0]
+# x X bogus1: req @%to-do\[u1F63C]\[u1F00]@-\[`a]
+# x X bogus2: esc to-do\[u1F63C]\[u1F00]-\[u00E0]
+# x X bogus2: req @%to-do@[u1F63C]@[u1F00]@-@[`a]
 
 echo "checking X escape sequence, default escape character" >&2
 echo "$output" \
-  | grep -Fqx 'x X bogus1: esc \[u1F63C]\[u1F00]-\[u00E0]' || wail
+  | grep -Fqx 'x X bogus1: esc to-do\[u1F63C]\[u1F00]-\[u00E0]' || wail
 
 #echo "checking device request, default escape character" >&2
 #echo "$output" \
-#  | grep -qx 'x X bogus1: req \\\[u1F00\] -'"'"'"`^\\~' \
+#  | grep -qx 'x X bogus1: req to-do\\\[u1F00\] -'"'"'"`^\\~' \
 #  || wail
 
 echo "checking X escape sequence, alternate escape character" >&2
 echo "$output" \
-  | grep -Fqx 'x X bogus2: esc \[u1F63C]\[u1F00]-\[u00E0]' || wail
+  | grep -Fqx 'x X bogus2: esc to-do\[u1F63C]\[u1F00]-\[u00E0]' || wail
 
 #echo "checking device request, alternate escape character" >&2
 #echo "$output" \
-#  | grep -qx 'x X bogus2: req \\\[u1F00\] -'"'"'"`^\\~' \
+#  | grep -qx 'x X bogus2: req to-do\\\[u1F00\] -'"'"'"`^\\~' \
 #  || wail
 
 input='.
@@ -97,23 +97,39 @@ echo "$output" | grep -Fqx 'x X bogus4: [\]^' || wail
 echo "checking X escape sequence, conversions to basic Latin (3/3)" >&2
 echo "$output" | grep -Fqx 'x X bogus5: {||}~' || wail
 
+# A more practical case, suggested by Deri James.
+
 input='.
-.nf
-\X#bogus6: '"'"'-^`~#
-.\"device bogus6: '"'"'-^`~
+.ds h Hyphen-Minus and \[rs]\[u2010]
+\X"ps:exec 1:\\X [/Dest /\*[h] /Title \*[h] /Level 1 /OUT pdfmark"
+\!x X ps:exec 2:\! [/Dest /\*[h] /Title \*[h] /Level 1 /OUT pdfmark
+.device ps:exec 3:device [/Dest /\*[h] /Title \*[h] /Level 1 /OUT pdfmark
+.output x X ps:exec 4:output [/Dest /\*[h] /Title \*[h] /Level 1 /OUT pdfmark
 .'
 
-# Expected:
-#
-# x X bogus6: \[u2019]\[u2010]\[u0302]\[u0300]\[u0303]
-
-output=$(printf '%s\n' "$input" | "$groff" -T ps -Z 2> /dev/null \
+output=$(printf '%s\n' "$input" | "$groff" -T pdf -Z 2> /dev/null \
   | grep '^x X')
 echo "$output"
 
-echo "checking X escape sequence, conversions from basic Latin" >&2
+# Expected:
+#
+# x X ps:exec 2:\! [/Dest /Hyphen-Minus and \[rs]\[u2010] /Title Hyphen-Minus and \[rs]\[u2010] /Level 1 /OUT pdfmark
+# x X ps:exec 4:output [/Dest /Hyphen-Minus and \[rs]\[u2010] /Title Hyphen-Minus and \[rs]\[u2010] /Level 1 /OUT pdfmark
+# x X ps:exec 1:\X [/Dest /Hyphen-Minus and \[u2010] /Title Hyphen-Minus and \[u2010] /Level 1 /OUT pdfmark
+# x X ps:exec 3:device [/Dest /Hyphen-Minus and \[rs]\[u2010] /Title Hyphen-Minus and \[rs]\[u2010] /Level 1 /OUT pdfmark
+
+echo "checking practical bookmarking with \X escape sequence" >&2
+echo "$output" | grep -q '1:\\X.*Hyphen-Minus and \\\[u2010\]' || wail
+
+echo "checking practical bookmarking with \! escape sequence" >&2
+echo "$output" | grep -q '2:\\!.*Hyphen-Minus and \\\[rs\]\\\[u2010\]' \
+  || wail
+
+# XXX: case 3 isn't ready yet
+
+echo "checking practical bookmarking with output request" >&2
 echo "$output" \
-  | grep -Fqx 'x X bogus6: \[u2019]\[u2010]\[u0302]\[u0300]\[u0303]' \
+  | grep -q '4:output.*Hyphen-Minus and \\\[rs\]\\\[u2010\]' \
   || wail
 
 test -z "$fail"

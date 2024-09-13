@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -49,10 +49,11 @@ static vunits truncated_space;
 static vunits needed_space;
 
 diversion::diversion(symbol s)
-: prev(0), nm(s), vertical_position(V0), high_water_mark(V0),
-  any_chars_added(0), no_space_mode(0), needs_push(0),
-  saved_seen_break(0), saved_seen_space(0), saved_seen_eol(0),
-  saved_suppress_next_eol(0), marked_place(V0)
+: prev(0 /* nullptr */), nm(s), vertical_position(V0),
+  high_water_mark(V0), is_in_no_space_mode(false),
+  saved_seen_break(false), saved_seen_space(false),
+  saved_seen_eol(false), saved_suppress_next_eol(false),
+  marked_place(V0)
 {
 }
 
@@ -92,7 +93,7 @@ top_level_diversion *topdiv;
 
 diversion *curdiv;
 
-void do_divert(int append, int boxing)
+void do_divert(bool appending, bool boxing)
 {
   tok.skip();
   symbol nm = get_name();
@@ -108,7 +109,8 @@ void do_divert(int append, int boxing)
 	curenv->space_total = curdiv->saved_space_total;
 	curenv->saved_indent = curdiv->saved_saved_indent;
 	curenv->target_text_length = curdiv->saved_target_text_length;
-	curenv->prev_line_interrupted = curdiv->saved_prev_line_interrupted;
+	curenv->prev_line_interrupted
+	  = curdiv->saved_prev_line_interrupted;
       }
       diversion *temp = curdiv;
       curdiv = curdiv->prev;
@@ -118,7 +120,7 @@ void do_divert(int append, int boxing)
       warning(WARN_DI, "diversion stack underflow");
   }
   else {
-    macro_diversion *md = new macro_diversion(nm, append);
+    macro_diversion *md = new macro_diversion(nm, appending);
     md->prev = curdiv;
     curdiv = md;
     curdiv->saved_seen_break = curenv->seen_break;
@@ -134,8 +136,9 @@ void do_divert(int append, int boxing)
       curdiv->saved_space_total = curenv->space_total;
       curdiv->saved_saved_indent = curenv->saved_indent;
       curdiv->saved_target_text_length = curenv->target_text_length;
-      curdiv->saved_prev_line_interrupted = curenv->prev_line_interrupted;
-      curenv->line = 0;
+      curdiv->saved_prev_line_interrupted
+	= curenv->prev_line_interrupted;
+      curenv->line = 0 /* nullptr */;
       curenv->start_line();
     }
   }
@@ -144,22 +147,22 @@ void do_divert(int append, int boxing)
 
 void divert()
 {
-  do_divert(0, 0);
+  do_divert(false /* appending */, false /* boxing */);
 }
 
 void divert_append()
 {
-  do_divert(1, 0);
+  do_divert(true /* appending */, false /* boxing */);
 }
 
 void box()
 {
-  do_divert(0, 1);
+  do_divert(false /* appending */, true /* boxing */);
 }
 
 void box_append()
 {
-  do_divert(1, 1);
+  do_divert(true /* appending */, true /* appending */);
 }
 
 void diversion::need(vunits n)
@@ -172,7 +175,7 @@ void diversion::need(vunits n)
   }
 }
 
-macro_diversion::macro_diversion(symbol s, int append)
+macro_diversion::macro_diversion(symbol s, bool appending)
 : diversion(s), max_width(H0), diversion_trap(0 /* nullptr */),
   diversion_trap_pos(0)
 {
@@ -202,11 +205,11 @@ macro_diversion::macro_diversion(symbol s, int append)
       .a
       .di
 
-       will work and will make 'a' contain two copies of what it contained
-       before; in troff, 'a' would contain nothing. */
+       will work and will make 'a' contain two copies of what it
+       contained before; in troff, 'a' would contain nothing. */
     request_or_macro *rm
-      = (request_or_macro *)request_dictionary.remove(s);
-    if (!rm || (mac = rm->to_macro()) == 0)
+      = static_cast<request_or_macro *>(request_dictionary.remove(s));
+    if (!rm || (0 /* nullptr */ == (mac = rm->to_macro()))
       mac = new macro;
   }
   else
@@ -215,10 +218,10 @@ macro_diversion::macro_diversion(symbol s, int append)
   // We can now catch the situation described above by comparing
   // the length of the charlist in the macro_header with the length
   // stored in the macro. When we detect this, we copy the contents.
-  mac = new macro(1);
-  if (append) {
+  mac = new macro(true /* is diversion */);
+  if (appending) {
     request_or_macro *rm
-      = (request_or_macro *)request_dictionary.lookup(s);
+      = static_cast<request_or_macro *>(request_dictionary.lookup(s));
     if (rm) {
       macro *m = rm->to_macro();
       if (m)
@@ -229,15 +232,16 @@ macro_diversion::macro_diversion(symbol s, int append)
 
 macro_diversion::~macro_diversion()
 {
-  request_or_macro *rm = (request_or_macro *)request_dictionary.lookup(nm);
-  macro *m = rm ? rm->to_macro() : 0;
+  request_or_macro *rm
+    = static_cast<request_or_macro *>(request_dictionary.lookup(nm));
+  macro *m = rm ? rm->to_macro() : 0 /* nullptr */;
   if (m) {
     *m = *mac;
     delete mac;
   }
   else
     request_dictionary.define(nm, mac);
-  mac = 0;
+  mac = 0 /* nullptr */;
   dl_reg_contents = max_width.to_units();
   dn_reg_contents = vertical_position.to_units();
 }
@@ -277,12 +281,12 @@ void macro_diversion::transparent_output(node *n)
   mac->append(n);
 }
 
-void macro_diversion::output(node *nd, int retain_size,
+void macro_diversion::output(node *nd, bool retain_size,
 			     vunits vs, vunits post_vs, hunits width)
 {
-  no_space_mode = 0;
+  is_in_no_space_mode = false;
   vertical_size v(vs, post_vs);
-  while (nd != 0) {
+  while (nd != 0 /* nullptr */) {
     nd->set_vertical_size(&v);
     node *temp = nd;
     nd = nd->next;
@@ -334,10 +338,11 @@ void macro_diversion::output(node *nd, int retain_size,
     high_water_mark = vertical_position - v.post;
 }
 
-void macro_diversion::space(vunits n, int)
+void macro_diversion::space(vunits n, bool /* forcing */)
 {
   if (honor_vertical_position_traps
-      && !diversion_trap.is_null() && diversion_trap_pos > vertical_position
+      && !diversion_trap.is_null()
+      && diversion_trap_pos > vertical_position
       && diversion_trap_pos <= vertical_position + n) {
     truncated_space = vertical_position + n - diversion_trap_pos;
     n = diversion_trap_pos - vertical_position;
@@ -358,8 +363,8 @@ top_level_diversion::top_level_diversion()
 : page_number(0), page_count(0), last_page_count(-1),
   page_length(units_per_inch*11),
   prev_page_offset(units_per_inch), page_offset(units_per_inch),
-  page_trap_list(0), have_next_page_number(0),
-  ejecting_page(0), before_first_page(1)
+  page_trap_list(0 /* nullptr */), overriding_next_page_number(false),
+  ejecting_page(false), before_first_page_status(1)
 {
 }
 
@@ -367,13 +372,14 @@ top_level_diversion::top_level_diversion()
 
 trap *top_level_diversion::find_next_trap(vunits *next_trap_pos)
 {
-  trap *next_trap = 0;
-  for (trap *pt = page_trap_list; pt != 0; pt = pt->next)
+  trap *next_trap = 0 /* nullptr */;
+  for (trap *pt = page_trap_list; pt != 0 /* nullptr */; pt = pt->next)
     if (!pt->nm.is_null()) {
       if (pt->position >= V0) {
-	if (pt->position > vertical_position
-	    && pt->position < page_length
-	    && (next_trap == 0 || pt->position < *next_trap_pos)) {
+	if ((pt->position > vertical_position)
+	    && (pt->position < page_length)
+	    && ((0 /* nullptr */ == next_trap)
+	        || pt->position < *next_trap_pos)) {
 	  next_trap = pt;
 	  *next_trap_pos = pt->position;
 	}
@@ -381,9 +387,10 @@ trap *top_level_diversion::find_next_trap(vunits *next_trap_pos)
       else {
 	vunits pos = pt->position;
 	pos += page_length;
-	if (pos > 0
-	    && pos > vertical_position
-	    && (next_trap == 0 || pos < *next_trap_pos)) {
+	if ((pos > 0)
+	    && (pos > vertical_position)
+	    && ((0 /* nullptr */ == next_trap)
+		|| (pos < *next_trap_pos))) {
 	  next_trap = pt;
 	  *next_trap_pos = pos;
 	}
@@ -412,19 +419,19 @@ const char *top_level_diversion::get_next_trap_name()
 }
 
 // This is used by more than just top-level diversions.
-void top_level_diversion::output(node *nd, int retain_size,
+void top_level_diversion::output(node *nd, bool retain_size,
 				 vunits vs, vunits post_vs,
 				 hunits width)
 {
-  no_space_mode = 0;
+  is_in_no_space_mode = false;
   vunits next_trap_pos;
   trap *next_trap = find_next_trap(&next_trap_pos);
-  if (before_first_page && begin_page())
+  if ((before_first_page_status > 0) && begin_page())
     fatal("attempting diversion output before first page has started,"
 	  " when a top-of-page trap is defined; invoke break or flush"
 	  " request beforehand");
   vertical_size v(vs, post_vs);
-  for (node *tem = nd; tem != 0; tem = tem->next)
+  for (node *tem = nd; tem != 0 /* nullptr */; tem = tem->next)
     tem->set_vertical_size(&v);
   last_post_line_extra_space = v.post_extra.to_units();
   if (!retain_size) {
@@ -472,7 +479,7 @@ void top_level_diversion::output(node *nd, int retain_size,
 
 void top_level_diversion::transparent_output(unsigned char c)
 {
-  if (before_first_page && begin_page())
+  if ((before_first_page_status > 0) && begin_page())
     fatal("attempting transparent output from top-level diversion"
 	  " before first page has started, when a top-of-page trap is"
 	  " defined; invoke break or flush request beforehand");
@@ -491,22 +498,22 @@ void top_level_diversion::transparent_output(node * /*n*/)
 // Implement the internals of `.cf`.
 void top_level_diversion::copy_file(const char *filename)
 {
-  if (before_first_page && begin_page())
+  if ((before_first_page_status > 0) && begin_page())
     fatal("attempting transparent copy of file to top-level diversion"
 	  " before first page has started, when a top-of-page trap is"
 	  " defined; invoke break or flush request beforehand");
   the_output->copy_file(page_offset, vertical_position, filename);
 }
 
-void top_level_diversion::space(vunits n, int forced)
+void top_level_diversion::space(vunits n, bool forcing)
 {
-  if (no_space_mode) {
-    if (!forced)
+  if (is_in_no_space_mode) {
+    if (!forcing)
       return;
     else
-      no_space_mode = 0;
+      is_in_no_space_mode = false;
   }
-  if (before_first_page) {
+  if (before_first_page_status > 0) {
     begin_page(n);
     return;
   }
@@ -544,11 +551,11 @@ trap::trap(symbol s, vunits n, trap *p)
 
 void top_level_diversion::add_trap(symbol nam, vunits pos)
 {
-  trap *first_free_slot = 0;
+  trap *first_free_slot = 0 /* nullptr*/;
   trap **p;
   for (p = &page_trap_list; *p; p = &(*p)->next) {
     if ((*p)->nm.is_null()) {
-      if (first_free_slot == 0)
+      if (0 /* nullptr*/ == first_free_slot)
 	first_free_slot = *p;
     }
     else if ((*p)->position == pos) {
@@ -561,7 +568,7 @@ void top_level_diversion::add_trap(symbol nam, vunits pos)
     first_free_slot->position = pos;
   }
   else
-    *p = new trap(nam, pos, 0);
+    *p = new trap(nam, pos, 0 /* nullptr*/);
 }
 
 void top_level_diversion::remove_trap(symbol nam)
@@ -599,7 +606,8 @@ void top_level_diversion::print_traps()
     if (p->nm.is_null())
       fprintf(stderr, "  empty\n");
     else
-      fprintf(stderr, "%s\t%d\n", p->nm.contents(), p->position.to_units());
+      fprintf(stderr, "%s\t%d\n", p->nm.contents(),
+	      p->position.to_units());
   fflush(stderr);
 }
 
@@ -616,7 +624,7 @@ void end_diversions()
 
 void cleanup_and_exit(int exit_code)
 {
-  if (the_output) {
+  if (the_output != 0 /* nullptr */) {
     the_output->trailer(topdiv->get_page_length());
     // If we're already dying, don't call the_output's destructor.  See
     // node.cpp:real_output_file::~real_output_file().
@@ -642,14 +650,14 @@ bool top_level_diversion::begin_page(vunits n)
   }
   if (last_page_number > 0 && page_number == last_page_number)
     cleanup_and_exit(EXIT_SUCCESS);
-  if (!the_output)
+  if (0 /* nullptr */ == the_output)
     init_output();
   ++page_count;
-  if (have_next_page_number) {
+  if (overriding_next_page_number) {
     page_number = next_page_number;
-    have_next_page_number = 0;
+    overriding_next_page_number = false;
   }
-  else if (before_first_page == 1)
+  else if (before_first_page_status == 1)
     page_number = 1;
   else
     page_number++;
@@ -659,12 +667,12 @@ bool top_level_diversion::begin_page(vunits n)
   trap *next_trap = find_next_trap(&next_trap_pos);
   vertical_position = V0;
   high_water_mark = V0;
-  ejecting_page = 0;
-  // If before_first_page was 2, then the top of page transition was
-  // undone using eg .nr nl 0-1.  See nl_reg::set_value.
-  if (before_first_page != 2)
+  ejecting_page = false;
+  // If before_first_page_status was 2, then the top of page transition
+  // was undone using ".nr nl 0-1" or similar.  See nl_reg::set_value.
+  if (before_first_page_status != 2)
     the_output->begin_page(page_number, page_length);
-  before_first_page = 0;
+  before_first_page_status = 0;
   nl_reg_contents = vertical_position.to_units();
   if ((honor_vertical_position_traps && (next_trap != 0 /* nullptr */))
       && (next_trap_pos == V0)) {
@@ -686,20 +694,21 @@ void continue_page_eject()
 	    " traps disabled");
     else {
       push_page_ejector();
-      topdiv->space(topdiv->get_page_length(), 1);
+      topdiv->space(topdiv->get_page_length(), true /* forcing */);
     }
   }
 }
 
 void top_level_diversion::set_next_page_number(int n)
 {
-  next_page_number= n;
-  have_next_page_number = 1;
+  next_page_number = n;
+  overriding_next_page_number = true;
 }
 
 int top_level_diversion::get_next_page_number()
 {
-  return have_next_page_number ? next_page_number : page_number + 1;
+  return overriding_next_page_number ? next_page_number
+				     : (page_number + 1);
 }
 
 void top_level_diversion::set_page_length(vunits n)
@@ -738,7 +747,7 @@ void page_length()
     topdiv->set_page_length(temp);
   }
   else
-    topdiv->set_page_length(11*units_per_inch);
+    topdiv->set_page_length(11 * units_per_inch);
   skip_line();
 }
 
@@ -757,21 +766,21 @@ void when_request()
 
 void begin_page()
 {
-  int got_arg = 0;
-  int n = 0;		/* pacify compiler */
+  bool got_arg = false;
+  int n = 0;
   if (has_arg() && get_integer(&n, topdiv->get_page_number()))
-    got_arg = 1;
+    got_arg = true;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
   if (curdiv == topdiv) {
-    if (topdiv->before_first_page) {
+    if (topdiv->before_first_page_status > 0) {
       if (!want_break) {
 	if (got_arg)
 	  topdiv->set_next_page_number(n);
-	if (got_arg || !topdiv->no_space_mode)
+	if (got_arg || !topdiv->is_in_no_space_mode)
 	  topdiv->begin_page();
       }
-      else if (topdiv->no_space_mode && !got_arg)
+      else if (topdiv->is_in_no_space_mode && !got_arg)
 	topdiv->begin_page();
       else {
 	/* Given this
@@ -802,7 +811,7 @@ void begin_page()
 	curenv->do_break();
       if (got_arg)
 	topdiv->set_next_page_number(n);
-      if (!(topdiv->no_space_mode && !got_arg))
+      if (!(topdiv->is_in_no_space_mode && !got_arg))
 	topdiv->set_ejecting();
     }
   }
@@ -811,13 +820,13 @@ void begin_page()
 
 void no_space()
 {
-  curdiv->no_space_mode = 1;
+  curdiv->is_in_no_space_mode = true;
   skip_line();
 }
 
 void restore_spacing()
 {
-  curdiv->no_space_mode = 0;
+  curdiv->is_in_no_space_mode = false;
   skip_line();
 }
 
@@ -842,7 +851,7 @@ void space_request()
     n = curenv->get_vertical_spacing();
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (!unpostpone_traps() && !curdiv->no_space_mode)
+  if (!unpostpone_traps() && !curdiv->is_in_no_space_mode)
     curdiv->space(n);
   else
     // The line might have had line spacing that was truncated.
@@ -854,7 +863,7 @@ void space_request()
 void blank_line()
 {
   curenv->do_break();
-  if (!was_trap_sprung && !curdiv->no_space_mode)
+  if (!was_trap_sprung && !curdiv->is_in_no_space_mode)
     curdiv->space(curenv->get_vertical_spacing());
   else
     truncated_space += curenv->get_vertical_spacing();
@@ -876,14 +885,13 @@ void need_space()
 
 void page_number()
 {
-  int n;
-
+  int n = 0;
   // the ps4html register is set if we are using -Tps
   // to generate images for html
   // XXX: Yuck!  Get rid of this; macro packages already test the
   // register before invoking .pn.
-  reg *r = (reg *)register_dictionary.lookup("ps4html");
-  if (r == 0 /* nullptr */)
+  reg *r = static_cast<reg *>(register_dictionary.lookup("ps4html"));
+  if (0 /* nullptr */ == r)
     if (has_arg() && get_integer(&n, topdiv->get_page_number()))
       topdiv->set_next_page_number(n);
   skip_line();
@@ -897,7 +905,7 @@ void save_vertical_space()
   if (!has_arg() || !get_vunits(&x, 'v'))
     x = curenv->get_vertical_spacing();
   if (curdiv->distance_to_next_trap() > x)
-    curdiv->space(x, 1);
+    curdiv->space(x, true /* forcing */);
   else
     saved_space = x;
   skip_line();
@@ -908,18 +916,18 @@ void output_saved_vertical_space()
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
   if (saved_space > V0)
-    curdiv->space(saved_space, 1);
+    curdiv->space(saved_space, true /* forcing */);
   saved_space = V0;
   tok.next();
 }
 
-void flush_output()
+static void flush_request()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
   if (want_break)
     curenv->do_break();
-  if (the_output)
+  if (the_output != 0 /* nullptr */)
     the_output->flush();
   tok.next();
 }
@@ -1016,7 +1024,7 @@ void return_request()
 
 void vertical_position_traps()
 {
-  int n;
+  int n = 0;
   if (has_arg() && get_integer(&n))
     honor_vertical_position_traps = (n > 0);
   else
@@ -1066,7 +1074,7 @@ public:
 
 bool vertical_position_reg::get_value(units *res)
 {
-  if (curdiv == topdiv && topdiv->before_first_page)
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0))
     *res = -1;
   else
     *res = curdiv->get_vertical_position().to_units();
@@ -1075,7 +1083,7 @@ bool vertical_position_reg::get_value(units *res)
 
 const char *vertical_position_reg::get_string()
 {
-  if (curdiv == topdiv && topdiv->before_first_page)
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0))
     return "-1";
   else
     return i_to_a(curdiv->get_vertical_position().to_units());
@@ -1210,11 +1218,11 @@ void nl_reg::set_value(units n)
   // the top-level diversion is 0 undoes the top of page transition,
   // so that the header macro will be called as if the top of page
   // transition hasn't happened.  This is used by Larry Wall's
-  // wrapman program.  Setting before_first_page to 2 rather than 1,
-  // tells top_level_diversion::begin_page not to call
+  // wrapman program.  Setting before_first_page_status to 2 rather than
+  // 1, tells top_level_diversion::begin_page not to call
   // output_file::begin_page again.
   if (n < 0 && topdiv->get_vertical_position() == V0)
-    topdiv->before_first_page = 2;
+    topdiv->before_first_page_status = 2;
 }
 
 class no_space_mode_reg : public reg {
@@ -1225,13 +1233,13 @@ public:
 
 bool no_space_mode_reg::get_value(units *val)
 {
-  *val = curdiv->no_space_mode;
+  *val = curdiv->is_in_no_space_mode;
   return true;
 }
 
 const char *no_space_mode_reg::get_string()
 {
-  return curdiv->no_space_mode ? "1" : "0";
+  return curdiv->is_in_no_space_mode ? "1" : "0";
 }
 
 void init_div_requests()
@@ -1243,7 +1251,7 @@ void init_div_requests()
   init_request("da", divert_append);
   init_request("di", divert);
   init_request("dt", diversion_trap);
-  init_request("fl", flush_output);
+  init_request("fl", flush_request);
   init_request("mk", mark);
   init_request("ne", need_space);
   init_request("ns", no_space);

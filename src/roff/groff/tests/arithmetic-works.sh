@@ -160,7 +160,7 @@ echo "$output" | grep -Fqx '6: decr -2147483648 -> -2147483648' || wail
 # A quirk that GNU troff arithmetic has is that one cannot directly
 # assign INT_MIN to a register, because the negative sign is parsed
 # separately from the digit sequence.  (This is true even when the
-# negative sign is not intrepreted as a decrementation operator.)
+# negative sign is not interpreted as a decrementation operator.)
 #
 # .nr a 2147483647
 # .tm a=\na

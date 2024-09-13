@@ -888,11 +888,16 @@ file.
 .
 .
 .\" ====================================================================
-.SS "Device control commands"
+.SS "Device extension commands"
 .\" ====================================================================
 .
 .I grops
-recognizes device control commands produced by the
+recognizes device extension commands produced by the
+.I groff
+request
+.B \%device
+or
+.I roff
 .B \[rs]X
 escape sequence,
 but interprets only those that begin with a
@@ -952,7 +957,7 @@ commands is on top of the dictionary stack.
 .
 If your code adds definitions to this dictionary,
 you should allocate space for them using
-.RB \[lq] "\[rs]X\[aq]ps: mdef\~"
+.RB \[lq] "\[rs]X\[aq]ps:\~mdef\~"
 .IB n \[aq]\c
 \[rq].
 .
@@ -1219,10 +1224,10 @@ is previewed with
 If a PostScript procedure
 .B BPhook
 has been defined via a
-.RB \[lq] "ps: def" \[rq]
+.RB \[lq] "ps:\~def" \[rq]
 or
-.RB \[lq] "ps: mdef" \[rq]
-device control command,
+.RB \[lq] "ps:\~mdef" \[rq]
+device extension command,
 it is executed at the beginning of every page
 (before anything is drawn or written by
 .IR groff ).

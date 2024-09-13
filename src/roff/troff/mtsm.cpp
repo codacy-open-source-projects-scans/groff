@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2024 Free Software Foundation, Inc.
      Written by Gaius Mulley (gaius@glam.ac.uk)
 
 This file is part of groff.

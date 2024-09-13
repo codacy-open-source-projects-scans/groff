@@ -473,10 +473,12 @@ The
 driver uses this directive.
 .
 .
+.\" XXX: Savannah #63074 is trying to make this obsolescent.
 .TP
 .B use_charnames_in_special
 .I @g@troff
-should encode named glyphs inside device control commands.
+should encode special characters in arguments to device extension
+commands.
 .
 The
 .I \%grohtml

@@ -54,7 +54,7 @@ o GNU troff now implements saturating rather than wrapping integer
   the formatter now emits a warning diagnostic in the "range" category.
 
 o The `pnr` request now additionally reports the interpolation format of
-  each register.
+  each register (if it is not string-valued).
 
 o The formatter no longer reports warnings in the "el" category.  There
   was only one; it threw a warning diagnostic if enabled (which it was
@@ -129,6 +129,10 @@ o The `hla` request, when invoked with no arguments, now clears the
 o The read-only registers `.m` and `.M` now interpolate "default" when
   the default color is selected as the stroke or fill color,
   respectively, rather than interpolating nothing.
+
+o Numerical expression contexts that accept the `z` and `u` scaling
+  units, such as the `ps` request and `\s` escape sequence, now also
+  accept `p` and `s`.
 
 eqn
 ---

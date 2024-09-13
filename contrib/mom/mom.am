@@ -110,9 +110,9 @@ endif
 mom_test_template = contrib/mom/examples/test-mom.sh.in
 
 # Small test suite on mom examples
-mom_TESTS = contrib/mom/examples/tests-mom.sh
+mom_TESTS = contrib/mom/examples/test-mom.sh
 TESTS += $(mom_TESTS)
-contrib/mom/examples/tests-mom.sh: \
+contrib/mom/examples/test-mom.sh: \
   $(top_builddir)/config.status \
   $(MOMPROCESSEDEXAMPLEFILES) \
   $(top_srcdir)/$(mom_test_template)
