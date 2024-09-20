@@ -543,8 +543,8 @@ can be any character not in
 .TP
 .BI print\~ arg\c
 \~.\|.\|.
-Concatenate and write arguments to the standard error stream followed by
-a newline.
+Catenate and write arguments to the standard error stream followed by a
+newline.
 .
 Each
 .I arg
@@ -559,7 +559,7 @@ This feature is useful for debugging.
 \~.\|.\|.
 .\" Move right margin to indentation since we must indent more later.
 .RS
-Concatenate arguments
+Catenate arguments
 and pass them as a line to
 .I troff \" generic
 or \*[tx].

@@ -321,7 +321,7 @@ public:
   statem *diversion_state;
 protected:
   const unsigned char *ptr;
-  const unsigned char *eptr;
+  const unsigned char *endptr;
   input_iterator *next;
 private:
   virtual int fill(node **);
@@ -348,12 +348,12 @@ private:
 };
 
 input_iterator::input_iterator()
-: is_diversion(false), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
+: is_diversion(false), ptr(0 /* nullptr */), endptr(0 /* nullptr */)
 {
 }
 
 input_iterator::input_iterator(bool is_div)
-: is_diversion(is_div), ptr(0 /* nullptr */), eptr(0 /* nullptr */)
+: is_diversion(is_div), ptr(0 /* nullptr */), endptr(0 /* nullptr */)
 {
 }
 
@@ -369,7 +369,7 @@ int input_iterator::peek()
 
 inline int input_iterator::get(node **p)
 {
-  return ptr < eptr ? *ptr++ : fill(p);
+  return ptr < endptr ? *ptr++ : fill(p);
 }
 
 class input_boundary : public input_iterator {
@@ -441,7 +441,7 @@ bool file_iterator::next_file(FILE *f, const char *s)
   seen_escape = false;
   was_popened = false;
   ptr = 0 /* nullptr */;
-  eptr = 0 /* nullptr */;
+  endptr = 0 /* nullptr */;
   return true;
 }
 
@@ -470,11 +470,11 @@ int file_iterator::fill(node **)
     }
   }
   if (p > buf) {
-    eptr = p;
+    endptr = p;
     return *ptr++;
   }
   else {
-    eptr = p;
+    endptr = p;
     return EOF;
   }
 }
@@ -597,7 +597,7 @@ inline int input_stack::get_div_level()
 
 inline int input_stack::get(node **np)
 {
-  int res = (top->ptr < top->eptr) ? *top->ptr++ : finish_get(np);
+  int res = (top->ptr < top->endptr) ? *top->ptr++ : finish_get(np);
   if (res == '\n') {
     have_formattable_input_on_interrupted_line = have_formattable_input;
     have_formattable_input = false;
@@ -624,7 +624,7 @@ int input_stack::finish_get(node **np)
     top = top->next;
     level--;
     delete tem;
-    if (top->ptr < top->eptr)
+    if (top->ptr < top->endptr)
       return *top->ptr++;
   }
   assert(level == 0);
@@ -633,7 +633,7 @@ int input_stack::finish_get(node **np)
 
 inline int input_stack::peek()
 {
-  return (top->ptr < top->eptr) ? *top->ptr : finish_peek();
+  return (top->ptr < top->endptr) ? *top->ptr : finish_peek();
 }
 
 void input_stack::check_end_diversion(input_iterator *t)
@@ -659,7 +659,7 @@ int input_stack::finish_peek()
     top = top->next;
     level--;
     delete tem;
-    if (top->ptr < top->eptr)
+    if (top->ptr < top->endptr)
       return *top->ptr;
   }
   assert(level == 0);
@@ -1565,7 +1565,7 @@ static void report_color()
   while (iter.get(&key, reinterpret_cast<void **>(&value))) {
     assert(!key.is_null());
     assert(value != 0 /* nullptr */);
-    errprint("%1\n", key.contents());
+    errprint("%1\t%2\n", key.contents(), value->print_color());
   }
   fflush(stderr);
   skip_line();
@@ -2836,9 +2836,12 @@ static symbol do_get_long_name(bool required, char end_char)
   }
 }
 
+static void close_all_streams();
+
 void exit_troff()
 {
   is_exit_underway = true;
+  close_all_streams();
   topdiv->set_last_page();
   if (!end_of_input_macro_name.is_null()) {
     spring_trap(end_of_input_macro_name);
@@ -3711,12 +3714,12 @@ string_iterator::string_iterator(const macro &m, const char *p,
   if (count != 0) {
     bp = mac.p->cl.head;
     nd = mac.p->nl.head;
-    ptr = eptr = bp->s;
+    ptr = endptr = bp->s;
   }
   else {
-    bp = 0;
-    nd = 0;
-    ptr = eptr = 0;
+    bp = 0 /* nullptr */;
+    nd = 0 /* nullptr */;
+    ptr = endptr = 0 /* nullptr */;
   }
   with_break = input_stack::get_break_flag();
 }
@@ -3725,7 +3728,7 @@ string_iterator::string_iterator()
 {
   bp = 0 /* nullptr */;
   nd = 0 /* nullptr */;
-  ptr = eptr = 0 /* nullptr */;
+  ptr = endptr = 0 /* nullptr */;
   seen_newline = false;
   how_invoked = 0 /* nullptr */;
   lineno = 1;
@@ -3745,7 +3748,7 @@ int string_iterator::fill(node **np)
   seen_newline = false;
   if (count <= 0)
     return EOF;
-  const unsigned char *p = eptr;
+  const unsigned char *p = endptr;
   if (p >= bp->s + char_block::SIZE) {
     bp = bp->next;
     p = bp->s;
@@ -3759,7 +3762,7 @@ int string_iterator::fill(node **np)
 	(*np)->div_nest_level = 0;
     }
     nd = nd->next;
-    eptr = ptr = p + 1;
+    endptr = ptr = p + 1;
     count--;
     return 0;
   }
@@ -3778,7 +3781,7 @@ int string_iterator::fill(node **np)
       break;
     p++;
   }
-  eptr = p;
+  endptr = p;
   count -= p - ptr;
   return *ptr++;
 }
@@ -3787,7 +3790,7 @@ int string_iterator::peek()
 {
   if (count <= 0)
     return EOF;
-  const unsigned char *p = eptr;
+  const unsigned char *p = endptr;
   if (p >= bp->s + char_block::SIZE) {
     p = bp->next->s;
   }
@@ -3843,7 +3846,7 @@ temp_iterator::temp_iterator(const char *s, int len)
     (void) memcpy(base, s, len);
     base[len] = '\0';
     ptr = base;
-    eptr = base + len;
+    endptr = base + len;
   }
 }
 
@@ -4316,8 +4319,7 @@ static void report_composite_characters()
   while (iter.get(&key, reinterpret_cast<void **>(&value))) {
     assert(!key.is_null());
     assert(value != 0 /* nullptr */);
-    const char *k = key.contents();
-    errprint("%1\t%2\n", k, value);
+    errprint("%1\t%2\n", key.contents(), value);
   }
   fflush(stderr);
   skip_line();
@@ -5733,16 +5735,9 @@ static node *do_non_interpreted() // \?
   return new non_interpreted_node(mac);
 }
 
-// This is a helper function for `encode_character_for_device_output()`.
-static void encode_special_character_for_device_output(macro *mac)
+static void map_special_character_for_device_output(macro *mac,
+						    const char *sc)
 {
-  const char *sc;
-  if (font::use_charnames_in_special) {
-    charinfo *ci = tok.get_char(true /* required */);
-    sc = ci->get_symbol()->contents();
-  }
-  else
-    sc = tok.get_char(true /* required */)->get_symbol()->contents();
   if (strcmp("-", sc) == 0)
     mac->append('-');
   else if (strcmp("dq", sc) == 0)
@@ -5794,7 +5789,7 @@ static void encode_special_character_for_device_output(macro *mac)
       char character[unibufsz];
       (void) memset(errbuf, '\0', ERRBUFSZ);
       (void) memset(character, '\0', UNIBUFSZ);
-      // If looks like something other than an attempt at a Unicode
+      // If it looks like something other than an attempt at a Unicode
       // special character escape sequence already, try to convert it
       // into one.  Output drivers don't (and shouldn't) know anything
       // about a troff formatter's special character identifiers.
@@ -5822,6 +5817,18 @@ static void encode_special_character_for_device_output(macro *mac)
       mac->append(']');
     }
   }
+}
+
+static void encode_special_character_for_device_output(macro *mac)
+{
+  const char *sc;
+  if (font::use_charnames_in_special) {
+    charinfo *ci = tok.get_char(true /* required */);
+    sc = ci->get_symbol()->contents();
+  }
+  else
+    sc = tok.get_char(true /* required */)->get_symbol()->contents();
+  map_special_character_for_device_output(mac, sc);
 }
 
 // In troff output, we translate the escape character to '\', but it is
@@ -5861,6 +5868,8 @@ static node *do_device_extension() // \X
   if (!start_token.is_usable_as_delimiter(true /* report error */))
     return 0 /* nullptr */;
   macro mac;
+  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0))
+    topdiv->begin_page();
   for (;;) {
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
@@ -7212,14 +7221,53 @@ void terminal_continue()
   do_terminal(0, 1);
 }
 
-dictionary stream_dictionary(20);
+struct grostream {
+  string filename;
+  string mode;
+  FILE *file;
+  grostream(const string &fn, string m, FILE *fp);
+  ~grostream();
+};
+
+grostream::grostream(const string &fn, string m, FILE *fp)
+: filename(fn), mode(m), file(fp)
+{
+  filename += '\0'; // Don't leak garbage in print_streams().
+}
+
+// XXX: Maybe we should try to close the libc FILE stream here.
+// Resource Release Is Destruction?
+grostream::~grostream()
+{
+}
+
+object_dictionary stream_dictionary(20);
+
+void print_streams()
+{
+  object_dictionary_iterator iter(stream_dictionary);
+  symbol stream_name;
+  grostream *grost;
+  while (iter.get(&stream_name, (object **)&grost)) {
+    assert(!stream_name.is_null());
+    if (stream_name != 0 /* nullptr */) {
+      errprint("%1\t", stream_name.contents());
+      errprint("%1\t%2\n", grost->filename.contents(),
+	       grost->mode.contents());
+    }
+  }
+  fflush(stderr);
+  skip_line();
+}
 
 static void open_file(bool appending)
 {
   symbol stream = get_name(true /* required */);
   if (!stream.is_null()) {
-    symbol filename = get_long_name(true /* required */);
-    if (!filename.is_null()) {
+    symbol fnarg = get_long_name(true /* required */);
+    if (!fnarg.is_null()) {
+      const string mode = appending ? "appending" : "writing";
+      string filename = fnarg.contents();
       errno = 0;
       FILE *fp = fopen(filename.contents(), appending ? "a" : "w");
       if (0 /* nullptr */ == fp) {
@@ -7227,13 +7275,27 @@ static void open_file(bool appending)
 	      filename.contents(),
 	      appending ? "appending" : "writing",
 	      strerror(errno));
-	fp = (FILE *)stream_dictionary.remove(stream);
+	// If we already had a key of this name in the dictionary, it's
+	// invalid now.
+	stream_dictionary.remove(stream);
       }
-      else
-	fp = (FILE *)stream_dictionary.lookup(stream, fp);
-      if (fp != 0 /* nullptr */ && (fclose(fp) != 0))
-	error("cannot close file '%1': %2", filename.contents(),
-	      strerror(errno));
+      else {
+	grostream *oldgrost
+	  = (grostream *)stream_dictionary.lookup(stream);
+	if (oldgrost != 0 /* nullptr */) {
+	  FILE *oldfp = oldgrost->file;
+	  assert(oldfp != 0 /* nullptr */);
+	  if (oldfp != 0 /* nullptr */ && (fclose(oldfp) != 0)) {
+	    error("cannot close file '%1' already associated with"
+		  " stream '%2': %3", filename.contents(),
+		  strerror(errno));
+	    return;
+	  }
+	}
+	grostream *grost = new grostream(filename.contents(), mode,
+					 &*fp);
+	stream_dictionary.define(stream, (object *)grost);
+      }
     }
   }
 }
@@ -7270,6 +7332,42 @@ static void opena_request() // .opena
   skip_line();
 }
 
+static void close_stream(symbol &stream)
+{
+  assert(!stream.is_null());
+  grostream *grost = (grostream *)stream_dictionary.lookup(stream);
+  FILE *fp = grost->file;
+  if (0 /* nullptr */ == fp) {
+    error("cannot close nonexistent stream '%1'", stream.contents());
+    return;
+  }
+  else {
+    if (fclose(fp) != 0) {
+      error("cannot close stream '%1': %2", stream.contents(),
+	    strerror(errno));
+      return;
+    }
+  }
+  stream_dictionary.remove(stream);
+}
+
+// Call this from exit_troff().
+static void close_all_streams()
+{
+  object_dictionary_iterator iter(stream_dictionary);
+  FILE *filestream;
+  symbol stream;
+  while (iter.get(&stream, (object **)&filestream)) {
+    assert(!stream.is_null());
+    if (stream != 0 /* nullptr */) {
+      warning(WARN_FILE, "stream '%1' still open; closing",
+	      stream.contents());
+      close_stream(stream);
+    }
+  }
+  skip_line();
+}
+
 static void close_request() // .close
 {
   if (!has_arg(true /* peek */)) {
@@ -7277,18 +7375,11 @@ static void close_request() // .close
     skip_line();
     return;
   }
-  symbol stream = get_name(true /* required */);
-  if (!stream.is_null()) {
-    FILE *fp = (FILE *)stream_dictionary.remove(stream);
-    if (0 /* nullptr */ == fp)
-      error("cannot close nonexistent stream '%1'", stream.contents());
-    else {
-      int status = fclose(fp);
-	if (status != 0)
-	  error("cannot close stream '%1': %2", stream.contents(),
-		strerror(errno));
-    }
-  }
+  symbol stream = get_name();
+  // Testing has_arg() should have ensured this.
+  assert(stream != 0 /* nullptr */);
+  if (!stream.is_null())
+    close_stream(stream);
   skip_line();
 }
 
@@ -7301,9 +7392,10 @@ void do_write_request(int newline)
     skip_line();
     return;
   }
-  FILE *fp = (FILE *)stream_dictionary.lookup(stream);
+  grostream *grost = (grostream *)stream_dictionary.lookup(stream);
+  FILE *fp = grost->file;
   if (0 /* nullptr */ == fp) {
-    error("no stream named '%1'", stream.contents());
+    error("cannot write to nonexistent stream '%1'", stream.contents());
     skip_line();
     return;
   }
@@ -7337,7 +7429,8 @@ void write_macro_request()
     skip_line();
     return;
   }
-  FILE *fp = (FILE *)stream_dictionary.lookup(stream);
+  grostream *grost = (grostream *)stream_dictionary.lookup(stream);
+  FILE *fp = grost->file;
   if (0 /* nullptr */ == fp) {
     error("no stream named '%1'", stream.contents());
     skip_line();
@@ -9047,6 +9140,7 @@ void init_input_requests()
   init_request("pm", print_macros);
   init_request("psbb", ps_bbox_request);
   init_request("pso", pipe_source_request);
+  init_request("pstream", print_streams);
   init_request("rchar", remove_character);
   init_request("rd", read_request);
   init_request("return", return_macro_request);

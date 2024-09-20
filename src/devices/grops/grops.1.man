@@ -144,7 +144,7 @@ arguments,
 doesn't produce a valid document structure
 (one conforming to the Document Structuring Conventions).
 .
-To print such concatenated output,
+To print such catenated output,
 it is necessary to deactivate DSC handling in the printing program or
 previewer.
 .

@@ -472,7 +472,7 @@ Output section heading.
 .i T
 is the title,
 .i B
-is the concatenated number,
+is the catenated number,
 and
 .i n
 is the depth.
@@ -2213,7 +2213,7 @@ and a square \(sq labels \*G extensions.
 \en($i	R	paragraph base indentation
 \en($l	R	column width
 \en($m	R	number of available columns
-\e*($n	S	concatenated section number
+\e*($n	S	catenated section number
 \en($p	R	numbered paragraph number
 \&.$p	M\(dd	output section heading
 \en($s	R	column spacing (indentation)

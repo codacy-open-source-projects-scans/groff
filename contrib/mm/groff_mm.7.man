@@ -5118,7 +5118,7 @@ If the list nesting level is greater than this value,
 no such spacing occurs;
 see
 .B LI
-.RB ( 99 ).
+.RB ( \[rs]n[.R] ).
 .
 .
 .TP

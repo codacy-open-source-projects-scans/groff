@@ -4111,7 +4111,11 @@ at the beginning of the document.
 AT&T
 .I ms 's
 .CW AU
-macro supported arguments used with some document types;
+macro supported arguments
+whose values were used with some
+.CW RP "" non-
+ document types;
+that of
 .I "groff ms"
 does not.
 .

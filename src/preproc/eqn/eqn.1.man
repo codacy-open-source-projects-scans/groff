@@ -1706,7 +1706,7 @@ which sets an ellipsis on the text baseline.
 uses up to three typefaces to set an equation:
 italic (oblique),
 roman (upright),
-and bold.
+and bold (heavy).
 .
 Assign each a
 .I groff

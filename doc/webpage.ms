@@ -2033,7 +2033,7 @@ Example:
 
 .LI
 `.fn' is a new string-valued register which returns the (internal) real
-font name; styles and families are properly concatenated.
+font name; styles and families are properly catenated.
 
 .LI
 Three new read/write registers `seconds', `minutes', and `hours' contain

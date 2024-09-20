@@ -628,7 +628,7 @@ string,
 a GNU extension,
 sets the font family for body text;
 the default is
-.RB \[lq] T \[rq].
+.RB \[lq]\^ T \^\[rq].
 .
 The
 .B PS
@@ -2486,8 +2486,12 @@ at the beginning of the document.
 AT&T
 .IR ms 's
 .B AU
-macro supported arguments used with some document types;
-.I groff ms
+macro supported arguments
+whose values were used with some
+.RB non- RP
+document types;
+that of
+.I "groff ms"
 does not.
 .
 .

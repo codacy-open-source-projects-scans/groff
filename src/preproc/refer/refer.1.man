@@ -1565,7 +1565,7 @@ then it will be replaced by
 .
 .TP
 .I expr1 expr2
-The concatenation of
+The catenation of
 .I expr1
 and
 .IR expr2 .

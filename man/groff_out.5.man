@@ -2,7 +2,7 @@
 .SH Name
 groff_out \- GNU
 .I roff
-device-independent output format
+device-independent page description language
 .
 .
 .\" XXX: This page needs review and editing.
@@ -215,7 +215,7 @@ sources at
 .P
 When Brian Kernighan designed AT&T
 .IR troff 's \" AT&T
-device-independent output format circa 1980,
+device-independent page description language circa 1980,
 he had to balance
 readability and maintainability against severe constraints on file size
 and transmission speed to the output device.
@@ -1850,7 +1850,7 @@ James Clark wrote an early version of this document,
 which described only the differences between AT&T
 device-independent
 .IR troff 's \" AT&T
-output format and that of GNU
+page description language and that of GNU
 .IR troff . \" GNU
 .
 It has since been expanded and revised by
@@ -1889,7 +1889,7 @@ AT&T Bell Laboratories Computing Science Technical Report No.\& 54,
 widely called simply \[lq]CSTR\~#54\[rq],
 documents the language,
 device and font description file formats,
-and device-independent output format
+and device-independent page description language
 referred to collectively in
 .I groff
 documentation as
@@ -1904,7 +1904,7 @@ AT&T Bell Laboratories Computing Science Technical Report No.\& 97,
 (CSTR\~#97),
 provides additional insights into the
 device and font description file formats
-and device-independent output format.
+and device-independent page description language.
 .
 .
 .TP

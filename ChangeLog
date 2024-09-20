@@ -1,3 +1,125 @@
+2024-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (open_file): Fix unsafe-mode SEGV
+	caused by null pointer dereference.  Problem introduced by me in
+	commit 6d32f2492e, 13 September.  Also add assertion; null
+	`FILE` stream pointers should not be getting stored in GNU
+	troff's `stream_dictionary`.
+
+2024-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (report_color): Report color space
+	and channel assignments.
+
+	* doc/groff.texi.in (Debugging):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Update documentation.
+
+2024-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/color.h: Fix code style nit: drop unnecessary
+	`#include`.
+
+2024-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (report_composite_characters): Fix
+	code style nit: eliminate unnecessary temporary variable.
+
+2024-09-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  `\X` reads its delimited argument in
+	interpretation mode and the `device` request reads its argument
+	in copy mode.  We want parity in special character handling for
+	these formatter instructions, but one works with tokenized
+	input and the other with tokens that happen to be a sequence of
+	ordinary characters.  (In other words, in `\X'\[em]` and
+	`.device \[em]`, the escape sequence "knows" that it is dealing
+	with a valid special character named "em", whereas the request
+	merely handles '\', '[', 'e', 'm', and ']' in series.) This
+	change is in service of the grueling march toward resolution of
+	<https://savannah.gnu.org/bugs/?63074>.
+
+	* src/roff/troff/input.cpp
+	(map_special_character_for_device_output): New function handles
+	all of the potential special (including composite) character
+	identifier rewriting formerly in...
+	(encode_special_character_for_device_output): ...this function,
+	which now simply calls the foregoing after extracting the
+	special character identifier from the `charinfo` of the current
+	token.
+
+2024-09-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_device_extension): Make `\X`
+	escape sequence begin the first page of the document if it
+	hasn't begun already.  In the "grout" page description language,
+	this puts the leading 'x' initialization commands on the output
+	stream, which we guarantee to come first in any such document.
+	Device extension commands 'x X' before that point are not
+	well-defined, and further this change brings `\X` into parity
+	with its sibling, the `device` request, which does so already.
+
+2024-09-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Clean up streams on formatter exit.
+
+	* src/roff/troff/input.cpp (close_all_streams): New function
+	iterates `stream_dictionary` and closes each stream.
+	(exit_troff): Call `close_all_streams()`.
+
+2024-09-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add `pstream` request.
+
+	* src/roff/troff/input.cpp (print_streams): New request handler
+	iterates through `stream_dictionary`, writing each entry.
+	(init_input_requests): Wire up `pstream` request to new handler.
+
+2024-09-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Make groff streams objects of new `grostream` class, so
+	we can conveniently store more state in them.
+
+	* src/roff/troff/input.cpp (class grostream): Declare.
+	(grostream::grostream): Declare constructor.
+	(grostream::~grostream): Declare (trivial) destructor.
+	(print_streams): Report mode in which the stream was opened and
+	name of file backing it.
+	(open_file, close_stream, do_write_request)
+	(write_macro_request): Migrate to expect an object of type
+	`grostream` from a `stream_dictionary.lookup()` instead of a
+	pointer to `FILE`.
+
+2024-09-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (close_request): Move stream-closing
+	logic (as opposed to request argument validation) into...
+	(close_stream): ...its own new function.
+
+2024-09-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Declare global `stream_dictionary`
+	as type `object_dictionary` instead of `dictionary`, since we
+	want the stored values to be class objects instead of a
+	primitive data type.
+	(open_file, close_request): Update member function calls
+	appropriately; the former class uses return values for
+	`lookup()` and `remove()`, the latter does not.
+	(open_file): Clarify diagnostic when we try to reorient an
+	existing stream name to a new file, but can't close the old file
+	associated with the stream name.
+	(close_request): Remove the stream from the dictionary only if,
+	and after, we have successfully closed the `FILE` stream.
+
+2024-09-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (class input_iterator): Trivially
+	refactor.  Rename `eptr` member variable to `endptr`.
+	(input_stack::get, input_stack::finish_get, input_stack::peek)
+	(string_iterator::string_iterator, string_iterator::fill)
+	(string_iterator::peek, temp_iterator::temp_iterator): Migrate.
+
 2024-09-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp: Slightly refactor.  Move
@@ -9,7 +131,7 @@
 2024-09-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (do_open): The `write` request, an
-	"unsafe mode" feature has been broken for a week.  (As,
+	"unsafe mode" feature, has been broken for a week.  (As,
 	possibly, have others that write to streams.)  Revert
 	`static_cast` operators to C-style casts, which seem to be
 	necessary (sometimes) with groff's bespoke, pre-STL `dictionary`

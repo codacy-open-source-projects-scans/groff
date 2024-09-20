@@ -904,6 +904,8 @@ planting a one-line input trap as with
 is a GNU extension supported by
 Heirloom Doctools
 .I troff \" Heirloom
+.\" commit 5e4181af2a1562c542caaa3b2cc129e40e3e76e5
+(since Git snapshot 151220)
 and
 .I mandoc
 (since 1.14.5)

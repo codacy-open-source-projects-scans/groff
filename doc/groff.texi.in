@@ -4695,8 +4695,9 @@ expression of non-integral type sizes.  For example, @samp{groff
 10.5p} at the beginning of the document.
 
 @item
-@acronym{AT&T} @file{ms}'s @code{AU} macro supported arguments used with
-some document types; @code{groff} @file{ms} does not.
+@acronym{AT&T} @file{ms}'s @code{AU} macro supported arguments whose
+values were used with some non-@code{RP} document types; that of
+@code{groff} @file{ms} does not.
 
 @item
 Right-aligned displays are available.  The @acronym{AT&T} @file{ms}
@@ -5936,7 +5937,7 @@ that fits on the page, the break caused by the end of input will also
 break the page, producing a useless blank one.  Macro packages keep
 users from having to confront this difficulty by setting ``traps''
 (@pxref{Traps}); moreover, all but the simplest page layouts tend to
-have headers and footers, or at least bear vertical margins larger than
+have headers and footers, or at least bear vertical margins of at least
 one vee.
 @c END Keep parallel with subsection "Page geometry" of roff(7).
 
@@ -6346,8 +6347,9 @@ it must be the ``outermost'' operator.  Including it elsewhere in the
 expression produces a warning in the @samp{number} category
 (@pxref{Warnings}), and its expression evaluates false.  This
 unfortunate limitation maintains compatibility with @acronym{AT&T}
-@code{troff}.  Test a numeric expression for falsity by
-comparing it to a false value.@footnote{@xref{Conditionals and Loops}.}
+@code{troff}.  Test a numeric expression for falsity within a complex
+expression by comparing it to a false value.@footnote{@xref{Conditionals
+and Loops}.}
 
 @Example
 .nr X 1
@@ -6420,13 +6422,13 @@ argument.  @xref{Setting Registers}, for examples.
 @cindex @code{|}, and page motion
 @cindex absolute @slanted{(sic)} position operator (@code{|})
 @cindex position, absolute @slanted{(sic)} operator (@code{|})
-@cindex boundary-relative motion operator (@code{|})
-@c "motion" and "operators" already indexed above
-A leading @code{|} operator indicates a motion relative not to the
+@cindex boundary-relative measurement operator (@code{|})
+@c "operators" already indexed above
+A leading @code{|} operator indicates a measurement relative not to the
 drawing position but to a boundary.  For horizontal motions, the
-measurement specifies a distance relative to a drawing position
-corresponding to the beginning of the @emph{input} line.  By default,
-tab stops reckon movements in this way.  Most escape sequences do not;
+boundary is the drawing position corresponding to the beginning of the
+@emph{input} line.  By default, tab stops reckon movements in this way.
+Most escape sequences do not;
 @c XXX: Which ones do?
 @code{|} tells them to do so.
 
@@ -7398,12 +7400,12 @@ A @code{\"} comment on a line by itself is treated as a blank line,
 because after eliminating the comment, that is all that remains.
 
 @Example
-Test
-\" comment
-Test
-    @result{} Test
+apples bananas
+\" cantaloupes
+durians
+    @result{} apples bananas
     @result{}
-    @result{} Test
+    @result{} durians
 @endExample
 
 To compensate, it is common to combine the empty request with the
@@ -7426,10 +7428,10 @@ described above.
 @code{\#} is interpreted even in copy mode.
 
 @Example
-Test
-\# comment
-Test
-    @result{} Test Test
+apples bananas
+\# cantaloupes
+durians
+    @result{} apples bananas durians
 @endExample
 @endDefesc
 
@@ -7877,8 +7879,13 @@ desirable to test the page number independently of its format.
 
 Predefined registers whose identifiers start with a dot are read-only.
 Many are Boolean-valued, interpolating a true or false value testable
-with the @code{if}, @code{ie}, or @code{while} requests.  Some read-only
-registers are string-valued, meaning that they interpolate text.
+with the @code{if}, @code{ie}, or @code{while} requests.
+@cindex format, register
+@cindex register format
+Each register can be assigned a @dfn{format}, causing its value to
+interpolate with leading zeroes, in Roman numerals, or alphabetically.
+Some read-only registers are string-valued, meaning that they
+interpolate text and lack a format.
 
 @cindex removing a built-in register
 @cindex register, built-in, removing
@@ -9973,11 +9980,11 @@ suppresses the effects of that newline in the input.  The next input
 line thus retains the classification of its predecessor as a control or
 text line.  @code{\@key{RET}} is useful for managing line lengths in the
 input during document maintenance; you can even break an input line in
-the middle of a request invocation, macro call, or escape sequence.
-Input line continuation is invisible to the formatter, with two
-exceptions: the @code{|} operator recognizes the new input line
+the middle of a word, request invocation, macro call, or escape
+sequence.  Input line continuation is invisible to the formatter, with
+two exceptions: the @code{|} operator recognizes the new input line
 (@pxref{Numeric Expressions}), and the input line counter register
-@code{.c} is incremented.
+@code{.c} increments.
 @cindex @code{\@key{RET}}, interpretation in copy mode
 @code{\RET} is interpreted even in copy mode.@footnote{@xref{Copy
 Mode}.}
@@ -11072,7 +11079,7 @@ Any component @code{u@var{XXXX}} that is found in the list of
 decomposable glyphs is decomposed.
 
 @item
-The resulting elements are then concatenated with @samp{_} in between,
+The resulting elements are then catenated with @samp{_} in between,
 dropping the leading @samp{u} in all elements but the first.
 @end itemize
 
@@ -13690,12 +13697,12 @@ additional escape character is the price of this power.}
 @DefescListEndx {\\$^, , , }
 In some cases it is convenient to interpolate all of the parameters at
 once (to pass them to a request, for instance).  The @code{\$*} escape
-concatenates the parameters, separating them with spaces.  @code{\$@@}
-is similar, concatenating the parameters, surrounding each with double
-quotes and separating them with spaces.  If not in compatibility mode,
-the interpolation depth of double quotes is preserved (@pxref{Calling
-Macros}).  @code{\$^} interpolates all parameters as if they were
-arguments to the @code{ds} request.
+catenates the parameters, separating them with spaces.  @code{\$@@} is
+similar, surrounding each parameter with double quotes and separating
+them with spaces.  If not in compatibility mode, the interpolation depth
+of double quotes is preserved (@pxref{Calling Macros}).  @code{\$^}
+interpolates all parameters as if they were arguments to the @code{ds}
+request.
 
 @Example
 .de foo
@@ -14059,7 +14066,7 @@ Vertically move the drawing position.  @var{expr} indicates the
 magnitude of motion: positive is downward and and negative upward.  The
 default scaling unit is @samp{v}.  The motion is relative to the current
 drawing position unless @var{expr} begins with the boundary-relative
-motion operator @samp{|}.  @xref{Numeric Expressions}.
+measurement operator @samp{|}.  @xref{Numeric Expressions}.
 
 Text processing continues at the new drawing position; usually, vertical
 motions should be in balanced pairs to avoid a confusing page layout.
@@ -14115,7 +14122,7 @@ Horizontally move the drawing position.  @var{expr} indicates the
 magnitude of motion: positive is rightward and negative leftward.  The
 default scaling unit is @samp{m}.  The motion is relative to the current
 drawing position unless @var{expr} begins with the boundary-relative
-motion operator @samp{|}.  @xref{Numeric Expressions}.
+measurement operator @samp{|}.  @xref{Numeric Expressions}.
 @endDefesc
 
 The following string definition sets the @TeX{}
@@ -14375,10 +14382,10 @@ Let us see how to draw a box around a word using a macro.
 @noindent
 The foregoing outputs a box rule (a vertical line), the text
 argument(s), and another box rule.  We employ the boundary-relative
-motion operator @samp{|}.  Finally, the line-drawing escape sequences
-draw a radical extender (a form of overline) and an underline from the
-drawing position to the position corresponding to beginning of the
-@emph{input} line.  The formatter leaves the drawing position at the
+measurement operator @samp{|}.  Finally, the line-drawing escape
+sequences draw a radical extender (a form of overline) and an underline
+from the drawing position to the position corresponding to beginning of
+the @emph{input} line.  The formatter leaves the drawing position at the
 right-hand box rule even though the line lengths are negative, as noted
 above.
 @endDefesc
@@ -14645,23 +14652,24 @@ documents, but arise as page layouts become more sophisticated and
 demanding.  @dfn{Environments} collect formatting parameters like line
 length and typeface.  A @dfn{diversion} stores formatted output for
 later use.  A @dfn{trap} is a condition on the input or output, tested
-automatically by the formatter, that is associated with a macro, causing
-it to be called when that condition is fulfilled.
+automatically by the formatter, that is associated with a macro:
+fulfilling the condition @dfn{springs} the trap---calls the macro.
 
 Footnote support often exercises all three of the foregoing features.  A
-simple implementation might work as follows.  A pair of macros is
-defined: one starts a footnote and the other ends it.  The author calls
-the first macro where a footnote marker is desired.  The macro
-establishes a diversion so that the footnote text is collected at the
-place in the body text where its corresponding marker appears.  An
-environment is created for the footnote so that it is set at a smaller
-typeface.  The footnote text is formatted in the diversion using that
-environment, but it does not yet appear in the output.  The document
-author calls the footnote end macro, which returns to the previous
-environment and ends the diversion.  Later, after much more body text in
-the document, a trap, set a small distance above the page bottom, is
-sprung.  The macro called by the trap draws a line across the page and
-emits the stored diversion.  Thus, the footnote is rendered.
+simple implementation might work as follows.  The author writes a pair
+of macros: one starts a footnote and the other ends it.  They further
+set a trap a small distance above the page bottom, reserving a footnote
+area.  The author calls the first macro where a footnote marker is
+desired.  The macro establishes a diversion so that the footnote text is
+collected at the place in the body text where its corresponding marker
+appears.  It further creates an environment for the footnote so that it
+sets at a smaller typeface.  The footnote text is formatted in the
+diversion using that environment, but it does not yet appear in the
+output.  The document author calls the footnote end macro, which returns
+to the previous environment and ends the diversion.  Later, after body
+text nearly fills the page, the trap springs.  The macro called by the
+trap draws a line across the page and emits the stored diversion.  Thus,
+the footnote renders.
 
 Diversions and traps make the text formatting process non-linear.  Let
 us imagine a set of text lines or paragraphs labelled @samp{A},
@@ -16512,6 +16520,9 @@ append to it instead of truncating it.
 It is an error to use these requests in safer mode; this is the default.
 Give GNU @code{troff} or a front end program the @option{-U} option to
 enable unsafe mode.
+
+The @code{pstream} request dumps the list of open streams to the
+standard error stream; @ref{Debugging}.
 @endDefreq
 
 @DefreqList {write, stream [@code{"}]@Var{contents}}
@@ -16678,9 +16689,9 @@ construction in that the contents of the string or macro @var{name} are
 not interpreted; further, @var{name} may be a macro and thus contain
 newlines.  (There is no way to embed a newline in the arguments to
 @code{device} or @code{\X}.)  The inclusion of newlines requires an
-extension to the @acronym{AT&T} @command{troff} output format; their
-presence confuses drivers that do not know about it (@pxref{Device
-Control Commands}).
+extension to the @acronym{AT&T} @command{troff} device-independen page
+description language; their presence confuses drivers that do not know
+about it (@pxref{Device Control Commands}).
 @endDefesc
 
 @DefreqList {tag, name}
@@ -17149,10 +17160,10 @@ or are interested @emph{only} in diagnostic output, you can suppress GNU
 @cindex dumping defined colors (@code{pcolor})
 @cindex defined colors, dumping (@code{pcolor})
 @cindex colors, defined, dumping (@code{pcolor})
-Report, to the standard error stream, the list of defined color names.
-A device's default stroke and/or fill colors, ``default'', are not
-listed since they are immutable and their details unknown to the
-formatter.
+Report, to the standard error stream, each defined color name, its color
+space identifier, and channel value assignments.  A device's default
+stroke and/or fill colors, ``default'', are not listed since they are
+immutable and their details unknown to the formatter.
 @endDefreq
 
 @Defreq {pcomposite, }
@@ -17213,6 +17224,14 @@ strings, and diversions with their sizes in bytes.
 Report the name and value and, if the value is numeric, the assigned
 format of each register @var{reg}, or, without arguments, those of all
 defined registers, to the standard error stream.
+@endDefreq
+
+@Defreq {pstream, }
+@cindex dumping open streams (@code{pstream})
+@cindex open streams, dumping (@code{pstream})
+@cindex streams, open, dumping (@code{pstream})
+Report, to the standard error stream, the name of each opened stream,
+the name of the file backing it, and its mode (writing or appending).
 @endDefreq
 
 @Defreq {ptr, }
@@ -18000,8 +18019,8 @@ following two sections describe their format.
 @cindex @command{gtroff}, output
 @cindex output, @command{gtroff}
 
-We now describe the @code{groff} device-independent output format
-produced by GNU @command{troff}.
+We now describe the @code{groff} device-independent page description
+language produced by GNU @command{troff}.
 
 @c BEGIN Keep parallel with subsection "Background" of groff_out(5).
 As @command{groff} is a wrapper program around GNU @command{troff} and
@@ -18017,25 +18036,28 @@ interface for all devices.  It is a distinct, and much simpler, language
 from that of the formatter, @command{troff}.  The device-independent
 output can be thought of as a ``page description language''.
 
+@cindex @command{troff} page description language
+@cindex page description language, @command{troff}
+@cindex language, @command{troff} page description
 @cindex @command{troff} output format
 @cindex output format, @command{troff}
 @cindex format, @command{troff} output
 @cindex intermediate output
 @cindex output, intermediate
 In the following discussion, the term @dfn{troff output} describes what
-is output by GNU @command{troff}, while @dfn{device-independent output}
-denotes the language accepted by the parser that interprets this output
-for the output drivers.  This parser handles whitespace more flexibly
-than @acronym{AT&T} @command{troff}'s implementation, recognizes a GNU
+is output by GNU @command{troff}, while @dfn{page description} denotes
+the language accepted by the parser that interprets this output for the
+output drivers.  This parser handles whitespace more flexibly than
+@acronym{AT&T} @command{troff}'s implementation, recognizes a GNU
 extension to the language, and supports an obsolete construct for
 compatibility; otherwise, both formats are the same.@footnote{The parser
 for device-independent output can be found in the file
 @file{@var{groff-source-dir}/@/src/@/libs/@/libdriver/@/input.cpp}.}
 
 When Brian Kernighan designed @acronym{AT&T} @code{troff}'s
-device-independent output format circa 1980, he had to balance
-readability and maintainability against severe constraints on file size
-and transmission speed to the output device.@footnote{See ``A
+device-independent page description language circa 1980, he had to
+balance readability and maintainability against severe constraints on
+file size and transmission speed to the output device.@footnote{See ``A
 Typesetter-independent TROFF'', Bell Labs CSTR@tie{}#97, 1982.}  A
 decade later, when James Clark wrote @code{groff}, these constraints
 were no longer as tight.  GNU @command{troff} therefore emits
@@ -18161,8 +18183,9 @@ x init
 
 @noindent
 with the arguments set as outlined in @ref{Device Control Commands}.
-The parser for the intermediate output format is able to interpret
-additional whitespace and comments as well even in the prologue.
+The parser for the device-independent page description language format
+is able to interpret additional whitespace and comments as well even in
+the prologue.
 
 The body is the main section for processing the document data.
 Syntactically, it is a sequence of any commands different from the ones
@@ -18822,7 +18845,7 @@ first documented in @cite{A Typesetter-independent TROFF}, by Brian
 Kernighan, and by 1992 the @acronym{AT&T} @code{troff} manual was
 updated to incorporate a description of it.
 
-The GNU @code{troff} intermediate output format is compatible with this
+GNU @code{troff}'s page description language  is compatible with this
 specification except for the following features.
 
 @itemize @bullet

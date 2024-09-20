@@ -31,7 +31,7 @@ o The `mso` request no longer attempts to open a macro file named, say,
   `mso` is itself a groff extension), consider the following.
 
     .\" Load the ms package, whatever it might be named.
-    .msoquiet s.tmac
+    .msoquiet s.tmac \" If file present, defines `LP` macro.
     .if !d LP .msoquiet tmac.s
 
 o GNU troff no longer accepts nonpositive page lengths.  Attempting to
@@ -70,8 +70,8 @@ o In nroff mode (in other words, when producing output for devices that
   inches (or the unit configured with the `warnscale` request) to
   describe the vertical drawing position where the problem occurred.
 
-o The device-independent output now reports unbreakable spaces (those
-  produced with the `\~` escape sequence) as word breaks with the
+o The device-independent page description now reports unbreakable spaces
+  (those produced with the `\~` escape sequence) as word breaks with the
   documentary 'w' command, just as it does for regular breakable spaces.
 
 o A new request, `hydefault`, and read-only register, `.hydefault`,
@@ -92,7 +92,7 @@ o A new request, `hydefault`, and read-only register, `.hydefault`,
   this release, the foregoing input now works as desired.
 
 o A new read-only, string-valued register, `.trap`, interpolates the
-  name of the next vertical position trap that will be sprung.
+  name of the next vertical position trap after the drawing position.
 
 o New registers `.it`, `.itc`, and `.itm` are available.  These
   read-only (and, in the case of `.itm`, string-valued) registers report
@@ -101,10 +101,11 @@ o New registers `.it`, `.itc`, and `.itm` are available.  These
   continuation (cf. the `it` and `itc` requests), and the name of the
   macro associated with the pending input trap, respectively.
 
-o A new request, `pcolor`, reports to the standard error stream the
-  current list of defined colors.  (A device's default stroke and/or
-  fill colors, "default", are not listed since they are immutable and
-  their details unknown to the formatter.)
+o A new request, `pcolor`, reports to the standard error stream each
+  defined color name, its color space identifier, and channel value
+  assignments.  (A device's default stroke and/or fill colors,
+  "default", are not listed since they are immutable and their details
+  unknown to the formatter.)
 
 o A new request, `pcomposite`, reports to the standard error stream the
   current list of defined composite characters.
@@ -119,8 +120,12 @@ o A new request, `pline`, reports to the standard error stream the list
   of output nodes (an internal data structure) corresponding to
   the pending output line.  The list is empty if no such nodes exist.
 
-o The `pnr` request now accepts arguments; each is treated as
-  identifying a register, and its properties reported to the standard
+o A new request, `pstream`, reports to the standard error stream the
+  name of each stream opened with the `open` or `opena` requests,
+  the name of the file backing it, and its mode (writing or appending).
+
+o The `pnr` request now accepts arguments.  It treats each as
+  identifying a register and reports its properties to the standard
   error stream.
 
 o The `hla` request, when invoked with no arguments, now clears the
@@ -290,10 +295,10 @@ o The behavior of the an (man) package's `SY` and `YS` macros has been
 
 o The an (man), doc (mdoc), and doc-old (mdoc-old) macro packages have
   changed the default line length when formatting on terminals from 78n
-  to 80n.  The latter is a vastly more common configuration, but that
-  line length had been avoided for decades (perhaps as long as groff has
-  existed), for an undocumented reason.  That reason appears to have
-  been the interaction of bugs in GNU tbl(1) with an aspect of
+  to 80n.  The latter is a vastly more common device configuration, but
+  that line length had been avoided for decades (perhaps as long as
+  groff has existed), for an undocumented reason.  That reason appears
+  to have been the interaction of bugs in GNU tbl(1) with an aspect of
   grotty(1)'s design.  Those bugs have been resolved.  A man(1) program
   can still instruct groff to format for any desired line length by
   setting the `LL` register on {g,n,t}roff's command line.
@@ -423,11 +428,11 @@ o The m (mm) macro package now supports a user-definable hook macro
   normal operation.  Applications include customization of letterhead.
 
 o The m (mm) macro package's `LI` macro now interprets its second
-  argument as a Boolean indicating whether a space should separate the
-  list item mark from its prefix (the first argument).  Thus, where you
-  formerly specified "2" to indicate no such separation, you would now
-  use "0", matching the semantics of the former `Limsp` register.  "2"
-  continues to be recognized and handled as before, but prompts a
+  argument as a Boolean value indicating whether a space should separate
+  the list item mark from its prefix (the first argument).  Thus, where
+  you formerly specified "2" to indicate no such separation, you would
+  now use "0", matching the semantics of the former `Limsp` register.
+  "2" continues to be recognized and handled as before, but prompts a
   warning; migrate your documents.
 
 o The m (mm) macro package now supports the `E` register as DWB mm did.
@@ -531,8 +536,7 @@ o The `troffrc` file now loads an English localization file instead of
 
 o A new read-only register `.cp` is implemented.  Within a `do` request,
   "\n[.cp]" holds the saved value of compatibility mode.  See
-  groff_diff(7) or the groff Texinfo manual for rationale, use case, and
-  example.
+  groff_diff(7) or the groff Texinfo manual for rationale and example.
 
 o New read-only registers `.nm` and `.nn` are implemented.  `.nm` is of
   Boolean sense, reporting the enablement status of output line

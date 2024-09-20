@@ -1980,8 +1980,9 @@ box
 .NH 2
 Debug Messages
 .PP
-The command \fBprint\fR accepts any number of arguments, concatenates
-their output forms, and writes the result to standard error.
+The command \fBprint\fR accepts any number of arguments,
+catenates their output forms,
+and writes the result to standard error.
 Each argument must be an expression, a position, or a text string.
 .
 .NH 2

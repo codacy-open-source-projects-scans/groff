@@ -317,7 +317,7 @@ a program that reads device and font descriptions
 interprets the
 .I groff
 language expressed in input text,
-translating it to a device-independent output format
+translating it to a device-independent page description language
 (\c
 .MR groff_out @MAN5EXT@ )
 that is usually then post-processed by an output driver to produce
@@ -624,7 +624,9 @@ as a control or text line.
 .BI \[rs] newline
 is useful for managing line lengths in the input during document
 maintenance;
-you can break an input line in the middle of a request invocation,
+you can break an input line in the middle of a
+word,
+request invocation,
 macro call,
 or escape sequence.
 .
@@ -635,7 +637,7 @@ the
 operator recognizes the new input line,
 and the input line counter register
 .B .c
-is incremented.
+increments.
 .
 .
 .P
@@ -803,11 +805,14 @@ another typesetter's unit.
 There are 6\~picas to an inch and 12\~points to a pica.
 .
 .TP
-.BR s ,\~ z
-Scaled points and multiplication by the output device's
-.I sizescale
-parameter,
-respectively.
+.B z
+Scaled points.
+.
+.TP
+.B s
+The device's \[lq]sizescale\[rq] units;
+see
+.MR groff_font @MAN5EXT@ .
 .
 .TP
 .B f
@@ -952,7 +957,7 @@ _
 _
 ( )	precedence
 _
-|	boundary-relative motion
+|	boundary-relative measurement
 .TE
 .
 .
@@ -1145,7 +1150,9 @@ and its expression evaluates false.
 This unfortunate limitation maintains compatibility with AT&T
 .IR troff .\" AT&T
 .
-Test a numeric expression for falsity by comparing it to a false value.
+Test a numeric expression for falsity
+within a complex expression
+by comparing it to a false value.
 .
 .
 .P
@@ -3964,9 +3971,10 @@ Change the page number character used in titles
 .
 .TPx
 .REQ .pcolor
-Report,
-to the standard error stream,
-the list of defined color names.
+Report, to the standard error stream,
+each defined color name,
+its color space identifier,
+and channel value assignments.
 .
 A device's default stroke and/or fill colors,
 \[lq]default\[rq],
@@ -4125,6 +4133,15 @@ and interpolate its output.
 .
 Unsafe request;
 disabled by default.
+.
+.TPx
+.REQ .pstream
+Report,
+to the standard error stream,
+the name of each opened stream,
+the name of the file backing it,
+and its mode
+(writing or appending).
 .
 .TPx
 .REQ .ptr
@@ -4926,19 +4943,19 @@ Interpolate macro or string parameter
 .
 .TP
 .ESC $*
-Interpolate concatenation of all macro or string parameters,
+Interpolate catenation of all macro or string parameters,
 separated by spaces.
 .
 .
 .TP
 .ESC $@
-Interpolate concatenation of all macro or string parameters,
+Interpolate catenation of all macro or string parameters,
 with each surrounded by double quotes and separated by spaces.
 .
 .
 .TP
 .ESC $\[ha]
-Interpolate concatenation of all macro or string parameters
+Interpolate catenation of all macro or string parameters
 as if they were arguments to the
 .request .ds
 request.
@@ -8224,7 +8241,7 @@ or
 .
 The inclusion of newlines requires an extension to the AT&T
 .I troff \" AT&T
-output format;
+device-independent page description language;
 their presence confuses drivers that do not know about it
 (see subsection \[lq]Device control commands\[rq] of
 .MR groff_out @MAN5EXT@ ).
@@ -8441,7 +8458,7 @@ and that of AT&T
 .IR troff , \" AT&T
 as well as the device,
 font,
-and device-independent intermediate output formats described by
+and device-independent page description formats described by
 CSTR\~#54 are documented in
 .MR groff_diff @MAN7EXT@ .
 .
@@ -8574,7 +8591,7 @@ AT&T Bell Laboratories Computing Science Technical Report No.\& 54,
 widely called simply \[lq]CSTR\~#54\[rq],
 documents the language,
 device and font description file formats,
-and device-independent output format
+and device-independent page description language
 referred to collectively in
 .I groff
 documentation as
@@ -8591,7 +8608,7 @@ AT&T Bell Laboratories Computing Science Technical Report No.\& 97
 (CSTR\~#97),
 provides additional insights into the
 device and font description file formats
-and device-independent output format.
+and device-independent page description language.
 .
 .
 .TP
@@ -8627,7 +8644,7 @@ GNU
 .I troff \" GNU
 formatter,
 its device and font description file formats,
-its device-independent output format,
+its device-independent page description language,
 and those of AT&T
 .IR troff ,\" AT&T
 whose design it reimplements.

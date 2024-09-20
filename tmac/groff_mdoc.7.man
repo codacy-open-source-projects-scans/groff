@@ -874,7 +874,7 @@ This first macro of any
 .Xr mdoc
 manual records the last modification date of the document source.
 .
-Arguments are concatenated and separated with space characters.
+Arguments are catenated and separated with space characters.
 .
 .
 .Pp
@@ -4876,7 +4876,7 @@ String	7-bit	8-bit	UCS	Prefer	Meaning
 \[rs]*(Pm	+\- 	\[+-]	\*[Pm]	\[rs](+\-	plus or minus
 \[rs]*(If	infinity	infinity	\*[If]	\[rs](if	infinity
 \[rs]*(Am	\*[Am]	\*[Am]	\*[Am]	&	ampersand
-\[rs]*(Na	\*[Na]	\*[Na]	\*[Na]	\f[I]NaN\f[]	not a number (slanted)
+\[rs]*(Na	\*[Na]	\*[Na]	\*[Na]	.Em NaN	not a number (slanted)
 \[rs]*(Ba	\*[Ba]	\*[Ba]	\*[Ba]	|	bar (upright)
 .TE
 .

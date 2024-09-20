@@ -613,7 +613,7 @@ This is a defect in pageview.  Change the `broken' parameter in
 
 The left mouse button brings up a menu that allows you to view other
 pages.  You can also press <space> and <backspace> to advance and
-retreat the current page view, respectively.
+retreat, respectively, the current page view.
 
 ----------------------------------------------------------------------
 

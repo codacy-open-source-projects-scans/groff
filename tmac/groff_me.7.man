@@ -440,7 +440,7 @@ zs	floating keep pre/post space
 .TS
 Lb L.
 #	delayed text marker
-$n	concatenated section number
+$n	catenated section number
 *	footnote marker
 \-	em dash
 <	begin subscripting

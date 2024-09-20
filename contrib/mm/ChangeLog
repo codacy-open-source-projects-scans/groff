@@ -1,3 +1,8 @@
+2024-09-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Use value of GNU troff `.R` register instead of "99"
+	{an "arbitrary large number"} as `Ls` register default.
+
 2024-08-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (ds@output-float, ds@end): Use value of GNU troff `.R`

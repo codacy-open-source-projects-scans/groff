@@ -1195,7 +1195,7 @@ cannot.
 .
 This inclusion of newlines requires an extension to the AT&T
 .I troff \" AT&T
-output format,
+page description language,
 and confuses postprocessors that do not know about it.
 .
 .
@@ -3254,9 +3254,10 @@ which is read in copy mode and continues to the end of the input line.
 .
 .TP
 .B .pcolor
-Report,
-to the standard error stream,
-the list of defined color names.
+Report, to the standard error stream,
+each defined color name,
+its color space identifier,
+and channel value assignments.
 .
 A device's default stroke and/or fill colors,
 \[lq]default\[rq],
@@ -3369,6 +3370,16 @@ As
 .RB \[lq] so \[rq],
 except that input comes from the standard output stream of
 .IR command .
+.
+.
+.TP
+.B .pstream
+Report,
+to the standard error stream,
+the name of each opened stream,
+the name of the file backing it,
+and its mode
+(writing or appending).
 .
 .
 .TP
@@ -6147,7 +6158,8 @@ will not.
 Its extensions notwithstanding,
 GNU
 .IR troff 's \" GNU
-output format has some incompatibilities with that of AT&T
+page description language
+has some incompatibilities with that of AT&T
 .IR troff , \" AT&T
 but better compatibility is sought;
 problem reports and patches are welcome.
@@ -6216,7 +6228,7 @@ AT&T Bell Laboratories Computing Science Technical Report No.\& 54,
 widely called simply \[lq]CSTR\~#54\[rq],
 documents the language,
 device and font description file formats,
-and output format
+and page description language
 referred to collectively in
 .I groff
 documentation as AT&T
@@ -6230,7 +6242,7 @@ by Brian W.\& Kernighan,
 AT&T Bell Laboratories Computing Science Technical Report No.\& 97,
 provides additional insights into the
 device and font description file formats
-and output format.
+and page description language.
 .
 .
 .P

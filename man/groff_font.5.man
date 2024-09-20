@@ -1076,7 +1076,7 @@ AT&T Bell Laboratories Computing Science Technical Report No.\& 54,
 widely called simply \[lq]CSTR\~#54\[rq],
 documents the language,
 device and font description file formats,
-and device-independent output format
+and device-independent page description language
 referred to collectively in
 .I groff
 documentation as
@@ -1090,7 +1090,7 @@ by Brian W.\& Kernighan,
 AT&T Bell Laboratories Computing Science Technical Report No.\& 97,
 provides additional insights into the
 device and font description file formats
-and device-independent output format.
+and device-independent page description language.
 .
 .
 .P

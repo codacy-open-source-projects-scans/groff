@@ -1021,10 +1021,11 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream,
-"usage: %s [-bBcdfhioruU] [-F font-directory] [file ...]\n"
+"usage: %s [-dfho] [-i|-r] [-F font-directory] [file ...]\n"
+"usage: %s -c [-bBdfhouU] [-F font-directory] [file ...]\n"
 "usage: %s {-v | --version}\n"
 "usage: %s --help\n",
-	  program_name, program_name, program_name);
+	  program_name, program_name, program_name, program_name);
   if (stdout == stream) {
     fputs(
 "\n"

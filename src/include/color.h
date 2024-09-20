@@ -1,7 +1,5 @@
-// -*- C++ -*-
-/* <groff_src_dir>/src/include/color.h
-Copyright (C) 2001-2020 Free Software Foundation, Inc.
-    Written by Gaius Mulley <gaius@glam.ac.uk>
+/* Copyright (C) 2001-2016 Free Software Foundation, Inc.
+     Written by Gaius Mulley <gaius@glam.ac.uk>
 
 This file is part of groff.
 
@@ -18,7 +16,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <stddef.h>
 #include "symbol.h"
 
 enum color_scheme {DEFAULT, CMY, CMYK, RGB, GRAY};
@@ -53,7 +50,7 @@ public:
   void set_cmyk(const unsigned int c, const unsigned int m,
 		const unsigned int y, const unsigned int k);
   void set_gray(const unsigned int g);
-	  
+
   // set color from a color string
   int read_rgb(const char * const s);
   int read_cmy(const char * const s);
@@ -86,3 +83,9 @@ public:
 #define Gray components[0]
 
 extern color default_color;
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:
