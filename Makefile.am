@@ -790,6 +790,24 @@ MOSTLYCLEANFILES += $(prefixexecbin_SCRIPTS) $(bin_SCRIPTS) \
   $(man1_MANS) $(man5_MANS) $(man7_MANS) \
   $(PREFIXMAN1)
 
+# Maintainer-mode rule to set man page time stamps to date of last
+# Git commit thereto (rebasing can screw up their mtimes).
+.PHONY: set-man-page-time-stamps
+set-man-page-time-stamps:
+	for f in $(man1_MANS) $(man5_MANS) $(man7_MANS); do \
+	  g=$(top_srcdir)/$$f.man; \
+	  if [ -f $$g ]; then \
+	    h=$$g.in; \
+	    if [ -f $$h ]; then \
+	      page=$$h; \
+	    else \
+	      page=$$g; \
+	    fi; \
+	  fi; \
+	  ts=`git log -1 --pretty="format:%aI" $$page`; \
+	  touch -d $$ts $$page; \
+	done
+
 # Suffix rule to build .1, .5 and .7 files from .1.man, .5.man and
 # .7.man files.  The brackets around the @ are used to prevent the
 # substitution of the variable by Automake.

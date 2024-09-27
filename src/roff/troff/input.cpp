@@ -4020,9 +4020,10 @@ bool operator==(const macro &m1, const macro &m2)
 
 static void interpolate_macro(symbol nm, bool do_not_want_next_token)
 {
-  request_or_macro *p = (request_or_macro *)request_dictionary.lookup(nm);
-  if (p == 0) {
-    int warned = 0;
+  request_or_macro *p
+    = (request_or_macro *)request_dictionary.lookup(nm);
+  if (0 /* nullptr */ == p) {
+    bool was_warned = false;
     const char *s = nm.contents();
     if (strlen(s) > 2) {
       request_or_macro *r;
@@ -4033,20 +4034,20 @@ static void interpolate_macro(symbol nm, bool do_not_want_next_token)
       r = (request_or_macro *)request_dictionary.lookup(symbol(buf));
       if (r) {
 	macro *m = r->to_macro();
-	if (!m || !m->is_empty())
-	  warned = warning(WARN_SPACE,
-			   "macro '%1' not defined "
-			   "(possibly missing space after '%2')",
-			   nm.contents(), buf);
+	if ((0 /* nullptr */ == m) || !m->is_empty()) {
+	  warning(WARN_SPACE, "macro '%1' not defined (possibly missing"
+		  " space after '%2')", nm.contents(), buf);
+	  was_warned = true;
+	}
       }
     }
-    if (!warned) {
+    if (!was_warned) {
       warning(WARN_MAC, "macro '%1' not defined", nm.contents());
       p = new macro;
       request_dictionary.define(nm, p);
     }
   }
-  if (p)
+  if (p != 0 /* nullptr */)
     p->invoke(nm, do_not_want_next_token);
   else {
     skip_line();
@@ -4106,6 +4107,7 @@ static void decode_args(macro_iterator *mi)
   }
 }
 
+// XXX: This is a misnomer.  It's used to read stuff like `\[e aa]` too.
 static void decode_string_args(macro_iterator *mi)
 {
   node *n;
@@ -4114,7 +4116,7 @@ static void decode_string_args(macro_iterator *mi)
     while (c == ' ')
       c = get_copy(&n);
     if (c == '\n' || c == EOF) {
-      error("missing ']'");
+      error("missing ']' in parameterized escape sequence");
       break;
     }
     if (c == ']')
@@ -4933,6 +4935,11 @@ void ignore()
 
 void remove_macro()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "name removal request expects arguments");
+    skip_line();
+    return;
+  }
   for (;;) {
     symbol s = get_name();
     if (s.is_null())
@@ -4944,10 +4951,20 @@ void remove_macro()
 
 void rename_macro()
 {
-  symbol s1 = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "renaming request expects arguments");
+    skip_line();
+    return;
+  }
+  symbol s1 = get_name();
+  assert(s1 != 0 /* nullptr */);
   if (!s1.is_null()) {
-    symbol s2 = get_name(true /* required */);
-    if (!s2.is_null())
+    symbol s2 = get_name();
+    if (s2.is_null())
+      warning(WARN_MISSING, "renaming request expects identifier of"
+	      " existing request, macro, string, or diversion as"
+	      " second argument");
+    else
       request_dictionary.rename(s1, s2);
   }
   skip_line();
@@ -4955,12 +4972,22 @@ void rename_macro()
 
 void alias_macro()
 {
-  symbol s1 = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "name aliasing request expects arguments");
+    skip_line();
+    return;
+  }
+  symbol s1 = get_name();
+  assert(s1 != 0 /* nullptr */);
   if (!s1.is_null()) {
-    symbol s2 = get_name(true /* required */);
-    if (!s2.is_null()) {
+    symbol s2 = get_name();
+    if (s2.is_null())
+      warning(WARN_MISSING, "name aliasing request expects identifier"
+	      " of existing request, macro, string, or diversion as"
+	      " second argument");
+    else {
       if (!request_dictionary.alias(s1, s2))
-	error("cannot alias undefined object '%1'", s2.contents());
+	error("cannot alias undefined name '%1'", s2.contents());
     }
   }
   skip_line();
@@ -4968,7 +4995,13 @@ void alias_macro()
 
 void chop_macro()
 {
-  symbol s = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "chop request expects an argument");
+    skip_line();
+    return;
+  }
+  symbol s = get_name();
+  assert(s != 0 /* nullptr */);
   if (!s.is_null()) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
@@ -5014,7 +5047,8 @@ enum case_xform_mode { STRING_UPCASE, STRING_DOWNCASE };
 void do_string_case_transform(case_xform_mode mode)
 {
   assert((mode == STRING_DOWNCASE) || (mode == STRING_UPCASE));
-  symbol s = get_name(true /* required */);
+  symbol s = get_name();
+  assert(s != 0 /* nullptr */);
   if (s.is_null()) {
     skip_line();
     return;
@@ -5051,18 +5085,36 @@ void do_string_case_transform(case_xform_mode mode)
 
 // Uppercase-transform each byte of the string argument's contents.
 void stringdown_request() {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "string downcasing request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   do_string_case_transform(STRING_DOWNCASE);
 }
 
 // Lowercase-transform each byte of the string argument's contents.
 void stringup_request() {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "string upcasing request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   do_string_case_transform(STRING_UPCASE);
 }
 
 void substring_request()
 {
-  int start;				// 0, 1, ..., n-1  or  -1, -2, ...
-  symbol s = get_name(true /* required */);
+  if (!has_arg()) {
+    warning(WARN_MISSING, "substring request expects arguments");
+    skip_line();
+    return;
+  }
+  int start;			// 0, 1, ..., n-1  or  -1, -2, ...
+  symbol s = get_name();
+  assert(s != 0 /* nullptr */);
   if (!s.is_null() && get_integer(&start)) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
@@ -5150,8 +5202,15 @@ void substring_request()
 
 void length_request()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "length computation request expects"
+	    " arguments");
+    skip_line();
+    return;
+  }
   symbol ret;
-  ret = get_name(true /* required */);
+  ret = get_name();
+  assert(ret != 0 /* nullptr */);
   if (ret.is_null()) {
     skip_line();
     return;
@@ -5929,9 +5988,53 @@ static void device_request()
   // Null characters can correspond to node types like vmotion_node that
   // are unrepresentable in a device extension command, and got scrubbed
   // by `asciify`.
-  for (; c != '\0' && c != '\n' && c != EOF;
-       c = get_copy(0 /* nullptr */))
-    mac.append(c);
+  for (int prevc = c; (c != '\0') && (c != '\n') && (c != EOF);
+       c = get_copy(0 /* nullptr */)) {
+    if (!('\\' == c) && (prevc != '\\'))
+      mac.append(c);
+    else {
+      int c1 = get_copy(0 /* nullptr */);
+      if (c1 != '[')
+	mac.append(c1);
+      else {
+	// Does the input resemble a valid (bracket-form) special
+	// character escape sequence?
+	bool is_valid = false;
+	string sc = "";
+	string scdup; // for composite character ugliness below
+	int c2 = get_copy(0 /* nullptr */);
+	for (; (c2 != '\0') && (c2 != '\n') && (c2 != EOF);
+	     c2 = get_copy(0 /* nullptr */)) {
+	  // XXX: `map_special_character_for_device_output()` will need
+	  // the closing bracket in the iterator we construct, but a
+	  // composite character mapping mustn't see it.
+	  sc += c2;
+	  if (']' == c2) {
+	    is_valid = true;
+	    break;
+	  }
+	}
+	sc += '\0';
+	if (sc.search(' ') > 0) {
+	  // XXX: TODO
+	  error("composite special character escape sequences not yet"
+	        " supported in device extension command arguments");
+	  is_valid = false;
+	}
+	if (is_valid) {
+	  input_stack::push(make_temp_iterator(sc.contents()));
+	  symbol s = read_long_escape_parameters(WITH_ARGS);
+	  map_special_character_for_device_output(&mac, s.contents());
+	}
+	else {
+	  // We couldn't make sense of it.  Write it out as-is.
+	  mac.append(c);
+	  mac.append(c1);
+	  mac.append_str(sc.contents());
+	}
+      }
+    }
+  }
   curenv->add_node(new device_extension_node(mac));
   tok.next();
 }
@@ -7335,9 +7438,17 @@ static void opena_request() // .opena
 static void close_stream(symbol &stream)
 {
   assert(!stream.is_null());
+  bool is_valid = false;
+  FILE *fp = 0 /* nullptr */;
   grostream *grost = (grostream *)stream_dictionary.lookup(stream);
-  FILE *fp = grost->file;
-  if (0 /* nullptr */ == fp) {
+  if (grost != 0 /* nullptr */) {
+    fp = grost->file;
+    // We shouldn't have stored a null pointer in the first place.
+    assert(fp != 0 /* nullptr */);
+    if (fp != 0 /* nullptr */)
+      is_valid = true;
+  }
+  if (!is_valid) {
     error("cannot close nonexistent stream '%1'", stream.contents());
     return;
   }

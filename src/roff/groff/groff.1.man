@@ -1668,7 +1668,7 @@ diagram into a cropped image.
 .P
 Another set of programs works with the bibliographic data files used
 by the
-.MR refer @MAN1EXT@
+.MR @g@refer @MAN1EXT@
 preprocessor.
 .
 .
@@ -2102,7 +2102,7 @@ executable commands.
 .TP
 .I @COMMON_WORDS_FILE@
 List of common words for
-.MR indxbib @MAN1EXT@ .
+.MR @g@indxbib @MAN1EXT@ .
 .
 .
 .TP
@@ -2115,7 +2115,7 @@ Directory for data files.
 Default index for
 .MR lkbib @MAN1EXT@
 and
-.MR refer @MAN1EXT@ .
+.MR @g@refer @MAN1EXT@ .
 .
 .
 .TP

@@ -100,42 +100,97 @@ echo "$output" | grep -Fqx 'x X bogus5: {||}~' || wail
 # A more practical case, suggested by Deri James.
 
 input='.
-.ds h Caf\[e aa] Hyphen-Minus and \[rs]\[u2010]
-\X"ps:exec 1:\\X [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark"
-\!x X ps:exec 2:\! [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
+.ds h Caf\['"'"'e] Hyphen-Minus and \[rs]\[u2010]
+\X"ps:exec 1:\\X     [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark"
+.fl
+\!x X ps:exec 2:\!     [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
 .device ps:exec 3:device [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
+.fl
 .output x X ps:exec 4:output [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
 .'
 
 output=$(printf '%s\n' "$input" | "$groff" -T pdf -Z 2> /dev/null \
   | grep '^x X')
-echo "$output"
+error=$(printf '%s\n' "$input" | "$groff" -ww -T pdf -z)
+echo "$error"
+printf "%s\n" "$output"
 
 # Expected:
 #
-# x X ps:exec 2:\! [/Dest /pdf:bm1 /Title (Caf\[e aa] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
-# x X ps:exec 4:output [/Dest /pdf:bm1 /Title (Caf\[e aa] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
-# x X ps:exec 1:\X [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \[u2010]) /Level 1 /OUT pdfmark
-# x X ps:exec 3:device [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 2:\!     [/Dest /pdf:bm1 /Title (Caf\['e] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 4:output [/Dest /pdf:bm1 /Title (Caf\['e] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 1:\X     [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \\[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 3:device [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \\[u2010]) /Level 1 /OUT pdfmark
 
 echo "checking practical bookmarking with \X escape sequence" >&2
-echo "$output" \
-  | grep -q '1:\\X.*(Caf\\\[u00E9\] Hyphen-Minus and \\\[u2010\])' \
+# 5 spaces in the pattern below
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 1:\X     [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \\[u2010]) /Level 1 /OUT pdfmark' \
   || wail
 
 echo "checking practical bookmarking with \! escape sequence" >&2
-echo "$output" \
-  | grep -q '2:\\!.*(Caf\\\[e aa\] Hyphen-Minus and \\\[rs\]\\\[u2010\])' \
+# 5 spaces in the pattern below
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 2:\!     [/Dest /pdf:bm1 /Title (Caf\['"'"'e] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark' \
+  || wail
+
+echo "checking practical bookmarking with device request" >&2
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 3:device [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \\[u2010]) /Level 1 /OUT pdfmark' \
+  || wail
+
+echo "checking practical bookmarking with output request" >&2
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 4:output [/Dest /pdf:bm1 /Title (Caf\['"'"'e] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark' \
+  || wail
+
+#test -z "$fail"
+#exit
+
+# Test the same thing, but with a composite special character escape
+# sequence.
+
+input='.
+.ds h Caf\[e aa] Hyphen-Minus and \[rs]\[u2010]
+\X"ps:exec 5:\\X     [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark"
+.fl
+\!x X ps:exec 6:\!     [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
+.device ps:exec 7:device [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
+.fl
+.output x X ps:exec 8:output [/Dest /pdf:bm1 /Title (\*[h]) /Level 1 /OUT pdfmark
+.'
+
+output=$(printf '%s\n' "$input" | "$groff" -T pdf -Z 2> /dev/null \
+  | grep '^x X')
+error=$(printf '%s\n' "$input" | "$groff" -ww -T pdf -z)
+echo "$error"
+printf "%s\n" "$output"
+
+# Expected:
+#
+# x X ps:exec 6:\! [/Dest /pdf:bm1 /Title (Caf\['e] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 8:output [/Dest /pdf:bm1 /Title (Caf\['e] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 5:\X [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \[u2010]) /Level 1 /OUT pdfmark
+# x X ps:exec 7:device [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark
+
+echo "checking practical bookmarking with \X escape sequence" >&2
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 5:\X     [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \\[u2010]) /Level 1 /OUT pdfmark' \
+  || wail
+
+echo "checking practical bookmarking with \! escape sequence" >&2
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 6:\!     [/Dest /pdf:bm1 /Title (Caf\[e aa] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark' \
   || wail
 
 #echo "checking practical bookmarking with device request" >&2
-#echo "$output" \
-#  | grep -q '3:device.*(Caf\\\[u00E9\] Hyphen-Minus and \\\[rs\]\\\[u2010\])' \
+#printf "%s\n" "$output" \
+#  | grep -Fqx 'x X ps:exec 7:device [/Dest /pdf:bm1 /Title (Caf\[u00E9] Hyphen-Minus and \\[u2010]) /Level 1 /OUT pdfmark' \
 #  || wail
 
 echo "checking practical bookmarking with output request" >&2
-echo "$output" \
-  | grep -q '4:output.*(Caf\\\[e aa\] Hyphen-Minus and \\\[rs\]\\\[u2010\])' \
+printf "%s\n" "$output" \
+  | grep -Fqx 'x X ps:exec 8:output [/Dest /pdf:bm1 /Title (Caf\[e aa] Hyphen-Minus and \[rs]\[u2010]) /Level 1 /OUT pdfmark' \
   || wail
 
 test -z "$fail"

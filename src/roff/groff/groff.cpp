@@ -107,7 +107,7 @@ char *groff_font_path = 0 /* nullptr */;
 
 possible_command commands[NCOMMANDS];
 
-int run_commands(int no_pipe);
+int run_commands(bool no_pipe);
 void print_commands(FILE *);
 void append_arg_to_string(const char *arg, string &str);
 void handle_unknown_desc_command(const char *command, const char *arg,
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
   assert(NCOMMANDS <= MAX_COMMANDS);
   string Pargs, Largs, Fargs;
   int Kflag = 0;
-  int vflag = 0;
+  bool want_version_info = false;
   int Vflag = 0;
   int zflag = 0;
   int iflag = 0;
@@ -253,17 +253,17 @@ int main(int argc, char **argv)
       Vflag++;
       break;
     case 'v':
-      vflag = 1;
+      want_version_info = true;
       printf("GNU groff version %s\n", Version_string);
       puts(
-"Copyright (C) 2023 Free Software Foundation, Inc.\n"
+"Copyright (C) 1989-2023 Free Software Foundation, Inc.\n"
 "This is free software, distributed under the terms of the GNU General"
 " Public\n"
 "License, version 3, or any later version, at your option.  There is NO"
 " warranty;\n"
 "not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
       );
-      puts("\nprograms called:\n");
+      puts("\nprograms in constructed pipeline:\n");
       fflush(stdout);
       // Pass -v to all possible subprograms
       commands[PRECONV_INDEX].append_arg(buf);
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
     commands[TROFF_INDEX].insert_args(Pargs);
     if (eflag && is_xhtml)
       commands[TROFF_INDEX].insert_arg("-e");
-    if (vflag)
+    if (want_version_info)
       commands[TROFF_INDEX].insert_arg("-v");
   }
   const char *real_driver = 0 /* nullptr */;
@@ -442,7 +442,7 @@ int main(int argc, char **argv)
   }
   if (gxditview_flag)
     commands[POST_INDEX].append_arg("-");
-  if (lflag && !vflag && !Xflag && spooler) {
+  if (lflag && !want_version_info && !Xflag && spooler) {
     commands[SPOOL_INDEX].set_name(BSHELL);
     commands[SPOOL_INDEX].append_arg(BSHELL_DASH_C);
     Largs += '\0';
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
     print_commands(Vflag == 1 ? stdout : stderr);
   if (Vflag == 1)
     xexit(EXIT_SUCCESS);
-  xexit(run_commands(vflag));
+  xexit(run_commands(want_version_info));
 }
 
 const char *xbasename(const char *s)
@@ -611,7 +611,7 @@ void print_commands(FILE *fp)
 
 // Run the commands. Return the code with which to exit.
 
-int run_commands(int no_pipe)
+int run_commands(bool no_pipe)
 {
   char **v[NCOMMANDS]; // vector of argv arrays to pipe together
   int ncommands = 0;

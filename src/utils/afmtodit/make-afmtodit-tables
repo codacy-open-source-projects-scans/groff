@@ -1,9 +1,8 @@
 #!/bin/sh
 #
-# make-afmtodit-tables -- script for creating the 'unicode_decomposed'
-#                         and 'AGL_to_unicode' tables
+# Create afmtodit(1)'s 'unicode_decomposed' and 'AGL_to_unicode' tables.
 #
-# Copyright (C) 2005-2020 Free Software Foundation, Inc.
+# Copyright (C) 2005-2024 Free Software Foundation, Inc.
 #      Written by Werner Lemberg <wl@gnu.org>
 #
 # This file is part of groff.
@@ -105,10 +104,13 @@ cat <<END
 END
 
 # Convert AGL syntax to a chunk of Perl.
+#
+# Formerly we omitted characters from the Private Use Area (PUA) in the
+# Basic Multilingual Plane (BMP).
+#      -e '/;\(E\|F[0-8]\)/d' \
 cat "$3" \
 | sed -e '/#/d' \
       -e 's/ /_/g' \
-      -e '/;\(E\|F[0-8]\)/d' \
       -e 's/\(.*\);\(.*\)/  "\1", "\2",/' > $$5
 
 # Perform groff replacements.

@@ -5523,6 +5523,8 @@ hyphenation exceptions
 .RB ( phw ),
 registers
 .RB ( pnr ),
+open streams
+.RB ( .pstream ),
 page location traps
 .RB ( ptr ),
 and a list of output nodes corresponding to the pending input

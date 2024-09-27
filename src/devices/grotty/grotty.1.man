@@ -641,7 +641,7 @@ defines fallback characters for use with
 .I grotty.
 .
 See
-.MR nroff @MAN1EXT@ .
+.MR @g@nroff @MAN1EXT@ .
 .
 .
 .\" ====================================================================

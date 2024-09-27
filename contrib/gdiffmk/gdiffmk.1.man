@@ -320,10 +320,10 @@ developers.
 .\" ====================================================================
 .
 .MR groff @MAN1EXT@ ,
-.MR nroff @MAN1EXT@ ,
-.MR gtroff @MAN1EXT@ ,
+.MR @g@nroff @MAN1EXT@ ,
+.MR @g@troff @MAN1EXT@ ,
 .MR roff @MAN7EXT@ ,
-.MR diff @MAN1EXT@
+.MR diff 1
 .
 .
 .\" Restore compatibility mode (for, e.g., Solaris 10/11).

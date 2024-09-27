@@ -85,11 +85,15 @@ output in X11
 .
 .P
 .SY gxditview
+.B \-v
+.YS
+.
+.SY gxditview
 .B \-version
 .YS
 .
 .SY gxditview
-.B \%\-\-version
+.B \-\-version
 .YS
 .
 .
@@ -463,7 +467,8 @@ and
 .B \-\-help
 display a usage message,
 while
-.B \-version
+.BR \-v ,
+.BR \-version ,
 and
 .B \%\-\-version
 show version information;

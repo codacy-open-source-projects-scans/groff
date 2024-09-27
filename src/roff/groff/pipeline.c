@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
@@ -76,7 +77,7 @@ extern char *strerror();
 #include "pipeline.h"
 
 /* Prototype */
-int run_pipeline(int, char ***, int);
+int run_pipeline(int, char ***, bool);
 
 #ifdef __cplusplus
 extern "C" {
@@ -210,7 +211,7 @@ int is_system_shell(const char *prog)
   and before waiting for any of the children.
 */
 
-int run_pipeline(int ncommands, char ***commands, int no_pipe)
+int run_pipeline(int ncommands, char ***commands, bool no_pipe)
 {
   int i;
   int last_input = 0;	/* pacify some compilers */
@@ -356,7 +357,7 @@ static RETSIGTYPE signal_catcher(int signo)
   child_interrupted++;
 }
 
-int run_pipeline(int ncommands, char ***commands, int no_pipe)
+int run_pipeline(int ncommands, char ***commands, bool no_pipe)
 {
   int save_stdin = dup(0);
   int save_stdout = dup(1);
@@ -391,7 +392,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
       if (f < 0)
 	sys_fatal("open stdin");
       if (dup2(f, 0) < 0)
-	sys_fatal("dup2 stdin"); 
+	sys_fatal("dup2 stdin");
       if (close(f) < 0)
 	sys_fatal("close stdin");
     }
@@ -443,7 +444,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
 
 #else /* not __MSDOS__, not _WIN32 */
 
-int run_pipeline(int ncommands, char ***commands, int no_pipe)
+int run_pipeline(int ncommands, char ***commands, bool no_pipe)
 {
   int i;
   int last_input = 0;

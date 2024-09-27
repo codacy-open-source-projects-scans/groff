@@ -1,3 +1,118 @@
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mdate.pl: Report dates in ISO 8601 format (for man page center
+	footers).  That is what we prescribe in groff_man_style(7), so
+	it's only fair that we dog food our own recommendation.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am (set-man-page-time-stamps): New maintainer-mode
+	rule sets time stamps of man page source documents to match the
+	Git "author date" of their most recent commits.  This is to make
+	the date reported in the center footer of the rendered page tell
+	the truth.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/afmtodit/afmtodit.tables: Update using the Unicode
+	16.0.0 version of the "UnicodeData.txt" file.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/afmtodit/afmtodit.tables: Update with freshly
+	changed "make-afmtodit-tables" script, adding ~192 mappings.
+
+	Fixes <https://savannah.gnu.org/bugs/?65716> (2/2).  Thanks to
+	Deri James for the report.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/afmtodit/make-afmtodit-tables: Alter maintainer-mode
+	script to stop excluding code points from the Private Use Area
+	in the Unicode Basic Multilingual Plane from glyph mappings for
+	Adobe fonts (and workalikes).  Doing so expands coverage to ~192
+	more glyphs, including groff's "braceex".
+
+	Fixes <https://savannah.gnu.org/bugs/?65716> (1/2).  Thanks to
+	Deri James for the report.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (interpolate_macro): Fix code style
+	nits.  Reorder equality comparisons to avoid inadvertent lvalue
+	assignment.  Rename local variable `warned` to `was_warned` and
+	demote it from `int` to `bool`.  Assign to it using Boolean, not
+	integer, literals.  Explicitly compare variable of pointer type
+	to null pointer literal instead of letting it pun down to a
+	Boolean.  Stop treating return value of `warning()` as
+	significant.  If ever there was a function that was called only
+	for its side effects, that's it.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (device_request): Add extensive new
+	logic to subvert copy mode so as to interpret special character
+	escape sequences.  We don't yet support _composite_ special
+	character escape sequences.
+	* src/roff/groff/tests/
+	device-control-special-character-handling.sh: Update and expand
+	test cases.  Comment out one new case that doesn't yet work.
+
+	This change is in further service of the grueling march toward
+	resolution of <https://savannah.gnu.org/bugs/?63074>.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp (main): Clarify verbose output.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp: Boolify variables controlling
+	whether a command pipeline is constructed.
+	(run_commands): Demote `no_pipe` argument from `int` to `bool`.
+	(main): Rename `vflag` to `want_version_info` and demote it from
+	`int` to `bool`.  Assign to it using Boolean, not integer,
+	literals.
+	* src/roff/groff/pipeline.c:
+	* src/roff/groff/pipeline.h:
+	(run_pipeline): Demote `no_pipe` argument from `int` to `bool`.
+	* src/roff/groff/pipeline.c: Include "stdbool.h" header file.
+
+2024-09-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[gxditview]: Accept the `-v` option groff(1) may supply.
+
+	* src/devices/xditview/xditview.c (Syntax): Report `-v` as an
+	accepted synonym of `-version` and `--version` in usage message.
+	(main): Refactor argument processing.  Accept `-v`.  Handle
+	early-exit options {`--help`, `--version` and their synonyms}
+	_before_ checking for an excess argument count, another error
+	condition.
+
+	* src/devices/xditview/gxditview.1.man (Synopsis): Document
+	`-v` option.
+
+2024-09-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (remove_macro, rename_macro)
+	(alias_macro, chop_macro, stringdown_request, stringup_request)
+	(substring_request, length_request): Check for arguments: if
+	none are present, throw warning in category "missing" and skip
+	the remainder of the input line.
+	(do_string_case_transform): Add `assert()` since our callers
+	now require that arguments be present.
+
+2024-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (decode_string_args): Improve
+	error diagnostic to disclose more context.
+
+2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (close_stream): Handle being given a
+	nonexistent stream to close.  Prevents null pointer dereference.
+	Continues 6d32f2492e, 13 September.
+
 2024-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (open_file): Fix unsafe-mode SEGV
@@ -33,10 +148,10 @@
 	in copy mode.  We want parity in special character handling for
 	these formatter instructions, but one works with tokenized
 	input and the other with tokens that happen to be a sequence of
-	ordinary characters.  (In other words, in `\X'\[em]` and
+	ordinary characters.  (In other words, in `\X'\[em]'` and
 	`.device \[em]`, the escape sequence "knows" that it is dealing
 	with a valid special character named "em", whereas the request
-	merely handles '\', '[', 'e', 'm', and ']' in series.) This
+	merely handles '\', '[', 'e', 'm', and ']' in series.)  This
 	change is in service of the grueling march toward resolution of
 	<https://savannah.gnu.org/bugs/?63074>.
 
@@ -400,8 +515,8 @@
 	already reported "target text length".  Clarify "total number of
 	spaces" as "number of adjustable spaces"; that's what's really
 	counted.  Relocate report of "target text length" to more
-	follow "text length" and "number of adjustable spaces" to make
-	their relationship more obvious.
+	closely follow "text length" and "number of adjustable spaces"
+	to make their relationship more obvious.
 
 2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -456,7 +571,7 @@
 	with many images, continues to render fine.  In
 	device-independent output, a pair of absolute positioning
 	commands ('H' and 'V') moves to a redundant place, but the HTML
-	produces is identical (except for a date stamp in a comment).
+	produced is identical (except for a date stamp in a comment).
 
 2024-09-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 

@@ -64,3 +64,6 @@ This file describes how to prepare 'groff' for a new release.
   major.minor.revision, due to the .Y register.
 
     $ git tag 1.23.0.rc1
+
+* Run the "set-man-page-time-stamps" Makefile target from your build
+  directory to fix up the stamps on the man pages.
