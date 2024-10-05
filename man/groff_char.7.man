@@ -201,7 +201,7 @@ and the Bell System logo
 .P
 In
 .IR groff ,
-you can test output device support for any character
+you can test support for any character
 (ordinary or special)
 with the conditional expression operator
 .RB \[lq] c \[rq].
@@ -292,8 +292,8 @@ The developers of AT&T
 .I troff
 chose mappings for them that would be useful for typesetting technical
 literature in a broad range of scientific disciplines:
-Bell Labs used the system for preparation of AT&T's patent filings with
-the U.S.\& government.
+Bell Labs used the system to prepare AT&T's patent filings with the
+U.S.\& government.
 .
 Further,
 the prevailing character encoding standard in the 1970s,
@@ -491,9 +491,16 @@ Using Unicode basic Latin characters to compose boxes and lines is
 ill-advised.
 .
 .I roff
-systems have special characters for drawing horizontal and vertical
-lines;
-see subsection \[lq]Rules and lines\[rq] below.
+systems have dedicated features for drawing horizontal and vertical
+lines,
+the
+.BR \[rs]l ,
+.BR \[rs]L ,
+and
+.B \[rs]D
+escape sequences.
+.
+Also see subsection \[lq]Rules and lines\[rq] below.
 .
 Preprocessors like
 .MR @g@tbl @MAN1EXT@
@@ -530,7 +537,7 @@ never produces them as output.
 .TP
 NBSP
 encodes a no-break space;
-it is mapped to
+it maps to
 .BR \[rs]\[ti] ,
 the adjustable non-breaking space escape sequence.
 .
@@ -538,7 +545,7 @@ the adjustable non-breaking space escape sequence.
 .TP
 SHY
 encodes a soft hyphen;
-it is mapped to
+it maps to
 .BR \[rs]% ,
 the hyphenation control escape sequence.
 .
@@ -976,7 +983,8 @@ and
 .B \[rs][or]
 escape sequences may render differently.
 .
-See subsection \[lq]Mathematical symbols\[rq] below for special variants
+See subsection \[lq]Mathematical symbols\[rq] below
+for unstyled variants
 of the plus,
 minus,
 and equals
@@ -1287,7 +1295,7 @@ they are
 .I not
 font-invariant;
 .I groff
-maps them rather arbitrarily to U+23AA
+maps them arbitrarily to U+23AA
 (\[lq]curly bracket extension\[rq]).
 .
 In AT&T
@@ -1726,7 +1734,7 @@ these special characters are intended for use with text fonts.
 .B \[rs][sqrt]
 and
 .B \[rs][sqrtex]
-are their counterparts with mathematical spacing.
+are their unstyled counterparts.
 .
 .
 .P
@@ -1761,7 +1769,7 @@ L Lf(CR) L Lx.
 \[tmu]	\e[tmu]	u00D7	text variant of \f[B]\e[mu]\f[]
 \[c*]	\e[c*]	u2297	circled times
 \[c+]	\e[c+]	u2295	circled plus
-\[di]	\e[di]	u00F7	division sign + ***
+\[di]	\e[di]	u00F7	division sign, obelus + ***
 \[tdi]	\e[tdi]	u00F7	text variant of \f[B]\e[di]\f[]
 \[f/]	\e[f/]	u2044	fraction slash
 *	*	u002A	asterisk

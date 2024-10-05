@@ -83,6 +83,26 @@ http://savannah.gnu.org/bugs/?group=groff.
 .in
 ..
 .\"------------
+.\" mm changed what `AU` fields in printed at the top of memoranda over
+.\" time, from PWB to DWB 3.3 at least.  groff mm defaults to formatting
+.\" all that are present, but supports an `Aumt` string enabling their
+.\" selective suppression by position.
+.nr cov*i 0 1
+.while \n+[cov*i]<=9 \{\
+.	nr cov*fmt-au!\n[cov*i] 1
+.\}
+.rr cov*i
+.
+.de cov*suppress-au-fields
+.while \\n[.$] \{\
+.	ie \B'\\$1' .nr cov*fmt-au!\\$1 0
+.	el .tm 0.MT:\\$0: non-numeric 'Aumt' argument '\\$1'
+.	shift
+.\}
+..
+.
+.if d Aumt .cov*suppress-au-fields \*[Aumt]
+.
 .de cov@print-authors
 .\" The following diagnostic might be unreachable.
 .if !r cov*au .@error no authors defined; call AU before MT
@@ -105,20 +125,26 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ll \\n[cov*column4-limit]u
 .sp -1
 .ft \\*[@metadata-font]
-.nr cov*i 0 1
 .\" DWB 3.3 mm turned off filling, but that runs a big risk of
 .\" oversetting the line in nroff mode.
 .nr cov*saved-adjustment \\n[.j]
 .ad l
+.nr cov*i 0 1
 .while \\n+[cov*i]<=\\n[cov*au] \{\
 .	cov@print-au1 \\n[cov*i] 1
 .	if \\n[Au] \{\
-.		cov@print-au1 \\n[cov*i] 4
-.		cov@print-au2 \\n[cov*i] 3 6
-.		cov@print-au1 \\n[cov*i] 5
-.		cov@print-au1 \\n[cov*i] 7
-.		cov@print-au1 \\n[cov*i] 8
-.		cov@print-au1 \\n[cov*i] 9
+.		if \\n[cov*fmt-au!4] .cov@print-au1 \\n[cov*i] 4
+.		ie \\n[cov*fmt-au!3]&\\n[cov*fmt-au!6] \{\
+.			cov@print-au2 \\n[cov*i] 3 6
+.		\}
+.		el \{\
+.			if \\n[cov*fmt-au!3] .cov@print-au1 \\n[cov*i] 3
+.			if \\n[cov*fmt-au!6] .cov@print-au1 \\n[cov*i] 6
+.		\}
+.		if \\n[cov*fmt-au!5] .cov@print-au1 \\n[cov*i] 5
+.		if \\n[cov*fmt-au!6] .cov@print-au1 \\n[cov*i] 7
+.		if \\n[cov*fmt-au!7] .cov@print-au1 \\n[cov*i] 8
+.		if \\n[cov*fmt-au!8] .cov@print-au1 \\n[cov*i] 9
 .	\}
 .	if \\n[cov*i]<\\n[cov*au] .SP 1
 .\}

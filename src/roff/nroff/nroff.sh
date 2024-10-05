@@ -1,4 +1,5 @@
 #!/bin/sh
+#
 # Emulate nroff with groff.
 #
 # Copyright (C) 1992-2024 Free Software Foundation, Inc.
@@ -49,11 +50,11 @@ do
   while :
   do
     case $thisarg in
-      -[abCEikpRStUzZ])
+      -[abCEikpRStUvzZ])
         newargs="$newargs $thisarg"
         break
         ;;
-      -[abCEikpRStUzZ]*)
+      -[abCEikpRStUvzZ]*)
         remainder=${thisarg#-?}
         thisarg=${thisarg%%$remainder}
         newargs="$newargs $thisarg"
@@ -81,16 +82,16 @@ do
 
   # groff(1) options we don't support:
   #
-  # -e
-  # -s because of historical clash in meaning.
+  # -e because of historical clash in meaning.
+  # -s "
   # -f because terminal devices don't support font families.
-  # -g
-  # -G
-  # -j
-  # -p because terminals don't do graphics.  (Some do, but grotty(1)
+  # -g because terminals don't do graphics.  (Some do, but grotty(1)
   #    does not produce ReGIS or Sixel output.)
-  # -l
-  # -L because terminal output is not suitable for a print spooler.
+  # -G "
+  # -j "
+  # -p "
+  # -l because terminal output is not suitable for a print spooler.
+  # -L "
   # -N because we don't support -e.
   # -X because gxditview(1) doesn't support terminal documents (why?).
   case $arg in

@@ -8,7 +8,7 @@ preconv \- prepare files for typesetting with
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2006-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 2006-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -416,7 +416,7 @@ ISO\~646:1991\~IRV (US-ASCII)
 is a proper subset of both these encodings.
 .
 If
-.I iconv
+.MR iconv 3
 support is configured at compile time and available at run time,
 all others are passed to
 .I iconv

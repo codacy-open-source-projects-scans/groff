@@ -106,14 +106,14 @@ Updating Copyright Notices
   repository.
 
 * Update a _file_'s copyright notice in a year when committing a change
-  to it that is "original work" and would thus merit copyright
+  to it that is "original expression" and would thus merit copyright
   protection.  This is a subjective and arguable matter, so it's not
   necessarily offensive to apply an expansive interpretation, but
   "bumping" the copyright notice when _no_ change has been made, or when
   the alterations are trivial by another standard (code style changes
   that don't require regression testing; editorial changes to text that
   are _invisible_ to the lay reader without technological
-  assistance--like trailing tab/space removal) abuse the principle.
+  assistance--like trailing tab/space removal) abuses the principle.
 
 * If you forget the foregoing step, or contributions to a file seem to
   accrete original status over time or a series of commits, it's fine to

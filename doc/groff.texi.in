@@ -4058,15 +4058,16 @@ P V = n R T
 @cindex equations [@file{ms}]
 @cindex references [@file{ms}]
 
-The @file{ms} package is often used with the @code{tbl}, @code{pic},
-@code{eqn}, and @code{refer} preprocessors.
+@file{ms} often sees use with the @code{tbl}, @code{pic}, @code{eqn},
+and @code{refer} preprocessors.
 @pindex tbl
 @pindex pic
 @pindex eqn
 @pindex refer
 Mark text meant for preprocessors by enclosing it in pairs of tokens
-as follows, with nothing between the dot and the macro name.  The
-preprocessors match these tokens only at the start of an input line.
+as follows, with nothing between the dot and the macro name.
+Preprocessors match these tokens only at the start of an input line.
+@code{troff} interprets them as macro calls.
 
 @DefmacList {TS, [@code{H}], ms}
 @DefmacListEndx {TE, , ms}
@@ -4742,11 +4743,10 @@ register; Berkeley and @code{groff} @file{ms} do.
 @end itemize
 
 @Defmpreg {GS, ms}
-The register @code{GS} is set to@tie{}1 by the @code{groff} @file{ms}
-macros, but is not used by the @acronym{AT&T} @file{ms} package.
-Documents that need to determine whether they are being formatted with
-@code{groff} @file{ms} or another implementation should test this
-register.
+@code{groff} @file{ms} sets the register @code{GS} to@tie{}1;
+@acronym{AT&T} @file{ms} does not use it.  A document can test its value
+to determine whether it is being formatted with @code{groff} @file{ms}
+or another implementation.
 @endDefmpreg
 
 @menu
@@ -4991,14 +4991,16 @@ Constructed names used to implement arrays are of the form
 @var{array}@code{!}@var{index}.
 @end itemize
 
-Thus the @code{groff} @file{ms} macros reserve the following names.
+Thus the @code{groff} @file{ms} macros reserve the following
+identifiers:
 
 @itemize @bullet
 @item
-Names containing the characters @code{*}, @code{@@}, and@tie{}@code{:}.
+those containing the characters @code{*}, @code{@@}, and@tie{}@code{:},
+and
 
 @item
-Names containing only uppercase letters and digits.
+those containing only uppercase letters and digits.
 @end itemize
 
 
@@ -5974,7 +5976,7 @@ The formatter sometimes requires the input of numeric parameters to
 specify measurements.  These are specified as integers or decimal
 fractions with an optional @dfn{scaling unit} suffixed.  A scaling unit
 is a letter that immediately follows the last digit of a number.  Digits
-after the decimal point are optional.  Measurement expressions include
+after the decimal point are optional.  Examples of measurements include
 @samp{10.5p}, @samp{11i}, and @samp{3.c}.
 
 @cindex basic units, conversion to
@@ -6107,7 +6109,7 @@ Half-quantum fractions round toward zero.
 @DefregList {.H}
 @DefregListEndx {.V}
 These read-only registers interpolate the horizontal and vertical motion
-quanta, respectively, of the output device in basic units.
+quantum, respectively, of the output device in basic units.
 @endDefreg
 
 For example, we might draw short baseline rules on a terminal device as
@@ -6503,6 +6505,7 @@ invalid macro or string arguments.  @xref{Conditionals and Loops}.
 .\" Indent by amount given in first argument; assume ens.
 .de Indent
 .  if \B'\\$1' .in (n;\\$1)
+.  el          .tm \\$0: invalid number '\\$1'
 ..
 @endExample
 
@@ -6627,10 +6630,10 @@ preprocessor, which recognizes input lines starting with @samp{.[} and
 @Defesc {\\A, @code{'}, anything, @code{'}}
 Interpolate@tie{}1 if @var{anything} is a valid identifier, and@tie{}0
 otherwise.  The delimiter need not be a neutral apostrophe; see
-@ref{Delimiters}.  Because invalid input characters are removed (see
-above), invalid identifiers are empty or contain spaces, tabs, newlines,
-or escape sequences that interpolate something other than a sequence of
-ordinary characters.
+@ref{Delimiters}.  Because GNU @command{troff} ignores any input
+character with an invalid code when reading it, invalid identifiers are
+empty or contain spaces, tabs, newlines, or escape sequences that
+interpolate something other than a sequence of ordinary characters.
 
 You can employ @code{\A} to validate a macro argument before using it to
 construct another escape sequence or identifier.
@@ -7413,10 +7416,10 @@ comment escape sequence as @samp{.\"}, causing the input line to be
 ignored.
 
 @cindex @code{'}, as a comment
-Another commenting scheme sometimes seen is three consecutive single
-quotes (@code{'''}) at the beginning of a line.  This works, but GNU
-@code{troff} emits a warning diagnostic (if enabled) about an undefined
-macro (namely @samp{''}).
+Another commenting scheme sometimes seen is three consecutive neutral
+apostrophes (@code{'''}) at the beginning of an input line.  This works,
+but GNU @command{troff} emits a warning diagnostic (if enabled) about an
+undefined macro (namely @samp{''}).
 @endDefesc
 
 @Defesc {\\#, , , }
@@ -10059,14 +10062,15 @@ flushing out the pending output line in the usual way.
 
 @cindex interrupted line register (@code{.int})
 @cindex continued output line register (@code{.int})
-The @code{.int} register contains a positive value if the most recently
-formatted text was continued with @code{\c}; this datum is associated
-with the environment (@pxref{Environments}).@footnote{Historically, the
-@code{\c} escape sequence has proven challenging to characterize.  Some
-sources say it ``connects the next input text'' (to the input line on
-which it appears); others describe it as ``interrupting'' text, on the
-grounds that a text line is interrupted without breaking, perhaps to
-inject a request invocation or macro call.}
+The @code{.int} register interpolates a positive value only if the
+pending output line has been continued with @code{\c}; this datum is
+associated with the environment
+(@pxref{Environments}).@footnote{Historically, the @code{\c} escape
+sequence has proven challenging to characterize.  Some sources say it
+``connects the next input text'' (to the input line on which it
+appears); others describe it as ``interrupting'' text, on the grounds
+that a text line is interrupted without breaking, perhaps to inject a
+request invocation or macro call.}
 @endDefesc
 
 
@@ -11207,9 +11211,9 @@ have different properties.  The only ones known to GNU @code{troff} are
 those in its font's description file.  Recall @ref{Using Fonts}.}  These
 properties can be modified with this request.  The first argument is the
 sum of the desired flags and the remaining arguments are the characters
-to be assigned those properties.  Spaces between the @var{cn} arguments
-are optional.  Any argument @var{cn} can be a character class defined
-with the @code{class} request rather than an individual character.
+to be assigned those properties.  Spaces need not separate the @var{cn}
+arguments.  Any argument @var{cn} can be a character class defined with
+the @code{class} request rather than an individual character.
 @xref{Character Classes}.
 
 The non-negative integer @var{n} is the sum of any of the following.
@@ -11354,18 +11358,19 @@ Define an ordinary or special character@tie{}@var{c} as @var{contents}.
 If @var{contents} is absent, an existing character definition made with
 the same request is deleted.
 
-Defining (or redefining) a character @var{c} creates an object in the
-formatter that is recognized like any other ordinary or special
-character on input, and produces @var{contents} on output.  Every time
-@var{c} is to be output, @var{contents} is processed in a temporary
-environment and the result encapsulated in a node.@footnote{@xref{Gtroff
-Internals}.} A leading neutral double quote in the final argument is
-stripped from it, allowing embedded leading spaces in @var{contents},
-which is read in copy mode and continues to the end of the input line.
-Further, compatibility mode is disabled and the escape character set to
-@code{\} while @var{contents} is interpreted.  Any emboldening, constant
-spacing, or track kerning is applied to this object rather than to
-individual glyphs in @var{contents}.
+A leading neutral double quote in the second argument is stripped from
+it, allowing embedded leading spaces in @var{contents}, which is read to
+the end of the input line in copy mode.
+
+Defining (or redefining) a character @var{c} creates a formatter object
+that is recognized like any other ordinary or special character on
+input, and produces @var{contents} on output.  Every time @var{c} is to
+be output, @var{contents} is processed in a temporary environment and
+the result encapsulated in a node.@footnote{@xref{Gtroff Internals}.}
+Compatibility mode is disabled and the escape character set to @code{\}
+while @var{contents} is interpreted.  Any emboldening, constant spacing,
+or track kerning is applied to this object rather than to individual
+glyphs in @var{contents}.
 
 A character defined by these requests can be used just like a glyph
 provided by the output device.  In particular, other characters can be
@@ -11422,7 +11427,7 @@ request, but before the already mounted special fonts.
 Remove definition of each ordinary or special character @var{c},
 undoing the effect of a @code{char}, @code{fchar}, or @code{schar}
 request.  Those supplied by font description files cannot be removed.
-Spaces and tabs may separate @var{c}@tie{}arguments.
+Spaces need not separate @var{c}@tie{}arguments.
 
 The request @code{rfschar} removes glyph definitions defined with
 @code{fschar} for font@tie{}@var{f}.
@@ -12744,7 +12749,10 @@ can be manipulated through renaming, removal, and aliasing (@code{rn},
 @cindex mode, copy, and @code{length} request
 Compute the number of characters of @var{anything} and store the count
 in the register @var{reg}.  If @var{reg} doesn't exist, it is created.
-GNU @command{troff} reads @var{anything} in copy mode.
+
+A leading neutral double quote in the argument is stripped from it,
+allowing embedded leading spaces in @var{contents}, which is read to
+the end of the input line in copy mode.
 
 @Example
 .ds xxx abcd\h'3i'efgh
@@ -12946,9 +12954,10 @@ termed @dfn{conditional expressions}.
 @table @code
 @item c @var{glyph}
 True if @var{glyph} is available, where @var{glyph} is an ordinary
-character, a special character @samp{\(@var{xx}} or @samp{\[@var{xxx}]},
-@samp{\N'@var{xxx}'}, or has been defined by any of the @code{char},
-@code{fchar}, @code{fschar}, or @code{schar} requests.
+character, a special character @samp{\(@var{xx}} or @samp{\[@var{xxx}]}
+(whether built-in or user-defined), @samp{\N'@var{xxx}'}, or has been
+defined by any of the @code{char}, @code{fchar}, @code{fschar}, or
+@code{schar} requests.
 
 @item d @var{name}
 True if a string, macro, diversion, or request called @var{name} exists.
@@ -14564,11 +14573,13 @@ Afterward, the drawing position is left at (@var{hn}, @var{vn}).
 @cindex polygon, solid, drawing (@samp{\D'P @dots{}'})
 @cindex drawing a solid polygon (@samp{\D'P @dots{}'})
 @cindex solid polygon, drawing (@samp{\D'P @dots{}'})
-As @samp{\D'P @r{@dots{}}'}, but the polygon is filled.
+As @samp{\D'P @r{@dots{}}'}, but the polygon is filled.  @code{groff}
+does not specify how the output device must fill concave or
+self-intersecting polygons.
 
 The following macro is like the @samp{\D'l'} example, but shades the
 box.  We draw the box before writing the text because colors in GNU
-@code{troff} have no transparency; in the opposite order, the filled
+@command{troff} have no transparency; in the opposite order, the filled
 polygon would occlude the text.
 
 @Example
@@ -15741,14 +15752,21 @@ no output at all; its argument is simply ignored.
 @cindex mode, copy, and @code{output} request
 @Defreq {output, [@code{"}]@Var{contents}}
 Emit @var{contents} directly to GNU @command{troff}'s output; this usage
-is similar to that of @code{\!} in the top-level diversion.  An initial
-neutral double quote in the argument is stripped, allowing embedded
-leading spaces in @var{contents}, which is read in copy mode and
-continues to the end of the input line.
+is similar to that of @code{\!} in the top-level diversion.
 
-Use with caution!  It is normally only needed for mark-up used by a
-postprocessor that does something with the output before sending it to
-the output device, filtering out @var{contents} again.
+A leading neutral double quote in the argument to @code{output} is
+stripped from it, allowing embedded leading spaces in @var{contents},
+which is read to the end of the input line in copy mode.
+
+@strong{Caution:@:} Use of these features can put syntactically invalid
+content into GNU @command{troff}'s output, which @code{groff}'s output
+drivers then fail to process.  They are normally needed only for
+instructions to a postprocessor that does something with the output
+before sending it to the output device, filtering out @var{contents}
+again.
+@c TODO: Once the dust settles from Savannah #63074, document how these
+@c can be used to construct device extension commands without special
+@c character processing.
 @endDefreq
 
 @Defreq {asciify, div}
@@ -16536,25 +16554,29 @@ standard error stream; @ref{Debugging}.
 @cindex write to file stream (@code{write}, @code{writec})
 @cindex file stream, write to (@code{write}, @code{writec})
 Write @var{contents} to @var{stream}, which must previously have been
-the subject of an @code{open} request.  A leading neutral double quote
-in the second argument is stripped, allowing embedded leading spaces in
-@var{contents}, which is read in copy mode until the end of the line.
+the subject of an @code{open} (or @code{opena}) request.  GNU
+@command{troff} flushes the stream after writing to it.
+
+A leading neutral double quote in the second argument is stripped from
+it, allowing embedded leading spaces in @var{contents}, which is read to
+the end of the input line in copy mode.
 
 The @code{writec} request is like @code{write}, but only @code{write}
 appends a newline to @var{contents}.
 @endDefreq
 
-@Defreq {writem, stream xx}
+@Defreq {writem, stream name}
 @cindex @code{asciify} request, and @code{writem}
-Write the contents of the macro or string @var{xx} to the file
-associated with the specified @var{stream}.
-
+Write the contents of the macro or string @var{name} to @var{stream},
+which must previously have been the subject of an @code{open} (or
+@code{opena}) request.
 @cindex @code{writem} request, and copy mode
 @cindex copy mode, and @code{writem} request
 @cindex mode, copy, and @code{writem} request
-@var{xx} is read in copy mode, i.e., already formatted elements are
-ignored.  Consequently, diversions must be unformatted with the
-@code{asciify} request before calling @code{writem}.  Usually, this
+The contents of
+@var{name} are read in copy mode.  That is, already formatted elements
+(nodes) are ignored.  Consequently, diversions must be unformatted with
+the @code{asciify} request before calling @code{writem}.  Usually, this
 means a loss of information.
 @endDefreq
 
@@ -16617,8 +16639,9 @@ Embed @var{contents} into GNU @command{troff} output as parameters to an
 The interpretation of such parameters is determined by the output driver
 or other postprocessor.
 
-The @code{device} request strips a leading neutral double quote from
-@var{contents} to allow embedding of leading spaces.
+A leading neutral double quote in the argument to @code{device} is
+stripped from it, allowing embedded leading spaces in @var{contents},
+which is read to the end of the input line in copy mode.
 
 @cindex @code{device} request, and copy mode
 @cindex copy mode, and @code{device} request
@@ -17803,7 +17826,7 @@ helpful in avoiding use of these escape sequences in names.
 @cindex end-of-sentence detection, cancellation, on @acronym{AT&T} @code{troff}
 @cindex sentence, cancelling detection of end of, on @acronym{AT&T} @code{troff}
 @acronym{AT&T} @command{troff} discards trailing spaces from input
-lines, like GNU @command{troff}, but if it does so, @acronym{AT&T}
+lines, like GNU @command{troff}, but when it does so, @acronym{AT&T}
 @command{troff} also cancels end-of-sentence detection.  Use of the
 dummy character escape sequence @code{\&} is more portable.
 

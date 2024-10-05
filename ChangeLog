@@ -1,8 +1,126 @@
+2024-10-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::init_output): Migrate to use
+	of `.R` register for a huge value in generated groff language,
+	instead of hard-coding (2^31)-1 as a numeric literal.
+
+2024-10-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp: Add C preprocessor macro storing
+	the name of a groff register for saving the state of line
+	numering enablement.
+	(table::init_output): Save the value of the `.nm` register to
+	this groff register.
+	(table::do_bottom): Test the value of that register (instead of
+	the saved line number itself) when deciding whether to reënable
+	line numbering after leaving the table region.
+
+	Fixes <https://savannah.gnu.org/bugs/?66290>.  Problem
+	introduced by me in commit 950f92e25f, 28 November 2022, when
+	fixing Savannah #61040.  Thanks to Deri James for the report.
+
+2024-10-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/tests/save-and-restore-line-numbering.sh: Add
+	regression test for Savannah #66290.
+
+2024-10-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/\
+	write-request-handles-empty-second-arg.sh: Revise signal
+	handling.
+
+2024-09-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (class input_iterator)
+	(class string_iterator, class macro_iterator):
+	Demote `get_break_flag()` member function from `int` to `bool`.
+	Return Boolean, not integer, literal from it.
+	(class string_iterator, class macro_iterator): Demote member
+	variable `with_break` from `int` to `bool`.
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_write_request): Fix code style
+	nits.  Restyle loops to more closely resemble similar logic in
+	this file.  Reorder equality comparisons to avoid inadvertent
+	lvalue assignment.
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_write_request): Check for a
+	second argument before proceeding as if it's there.  This makes
+	`write` and `writec` behave more like other requests that read
+	`contents` or `anything` arguments.
+
+	Fixes <https://savannah.gnu.org/bugs/?66255>.
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add regression test for Savannah #66255.
+
+	* src/roff/groff/tests/\
+	write-request-handles-empty-second-arg.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (close_all_streams): Drop
+	copy-and-wasted line.  Harmless but pointless (we're no
+	longer reading input when this function is called).
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (pipe_output): Shorten diagnostics.
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[gropdf]: Handle errors and abnormal exits.
+
+	* src/devices/gropdf/pdfmom.pl: Handle signaled and error exits
+	from groff pipeline.  Improve diagnostics.  Store "basename" of
+	executing command into `prog` scalar.  Gather the wait status
+	returned by every use of `system()`.
+	(abort): New subroutine writes a fatal diagnostic message and
+	exits with status 1.
+	(autopsy): New subroutine decodes a POSIX wait status to
+	determine the fate of an unlucky process, and returns it as a
+	human-readable string scalar.  (The interesting part is cribbed
+	from Perl documentation.)
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Throw warnings
+	if comment (`\"`, `\#`) or transparent throughput (`\!`) escape
+	sequences encountered in table entry.  Because these escape
+	sequences cause the formatter to consume the rest of the input
+	line as their argument, they don't play well with tbl, which
+	tries to measure a table entry's width by interpolating it
+	inside the delimited `\w` escape sequence.  You can sometimes
+	get away with this (especially in simple table layouts), hence
+	the mere warning, but it can't be relied upon.
+
+2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): When erroring
+	about a table entry ending with (an incomplete) zero-motion
+	escape sequence, spell out the escape sequence in the diagnostic
+	for the benefit of *roff non-experts.
+
+2024-09-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/nroff/nroff.sh: Support `-v` non-finally in option
+	clusters.  "nroff -tv" worked while "nroff -vt" did not.  That
+	was silly.  Continues commit 24d4975ebe, 12 July.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?64684>.
+
 2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mdate.pl: Report dates in ISO 8601 format (for man page center
-	footers).  That is what we prescribe in groff_man_style(7), so
-	it's only fair that we dog food our own recommendation.
+	footers).  That is what we prescribe in an `-rCHECKSTYLE`
+	diagnostic; it's only fair that we dog food our own
+	recommendation.
 
 2024-09-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -73,9 +191,9 @@
 	(main): Rename `vflag` to `want_version_info` and demote it from
 	`int` to `bool`.  Assign to it using Boolean, not integer,
 	literals.
-	* src/roff/groff/pipeline.c:
-	* src/roff/groff/pipeline.h:
-	(run_pipeline): Demote `no_pipe` argument from `int` to `bool`.
+	* src/roff/groff/pipeline.c (run_pipeline):
+	* src/roff/groff/pipeline.h (run_pipeline): Demote `no_pipe`
+	argument from `int` to `bool`.
 	* src/roff/groff/pipeline.c: Include "stdbool.h" header file.
 
 2024-09-20  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -316,18 +434,13 @@
 
 	* src/preproc/html/pre-html.cpp: Improve diagnostic message
 	handling.
-	(html_system)
-	(imageList::createPage)
-	(imageList::createImage)
-	(set_redirection)
-	(save_and_redirect)
-	(print_args [DEBUGGING]): Prefix output to standard error stream
-	with name of program.
-	(html_system [DEBUGGING])
-	(imageList::createPage [DEBUGGING])
-	(imageList::createImage [DEBUGGING])
-	(print_args [DEBUGGING]): Prefix output to standard error stream
-	with "debug:" message severity tag.
+	(html_system, imageList::createPage, imageList::createImage)
+	(set_redirection, save_and_redirect, print_args [DEBUGGING]):
+	Prefix output to standard error stream with name of program.
+	(html_system [DEBUGGING], imageList::createPage [DEBUGGING])
+	(imageList::createImage [DEBUGGING], print_args [DEBUGGING]):
+	Prefix output to standard error stream with "debug:" message
+	severity tag.
 	(main): Assign to `program_name` global variable before emitting
 	first diagnostic ([CAPTURE_MODE]), and convert that diagnostic
 	to use it.

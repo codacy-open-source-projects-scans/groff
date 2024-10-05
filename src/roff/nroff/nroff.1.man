@@ -2,14 +2,14 @@
 .SH Name
 @g@nroff \- format documents with
 .I groff
-for TTY (terminal) devices
+for terminal (\[lq]TTY\[rq]) devices
 .
 .
 .\" ====================================================================
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2021 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -98,10 +98,12 @@ for TTY (terminal) devices
 .P
 .SY @g@nroff
 .B \-v
+.RI [ other-nroff-option \~.\|.\|.]
 .YS
 .
 .SY @g@nroff
 .B \%\-\-version
+.RI [ other-nroff-option \~.\|.\|.]
 .YS
 .
 .
@@ -155,8 +157,9 @@ then checks several locale-related environment variables;
 see section \[lq]Environment\[rq] below.
 .
 If all of the foregoing fail,
-.B \-Tascii
-is implied.
+.I @g@nroff
+assumes
+.RB \[lq] "\-T ascii" \[rq].
 .
 .
 .P
@@ -186,26 +189,28 @@ options have the effects described in
 and
 .B \-h
 imply
-.RB \[lq] \-P\-c \[rq]
+.RB \[lq] "\-P \-c" \[rq]
 and
-.RB \[lq] \-P\-h \[rq],
+.RB \[lq] "\-P \-h" \[rq],
 respectively;
 .B \-c
-is also interpreted directly by
-.IR @g@troff .
+is also meaningful to
+.I @g@troff
+itself.
 .
-In addition,
-this implementation ignores the AT&T
+Further,
+GNU
+.I nroff \" GNU
+ignores the AT&T
 .I nroff \" AT&T
 options
 .BR \-e ,
 .BR \-q ,
 and
-.B \-s
-(which are not implemented in GNU
-.IR nroff ). \" GNU
+.BR \-s .
 .
-The options
+.MR groff @MAN1EXT@
+documents options
 .BR \-D ,
 .BR \-k ,
 .BR \-K ,
@@ -215,9 +220,7 @@ The options
 .BR \-t ,
 .BR \-S ,
 and
-.B \-Z
-are documented in
-.MR groff @MAN1EXT@ .
+.BR \-Z .
 .
 .B \-V
 causes

@@ -1,3 +1,23 @@
+2024-09-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT: Support an `Aumt` string to suppress the appearance
+	of positional arguments to the `AU` macro in the document
+	heading used by memorandum types 0-3 and 6.  By default, all
+	such arguments appear, except the second (author initials).  For
+	example, a value of "3 4" more accurately reproduces London &
+	Reiser's 1978 paper describing the porting of Unix to the
+	VAX-11/780.
+	(cov*suppress-au-fields): New macro interprets `Aumt` string, if
+	defined.
+	(cov*print-authors): Format `AU` arguments only if not
+	suppressed.
+	* groff_mm.7.man (Strings) <Aumt>: Document facility.
+
+2024-09-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT (cov*print-authors): Fix code style nit: define
+	register closer to its point of use.
+
 2024-09-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac: Use value of GNU troff `.R` register instead of "99"

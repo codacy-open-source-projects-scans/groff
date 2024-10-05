@@ -13,6 +13,8 @@ documents
 .\" Copyright (C) 1980, 1993
 .\"   The Regents of the University of California.  All rights reserved.
 .\"
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -146,7 +148,8 @@ cp	n	en-/disable AT&T \fItroff\fP compatibility mode\fB*
 de	m e	define macro \fIm\fP until \fIe\fP called
 do	t	interpret input \fIt\fP with compatibility mode off\fB*
 ds	s t	define rest of line \fIt\fP as string \fIs
-el	t	interpret \fIt\fP if corresponding \fBie\fP false
+el	t	interpret \fIt\fP if corresponding \fBie\fP's \fIp\fP \
+false
 fc	c d	set field delimiter \fIc\fP and padding glyph \fId
 fi	\&	enable filling
 hc	c	set hyphenation character to \fIc
@@ -194,7 +197,7 @@ suppresses the output of vertical space at the tops of pages
 (after the output of any page header);
 the
 .B sp
-request will thus not work there.
+request thus does not work there.
 .
 You can instead call
 .B bl

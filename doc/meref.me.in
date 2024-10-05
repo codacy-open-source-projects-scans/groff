@@ -1,5 +1,10 @@
+.\" groff -me
+.\" nroff -me
+.\"
 .\" Copyright (c) 1986, 1993
 .\"   The Regents of the University of California.  All rights reserved.
+.\"
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -1392,7 +1397,7 @@ With \(lq\c
 .b ".TS H" \(rq,
 end the
 .i \%@g@tbl
-table header.
+table heading.
 .TL
 .b .TE
 .DE

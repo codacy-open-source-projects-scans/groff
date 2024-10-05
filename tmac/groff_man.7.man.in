@@ -134,6 +134,12 @@ This document presents the macros thematically;
 for those needing only a quick reference,
 the following table lists them alphabetically,
 with cross references to appropriate subsections below.
+_ifstyle()dnl
+Experienced
+.I man
+authors may prefer
+.MR groff_man @MAN7EXT@ .
+_endif()dnl
 .
 .
 _ifnotstyle()dnl
@@ -396,7 +402,7 @@ Section headings
 .RB ( .SH ),
 one of which is mandatory and many of which are conventionally expected,
 facilitate location of material by the reader and aid the man page
-writer to discuss all essential aspects of the subject.
+writer to discuss all essential aspects of the topics presented.
 .
 Subsection headings
 .RB ( .SS )
@@ -462,23 +468,23 @@ in parentheses and without space.
 .I footer-middle
 is centered in the footer.
 .
-The arrangement of the rest of the footer depends on whether
-double-sided layout is enabled with the option
-.BR \-rD1 .
-.
-When disabled (the default),
+By default,
 .I footer-inside
 is positioned at the bottom left.
 .
-Otherwise,
+Use of the double-sided layout option
+.B \-rD1
+places
 .I footer-inside
-appears at the bottom left on recto (odd-numbered) pages,
-and at the bottom right on verso (even-numbered) pages.
+at the bottom left on recto (odd-numbered) pages,
+and the bottom right on verso (even-numbered) pages.
 .
-The outside footer is the page number,
-except in the continuous-rendering mode enabled by the option
-.BR \-rcR=1 ,
-in which case it is the
+By default,
+the outside footer is the page number.
+.
+Use of the continuous-rendering option
+.B \-rcR=1
+replaces it with
 .I identifier
 and
 .I section,
@@ -495,16 +501,19 @@ there is no need to specify
 .I an.tmac
 supplies text for it.
 .
-This package may abbreviate
+If
 .I identifier
-and
+or
 .I footer-inside
-with ellipses
-_ifstyle()dnl
-.RB ( .\|.\|.\& )
+would overrun the space available in the header and/or footer,
+this package may abbreviate them with
+_ifnotstyle()dnl
+ellipses.
 _endif()dnl
-if they would overrun the space available in the header and footer,
-respectively.
+_ifstyle()dnl
+ellipses
+.RB ( .\|.\|.\& ).
+_endif()dnl
 .
 In HTML output,
 headers and footers are suppressed.
@@ -601,7 +610,11 @@ and must contain only text of the form
 .RB "].\|.\|.\& \e\- "\c
 .I summary-description
 .RE \" Move left margin back to .IP indentation.
-for a man page in English to be properly indexed.
+for tools like
+.MR makewhatis 8
+or
+.MR mandb 8
+to `index' them.
 .RE \" Move left margin back to standard position.
 .
 .
@@ -735,7 +748,7 @@ Start a new relative inset level.
 The current inset amount is saved,
 then moved right by
 .I inset-amount,
-if specified,
+if specified;
 by the
 .I indentation
 amount of the preceding
@@ -744,7 +757,7 @@ amount of the preceding
 or (deprecated)
 .B .HP
 macro call if no (sub-)sectioning or ordinary paragraphing macro has
-intervened,
+intervened;
 and by the amount of the
 .B IN
 register otherwise.
@@ -851,8 +864,7 @@ is not.
 .TP
 .BR .TP " ["\c
 .IR indentation ]
-Set a paragraph with a leading tag,
-and the remainder of the paragraph indented.
+Set an indented paragraph with a leading unindented tag.
 .
 The macro plants a one-line input trap that honors the
 .B \(rsc
@@ -873,7 +885,7 @@ plus the \(lqtag spacing\(rq stored in the
 register
 (see section \(lqOptions\(rq below)
 is wider than the indentation,
-the line is broken after the tag.
+the package breaks the line after the tag.
 _ifstyle()dnl
 .
 .
@@ -928,12 +940,12 @@ _ifstyle()dnl
 .
 .
 .IP
-The descriptions of
+The description of
 .BR .P ,
 .BR .LP ,
 and
 .B .PP
-above were written using
+above was written using
 .B .TP
 and
 .BR .TQ .
@@ -999,6 +1011,9 @@ _endif()dnl
 .SS "Synopsis macros"
 .\" ====================================================================
 .
+_ifnotstyle()dnl
+.if t .nr PD 0.3125v \" Unstrand line.  Oh, the shame.
+_endif()dnl
 Use
 .B .SY
 and
@@ -1063,13 +1078,14 @@ Unless the previous synopsis's indentation is reused
 (see
 .B .YS
 below),
-output lines after the first indent by the width of
+output lines after the first
+indent by the width of the pending output line up to the end of
 .I keyword
 plus a space,
-if that is the only argument,
-and by the sum of the widths of
+if
 .I keyword
-and
+is the only argument,
+and up to the end of
 .I suffix
 otherwise.
 .
@@ -1090,6 +1106,9 @@ the indentation corresponding to the previous
 call is reused by the next
 .B .SY
 call instead of being computed.
+_ifnotstyle()dnl
+.if t .nr PD 0.4v \" Undo kludge.
+_endif()dnl
 _ifstyle()dnl
 .
 .
@@ -1103,10 +1122,15 @@ operation of a complex command like
 Omit the paragraphing macro to indicate synonymous ways of invoking a
 particular mode of operation.
 .
+Paragraphing macros can similarly manage grouping of function synopses.
 .
+.
+.br
+.ne 4v
 .P
 .IR groff 's
-own command-line interface illustrates most specimens one may encounter.
+own command-line interface illustrates most specimens
+of synopsis syntax one may encounter.
 .
 .
 .IP
@@ -1415,13 +1439,13 @@ _endif()dnl
 .
 .
 .P
-The arguments to
+Prepare arguments to
 .BR .MR ,
 .BR .MT ,
 and
 .B .UR
-should be prepared for typesetting since they can appear in the
-output.
+for typesetting;
+they can appear in the output.
 .
 Use special character escape sequences to encode Unicode basic Latin
 characters where necessary,
@@ -1466,10 +1490,12 @@ ampersands,
 and number signs in HTTP(S) URIs.
 .
 _endif()dnl
-The formatter removes
-.B \e:
-escape sequences from hyperlinks when supplying device extension command
-arguments to output drivers.
+.\" XXX: We don't need to say this, do we?  It shouldn't be the man(7)
+.\" user's problem.
+.\" The formatter removes
+.\" .B \e:
+.\" escape sequences from hyperlinks when supplying
+.\" device extension command arguments to output drivers.
 .
 .
 .TP
@@ -1840,12 +1866,13 @@ and occurrences after the first of a technical term.
 .
 .
 .P
-Be frugal with italics for emphasis,
-and particularly with bold.
+Use italics for emphasis rarely,
+and bold almost never.
 .
-Article titles and brief runs of literal text,
-such as references to individual characters or short strings,
-including section and subsection headings of man pages,
+Brief specimens of literal text,
+such as article titles,
+mentions of individual characters or short strings,
+and (sub)section headings in man pages,
 are suitable objects for quotation;
 see the
 .BR \e(lq ,
@@ -2016,7 +2043,8 @@ _endif()dnl
 .SS "Horizontal and vertical spacing"
 .\" ====================================================================
 .
-All text is rendered with respect to the
+The package sets all text inboard of the left edge of the output medium
+by the amount of the
 .I "page offset;"
 see register
 .B PO
@@ -2028,11 +2056,14 @@ footers
 .BR .TH ),
 and section headings
 .RB ( .SH )
-are set with no further indentation.
+lie at the page offset.
 .
-Subsection headings
+.I groff
+.I man
+indents
+subsection headings
 .RB ( .SS )
-are indented by the amount in the
+by the amount in the
 .B SN
 register.
 .
@@ -2131,6 +2162,8 @@ and its synonyms.
 An extensive example follows.
 .
 .
+.br
+.ne 3v
 .P
 This ordinary
 .RB ( .P )
@@ -2367,6 +2400,8 @@ though even it supports
 avoid using the above strings.
 .
 .
+.br
+.ne 4v
 .\" ====================================================================
 .SS "Use of extensions"
 .\" ====================================================================
@@ -2502,15 +2537,14 @@ use of
 requests
 (apart from the empty request
 .RB \(lq . \(rq)\&
-risks poor rendering when your page is processed by tools other than
-.I roff
+risks poor rendering when your page is processed by
+.RI non- roff
 formatters that attempt to interpret page sources.
 .
 (Historically,
 this was commonly attempted for HTML conversion.)
 .
-Requests might make assumptions about line length that do not hold in an
-HTML environment.
+Requests may make assumptions that do not hold in an HTML environment.
 .
 Many of these programs don't interpret the full
 .I roff
@@ -2527,7 +2561,10 @@ incomprehensibly or omitted altogether.
 .
 .
 .P
-It is wise to quote multi-word section and subsection headings;
+The wise
+.I man
+author
+quotes multi-word section and subsection headings;
 the
 .B .SH
 and
@@ -2550,8 +2587,6 @@ Exercise restraint with escape sequences as with requests.
 Some escape sequences are however required for correct typesetting
 even in man pages and usually do not cause portability problems.
 .
-.
-.P
 Several of these render glyphs corresponding to punctuation code points
 in the Unicode basic Latin range
 (U+0000\(enU+007F)
@@ -2578,10 +2613,11 @@ tilde).
 .B \e\(dq
 Comment.
 .
-Everything after the double-quote to the end of the input line is
-ignored.
+The formatter ignores everything after the double-quote to the end of
+the input line.
 .
-Whole-line comments should be placed immediately after the empty request
+Place whole-line comments on a control line
+immediately after the empty request
 .RB (\(lq . \(rq).
 .
 .
@@ -2623,9 +2659,12 @@ Insert a non-printing break point.
 A word can break at such a point,
 but a hyphen glyph is not written to the output if it does.
 .
-.B \e:
-is an input word boundary,
-so the remainder of the word is subject to hyphenation as normal.
+The remainder of the word is subject to hyphenation as normal.
+.\" XXX: That's a bug; see Savannah #65549, because GNU troff doesn't
+.\" stick a hyphenation suppression node at the beginning of the new
+.\" output line.  Worse, there's no portability here anyway.
+.\" See <https://lists.gnu.org/archive/html/groff/2024-04/msg00000.html>
+.\" and the thread generally.
 .
 You can use
 .B \e:
@@ -3224,25 +3263,25 @@ instead.
 .TP
 .BR .HP " ["\c
 .IR indentation ]
-Set up a paragraph with a hanging left indentation.
-.
-.I indentation,
-if present,
-is handled as with
-.BR .TP .
+Set a paragraph with a hanging indentation.
+The first line sets with no (additional) indentation,
+and any further lines as with
+.B .TP
+or
+.BR .IP .
 .
 .
 .IP
-Use of this presentation-oriented macro is deprecated.
+Use this presentation-oriented macro with caution.
 .
-A hanging indentation cannot be expressed naturally in HTML,
+A hanging indentation cannot be expressed naturally in (pure) HTML,
 a hanging paragraph is not distinguishable from an ordinary one if it
 formats on only one output line,
 and
 .RI non- roff -based
 man page interpreters may treat
 .B .HP
-as an ordinary paragraph.
+as an ordinary paragraph anyway.
 .
 Thus,
 information or distinctions you mean to express with indentation may be
@@ -3299,7 +3338,7 @@ specifies the amount;
 the default scaling unit is \(lqv\(rq.
 .
 Without an argument,
-the spacing is reset to its default value;
+inter-paragraph spacing resets to its default value;
 see subsection \(lqHorizontal and vertical spacing\(rq above.
 .
 .
@@ -3426,13 +3465,12 @@ and documented the AT&T
 macros
 for
 Unix Version\~7 (1979) and employed them
-to edit the first volume of its
+to edit Volume\~1 of its
 .IR "Programmer's Manual" ,
 a compilation of all man pages supplied by the system.
 .
-That
-.I man
-supported the macros listed in this page not described as extensions,
+The package supported the macros listed in this page
+not described as extensions,
 except
 .B .P
 .\" .SS was implemented in tmac.an but not documented in man(7).
@@ -3441,11 +3479,11 @@ and the deprecated
 and
 .BR .UC .
 .
-The only strings defined were
+It documented no registers and defined only
 .B R
 and
-.BR S ;
-no registers were documented.
+.B S
+strings.
 .
 .
 .P
@@ -3510,18 +3548,28 @@ Ninth Edition Unix (1986) introduced
 .B .EX
 and
 .BR .EE .
+.\" DWB added .EX/.EE support, albeit slightly incompatibly.*  It
+.\" was in 3.3 (1992) but could have appeared as early as 2.0 (1986)
+.\" given its origin in Research Unix.
+.\"
+.\" * See <https://lists.gnu.org/archive/html/bug-ncurses/2024-03/\
+.\" msg00173.html>.
 .
 SunOS\~4.0 (1988) added
 .BR .SB .
 .
 .
 .P
+Except for
+.BR .EX / .EE ,
 James Clark implemented the foregoing features in early versions of
 .I groff.
 .
 Later,
 .I groff
-1.20 (2009) originated
+1.20 (2009) resurrected
+.BR .EX / .EE
+and originated
 .BR .SY / .YS ,
 .BR .TQ ,
 .BR .MT / .ME ,
@@ -4056,7 +4104,7 @@ and
 .MR fprintf 3
 are often presented together.
 .
-Further,
+Moreover,
 multiple programming languages have functions named \(lqprintf\(rq,
 and may document these in a man page.
 .
@@ -4074,12 +4122,12 @@ man page identifiers.
 .
 Thus,
 you can type
-.RB \(lq "man fprintf" \(rq,
+.RB \(lq "man fprintf" \|\(rq,
 and other pages can refer to it,
 without knowing whether the installed document uses
-\(lqprintf\(rq,
-\(lqfprintf\(rq,
-or even \(lqc_printf\(rq
+\(lqprintf\|\(rq,
+\(lqfprintf\|\(rq,
+or even \(lqc_printf\|\(rq
 as an identifier.
 .
 .
@@ -4090,9 +4138,15 @@ Some ASCII characters look funny or copy and paste wrong.
 .IP
 On devices with large glyph repertoires,
 like UTF-8-capable terminals and PDF,
-several keyboard glyphs are mapped to code points outside the Unicode
-basic Latin range because that usually results in better typography in
-the general case.
+GNU
+.IR troff , \" GNU
+like AT&T
+.I troff \" AT&T
+before it,
+maps several keycaps to code points
+outside the Unicode basic Latin range
+(historically \(lqASCII\(rq)
+because that usually results in better typography in the general case.
 .
 When documenting GNU/Linux command or C language syntax,
 however,
@@ -4103,7 +4157,7 @@ this translation is sometimes not desirable.
 .if t .ne 2v
 .if n .ne 3v \" account for horizontal rule
 .TS
-C    C
+Cb   Cb
 RfCR LfCR.
 To get a \(lqliteral\(rq.\|.\|.	.\|.\|.should be input.
 _
@@ -4153,7 +4207,7 @@ often a shorter or clearer alternative is available.
 .if t .ne 10v
 .if n .ne 16v \" account for horizontal rules
 .TS
-C    C
+Cb   Cb
 LfCR LfCR.
 Instead of.\|.\|.	.\|.\|.should be considered.
 _
@@ -4315,11 +4369,11 @@ that precedes it.
 .
 .
 .IP
-Calling the
+The
 .B .SH
 or
 .B .SS
-sectioning macros clears all relative insets and
+sectioning macros clear relative insets;
 .B .RE
 calls have no effect until
 .B .RS
@@ -4342,7 +4396,7 @@ Review subsection \(lqHorizontal and vertical spacing\(rq above.
 .if t .ne 5v
 .if n .ne 7v \" account for horizontal rules
 .TS
-C    C
+Cb   Cb
 LfCR LfCR.
 Instead of.\|.\|.	.\|.\|.should be considered.
 _
@@ -4401,7 +4455,7 @@ when not ending a sentence.
 .if t .ne 5v
 .if n .ne 7v \" account for horizontal rules
 .TS
-C    C
+Cb   Cb
 LfCR LfCR.
 Instead of.\|.\|.	.\|.\|.do this.
 _
@@ -4423,19 +4477,18 @@ man page formatters that cannot handle string definitions.
 .
 .
 .IP
-There is an ellipsis code point in Unicode,
+Unicode defines an ellipsis code point,
 and some fonts have an ellipsis glyph,
-which some man pages have accessed in a non-portable way with the
-font-dependent
+which some man pages have accessed non-portably with the font-dependent
 .B \[rs]N
 escape sequence.
 .
-We discourage the use of these;
+We discourage their use;
 on terminals,
 they may crowd the dots into a half-width character cell,
-and do not render at all if the output device doesn't have the glyph.
+and do not render at all if the output device lacks the glyph.
 .
-In syntax synopses,
+In synopses,
 missing ellipses can mislead the reader.
 .
 Dots and space are universally supported.
@@ -4485,7 +4538,24 @@ and the
 .B PT
 and
 .B BT
-macros.
+macros in
+.I groff
+1.19 (2003).
+.
+Lemberg and
+.MT esr@\:thyrsus\:.com
+Eric S.\& Raymond
+.ME
+wrote
+.BR EX / EE ,
+.BR MT / ME ,
+.BR UR / UE ,
+.BR SY / YS ,
+and
+.B TQ
+macros for
+.I groff
+1.20 (2009).
 .
 .MT g.branden\:.robinson@\:gmail\:.com
 G.\& Branden Robinson
@@ -4506,17 +4576,6 @@ registers;
 and the
 .B MR
 macro. \" all 1.23 except where noted
-.
-.
-Extension macros since
-.I groff
-1.20 were written by
-Lemberg,
-.MT esr@\:thyrsus\:.com
-Eric S.\& Raymond
-.ME ,
-and
-Robinson. \" 1.23: MR
 .
 .
 .br
@@ -4558,7 +4617,7 @@ describes the man page librarian on your system.
 .MR groff_mdoc @MAN7EXT@
 details the
 .I groff
-version of the BSD-originated alternative macro package for man pages.
+version of BSD's alternative macro package for man pages.
 .
 .
 .P

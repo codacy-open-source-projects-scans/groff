@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -79,6 +79,35 @@ echo "$output"
 
 echo "testing that suppressed numbering is restored correctly" >&2
 echo "$output" | grep -Eq '4 +numbering returns here' || wail
+
+# Regression-test Savannah #66290.
+#
+# A positive `ln` register value alone should not cause disabled line
+# numbering to scrabble out of the grave after setting a table region.
+
+input='.
+.nf
+.nm 1
+This is temporarily line-numbered text.
+alpha
+beta
+.nm
+Now it is off.
+.TS
+L.
+I am a table.
+I have two rows.
+.TE
+gamma
+delta
+Line numbering had better still be off.
+.'
+
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -t)
+echo "$output"
+
+echo "testing that disabled numbering doesn't resurrect after table" >&2
+echo "$output" | grep -Fqx 'gamma' || wail
 
 test -z "$fail"
 

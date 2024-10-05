@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -68,6 +68,7 @@ const int DEFAULT_COLUMN_SEPARATION = 3;
 #define SAVED_HYPHENATION_MARGIN_REG PREFIX "hyphmargin"
 #define SAVED_HYPHENATION_SPACE_REG PREFIX "hyphspace"
 #define SAVED_NUMBERING_LINENO PREFIX "linenumber"
+#define SAVED_NUMBERING_ENABLED PREFIX "linenumberingenabled"
 #define SAVED_NUMBERING_SUPPRESSION_COUNT PREFIX "linenumbersuppresscnt"
 #define STARTING_PAGE_REG PREFIX "starting-page"
 #define IS_BOXED_REG PREFIX "is-boxed"
@@ -1525,11 +1526,44 @@ void table::add_entry(int r, int c, const string &str,
   allocate(r);
   table_entry *e = 0 /* nullptr */;
   int len = str.length();
+  // Diagnose escape sequences that can wreak havoc in generated output.
   if (len > 1) {
+    const char *entryptr = str.contents();
+    // A comment on a control line or in a text block is okay.
+    const char *commentptr = strstr(entryptr, "\\\"");
+    if (commentptr != 0 /* nullptr */) {
+      const char *controlptr = strchr(entryptr, '.');
+      if ((controlptr == 0 /* nullptr */)
+	  || (controlptr == entryptr)
+	  || (strstr(entryptr, "\n") == 0 /* nullptr */))
+	warning_with_file_and_line(fn, ln, "table entry contains"
+				   " comment escape sequence '\\\"'");
+    }
+    const char *gcommentptr = strstr(entryptr, "\\#");
+    // If both types of comment are present, the first is what matters.
+    if ((gcommentptr != 0 /* nullptr */)
+	&& (gcommentptr < commentptr))
+      commentptr = gcommentptr;
+    if (commentptr != 0 /* nullptr */) {
+      const char *controlptr = strchr(entryptr, '.');
+      if ((controlptr == 0 /* nullptr */)
+	  || (controlptr == entryptr)
+	  || (strstr(entryptr, "\n") == 0 /* nullptr */))
+	warning_with_file_and_line(fn, ln, "table entry contains"
+				   " comment escape sequence '\\#'");
+    }
+    // A \! escape sequence after a comment has started is okay.
+    const char *exclptr = strstr(str.contents(), "\\!");
+    if ((exclptr != 0 /* nullptr */)
+	&& ((0 /* nullptr */ == commentptr)
+	    || (exclptr < commentptr)))
+      warning_with_file_and_line(fn, ln, "table entry contains"
+				 " transparent throughput escape"
+				 " sequence '\\!'");
     string last_two_chars = str.substring((len - 2), 2);
     if ("\\z" == last_two_chars)
       error_with_file_and_line(fn, ln, "table entry ends with"
-			       " zero-motion escape sequence");
+			       " zero-motion escape sequence '\\z'");
   }
   char *s = str.extract();
   if (str.search('\n') >= 0) {
@@ -1985,8 +2019,9 @@ void table::init_output()
 	 ".ce 0\n");
   prints(".nr " SAVED_NUMBERING_LINENO " \\n[ln]\n"
 	 ".nr ln 0\n"
+	 ".nr " SAVED_NUMBERING_ENABLED " \\n[.nm]\n"
 	 ".nr " SAVED_NUMBERING_SUPPRESSION_COUNT " \\n[.nn]\n"
-	 ".nn 2147483647\n"); // 2^31-1; inelegant but effective
+	 ".nn \\n[.R]\n"); // INT_MAX as of groff 1.24
   prints(".nf\n");
 }
 
@@ -3124,7 +3159,7 @@ void table::do_bottom()
     prints(".if n .sp\n");
   prints("." RESET_MACRO_NAME "\n"
 	 ".nn \\n[" SAVED_NUMBERING_SUPPRESSION_COUNT "]\n"
-	 ".ie \\n[" SAVED_NUMBERING_LINENO "] "
+	 ".ie \\n[" SAVED_NUMBERING_ENABLED "] "
 	 ".nm \\n[" SAVED_NUMBERING_LINENO "]\n"
 	 ".el .nm\n"
 	 ".fc\n"

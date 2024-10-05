@@ -4,7 +4,7 @@
 #	Deri James	: Friday 16 Mar 2012
 #
 
-# Copyright (C) 2012-2020 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 #      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff.
@@ -24,7 +24,9 @@
 
 use strict;
 use warnings;
+use File::Spec qw/splitpath/;
 use File::Temp qw/tempfile/;
+
 my @cmd;
 my $dev='pdf';
 my $preconv='';
@@ -48,10 +50,38 @@ my $RT_SEP='@RT_SEP@';
 $ENV{PATH}=$ENV{GROFF_BIN_PATH}.$RT_SEP.$ENV{PATH} if exists($ENV{GROFF_BIN_PATH});
 $ENV{TMPDIR}=$ENV{GROFF_TMPDIR} if exists($ENV{GROFF_TMPDIR});
 
+(undef,undef,my $prog)=File::Spec->splitpath($0);
+
+sub abort
+{
+    my $message=shift(@_);
+    print STDERR "$prog: fatal error: $message";
+    exit 1;
+}
+
+sub autopsy
+{
+    my $waitstatus=shift(@_);
+    my $finding;
+
+    if ($waitstatus == -1) {
+	$finding = "unable to run groff: $!\n";
+    }
+    elsif ($? & 127) {
+	$finding = sprintf("groff died with signal %d, %s core dump\n",
+	    ($? & 127),  ($? & 128) ? 'with' : 'without');
+    }
+    else {
+	$finding = sprintf("groff exited with status %d\n", $? >> 8);
+    }
+
+    return $finding;
+}
+
 while (my $c=shift)
 {
     $c=~s/(?<!\\)"/\\"/g;
-    
+
     if (substr($c,0,2) eq '-T')
     {
 	if (length($c) > 2)
@@ -122,7 +152,7 @@ while (my $c=shift)
 	else
 	{
 	    # Just a '-'
-	    
+
 	    push(@cmd,$c);
 	    $readstdin=2;
 	}
@@ -130,10 +160,10 @@ while (my $c=shift)
     else
     {
 	# Got a filename?
-	
+
 	push(@cmd,"\"$c\"");
 	$readstdin=0 if $readstdin == 1;
-	
+
     }
 
 }
@@ -148,40 +178,46 @@ if ($readstdin)
     {
 	print $fh ($_);
     }
-    
+
     close($fh);
-    
+
     $cmdstring=~s/ - / $tmpfn / if $readstdin == 2;
     $cmdstring.=" $tmpfn " if $readstdin == 1;
 }
+
+my $waitstatus = 0;
 
 if ($dev eq 'pdf')
 {
     if ($mom)
     {
-        system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $mom $preconv - $cmdstring $zflg");
+	$waitstatus = system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $mom $preconv - $cmdstring $zflg");
+	abort(autopsy($?)) unless $waitstatus == 0;
+
     }
     else
     {
-        system("groff -Tpdf $preconv -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv - $cmdstring $zflg");
+	$waitstatus = system("groff -Tpdf $preconv -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv - $cmdstring $zflg");
+	abort(autopsy($?)) unless $waitstatus == 0;
     }
 }
 elsif ($dev eq 'ps')
 {
-    system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
+	$waitstatus = system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
+	abort(autopsy($?)) unless $waitstatus == 0;
 }
 elsif ($dev eq '-z') # pseudo dev - just compile for warnings
 {
-    system("groff -Tpdf $mom -z $cmdstring");
+    $waitstatus = system("groff -Tpdf $mom -z $cmdstring");
+    abort(autopsy($?)) unless $waitstatus == 0;
 }
 else
 {
-    print STDERR "Not compatible with device '-T $dev'\n";
-    exit 1;
+    abort("groff output device '$dev' not supported");
 }
 
 # Local Variables:
 # fill-column: 72
 # mode: CPerl
 # End:
-# vim: set cindent noexpandtab shiftwidth=2 softtabstop=2 textwidth=72:
+# vim: set cindent noexpandtab shiftwidth=4 softtabstop=4 textwidth=72:

@@ -66,8 +66,9 @@ command with the
 output device.
 .
 .
-.LP
-.I @g@eqn
+.PP
+GNU
+.I eqn \" GNU
 does not support low-resolution,
 typewriter-like devices,
 although it may work adequately for very simple input.

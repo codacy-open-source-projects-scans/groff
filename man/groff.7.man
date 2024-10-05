@@ -665,7 +665,8 @@ flushing out the pending output line in the usual way.
 .
 The
 .register .int
-contains a positive value if the last output line was continued with
+interpolates a positive value only if the pending output line has been
+continued with
 .esc c ;
 this datum is associated with the
 environment.
@@ -2775,17 +2776,11 @@ Remove definition of ordinary or special
 .RI character\~ c.
 .
 .TPx
-.REQ .char "c contents"
+.REQ .char "c \fR[\fB\[dq]\fP]\fIcontents"
 Define ordinary or special character
 .I c
 as
 .I anything.
-.
-A leading neutral double quote in the second argument is stripped from
-it,
-allowing embedded leading spaces in
-.I contents,
-which is read in copy mode and continues to the end of the input line.
 .
 .TPx
 .REQ .chop name
@@ -3023,16 +3018,13 @@ As
 with compatibility mode disabled when the macro is interpreted.
 .
 .TPx
-.REQ .device contents
+.REQ .device \fR[\fB"\fP]\fIcontents
 Write
 .IR contents ,
 read in copy mode,
 to
 .I @g@troff
 output as a device extension command.
-.
-A leading neutral double quote is stripped to allow embedding of
-leading spaces.
 .
 .TPx
 .REQ .devicem name
@@ -3282,7 +3274,7 @@ as
 .IR contents .
 .
 As
-.request char ,
+.request .char ,
 but a character defined by
 .B fschar
 is located after the list of fonts declared with
@@ -3630,9 +3622,9 @@ Set leader repetition character
 .RB \[lq] . \[rq]).
 .
 .TPx
-.REQ .length "reg anything"
+.REQ .length "reg \fR[\fB\[dq]\fP]\fIcontents"
 Compute the number of characters in
-.I anything
+.I contents
 and store the count
 in the register
 .IR reg .
@@ -3947,17 +3939,13 @@ Output vertical distance that was saved by the
 request.
 .
 .TPx
-.REQ .output contents
+.REQ .output \fR[\fB"\fP]\fIcontents
 Emit
 .I contents
-directly to
+\[lq]transparently\[rq]
+(directly) to
 .IR @g@troff 's
 output.
-.
-A leading neutral double quote in the argument is stripped,
-allowing embedded leading spaces in
-.IR contents ,
-which is read in copy mode and continues to the end of the input line.
 .
 .TPx
 .REQ .pc
@@ -4293,7 +4281,7 @@ as
 .IR contents .
 .
 As
-.request char ,
+.request .char ,
 but a character defined with
 .B schar
 is located after the list of fonts declared with the
@@ -4794,6 +4782,8 @@ to
 .IR stream ,
 which must previously have been the subject of an
 .request .open
+(or
+.request \%.opena )
 request,
 followed by a newline.
 .
@@ -4801,6 +4791,10 @@ A leading neutral double quote in the second argument is stripped,
 allowing embedded leading spaces in
 .IR contents ,
 which is read in copy mode until the end of the line.
+.
+GNU
+.I troff \" GNU
+flushes the stream after writing to it.
 .
 .TPx
 .REQ .writec "stream contents"
@@ -4811,10 +4805,19 @@ but does not append a newline to
 .
 .TPx
 .REQ .writem "stream name"
-Write contents of macro or string
+Write the contents of the macro or string
 .I name
 to
-.IR stream .
+.IR stream ,
+which must previously have been the subject of an
+.request .open
+(or
+.request \%.opena )
+request.
+.
+The contents of
+.I name
+are read in copy mode.
 .
 .LE
 .

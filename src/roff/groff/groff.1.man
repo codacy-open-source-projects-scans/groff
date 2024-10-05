@@ -627,6 +627,7 @@ passes
 options and their arguments to
 .MR @g@eqn @MAN1EXT@ ,
 .MR grap 1 ,
+and
 .MR @g@grn @MAN1EXT@ .
 .
 .
@@ -642,6 +643,7 @@ passes
 options and their arguments to
 .MR @g@eqn @MAN1EXT@ ,
 .MR grap 1 ,
+and
 .MR @g@grn @MAN1EXT@ .
 .
 .
@@ -2384,7 +2386,7 @@ and GNU extensions:
 .
 .
 .TP
-Device-independent output language:
+Device-independent page description language:
 .MR groff_out @MAN5EXT@ \" #21
 .
 .

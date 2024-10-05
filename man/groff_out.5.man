@@ -1926,8 +1926,9 @@ including its escape sequences and system of units.
 .
 .TP
 .MR groff_font @MAN5EXT@
-details the device scaling parameters of device
+details the scaling parameters of
 .I DESC
+(device description)
 files.
 .
 .

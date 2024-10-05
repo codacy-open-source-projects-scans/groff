@@ -10,7 +10,7 @@ documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -510,8 +510,7 @@ the second and any further rows' first and second columns are left- and
 right-aligned,
 respectively.
 .
-If more rows of entries are added to the table data,
-they reuse the row definition
+Any rows of entries appended to the table data reuse the row definition
 .RB \[lq] LR \[rq].
 .
 .
@@ -655,10 +654,10 @@ Span entry in the same column from the previous row into this row.
 .BR _ ,\~ \-
 Replace table entry with a horizontal rule.
 .
-An empty table entry is expected to correspond to this classifier;
-if data are found there,
 .I @g@tbl
-issues a diagnostic message.
+expects an empty table entry to correspond to this classifier;
+if data are found there,
+it issues a diagnostic message.
 .
 If the entire row definition consists of these classifiers
 (only one is necessary),
@@ -672,12 +671,13 @@ and no corresponding data are expected.
 .B =
 Replace table entry with a double horizontal rule.
 .
-An empty table entry is expected to correspond to this classifier;
-if data are found there,
 .I @g@tbl
-issues a diagnostic message.
+expects an empty table entry to correspond to this classifier;
+if data are found there,
+it issues a diagnostic message.
 .
-If the entire row definition consists of these classifiers,
+If the entire row definition consists of these classifiers
+(only one is necessary),
 it is treated as a
 .RB \[lq] = \[rq]
 occupying a row of table entries,
@@ -805,11 +805,12 @@ This modifier sets the default line length used in a text block.
 .BR f ,\~ F
 Select the typeface for the table entry.
 .
-This modifier must be followed by a font or style name
+A font or style name
 (one or two characters not starting with a digit),
 font mounting position
 (a single digit),
-or a name or mounting position of any length in parentheses.
+or a name or mounting position of any length in parentheses,
+must follow.
 .
 The last form is a GNU extension.
 .
@@ -838,8 +839,9 @@ macro before typesetting a text block
 .
 This is a GNU extension.
 .
-This modifier must be followed by a macro name of one or two characters
-or a name of any length in parentheses.
+A macro name of one or two characters,
+or a name of any length in parentheses,
+must follow.
 .
 A one-character macro name not in parentheses must be separated by one
 or more spaces or tabs from what follows.
@@ -867,11 +869,11 @@ it can thus override other column modifiers.
 .
 .TP
 .BR p ,\~ P
-Set the type size for the table entry.
+Set the type size.
 .
-This modifier must be followed by an
+An
 .RI integer\~ n
-with an optional leading sign.
+with an optional leading sign must follow.
 .
 If unsigned,
 the type size is set to
@@ -915,11 +917,11 @@ Unix extension.
 .
 .TP
 .BR v ,\~ V
-Set the vertical spacing to be used in a text block.
+Set the vertical spacing of a text block.
 .
-This modifier must be followed by an
+An
 .RI integer\~ n
-with an optional leading sign.
+with an optional leading sign must follow.
 .
 If unsigned,
 the vertical spacing is set to
@@ -948,11 +950,12 @@ they must be separated by at least one space or tab.
 .BR w ,\~ W
 Set the column's minimum width.
 .
-This modifier must be followed by a number,
-which is either a unitless integer,
+A number,
+either a unitless integer,
 or a
 .I roff
-horizontal measurement in parentheses.
+horizontal measurement in parentheses,
+must follow.
 .
 Parentheses are required if the width is to be followed immediately by
 an explicit column separation
@@ -1018,9 +1021,9 @@ provokes a diagnostic from
 .SS "Table data"
 .\" ====================================================================
 .
-The table data come after the format specification.
+Place table data on lines after the format specification.
 .
-Each input line corresponds to a table row,
+Each text line corresponds to a table row,
 except that a backslash at the end of a line of table data continues an
 entry on the next input line.
 .
@@ -1396,8 +1399,9 @@ should not use any such identifiers.
 .SS "Interaction with \f[I]@g@eqn\f[]"
 .\" ====================================================================
 .
+Process a document with
 .I @g@tbl
-should always be called before
+before
 .MR @g@eqn @MAN1EXT@ .
 .
 (\c
@@ -1562,11 +1566,11 @@ recognize
 .B .TS
 and
 .B .TE
-even when followed by a character other than space or newline.
-.
-Furthermore,
-interpret the uninterpreted leader escape sequence
-.BR \[rs]a .
+even when followed by a character other than space or newline,
+and
+interpret the copy-mode leader escape sequence
+.B \[rs]a
+as a leader character.
 .
 .
 .\" ====================================================================
@@ -1580,7 +1584,7 @@ escape sequences that read to the end of the line,
 like
 .B \[rs]\[dq]
 or
-.B \[rs]!\& .
+.BR \[rs]!\& .
 .
 .
 .P
@@ -1726,16 +1730,16 @@ Population;6,327,119
 .
 .
 .P
-A leading and/or trailing
-.B |
+A leading or trailing
+.RB \[lq] | \[rq]
 in a format specification,
-such as
+as in
 .RB \[lq] |LCR|.\& \[rq],
-produces an en space between the vertical rules and the content of the
-adjacent columns.
+produces an en space between the rules and the content of adjacent
+columns.
 .
-If no such space is desired
-(so that the rule abuts the content),
+If such space is undesired
+(the rule should abut the content),
 you can introduce \[lq]dummy\[rq] columns with zero separation and empty
 corresponding table entries before and/or after.
 .
@@ -1790,7 +1794,7 @@ especially at first.
 \&.TS
 box center tab(#);
 Cb Cb
-L L.
+L  L.
 Ability#Application
 Strength#crushes a tomato
 Dexterity#dodges a thrown tomato
@@ -1807,7 +1811,7 @@ Charisma#sells tomato-based fruit salads to hypercarnivores
 .TS
 box center tab(#);
 Cb Cb
-L L.
+L  L.
 Ability#Application
 Strength#crushes a tomato
 Dexterity#dodges a thrown tomato

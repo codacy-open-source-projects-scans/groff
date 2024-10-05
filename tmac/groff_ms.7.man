@@ -1489,9 +1489,8 @@ Changes to either register take effect at the next display boundary.
 .SS "Tables, figures, equations, and references"
 .\" ====================================================================
 .
-The
 .I ms
-package is often used with the
+often sees use with the
 .IR @g@tbl ,
 .IR @g@pic ,
 .IR @g@eqn ,
@@ -1499,9 +1498,10 @@ and
 .I @g@refer
 preprocessors.
 .
-The
+.I "groff ms"
+applies the
 .B \[rs]n[DD]
-distance is also applied to regions of the document preprocessed with
+distance to regions of the document preprocessed with
 .IR @g@eqn ,
 .IR @g@pic ,
 and
@@ -1511,7 +1511,10 @@ Mark text meant for preprocessors by enclosing it in pairs of tokens as
 follows,
 with nothing between the dot and the macro name.
 .
-The preprocessors match these tokens only at the start of an input line.
+Preprocessors match these tokens only at the start of an input line.
+.
+.I troff \" generic
+interprets them as macro calls.
 .
 .
 .TP
@@ -2605,18 +2608,18 @@ do.
 .
 .
 .IP \[bu]
-The register
+.I "groff ms"
+sets the register
 .B GS
-is set to\~1 by the
-.I groff ms
-macros,
-but is not used by the AT&T
+to\~1;
+the AT&T
 .I ms
-package.
+package does not use it.
 .
-Documents that need to determine whether they are being formatted with
-.I groff ms
-or another implementation should test this register.
+A document can test its value to determine whether it is being formatted
+with
+.I "groff ms"
+or another implementation.
 .
 .
 .\" ====================================================================
@@ -2810,17 +2813,18 @@ Constructed names used to implement arrays are of the form
 .PP
 Thus the
 .I groff ms
-macros reserve the following names:
+macros reserve the following identifiers:
 .
 .IP \[bu] 3n
-Names containing the characters
+those containing the characters
 .BR * ,
 .BR @ ,
 and\~\c
-.BR : .
+.BR : ,
+and
 .
 .IP \[bu]
-Names containing only uppercase letters and digits.
+those containing only uppercase letters and digits.
 .
 .
 .\" ====================================================================

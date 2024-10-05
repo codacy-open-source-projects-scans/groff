@@ -332,7 +332,7 @@ private:
   virtual arg_list *get_arg_list() { return 0 /* nullptr */; }
   virtual symbol get_macro_name() { return NULL_SYMBOL; }
   virtual bool space_follows_arg(int) { return false; }
-  virtual int get_break_flag() { return 0; }
+  virtual bool get_break_flag() { return false; }
   virtual bool get_location(bool /* allow_macro */,
 			    const char ** /* filep */,
 			    int * /* linep */) { return false; }
@@ -3687,7 +3687,7 @@ class string_iterator : public input_iterator {
   int count;			// of characters remaining
   node *nd;
   bool att_compat;
-  int with_break;		// inherited from the caller
+  bool with_break;		// inherited from the caller
 protected:
   symbol nm;
   string_iterator();
@@ -3699,7 +3699,7 @@ public:
   bool get_location(bool /* allow_macro */, const char ** /* filep */,
 		    int * /* linep */);
   void backtrace();
-  int get_break_flag() { return with_break; }
+  bool get_break_flag() { return with_break; }
   void set_att_compat(bool b) { att_compat = b; }
   bool get_att_compat() { return att_compat; }
   bool is_diversion();
@@ -3903,7 +3903,7 @@ arg_list::~arg_list()
 class macro_iterator : public string_iterator {
   arg_list *args;
   int argc;
-  int with_break;		// whether called as .foo or 'foo
+  bool with_break;		// whether called as .foo or 'foo
 public:
   macro_iterator(symbol, macro &,
 		 const char * /* how_called */ = "macro",
@@ -3915,7 +3915,7 @@ public:
   arg_list *get_arg_list();
   symbol get_macro_name();
   bool space_follows_arg(int);
-  int get_break_flag() { return with_break; }
+  bool get_break_flag() { return with_break; }
   int nargs() { return argc; }
   void add_arg(const macro &, int);
   void shift(int);
@@ -7476,7 +7476,6 @@ static void close_all_streams()
       close_stream(stream);
     }
   }
-  skip_line();
 }
 
 static void close_request() // .close
@@ -7510,13 +7509,17 @@ void do_write_request(int newline)
     skip_line();
     return;
   }
-  int c;
-  while ((c = get_copy(0)) == ' ')
-    ;
-  if (c == '"')
-    c = get_copy(0);
-  for (; c != '\n' && c != EOF; c = get_copy(0))
-    fputs(asciify(c), fp);
+  if (!tok.is_newline() && !tok.is_eof()) {
+    int c = get_copy(0 /* nullptr */);
+    while (' ' == c)
+      c = get_copy(0 /* nullptr */);
+    if ('"' == c)
+      c = get_copy(0 /* nullptr */);
+    while (c != '\n' && c != EOF) {
+      fputs(asciify(c), fp);
+      c = get_copy(0 /* nullptr */);
+    }
+  }
   if (newline)
     fputc('\n', fp);
   fflush(fp);
@@ -8407,14 +8410,13 @@ char *read_string()
 void pipe_output()
 {
   if (!has_arg(true /* peek */)) {
-    warning(WARN_MISSING, "device-independent output piping request"
-	    " expects a system command as argument");
+    warning(WARN_MISSING, "output piping request expects a system"
+	    " command as argument");
     skip_line();
     return;
   }
   if (!want_unsafe_requests) {
-    error("device-independent output piping request is not allowed in"
-	  " safer mode");
+    error("output piping request is not allowed in safer mode");
     skip_line();
   }
   else {

@@ -2433,9 +2433,8 @@ Tables, figures, equations, and references
 	Tables, figures, equations, and references
 .XE
 .LP
-The
 .I ms
-package is often used with the
+often sees use with the
 .I tbl ,
 .I pic ,
 .I eqn ,
@@ -2443,9 +2442,10 @@ and
 .I refer
 preprocessors.
 .
-The
+.I "groff ms"
+applies the
 .CW \[rs]n[DD]
-distance is also applied to regions of the document preprocessed with
+distance to regions of the document preprocessed with
 .I tbl ,
 .I pic ,
 and
@@ -2455,7 +2455,10 @@ Mark text meant for preprocessors by enclosing it in pairs of tokens as
 follows,
 with nothing between the dot and the macro name.
 .
-The preprocessors match these tokens only at the start of an input line.
+Preprocessors match these tokens only at the start of an input line.
+.
+.I troff
+interprets them as macro calls.
 .
 .
 .TS
@@ -4232,18 +4235,18 @@ do.
 .
 .
 .PP
-The register
+.I "groff ms"
+sets the register
 .CW GS
-is set to\~1 by the
-.I "groff ms"
-macros,
-but is not used by the AT&T
+to\~1;
+the AT&T
 .I ms
-package.
+package does not use it.
 .
-Documents that need to determine whether they are being formatted with
+A document can test its value to determine whether it is being formatted
+with
 .I "groff ms"
-or another implementation should test this register.
+or another implementation.
 .
 .
 .\" XXX: We can't use a keep here because the wrong page number will be

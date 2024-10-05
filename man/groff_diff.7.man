@@ -149,7 +149,7 @@ can group text typefaces into
 .I families.
 For example,
 .I groff
-ships families containing each of the styles
+ships with support for families containing each of the styles
 .RB \[lq] R \[rq],
 .RB \[lq] I \[rq],
 .RB \[lq] B \[rq],
@@ -271,19 +271,21 @@ or because the line can instead be adjusted with additional inter-word
 space
 .RB ( hys ).
 .
-A hyphenation language is selected with the
+The
 .B hla
-request and hyphenation patterns loaded
-(or appended)
-with
+request selects a hyphenation language,
+whereas
 .B hpf
-(or
-.BR hpfa ).
+and
+.B hpfa
+load
+(or append to)
+the language's hyphenation patterns.
 .
 If no hyphenation language is set or no patterns are loaded,
 GNU
 .I troff \" GNU
-will not perform automatic hyphenation.
+does not perform automatic hyphenation.
 .
 .
 .P
@@ -419,6 +421,26 @@ both set the type size to 10,500\~scaled points,
 or 10.5\~points.
 .
 .
+.br
+.ne 2v
+.P
+Another new scaling unit,
+.RB \[lq] s \[rq],
+multiplies by the number of basic units in a scaled point.
+.
+Thus,
+.RB \[lq]\^ \[rs]n[.ps]s \[rq]
+is equal to
+.RB \[lq] 1m \[rq]
+by definition.
+.
+Do not confuse the
+.RB \[lq] s \[rq]
+and
+.RB \[lq] z \[rq]
+scaling units.
+.
+.
 .P
 It makes no sense to use the
 .RB \[lq] z \[rq]\~scaling
@@ -441,26 +463,6 @@ in a numeric expression whose default scaling unit
 and so GNU
 .I troff \" GNU
 disallows those as well.
-.
-.
-.br
-.ne 2v
-.P
-Another new scaling unit,
-.RB \[lq] s \[rq],
-multiplies by the number of basic units in a scaled point.
-.
-Thus,
-.RB \[lq]\^ \[rs]n[.ps]s \[rq]
-is equal to
-.RB \[lq] 1m \[rq]
-by definition.
-.
-Do not confuse the
-.RB \[lq] s \[rq]
-and
-.RB \[lq] z \[rq]
-scaling units.
 .
 .
 .br
@@ -561,6 +563,12 @@ if
 is empty.
 .
 .
+.P
+Arithmetic in GNU
+.I troff \" troff
+saturates instead of wrapping.
+.
+.
 .\" ====================================================================
 .SS "Conditional expressions"
 .\" ====================================================================
@@ -584,7 +592,8 @@ where
 .I chr
 is an ordinary character
 (Unicode basic Latin excluding control characters and the space),
-a special character,
+a special character
+(whether built-in or user-defined),
 or
 .BI \[rs]N\[aq] index\c
 .BR \[aq] .
@@ -738,7 +747,9 @@ Interpolate 1 if
 is a valid identifier,
 and\~0 otherwise.
 .
-Because invalid input characters are removed,
+Because GNU
+.I troff \" GNU
+ignores any input character with an invalid code when reading it,
 invalid identifiers are empty or contain spaces,
 tabs,
 newlines,
@@ -777,7 +788,7 @@ Draw filled ellipse with
 .I h
 and
 .I v
-as the axes and the leftmost point at the drawing position.
+as the axis lengths and its leftmost point at the drawing position.
 .
 .
 .TP
@@ -812,6 +823,10 @@ the drawing position is left at
 As
 .BR \[rs]D\[aq]p\[aq] ,
 but the polygon is filled.
+.
+.I groff
+does not specify how the output device must fill concave or
+self-intersecting polygons.
 .
 .
 .TP
@@ -1511,6 +1526,11 @@ accepting an optional leading neutral double-quote
 in an argument that extends to the end of the input line,
 permitting inclusion of leading spaces.
 .
+Such arguments are labeled
+.I contents,
+are read in copy mode,
+and cosume the rest of the input line.
+.
 .
 .TP 8n \" ".break" + 2n
 .BI .aln\~ "new old"
@@ -1806,9 +1826,9 @@ see
 The first argument is the sum of the desired flags and the remaining
 arguments are the characters to be assigned those properties.
 .
-Spaces between the
+Spaces need not separate the
 .I cn
-arguments are optional.
+arguments.
 .
 Any argument
 .I cn
@@ -1991,7 +2011,7 @@ Defining
 (or redefining)
 a
 .RI character\~ c
-creates an object in the formatter that is recognized like any other
+creates a formatter object that is recognized like any other
 ordinary or special character on input,
 and produces
 .I contents
@@ -2010,14 +2030,7 @@ the
 .I groff
 Texinfo manual.)
 .
-A leading neutral double quote in the second argument is stripped from
-it,
-allowing embedded leading spaces in
-.I contents,
-which is read in copy mode and continues to the end of the input line.
-.
-Further,
-compatibility mode is disabled and the escape character set
+Compatibility mode is disabled and the escape character set
 .RB to\~ \[rs]
 while
 .I contents
@@ -2031,8 +2044,9 @@ not to each character in
 .
 .
 .IP
-A character defined by this request can be used just like a glyph
-provided by the output device.
+A character defined by
+.B char
+can be used just like a glyph provided by the output device.
 .
 In particular,
 other characters can be translated to it with the
@@ -2349,18 +2363,15 @@ is interpreted.
 .
 .
 .TP
-.BI .device\~ contents
+.BR .device\~ [\c
+.RB [ \[dq] ]\c
+.IR contents ]
 Write
 .IR contents ,
 read in copy mode,
 to
 .I @g@troff
 output as a device extension command.
-.
-A leading neutral double quote in
-.I anything
-is stripped to allow the embedding of
-leading spaces.
 .
 .
 .TP
@@ -3069,9 +3080,11 @@ is omitted.
 .
 .
 .TP
-.BI .length\~ "reg anything"
+.BI .length\~ reg\~\c
+.RB [[ \[dq]\c
+.IR contents ]
 Compute the number of characters in
-.I anything
+.I contents
 and store the count in the register
 .IR reg .
 .
@@ -3079,12 +3092,6 @@ If
 .I reg
 doesn't exist,
 it is created.
-.
-GNU
-.I troff \" GNU
-reads
-.I anything
-in copy mode.
 .
 .
 .TP
@@ -3239,17 +3246,13 @@ append to it instead of truncating it.
 .IR contents ]
 Emit
 .I contents
-directly to
+\[lq]transparently\[rq]
+(directly) to
 .IR @g@troff 's
 output;
 this usage is similar to that of
 .B \[rs]!\&
 in the top-level diversion.
-.
-A leading neutral double quote in the argument is stripped,
-allowing embedded leading spaces in
-.IR contents ,
-which is read in copy mode and continues to the end of the input line.
 .
 .
 .TP
@@ -3472,7 +3475,7 @@ Remove each fallback special
 for font
 .IR f .
 .
-Spaces and tabs may separate
+Spaces need not separate
 .I c
 arguments.
 .
@@ -3691,10 +3694,10 @@ with non-negative font mounting
 .
 .
 .TP
-.BI .substring\~ "string start\~"\c
+.BI .substring\~ "str start\~"\c
 .RI [ end ]
 Replace the string named
-.I string
+.I str
 with its substring bounded by the indices
 .I start
 and
@@ -3741,8 +3744,7 @@ the increase in width is a linear function of the type size.
 .
 .
 .TP
-.BR .tm1\~ [\c
-.RI [ \[dq] ]\c
+.BR .tm1 \~[[ \[dq] ]\c
 .IR message ]
 As
 .BR tm ,
@@ -3752,8 +3754,7 @@ allowing embedded leading spaces in
 .
 .
 .TP
-.BR .tmc\~ [\c
-.RI [ \[dq] ]\c
+.BR .tmc \~[[ \[dq] ]\c
 .IR message ]
 As
 .B tm1
@@ -4004,10 +4005,9 @@ which must previously have been the subject of an
 request,
 followed by a newline.
 .
-A leading neutral double quote in the second argument is stripped,
-allowing embedded leading spaces in
-.IR contents ,
-which is read in copy mode until the end of the line.
+GNU
+.I troff \" GNU
+flushes the stream after writing to it.
 .
 .
 .TP
@@ -4028,19 +4028,21 @@ to
 .IR stream ,
 which must previously have been the subject of an
 .B open
+(or
+.B \%opena )
 request.
 .
+The contents of
 .I name
-is read in copy mode.
+are read in copy mode.
 .
 .
 .br
 .ne 6v
 .\" ====================================================================
-.SS "Extended requests"
+.SS "Altered requests"
 .\" ====================================================================
 .
-.\" XXX: .cf might better belong in "Implementation differences".
 .TP
 .BI .cf\~ file
 In a diversion,
@@ -4129,7 +4131,8 @@ Negative values are erroneous.
 .IR "n1 n2\~" .\|.\|.\~ nn \~]\c
 .BR T \~\c \" space in roman because we must use 2-font macro with \c
 .IR "r1 r2\~" .\|.\|.\~ rn ]
-.I groff
+GNU
+.I troff \" GNU
 supports an extended syntax to specify repeating tab stops after
 the
 .RB \[lq] T \[rq]
@@ -5483,7 +5486,7 @@ GNU
 emits more error diagnostics when syntactical or semantic nonsense is
 encountered and supports several warning categories;
 the output of these can be selected with
-.BR warn .
+.RB \[lq] warn \[rq].
 .
 Also see the
 .BR \-E ,
@@ -5524,7 +5527,7 @@ hyphenation exceptions
 registers
 .RB ( pnr ),
 open streams
-.RB ( .pstream ),
+.RB ( pstream ),
 page location traps
 .RB ( ptr ),
 and a list of output nodes corresponding to the pending input
@@ -5696,7 +5699,7 @@ AT&T
 discards trailing spaces from input lines,
 like GNU
 .IR troff , \" GNU
-but if it does so,
+but when it does so,
 AT&T
 .I troff \" AT&T
 also cancels end-of-sentence detection.

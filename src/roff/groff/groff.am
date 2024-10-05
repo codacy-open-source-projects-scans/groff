@@ -93,7 +93,8 @@ groff_TESTS = \
   src/roff/groff/tests/stringup-request-transforms-non-basic-latin.sh \
   src/roff/groff/tests/substring-request-works.sh \
   src/roff/groff/tests/sy-request-works.sh \
-  src/roff/groff/tests/unencodable-things-in-grout.sh
+  src/roff/groff/tests/unencodable-things-in-grout.sh \
+  src/roff/groff/tests/write-request-handles-empty-second-arg.sh
 TESTS += $(groff_TESTS)
 EXTRA_DIST += $(groff_TESTS)
 
