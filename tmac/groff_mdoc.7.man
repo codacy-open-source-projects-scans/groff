@@ -1,16 +1,10 @@
 '\" t
-.\" groff_mdoc.man
-.\"
-.\"   A complete reference of the mdoc macro package for GNU troff.
-.\"
-.\" Based on NetBSD's mdoc.samples.7, version 1.21.
-.\"
-.\"
-.\"   Warning: You can't format this file with the old mdoc macros!
-.\"
+.\" a complete reference to the mdoc macro package for GNU troff
 .\"
 .\" Copyright (C) 1990, 1993
 .\"   The Regents of the University of California.  All rights reserved.
+.\"
+.\" Copyright (C) 2001-2024 Free Software Foundation, Inc.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions

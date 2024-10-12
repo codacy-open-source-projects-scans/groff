@@ -131,6 +131,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ad l
 .nr cov*i 0 1
 .while \\n+[cov*i]<=\\n[cov*au] \{\
+.	nr cov*au-line-counter 0
 .	cov@print-au1 \\n[cov*i] 1
 .	if \\n[Au] \{\
 .		if \\n[cov*fmt-au!4] .cov@print-au1 \\n[cov*i] 4
@@ -146,8 +147,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .		if \\n[cov*fmt-au!7] .cov@print-au1 \\n[cov*i] 8
 .		if \\n[cov*fmt-au!8] .cov@print-au1 \\n[cov*i] 9
 .	\}
-.	if \\n[cov*i]<\\n[cov*au] .SP 1
+.	if (\\n[cov*i]<\\n[cov*au])&(\\n[cov*au-line-counter]>1) .SP 1
 .\}
+.rr cov*au-line-counter
 .rr cov*i
 .ft
 .if r cov*mt-tm-max \{\
@@ -174,6 +176,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	if '\\$2'4' .as cov*prefix Org.\& \"
 .	if '\\$2'5' .as cov*prefix x\"
 .	nop \\*[cov*prefix]\\*[cov*au!\\$1!\\$2]
+.	nr cov*au-line-counter +1
 .	rm cov*prefix
 .\}
 .br
@@ -184,6 +187,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .de cov@print-au2
 .if d cov*au!\\$1!\\$2 \\*[cov*au!\\$1!\\$2] \c
 .if d cov*au!\\$1!\\$3 \\*[cov*au!\\$1!\\$3]
+.nr cov*au-line-counter +1
 .br
 ..
 .\"------------

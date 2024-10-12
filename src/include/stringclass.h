@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -46,7 +46,7 @@ public:
   string(char);
 
   ~string();
-  
+
   string &operator=(const string &);
   string &operator=(const char *);
   string &operator=(char);
@@ -55,7 +55,7 @@ public:
   string &operator+=(const char *);
   string &operator+=(char);
   void append(const char *, int);
-  
+
   int length() const;
   int empty() const;
   int operator*() const;
@@ -67,7 +67,8 @@ public:
 
   void set_length(int i);
   const char *contents() const;
-  int search(char) const;
+  int search(const char) const;
+  int find(const char *) const;
   char *extract() const;
   void remove_spaces();
   void clear();
@@ -78,7 +79,7 @@ public:
   friend string operator+(const char *, const string &);
   friend string operator+(const string &, char);
   friend string operator+(char, const string &);
-	 
+
   friend int operator==(const string &, const string &);
   friend int operator!=(const string &, const string &);
   friend int operator<=(const string &, const string &);
@@ -169,13 +170,13 @@ inline string operator+(char c, const string &s)
 
 inline int operator==(const string &s1, const string &s2)
 {
-  return (s1.len == s2.len 
+  return (s1.len == s2.len
 	  && (s1.len == 0 || memcmp(s1.ptr, s2.ptr, s1.len) == 0));
 }
 
 inline int operator!=(const string &s1, const string &s2)
 {
-  return (s1.len != s2.len 
+  return (s1.len != s2.len
 	  || (s1.len != 0 && memcmp(s1.ptr, s2.ptr, s1.len) != 0));
 }
 

@@ -116,7 +116,7 @@ and Research Tenth Edition Unix have been recreated.
 .
 .
 .\" ====================================================================
-.SH Usage
+.SH "Document structure"
 .\" ====================================================================
 .
 The
@@ -133,7 +133,7 @@ begin it by calling
 or
 .BR .PP .
 .
-Longer documents have a structure as follows.
+Organize longer documents as follows.
 .
 .
 .TP

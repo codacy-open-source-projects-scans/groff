@@ -35,7 +35,7 @@
 .nr TC-MARGIN \w'00' \" expect 2-digit page numbers at most
 .ie t .nr PI 3.5n
 .el   .nr PI 4n
-.ds date August 2024\"
+.ds date October 2024\"
 .ND \*[date]
 .EH '%''\*[date]'
 .EF ''''
@@ -392,13 +392,9 @@ Wallace after the criticality incident.
 .  bp
 .\}
 .NH 1
-General structure of an
-.BI ms
-document
+Document structure
 .XS
-General structure of an
-.I ms
-document
+Document structure
 .XE
 .
 .
@@ -409,7 +405,7 @@ macro package expects a certain amount of structure:
 a well-formed document contains at least one paragraphing or heading
 macro call.
 .
-Longer documents have a structure as follows.
+Organize longer documents as follows.
 .
 .
 .IP "\fBDocument type\fP"
@@ -4117,7 +4113,7 @@ AT&T
 macro supported arguments
 whose values were used with some
 .CW RP "" non-
- document types;
+document types;
 that of
 .I "groff ms"
 does not.

@@ -1,3 +1,128 @@
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Support new `Rpfmt` string specifying the `LB` macro
+	arguments that the package uses to format the items in a
+	reference list.
+	(initialization): Define it.
+	(ref@start-print): Use it.
+
+	* groff_mm.7.man (Macros) <RS>: Cross reference `Rpfmt` register
+	description and recast.
+	(Strings) <Rpfmt>: Document it.
+
+2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Make new `LB`-based approach to reference page work both with
+	documents that use refer(1) to collect references and those that
+	use only mm(7)'s own facilities.
+
+	* m.tmac (ref@start-print): Change `LB` list "type" argument
+	from 1 (enumerated) to 0 (string-based).  This is because the
+	reference marks are self-enumerating.  However, this loses their
+	trailing dots, so update `LI` call to add them back in.
+	* refer-mm.tmac (ref*biblio-item-sfx): Define as empty,
+	overriding "refer.tmac"'s default.  As shown above, our own
+	infrastructure supplies the dot suffix now.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ref@start-print): Employ dummy character as "empty"
+	fifth argument to `LB` as prepared for.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LB): Accept a dummy character escape sequence as a
+	synonym for an empty fifth argument.
+
+	* groff_mm.7.man (Macros) <LB>: Document this.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LB): Validate fifth (mark-or-format) argument.
+	Getting it wrong leads to surprising formatter diagnostics.
+	Since we're (ultimately) passing it to the `af` request, ensure
+	that it's a nonnegative integer or in the set {a,A,i,I}.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Refactor reference list formatting.
+	(RS): Drop trailing dot from list item mark.
+	(ref@start-print): Format list in terms of mm `LB` and `LI`
+	macros instead of `in`, `ti`, and `sp` *roff requests.  This
+	includes setting `LB`'s "type" argument to "1", putting a
+	trailing dot after the mark.
+	(ref@stop-print): Call `LE` macro instead of invoking `br`
+	request.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	The package no longer superscripts _and_ brackets a reference
+	mark (the `Rf` string).  Instead, the new `Rfstyle` register
+	controls its formatting.  The default, 0, selects bracketing in
+	nroff mode and superscripting in troff mode.  Set `Rfstyle` to 3
+	in a document to obtain groff mm's previous mark formatting
+	behavior.
+
+	* m.tmac (initialization): Assign zero to `Rfstyle`.  Define new
+	`ref*{n,t}roff-{(,)}` strings.  Define `Rf` in terms of new
+	`ref*(` and `ref*)` strings below.  Call `ref*set-mark-style`.
+	(ref*set-mark-style): New macro maps a `Rfstyle` to 1
+	{nroff-style} or 2 {troff-style} as described above and defines
+	`ref*(` and `ref*)` strings per that value.
+	(RS): Call `ref*set-mark-style`, handling the case where the
+	document changes its reference mark formatting style midstream.
+
+	* refer-mm.tmac ([., .]): Use new `ref*(` and `ref*)` strings.
+
+	* groff_mm.7.man (Macros) <RS>: Cross reference `Rfstyle`
+	register description.
+	(Strings) <Rf>: Drop incorrect (oversimplified) description of
+	how the reference mark is formatted.
+	(Registers) <Rfstyle>: Document it.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Refactor.  Define new internal strings `ref*(` and
+	`ref*)` to bracket reference marks.  Define `Rf` string in terms
+	of these.
+	(RS): If given an argument, use the new strings in the named
+	string's contents instead of repeating the literal content now
+	stored in the new strings.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm/0.MT: Stop putting a blank line between author names in the
+	document heading for memorandum types 0-3 and 6 if no
+	supplementary data for each author is being formatted.  This
+	change more accurately reproduces London & Reiser's 1978 paper
+	describing the porting of Unix to the VAX-11/780.
+	(cov@print-authors): New internal register `cov@au-line-counter`
+	tracks how many output lines (more like items of per-author
+	data) have been emitted for the current author.  Only if it ends
+	up being more than one, call `SP 1` as before.  Remove register
+	when done.
+	(cov@print-au1, cov@print-au2): Increment `cov@au-line-counter`.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (RP): Move `SP 2` call (spacing before reference list
+	caption) from here...
+	(ref@print-refs): ...to here.  Bracket the formatting of the
+	caption in a conditional; if an `RPX` macro is defined, call
+	that instead.
+	* groff_mm.7.man (Macros) <RPX>: Document facility.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (RP): Validate macro arguments.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* contrib/mm/m.tmac (initialization, LB, LI): Trivially
+	refactor.  Rename internal string `li*mark` to `li*mf`, since it
+	can be _either_ an arbitrary string _or_ an argument to the `af`
+	request.
+
 2024-09-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mm/0.MT: Support an `Aumt` string to suppress the appearance

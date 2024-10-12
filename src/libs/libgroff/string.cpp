@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -276,10 +276,22 @@ void string::clear()
   len = 0;
 }
 
-int string::search(char c) const
+int string::search(const char c) const
 {
-  char *p = ptr ? (char *)memchr(ptr, c, len) : 0;
-  return p ? p - ptr : -1;
+  const char *p = ptr
+		  ? static_cast<const char *>(memchr(ptr, c, len))
+		  : 0 /* nullptr */;
+  return (p != 0 /* nullptr */) ? (p - ptr) : -1;
+}
+
+// Return index of substring `c` in string, -1 if not found.
+int string::find(const char *c) const
+{
+  const char *p = ptr
+		  ? static_cast<const char *>(memmem(ptr, len, c,
+						     strlen(c)))
+		  : 0  /* nullptr */;
+  return (p != 0 /* nullptr */) ? (p - ptr) : -1;
 }
 
 // we silently strip nuls

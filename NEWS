@@ -224,9 +224,9 @@ Macro packages
    keyword in `SY`'s single-argument form, and is used in computation of
    the indentation of non-initial synopsis lines.  However, this
    computed indentation can now also be overridden with that of the
-   previous syopsis item.  To do this, give any argument to
-   the `YS` macro call "closing" the synopsis whose indentation you want
-   to reuse.  When you're done with such a grouped synopsis, leave the
+   previous synopsis item.  To do this, give any argument to the `YS`
+   macro call "closing" the synopsis whose indentation you want to
+   reuse.  When you're done with such a grouped synopsis, leave the
    argument off the final `YS` call.
 
    In a "Synopsis" section of a man page, existing synopses consisting
@@ -398,6 +398,12 @@ Macro packages
    now interprets an argument to its `-I` option in ens instead of ems
    by default.
 
+*  The m (mm) macro package no longer superscripts _and_ brackets a
+   reference mark (the `Rf` string).  Instead, the new `Rfstyle`
+   register controls its formatting.  The default, 0, selects bracketing
+   in nroff mode and superscripting in troff mode.  Set `Rfstyle` to 3
+   in a document to obtain groff mm's previous mark formatting behavior.
+
 *  The m (mm) macro package's `Li` register now defaults to 5 ens (not
    6) to align with the `Pi` register default.
 
@@ -433,6 +439,10 @@ Macro packages
    `AFX`, which if defined is called by `AF` in lieu of the latter's
    normal operation.  Applications include customization of letterhead.
 
+*  The m (mm) macro package now supports a user-definable hook macro
+   `RPX`, which if defined is called by `RP` to format the reference
+   list caption string `Rp` instead of the default formatting.
+
 *  The m (mm) macro package's `LI` macro now interprets its second
    argument as a Boolean value indicating whether a space should
    separate the list item mark from its prefix (the first argument).
@@ -447,6 +457,10 @@ Macro packages
    such arguments appear, except the second (author initials).  For
    example, a value of "3 4" more accurately reproduces London &
    Reiser's 1978 paper describing the porting of Unix to the VAX-11/780.
+
+*  The m (mm) macro package now supports an `Rpfmt` string specifying
+   the `LB` macro arguments that the package uses to format the items in
+   a reference list.
 
 *  The m (mm) macro package now supports the `E` register as DWB mm did.
 
@@ -928,7 +942,8 @@ Macro packages
    otherwise suggest makeindex(1), which supports troff and is available
    with most TeX distributions, for your mm/ms document indexing needs.
 
-   A document can define its own `IX` macro to suit its requirements.
+   A document can define its own `IX` macro to suit the requirements of
+   the indexing tool.  groff mm and ms formerly used the following.
 
      .de IX
      .tm \\$1\t\\$2\t\\$3\t\\$4 ... \\n[%]

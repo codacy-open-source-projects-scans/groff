@@ -493,13 +493,14 @@ followed by a newline.
 .
 Each row definition is applied in turn to one row of the table.
 .
-The last row definition is applied to rows of table data in excess of
-the row definitions.
+.I tbl \" generic
+applies the last row definition to rows of table data
+in excess of the row definitions.
 .
 .
 .P
 For clarity in this document's examples,
-we shall write classifiers in uppercase and modifiers in lowercase.
+we write classifiers in uppercase and modifiers in lowercase.
 .
 Thus,
 .RB \[lq] CbCb,LR.\& \[rq]
@@ -519,10 +520,13 @@ Any rows of entries appended to the table data reuse the row definition
 .P
 The row definition with the most column descriptors determines the
 number of columns in the table;
-any row definition with fewer is implicitly extended on the right-hand
-side with
+GNU
+.I tbl \" GNU
+implicitly extends any row definition with fewer
+on the right-hand side with
 .B L
 classifiers as many times as necessary to make the table rectangular.
+.\" Heirloom Doctools tbl also does that; DWB tbl does not.
 .
 .
 .br
@@ -581,7 +585,7 @@ it uses the rightmost one for vertical alignment.
 .
 If there is no decimal separator,
 the rightmost digit is used for vertical alignment;
-otherwise,
+if no digits are present,
 .I @g@tbl
 centers the entry within the column.
 .
@@ -593,7 +597,8 @@ in an entry marks the glyph preceding it
 (if any)
 as the units place;
 if multiple instances occur in the data,
-the leftmost is used for alignment.
+.I tbl \" generic
+uses the leftmost for alignment.
 .
 .
 .IP
@@ -1577,8 +1582,8 @@ as a leader character.
 .SH Limitations
 .\" ====================================================================
 .
-In table entries,
-do not use
+In table entries that are not text blocks,
+avoid use of
 .I roff
 escape sequences that read to the end of the line,
 like

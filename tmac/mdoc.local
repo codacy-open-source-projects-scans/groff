@@ -8,8 +8,8 @@
 .\"
 .\" "CW" is not a portable font name, but some man pages use it anyway.
 .\" Uncomment this to suppress warnings produced by such pages.  This
-.\" test remaps the font to roman ("R") on nroff (terminal) devices. You
-.\" might prefer to remap it to bold ("B") instead.
+.\" test remaps the font to roman ("R") on nroff (terminal) devices.
+.\" You might prefer to remap it to bold ("B") instead.
 .\" .if n .ftr CW R
 .\"
 .\" Local Variables:

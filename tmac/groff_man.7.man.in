@@ -607,7 +607,7 @@ and must contain only text of the form
 .RS \" Now indent further, visibly.
 .IR topic [\c
 .BI , " another-topic"\c
-.RB "].\|.\|.\& \e\- "\c
+].\|.\|.\& \e\-
 .I summary-description
 .RE \" Move left margin back to .IP indentation.
 for tools like
@@ -3373,7 +3373,7 @@ is set smaller and in bold.
 Use of this macro,
 an extension originating in SunOS\~4.0
 .IR troff ,\" SunOS
-.\" ..and which Clark included in groff man(7) from 1.01 or earlier...
+.\" ...and which Clark included in groff man(7) from 1.01 or earlier...
 is deprecated.
 .
 .B .SM
@@ -4209,7 +4209,7 @@ often a shorter or clearer alternative is available.
 .TS
 Cb   Cb
 LfCR LfCR.
-Instead of.\|.\|.	.\|.\|.should be considered.
+Instead of.\|.\|.\&	\&.\|.\|.should be considered.
 _
 \&.TP \(dq\(dq	.TP
 _
@@ -4457,7 +4457,7 @@ when not ending a sentence.
 .TS
 Cb   Cb
 LfCR LfCR.
-Instead of.\|.\|.	.\|.\|.do this.
+Instead of.\|.\|.\&	\&.\|.\|.do this.
 _
 \&.ds EL \[rs]&.\[rs]|.\[rs]|.	Arguments are
 Arguments are	.IR src-file\[rs]\[ti] .\[rs]|.\[rs]|.\[rs]&

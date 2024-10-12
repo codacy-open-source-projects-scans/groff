@@ -370,8 +370,13 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds Qrf See chapter \E*[Qrfh], page \E*[Qrfp].
 .\" output reference marks to standard error?
 .if !r Ref .nr Ref 0
+.\" reference mark style
+.\" 0 = auto (nroff/troff); 1 = bracket; 2 = superscript; 3 = both
+.nr Rfstyle 0
 .\" reference list page ejection policy
 .nr Rpe 0
+.\" reference list format (arguments to `LB`)
+.ds Rpfmt \\n[Li] 0 1 0 \& 0\"
 .\" use section-page page numbering?
 .nr Sectp 0
 .if (\n[N]=3):(\n[N]=5) \{\
@@ -2315,7 +2320,7 @@ breaking page
 .nr li*mind 0
 .nr li*pad 0
 .nr li*type 0
-.ds li*mark 0
+.ds li*mf 0\" mark-or-format
 .nr li*li-spc 0
 .nr li*lvl 0 1
 .aln :g li*lvl
@@ -2333,14 +2338,14 @@ breaking page
 .misc@push pad \\n[li*pad]
 .misc@push type \\n[li*type]
 .misc@push li-spc \\n[li*li-spc]
-.ds li*mark-list!\\n[li*lvl] \\*[li*mark]
+.ds li*mark-list!\\n[li*lvl] \\*[li*mf]
 .nr li*lvl +1
 .\"
 .nr li*tind (n;0\\$1)\"			text-indent
 .nr li*mind (n;0\\$2)\"			mark-indent
 .nr li*pad (n;0\\$3)\"			pad
 .nr li*type 0\\$4\"			type
-.ds li*mark \\$5\"			mark
+.ds li*mf \\$5\"			mark-or-format
 .ie !'\\$6'' .nr li*li-spc \\$6\"	LI-space
 .el          .nr li*li-spc 1
 .ie !'\\$7'' .nr li*lb-spc \\$7\"	LB-space
@@ -2349,7 +2354,23 @@ breaking page
 .nr li*cnt!\\n[li*lvl] 0 1
 .\" assign format
 .af li*cnt!\\n[li*lvl] 1
-.if \\n[li*type] .if !'\\*[li*mark]'' .af li*cnt!\\n[li*lvl] \\*[li*mark]
+.if \\n[li*type] \{\
+.	ie '\?\\*[li*mf]\?'\?\&\?' .af li*cnt!\\n[li*lvl] 0
+.	el \{\
+.		nr li*is-format-valid 0
+.		if \B'\\*[li*mf]'&\\*[li*mf]>-1 .nr li*is-format-valid 1
+.		if '\?\\*[li*mf]\?'\?a\?'       .nr li*is-format-valid 1
+.		if '\?\\*[li*mf]\?'\?A\?'       .nr li*is-format-valid 1
+.		if '\?\\*[li*mf]\?'\?i\?'       .nr li*is-format-valid 1
+.		if '\?\\*[li*mf]\?'\?i\?'       .nr li*is-format-valid 1
+.		if !\\n[li*is-format-valid] \{\
+.			@warning \\$0: type argument is \\n[li*type] \
+but mark argument '\\*[li*mf]' is not a valid register format; \
+assuming '0'
+.			ds li*mf 0\"
+.		\}
+.	\}
+.\}
 .\"
 .if \\n[li*lb-spc] .SP (u;\\n[li*lb-spc]*\\n[Lsp])
 .in +\\n[li*tind]u
@@ -2379,7 +2400,7 @@ ML, RL, VL, or LB first
 .		\" empty string.  We want a comparison of string
 .		\" contents instead (otherwise the tag disappears from
 .		\" the output), hence `\?`.
-.		if !'\?\\*[li*mark]\?'' .nr li*apply-prefix 1
+.		if !'\?\\*[li*mf]\?'' .nr li*apply-prefix 1
 .	\}
 .	el .nr li*apply-prefix 1
 .	ie \B'\\$2' .nr li*pad-prefix \\$2
@@ -2407,7 +2428,7 @@ ML, RL, VL, or LB first
 .ie \\n[.$]=1 .ds li*c-mark \\$1\"
 .el \{\
 .	ie d li*enumerator    .as li*c-mark \\*[li*enumerator]\"
-.	el                    .as li*c-mark \\*[li*mark]\"
+.	el                    .as li*c-mark \\*[li*mf]\"
 .\}
 .rm li*enumerator
 .\" Determine amount of padding after the mark.
@@ -3062,15 +3083,44 @@ exceeds depth of nested lists (\\n[li*lvl])
 .aln :R ref*nr
 .nr ref*nr-width 5n
 .nr ref*flag 0		\" for end-of-text
-.ds Rf \v'-.4m'\s-3[\\n+[ref*nr]]\s0\v'.4m'
+.ds ref*nroff-( [
+.ds ref*troff-( \v'-.4m'\s-3
+.ds ref*nroff-) ]
+.ds ref*troff-) \s0\v'.4m'
+.
+.de ref*set-mark-style
+.nr ref*mark-style \\n[Rfstyle]
+.if \\n[Rfstyle]=0 \{\
+.	if n .nr ref*mark-style 1
+.	if t .nr ref*mark-style 2
+.\}
+.if \\n[ref*mark-style]=1 \{\
+.	ds ref*( \\*[ref*nroff-(]
+.	ds ref*) \\*[ref*nroff-)]
+.\}
+.if \\n[ref*mark-style]=2 \{\
+.	ds ref*( \\*[ref*troff-(]
+.	ds ref*) \\*[ref*troff-)]
+.\}
+.if \\n[ref*mark-style]=3 \{\
+.	ds ref*( \\*[ref*troff-(]\\*[ref*nroff-(]
+.	ds ref*) \\*[ref*nroff-)]\\*[ref*troff-)]
+.\}
+.rr ref*mark-style
+..
+.
+.ref*set-mark-style
+.ds Rf \\*[ref*(]\\n+[ref*nr]\\*[ref*)]
+.
 .\"
 .\" start reference
 .\"------------
 .de RS
-.if !''\\$1' .ds \\$1 \v'-.4m'\s-3[\\n[ref*nr]]\s0\v'.4m'
+.ref*set-mark-style \" in case the document changed it
+.if !''\\$1' .ds \\$1 \*[ref*(]\\n[ref*nr]\*[ref*)]
 .nr ref*flag 1
 .am ref*mac
-.ref@start-print \\n[ref*nr].
+.ref@start-print \\n[ref*nr]
 \\..
 .eo
 .am ref*mac RF
@@ -3085,13 +3135,12 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"------------
 .de ref@start-print
 .di ref*div
-.in \\n[ref*nr-width]u
-.ti -(\w@\\$1@u+1n)
-\\$1
-.sp -1
+.LB \\*[Rpfmt]
+.LI "\\$1."
 ..
+.\"------------
 .de ref@stop-print
-.br
+.LE
 .di
 .ne \\n[dn]u
 .ev ref*ev2
@@ -3107,13 +3156,25 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	@warning \\$0: ignoring; no references defined
 .	return
 .\}
-.ie !''\\$2' .nr ref*i 0\\$2
-.el          .nr ref*i \\n[Rpe]
+.\" Wart: mm treats the first argument as Boolean based on its
+.\" (non-)emptiness, not a numeric value.
+.nr ref*reset-counter 1
+.if !''\\$1' \{\
+.	ie \B'\\$1' .nr ref*reset-counter \\$1
+.	el          .@warning \\$0: treating non-numeric first \
+argument '\\$1' as '1'
+.\}
+.if \\n[ref*reset-counter] .nr ref*nr 0 1
+.nr ref*i \\n[Rpe]
+.if !''\\$2' \{\
+.	ie \B'\\$2' .nr ref*i \\$2
+.	el          .@warning \\$0: ignoring non-numeric second \
+argument: '\\$2'
+.\}
 .if \\n[ref*i]<2 .SK
-.SP 2
 .ref@print-refs
-.if 0\\$1<1 .nr ref*nr 0 1
 .if (\\n[ref*i]=0):(\\n[ref*i]=2) .SK
+.rr ref*reset-counter
 ..
 .\"-----------
 .\" called by end-of-text!
@@ -3135,9 +3196,13 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" prints the references
 .de ref@print-refs
 .toc@save 1 "" "\\*[Rp]" \\n[%]
-.ce
-\f2\\*[Rp]\fP
-.sp
+.ie d RPX .RPX
+.el \{\
+.	SP 2
+.	ce
+.	nop \f2\\*[Rp]\fP
+.	sp
+.\}
 .nr ref*ll \\n[.l]
 .misc@ev-keep ref*ev
 .ll \\n[ref*ll]u

@@ -140,7 +140,7 @@ and with uppercase for text arguments.
 Default parameter values are shown in square brackets.
 The notation
 .i \(+-n
-indicates a numerical value with an optional leading sign.
+indicates a numeric value with an optional leading sign.
 Without the sign,
 it assigns a value
 .i n.
@@ -1859,7 +1859,7 @@ in the current font)].
 .DE
 Stop numbering output lines if
 .i n
-missing,
+empty,
 otherwise continue with the number modified by
 \(+-\c
 .i n.

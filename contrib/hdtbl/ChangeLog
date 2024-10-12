@@ -1,3 +1,19 @@
+2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.am (HDTBLPROCESSEDEXAMPLEFILES): Declare dependency on
+	`grn`; because `-I` flags are used, it is dragged in even though
+	not explicitly needed.  Resolves race against `grn`'s
+	availability in the build tree.
+
+	Fixes <https://savannah.gnu.org/bugs/?66316>.  Thanks to Ross
+	Burton for the report.
+
+2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.am (.roff.ps): Move `-I`, `-d`, and `-m` groff options
+	from this inference rule...
+	(HDTBLGROFF): ...to this macro definition.
+
 2022-06-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* hdtbl.am (HDTBLPROCESSEDEXAMPLEFILES): Add dependency on

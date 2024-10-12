@@ -453,7 +453,7 @@
 .  ie \\n[cR] .pl +1v
 .  el         .sp (.5i - .5m)
 .  \" Attach a bookmark to the page header on the first page of a new
-.  \" man(7) document; a changed identifier and section indicates this.
+.  \" man(7) document; a changed identifier or section indicates this.
 .  if !'\\*[an*page-ref-string]'\\*[an*previous-page-ref-string]' \{\
 .    nr an*bookmark-level (\\n[an*bookmark-base-level] + 1)
 .    an*bookmark \\n[an*bookmark-level]  "\\*[an*page-ref-string]"
@@ -1515,7 +1515,7 @@ contains unsupported escape sequence
 .if !r CS \
 .  nr CS 0
 .
-.\" full capitalization of page topic
+.\" full capitalization of page identifier
 .if !r CT \
 .  nr CT 0
 .
@@ -1658,7 +1658,7 @@ contains unsupported escape sequence
 .if !r SN \
 .  nr SN 3n
 .
-.\" URI enablement desired
+.\" hyperlinked text desired
 .if !r U \
 .  nr U 1
 .

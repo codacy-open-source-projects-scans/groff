@@ -1,3 +1,109 @@
+2024-10-11  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Don't use inbuilt pdf parser on user supplied data.
+
+	* src/devices/gropdf/gropdf.pl: Another example of using it
+	in an inappropriate situation.
+
+2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/doc.tmac (doc-enclose-string): Add warning.  mdoc input
+	like this
+
+	  .Sq ,
+
+	...is something I see from time to time; it's a conspicuous
+	hazard of mdoc's macro system within a macro system.  It leads
+	to an unhelpful diagnostic when GNU troff warnings are dialed
+	up.
+
+	  warning: register 'doc-type0' not defined
+
+	Throw document maintainers, if not readers, a bone.
+
+2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac:
+	* tmac/doc.tmac: Fix code style nits; parallelize handling of
+	rendering option registers and strings.
+
+2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/refer.tmac (ref*biblio-item-sfx): Define new string (if
+	not already defined) to specify trailing punctuation for a
+	bibliographic entry list item.  The default is a dot.
+	(ref*end-print): Interpolate the new string instead of a literal
+	dot.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Quote the
+	contents of (ordinary) non-text-block table entries when
+	throwing diagnostics about their contents.
+
+2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Fix logic error
+	in *roff escape sequence detection, exposed by UTP document
+	<https://github.com/larrykollar/Unix-Text-Processing/tree/1.0>.
+
+2024-10-11  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.pl: When switching writing
+	direction (\X'pdf: xrev') ensure any buffered output is
+	flushed.
+
+2024-10-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Refactor match
+	attempts for `\R` and `\z` in table entries to use new `find()`
+	member function of `string` class.
+
+2024-10-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Refactor to
+	avoid overreading memory allocated to `string` objects, which
+	don't null-terminate their contents.  Use string class's
+	existing `search` and new `find` member functions to perform
+	character and substring matches, respectively, instead of
+	`strchr()` and `strstr()`.  As a side benefit, the code now
+	looks cleaner and reads easier.
+
+	Fixes a SEGV reported by Lennart Jablonka that I can't reproduce
+	but which made sense once he pointed it out.  Problem introduced
+	by me in commit a91cd457d9, 26 September.
+
+2024-10-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/stringclass.h (class string): Declare new `find`
+	public member function; it works like `search` but takes a
+	pointer to `const char`, making it a substring locator.
+
+	* src/libs/libgroff/string.cpp (string::find): Implement it.
+
+2024-10-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* bootstrap.conf: Add "memmem" to `gnulib_modules`.
+
+2024-10-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/stringclass.h (class string): Fix code style nit:
+	`const`-ify argument to `search` public member function.
+
+	* src/libs/libgroff/string.cpp (string::search): `const`-ify
+	argument and local variable.  Use C++ `static_cast` operator
+	instead of C-style type cast.  Explicitly compare variable of
+	pointer type to null pointer literal instead of letting it pun
+	down to a Boolean.  Parenthesize complex expression.
+
+2024-10-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (dump_register): Remove garbage from
+	`errprint()` format string.
+
+	Fixes <https://savannah.gnu.org/bugs/?66293>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
 2024-10-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/tbl/table.cpp (table::init_output): Migrate to use

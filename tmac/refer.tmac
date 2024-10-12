@@ -48,6 +48,8 @@
 .\"   ref*item-end-hook             -- stuff prepended to the ][ macro
 .\"   ref*biblio-start-hook         -- stuff appended to the ]< macro
 .\"   ref*biblio-end-hook           -- stuff appended to the ]> macro
+.\"   ref*biblio-item-sfx           -- stuff appended to list item marks
+.\"                                    in bibliography block
 .\"
 .\" The following strings must be defined:
 .\"
@@ -183,9 +185,14 @@
 ..
 .
 .
+.\" A macro package should set this to an empty string if it handles
+.\" suffixing the item enumerators itself in the listing.
+.if !d ref*biblio-item-sfx \
+.	ds ref*biblio-item-sfx .\"
+.
 .de ref*end-print
 .	ie d [F \
-.		ref*biblio-item-start "\\*([F."
+.		ref*biblio-item-start "\\*([F\\*[ref*biblio-item-sfx]"
 .	el \
 .		ref*biblio-item-start-nolabel
 .	nop \\*[ref*string]

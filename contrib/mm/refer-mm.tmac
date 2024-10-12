@@ -1,24 +1,23 @@
-.\" refer-mm.tmac
-.\"
 .\" Refer support for mm macros.
 .\"
-.\" Copyright (C) 2011-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 2011-2024 Free Software Foundation, Inc.
 .\"   Written by Werner Lemberg (wl@gnu.org)
 .\"
 .\" This file is part of groff.
 .\"
-.\" groff is free software; you can redistribute it and/or modify it under
-.\" the terms of the GNU General Public License as published by the Free
-.\" Software Foundation, either version 3 of the License, or
+.\" groff is free software; you can redistribute it and/or modify it
+.\" under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation, either version 3 of the License, or
 .\" (at your option) any later version.
 .\"
-.\" groff is distributed in the hope that it will be useful, but WITHOUT ANY
-.\" WARRANTY; without even the implied warranty of MERCHANTABILITY or
-.\" FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-.\" for more details.
+.\" groff is distributed in the hope that it will be useful, but WITHOUT
+.\" ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+.\" or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+.\" License for more details.
 .\"
 .\" You should have received a copy of the GNU General Public License
-.\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.\" along with this program.  If not, see
+.\" <http://www.gnu.org/licenses/>.
 .\"
 .\" Please send comments to groff@gnu.org.
 .
@@ -42,11 +41,12 @@
 .  ref@stop-print
 ..
 .
+.\" used in footnotes only, not the reference list produced by `RP`
 .ds ref*refnum-start \" empty
 .ds ref*refnum-end   .\"
 .
-.ds [. \v'-.4m'\s-3[\"
-.ds .] ]\s0\v'.4m'\"
+.ds [. \\*[ref*(]\"
+.ds .] \\*[ref*)]\"
 .
 .ds ref*spec!0  Q A T S V N P I C D O
 .ds ref*spec!1  Q A T J S V N P I C D O
@@ -70,9 +70,9 @@
 .ds ref*spec!V     """ " " "\fB"    "\fR"
 .ds ref*spec!dflt  ",  " "
 .
-.\" For the bibliography section, we emulate the .RS/.RF mechanism of mm by
-.\" collecting references (enclosed with .]- and .][) in macro 'ref*mac'.
-.\" This macro gets expanded while calling the .RP macro.
+.\" For the bibliography section, we emulate the .RS/.RF mechanism of mm
+.\" by collecting references (enclosed with .]- and .][) in macro
+.\" 'ref*mac'.  This macro gets expanded while calling the .RP macro.
 .
 .de ref*][-first-pass
 .  ec
@@ -91,6 +91,8 @@
 .    am ref*mac ][
 \\..
 ..
+.
+.ds ref*biblio-item-sfx \" empty (ref@start-print supplies the dot)
 .
 .de ref*biblio-end-hook
 .  als ][ ref*][-second-pass

@@ -1460,15 +1460,10 @@ sub do_x
 		$pdfmark=~s(\\\[u00(..)\])(chr(hex($1)))eg;
 		$pdfmark=~s/\\n/\n/g;
 
-		if ($pdfmark=~m/(.+) \/DOCINFO\s*$/s)
+		if ($pdfmark=~m/\/(\w+) \((.+)\) \/DOCINFO\s*$/s)
 		{
-		    my @xwds=split(/ /,"<< $1 >>");
-		    my $docinfo=ParsePDFValue(\@xwds);
-
-		    foreach my $k (sort keys %{$docinfo})
-		    {
-			$info{$k}='('.utf16(substr($docinfo->{$k},1,-1)).')' if $k ne 'Producer';
-		    }
+		    my $k=$1;
+		    $info{$k}='('.utf16($2,1,-1).')' if $k ne 'Producer';
 		}
 		elsif ($pdfmark=~m/(.+) \/DOCVIEW\s*$/)
 		{
@@ -1791,6 +1786,7 @@ sub do_x
 	    }
 	    elsif (lc($xprm[1]) eq 'xrev')
 	    {
+		PutLine(0);
 		$xrev=!$xrev;
 	    }
 	    elsif (lc($xprm[1]) eq 'markstart')

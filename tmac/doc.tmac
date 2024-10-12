@@ -1,6 +1,8 @@
 .\" Copyright (c) 1991, 1993
 .\"   The Regents of the University of California.  All rights reserved.
 .\"
+.\" Copyright (C) 2001-2024 Free Software Foundation, Inc.
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -92,11 +94,21 @@
 .if r ps4html \
 .  nr doc-is-output-html 1
 .
-.\" Use -dAD to set the adjustment mode for ordinary body text.
+.\" adjustment mode
 .if !d AD \
 .  ds AD b\"
 .
-.\" Use -rC1 to consecutively number pages across multiple documents.
+.\" base paragraph indentation
+.if !r BP \
+.  nr BP 5n
+.
+.\" continuous rendering (one long page)
+.if !r cR \{\
+.  ie n .nr cR 1
+.  el   .nr cR 0
+.\}
+.
+.\" consecutive page numbering across multiple documents
 .\"
 .\" We must use consecutive page numbers when using PostScript to
 .\" generate HTML images; we must not reset the page number at the
@@ -112,17 +124,13 @@
 .if \n[doc-is-output-html] \
 .  nr C 1
 .
-.\" Use -rCS=1 to force capitalization of section headings.
-.if !r CS .nr CS 0
+.\" full capitalization of section headings
+.if !r CS \
+.  nr CS 0
 .
-.\" Use -rCT=1 to force capitalization of page titles in headers.
-.if !r CT .nr CT 0
-.
-.\" Use -rcR=0 for multiple pages instead of a single, very long page.
-.if !r cR \{\
-.  if t .nr cR 0
-.  if n .nr cR 1
-.\}
+.\" full capitalization of page identifier
+.if !r CT \
+.  nr CT 0
 .
 .\" If continuous rendering, tell tbl not to use keeps.
 .ie \n[cR] \
@@ -199,10 +207,12 @@
 .
 .\" \n[HY] is recognized for groff_man(7) compatibility, particularly
 .\" via andoc.tmac and man(1); see \n[doc-hyphen-flags] in doc-common.
-.if !r HY .nr HY 1
+.\"
+.\" hyphenation enablement
+.if !r HY \
+.  nr HY 1
 .
-.\" Use -rBP=<xxx> to set the paragraph indentation amount.
-.if !r BP .nr BP 5n
+.\" groff mdoc does _not_ use groff man's `IN` register.
 .
 .\" LL and LT registers are handled by the doc-setup-page-layout macro.
 .
@@ -255,10 +265,11 @@
 .  \}
 .\}
 .
-.\" Use -rSN=<xxx> to set the subsection heading indentation amount.
-.if !r SN .nr SN 3n
+.\" subsection indentation
+.if !r SN \
+.  nr SN 3n
 .
-.\" URI enablement desired
+.\" hyperlinked text desired
 .if !r U \
 .  nr U 1
 .
@@ -1713,6 +1724,8 @@
 .    \" resp. suffix
 .    ie (\n[doc-type\n[doc-arg-count]] == 3) \{\
 .      nr doc-reg-des (\n[doc-arg-count] - 1)
+.      if !r doc-type\n[doc-reg-des] \
+.        doc-warn possible missing dummy character '\&' before argument
 .      while (\n[doc-type\n[doc-reg-des]] == 3) \
 .        nr doc-reg-des -1
 .

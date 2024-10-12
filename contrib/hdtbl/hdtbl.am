@@ -1,4 +1,4 @@
-# Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# Copyright (C) 2006-2024 Free Software Foundation, Inc.
 #      Written by Werner Lemberg <wl@gnu.org>
 #      Automake migration by Bertrand Garrigues
 #        <bertrand.garrigues@laposte.net>
@@ -26,7 +26,11 @@ man7_MANS += contrib/hdtbl/groff_hdtbl.7
 HDTBLGROFF = \
   GROFF_COMMAND_PREFIX= \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-  $(GROFFBIN) $(FFLAG) $(MFLAG) -M$(hdtbl_srcdir) -t -p -e -U
+  $(GROFFBIN) $(FFLAG) \
+    -dfontpath=$(top_srcdir)/font \
+    -dsopath=$(hdtbl_srcdir)/ \
+    -I $(doc_builddir) -I $(doc_srcdir) \
+     $(MFLAG) -M$(hdtbl_srcdir) -mhdtbl -t -p -e -U
 
 HDTBLTMACFILES = \
   contrib/hdtbl/hdtbl.tmac \
@@ -108,19 +112,15 @@ SUFFIXES += .roff .in .ps
 
 .roff.ps:
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
-	&& $(HDTBLGROFF) -I $(doc_builddir) -I $(doc_srcdir) -Tps \
-	     -dfontpath=$(top_srcdir)/font \
-	     -dsopath=$(hdtbl_srcdir)/ \
-	     -mhdtbl $< >$@
+	&& $(HDTBLGROFF) -Tps $< >$@
 
 .in.roff:
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
 	&& sed -e "s|[@]fontdir[@]|$(fontdir)|" \
 	       -e "s|[@]EGREP[@]|$(EGREP)|" $< >$@
 
-
 $(HDTBLPROCESSEDEXAMPLEFILES): $(DOC_GNU_EPS) groff troff eqn pic tbl \
-  grops font/devps/stamp contrib/hdtbl/examples/common.roff
+  grops grn font/devps/stamp contrib/hdtbl/examples/common.roff
 
 uninstall_groffdirs: uninstall-hdtbl-hook
 uninstall-hdtbl-hook:

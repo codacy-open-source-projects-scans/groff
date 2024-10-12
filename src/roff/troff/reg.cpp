@@ -514,7 +514,7 @@ static void dump_register(symbol *id, reg *r)
     const char *f = r->get_format();
     assert(f != 0 /* nullptr */);
     if (f != 0 /* nullptr*/)
-      errprint("\t\%1", f);
+      errprint("\t%1", f);
   }
   else {
     const char *s = r->get_string();

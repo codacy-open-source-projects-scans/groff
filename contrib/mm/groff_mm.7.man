@@ -2419,7 +2419,7 @@ this is also the default.
 .
 .TP
 .BI LB\~ "text-indent mark-indent pad type"\~\c
-.RI [ mark \~[ pre-item-space \~[ pre-list-space ]]]
+.RI [ mark-or-format \~[ pre-item-space \~[ pre-list-space ]]]
 Begin list.
 .
 The macros
@@ -2486,21 +2486,30 @@ type@Output for a mark \[lq]x\[rq]
 .IP
 If
 .I type
-is\~0 and
-.I mark
-is unspecified,
+is\~0,
 .I mm
-sets items with a hanging indent.
+assumes that the marks are not numeric.
 .
-Otherwise,
-.I mark
-is interpreted as a string defining the mark.
+If
+.I mark-or-format
+is empty
+(or the dummy character
+.RB \[lq] \[rs]& \[rq])
+.I mm
+sets items with a hanging indent;
+otherwise,
+.I mm
+treats
+.I mark-or-format
+as a string defining the mark.
 .
+.
+.IP
 If
 .I type
 is greater than zero,
 items are automatically numbered and
-.I mark
+.I mark-or-format
 is interpreted as a register format.
 .
 A
@@ -3411,19 +3420,35 @@ automatically if references have accumulated.
 .
 .
 .IP
-References are list items,
-and thus are vertically separated
-(see
-.BR LB ).
+References are formatted as a list with
+.BR LB ;
+the
+.B Rpfmt
+string configures the list's appearance.
 .
 Setting register
 .B Ls
 .RB to\~ 0
-suppresses this spacing.
+suppresses spacing after the list.
 .
 The string
 .B Rp
 contains the reference list caption.
+.
+.
+.TP
+.B RPX
+This user-definable hook macro assumes responsibility for formatting
+the heading of the reference page produced when the document calls
+.B RP .
+.
+If not defined
+(the default),
+the reference list caption in the string
+.B Rp
+is set after two vees of space,
+centered in italics,
+and followed by another vee of space.
 .
 .
 .br
@@ -3443,6 +3468,13 @@ Interpolate the string
 where the reference mark should be and write the reference between
 .BR RS / RF
 on an input line after the reference mark.
+.
+The mark may be bracketed,
+superscripted,
+or both;
+see the
+.B \%Rfstyle
+register.
 .
 If
 .I reference-string
@@ -4502,19 +4534,22 @@ the number is used by the next
 .B RS
 call.
 .
-In
-.I troff
-mode,
-the marker is superscripted;
-in
-.I nroff
-mode,
-it is surrounded by square brackets.
-.
 .
 .TP
 .B Rp
 \[lq]REFERENCES\[rq]
+.
+.
+.TP
+.B Rpfmt
+specifies the
+.B LB
+arguments that
+.I "groff mm"
+uses to format the items in a reference list.
+.
+The default is
+.RB \[lq] "\[rs]\[rs]n[Li] 0 1 0 \[rs]& 0 0" \[rq].
 .
 .
 .TP
@@ -5286,6 +5321,10 @@ see
 and
 .BR TB .
 .
+The punctuation in the separator is either a dot or the
+.B EM
+string.
+.
 The following values are recognized;
 the spaces shown are unpaddable
 .RB ( 0 ).
@@ -5409,6 +5448,41 @@ and
 .B RS
 (Boolean-valued;
 .BR 0 ).
+.
+.
+.TP
+.B Rfstyle
+determines the format of the reference number in the
+.B Rf
+string.
+.
+.I "groff mm"
+maps
+.B 0
+to
+.B 1
+in
+.I nroff
+mode
+and
+.B 2
+in
+.I troff
+mode
+.RB ( 0 ).
+.
+.
+.IP
+.TS
+tab(@);
+lb lb
+l l.
+Value@Meaning
+0@automatic
+1@bracketed
+2@superscripted
+3@bracketed and superscripted
+.TE
 .
 .
 .\" XXX: Why is this not named `Rpej`?
