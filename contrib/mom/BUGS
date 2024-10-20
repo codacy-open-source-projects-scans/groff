@@ -21,6 +21,22 @@ the Subject line or you risk my spam filters nuking your message.
 
 ====================================================================
 
+Version 2.6_d
+=============
+PDF_IMAGE after only one line text after START is moves the image to
+the next page.
+---Fixed---
+Some graphical objects not recognising colours initialized with
+.XCOLOR.
+---Fixed---
+
+Graphical objects' left margins slightly offset to the right.
+---Fixed---
+
+Graphical objects with depth (vertical rules, boxes, ellipses) close
+to bottom margin clobbering footer trap.
+---Fixed---
+
 Version 2.6_c
 =============
 First line of columns after first falling one line lower than column

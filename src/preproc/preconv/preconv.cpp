@@ -1105,13 +1105,17 @@ do_file(const char *filename)
     fp = fopen(filename, FOPEN_RB);
     reported_filename = "'" + string(filename) + "'";
   }
+  char *c_reported_filename = reported_filename.extract();
   if (!fp) {
-    error("can't open %1: %2", reported_filename.contents(),
-	  strerror(errno));
+    error("can't open %1: %2", c_reported_filename, strerror(errno));
+    free(c_reported_filename);
     return 0;
   }
-  if (is_debugging)
-    fprintf(stderr, "processing %s\n", reported_filename.contents());
+  if (is_debugging) {
+    fprintf(stderr, "processing %s\n", c_reported_filename);
+    fflush(stderr);
+  }
+  free(c_reported_filename);
   if (fseek(fp, 0L, SEEK_SET) == 0)
     is_seekable = true;
   else {

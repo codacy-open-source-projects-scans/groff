@@ -2802,10 +2802,6 @@ end
 .    rr #FILL_MODE
 .    rr #NOFILL
 .    rr #NOFILL_MODE
-.    if \\n[.vpt]=1 \{\
-.       vpt 0
-.       nr #RESTORE_TRAP 1
-.    \}
 .    ie !\\n[#NO_ADVANCE]=1 .br
 .    el \{\
 .       sp -1v
@@ -2823,6 +2819,10 @@ end
 .       rj 0
 .    \}
 .    nf
+.    if \\n[.vpt]=1 \{\
+.       vpt 0
+.       nr #RESTORE_TRAP 1
+.    \}
 .END
 \#
 \# HORIZONTAL RULE - DRH
@@ -2842,19 +2842,20 @@ end
 .    ds $RL_WEIGHT \\$1
 .    ds $RL_INDENT \\$2
 .    ds $RL_LENGTH \\$3
-.    nr #SAVED_WEIGHT     \\n[#RULE_WEIGHT]
-.    nr #SAVED_WEIGHT_ADJ \\n[#RULE_WEIGHT_ADJ]
+.    nr #SAVED_RULE_WEIGHT \\n[#RULE_WEIGHT]
+.    nr #SAVED_WEIGHT_ADJ  \\n[#RULE_WEIGHT_ADJ]
 .    di NULL
 .       if \\n[#NUM_ARGS]>=1 .RULE_WEIGHT \\*[$RL_WEIGHT]
 .    di
-.    if !'\\$4'' .gcolor \\$4
+.    if !'\\$4'' .COLOR \\$4
 .    ie \\n[#NUM_ARGS]=0 \{\
+.       ds $RL_INDENT 0
 .       ie \\n[#INDENT_ACTIVE] \{\
 .          nr #RESTORE_L_LENGTH \\n[.l]
 .          if \\n[#INDENT_BOTH_ACTIVE] .ll \\n[.l]u-\\n[#BL_INDENT]u
 .          if \\n[#INDENT_LEFT_ACTIVE] .ll \\n[.l]u-\\n[#L_INDENT]u
 \Z'\D't \\n[#RULE_WEIGHT]''\
-\h'\\*[$RL_INDENT]+\\n[#RULE_WEIGHT_ADJ]u'\
+\h'\\*[$RL_INDENT]'\
 \v'\\n[#RULE_WEIGHT_ADJ]u'\
 \D'l \En[.l]u 0'\v'-\\n[#RULE_WEIGHT_ADJ]u'\
 \v'-\\n[#RULE_WEIGHT_ADJ]u'\
@@ -2864,7 +2865,7 @@ end
 .       \}
 .       el \{\
 \Z'\D't \\n[#RULE_WEIGHT]''\
-\h'\\*[$RL_INDENT]+\\n[#RULE_WEIGHT_ADJ]u'\
+\h'\\*[$RL_INDENT]'\
 \v'\\n[#RULE_WEIGHT_ADJ]u'\
 \D'l \En[.l]u 0'\v'-\\n[#RULE_WEIGHT_ADJ]u'\
 \v'-\\n[#RULE_WEIGHT_ADJ]u'\
@@ -2873,13 +2874,14 @@ end
 .    \}
 .    el \{\
 \Z'\D't \\n[#RULE_WEIGHT]''\
-\h'\\*[$RL_INDENT]+\\n[#RULE_WEIGHT_ADJ]u'\
+\h'\\*[$RL_INDENT]'\
 \v'\\n[#RULE_WEIGHT_ADJ]u'\
 \D'l \\*[$RL_LENGTH] 0'\
 \v'-\\n[#RULE_WEIGHT_ADJ]u'\
 \Z'\D't \\n[#SAVED_RULE_WEIGHT]''
 .          rr #RESTORE_L_LENGTH
 .    \}
+.    gcolor default
 .    if \\n[#FILLED]=1 \{\
 .       if \\n[#FILL_MODE]=0 .QUAD LEFT
 .       if \\n[#FILL_MODE]=1 .JUSTIFY
@@ -2892,11 +2894,10 @@ end
 .       if \\n[#NOFILL_MODE]=3 .CENTER
 .       if \\n[#NOFILL_MODE]=5 .RIGHT
 .    \}
-.    gcolor default
-.    nr #RULE_WEIGHT     \\n[#SAVED_WEIGHT]
+.    nr #RULE_WEIGHT     \\n[#SAVED_RULE_WEIGHT]
 .    nr #RULE_WEIGHT_ADJ \\n[#SAVED_WEIGHT_ADJ]
 .    rr #SAVED_WEIGHT
-.    rr #SAVED_WEIGHT_ADJ
+.    rr #SAVED_RULE_WEIGHT_ADJ
 .    if \\n[#RESTORE_TRAP]=1 \{\
 .       vpt
 .       rr #RESTORE_TRAP
@@ -2927,8 +2928,7 @@ end
 .       PRINT \
 \Z'\D't \\n[#RULE_WEIGHT]''\
 \v'\\n[#RULE_WEIGHT_ADJ]u'\
-\h'\\n[#RULE_WEIGHT_ADJ]u'\
-\D'l \En[.l]u 0'\v'-\\n[#RULE_WEIGHT_ADJ]u'\h'|0'\c
+\Z'\D'l \En[.l]u 0'\v'-\\n[#RULE_WEIGHT_ADJ]u''\h'|0'\c
 .       ll
 .       rr #RESTORE_L_LENGTH
 .    \}
@@ -2936,8 +2936,7 @@ end
 .       PRINT \
 \Z'\D't \\n[#RULE_WEIGHT]''\
 \v'\\n[#RULE_WEIGHT_ADJ]u'\
-\h'\\n[#RULE_WEIGHT_ADJ]u'\
-\D'l \En[.l]u 0'\v'-\\n[#RULE_WEIGHT_ADJ]u'\h'|0'\c
+\Z'\D'l \En[.l]u 0'\v'-\\n[#RULE_WEIGHT_ADJ]u''\h'|0'\c
 .    \}
 .    if \\n[fill] \{\
 .       fi
@@ -2962,14 +2961,15 @@ end
 .    ds $RL_WEIGHT \\$1
 .    ds $RL_INDENT \\$2
 .    ds $RL_DEPTH  \\$3
-.    if !'\\$4'' .gcolor \\$4
-.    nr #SAVED_WEIGHT     \\n[#RULE_WEIGHT]
-.    nr #SAVED_WEIGHT_ADJ \\n[#RULE_WEIGHT_ADJ]
+.    if !'\\$4'' .COLOR \\$4
+.    nr #SAVED_RULE_WEIGHT \\n[#RULE_WEIGHT]
+.    nr #SAVED_WEIGHT_ADJ  \\n[#RULE_WEIGHT_ADJ]
 .    RULE_WEIGHT \\*[$RL_WEIGHT]
 \Z'\D't \\n[#RULE_WEIGHT]''\
-\h'\\*[$RL_INDENT]+\\n[#RULE_WEIGHT]u+\\n[#RULE_WEIGHT_ADJ]u'\
+\h'\\*[$RL_INDENT]+\\n[#RULE_WEIGHT_ADJ]u'\
 \D'l 0 \\*[$RL_DEPTH]'\
-\D't \\n[#SAVED_RULE_WEIGHT]'
+\Z'\D't \\n[#SAVED_RULE_WEIGHT]''
+.    gcolor default
 .    if \\n[#FILLED]=1 \{\
 .       if \\n[#FILL_MODE]=0 .QUAD LEFT
 .       if \\n[#FILL_MODE]=1 .JUSTIFY
@@ -2982,9 +2982,10 @@ end
 .       if \\n[#NOFILL_MODE]=3 .CENTER
 .       if \\n[#NOFILL_MODE]=5 .RIGHT
 .    \}
-.    gcolor default
 .    nr #RULE_WEIGHT     \\n[#SAVED_WEIGHT]
 .    nr #RULE_WEIGHT_ADJ \\n[#SAVED_WEIGHT_ADJ]
+.    rr #SAVED_WEIGHT
+.    rr #SAVED_WEIGHT_ADJ
 .    if \\n[#RESTORE_TRAP]=1 \{\
 .       vpt
 .       rr #RESTORE_TRAP
@@ -3036,34 +3037,35 @@ end
 .       el             .ds $BX_COLOR \\$5
 .    \}
 .    el .ds $BX_COLOR default
-.    nr #SAVED_WEIGHT     \\n[#RULE_WEIGHT]
-.    nr #SAVED_WEIGHT_ADJ \\n[#WEIGHT_ADJ]
+.    nr #SAVED_RULE_WEIGHT \\n[#RULE_WEIGHT]
+.    nr #SAVED_WEIGHT_ADJ  \\n[#WEIGHT_ADJ]
 .    if !'\\$1'SOLID' .RULE_WEIGHT \\*[$BX_WEIGHT]
 .    ds $BX_INDENT \\*[$BX_INDENT]-\\n[#WEIGHT_ADJ]u
 .    ie \\n[#BX_SOLID]=1 \{\
 .       fcolor \\*[$BX_COLOR]
-\h'\\*[$BX_INDENT]+\\n[#BOX_WEIGHT_ADJ]u+\\n[#RULE_WEIGHT]u'\
+\h'\\*[$BX_INDENT]+\\n[#WEIGHT_ADJ]u'\
 \D'P \\*[$BX_WIDTH] 0 0 \\*[$BX_DEPTH] -\\*[$BX_WIDTH] 0 0 -\\*[$BX_DEPTH]'
 .       fcolor
 .       rr #BX_SOLID
 .    \}
 .    el \{\
-.       gcolor \\*[$BX_COLOR]
+.       COLOR \\*[$BX_COLOR]
 \Z'\D't \\n[#RULE_WEIGHT]''\
-\h'\\*[$BX_INDENT]+\\n[#RULE_WEIGHT]u+\\n[#RULE_WEIGHT_ADJ]u'\
+\h'\\*[$BX_INDENT]+\\n[#RULE_WEIGHT]u'\
 \v'\\n[#WEIGHT_ADJ]u'\
 \D'p \\*[$BX_WIDTH]-\\n[#RULE_WEIGHT]u 0 0 \\*[$BX_DEPTH]-\\n[#RULE_WEIGHT]u -\\*[$BX_WIDTH]+\\n[#RULE_WEIGHT]u 0 0 -\\*[$BX_DEPTH]+\\n[#RULE_WEIGHT]u'\
 \v'-\\n[#WEIGHT_ADJ]u'\
 \Z'\D't \\n[#SAVED_RULE_WEIGHT]''
-.       gcolor default
 .    \}
-.    sp -1v
+.    gcolor default
 .    if \\n[#FILLED]=1 \{\
 .       if \\n[#FILL_MODE]=0 .QUAD LEFT
 .       if \\n[#FILL_MODE]=1 .JUSTIFY
 .       if \\n[#FILL_MODE]=3 .QUAD CENTER
 .       if \\n[#FILL_MODE]=5 .QUAD RIGHT
+.       rr #FILLED
 .    \}
+.    sp -1v
 .    if \\n[#NOFILL]=1 \{\
 .       if \\n[#NOFILL_MODE]=3 .CENTER
 .       if \\n[#NOFILL_MODE]=5 .RIGHT
@@ -3096,11 +3098,11 @@ end
 .    ie '\\$1'SOLID' .nr #CL_SOLID 1
 .    el .ds $CL_WEIGHT \\$1
 .    ds $CL_INDENT \\$2
-.    ds $CL_WIDTH  \\$3
 .    ie '\\$3'FULL_MEASURE' \{\
-.       ie (\\n[#INDENT_LEFT_ACTIVE]+\\n[#INDENT_RIGHT_ACTIVE]+\\n[#INDENT_BOTH_ACTIVE])=0 \
+.       ie (\\n[#INDENT_LEFT_ACTIVE]+\\n[#INDENT_RIGHT_ACTIVE]+\\n[#INDENT_BOTH_ACTIVE])=0 \{\
 .          nr #WIDTH \\n[.l]
-.       ds $CL_WIDTH \\n[#WIDTH]u
+.          ds $CL_WIDTH \\n[#WIDTH]u
+.       \}
 .       el \{\
 .          if \\n[#INDENT_LEFT_ACTIVE] \{\
 .             nr #WIDTH \\n[.l]-\\n[#L_INDENT]
@@ -3123,13 +3125,13 @@ end
 .       el             .ds $CL_COLOR \\$5
 .    \}
 .    el .ds $CL_COLOR default
-.    nr #SAVED_WEIGHT     \\n[#RULE_WEIGHT]
-.    nr #SAVED_WEIGHT_ADJ \\n[#WEIGHT_ADJ]
+.    nr #SAVED_RULE_WEIGHT \\n[#RULE_WEIGHT]
+.    nr #SAVED_WEIGHT_ADJ  \\n[#WEIGHT_ADJ]
 .    if !'\\$1'SOLID' .RULE_WEIGHT \\*[$CL_WEIGHT]
 .    ds $CL_INDENT \\*[$CL_INDENT]-\\n[#WEIGHT_ADJ]u
 .    ie \\n[#CL_SOLID]=1 \{\
 .       fcolor \\*[$CL_COLOR]
-\h'\\*[$CL_INDENT]+\\n[#RULE_WEIGHT]u'\
+\h'\\*[$CL_INDENT]+\\n[#WEIGHT_ADJ]u'\
 \v'\\*[$CL_DEPTH]/2u'\
 \D'E \\*[$CL_WIDTH]-\\n[#RULE_WEIGHT]u \\*[$CL_DEPTH]-\\n[#RULE_WEIGHT]u'\
 \v'-\\*[$CL_DEPTH]/2u'
@@ -3137,16 +3139,15 @@ end
 .       rr #CL_SOLID
 .    \}
 .    el \{\
-.       gcolor \\*[$CL_COLOR]
+.       COLOR \\*[$CL_COLOR]
 \Z'\D't \\n[#RULE_WEIGHT]''\
-\h'\\*[$CL_INDENT]+\\n[#RULE_WEIGHT]u+\\n[#RULE_WEIGHT_ADJ]u'\
+\h'\\*[$CL_INDENT]+\\n[#RULE_WEIGHT]u'\
 \v'\\*[$CL_DEPTH]/2u'\
 \D'e \\*[$CL_WIDTH]-\\n[#RULE_WEIGHT]u \\*[$CL_DEPTH]-\\n[#RULE_WEIGHT]u'\
 \v'-(\\*[$CL_DEPTH]/2u)'\
 \Z'\D't \\n[#SAVED_RULE_WEIGHT]''
 .       gcolor default
 .    \}
-.    sp -1v
 .    if \\n[#FILLED]=1 \{\
 .       if \\n[#FILL_MODE]=0 .QUAD LEFT
 .       if \\n[#FILL_MODE]=1 .JUSTIFY
@@ -3154,6 +3155,7 @@ end
 .       if \\n[#FILL_MODE]=5 .QUAD RIGHT
 .       rr #FILLED
 .    \}
+.    sp -1v
 .    if \\n[#NOFILL]=1 \{\
 .       if \\n[#NOFILL_MODE]=3 .CENTER
 .       if \\n[#NOFILL_MODE]=5 .RIGHT
@@ -6992,6 +6994,7 @@ SMALLCAPS takes precedence.
 .    \}
 .    vs \\n[#DOC_LEAD]u
 .    if \\n[#SINGLE_SPACE] .sp 2
+.sp
 .END
 \#
 .MAC NAMED_DOCHEADER END
@@ -8137,7 +8140,10 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .          L_MARGIN \\n[#DOC_L_MARGIN]u
 .          LL       \\n[#DOC_L_LENGTH]u
 .          ta \\n[.l]u
-.          if \\n[#PRINT_STYLE]=1 .DEFAULT_DOCHEADER_TYPEWRITE
+.          if \\n[#PRINT_STYLE]=1 \{\
+.             DEFAULT_DOCHEADER_TYPEWRITE
+.             sp
+.          \}
 .          if \\n[#PRINT_STYLE]=2 .DEFAULT_DOCHEADER
 .          ev
 .       \}
@@ -8174,6 +8180,7 @@ $\\*[DOC_]COVERTITLE_\\n+[#\\*[DOC_]COVERTITLE_NUM] \\$\\n[#\\*[DOC_]COVERTITLE_
 .             if !\\n[#NO_PRINT_DOCTYPE] \{\
 .                sp
 .                UNDERSCORE2 3p 2p "\\*[$DOC_TYPE]"
+.                sp
 .             \}
 .          \}
 .          if \\n[#PRINT_STYLE]=2 .NAMED_DOCHEADER
@@ -11475,13 +11482,15 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .       nr #LEVEL \\$1
 .       if \\n[#FROM_OLDSTYLE] .nr #LEVEL_\\n[#LEVEL]_SET 1
 .       shift
-.\" Prepend TOC_ to style strings if called as TOC_ENTRY_STYLE
 .    \}
+.\" Prepend TOC_ to style strings if called as TOC_ENTRY_STYLE
 .    if '\\$0'TOC_ENTRY_STYLE' .ds $TOC TOC_
 .    nr #ARG_NUM 0 1
 .    nr #ATTRIB \\n[#NUM_ARGS]
 .    while \\n+[#ARG_NUM]<=\\n[#ATTRIB] \{\
 .       if '\\$1'UNDERSCORE' \{\
+.          if \\n[#HEAD_\\n[#LEVEL]_UNDERSCORE2] \
+.             rr #HEAD_\\n[#LEVEL]_UNDERSCORE2
 .          nr #HEAD_\\n[#LEVEL]_UNDERSCORE 1
 .          shift
 .          if '\\$1'' \{\
@@ -11502,6 +11511,8 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          shift
 .       \}
 .       if '\\$1'UNDERSCORE2' \{\
+.          if \\n[#HEAD_\\n[#LEVEL]_UNDERSCORE] \
+.             rr #HEAD_\\n[#LEVEL]_UNDERSCORE
 .          nr #HEAD_\\n[#LEVEL]_UNDERSCORE2 1
 .          shift
 .          if '\\$1'' \{\
@@ -12317,9 +12328,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 \#   how much space to put before and after.
 \#
 .MAC QUOTE END
-.    ie \\n[@TOP] \
-.       br
-.    el 'br
+.    br
 .    ie \\n[#PP]>0 .rr #START
 .    el .nr #PP 1 1
 .    if '\\n[.z]'FLOAT*DIV' .nr Q-float 1
@@ -12507,9 +12516,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 \#   but required if there's more than one.
 \#
 .MAC BLOCKQUOTE END
-.    ie \\n[@TOP] \
-.       br
-.    el 'br
+.    br
 .    if \\n[#PP]>0 .rr #START
 .    if '\\n[.z]'FLOAT*DIV' .nr Q-float 1
 .    if \\n[#LINENUMBERS]=1 \{\
@@ -14948,6 +14955,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .MAC ENDNOTE END
 .    ie '\\$1'' \{\
 .       nr #ENDNOTE 1
+.       ds $PRE_EN_QUAD \\*[$QUAD_VALUE]
 .       ie !\\n[#EN_MARKER_STYLE]=2 \{\
 .          if \\n[#CONDENSE] .nop \*[CONDX]\c
 .          if \\n[#EXTEND] .nop \*[EXTX]\c
@@ -14962,10 +14970,15 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .             \}
 .\" Vertical raise amount here is more than when the same string is printed in
 .\" the endnotes so bottom of number aligns with top of bowl.
-.             PRINT \
-"\s-2\v'-\\n[#DOC_LEAD]u/5u'\\n+[#EN_NUMBER]\v'+\\n[#DOC_LEAD]u/5u'\s+2\c"
+.             PDF_TARGET EN-\\n+[#EN_NUMBER]-body
+.             PDF_LINK \
+EN-\\n[#EN_NUMBER] SUFFIX \c "\s-2\v'-\\n[#DOC_LEAD]u/5u'\\n[#EN_NUMBER]\v'+\\n[#DOC_LEAD]u/5u'\s+2\c"
 .          \}
-.          if \\n[#PRINT_STYLE]=2 .PRINT \*[SUP]\\n+[#EN_NUMBER]\*[SUPX]\c
+.          if \\n[#PRINT_STYLE]=2 \{\
+.             PDF_TARGET EN-\\n+[#EN_NUMBER]-body
+.             PDF_LINK \
+EN-\\n[#EN_NUMBER] SUFFIX \c "\*[SUP]\\n[#EN_NUMBER]\*[SUPX]"
+.          \}
 .       \}
 .       el \{\
 .          ie r#EN_NUMBER .nr #EN_NUMBER \\n[#EN_NUMBER]+1
@@ -15115,10 +15128,14 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .          ie \\n[#PRINT_STYLE]=1 \{\
 .\" Vertical raise amount here is less than when the same string is printed in
 .\" the body of the text because number precedes a cap.
-.             nop \
-\s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|\v'+\\n[#DOC_LEAD]u/7u'\s+2
+.             PDF_TARGET EN-\\n[#EN_NUMBER]
+.             PDF_LINK \
+EN-\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|\v'+\\n[#DOC_LEAD]u/7u'\s+2
 .          \}
-.          el .nop \E*[SUP]\\n[#EN_NUMBER]\E*[SUPX]\h'.15m'
+.          el \{\
+.             PDF_TARGET EN-\\n[#EN_NUMBER]
+.             PDF_LINK EN-\\n[#EN_NUMBER]-body \E*[SUP]\\n[#EN_NUMBER]\E*[SUPX]\h'.15m'
+.          \}
 .       \}
 .       EOL
 .       ll
@@ -15180,6 +15197,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .          rr #SLANT_WAS_ON
 \*[SLANT]\c
 .       \}
+.       ds $QUAD_VALUE \\*[$PRE_EN_QUAD]
 .    \}
 .    if \\n[#NUM_ARGS]=2 \{\
 .       if '\\$2'BREAK' .BR
@@ -15349,9 +15367,11 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    SMALLCAPS OFF
 .    if \\n[#\\*[EN-OR-BIB]_STRING_COLOR]=1 .gcolor default
 .    CAPS OFF
-.    FAMILY \\*[$\\*[EN-OR-BIB]_FAMILY]
-.    FT \\*[$\\*[EN-OR-BIB]_FT]
-.    ps -\\*[$\\*[EN-OR-BIB]_STRING_SIZE_CHANGE]
+.    if \\n[#PRINT_STYLE]=2 \{\
+.       FAMILY \\*[$\\*[EN-OR-BIB]_FAM]
+.       FT \\*[$\\*[EN-OR-BIB]_FT]
+.       ps -\\*[$\\*[EN-OR-BIB]_STRING_SIZE_CHANGE]
+.    \}
 .    ie \\n[#PRINT_STYLE]=1 \{\
 .       ie \\n[#SINGLE_SPACE]=1 .sp
 .       el \{\
@@ -16556,6 +16576,10 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .                   SET_LIST_INDENT
 .                   if \\n[#QUIT]=1 \{\
 .                      QUIT_LISTS
+.                      if \\n[#LINENUMBERS]=2 \{\
+.                          NUMBER_LINES RESUME
+.                          nr #LINENUMBERS 1
+.                      \}
 .                      return
 .                   \}
 .                   return
@@ -16715,49 +16739,51 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \\*[$PREFIX\\n[#DEPTH]]\\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
 .          \}
 .       \}
-.       if '\\*[$ENUMERATOR_TYPE\\n[#DEPTH]]'roman' \{\
-.          ie \\n[#PAD_LIST_DIGITS\\n[#DEPTH]]=1 \{\
+.       el \{\
+.          if '\\*[$ENUMERATOR_TYPE\\n[#DEPTH]]'roman' \{\
+.             ie \\n[#PAD_LIST_DIGITS\\n[#DEPTH]]=1 \{\
 .\" ROMAN I, padded
-.             ie '\\g[#ENUMERATOR\\n[#DEPTH]]'I' \{\
-.                ie \\n[#SEP_TYPE]=1 .PRINT \
+.                ie '\\g[#ENUMERATOR\\n[#DEPTH]]'I' \{\
+.                   ie \\n[#SEP_TYPE]=1 .PRINT \
 \h'\\n[#HL_INDENT\\n[#DEPTH]]u'\h'-\w'\\*[$PREFIX\\n[#DEPTH]]\
 \\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]\0'u'\
 \v'-.085m'\\*[$PREFIX\\n[#DEPTH]]\v'.085m'\\n[#ENUMERATOR\\n[#DEPTH]]\
 \v'-.085m'\\*[$SEPARATOR\\n[#DEPTH]]\v'.085m'
-.                el .PRINT \
+.                   el .PRINT \
 \h'\\n[#HL_INDENT\\n[#DEPTH]]u'\h'-\w'\\*[$PREFIX\\n[#DEPTH]]\
 \\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]\
 \0'u'\\*[$PREFIX\\n[#DEPTH]]\\n[#ENUMERATOR\\n[#DEPTH]]\
 \\*[$SEPARATOR\\n[#DEPTH]]
-.             \}
+.                \}
 .\" roman i, padded
-.             el .PRINT \
+.                el .PRINT \
 \h'\\n[#HL_INDENT\\n[#DEPTH]]u'\h'-\w'\\*[$PREFIX\\n[#DEPTH]]\
 \\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]\0'u'\
 \\*[$PREFIX\\n[#DEPTH]]\\n[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
-.          \}
+.             \}
 .\" No pad
-.          el \{\
+.             el \{\
 .\" ROMAN I, no pad
-.             ie '\\g[#ENUMERATOR\\n[#DEPTH]]'I' \{\
-.                ie \\n[#SEP_TYPE]=1 .PRINT \
+.                ie '\\g[#ENUMERATOR\\n[#DEPTH]]'I' \{\
+.                   ie \\n[#SEP_TYPE]=1 .PRINT \
 \v'-.085m'\\*[$PREFIX\\n[#DEPTH]]\v'.085m'\\n+[#ENUMERATOR\\n[#DEPTH]]\
 \v'-.085m'\\*[$SEPARATOR\\n[#DEPTH]]\v'.085m'
+.                   el .PRINT \
+\\*[$PREFIX\\n[#DEPTH]]\\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
+.                \}
+.\" roman i, no pad
 .                el .PRINT \
 \\*[$PREFIX\\n[#DEPTH]]\\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
 .             \}
-.\" roman i, no pad
-.             el .PRINT \
-\\*[$PREFIX\\n[#DEPTH]]\\n+[#ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
 .          \}
+.          if '\\*[$ENUMERATOR_TYPE\\n[#DEPTH]]'other' \
+.             PRINT \\*[$ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
+.          if '\\*[$ENUMERATOR_TYPE\\n[#DEPTH]]'variable' \
+.             PRINT  \\$1
+.          rr #SEP_TYPE
+.          EOL
 .       \}
-.       if '\\*[$ENUMERATOR_TYPE\\n[#DEPTH]]'other' \
-.          PRINT \\*[$ENUMERATOR\\n[#DEPTH]]\\*[$SEPARATOR\\n[#DEPTH]]
-.       if '\\*[$ENUMERATOR_TYPE\\n[#DEPTH]]'variable' \
-.          PRINT  \\$1
 .    \}
-.    rr #SEP_TYPE
-.    EOL
 .    if \\n[#REF]=1 \{\
 .       IL +\\n[#REF_BIB_INDENT]u
 .       ti \\n[#L_INDENT]u-\\n[#REF_BIB_INDENT]u
@@ -17067,8 +17093,16 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    if \\n[.u] .nr #FILLED 1
 .    nf
 .    if dLIST*DIV \{\
+.       if \\n[#LINENUMBERS]=1 \{\
+.          NUMBER_LINES off
+.          nr #LINENUMBERS 3
+.       \}
 .       LIST*DIV
-.       rm LIST*DIV
+.       if \\n[#LINENUMBERS]=3 \{\
+.          nr #LINENUMBERS 1
+.          NUMBER_LINES RESUME
+.          rm LIST*DIV
+.       \}
 .    \}
 .    if \\n[#FILLED] .fi
 .    if !\\n[#PRE_LIST_QUAD]=\\n[.j] .ad \\n[#PRE_LIST_QUAD]
@@ -17311,6 +17345,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \#   Begin, suspend/turn off, or resume numbering of output lines.
 \#
 .MAC NUMBER_LINES END
+.    if !\\n[#START] .br
 .    if '\\n[.z]'EPI_TEXT' .return
 .    if '\\$1'' \{\
 .       tm1 "[mom]: NUMBER_LINES at line \\n[.c] has no argument.
@@ -23719,6 +23754,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 \#   In safe mode, the dimensions must be given.
 \#
 .MAC PDF_IMAGE END
+.    ch RR_ADVANCE_FROM_TOP
 .    if \\n[.u] .nr #FILLED 1
 .    nf
 .    if !'\\n[.z]'FLOAT*DIV' \{\
@@ -23844,7 +23880,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .       \}
 .       el \{\
 \!.        if !'\\*[pdf-img*caption\\*[short]]'' \
-\!.           TO_FIGURES "\\*[pdf-img*caption\\*[short]]"
+.           TO_FIGURES "\\*[pdf-img*caption\\*[short]]"
 .       \}
 .    \}
 .    if r IMG \{\

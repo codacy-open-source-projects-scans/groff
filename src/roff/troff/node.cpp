@@ -73,6 +73,7 @@ tfont *make_tfont(tfont_spec &);
 
 int image_no = 0;
 static int suppression_starting_page_number = 0;
+static bool was_any_page_in_output_list = false;
 
 #define STORE_WIDTH 1
 
@@ -1603,12 +1604,16 @@ troff_output_file::~troff_output_file()
 void troff_output_file::trailer(vunits page_length)
 {
   flush_tbuf();
-  if (page_length > V0) {
-    put("x trailer\n");
-    put('V');
-    put(page_length.to_units());
-    put('\n');
+  if (was_any_page_in_output_list) {
+    if (page_length > V0) {
+      put("x trailer\n");
+      put('V');
+      put(page_length.to_units());
+      put('\n');
+    }
   }
+  else
+    warning(WARN_RANGE, "no pages in output page selection list");
   put("x stop\n");
 }
 
@@ -1735,8 +1740,10 @@ int real_output_file::is_printing()
 void real_output_file::begin_page(int pageno, vunits page_length)
 {
   printing = in_output_page_list(pageno);
-  if (printing)
+  if (printing) {
+    was_any_page_in_output_list = true;
     really_begin_page(pageno, page_length);
+  }
 }
 
 void real_output_file::copy_file(hunits x, vunits y,

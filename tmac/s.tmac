@@ -1071,6 +1071,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .el .@error-recover mismatched .DE
 ..
 .de DS
+.br
 .if '\\n(.z'ds*div' .@error-recover cannot begin display within display
 .nr ds*badarg 0
 .di ds*div
@@ -1780,6 +1781,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .	br
 .	par@reset
 .	na
+.	ll -8n \" XXX: take TC-MARGIN into account?
 .	in (n;0\\$2)
 .\}
 .el .@error .XA without .XS

@@ -688,7 +688,7 @@ extern char *pipe_command;
 
 extern output_file *the_output;
 extern void init_output();
-int in_output_page_list(int);
+bool in_output_page_list(int);
 
 class font_family {
   int *map;

@@ -46,7 +46,6 @@ output driver for Portable Document Format
 .\}
 .rr do-fallback
 .
-.
 .\" This macro definition is poor style from a portability standpoint,
 .\" but it's a good test and demonstration of the standard font
 .\" repertoire for the devices where it has any effect at all, and so
@@ -55,6 +54,10 @@ output driver for Portable Document Format
 .  if '\\*(.T'ps' .ft \\$1
 .  if '\\*(.T'pdf' .ft \\$1
 ..
+.
+.\" This man page employs an unusual character.
+.fchar \[u2717] X
+.
 .
 .\" ====================================================================
 .SH Synopsis
@@ -969,25 +972,38 @@ and
 .I height
 are non-zero the image is scaled to \[oq]best fit\[cq].
 .
+.
 .IP
-Three elements control which type of image files you can now embed into a -T pdf produced file. If you have perlmagick installed, if you have the program "identify" installed (part of ImageMagick), if you have the program "file" installed, or if you have none of these. Here's a table showing the different possibilities:-
+The availability of other software on the system,
+such as
+.IR PerlMagick ,
+influences the types of image files
+.I gropdf
+can embed in its output.
+.
+.
+.IP
 .TS
-allbox  centre;
-Cb Cb Cb Cb Cb
-L C C C C.
-	none	file	identify	perlmagick
+allbox center;
+Cb Ci Ci Ci Ci
+L  C  C  C  C.
+\&	none	file\fR(1)	identify\fR(1)	Image::Magick\fR(3pm)
 \&.pdf	\[OK]	\[OK]	\[OK]	\[OK]
 \&.jpg	\[u2717]	\[OK]	\[OK]	\[OK]
 \&.jp2	\[u2717]	\[u2717]	\[OK]	\[OK]
 other	\[u2717]	\[u2717]	\[u2717]	\[OK]
 .TE
+.
+.
 .IP
 See
 .MR groff_tmac @MAN5EXT@
 for a description of the
-.B PDFPIC
-macro which provides a convenient high-level interface for inclusion
-of various graphics files.
+.B \%PDFPIC
+macro,
+which provides a convenient high-level interface for inclusion of
+various graphic file formats.
+.
 .
 .TP
 .B \[rs]X\[aq]pdf: xrev\[aq]

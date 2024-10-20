@@ -7,6 +7,8 @@
 
 Release 2.6_d
 -------------
+Adds internal linking to endnotes.
+
 Removes need to convert images to PDF or EPS for inclusion in mom
 documents.  Most common image formats are now acceptable.
 

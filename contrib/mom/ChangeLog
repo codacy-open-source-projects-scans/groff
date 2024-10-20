@@ -1,3 +1,42 @@
+2024-10-15
+
+	* om.tmac: [PDF_IMAGE]: remove superfluous \!
+
+2024-10-13
+
+	* om.tmac:
+	+ Corrects PDF_IMAGE after only one line of text at the top of
+	documents placing the image on the next page.
+	+ Correct graphical objects' color handling and placement
+
+	* BUGS: Update
+
+	Fixes <https://savannah.gnu.org/bugs/?66332>.  Thanks to наб for
+	the report.
+
+2024-10-13
+
+	* om.tmac: Add linked endnotes; fix graphical objects; tweaks
+	+ adds internally linked endnotes
+	+ fixes graphical objects clobbering bottom of footer trap
+	  - move restoration of traps to the bottom of affected macros
+	+ resets $QUAD_VALUE before exiting ENDNOTE
+	+ tweaks QUOTE/BLOCKQUOTE and centred/right LISTs so they play
+	  nice with line numbering
+	+ makes UNDERSCORE2 clobber UNDERSCORE and vice versa in
+	  HEADING_STYLE
+	+ TYPEWRITE: fix spacing before first para after docheader
+
+	* BUGS, NEWS: Update
+	* examples/sample_docs.mom: small fix to sample_docs.mom for
+	TYPEWRITE
+	* momdoc/docelement.html:
+	* momdoc/docprocessing.html:
+	* momdoc/stylesheet.css: Update and emend docs
+
+	Fixes <https://savannah.gnu.org/bugs/?66322>.  Thanks to наб for
+	the report.
+
 2024-09-02  Sven Schober <sv3sch@gmail.com>
 
 	* examples/test-mom.sh.in: Handle discrepant
@@ -1602,7 +1641,7 @@
 
 	o Macro .PS renamed to .PT_SIZE.  Alias .TS removed.
 
-	o .tr bits in .CAPS rewritten in the form .tr �\[`E].
+	o .tr bits in .CAPS rewritten in the form .tr é\[`E].
 
 	o General cleanup of docs to reflect changes
 
@@ -1921,7 +1960,7 @@ ________________________________________________________________________
 
 ##### License
 
-Copyright 2004-2020 Free Software Foundation, Inc.
+Copyright 2004-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
@@ -1929,7 +1968,7 @@ notice and this notice are preserved.
 
 ##### Editor settings
 Local Variables:
-coding: latin-1
+coding: utf-8
 fill-column: 72
 mode: change-log
 version-control: never

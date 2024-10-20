@@ -1526,6 +1526,7 @@ void table::add_entry(int r, int c, const string &str,
   allocate(r);
   table_entry *e = 0 /* nullptr */;
   int len = str.length();
+  char *s = str.extract();
   // Diagnose escape sequences that can wreak havoc in generated output.
   if (len > 1) {
     // A comment on a control line or in a text block is okay.
@@ -1536,8 +1537,7 @@ void table::add_entry(int r, int c, const string &str,
 	  && ((-1 == controlpos) // (no control character in line OR
 	      || (0 == controlpos))) // control character at line start)
 	warning_with_file_and_line(fn, ln, "comment escape sequence"
-				   " '\\\"' in entry \"%1\"",
-				   str.extract());
+				   " '\\\"' in entry \"%1\"", s);
     }
     int gcommentpos = str.find("\\#");
     // If both types of comment are present, the first is what matters.
@@ -1549,8 +1549,7 @@ void table::add_entry(int r, int c, const string &str,
 	  && ((-1 == controlpos) // (no control character in line OR
 	      || (0 == controlpos))) // control character at line start)
 	warning_with_file_and_line(fn, ln, "comment escape sequence"
-				   " '\\#' in entry \"%1\"",
-				   str.extract());
+				   " '\\#' in entry \"%1\"", s);
     }
     // A \! escape sequence after a comment has started is okay.
     int exclpos = str.find("\\!");
@@ -1560,7 +1559,7 @@ void table::add_entry(int r, int c, const string &str,
       if (-1 == str.search('\n')) // not a text block
 	warning_with_file_and_line(fn, ln, "transparent throughput"
 				   " escape sequence '\\!' in entry"
-				   " \"%1\"", str.extract());
+				   " \"%1\"", s);
       else
 	warning_with_file_and_line(fn, ln, "transparent throughput"
 				   " escape sequence '\\!' in text"
@@ -1570,14 +1569,12 @@ void table::add_entry(int r, int c, const string &str,
     if (str.find("\\z") == (len - 2)) { // max valid index is (len - 1)
       if (-1 == str.search('\n')) // not a text block
 	error_with_file_and_line(fn, ln, "zero-motion escape sequence"
-				 " '\\z' at end of entry \"%1\"",
-				 str.extract());
+				 " '\\z' at end of entry \"%1\"", s);
       else
 	error_with_file_and_line(fn, ln, "zero-motion escape sequence"
 				 " '\\z' at end of text block entry");
     }
   }
-  char *s = str.extract();
   if (str.search('\n') != -1) { // if it's a text block
     bool was_changed = false;
     int repeatpos = str.find("\\R");

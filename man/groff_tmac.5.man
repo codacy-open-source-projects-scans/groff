@@ -44,6 +44,9 @@ typesetting system
 .\}
 .rr do-fallback
 .
+.\" This man page employs an unusual character.
+.fchar \[u2717] X
+.
 .
 .\" TODO: Consider parallelizing with our Texinfo node "Macro Packages".
 .\" ====================================================================
@@ -646,49 +649,71 @@ file when formatting for a typesetter
 .TP
 .I pdfpic
 provides a single macro,
-.BR PDFPIC ,
-it operates in two modes.
-If it is not used with the pdf output driver -T
-.IR pdf ,
+.BR \%PDFPIC ,
+that operates in two modes.
+.
+If it is not used with
+.IR gropdf ,
 the given
 .I file
-must be a pdf and it relies on the external program
+must be a PDF;
+.B \%PDFPIC
+then relies on the external program
 .MR pdftops 1
-to convert the pdf to an encapsulated postscript file
+to convert the PDF to an encapsulated PostScript (EPS) file
 and calls the
 .B PSPIC
 macro with which it shares an interface.
-If output is to a pdf it calls
-.BR "\[rs]X\[aq]pdf: pdfpic" \~.\|.\|. \[aq]
+.
+If output is to a PDF,
+.B \%PDFPIC
+uses the
+.RB \[lq] "pdf: \%pdfpic" \[rq]
+device extension command
 (see
-.MR gropdf @MAN1EXT@ )
-and the given
+.MR gropdf @MAN1EXT@ );
+the given
 .I file
-can be a pdf or any graphic format supported by
+can then be a PDF or any graphic file format supported by
 .IR gropdf .
+.
+.
 .IP
-Since this macro needs to discover the actual width and
-height of the image (in order to check if there is sufficient
-room on the page) there are dependencies on external programs
-shown in this table:-
+Since
+.B \%PDFPIC
+needs to discover the width and height of the image
+(to check if sufficient room exists to place it on the page),
+it has dependencies on external programs as shown below.
+.
+.
+.IP
 .TS
-allbox  centre;
-Cb Cb Cb Cb
-L C C C.
-	pdfinfo	file	identify
+allbox center;
+Cb Ci Ci Ci
+L  C  C  C.
+\&	pdfinfo\fR(1)	file\fR(1)	identify\fR(1)
 \&.pdf	\[OK]	\[OK]	\[OK]
 \&.jpg	\[u2717]	\[OK]	\[OK]
 \&.jp2	\[u2717]	\[u2717]	\[OK]
 other	\[u2717]	\[u2717]	\[OK]
 .TE
+.
+.
 .IP
-To include \[oq]other\[cq] (e.g. png/pam/gif) image formats the
-perlmagick modules must be installed as well, they are used by
+To include image formats such as PNG,
+PAM,
+and GIF,
 .I gropdf
-to embed the graphic. They are not needed for the other 3 types.
+relies upon PerlMagick modules to embed the graphic.
+.
+They are not needed for the types listed in the table above.
+.
+.
 .IP
-If the required programs are not available, the file is treated as
-a pdf, so will likely fail if it is not a pdf.
+If the required programs are not available,
+.I file
+is treated as a PDF;
+failure is likely if it is not one.
 .
 .
 .TP

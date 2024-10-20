@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2019-2020 Free Software Foundation, Inc.
+# Copyright (C) 2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -9,8 +9,8 @@
 # Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# groff is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
@@ -20,8 +20,18 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-"$groff" -rCS=0 -Tascii -P-cbou -man <<EOF | grep -q Name
-.TH sample 1 2019-09-09 "groff test suite"
-.SH Name
-sample \- test subject for groff
-EOF
+# Regression-test Savannah #66339.
+#
+# Render a static display correctly if it begins the document.
+
+input='.
+.DS
+Hello, world!  The type size is .s=\n(.s points.
+.DE
+.'
+
+output=$(printf "%s\n" "$input" | "$groff" -a -ms -T ps)
+echo "$output"
+echo "$output" | grep -Fq '.s=10 points'
+
+# vim:set ai et sw=4 ts=4 tw=72:

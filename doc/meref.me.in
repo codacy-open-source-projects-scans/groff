@@ -1859,8 +1859,10 @@ in the current font)].
 .DE
 Stop numbering output lines if
 .i n
-empty,
-otherwise continue with the number modified by
+[empty]
+is
+empty;
+otherwise resume using number
 \(+-\c
 .i n.
 .TL

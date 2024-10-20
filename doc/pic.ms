@@ -3135,6 +3135,7 @@ boxht@0.5@Default height of a box
 boxwid@0.75@Default width of a box
 lineht@0.5@Default length of vertical line
 linewid@0.75@Default length of horizontal line
+linethick@-1@Default line thickness
 arcrad @0.25@Default radius of an arc
 circlerad@0.25@Default radius of a circle
 ellipseht@0.5@Default height of an ellipse

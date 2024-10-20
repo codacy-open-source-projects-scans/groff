@@ -741,13 +741,11 @@ with '-A' option
 .   ds pdf:curcol \\n[.m]
 .   nr pdf:bm.width \\w'\\*[PDFHREF.DESC]'
 .   nop \&\m[\\*[PDFHREF.TEXT.COLOUR]]\c
-.   device pdf: markstart \\n[rst] \\n[rsb] \\n[PDFHREF.LEADING] \\*[pdf:href.link]
-'   fl
+.   nop \X'pdf: markstart \\n[rst] \\n[rsb] \\n[PDFHREF.LEADING] \\*[pdf:href.link]'\c
 .   if !\\n[pdf:href.leave-mark-open] \{\
-.     nop \&\\*[PDFHREF.DESC]\c
-.     device pdf: markend
-'     fl
-.     nop \m[\\*[pdf:curcol]]\c
+.      nop \&\\*[PDFHREF.DESC]\c
+.      nop \m[\\*[pdf:curcol]]\c
+.      nop \X'pdf: markend'\c
 .   \}
 .   \"
 .   \" Clean up the temporary registers and strings, used to

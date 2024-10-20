@@ -466,6 +466,12 @@ Macro packages
 
 *  The m (mm) macro package now supports AT&T/DWB mm's `Rg` string.
 
+*  The m (mm) macro package's `nP` macro now behaves more like DWB mm's.
+   It applies a temporary indentation to the second output line of a
+   paragraph to align it with the start of the paragraph text (not the
+   tag/label) in the first, and resets the paragraph counter when the
+   first- or second-level section heading number increments.
+
 *  The s (ms) macro package now sets the vertical spacing register
    defaults for normal (`VS`) and footnote (`FVS`) text to 120% of the
    type size configured in the `PS` and `FPS` registers, respectively,

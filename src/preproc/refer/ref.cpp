@@ -536,7 +536,7 @@ int same_reference(const reference &r1, const reference &r2)
     return 0;
   int i = 0; 
   for (i = 0; i < 256; i++)
-    if (r1.field_index != r2.field_index)
+    if (r1.field_index[i] != r2.field_index[i])
       return 0;
   for (i = 0; i < r1.nfields; i++)
     if (r1.field[i] != r2.field[i])

@@ -1,3 +1,286 @@
+2024-10-18  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Use new \X''.
+
+	* tmac/pdf.tmac: The new \X'' code does no flush, perfect
+	for hotspots. Thanks Branden.
+
+2024-10-18  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Foundries are only a single letter.
+
+	* src/devices/gropdf/gropdf.pl: Look for single letter
+	followed by '-'.
+
+2024-10-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/xditview/xditview.c (NewFile): Fix code style
+	nits.  Promote repeated expression to temporary variable.
+	`sizeof` is an operator, not a function, so don't parenthesize
+	its parameter when it's an lvalue (as opposed to a type name).
+
+2024-08-12  Lukas Javorsky <ljavorsk@redhat.com>
+
+	* src/devices/xditview/xditview.c (NewFile): Populate
+	`current_file_name` with `name` more cautiously since the latter
+	originates in the `argv` array.
+
+	Fixes <https://savannah.gnu.org/bugs/?66076>.
+
+2024-08-14  Lukas Javorsky <ljavorsk@redhat.com>
+
+	* src/preproc/refer/ref.cpp (same_reference): Fix array
+	comparison warning by comparing elements individually.
+
+	Fixes <https://savannah.gnu.org/bugs/?66078>.
+
+2024-08-14  Lukas Javorsky <ljavorsk@redhat.com>
+
+	* src/preproc/pic/object.cpp (object_spec::position_rectangle)
+	(object_spec::make_line): Initialize "x" and "y" elements of the
+	`here` structure.  Using uninitialized variables in
+	`path::follow()` could cause undefined behavior.
+
+	Fixes <https://savannah.gnu.org/bugs/?66080>.
+
+2024-10-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/pic.ms: Fix omission of `linethick` variable from
+	"Semi-Formal Grammar" section.
+
+	Fixes <https://savannah.gnu.org/bugs/?66335>.  Thanks to an
+	anonymous contributor for the report and patch.
+
+2024-10-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Better handle inapplicable or out-of-bounds (but still
+	numerically valid) output page selection list (`-o` argument).
+
+	* src/roff/troff/node.cpp: New global Boolean
+	`was_any_page_in_output_list` tracks this datum; defaults false.
+	(troff_output_file::trailer): When finishing up, don't write a
+	"trailer" grout command (and vertical motion) if no page ever
+	began.  Insted, throw a warning in category `range`.
+	(real_output_file::begin_page): Make
+	`was_any_page_in_output_list` true if any page is written.
+
+	Fixes <https://savannah.gnu.org/bugs/?64469>.  Thanks to Dave
+	Kemper for the report.
+
+2024-10-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (parse_output_page_list): Enhance
+	diagnostic message when `-o` option argument is nonsense; report
+	the invalid expression and inform user that it's being ignored.
+
+2024-10-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (in_output_page_list): Demote return
+	type from `int` to `bool`.  Return Boolean, not integer,
+	literals.
+	* src/roff/troff/node.h: Boolify declaration.
+
+2024-10-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (parse_output_page_list): `const`ify
+	function argument.
+
+2024-10-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/s.tmac (DS): Break line unconditionally, ensuring that
+	that the top-of-page trap springs even if the document starts
+	with a call of this macro.
+
+	Fixes <https://savannah.gnu.org/bugs/?66339>.  Thanks to Joerg
+	van den Hoff for the report.  Problem introduced by me in commit
+	1887bbe68c, 5 November 2021.
+
+2024-10-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Regression-test Savannah #66339.
+
+	* tmac/tests/s_can-start-document-with-DS-call.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-10-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Rename some test scripts for clarity.
+
+	* tmac/tests/doc_CS-works.sh:
+	* tmac/tests/doc_CT-works.sh: Rename these...
+
+	* tmac/tests/doc_CS-register-works.sh:
+	* tmac/tests/doc_CT-register-works.sh: ...to these.
+
+	* tmac/tmac.am (tmac_TESTS): Update.
+
+2024-10-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/preconv/tests/smoke-test.sh: Comment out a test;
+	we no longer have a specimen of a Latin-1 document in the build
+	tree.
+
+2024-10-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/meintro_fr.me.in: Add back old-style Emacs file-local
+	variable to supply preconv(1) a "coding tag".  Doing so throws
+	that program a bone if the "uchardet" library is not available
+	and the program is asked to guess the file's input encoding.
+
+	Fixes <https://savannah.gnu.org/bugs/?66287> (1/2).  Thanks to
+	Dave Kemper for the report.
+
+2024-10-14  Dave Kemper <saint.snit@gmail.com>
+
+	* tmac/en.tmac: Map hcodes of Latin-1 characters with
+	diacritical marks that are used in English words to their
+	unadorned ASCII counterparts.
+
+	Fixes <https://savannah.gnu.org/bugs/?66112>.
+
+2024-10-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* man/groff_tmac.5.man:
+	* src/devices/gropdf/gropdf.1.man: These man pages employ an
+	unusual character, U+2717 "BALLOT X".  Define a fallback
+	character for devices incapable of rendering that.
+
+	* tmac/tty.tmac: Define fallback character for groff `OK`
+	special character.
+
+	Fixes <https://savannah.gnu.org/bugs/?66162>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2024-10-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/ps.cpp (ps_printer::special): Fix off-by-one
+	error in diagnostic message's line number report.
+
+2024-10-15  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Work around debian's ImageMagick policy.
+
+	* src/devices/gropdf/gropdf.pl: Don't use perlmagick to embed
+	PDFs
+
+	Fixes <https://savannah.gnu.org/bugs/index.php?66333>. Thanks
+	to Branden for the report.
+
+2024-10-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/s.tmac (XA): Revert commit a6e09ca7fb, 2022-04-17.  The
+	macro once again reduces the line length by eight ens for the
+	entire TOC if used.  This looks a little funny (shouldn't it
+	apply only to the entry augmentation?), but is consistent with
+	4.2BSD and 4.3BSD-Reno ms behavior, whence comes this extension.
+
+	Fixes <https://savannah.gnu.org/bugs/?66328>.  Thanks to Joerg
+	van den Hoff for the report.
+
+2024-10-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[ms]: Regression-test Savannah #66328.
+
+	* tmac/tests/s_XA-reduces-line-length.sh: Do it.
+	* tmac/tmac.am (tmac_TESTS): Run test.
+
+2024-10-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::add_entry): Refactor.  Since
+	we use the C string `extract()`ion of the groff `string` table
+	entry repeatedly, move logic that stores its pointer to an
+	automatic variable much earlier, and reference that in
+	diagnostic messages instead of repeatedly calling a member
+	function.
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/preconv/preconv.cpp (do_file): Fix incorrect
+	handling of file name string (a post-groff 1.23.0 regression).
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Rename some test scripts for clarity.
+
+	* tmac/tests/an_FT-bad-value-should-not-trash-titles.sh:
+	* tmac/tests/an_LL-init-sanely.sh:
+	* tmac/tests/an_ME-punct-hyphenates.sh:
+	* tmac/tests/an_UE-punct-hyphenates.sh:
+	* tmac/tests/doc_D-places-page-numbers-correctly.sh:
+	* tmac/tests/s_PN-works.sh: Rename these...
+
+	* tmac/tests/an_FT-register-value-should-not-trash-titles.sh:
+	* tmac/tests/an_LL-register-initializes-sanely.sh:
+	* tmac/tests/an_ME-second-argument-hyphenates.sh:
+	* tmac/tests/an_UE-second-argument-hyphenates.sh:
+	* tmac/tests/doc_D-register-places-page-numbers-correctly.sh:
+	* tmac/tests/s_PN-register-works.sh: ...to these.
+
+	* tmac/tmac.am (tmac_TESTS): Update.
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Coalesce some tests.
+
+	* tmac/tests/an_CS-register-off.sh:
+	* tmac/tests/an_CS-register-on.sh:
+	* tmac/tests/an_CS-register-unspecified.sh:
+	* tmac/tests/an_CT-register-off.sh:
+	* tmac/tests/an_CT-register-on.sh:
+	* tmac/tests/an_CT-register-unspecified.sh: Delete files,
+	replacing with...
+	* tmac/tests/an_CS-register-works.sh:
+	* tmac/tests/an_CT-register-works.sh: ...these new files.
+
+	* tmac/tmac.am (tmac_TESTS): Update.
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (AT, UC): Fix code style nits.  In formatted
+	output comparisons, use `'` as the delimiter, as is done
+	everywhere else in the file.  Drop leading quotation marks from
+	string assignments when unnecessary (the value is known not to
+	contain leading space).
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (TH): Clarify language in style warning messages.
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (TH): Simplify logic populating center header.
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Rename internal strings and registers.
+	    `an*topic`             -> `an*ident`
+	    `an*topic-abbv`        -> `an*ident-abbv`
+	    `an*topic-string`      -> `an*ident-string`
+	    `an*topic-length`      -> `an*ident-length`
+	    `an*topic-length-prev` -> `an*ident-length-prev`
+	    `an*topic-style`       -> `an*ident-style`
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp (read_uint_arg): When complaining
+	of invalid input (that we expect to be an ISO 646-encoded
+	decimal integer), disclose what that input is.
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp (read_uint_arg): Boolify.
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp (read_uint_arg): Migrate from
+	`strtol()` to `strtoul()`.  Thirty years ago {see
+	"ChangeLog.old"}, James Clark converted some code in grolj4(1)
+	from strtoul(3) to strtol(3), possibly because the function was
+	not widespread or standardized.  Presumably that lesson was
+	applied here as well.  It's standard now, in ISO C99, for which
+	we require compiler support.  Migrate text-to-integer conversion
+	and discard diagnosis of negative value.
+
 2024-10-11  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Don't use inbuilt pdf parser on user supplied data.
@@ -38,8 +321,8 @@
 2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/tbl/table.cpp (table::add_entry): Quote the
-	contents of (ordinary) non-text-block table entries when
-	throwing diagnostics about their contents.
+	contents of ordinary (that is, non-text-block) table entries
+	when throwing diagnostics about their contents.
 
 2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -181,7 +464,7 @@
 
 2024-09-26  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[gropdf]: Handle errors and abnormal exits.
+	[gropdf]: Make pdfom handle errors and abnormal exits.
 
 	* src/devices/gropdf/pdfmom.pl: Handle signaled and error exits
 	from groff pipeline.  Improve diagnostics.  Store "basename" of

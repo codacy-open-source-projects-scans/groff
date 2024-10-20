@@ -1,3 +1,100 @@
+2024-10-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Trivially refactor.  Organize groff mm extensions
+	together more cleanly with respect to `HF` and `HP` strings.
+
+2024-10-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Trivially refactor.  Rename internal register
+	`ref*flag` to `ref*was-RS-used`, which has the startling
+	property of documenting what it's for.
+	(TC, B2, RS, ref@eot-print, ref@print-refs): Do it.
+	(ref@print-refs): Also drop autoincrement amount from register
+	redefinition.  Autoincrementation was never used with it, and it
+	looks like a copy-and-paste error from an `RP` call in `TC`.
+
+2024-10-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (EM): Simplify string definition: interpolate only the
+	`\[em]` special character always, even in nroff mode, and
+	without leading space.  It's the output device's responsibility
+	to fall back gracefully when encountering this Ossanna troff
+	special character.  This also makes the indentation of `DL`
+	list items consistent with those of other lists on nroff
+	devices.
+
+2024-10-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* groff_mmse.7.man: Add old-style Emacs file-local variable to
+	supply preconv(1) a "coding tag".  Doing so throws that program
+	a bone if the "uchardet" library is not available and the
+	program is asked to guess the file's input encoding.
+
+	Fixes <https://savannah.gnu.org/bugs/?66287> (2/2).  Thanks to
+	Dave Kemper for the report.
+
+2024-10-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* groff_mmse.7.man: Convert file encoding from Latin-1 to UTF-8.
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Handle `nP` paragraphs more compatibly with DWB 3.3 mm.
+
+	* m.tmac (nP): Apply a temporary indentation to the second
+	output line of a paragraph to align it with the start of the
+	paragraph text (not the tag/label) in the first.
+	(H): Reset the `nP` paragraph counter when the first- or
+	second-level section heading number increments.
+
+	* groff_mm.7.man (Description): Drop notice of difference
+	between DWB 3.3 and groff mm `nP` behavior.
+	(Macros <H>, Registers <Hb>): Document interaction of `nP` and
+	`Np` features with run-in headings.
+
+	Fixes <https://savannah.gnu.org/bugs/?63739>.
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #63739 (unit-test `nP` macro).
+
+	* tests/nP-works.sh: Add unit test.
+	* mm.am (mm_TESTS): Run test.
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Trivially refactor.  Rename registers for clarity.
+	    `par*number`  -> `par*nP-counter`
+	    `par*number2` -> `par*Np-counter`
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (initialization): Refactor.  Drop never-interpolated
+	register `par*num-counter`.
+	(par@reset-num): This macro was called in only one place, so
+	delete it...
+	(H): ...and open-code its logic at its lone call site.  Format
+	complex numeric expressions in conditionals using the dense and
+	AT&T-compatible manner of the rest of the package, omitting
+	parentheses and spaces where possible.
+
+2024-10-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/Np-register-works.sh: Add unit test.
+	* mm.am (mm_TESTS): Run test.
+
+2024-10-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Fix nits in new `Rfstyle` feature.
+
+	* m.tmac (@reset, par@doit): Call `ref*set-mark-style`.
+	(RS): Assign to string named in argument using the _current_
+	values of `ref*(` and `ref*)`, not those at package
+	initialization time.
+
+	* groff_mm.7.man (Registers) <Rfstyle>: Document that the effect
+	of changing the register value is not necessarily immediate.
+
 2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac: Support new `Rpfmt` string specifying the `LB` macro
@@ -93,15 +190,15 @@
 
 	* mm/0.MT: Stop putting a blank line between author names in the
 	document heading for memorandum types 0-3 and 6 if no
-	supplementary data for each author is being formatted.  This
-	change more accurately reproduces London & Reiser's 1978 paper
-	describing the porting of Unix to the VAX-11/780.
-	(cov@print-authors): New internal register `cov@au-line-counter`
+	further data for each author is formatted.  This change more
+	accurately reproduces London & Reiser's 1978 paper describing
+	the porting of Unix to the VAX-11/780.
+	(cov@print-authors): New internal register `cov*au-line-counter`
 	tracks how many output lines (more like items of per-author
 	data) have been emitted for the current author.  Only if it ends
 	up being more than one, call `SP 1` as before.  Remove register
 	when done.
-	(cov@print-au1, cov@print-au2): Increment `cov@au-line-counter`.
+	(cov@print-au1, cov@print-au2): Increment `cov*au-line-counter`.
 
 2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -118,10 +215,9 @@
 
 2024-10-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* contrib/mm/m.tmac (initialization, LB, LI): Trivially
-	refactor.  Rename internal string `li*mark` to `li*mf`, since it
-	can be _either_ an arbitrary string _or_ an argument to the `af`
-	request.
+	* m.tmac (initialization, LB, LI): Trivially refactor.  Rename
+	internal string `li*mark` to `li*mf`, since it can be _either_
+	an arbitrary string _or_ an argument to the `af` request.
 
 2024-09-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 

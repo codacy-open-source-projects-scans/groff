@@ -240,7 +240,7 @@ div.rule-long /* precedes nav bar at bottom of page */
   outline: solid 1px #ceac8d ;
   padding-left: 15px ; 
   padding-right: 15px ; 
-  text-align: justify ;
+  text-align: left ;
   background-color: #f9f9d9 ;
   margin-bottom: 1.5em ;
   }

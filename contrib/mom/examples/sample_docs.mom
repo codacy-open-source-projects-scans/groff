@@ -561,7 +561,8 @@ justo duo do\%lo\%res et ea rebum qua certiore.
 .PP
 Vero eos et accusam et justo duo do\%lo\%res et ea rebum amet:
 \#
-.QUOTE
+.ie \n[#PRINT_STYLE]=1 .QUOTE ADJUST -.5v
+.el .QUOTE
 Eirmod tempor invidunt
 Ut labore et do\%lo\%re magna ali\%quyam erat
 Sed diam voluptua

@@ -72,6 +72,7 @@ mm_TESTS = \
   contrib/mm/tests/ML-marks-work.sh \
   contrib/mm/tests/MT-1-reports-all-TM-numbers.sh \
   contrib/mm/tests/MT-5-includes-AT-in-SG.sh \
+  contrib/mm/tests/Np-register-works.sh \
   contrib/mm/tests/P-indentation-works.sh \
   contrib/mm/tests/VL-accommodates-overlong-mark.sh \
   contrib/mm/tests/flush-long-displays-at-end-of-input.sh \
@@ -81,6 +82,7 @@ mm_TESTS = \
   contrib/mm/tests/memoranda-format-correctly.sh \
   contrib/mm/tests/ms-cover-sheet-robust-to-missing-AF.sh \
   contrib/mm/tests/mse_has-sufficient-footnote-space.sh \
+  contrib/mm/tests/nP-works.sh \
   contrib/mm/tests/place-equation-labels-correctly-in-displays.sh \
   contrib/mm/tests/remove-stale-bib-entry-data.sh \
   contrib/mm/tests/short-pages-do-not-overflow-stack.sh

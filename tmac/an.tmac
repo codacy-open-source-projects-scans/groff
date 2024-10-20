@@ -26,7 +26,7 @@
 .
 .
 .\" Put site additions in the file man.local, loaded near the end of
-.\" this file.  To add things to TH, use '.am1 TH'.
+.\" this file.  To add things to `TH`, use '.am1 TH'.
 .
 .if !\n(.g \
 .  ab groff man macros require groff extensions; aborting
@@ -240,7 +240,7 @@
 .
 .
 .\" Begin man page.
-.\" .TH topic section[ extra1[ extra2[ extra3]]]
+.\" .TH identifier section[ extra1[ extra2[ extra3]]]
 .de1 TH
 .  if ((\\n[.$] < 2) : (\\n[.$] > 5)) \
 .    an-style-warn .\\$0 expects 2 to 5 arguments, got \\n[.$]
@@ -320,23 +320,16 @@
 .  nr an*is-in-example 0
 .  nr an*is-in-link-text-diversion 0
 .
-.  ds an*topic "\\$1\"
-.  if \\n[CT] .stringup an*topic
+.  ds an*ident "\\$1\"
+.  if \\n[CT] .stringup an*ident
 .  ds an*section "\\$2\"
 .  ie (\\n[.$] > 4) .ds an-extra3 "\\$5\"
 .  el \{\
-.    \" Simulate switch/case in roff.
-.          ie '\\$2'1' .ds an-extra3 \\*[an*section1]\"
-.    el \{.ie '\\$2'2' .ds an-extra3 \\*[an*section2]\"
-.    el \{.ie '\\$2'3' .ds an-extra3 \\*[an*section3]\"
-.    el \{.ie '\\$2'4' .ds an-extra3 \\*[an*section4]\"
-.    el \{.ie '\\$2'5' .ds an-extra3 \\*[an*section5]\"
-.    el \{.ie '\\$2'6' .ds an-extra3 \\*[an*section6]\"
-.    el \{.ie '\\$2'7' .ds an-extra3 \\*[an*section7]\"
-.    el \{.ie '\\$2'8' .ds an-extra3 \\*[an*section8]\"
-.    el \{.ie '\\$2'9' .ds an-extra3 \\*[an*section9]\"
-.    el                .ds an-extra3 \" empty
-.    \}\}\}\}\}\}\}\}
+.    ds an-extra3 \" empty
+.    if \B'\\$2' \{\
+.      if ((\\$2 > 0) & (\\$2 < 10)) \
+.        ds an-extra3 \\*[an*section\\$2]
+.    \}
 .  \}
 .
 .  ds an-extra1 "\\$3\"
@@ -344,14 +337,14 @@
 .  el                  .ds an-extra2 \" empty; but .AT/.UC can override
 .
 .  if '\\*[an-extra1]'' \{\
-.    ds an-msg .\\$0 missing third argument; suggest document\"
+.    ds an-msg .\\$0 missing third argument; consider document\"
 .    as an-msg " modification date in ISO 8601 format (YYYY-MM-DD)\"
 .    an-style-warn \\*[an-msg]
 .    rm an-msg
 .  \}
 .
 .  if '\\*[an-extra2]'' \{\
-.    ds an-msg .\\$0 missing fourth argument; suggest package/project\"
+.    ds an-msg .\\$0 missing fourth argument; consider package/project\"
 .    \" Yes, that's one double quote, then three, then two.
 .    as an-msg " name and version (e.g., """groff 1.23.0"")\"
 .    an-style-warn \\*[an-msg]
@@ -378,7 +371,7 @@
 .  \" HTML gets the topic without any abbreviation, since it's metadata.
 .  if \\n[an*is-output-html] \{\
 .    DEVTAG-TL
-.    nop \\*[an*topic]
+.    nop \\*[an*ident]
 .    DEVTAG-EO-TL
 .  \}
 .
@@ -404,12 +397,12 @@
 .\" .AT [system-id[ release-id]]
 .de1 AT
 .  nop \\*[an-deprecation-warn]\\
-.  ds an-extra2 "7th Edition\"
-.  if "\\$1"3" .ds an-extra2 "7th Edition\"
-.  if "\\$1"4" .ds an-extra2 "System III\"
-.  if "\\$1"5" \{\
-.    ie "\\$2"" .ds an-extra2 "System V\"
-.    el         .ds an-extra2 "System V Release \\$2\"
+.  ds an-extra2 7th Edition\"
+.  if '\\$1'3' .ds an-extra2 7th Edition\"
+.  if '\\$1'4' .ds an-extra2 System III\"
+.  if '\\$1'5' \{\
+.    ie '\\$2'' .ds an-extra2 System V\"
+.    el         .ds an-extra2 System V Release \\$2\"
 .  \}
 .  ev an*env-header-and-footer
 .  an*abbreviate-inner-footer
@@ -420,12 +413,12 @@
 .\" .UC [system-id]
 .de1 UC
 .  nop \\*[an-deprecation-warn]\\
-.  ds an-extra2 "3rd Berkeley Distribution\"
-.  if "\\$1"3" .ds an-extra2 "3rd Berkeley Distribution\"
-.  if "\\$1"4" .ds an-extra2 "4th Berkeley Distribution\"
-.  if "\\$1"5" .ds an-extra2 "4.2 Berkeley Distribution\"
-.  if "\\$1"6" .ds an-extra2 "4.3 Berkeley Distribution\"
-.  if "\\$1"7" .ds an-extra2 "4.4 Berkeley Distribution\"
+.  ds an-extra2 3rd Berkeley Distribution\"
+.  if '\\$1'3' .ds an-extra2 3rd Berkeley Distribution\"
+.  if '\\$1'4' .ds an-extra2 4th Berkeley Distribution\"
+.  if '\\$1'5' .ds an-extra2 4.2 Berkeley Distribution\"
+.  if '\\$1'6' .ds an-extra2 4.3 Berkeley Distribution\"
+.  if '\\$1'7' .ds an-extra2 4.4 Berkeley Distribution\"
 .  ev an*env-header-and-footer
 .  an*abbreviate-inner-footer
 .  ev
@@ -484,51 +477,51 @@
 .
 .\" Abbreviate the page topic if it's too long for the header.  Leaves
 .\" string an-pageref defined for use in .PT and .an-footer.  Also
-.\" leaves an*topic-abbv for possible use by .PT and .BT re-definers.
+.\" leaves an*ident-abbv for possible use by .PT and .BT re-definers.
 .\" Call this only from within the header/footer environment.
 .de an*abbreviate-page-topic
-.  ds an*topic-abbv \\*[an*topic]\" might not get abbreviated at all
-.  ds an*topic-string \\*[an*topic]\"
+.  ds an*ident-abbv \\*[an*ident]\" might not get abbreviated at all
+.  ds an*ident-string \\*[an*ident]\"
 .  ds an-ellipsis \|.\|.\|.\|\"
 .  \" an*page-ref-string is left unmodified for internal use, such as
 .  \" PDF bookmarks.
-.  ds an*page-ref-string \\*[an*topic](\\*[an*section])\"
-.  ds an-pageref \\*[an*topic-abbv](\\*[an*section])\"
+.  ds an*page-ref-string \\*[an*ident](\\*[an*section])\"
+.  ds an-pageref \\*[an*ident-abbv](\\*[an*section])\"
 .  nr an-header-width \\w'\\*[an-pageref]\\*[an-extra3]\\*[an-pageref]'
 .  while (\\n[an-header-width] >= \\n[.lt]) \{\
 .    \" The page topic is too long; trim some bits out of the middle.
-.    length an*topic-length \\*[an*topic-string]
+.    length an*ident-length \\*[an*ident-string]
 .    \" roff uses truncating division.  Remove an additional character
 .    \" on each side of the midpoint to account for the ellipsis we add
 .    \" later.
-.    nr an-mark1 (\\n[an*topic-length] / 2 - 2)
-.    nr an-mark2 (\\n[an*topic-length] / 2 + 2)
-.    ds an-prefix \\*[an*topic-string]\"
-.    ds an-suffix \\*[an*topic-string]\"
+.    nr an-mark1 (\\n[an*ident-length] / 2 - 2)
+.    nr an-mark2 (\\n[an*ident-length] / 2 + 2)
+.    ds an-prefix \\*[an*ident-string]\"
+.    ds an-suffix \\*[an*ident-string]\"
 .    \" Use extremum operators to ensure that the first and last
 .    \" characters of the topic remain intact (in cases of pathological
 .    \" shortening).
 .    substring an-prefix 0 (\\n[an-mark1] >? 1)
-.    substring an-suffix (\\n[an-mark2] <? \\n[an*topic-length] - 1) -1
-.    ds an*topic-string \\*[an-prefix]\\*[an-suffix]\"
-.    ds an*topic-abbv \\*[an-prefix]\\*[an-ellipsis]\\*[an-suffix]\"
+.    substring an-suffix (\\n[an-mark2] <? \\n[an*ident-length] - 1) -1
+.    ds an*ident-string \\*[an-prefix]\\*[an-suffix]\"
+.    ds an*ident-abbv \\*[an-prefix]\\*[an-ellipsis]\\*[an-suffix]\"
 .    \" Remeasure the formatted topic; give up if we made no progress.
-.    length an*topic-new-length \\*[an*topic-string]
-.    ie (\\n[an*topic-new-length] >= \\n[an*topic-length]) \
+.    length an*ident-new-length \\*[an*ident-string]
+.    ie (\\n[an*ident-new-length] >= \\n[an*ident-length]) \
 .      break
-.    ds an-pageref \\*[an*topic-abbv](\\*[an*section])\"
+.    ds an-pageref \\*[an*ident-abbv](\\*[an*section])\"
 .    nr an-header-width \
        \\w'\\*[an-pageref]\\*[an-extra3]\\*[an-pageref]'
 .  \}
-.  ds an-pageref \\*[an-lic]\f[\\*[MF]]\\*[an*topic-abbv]\\*[an-ic]\
+.  ds an-pageref \\*[an-lic]\f[\\*[MF]]\\*[an*ident-abbv]\\*[an-ic]\
 \f[R](\\*[an*section])\"
-.  rr an*topic-length-prev
+.  rr an*ident-length-prev
 .  rr an-mark1
 .  rr an-mark2
 .  rm an-prefix
 .  rm an-suffix
-.  rm an*topic-string
-.  rr an*topic-length
+.  rm an*ident-string
+.  rr an*ident-length
 .  rr an-header-width
 .  rm an-ellipsis
 ..
@@ -543,6 +536,9 @@
 .  while (\\n[an*index] < \\n[an*max-index]) \{\
 .    ds an*char \\$*
 .    substring an*char \\n[an*index] \\n[an*index]
+.    \" Note: Nasty hack alert!  DEL is a useful escape character for
+.    \" this string-iterating application because it is vanishingly
+.    \" unlikely to appear in man(7) document text--see Savannah #65469.
 .    ec 
 .    \" Use a weird delimiter to reduce lexical colorizer confusion.
 .    if _*[an*char]_\\_ .nr an*string-contains-backslash 1
@@ -1714,13 +1710,13 @@ contains unsupported escape sequence
 .\" is an oblique style, append the corrections.
 .ds an-lic \" left italic correction
 .ds an-ic \" italic correction
-.ds an*topic-style \*[MF]\"
-.substring an*topic-style -1 -1
-.if '\*[an*topic-style]'I' \{\
+.ds an*ident-style \*[MF]\"
+.substring an*ident-style -1 -1
+.if '\*[an*ident-style]'I' \{\
 .  as an-lic \,\"
 .  as an-ic \/\"
 .\}
-.rm an*topic-style
+.rm an*ident-style
 .
 .if \n[cR] \
 .  an-set-up-continuous-rendering

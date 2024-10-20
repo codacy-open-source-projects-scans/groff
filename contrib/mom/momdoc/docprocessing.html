@@ -309,10 +309,12 @@ appropriate macro.
 </p>
 
 <p>
-<b>Flex-spacing</b> kicks in automatically whenever you turn shimming
-off.  In other words, if you want a document flex-spaced,
-<kbd>.NO_SHIM</kbd> is how you achieve it.  If, in addition to not
-shimming, you don&#8217;t want mom flex-spacing either,
+<b>Flex-spacing</b> kicks in automatically whenever you
+turn shimming off, provided your document is processed with
+<b>pdfmom(1)</b>.  In other words, if you want a document
+flex-spaced, <kbd>.NO_SHIM</kbd> is how you achieve it.  If, in
+addition to not shimming, you don&#8217;t want mom flex-spacing
+either,
 <a href="#no-flex">NO_FLEX</a>
 lets you disable it, too.
 </p>
@@ -410,7 +412,8 @@ Macro: <b>NO_SHIM</b> <kbd class="macro-args">&lt;none&gt; | &lt;anything&gt;</k
 
 <p>
 NO_SHIM, without an argument, disables automatic shimming,
-suppresses the SHIM macro, and enables flex-spacing.
+suppresses the SHIM macro, and, provided your document is processed
+with <b>pdfmom(1)</b>, enables flex-spacing.
 </p>
 
 <p>
@@ -428,6 +431,9 @@ been disabled and disables flex-spacing.
 <div class="box-macro-args">
 Macro: <b>FLEX</b> <kbd class="macro-args">[ FORCE ]</kbd>
 </div>
+<p class="requires">
+&bull;&nbsp;Requires that documents be processed with <b>pdfmom(1)</b>
+</p>
 
 <p>
 When flex-spacing is enabled, the FLEX macro inserts flexible

@@ -15760,10 +15760,10 @@ which is read to the end of the input line in copy mode.
 
 @strong{Caution:@:} Use of these features can put syntactically invalid
 content into GNU @command{troff}'s output, which @code{groff}'s output
-drivers then fail to process.  They are normally needed only for
-instructions to a postprocessor that does something with the output
-before sending it to the output device, filtering out @var{contents}
-again.
+drivers then fail to process.  @code{output} and use of @code{\!} from
+the top-level diversion are normally needed only for instructions to a
+postprocessor that does something with the output before sending it to
+the output device, filtering out @var{contents} again.
 @c TODO: Once the dust settles from Savannah #63074, document how these
 @c can be used to construct device extension commands without special
 @c character processing.

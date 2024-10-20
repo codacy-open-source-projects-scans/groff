@@ -181,8 +181,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"	eject page before headings of level <= Ej
 .nr Ej 0
 .\"	em dash string
-.ie n .ds EM " --
-.el   .ds EM \[em]
+.ds EM \[em]
 .\"	align equation labels to the left instead of the right?
 .nr Eq 0
 .\"	multiple of Lsp to put between items of footnote text
@@ -200,14 +199,14 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"	center headings of level <= Hc
 .nr Hc 0
 .\"	heading font, per level
-.ds HF 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+.ds HF 2 2 2 2 2 2 2
 .\"	indentation policy of text after headings
 .\"	0 -> no indentation
 .\"	1 -> first-line indentation, like ".P 1"
 .\"	2 -> indent to line up with text part of preceding heading
 .nr Hi 1
 .\"	header point (type) size, per level
-.ds HP 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+.ds HP 0 0 0 0 0 0 0
 .\"	put vertical space of \n[Hss] after headings of level <= Hs
 .nr Hs 2
 .\"	heading numbering type
@@ -304,6 +303,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" spacing before and after static displays (if undefined, Lsp is used)
 .\" .nr Dsp 1v
 .\" more heading level counters
+.as HF " 2 2 2 2 2 2 2
+.as HP " 0 0 0 0 0 0 0
 .nr H8 0 1
 .nr H9 0 1
 .nr H10 0 1
@@ -451,6 +452,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 'ti 0
 .ps \\n[@ps]u
 .vs \\n[@vs]u
+.ref*set-mark-style \" in case the document has changed it
 ..
 .de misc@toupper
 .tr aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ
@@ -478,17 +480,10 @@ http://savannah.gnu.org/bugs/?group=groff.
 .nr par@suppress-indentation 0
 .nr hd*last-pos -1
 .nr hd*last-hsize -1
-.nr par*number 0 1
-.af par*number 01
-.nr par*number2 0 1
-.af par*number2 01
-.nr par*num-count 0 1
-.af par*num-count 01
-.\"	reset numbered paragraphs, arg1 = headerlevel
-.de par@reset-num
-.if \\$1<3 .nr par*num-count 0
-.if (\\$1=1)&(\\n[Np]=1) .nr par*number 0
-..
+.nr par*nP-counter 0 1
+.af par*nP-counter 00
+.nr par*Np-counter 0 1
+.af par*Np-counter 00
 .\"------------
 .\" paragraph
 .de P
@@ -508,7 +503,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\}
 .nr par*indentation-eligible 1-\\n[par@suppress-indentation]
 .par@doit \\$*
-.if \\n[Np] \\n[H1].\\n+[par*number]\ \ \c
+.if \\n[Np] \\n[H1].\\n+[par*Np-counter]\ \ \c
 ..
 .\"------------
 .de nP
@@ -516,10 +511,12 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	tm Paragraph nl=\\n[nl], last=\\n[hd*last-pos]
 .	tm Paragraph .k=\\n[.k], hsize=\\n[hd*last-hsize]
 .\}
-.\" A first-line indentation is meaningless for a numbered paragraph.
+.\" `nP` handles indentation differently from `P`.
 .nr par*indentation-eligible 0
 .par@doit
-\\n[H2].\\n+[par*number2]\ \ \c
+\\n[H2].\\n+[par*nP-counter]\ \ \c
+.\" Indent the paragraph's second line, too.
+'ti \w'\\n[H2].\\n[par*nP-counter]'u+2n
 ..
 .\"------------
 .de par@doit
@@ -536,6 +533,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .if \\n[par*do-indent] .ti +\\n[Pi]n
 .rr par*do-indent
 .nr par@suppress-indentation 0
+.ref*set-mark-style \" in case the document has changed it
 ..
 .\" ####### module line #######################################
 .de SP
@@ -1160,7 +1158,8 @@ numeric; got '\\$1'
 .ie \\n[hd*level]<=\\n[Hps] .SP (u;\\n[Hps2])
 .el                         .SP (u;\\n[Hps1])
 .\"
-.par@reset-num \\n[hd*level]\"			reset numbered paragraph
+.if \\$1=1&\\n[Np] .nr par*Np-counter 0
+.if \\$1<3         .nr par*nP-counter 0
 .\" start diversion to measure size of header
 .di hd*div
 \\*[hd*mark]\\$2\\$3\\*[hd*suf-space]
@@ -2703,7 +2702,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .br
 .\" print any pending displays and references
 .df@print-float 3
-.if \\n[ref*flag] .RP 0 1
+.if \\n[ref*was-RS-used] .RP 0 1
 .\"
 .if \w@\\$1@>0 .nr toc*slevel \\$1
 .if \w@\\$2@>0 .nr toc*spacing (u;\\$2*\\n[Lsp])
@@ -3082,7 +3081,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr ref*nr 0 1
 .aln :R ref*nr
 .nr ref*nr-width 5n
-.nr ref*flag 0		\" for end-of-text
+.nr ref*was-RS-used 0 \" for end-of-text
 .ds ref*nroff-( [
 .ds ref*troff-( \v'-.4m'\s-3
 .ds ref*nroff-) ]
@@ -3117,8 +3116,8 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"------------
 .de RS
 .ref*set-mark-style \" in case the document changed it
-.if !''\\$1' .ds \\$1 \*[ref*(]\\n[ref*nr]\*[ref*)]
-.nr ref*flag 1
+.if !''\\$1' .ds \\$1 \\*[ref*(]\\n[ref*nr]\\*[ref*)]
+.nr ref*was-RS-used 1
 .am ref*mac
 .ref@start-print \\n[ref*nr]
 \\..
@@ -3179,10 +3178,10 @@ argument: '\\$2'
 .\"-----------
 .\" called by end-of-text!
 .de ref@eot-print
-.\".if \\n[ref*flag] \{\
+.\".if \\n[ref*was-RS-used] \{\
 .if d ref*mac \{\
 .	if \\n[D]>2 .tm Print references, called by eot
-.	nr ref*flag 0
+.	nr ref*was-RS-used 0
 .	br
 .	misc@ev-keep ne
 .	@reset
@@ -3211,7 +3210,7 @@ argument: '\\$2'
 .in
 .rm ref*mac
 .ev
-.nr ref*flag 0 1
+.nr ref*was-RS-used 0
 ..
 .\"########################### module app ############################
 .\"

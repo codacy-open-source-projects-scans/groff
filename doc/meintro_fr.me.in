@@ -1,5 +1,6 @@
-.\" groff -kt -me -mfr
-.\" nroff -kt -me -mfr
+.\" -*- coding: utf-8; -*-  Help preconv(1) if uchardet is not present.
+.\" groff -K utf8 -t -me -mfr
+.\" nroff -K utf8 -t -me -mfr
 .\"
 .\" Copyright (c) 1986, 1993
 .\"   The Regents of the University of California.  All rights reserved.

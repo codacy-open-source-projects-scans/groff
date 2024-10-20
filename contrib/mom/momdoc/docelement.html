@@ -3411,10 +3411,10 @@ When you turn line-numbering on, mom, by default
 </p>
 <ul style="margin-top: -.5em;">
   <li>numbers every line of paragraph text; line-numbering is
-      suspended for all other document processing tags (like
-      docheaders, epigraphs, headings, quotes, etc.) and special
-      pages (covers, endotes, bibliographies, etc.); be aware,
-      though, that if you turn
+      suspended for all other document elements (docheaders,
+      epigraphs, headings, quotes, etc.) and special pages (covers,
+      endotes, bibliographies, etc.); be aware, though, that if you
+      turn
       <a href="definitions.html#docheader">docheaders</a>
       off (with
       <a href="docprocessing.html#docheader">DOCHEADER</a> OFF)
@@ -3474,18 +3474,38 @@ for instructions on line-numbered endnotes.)
 
 <div class="box-tip">
 <p class="tip">
-<span class="note">Note:</span>
+<span class="note">Note: QUOTE / BLOCKQUOTE</span>
+<br/>
+By default, mom does not include quotes and blockquotes in the line
+numbering scheme.  If you wish to enable line numbering for them,
+use the macros
+<a href="#number-quote-lines">NUMBER_QUOTE_LINES</a>
+or
+<a href="#number-quote-lines">NUMBER_BLOCKQUOTE_LINES</a>.
 Do not use NUMBER_LINES inside 
 <a href="#quote">QUOTE</a>
 or
 <a href="#blockquote">BLOCKQUOTE</a>.
-By default, mom expects that quotes and blockquotes will not be
-line numbered.  If you wish to enable line numbering for them, you
-must invoke
-<a href="#number-quote-lines">NUMBER_QUOTE_LINES</a>
-or
-<a href="#number-quote-lines">NUMBER_BLOCKQUOTE_LINES</a>.
 </p>
+</div>
+
+<div class="box-tip">
+<p class="tip">
+<span class="note">Note: LIST</span>
+<br/>
+By default,
+<a href="#item">ITEM</a>s
+in a
+<a href="#list">LIST</a>
+are included in the line numbering scheme.  If
+<a href="typesetting.html#quad">QUAD C</a>
+or
+<a href="typesetting.html#quad">QUAD R</a>
+are in effect prior to the start of the list, line numbers are set
+to the left of longest item, not the document&#8217;s left margin.
+If you wish to disable line numbering for a such (or any) lists,
+put <kbd>.NUMBER_LINES OFF</kbd> before the first ITEM and insert
+<kbd>NUMBER_LINES&nbsp;RESUME</kbd> after the last.
 </div>
 
 

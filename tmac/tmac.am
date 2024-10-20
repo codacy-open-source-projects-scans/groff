@@ -153,16 +153,12 @@ tmac_TESTS = \
   tmac/tests/an-ext_SY-and-YS-work.sh \
   tmac/tests/an-ext_UR-works.sh \
   tmac/tests/an_AT-and-UC-footer-saved-and-restored.sh \
-  tmac/tests/an_CS-register-off.sh \
-  tmac/tests/an_CS-register-on.sh \
-  tmac/tests/an_CS-register-unspecified.sh \
-  tmac/tests/an_CT-register-off.sh \
-  tmac/tests/an_CT-register-on.sh \
-  tmac/tests/an_CT-register-unspecified.sh \
-  tmac/tests/an_FT-bad-value-should-not-trash-titles.sh \
+  tmac/tests/an_CS-register-works.sh \
+  tmac/tests/an_CT-register-works.sh \
+  tmac/tests/an_FT-register-value-should-not-trash-titles.sh \
   tmac/tests/an_HY-register-works.sh \
-  tmac/tests/an_LL-init-sanely.sh \
-  tmac/tests/an_ME-punct-hyphenates.sh \
+  tmac/tests/an_LL-register-initializes-sanely.sh \
+  tmac/tests/an_ME-second-argument-hyphenates.sh \
   tmac/tests/an_MR-works.sh \
   tmac/tests/an_MT-body-hyphenates.sh \
   tmac/tests/an_MT-works.sh \
@@ -174,7 +170,7 @@ tmac_TESTS = \
   tmac/tests/an_TS-adds-no-vertical-space.sh \
   tmac/tests/an_TS-do-not-keep-tables-when-cR-set.sh \
   tmac/tests/an_UE-breaks-before-long-URIs.sh \
-  tmac/tests/an_UE-punct-hyphenates.sh \
+  tmac/tests/an_UE-second-argument-hyphenates.sh \
   tmac/tests/an_UR-body-hyphenates.sh \
   tmac/tests/an_UR-works.sh \
   tmac/tests/an_X-register-works.sh \
@@ -199,9 +195,9 @@ tmac_TESTS = \
   tmac/tests/andoc_check-an-to-doc-transition.sh \
   tmac/tests/andoc_clear-doc-traps.sh \
   tmac/tests/andoc_flush-between-packages.sh \
-  tmac/tests/doc_CS-works.sh \
-  tmac/tests/doc_CT-works.sh \
-  tmac/tests/doc_D-places-page-numbers-correctly.sh \
+  tmac/tests/doc_CS-register-works.sh \
+  tmac/tests/doc_CT-register-works.sh \
+  tmac/tests/doc_D-register-places-page-numbers-correctly.sh \
   tmac/tests/doc_Lk-respects-sentence-ending-punctuation.sh \
   tmac/tests/doc_Lk-works.sh \
   tmac/tests/doc_Mt-works.sh \
@@ -238,11 +234,13 @@ tmac_TESTS = \
   tmac/tests/s_EQ-handles-empty-first-arg.sh \
   tmac/tests/s_IP-indents-using-paragraph-type-size.sh \
   tmac/tests/s_IP-respects-inter-sentence-space-in-tags.sh \
-  tmac/tests/s_PN-works.sh \
+  tmac/tests/s_PN-register-works.sh \
   tmac/tests/s_R-handles-its-arguments.sh \
   tmac/tests/s_SH-resets-IP-indentation-amount.sh \
   tmac/tests/s_TC-works-with-percent-in-custom-titles.sh \
   tmac/tests/s_XA-literal-no-argument-suppresses-leader.sh \
+  tmac/tests/s_XA-reduces-line-length.sh \
+  tmac/tests/s_can-start-document-with-DS-call.sh \
   tmac/tests/s_honor-MINGW-when-two-columns.sh \
   tmac/tests/s_honor-page-break-after-display.sh \
   tmac/tests/s_honor-page-break-in-text.sh \

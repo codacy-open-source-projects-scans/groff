@@ -79,27 +79,22 @@ const char *resource_table[] = {
 
 const size_t NRESOURCES = array_length(resource_table);
 
-static int read_uint_arg(const char **pp, unsigned *res)
+static bool read_uint_arg(const char **pp, unsigned *res)
 {
   while (white_space(**pp))
     *pp += 1;
   if (**pp == '\0') {
     error("missing argument");
-    return 0;
+    return false;
   }
   const char *start = *pp;
-  // XXX use strtoul
-  long n = strtol(start, (char **)pp, 10);
+  unsigned long n = strtoul(start, (char **)pp, 10);
   if (*pp == start) {
-    error("not an integer");
-    return 0;
-  }
-  if (n < 0) {
-    error("argument must not be negative");
-    return 0;
+    error("not an integer: '%1'", *pp);
+    return false;
   }
   *res = unsigned(n);
-  return 1;
+  return true;
 }
 
 struct resource {

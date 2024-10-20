@@ -1551,7 +1551,8 @@ void ps_printer::special(char *arg, const environment *env, char type)
   for (; *p != '\0' && *p != ':' && *p != ' ' && *p != '\n'; p++)
     ;
   if (*p == '\0' || strncmp(tag, "ps", p - tag) != 0) {
-    error("X command without 'ps:' tag ignored");
+    error_with_file_and_line(current_filename, (current_lineno - 1),
+			     "X command without 'ps:' tag ignored");
     return;
   }
   p++;

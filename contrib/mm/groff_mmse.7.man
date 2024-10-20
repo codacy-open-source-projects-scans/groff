@@ -1,10 +1,13 @@
+.\" -*- coding: utf-8; -*-  Help preconv(1) if uchardet is not present.
+.\" groff -K utf8 -man -msv
+.\" nroff -K utf8 -man -msv
 .TH groff_mmse @MAN7EXT@ "@MDATE@" "groff @VERSION@"
 .SH Namn
 groff_mmse \- svenska \(rqmemorandum\(rq makro f\(:or GNU
 .I roff
 .
 .
-.\" Skrivet av Jörgen Hägg, Lund, Sverige
+.\" Skrivet av JÃ¶rgen HÃ¤gg, Lund, Sverige
 .
 .\" ====================================================================
 .\" Legal Terms
@@ -68,42 +71,42 @@ groff_mmse \- svenska \(rqmemorandum\(rq makro f\(:or GNU
 .\" ====================================================================
 .
 .I m@TMAC_M_PREFIX@mse
-är en svensk variant av
+Ã¤r en svensk variant av
 .IR m@TMAC_M_PREFIX@m .
-Alla texter är översatta.
-En A4 sida får text som är 13\~cm bred,
-3,5\~cm indragning samt är 28,5\~cm hög.
-Det finns stöd för brevuppställning enligt svensk standard
-för vänster och högerjusterad text.
+Alla texter Ã¤r Ã¶versatta.
+En A4 sida fÃ¥r text som Ã¤r 13\~cm bred,
+3,5\~cm indragning samt Ã¤r 28,5\~cm hÃ¶g.
+Det finns stÃ¶d fÃ¶r brevuppstÃ¤llning enligt svensk standard
+fÃ¶r vÃ¤nster och hÃ¶gerjusterad text.
 .
 .LP
 .B COVER
-kan använda
+kan anvÃ¤nda
 .I se_ms
 som argument.
-Detta ger ett svenskt försättsblad.
+Detta ger ett svenskt fÃ¶rsÃ¤ttsblad.
 Se
 .MR groff_mm @MAN7EXT@
-för övriga detaljer.
+fÃ¶r Ã¶vriga detaljer.
 .
 .
 .\" ====================================================================
 .SH Brev
 .\" ====================================================================
 .
-Tillgängliga brevtyper:
+TillgÃ¤ngliga brevtyper:
 .
 .TP
 .B ".LT SVV"
-Vänsterställd löptext med adressat i position T0 (vänsterställt).
+VÃ¤nsterstÃ¤lld lÃ¶ptext med adressat i position T0 (vÃ¤nsterstÃ¤llt).
 .
 .TP
 .B ".LT SVH"
-Högerställd löptext med adressat i position T4 (passar
-fönsterkuvert).
+HÃ¶gerstÃ¤lld lÃ¶ptext med adressat i position T4 (passar
+fÃ¶nsterkuvert).
 .
 .LP
-Följande extra LO-variabler används.
+FÃ¶ljande extra LO-variabler anvÃ¤nds.
 .
 .TP
 .BI ".LO DNAMN\ " namn
@@ -116,8 +119,8 @@ Mottagarens datum, anges under
 .RB ( LetMDAT ).
 .
 .TP
-.BI ".LO BIL\ " sträng
-Anger bilaga, nummer eller sträng med
+.BI ".LO BIL\ " strÃ¤ng
+Anger bilaga, nummer eller strÃ¤ng med
 .B Bilaga
 .RB ( LetBIL )
 som prefix.
@@ -133,7 +136,7 @@ Anger dokumentbeteckning eller dokumentnummer.
 .TP
 .BI ".LO BET\ " beteckning
 Anger beteckning
-(ärendebeteckning i form av diarienummer eller liknande).
+(Ã¤rendebeteckning i form av diarienummer eller liknande).
 .
 .TP
 .BI ".LO SIDOR\ " antal
@@ -143,8 +146,8 @@ parenteser.
 .LP
 Om makrot
 .B .TP
-är definierat anropas det efter utskrift av brevhuvudet.
-Där lägger man lämpligen in postadress och annat som brevfot.
+Ã¤r definierat anropas det efter utskrift av brevhuvudet.
+DÃ¤r lÃ¤gger man lÃ¤mpligen in postadress och annat som brevfot.
 .
 .
 .\" ====================================================================
@@ -152,7 +155,7 @@ Där lägger man lämpligen in postadress och annat som brevfot.
 .\" ====================================================================
 .
 .MT Jorgen.Hagg@axis.se
-Jörgen Hägg
+JÃ¶rgen HÃ¤gg
 .ME ,
 Lund,
 Sweden
@@ -169,7 +172,7 @@ Sweden
 .
 .
 .\" ====================================================================
-.SH "Se också"
+.SH "Se ocksÃ¥"
 .\" ====================================================================
 .
 .MR groff_mm @MAN7EXT@
@@ -181,7 +184,7 @@ Sweden
 .
 .
 .\" Local Variables:
-.\" coding: latin-1
+.\" coding: utf-8
 .\" fill-column: 72
 .\" mode: nroff
 .\" End:

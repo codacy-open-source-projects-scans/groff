@@ -51,6 +51,33 @@
 .el \
 .  hydefault \n[\*[locale]*hyphenation-mode-base]
 .
+.\" Map hcodes of Latin-1 characters with diacritical marks that are
+.\" used in English words to their unadorned ASCII counterparts.
+.\" See http://savannah.gnu.org/bugs/?66112 for rationale.
+.
+.hcode \['A] a \['a] a
+.hcode \[:A] a \[:a] a
+.hcode \[^A] a \[^a] a
+.hcode \[`A] a \[`a] a
+.hcode \[oA] a \[oa] a
+.hcode \[,C] c \[,c] c
+.hcode \['E] e \['e] e
+.hcode \[:E] e \[:e] e
+.hcode \[^E] e \[^e] e
+.hcode \[`E] e \[`e] e
+.hcode \['I] i \['i] i
+.hcode \[:I] i \[:i] i
+.hcode \[^I] i \[^i] i
+.hcode \[~N] n \[~n] n
+.hcode \['O] o \['o] o
+.hcode \[:O] o \[:o] o
+.hcode \[^O] o \[^o] o
+.hcode \[/O] o \[/o] o
+.hcode \['U] u \['u] u
+.hcode \[:U] u \[:u] u
+.hcode \[^U] u \[^u] u
+.hcode \[`U] u \[`u] u
+.
 .hy
 .
 .rr locale*use-trap-hyphenation-mode

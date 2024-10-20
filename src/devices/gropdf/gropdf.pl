@@ -1681,7 +1681,7 @@ sub do_x
 
 		if (!exists($incfil{$fil}))
 		{
-		    if ($gotexif)
+		    if ($gotexif and $FDnm!~m/\.pdf$/i)
 		    {
 			binmode $FD;
 
@@ -3390,7 +3390,7 @@ sub LoadFont
     Die("unable to open font '$ofontnm' for mounting") if !defined($f);
 
     my $foundry='';
-    $foundry=$1 if $fontnm=~m/^(.*?)-/;
+    $foundry=$1 if $fontnm=~m/^(.)-/;
     my $stg=1;
     my %fnt;
     my @fntbbox=(0,0,0,0);

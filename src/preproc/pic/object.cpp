@@ -891,6 +891,8 @@ int object_spec::position_rectangle(rectangle_object *p,
     if (flags & HAS_WITH) {
       place offset;
       place here;
+      here.x = 0;
+      here.y = 0;
       here.obj = p;
       if (!with->follow(here, &offset))
 	return 0;
@@ -1512,6 +1514,8 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
     position pos = at;
     place offset;
     place here;
+    here.x = 0;
+    here.y = 0;
     here.obj = &tmpobj;
     if (!with->follow(here, &offset))
       return 0;

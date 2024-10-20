@@ -226,17 +226,6 @@ DWB used a hard-coded value of 6\~ens.
 .
 .
 .IP \[bu]
-DWB
-.IR mm 's
-.B nP
-macro indented the second line of a paragraph to align it with the start
-of the text of the first
-(after the paragraph number);
-.IR "groff mm" 's
-does not.
-.
-.
-.IP \[bu]
 .I "groff mm"
 uses the same adjustment and font defaults in
 .I nroff
@@ -266,6 +255,21 @@ and affecting the interpretation of the
 and
 .B HP
 strings.
+.
+.
+.P
+.I "groff mm"
+features a new citation system that permits a bibliographic reference
+list to be sorted,
+an alternative to
+.BR RS / RE / RP .
+.
+See the
+.B INITR
+macro description below
+and the
+.MR mmroff @MAN1EXT@
+man page.
 .
 .
 .P
@@ -750,9 +754,8 @@ and
 .BR AL \~[\c
 .IR number-format \~[ text-indent \~[\c
 .BR 1 ]]]
-Begin an auto-incrementing numbered list.
-.
-Item numbers start at one.
+Begin an auto-incrementing numbered list,
+where item numbers start at one and are followed by a dot.
 .
 .I number-format
 assigns the register format
@@ -761,11 +764,7 @@ assigns the register format
 uses for the list item enumerators.
 .
 The default
-.RB is\~ 1 .
-.
-An explicitly empty
-.I type
-also indicates the default.
+.RB is\~ 0 .
 .
 A
 .I text-indent
@@ -799,8 +798,8 @@ Begin an appendix.
 If
 .I sequence-number
 is omitted,
-it is incremented
-(or initialized
+it increments
+(or is initialized
 .RB to\~ 1 ,
 .\" ...technically, initialized to zero but autoincremented.
 if necessary).
@@ -1963,9 +1962,10 @@ and register
 sets a threshold within which vertical space follows it.
 .
 If the heading level is above both of these,
-a
-.I run-in heading
-is produced;
+and the paragraph is not numbered,
+.I "groff mm"
+produces a
+.IR "run-in heading" ;
 paragraph text follows on the same output line.
 .
 Otherwise,
@@ -1975,12 +1975,13 @@ configures the indentation of text after headings.
 .
 Threshold register
 .B Hc
-enables the centering of headings;
-a heading level within both of the
+permits centering;
+.I mm
+centers a heading with a level below both of the
 .B Hb
 and
 .B Hc
-thresholds is centered.
+thresholds.
 .
 .
 .IP
@@ -2445,25 +2446,19 @@ purpose.
 tracks the nesting level of lists;
 the outermost is\~0.
 .
-Each list item is indented by
-.I text-indent,
-and its mark
-by
-.I mark-indent.
+Each list item
+(text lines after an
+.B LI
+call)
+is indented by
+.I text-indent.
 .
-The mark is normally left-aligned.
-.
-If
+The mark is left-aligned at
+.IR mark-indent ,
+padded on the left with
 .I pad
-is greater than zero,
-it overrides
-.I mark-indent
-such that
-.I pad
-ens of space follow the mark.
+ens of space.
 .
-.
-.IP
 .I type
 determines the mark's format.
 .
@@ -2474,6 +2469,7 @@ tab(@);
 Lf(BI) Lb
 L L.
 type@Output for a mark \[lq]x\[rq]
+0@x
 1@x.
 2@x)
 3@(x)
@@ -2486,9 +2482,11 @@ type@Output for a mark \[lq]x\[rq]
 .IP
 If
 .I type
-is\~0,
-.I mm
-assumes that the marks are not numeric.
+.RB is\~ 0 ,
+.I mark-or-format
+specifies each item's mark
+(which can be overridden by an argument to
+.BR LI ).
 .
 If
 .I mark-or-format
@@ -2496,32 +2494,33 @@ is empty
 (or the dummy character
 .RB \[lq] \[rs]& \[rq])
 .I mm
-sets items with a hanging indent;
-otherwise,
-.I mm
-treats
-.I mark-or-format
-as a string defining the mark.
+sets items at
+.I mark-indent
+with a hanging indent at
+.I text-indent.
 .
 .
 .IP
 If
 .I type
 is greater than zero,
-items are automatically numbered and
+.I mm
+supplies an automatically incrementing numeric mark,
+and interprets
 .I mark-or-format
-is interpreted as a register format.
+as a register format.
 .
+.
+.IP
 A
 .I type
-of\~\-1 breaks the line after the mark
+.RB of\~ \-1
+causes
+.I "groff mm"
+to break the line after the mark
 even if it fits within
 .I text-indent;
 this is a GNU extension.
-.
-The default
-.I type
-.RB is\~ 0 .
 .
 .
 .IP
@@ -2592,15 +2591,18 @@ is called again.
 By default,
 the item's text is preceded by any mark configured by the current list.
 .
-If only
+If
 .I mark
-is specified,
-it replaces the configured mark.
-.
-If the width of the mark plus any padding
-(specified in the list's
+is the only argument,
+it replaces the mark configured in the corresponding
 .B LB
-call)
+call.
+.
+If the width of the mark plus any
+.I pad
+specified in the
+.B LB
+call
 exceeds the text indentation,
 .I "groff mm"
 warns and uses one en of padding between the mark and the text.
@@ -2608,9 +2610,10 @@ warns and uses one en of padding between the mark and the text.
 A second argument
 prefixes
 .I mark
-to the configured mark
-and conditionally puts an unbreakable space between the prefix and mark
-per the argument's Boolean value.
+to the
+.BR LB -configured
+mark and conditionally puts an unbreakable space
+between the prefix and mark per the argument's Boolean value.
 .
 .
 .TP
@@ -2869,7 +2872,7 @@ implies
 .BR 1 .
 .
 .I addressee
-sets a string analogous to one used by AT&T cover sheet macros that are
+sets a string analogous to one used by AT&T cover sheet macros
 not implemented in
 .IR "groff mm" .
 .
@@ -3342,12 +3345,11 @@ is also stored in a string of that name.
 .
 .TP
 .B RF
-Reference end.
-.
-Ends a reference definition and returns to normal processing.
+End a bibliographic reference citiation started with
+.BR RS .
 .
 See
-.BR RS .
+.BR RP .
 .
 .
 .TP
@@ -3366,15 +3368,13 @@ without space between the arguments.
 .BR RL \~[\c
 .IR text-indent \~[\c
 .BR 1 ]]
-Begin reference list.
+Begin an auto-incrementing numbered list,
+where item numbers start at one and set between square brackets.
 .
-Each item is preceded by an automatically incremented number between
-square brackets;
-compare
-.BR AL .
-.
+A
 .I text-indent
-changes the default indentation.
+argument overrides register
+.BR Li .
 .
 A second argument suppresses the vertical space that normally precedes
 each list item;
@@ -3394,11 +3394,16 @@ and
 .B LE
 to end the list.
 .
+\[lq]RL\[rq] is a mnemonic for \[lq]reference list\[rq],
+but this macro has no relationship with
+.IR mm 's
+bibliographic reference list facilities.
+.
 .
 .TP
 .BR RP \~\c \" space in roman; we must use 2-font macro with \c
 .RI [ suppress-counter-reset \~[ page-ejection-policy ]]
-Format a reference page,
+Format a reference list,
 listing items accumulated within
 .BR RS / RF
 pairs.
@@ -3420,8 +3425,10 @@ automatically if references have accumulated.
 .
 .
 .IP
-References are formatted as a list with
-.BR LB ;
+.I "groff mm"
+calls
+.B LB
+to format the reference list;
 the
 .B Rpfmt
 string configures the list's appearance.
@@ -3439,16 +3446,18 @@ contains the reference list caption.
 .TP
 .B RPX
 This user-definable hook macro assumes responsibility for formatting
-the heading of the reference page produced when the document calls
-.B RP .
+the heading of the reference page that
+.B RP
+produces.
 .
 If not defined
 (the default),
-the reference list caption in the string
+.I mm
+sets the reference list caption in the string
 .B Rp
-is set after two vees of space,
+after two vees of space,
 centered in italics,
-and followed by another vee of space.
+followed by another vee of space.
 .
 .
 .br
@@ -3456,25 +3465,37 @@ and followed by another vee of space.
 .TP
 .BR RS \~[\c
 .IR reference-string ]
-Begin an automatically numbered reference definition.
+Begin citation of an automatically numbered bibliographic reference
+entry.
 .
-By default,
-references are numbered starting at 1;
-the number is available in register
-.BR :R .
+.I mm
+collects input until
+.B RF
+is called.
+.
+A subsequent
+.B RP
+call emits the accumulated entries.
+.
+References are numbered starting at 1;
+the register
+.B :R
+stores the most recently assigned number.
 .
 Interpolate the string
 .B Rf
-where the reference mark should be and write the reference between
-.BR RS / RF
-on an input line after the reference mark.
+where the reference mark should be,
+then place the entry between
+.B RS
+and
+.B RF
+calls on text lines after the reference mark.
 .
-The mark may be bracketed,
-superscripted,
-or both;
-see the
+The
 .B \%Rfstyle
-register.
+register determines whether the mark is bracketed,
+superscripted,
+or both.
 .
 If
 .I reference-string
@@ -3903,8 +3924,9 @@ for use in all memorandum types except 4.
 .TP
 .BI TM\~ number\c
 \~.\|.\|.
-Declare technical memorandum number(s) used by
-.BR MT .
+Declare technical memorandum number(s) used with
+.B MT
+memoranda.
 .
 .
 .br
@@ -4213,9 +4235,8 @@ except the second
 .
 .TP
 .B BU
-interpolates a bullet mark in
-.B BL
-lists.
+interpolates a bullet mark,
+.BR \[rs][bu] .
 .
 .
 .TP
@@ -4252,9 +4273,8 @@ and register
 .
 .TP
 .B EM
-interpolates an em dash mark in
-.B DL
-lists.
+interpolates an em dash,
+.BR \[rs][em] .
 .
 .
 .TP
@@ -4276,7 +4296,7 @@ it is surrounded by square brackets.
 .
 .TP
 .B H1txt
-stores the text of the current heading;
+stores the text of the current first-level heading;
 .B H
 and
 .B HU
@@ -4546,10 +4566,12 @@ specifies the
 .B LB
 arguments that
 .I "groff mm"
-uses to format the items in a reference list.
+uses to format the items in an
+.B RP
+reference list.
 .
 The default is
-.RB \[lq] "\[rs]\[rs]n[Li] 0 1 0 \[rs]& 0 0" \[rq].
+.RB \[lq] "\|\[rs]\[rs]n[Li] 0 1 0 \[rs]& 0\|" \[rq].
 .
 .
 .TP
@@ -4938,7 +4960,13 @@ and
 sets the threshold for breaking the line after formatting a heading.
 .
 Text after headings at levels above this value is set on the same
-output line if possible;
+output line if possible.
+.
+Paragraphs numbered via
+.B nP
+or the
+.B Np
+register cause a break regardless;
 see
 .B H
 .RB ( 2 ).
@@ -5147,7 +5175,9 @@ and
 .
 .TP
 .B Li
-configures the text indentation applied to enumerated list types;
+configures the text indentation
+(in ens)
+applied to enumerated list types;
 that is,
 to items in
 .B AL
@@ -5256,14 +5286,11 @@ T}
 .
 .TP
 .B Np
-causes paragraphs after first-level headings (only) to be numbered
-in the format
+numbers paragraphs with a leading mark in the format
 .IR s . p ,
 where
 .IR s \~is
-is the section number
-(the number of the current first-level heading)
-and
+is first-level heading number and
 .IR p \~is
 the paragraph number,
 starting at 1;
@@ -5352,10 +5379,11 @@ except when
 .
 .TP
 .B Pi
-configures the amount of indentation applied
-to the first line of a paragraph
+configures the indentation
+(in ens)
+applied to first line of an unnumbered paragraph that has such
 (see
-.BR P )
+.BR P );
 and the text indentation of non-enumerated list items;
 that is,
 to items in
@@ -5483,6 +5511,14 @@ Value@Meaning
 2@superscripted
 3@bracketed and superscripted
 .TE
+.
+.
+.IP
+Changes to
+.BR Rfstyle 's
+value
+may not take effect until the next heading or paragraphing macro call.
+.\" ...and in certain other cases we don't document.
 .
 .
 .\" XXX: Why is this not named `Rpej`?

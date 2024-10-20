@@ -63,9 +63,9 @@ input="$examples_dir"/letter.mm
 
 for t in BL SB FB SP
 do
-    echo "checking formatting of MT type '$t'" >&2
+    echo "checking formatting of LT type '$t'" >&2
     expected=$(cksum "$artifacts_dir"/letter.$t | cut -d' ' -f1-2)
-    actual=$("$groff" -mm -dlT=$t -Tascii -P-cbou "$input" | cksum \
+    actual=$("$groff" -ww -mm -dlT=$t -Tascii -P-cbou "$input" | cksum \
         | cut -d' ' -f1-2)
     test "$actual" = "$expected" || wail
 done
