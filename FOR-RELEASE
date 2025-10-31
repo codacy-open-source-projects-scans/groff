@@ -1,0 +1,72 @@
+    Copyright 2013-2025 Free Software Foundation, Inc.
+
+    Copying and distribution of this file, with or without modification,
+    are permitted in any medium without royalty provided the copyright
+    notice and this notice are preserved.
+
+This file describes how to prepare 'groff' for a new release.
+
+
+########################################################################
+
+* Update 'grog' to include the names of new GNU troff requests and macro
+  names unique to packages (and sufficiently heavily used in typical
+  documents).
+
+* Update font description files that we generate from external data and
+  provide with our source distribution.
+
+    Directory  Format                  Tool
+    ---------  ------                  ----
+    devX*      X11 core/server font    xtotroff
+
+  The make(1) target "maintainer-font-descriptions" produces these font
+  descriptions.
+
+* Retrieve current versions of 'UnicodeData.txt'[1] and the Adobe Glyph
+  List (AGL)[2], and use them with
+  'src/utils/afmtodit/make-afmtodit-tables' to update
+  'src/utils/afmtodit/afmtodit.tables'.
+
+  [1] E.g., <https://www.unicode.org/Public/15.0.0/ucd/UnicodeData.txt>.
+      Check for the latest _released_ version of Unicode at the time.
+      Data for the forthcoming release may be available.
+  [2] <https://github.com/adobe-type-tools/agl-aglfn/blob/master/\
+      glyphlist.txt>
+
+     (<https://raw.githubusercontent.com/adobe-type-tools/agl-aglfn/\
+     master/glyphlist.txt> may be more convenient.)
+
+* Use the same 'UnicodeData.txt' file as input to
+  'src/libs/libgroff/make-uniuni' to regenerate
+  'src/libs/libgroff/uniuni.cpp'.
+
+* Update the 'gnulib' sub-module and 'bootstrap' script to the latest
+  stable versions.  See the 'HACKING' file for instructions.
+
+* Update the release version number where it is hard-coded.
+  + NEWS
+  + BUG-REPORT
+  + arch/mingw/grap2graph.cmd
+  + doc/webpage.ms
+
+* If the major or minor version number is being incremented, split off
+  a historical ChangeLog file and add it to `EXTRA_DIST` in Makefile.am.
+
+* Update in 'src/roff/groff/groff.cpp' the 'printf' that displays the
+  copyright to include the current year if it is not present.  (If no
+  copyrightable changes to the project's code have been made in the
+  current calendar year, use the most recent year in which they have;
+  see the 'HACKING' file.)
+
+* Increment the version number by tagging the release, beta, or release
+  candidate.  groff requires an explicit three-part version,
+  major.minor.revision, due to the .Y register.
+
+    $ git tag 1.23.0.rc1
+
+* Run the "set-man-page-time-stamps" Makefile target from your build
+  directory to fix up the stamps on the man pages.
+
+* groff 1.24.0: Edit the groff home page.  Revise the sentence "Most
+  commands installed by groff recognize this option." to say "All".

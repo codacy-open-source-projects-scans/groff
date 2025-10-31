@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Copyright (C) 2018-2024 Free Software Foundation, Inc.
+#
+# This file is part of groff.
+#
+# groff is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+# Count pages in generated files 'font_n.ps' and 'font_x.ps'.
+
+builddir="@abs_top_builddir@"
+gs_program="@GHOSTSCRIPT@"
+ret=0
+
+if [ "$gs_program" = "missing" ]
+then
+   echo "ghostscript program missing, can't check hdtbl examples" >&2
+   exit 77
+fi
+
+# $1 file, $2 expected number of pages
+check_number_pages()
+{
+    echo "checking $1 for $2 pages" >&2
+
+    if ! [ -r "$1" ]
+    then
+        echo "error: \"$1\" does not exist or is not readable" >&2
+        exit 2
+    fi
+
+    res=$("$gs_program" -o /dev/null/ -sDEVICE=bbox "$1" 2>&1 \
+          | grep HiResBoundingBox | wc -l)
+    # macOS `wc` prefixes the line count with spaces.  Get rid of them.
+    res=$(( res + 0 )) || exit 99
+
+    if [ "$res" != $2 ]
+    then
+        echo "...FAILED; found $res page(s)" >&2
+        ret=1
+    fi
+}
+
+check_number_pages "$builddir"/contrib/hdtbl/examples/fonts_n.ps 46
+check_number_pages "$builddir"/contrib/hdtbl/examples/fonts_x.ps 46
+
+exit $ret
+
+# vim:set ai et sw=4 ts=4 tw=72:

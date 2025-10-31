@@ -1,0 +1,220 @@
+[[ maintainer: Send to platform-testers for betas/RCs,
+               info-gnu for releases,
+               and CC groff and linux-man@vger.kernel.org for both. ]]
+
+[[ groff x.y.Y release candidate Z, x.y.Y.rcZ, is now available from
+GNU's alpha site.  You may download the distribution archive from there.
+
+  https://alpha.gnu.org/gnu/groff/ ]]
+
+[[ We are pleased to announce the availability of groff 1.yy.0.  Obtain
+it from the GNU mirror network,
+
+  https://ftpmirror.gnu.org/groff/groff-1.yy.0.tar.gz
+
+or, if the network is for some reason inoperative, directly from GNU.
+
+  https://ftp.gnu.org/gnu/groff/groff-1.yy.0.tar.gz ]]
+
+Ensure the integrity of your download by checking this source code
+archive's cryptographic signature; see "Obtaining groff" below.
+
+What is groff?
+==============
+
+groff (GNU roff) is a typesetting system that reads plain text input
+that includes formatting commands to produce output in PostScript,
+PDF, HTML, or DVI formats or for display to a terminal.  Formatting
+commands can be low-level typesetting primitives, macros from a
+supplied package, or user-defined macros.  All three approaches can be
+combined.
+
+A reimplementation and extension of troff and other programs from AT&T
+Unix, groff is widely available on POSIX and other systems owing to its
+long association with Unix manuals, including man pages.  It and its
+predecessor have produced several best-selling software engineering
+texts.  groff can create typographically sophisticated documents while
+consuming minimal system resources.
+
+  https://www.gnu.org/software/groff/
+
+Changes
+=======
+
+Since groff 1.23.0 was released on 5 July 2023, MM people have made a
+total of over NNN commits.
+
+[[ Changes since the most recent release candidate, 1.yy.0.rcZ ... ]]
+
+[[ maintainer: Insert output of
+   "git shortlog --summary 1.22.4..1.23.0" ]]
+
+[[ Headline features nominated by our development community include: ]]
+
+For more on these and other feature changes, see "News" below.
+
+[[ As of this writing, per the GNU Savannah bug tracker, the groff
+project has resolved NNN problems as fixed for the 1.yy.0 release. ]]
+
+Classifying these issues by type and the component of the project to
+which they apply, we find the following.
+
+  Type                              Component
+  ----                              ---------
+  Build/installation           NN   Core                           NN
+  Crash/unresponsive           NN   Driver: grohtml                NN
+  Documentation                NN   Driver: gropdf                 NN
+  Feature change               NN   Driver: grops                  NN
+  Incorrect behavior           NN   Driver: grotty                 NN
+  Lint                         NN   Driver: others/general         NN
+  Rendering/cosmetics          NN   Font: devpdf                   NN
+  Test                         NN   Font: devps                    NN
+  Warning/suspicious behavior  NN   Font: others/general           NN
+                                    General                        NN
+                                    Macros: man                    NN
+                                    Macros: mdoc                   NN
+                                    Macros: me                     NN
+                                    Macros: mm                     NN
+                                    Macros: mom                    NN
+                                    Macros: ms                     NN
+                                    Macros: others/general         NN
+                                    Preprocessor: eqn              NN
+                                    Preprocessor: grn              NN
+                                    Preprocessor: pic              NN
+                                    Preprocessor: preconv          NN
+                                    Preprocessor: refer            NN
+                                    Preprocessor: tbl              NN
+                                    Preprocessor: others/general   NN
+                                    Utilities                      NN
+
+Another way of capturing the amount of revision is as follows.
+
+$ git diff --stat 1.23.0 1.yy.0 | tail -n 1
+ [[ maintainer: insert output ]]
+
+Obtaining groff
+===============
+
+Here are the compressed sources and a GPG detached signature[*].
+  [[ maintainer: insert .tar.gz URL ]]
+  [[ maintainer: insert .tar.gz.sig URL ]]
+
+[[ maintainer: include the following for final release:
+Use a mirror for higher download bandwidth.
+  https://ftpmirror.gnu.org/groff/groff-1.yy.0.tar.gz
+  https://ftpmirror.gnu.org/groff/groff-1.yy.0.tar.gz.sig
+]]
+
+Here are the SHA-1 and SHA-256 checksums.
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  groff-1.yy.0.tar.gz
+yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy  groff-1.yy.0.tar.gz
+
+The SHA-256 checksum is encoded in Base64 instead of the hexadecimal
+form that most checksum tools default to.  The mechanism follows.
+
+sha256sum < groff-1.yy.0.tar.gz | cut -f1 -d\  | xxd -r -p | base64
+
+[*] Use a .sig file to verify that the corresponding file (without the
+    .sig suffix) is intact.  First, be sure to download both the .sig
+    file and the corresponding archive.  Then, verify the archive.
+
+      gpg --verify groff-1.yy.0.tar.gz{.sig,}
+
+    If that command fails because you don't have the required public
+    key, you can import it.
+
+      wget -O 96214.asc \
+        'https://savannah.gnu.org/people/viewgpg.php?user_id=96214'
+      gpg --import 96214.asc
+
+    Re-run the 'gpg --verify' command subsequently.
+
+Caveats
+=======
+
+o GNU tools, or otherwise POSIX-conforming ones, are generally required
+  to build on Solaris 10 or 11.  See the "PROBLEMS" file in the
+  distribution archive.
+
+o Solaris 10 has known problems with automated tests; see the "PROBLEMS"
+  file in the distribution archive.
+
+News
+====
+
+[[ maintainer: insert output of
+   "sed -n '/VERSION 1\.yy/{n;:X;n;/VERSION 1\.23/q;p;bX}' NEWS" ]]
+
+Acknowledgements
+================
+
+We'd like to thank the following people for helping ensure the quality
+of this release.
+
+[[ maintainer: Collect "thanks to" credits from the ChangeLog file, for
+   instance with "grep -i -A1 thanks ChangeLog".  A manual merge of
+   similar from the contrib/ change log files may also be necessary. ]]
+
+Alex Colomar
+Alexander Kanavin
+Alexander Monakov
+Alexis (surryhill)
+Andrew Bower
+Benno Schulenberg
+Bjarni Ingi Gislason
+Brian Inglis
+Bruno Haible
+Carsten Kunze
+Christof Meerwald
+Colin Watson
+Collin Funk
+Damian McGuckin
+Dan Plassche
+Dave Kemper
+Deri James
+Doug McIlroy
+Duncan Losin
+Eli Schwartz
+Eloi Montañés
+Frederic Chartier
+Gavin Smith
+Grisha Levit
+Hanno Boeck
+Hans Bezemer
+Heinz-Jürgen Oertel
+Helge Kreutzmann
+Ian Ropers
+Ingo Schwarze
+James Cloos
+Jeff Conrad
+Joerg van den Hoff
+Jonathan Gray
+Lennart Jablonka
+Lukas Javorsky
+Michał Kruszewski
+Mike Fulton
+Morten Bo Johansen
+Nikita Ivanov
+Oliver Corff
+onf
+Patrice Dumas
+Paul Eggert
+Peter Schaffter
+Phil Chadwick
+Pim
+Ralph Corderoy
+Rob Kolstad
+Robert Yang
+Ross Burton
+Russ Allbery
+Sebastien Peterson-Boudreau
+Stefan Möding
+Sven Schober
+TANAKA Takuji
+Tadziu Hoffman
+Thorsten Glaser
+Thérèse Godefroy
+Walter Alejandro Iglesias
+Werner Lemberg
+наб
