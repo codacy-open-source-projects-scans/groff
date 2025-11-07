@@ -120,7 +120,7 @@ typedef struct _dviFileMap {
  * New fields for the Dvi widget record
  */
 
-typedef struct {
+typedef struct _dviPart {
 	/*
 	 * resource specifiable items
 	 */

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright 2021 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -16,54 +16,62 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-set -e
+fail=
 
-DOC='\*[locale]'
+wail () {
+  echo "...FAILED" >&2
+  fail=yes
+}
+
+input='\*[locale]'
 
 echo "testing default localization (English)" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii)
-echo "$OUTPUT" | grep -qx english
+output=$(echo "$input" | "$groff" -bww -Tascii)
+echo "$output" | grep -qx english || wail
 
 echo "testing Czech localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m cs)
-echo "$OUTPUT" | grep -qx czech
+output=$(echo "$input" | "$groff" -bww -Tascii -m cs)
+echo "$output" | grep -qx czech || wail
 
 echo "testing German localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m de)
-echo "$OUTPUT" | grep -qx german
+output=$(echo "$input" | "$groff" -bww -Tascii -m de)
+echo "$output" | grep -qx german || wail
 
 echo "testing English localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m en)
-echo "$OUTPUT" | grep -qx english
+output=$(echo "$input" | "$groff" -bww -Tascii -m en)
+echo "$output" | grep -qx english || wail
 
 echo "testing Spanish localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m es)
-echo "$OUTPUT" | grep -qx spanish
+output=$(echo "$input" | "$groff" -bww -Tascii -m es)
+echo "$output" | grep -qx spanish || wail
 
 echo "testing French localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m fr)
-echo "$OUTPUT" | grep -qx french
+output=$(echo "$input" | "$groff" -bww -Tascii -m fr)
+echo "$output" | grep -qx french || wail
 
 echo "testing Italian localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m it)
-echo "$OUTPUT" | grep -qx italian
+output=$(echo "$input" | "$groff" -bww -Tascii -m it)
+echo "$output" | grep -qx italian || wail
 
 echo "testing Japanese localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m ja)
-echo "$OUTPUT" | grep -qx japanese
+output=$(echo "$input" | "$groff" -bww -Tascii -m ja)
+echo "$output" | grep -qx japanese || wail
 
 echo "testing Russian localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m ru)
-echo "$OUTPUT" | grep -qx russian
+output=$(echo "$input" | "$groff" -bww -Tascii -m ru)
+echo "$output" | grep -qx russian || wail
 
 echo "testing Swedish localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m sv)
-echo "$OUTPUT" | grep -qx swedish
+output=$(echo "$input" | "$groff" -bww -Tascii -m sv)
+echo "$output" | grep -qx swedish || wail
 
 echo "testing Chinese localization" >&2
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii -m zh)
-echo "$OUTPUT" | grep -qx chinese
+output=$(echo "$input" | "$groff" -bww -Tascii -m zh)
+echo "$output" | grep -qx chinese || wail
+
+test -z "$fail"
+
+# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:

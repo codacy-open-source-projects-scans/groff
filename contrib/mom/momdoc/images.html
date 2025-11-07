@@ -672,7 +672,7 @@ floats with <kbd>NO_SHIM</kbd> or <kbd>NO_FLEX</kbd>.
 
 <p>
 If you&#8217;d like more space around a float, you must add it
-manually, for example with 
+manually, for example with
 <a href="typesetting.html#ald">ALD</a>
 or
 <a href="typesetting.html#space">SPACE</a>.
@@ -955,7 +955,7 @@ labelled floats are added to or subtracted from a document.
 <div class="box-tip">
 <p class="tip">
 <span class="note">Tip:</span>
-<a href="docelement.html#blockquote">QUOTE</a>
+<a href="docelement.html#quote">QUOTE</a>
 and
 <a href="docelement.html#blockquote">BLOCKQUOTE</a>
 may also be labelled and captioned using <b>LABEL</b> and
@@ -1198,25 +1198,6 @@ and follow it with the text of the caption surrounded by double-quotes:
 <span class="pre-in-pp">
   .FLOAT
   .CAPTION "Caption at top of float"
-</span>
-<b>CAPTION</b> can take multiple string arguments, allowing for
-captions that run to several lines.  There is a caveat: the strings
-are not automatically broken into individual lines.  You must
-provide strings that include literal breaks or spaces:
-<br/>
-<span class="pre-in-pp">
-  .FLOAT
-  .CAPTION "Caption" ".BR" "at top" ".BR" "of float"
-</span>
-or, easier to read:
-<br/>
-<span class="pre-in-pp">
-  .FLOAT
-  .CAPTION "Caption" \
-  ".BR" \
-  "at top" \
-  ".BR" \
-  "of float"
 </span>
 If you want a caption at the bottom, put <kbd>CAPTION</kbd> immediately
 before ending the float:
@@ -1496,7 +1477,7 @@ following:
   c s s                   c s s
   c s s                   c s s
   c c c                   c c c
-  n n n.                  n n n. 
+  n n n.                  n n n.
   Percent Increase        .TH
   2002-2012               Percent Increase
   .TH                     2002-2012
@@ -1695,7 +1676,7 @@ number would be 3, entering
 anywhere in running text would result in a pdf link that reads
 &#8220;Table 3&#8221;.  If chapter numbers are being prefixed to
 labels, the same string in, say, chapter 5 would produce the pdf
-link &#8220;Table 5.3&#8221;.  
+link &#8220;Table 5.3&#8221;.
 </p>
 
 <div class="macro-id-overline">
@@ -1854,7 +1835,7 @@ The <kbd>width</kbd> and <kbd>height</kbd> arguments to
 <kbd>.PS</kbd> are idiosyncratic owing to the preprocessor itself.
 Both are optional and both expect a value in inches, so neither
 argument should have a
-(<a href="definitions.html#unitofmeasure">unit of measure</a>
+<a href="definitions.html#unitofmeasure">unit of measure</a>
 appended.
 </p>
 
@@ -2013,7 +1994,7 @@ code unnecessarily.
 
 <p>
 PIC_TEXT_STYLE lets you establish the type parameters for text
-inside a <b>pic</b> block all at once in cases where so doing 
+inside a <b>pic</b> block all at once in cases where so doing
 improves the readability of your mom source files.
 </p>
 
@@ -2206,7 +2187,7 @@ flex-spaced, i.e. not given the <kbd>NO_FLEX</kbd> argument.
 <h5 class="docs" style="margin-top: 1em; text-transform: none">CAPTION</h5>
 
 <p>
-<kbd>CAPTION</kbd> allows you to give the equation a caption.  
+<kbd>CAPTION</kbd> allows you to give the equation a caption.
 Equation captions always appear beneath the equation.
 </p>
 
@@ -2652,7 +2633,7 @@ eqn, which is quadded right.)
 With the exception of <kbd>ADJUST</kbd> and <kbd>QUAD</kbd> (which
 requires a bit of explanation), the style arguments to <kbd>CAPTIONS</kbd>,
 <kbd>LABELS</kbd>, and <kbd>SOURCES</kbd> (which is only available
-for tables) behave identically to the 
+for tables) behave identically to the
 <a href="docelement.html#control-macro-args">arguments to control macros</a>.
 </p>
 
@@ -3079,7 +3060,7 @@ margins.  Indents set inside a box are relative to the inset.
 When a box is stopped, formerly active left and right indents
 are restored.
 </p>
- 
+
 <p>
 Frames are drawn from the perimeter inward.  The inset is
 relative to the inner edge of the frame.
@@ -3336,7 +3317,7 @@ invoked and stopped just before they are toggled off:
 <h3 id="code" class="docs">CODE</h3>
 
 <p>
-If you&#8217;re boxing 
+If you&#8217;re boxing
 <a href="docelement.html#code">CODE</a>
 that&#8217;s wrapped inside
 <a href="docelement.html#quote">QUOTE</a>,
@@ -3346,7 +3327,7 @@ set the quote indent to &#8220;0&#8221; with
 <span class="pre-in-pp">
 &nbsp;&nbsp;.QUOTE_STYLE INDENT 0
 </span>
-so that the box&#8217;s leftmost inset is respected.  
+so that the box&#8217;s leftmost inset is respected.
 </p>
 
 <p>

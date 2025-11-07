@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022-2024 Free Software Foundation, Inc.
+# Copyright (C) 2022-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -65,7 +65,7 @@ echo "$output" | grep -Eq '^   A +long +subsection +heading' || wail
 
 echo "checking default 'Ss' indentation on 2nd line" >&2
 # 3 spaces in string literal.
-echo "$output" | grep -Eq '^   indentation of said title is' || wail
+echo "$output" | grep -Eq '^   tion of said title is' || wail
 
 # Verify that paragraph indentation after subsection heading is correct.
 echo "checking 'Pp' indentation after 'Ss'" >&2

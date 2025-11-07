@@ -8,7 +8,7 @@
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -401,7 +401,7 @@ names the publisher (issuer).
 .
 .TP
 .B %J
-records the title of the journal within which a cited article is
+records the name of the journal within which a cited article is
 collected.
 .
 See
@@ -604,11 +604,11 @@ treatment of the particular citation.
 .
 AT&T
 .I \%refer \" AT&T
-treats these flags as keywords,
-but ignores them since they are non-alphanumeric.
+ignores them since they are non-alphanumeric.
 .
-The following flags direct GNU
-.IR \%refer . \" GNU
+They direct GNU
+.I \%refer \" GNU
+as follows.
 .
 .
 .TP
@@ -1897,6 +1897,21 @@ command instead of in the normal way.
 .
 .
 .\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@refer
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
+.
+.
+.\" ====================================================================
 .SH Environment
 .\" ====================================================================
 .
@@ -2011,11 +2026,11 @@ data for the reference;
 .RB \[lq] ][ \[rq];
 and (f) uses the
 .B lf
-request to restore the line numbers of the original input.
+request to restore the line numbers of the input.
 .
-As discussed in subsection \[lq]Macro interface\[rq] above,
-it is up to the document or a macro package to employ and format this
-information usefully.
+As noted in subsection \[lq]Macro interface\[rq] above,
+it is the document's responsibility to employ and format the information
+usefully.
 .
 Let us see how we might turn
 .MR groff_ms @MAN7EXT@

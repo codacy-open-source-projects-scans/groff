@@ -70,13 +70,13 @@
 .de pdfpic@get-image-dimensions
 .  ds pdfpic*command pdfinfo \$1 2>/dev/null \"
 .  eo
-.  as pdfpic*command  | perl -ne 'print qq(. \\\\R\@pdfpic*width $+{w}p@ \\\\R\@pdfpic*height $+{h}p\@) if m/Page\s+size:\s+(?<w>[\d.]+)\sx\s(?<h>[\d.]+)/si;'
+.  as pdfpic*command  | perl -ne 'print qq(. \\\\R\@pdfpic*width ${1}p@ \\\\R\@pdfpic*height ${2}p\@),qq(\\n) if m/Page\s+size:\s+([\d.]+)\sx\s([\d.]+)/si;'
 .  ec
 .  pso \*[pdfpic*command]
 .  if !r pdfpic*width \{\
 .    ds pdfpic*command ( identify \$1 2>/dev/null || file \$1 ) \"
 .    eo
-.    as pdfpic*command  | perl -ne 'print qq(. \\\\R\@pdfpic*width $+{w}p@ \\\\R\@pdfpic*height $+{h}p\@),qq(\\n) if m/(?:(?:[,=A-Z]|JP2) (?<w>\d+)\s*x\s*(?<h>\d+))|(?:height=(?<h>\d+).+width=(?<w>\d+))/;'
+.    as pdfpic*command  | perl -ne 'print qq(. \\\\R\@pdfpic*width ${1}p@ \\\\R\@pdfpic*height ${2}p\@),qq(\\n) if m/(?:[,=A-Z]|JP2) (\d+)\s*x\s*(\d+)/';
 .    ec
 .    pso \*[pdfpic*command]
 .  \}

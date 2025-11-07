@@ -72,10 +72,12 @@ groff_mom \- modern macros for document composition with GNU
 .	shift 2
 .  \}
 .  if (\\n[.$] = 1) .as result \,\f[\\$1]
+.  nr saved-hy \\n[.hy]
 .  nh
 .  nop \\*[result]\&
 .  rm result
-.  hy \\n[HY]
+.  hy \\n[saved-hy]
+.  rr saved-hy
 ..
 .
 .
@@ -131,7 +133,7 @@ panel of document viewers,
 and may contain clickable internal and external links.
 .
 .P
-Normally.
+Normally,
 .IR groff 's
 native PDF driver,
 .MR gropdf @MAN1EXT@ ,
@@ -169,7 +171,7 @@ format for the device specified with the
 option.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 .
@@ -1438,7 +1440,7 @@ Additional note: If you are running a
 version prior to
 1.19.2,
 you must follow all
-.B .FAMILY
+.B \%.FAMILY
 requests with a
 .B .FT
 request,
@@ -1448,21 +1450,22 @@ will set all type up to the next
 .B .FT
 request in the fallback font.
 .
+.
 .P
-If you are running
+When running
 .I groff
 1.19.2 or later,
-when you invoke the
-.B .FAMILY
+and you call the
+.B \%.FAMILY
 macro,
 .I mom
 .I remembers
 the font style
-.BR ( Roman ,
-.BR Italic ,
-etc) currently in use (if the font style exists in the new
+(such as roman or italic)
+currently in use
+(if the font style exists in the new
 .IR family )
-and will continue to use the same font style in the new family.
+and continues to use the same font style in the new family.
 For example:
 .RS
 .EX
@@ -1474,15 +1477,18 @@ For example:
 .EE
 .RE
 .
+.
 .P
-However, if the font style does not exist in the new family,
+However,
+if the font style does not exist in the new family,
 .I mom
-will set all subsequent type in the fallback font (by default,
+sets all subsequent type in the fallback font
+(by default,
 .B Courier Medium
 .BR Roman )
 until she encounters a
 .B .FT
-request that's valid for the
+call that's valid for the
 .IR family .
 .
 .P

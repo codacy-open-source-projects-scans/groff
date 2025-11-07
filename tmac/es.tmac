@@ -44,6 +44,11 @@
 .ds \*[locale]-april abril\"
 .ds \*[locale]-attribute_string por\"
 .ds \*[locale]-august agosto\"
+.ds \*[locale]-capcon RESUMEN\"
+.ds \*[locale]-capec Ecuaci\[o ']n\"
+.ds \*[locale]-capex Documento\"
+.ds \*[locale]-capfg Ilustrati\[o ']n\"
+.ds \*[locale]-captb Tabla\"
 .ds \*[locale]-chapter_string Cap\[i ']tulo\"
 .ds \*[locale]-december diciembre\"
 .ds \*[locale]-draft_string Borrador\"
@@ -81,11 +86,6 @@
 .ds \*[locale]-letsa A quien corresponda:\"
 .ds \*[locale]-letsj SUJETO:\"
 .ds \*[locale]-lf LISTA DE ILUSTRACIONES\"
-.ds \*[locale]-licon RESUMEN\"
-.ds \*[locale]-liec Ecuaci\[o ']n\"
-.ds \*[locale]-liex Documento\"
-.ds \*[locale]-lifg Ilustrati\[o ']n\"
-.ds \*[locale]-litb Tabla\"
 .ds \*[locale]-lt LISTA DE TABLAS\"
 .ds \*[locale]-lx LISTA DE DOCUMENTOS\"
 .ds \*[locale]-man-section1 Manual de commandos\"
@@ -126,30 +126,14 @@
 .if r GS \{\
 .	\" update the date
 .	ds DY \n[dy] de \*[MO] de \n[year]
-.	\" set hyphenation flags
+.	\" set hyphenation mode
 .	nr HY 6
 .\}
 .
 .
 .\" mm package
-.if d PH \{\
-.	\" update the date with the new strings
-.	ds cov*new-date \\n[dy] de \\*[MO\\n[mo]] de \\n[year]
-.
-.	\" ISODATE and DT update
-.	de ISODATE
-.	      nr cov*mm \\n[mo]
-.	      nr cov*dd \\n[dy]
-.	      af cov*mm 01
-.	      af cov*dd 01
-.	      ie '0'\\$1' \
-.		      ds cov*new-date \\n[dy] de \\*[MO\\n[mo]] de \\n[year]
-.	      el \
-.		      ds cov*new-date \\n[year]-\\n[cov*mm]-\\n[cov*dd]
-.	.
-.
-.	als DT cov*new-date
-.\}
+.if d PH \
+.	ds cov*local-date-format \En[dy] de \E*[MO\En[mo]] de \En[year]
 .
 .
 .\" Default encoding

@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
      Written by Werner Lemberg (wl@gnu.org)
 
 This file is part of groff.
@@ -17,7 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "lib.h"
+
 #include "paper.h"
 
 paper papersizes[NUM_PAPERSIZES];
@@ -80,3 +84,9 @@ papersize_init::papersize_init()
   // this is an ISO format, but it easier to use add_american_paper
   add_american_paper("dl", 40, 220/25.4, 110/25.4);
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright 2021-2024 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -23,7 +23,13 @@ groff="${abs_top_builddir:-.}/test-groff"
 set -e
 
 # Keep preconv from being run.
-unset GROFF_ENCODING
+#
+# The "unset" in Solaris /usr/xpg4/bin/sh can actually fail.
+if ! unset GROFF_ENCODING
+then
+    echo "unable to clear environment; skipping" >&2
+    exit 77
+fi
 
 DOC='.msoquiet nonexistent'
 

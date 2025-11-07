@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -20,7 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h> // free()
+#include <stdio.h> // fprintf(), printf()
 
 #include "eqn.h"
 #include "pbox.h"
@@ -73,7 +74,7 @@ void accent_box::output()
     printf("\\h'\\n[" WIDTH_FORMAT "]u-\\n[" WIDTH_FORMAT "]u/2u+\\n["
 	   SKEW_FORMAT "]u'",
 	   p->uid, ab->uid, p->uid);
-    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid); 
+    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid);
     ab->output();
     printf("\\h'-\\n[" WIDTH_FORMAT "]u'", ab->uid);
     printf("\\v'\\n[" SUP_RAISE_FORMAT "]u'", uid);
@@ -127,7 +128,7 @@ void accent_box::output()
     printf("\\h'\\n[" LEFT_WIDTH_FORMAT "]u+\\n[" SKEW_FORMAT "]u"
 	   "-(\\n[" WIDTH_FORMAT "]u/2u)'",
 	   uid, p->uid, ab->uid);
-    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid); 
+    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid);
     ab->output();
     printf(DELIMITER_CHAR);
     printf("\\Z" DELIMITER_CHAR);
@@ -304,7 +305,7 @@ void uaccent_box::output()
     printf("\\Z" DELIMITER_CHAR);
     printf("\\h'\\n[" LEFT_WIDTH_FORMAT "]u-(\\n[" WIDTH_FORMAT "]u/2u)'",
 	   uid, ab->uid);
-    printf("\\v'\\n[" DEPTH_FORMAT "]u'", p->uid); 
+    printf("\\v'\\n[" DEPTH_FORMAT "]u'", p->uid);
     ab->output();
     printf(DELIMITER_CHAR);
     printf("\\Z" DELIMITER_CHAR);

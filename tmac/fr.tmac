@@ -44,6 +44,11 @@
 .ds \*[locale]-april Avril\"
 .ds \*[locale]-attribute_string par\"
 .ds \*[locale]-august Ao\[u ^]t\"
+.ds \*[locale]-capcon SOMMAIRE\"
+.ds \*[locale]-capec \[E ']quation\"
+.ds \*[locale]-capex Document\"
+.ds \*[locale]-capfg Illustration\"
+.ds \*[locale]-captb Tableau\"
 .ds \*[locale]-chapter_string Chapitre\"
 .ds \*[locale]-december D\[e ']cembre\"
 .ds \*[locale]-draft_string Jet\"
@@ -81,22 +86,17 @@
 .ds \*[locale]-letsa \[A `] la personne concern\[e ']e:\"
 .ds \*[locale]-letsj SUJET:\"
 .ds \*[locale]-lf LISTE DES ILLUSTRATIONS\"
-.ds \*[locale]-licon SOMMAIRE\"
-.ds \*[locale]-liec \[E ']quation\"
-.ds \*[locale]-liex Document\"
-.ds \*[locale]-lifg Illustration\"
-.ds \*[locale]-litb Tableau\"
 .ds \*[locale]-lt LISTE DES TABLEAUX\"
 .ds \*[locale]-lx LISTE DES DOCUMENTS\"
-.ds \*[locale]-man-section1 Manuel des commandes générales\"
-.ds \*[locale]-man-section2 Manuel des appels système\"
-.ds \*[locale]-man-section3 Manuel des fonctions de la bibliothèque\"
+.ds \*[locale]-man-section1 Manuel des commandes g\[e ']n\[e ']rales\"
+.ds \*[locale]-man-section2 Manuel des appels syst\[e `]me\"
+.ds \*[locale]-man-section3 Manuel des fonctions de la biblioth\[e `]que\"
 .ds \*[locale]-man-section4 Manuel des interfaces du noyau\"
 .ds \*[locale]-man-section5 Manuel des formats de fichiers\"
 .ds \*[locale]-man-section6 Manuel des jeux\"
 .ds \*[locale]-man-section7 Manuel d'informations diverses\"
-.ds \*[locale]-man-section8 Manuel du gestionnaire de système\"
-.ds \*[locale]-man-section9 Manuel du développeur de noyau\"
+.ds \*[locale]-man-section8 Manuel du gestionnaire de syst\[e `]me\"
+.ds \*[locale]-man-section9 Manuel du d\[e ']veloppeur de noyau\"
 .ds \*[locale]-march Mars\"
 .ds \*[locale]-may Mai\"
 .ds \*[locale]-monday Lundi\"
@@ -126,30 +126,14 @@
 .if r GS \{\
 .	\" update the date
 .	ds DY \n[dy] \*[MO] \n[year]
-.	\" set hyphenation flags
+.	\" set hyphenation mode
 .	nr HY 6
 .\}
 .
 .
 .\" mm package
-.if d PH \{\
-.	\" update the date with the new strings
-.	ds cov*new-date \\n[dy] \\*[MO\\n[mo]] \\n[year]
-.
-.	\" ISODATE and DT update
-.	de ISODATE
-.		nr cov*mm \\n[mo]
-.		nr cov*dd \\n[dy]
-.		af cov*mm 01
-.		af cov*dd 01
-.		ie '0'\\$1' \
-.			ds cov*new-date \\n[dy] \\*[MO\\n[mo]] \\n[year]
-.		el \
-.			ds cov*new-date \\n[year]-\\n[cov*mm]-\\n[cov*dd]
-.	.
-.
-.	als DT cov*new-date
-.\}
+.if d PH \
+.	ds cov*local-date-format \En[dy] \E*[MO\En[mo]] \En[year]
 .
 .
 .\" Default encoding

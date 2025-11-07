@@ -1,5 +1,5 @@
 # Autoconf configuration file for groff.
-# Copyright (C) 1989-2023 Free Software Foundation, Inc.
+# Copyright (C) 1989-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -25,12 +25,8 @@ AC_INIT([GNU roff],
 
 AC_PREREQ([2.64])
 
-# SHORT_VERSION contains only the number of REVISION before the first
-# '.'; e.g., if REVISION is '3.real.434-5aafd' then SHORT_VERSION is
-# 'x.yy.3', where x and yy are MAJOR_VERSION and MINOR_VERSION,
-# respectively.
-AC_SUBST([SHORT_VERSION],
-	m4_bregexp(AC_PACKAGE_VERSION,[^\(\w+\.\w+\.\w+\).*$],[\1]))
+GROFF_MAKE_SHORT_VERSION
+GROFF_CHECK_VERSION_FORMAT
 
 # Directories where the helper scripts should be found. This must be
 # consistent with the variable build_aux in bootstrap.conf.
@@ -88,7 +84,6 @@ AC_SUBST([SH_SCRIPT_SED_CMD])
 AC_CHECK_HEADERS([stdbool.h stddef.h stdlib.h unistd.h dirent.h \
                   limits.h sys/dir.h string.h strings.h math.h \
                   sys/time.h direct.h process.h])
-GROFF_ISC_SYSV3
 GROFF_POSIX
 
 # checks for header stuff
@@ -99,8 +94,6 @@ GROFF_NEED_DECLARATION([pclose])
 GROFF_NEED_DECLARATION([putenv])
 GROFF_NEED_DECLARATION([rand])
 GROFF_NEED_DECLARATION([srand])
-GROFF_NEED_DECLARATION([strcasecmp])
-GROFF_NEED_DECLARATION([strncasecmp])
 GROFF_NEED_DECLARATION([vfprintf])
 GROFF_SYS_NERR
 GROFF_SYS_ERRLIST
@@ -133,14 +126,12 @@ AC_SUBST([LIBEXT],[$acl_libext])
 AC_FUNC_MMAP
 saved_libs="$LIBS"
 LIBS="$LIBS $LIBC $LIBM"
-AC_REPLACE_FUNCS([fmod getcwd putenv strcasecmp \
-                  strerror strncasecmp strtol])
+AC_REPLACE_FUNCS([fmod getcwd putenv strtol])
 LIBS="$saved_libs"
 AC_CHECK_FUNCS([gettimeofday isatty kill rename setlocale strdup \
                 strsep])
 GROFF_MKSTEMP
-AC_CHECK_DECLS([strsignal, getc_unlocked])
-AC_CHECK_DECLS([sys_siglist, getc_unlocked])
+AC_CHECK_DECLS([getc_unlocked])
 AM_LANGINFO_CODESET
 
 # checks for compiler characteristics
@@ -164,14 +155,12 @@ GROFF_TMAC
 GROFF_WITH_COMPATIBILITY_WRAPPERS
 GROFF_TARGET_PATH_SEPARATOR
 GROFF_CHECK_GROHTML_PROGRAMS
-GROFF_PDFROFF_DEPENDENCIES_CHECK
 GROFF_GROPDF_DEPENDENCIES_CHECK
 GROFF_PNMTOOLS_CAN_BE_QUIET
 GROFF_PNMTOPS_NOSETPAGE
 GROFF_MAKE_DEFINES_RM
 GROFF_DIFF_D
-GROFF_HAVE_TEST_EF_OPTION
-GROFF_BASH
+GROFF_PROG_SH
 GROFF_GHOSTSCRIPT_VERSION_CHECK
 gl_GLIBC21
 gl_LOCALCHARSET
@@ -195,13 +184,13 @@ AM_CONDITIONAL([MAKE_DEFINES_RM], [test "$groff_make_defines_rm" = yes])
 AM_CONDITIONAL([USEPROGRAMPREFIX], [test "$g" = g])
 
 AM_CONDITIONAL([USE_GROHTML], [test "$use_grohtml" = yes])
-AM_CONDITIONAL([USE_PDFROFF], [test "$use_pdfroff" = yes])
 AM_CONDITIONAL([USE_GROPDF], [test "$use_gropdf" = yes])
 AM_CONDITIONAL([USE_GROFF_ALLOCATOR],
                [test "$groff_use_own_allocator" = yes])
 AM_CONDITIONAL([HAVE_GHOSTSCRIPT], [test "$GHOSTSCRIPT" != no \
                 && test "$GHOSTSCRIPT" != missing])
 AM_CONDITIONAL([HAVE_URW_FONTS], [test "$groff_have_urw_fonts" = yes ])
+AM_CONDITIONAL([HAVE_MAKEINFO], [test "$groff_have_makeinfo" = yes ])
 AM_CONDITIONAL([HAVE_TEXI2DVI], [test "$groff_have_texi2dvi" = yes ])
 AM_CONDITIONAL([USE_TEX], [test "$groff_use_tex" = yes ])
 
@@ -249,15 +238,15 @@ then
 fi
 echo "\
  preconv can use uchardet library : $groff_have_uchardet
- can build groff.dvi, groff.pdf   : $groff_use_tex
+ can build groff.{info,html,txt}  : $groff_have_makeinfo
+ can build groff.{dvi,pdf}        : $groff_use_tex
 ----------------------------------------------------------------------"
 
 GROFF_APPDEFDIR_NOTICE
-GROFF_AWK_NOTICE
 GROFF_GHOSTSCRIPT_AVAILABILITY_NOTICE
 GROFF_GHOSTSCRIPT_VERSION_NOTICE
 GROFF_URW_FONTS_NOTICE
 GROFF_UCHARDET_NOTICE
 GROFF_GROHTML_PROGRAM_NOTICE
-GROFF_PDFROFF_PROGRAM_NOTICE
+GROFF_MAKEINFO_PROGRAM_NOTICE
 GROFF_GROPDF_PROGRAM_NOTICE

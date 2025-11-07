@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright 2014-2020 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -26,6 +26,7 @@ EXTRA_DIST += src/preproc/tbl/tbl.1.man
 
 tbl_TESTS = \
   src/preproc/tbl/tests/align-staggered-text-blocks-correctly.sh \
+  src/preproc/tbl/tests/boxed-TH-tables-work-on-utf8-device.sh \
   src/preproc/tbl/tests/boxes-and-vertical-rules.sh \
   src/preproc/tbl/tests/check-horizontal-line-length.sh \
   src/preproc/tbl/tests/check-line-intersections.sh \
@@ -36,9 +37,11 @@ tbl_TESTS = \
   src/preproc/tbl/tests/do-not-overlap-bottom-border-in-nroff.sh \
   src/preproc/tbl/tests/do-not-segv-on-invalid-vertical-span-entry.sh \
   src/preproc/tbl/tests/do-not-segv-when-backslash-R-in-text-block.sh \
+  src/preproc/tbl/tests/emit-accurate-lf-requests.sh \
   src/preproc/tbl/tests/expand-region-option-works.sh \
   src/preproc/tbl/tests/format-time-diagnostics-work.sh \
   src/preproc/tbl/tests/horizontal-rules-not-drawn-too-long.sh \
+  src/preproc/tbl/tests/passes-through-input-with-eighth-bit-set.sh \
   src/preproc/tbl/tests/repeated-character-entry-works.sh \
   src/preproc/tbl/tests/save-and-restore-hyphenation-parameters.sh \
   src/preproc/tbl/tests/save-and-restore-inter-sentence-space.sh \
@@ -48,7 +51,6 @@ tbl_TESTS = \
   src/preproc/tbl/tests/x-column-modifier-works.sh
 TESTS += $(tbl_TESTS)
 EXTRA_DIST += $(tbl_TESTS)
-
 
 # Local Variables:
 # fill-column: 72

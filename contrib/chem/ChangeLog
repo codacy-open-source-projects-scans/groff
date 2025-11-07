@@ -1,3 +1,48 @@
+2024-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* chem.am (all): Drop seemingly spurious use of target.
+
+2024-12-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Move "chem.pic" from its own subdirectory (which has no other
+	contents provided by groff) to the "tmac" directory.  The
+	"eqnrc" file and groff's hyphenation pattern and exception files
+	establish a precedent for using "tmac" for things that aren't
+	"troff macro" files.  This makes it easier to run automated
+	tests on GNU chem from the build tree.
+
+	* chem.am (chempicdir, dist_chempic_DATA): Drop macros.
+	(CHEMTMACFILES, chemtmacdir, dist_chemtmac_DATA): Add macros.
+	(uninstall_chem_extra): Rename this...
+	(uninstall_chem_hook): ...to this, for consistency with other
+	groff Automake files.
+	* chem.pl: If running as "built" version of script, locate
+	"chem.pic" file relative to the build's "tmac" directory.
+
+2024-12-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* chem.pl: Revise approach to determining program name.  This
+	reverts the change on 9 December; the Perl interpreter does not
+	populate `argv[0]` the same way that the shell typically does
+	with execve(2).  Drop global scalar `chem` in favor of a new
+	global scalar `prog`, populated by `File::Spec->splitpath()`.
+	(usage, version): Migrate from `chem` to `prog`.
+	(usage): Report only the "basename" of the script.  Revise and
+	shorten command description.
+
+2024-12-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* chem.pl (usage): Revise usage message.  Organize like other
+	groff commands' usage messages.  Use $0 in the synopses for
+	consistency with groff's C++ programs.  This also informs the
+	user with multiple versions available which they are running.
+
+2024-12-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* chem.am (chem): Use sed to replace magic token `@PERL@` with
+	contents of `PERL` macro, determined by groff configure script.
+	* chem.pl: Rewrite shebang line to use the magic token.
+
 2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* chem.pl: Stop endorsing shebang line space myth.  See
@@ -358,21 +403,18 @@
 	of chem is an awk script written by Brian Kernighan.  This project
 	is a rewrite of chem in Perl.
 
-2006-10-15  Bernd Warken  <groff-bernd.warken-72@web.de>
-________________________________________________________________
-License
+________________________________________________________________________
 
-Copyright (C) 2006-2020 Free Software Foundation, Inc.
-Written by Bernd Warken <groff-bernd.warken-72@web.de>.
+Copyright 2006-2015 Free Software Foundation, Inc.
+Copyright 2022-2024 G. Branden Robinson
 
-Copying and distribution of this file, with or without
-modification, are permitted provided the copyright notice and this
-notice are preserved.
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
 
-This file is part of `chem', which is part of the `groff' project.
-
-
-##### Editor settings
 Local Variables:
+fill-column: 72
 mode: change-log
+version-control: never
 End:
+vim:set autoindent textwidth=72:

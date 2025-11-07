@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2003-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2024 Free Software Foundation, Inc.
      Written by Jeff Conrad (jeff_conrad@msn.com)
 
 This file is part of groff.
@@ -17,7 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "lib.h"
+
 #include "stringclass.h"
 #include "ptable.h"
 
@@ -695,3 +699,9 @@ const char *hp_msl_to_unicode_code(const char *s)
   hp_msl_to_unicode *result = hp_msl_to_unicode_table.lookup(s);
   return result ? result->value : 0;
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

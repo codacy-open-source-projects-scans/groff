@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright 2021-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -25,7 +25,11 @@ tbl="${abs_top_builddir:-.}/tbl"
 # Don't segfault because we tried to span down from an invalid span that
 # tbl neglected to replace with an empty table entry.
 
-test -f core && exit 77 # skip
+if [ -e core ]
+then
+    echo "$0: 'core' file already exists; skipping" >&2
+    exit 77 # skip
+fi
 
 input=$(cat <<EOF
 .TS
@@ -38,4 +42,4 @@ EOF
 output=$(printf "%s" "$input" | "$tbl")
 ! test -f core
 
-# vim:set ai noet sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

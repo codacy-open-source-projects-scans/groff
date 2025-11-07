@@ -681,22 +681,22 @@
 .
 .de m1			\" *** position one space
 .nr _0 \\n(hmu
-.nr hm \\$1v
+.do nr hm (v;\\$1)
 .nr tm +\\n(hmu-\\n(_0u
 .rr _0
 ..
 .
 .de m2			\" *** position two space
-.nr tm \\n(hmu+\\n(tpp+\\$1v
+.do nr tm \\n(hmu+\\n(tpp+(v;\\$1)
 ..
 .
 .de m3			\" *** position three space
-.nr bm \\n(fmu+\\n(tpp+\\$1v
+.do nr bm \\n(fmu+\\n(tpp+(v;\\$1)
 ..
 .
 .de m4			\" *** position four space
 .nr _0 \\n(fmu
-.nr fm \\$1v
+.do nr fm (v;\\$1)
 .nr bm +\\n(fmu-\\n(_0u
 ..
 .
@@ -722,7 +722,7 @@
 .
 .de ba			\" *** set base indent
 .ie \\n(.$ \
-.	nr $i \\$1n
+.	do nr $i (n;\\$1)
 .el \
 .	nr $i \\n(siu*\\n($0u
 ..
@@ -760,7 +760,7 @@
 .	nr ii \\n(iin
 .nr _0 \\n(ii
 .if \\n(.$>1 \
-.	nr _0 \\$2n
+.	do nr _0 (n;\\$2)
 .@p \\n(_0u
 .nr _I \\n(.iu
 .in 0
@@ -825,7 +825,7 @@
 .if "\\n(.z"|e" .do @err eqn equation continuation unfulfilled
 .in \\n($iu+\\n(pou
 .if \\n(.$ \
-.	in +\\$1n
+.	do in +(n;\\$1)
 .ce 0
 .rj 0
 .fi
@@ -989,7 +989,7 @@
 .	nr $m \\$2			\" param 2: column quantity
 .if \\n(.$>0 \
 .	if !'\\$1'' \
-.		nr $s \\$1n		\" param 1: column separation
+.		do nr $s (n;\\$1)	\" param 1: column separation
 .nr $l (\\n(.l-((\\n($m-1)*\\n($s))/\\n($m
 .xl \\n($lu
 .mk _k
@@ -1409,8 +1409,8 @@
 .sp 0.3
 .do HTML-IMAGE
 .nr g7 \\$2
-.in (u;\\n(.l-\\n(g7>?0/2)
-.ne \\$1u
+.do in (u;\\n(.l-\\n(g7>?0/2)
+.do ne (u;\\$1)
 .nr g7 \\n(.u
 .ls 1
 .ie \\n(?n \

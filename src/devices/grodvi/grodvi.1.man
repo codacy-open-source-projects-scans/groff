@@ -110,7 +110,7 @@ when the latter is given the
 option.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 Use
@@ -552,6 +552,21 @@ of an em.
 The default thickness is
 .B 40
 (0.04\~em).
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%grodvi
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

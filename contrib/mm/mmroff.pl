@@ -1,5 +1,5 @@
 #!@PERL@
-# Copyright (C) 1989-2023 Free Software Foundation, Inc.
+# Copyright 1989-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -29,12 +29,21 @@ use Config;
 # I do agree however that the previous way opened a whole bunch
 # of security holes.
 
-my $no_exec;
+my $want_only_xref_update = 0;
 
 if (grep(/^--help$/, @ARGV)) {
-	print "usage: mmroff [-x] [groff-option ...] [file ...]\n";
-	print "usage: mmroff --version\n";
-	print "usage: mmroff --help\n";
+	print <<EOF;
+usage: mmroff [-x] [groff-argument ...]
+usage: mmroff --version
+usage: mmroff --help
+
+$progname is a simple wrapper for groff(1), used to expand cross
+references in mm documents; see groff_mm(7).  It also handles the
+inclusion of PostScript images.  Documents that do not use these
+features of groff mm (the INITI, IND, INDP, INITR, SETR, GETHN, GETPN,
+GETR, GETST, PIC macros) do not require mmroff.  See the mmroff(1)
+manual page.
+EOF
 	exit;
 }
 
@@ -45,7 +54,7 @@ if (grep(/^--version$/, @ARGV)) {
 
 # check for -x and remove it
 if (grep(/^-x$/, @ARGV)) {
-	$no_exec++;
+	$want_only_xref_update = 1;
 	@ARGV = grep(!/^-x$/, @ARGV);
 }
 
@@ -139,7 +148,7 @@ if ($rfilename) {
 	close(OUT);
 }
 
-exit 0 if $no_exec;
+exit 0 if $want_only_xref_update;
 exit system($second_pass);
 
 sub print_index {

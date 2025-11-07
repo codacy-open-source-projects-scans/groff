@@ -32,7 +32,7 @@ a:link.quick { text-decoration: underline; }
   top: 12px ;
   bottom: 12px ;
   margin: auto ;
-  padding: 12px ; 
+  padding: 12px ;
   border: solid 1px #ceac8d ;
   color: #302419 ;
   background-color: #ffffeb ;
@@ -238,8 +238,8 @@ div.rule-long /* precedes nav bar at bottom of page */
 .box-tip
 {
   outline: solid 1px #ceac8d ;
-  padding-left: 15px ; 
-  padding-right: 15px ; 
+  padding-left: 15px ;
+  padding-right: 15px ;
   text-align: left ;
   background-color: #f9f9d9 ;
   margin-bottom: 1.5em ;
@@ -247,8 +247,8 @@ div.rule-long /* precedes nav bar at bottom of page */
 .box-example-layout
 {
   outline: solid 1px #ceac8d ;
-  padding-left: 15px ; 
-  padding-right: 15px ; 
+  padding-left: 15px ;
+  padding-right: 15px ;
   text-align: justify ;
   background-color: #f9f9d9 ;
   margin-bottom: 2.5em ;
@@ -256,8 +256,8 @@ div.rule-long /* precedes nav bar at bottom of page */
 .box-notes
 {
   outline: solid 1px #ceac8d ;
-  padding-left: 15px ; 
-  padding-right: 15px ; 
+  padding-left: 15px ;
+  padding-right: 15px ;
   text-align: justify ;
   background-color: #f9f9d9 ;
   margin-bottom: 1.5em ;
@@ -265,8 +265,8 @@ div.rule-long /* precedes nav bar at bottom of page */
 .box-important
 {
   outline: solid 1px #ce7a65 ;
-  padding-left: 15px ; 
-  padding-right: 15px ; 
+  padding-left: 15px ;
+  padding-right: 15px ;
   text-align: justify ;
   background-color: #f9f9d9 ;
   margin-bottom: 1.5em ;
@@ -686,6 +686,6 @@ dt.params
 
 dd.cover-args
 {
-  margin-bottom: .25em; 
+  margin-bottom: .25em;
   margin-left: 1.25em ;
 }

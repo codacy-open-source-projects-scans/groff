@@ -1,4 +1,4 @@
-/* Copyright (C) 1994-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1994-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -23,19 +23,23 @@ option to specify symbol sets to look in
 put filename in error messages (or fix lib)
 */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
-#include <ctype.h>
 #include <errno.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <math.h> // cos(), sin()
+#include <stdio.h> // FILE, fclose(), fgets(), fopen(), fprintf(),
+		   // freopen(), printf(), sprintf()
+#include <stdlib.h> // atoi(), exit(), EXIT_FAILURE, EXIT_SUCCESS,
+		    // strtol()
+#include <string.h> // strchr(), strcmp(), strerror(), strlen(),
+		    // strrchr(), strtok()
+
+#include <getopt.h> // getopt_long()
+
+#include "lib.h"
 
 #include "posix.h"
 #include "errarg.h"
@@ -286,18 +290,20 @@ main(int argc, char **argv)
   program_name = argv[0];
 
   int opt;
-  int res = 1200;		// PCL unit of measure for cursor moves
-  int scalesize = 4;		// LaserJet 4 only allows 1/4 point increments
+  int res = 1200;	// PCL unit of measure for cursor moves
+  int scalesize = 4;	// LaserJet 4 only allows 1/4 point increments
   int unitwidth = 6350;
-  double ppi;			// points per inch
-  double upem;			// design units per em
+  double ppi;		// points per inch
+  double upem;		// design units per em
 
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "adsqvi:", long_options, NULL)) != EOF) {
+  while ((opt = getopt_long(argc, argv, ":adsqvi:", long_options,
+			    0 /* nullptr */))
+	  != EOF)
     switch (opt) {
     case 'a':
       all_flag = YES;
@@ -317,19 +323,25 @@ main(int argc, char **argv)
       break;
     case 'v':
       printf("GNU hpftodit (groff) version %s\n", Version_string);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage();
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       assert(0);
     }
-  }
 
   if (debug_flag && argc - optind < 1)
     usage();
@@ -341,7 +353,7 @@ main(int argc, char **argv)
   if (debug_flag)
     dump_tags(f);
   if (!debug_flag && !read_map(argv[optind + 1], tfm_type))
-    exit(1);
+    exit(EXIT_FAILURE);
   else if (debug_flag && argc - optind > 1)
     read_map(argv[optind + 1], tfm_type);
   current_filename = NULL;
@@ -394,13 +406,20 @@ usage(FILE *stream)
 "usage: %s {-v | --version}\n"
 "usage: %s --help\n",
 	  program_name, program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"Create a font description file for use with a Hewlett-Packard\n"
+"LaserJet 4-series (or newer) printer and the grolj4(1) output driver\n"
+"of groff(1), using data from an HP tagged font metric (TFM) file.\n"
+"See the hpftodit(1) manual page.\n",
+	  stream);
 }
 
 static void
 usage()
 {
   usage(stderr);
-  exit(1);
+  exit(2);
 }
 
 File::File(const char *s)

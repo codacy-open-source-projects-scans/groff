@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.com)
 
    This file is part of groff.
@@ -22,6 +22,9 @@
 #endif
 
 #include <assert.h>
+#include <errno.h> // EINVAL, errno
+#include <stdio.h> // clearerr(), ferror(), fflush(), stdout
+#include <string.h> // strcmp()
 
 #include "driver.h"
 
@@ -81,7 +84,7 @@ font_pointer_list::font_pointer_list(font *f, font_pointer_list *fp)
 }
 
 printer::printer()
-: font_list(0), font_table(0), nfonts(0)
+: font_list(0 /* nullptr */), font_table(0 /* nullptr */), nfonts(0)
 {
 }
 
@@ -102,13 +105,13 @@ void printer::load_font(int n, const char *nm)
 {
   assert(n >= 0);
   if (n >= nfonts) {
-    if (nfonts == 0) {
+    if (0 == nfonts) {
       nfonts = 10;
       if (nfonts <= n)
 	nfonts = n + 1;
       font_table = new font *[nfonts];
       for (int i = 0; i < nfonts; i++)
-	font_table[i] = 0;
+	font_table[i] = 0 /* nullptr */;
     }
     else {
       font **old_font_table = font_table;
@@ -121,7 +124,7 @@ void printer::load_font(int n, const char *nm)
       for (i = 0; i < old_nfonts; i++)
 	font_table[i] = old_font_table[i];
       for (i = old_nfonts; i < nfonts; i++)
-	font_table[i] = 0;
+	font_table[i] = 0 /* nullptr */;
       delete[] old_font_table;
     }
   }
@@ -132,7 +135,7 @@ void printer::load_font(int n, const char *nm)
 font *printer::find_font(const char *nm)
 {
   for (font_pointer_list *p = font_list; p; p = p->next)
-    if (strcmp(p->p->get_name(), nm) == 0)
+    if (strcmp(p->p->get_filename(), nm) == 0)
       return p->p;
   font *f = make_font(nm);
   if (0 /* nullptr */ == f)
@@ -158,6 +161,7 @@ void printer::devtag(char *, const environment *, char)
 {
 }
 
+// TODO: 1st and 3rd args should be `const`.
 void printer::draw(int, int *, int, const environment *)
 {
 }
@@ -170,7 +174,7 @@ void printer::change_fill_color(const environment * const)
 {
 }
 
-void printer::set_ascii_char(unsigned char c, const environment *env, 
+void printer::set_ascii_char(unsigned char c, const environment *env,
 			     int *widthp)
 {
   char  buf[2];
@@ -183,8 +187,8 @@ void printer::set_ascii_char(unsigned char c, const environment *env,
   glyph *g = set_char_and_width(buf, env, &w, &f);
 
   if (g != UNDEFINED_GLYPH) {
-    set_char(g, f, env, w, 0);
-    if (widthp)
+    set_char(g, f, env, w, 0 /* nullptr */);
+    if (widthp != 0 /* nullptr */)
       *widthp = w;
   }
 }
@@ -197,7 +201,7 @@ void printer::set_special_char(const char *nm, const environment *env,
   glyph *g = set_char_and_width(nm, env, &w, &f);
   if (g != UNDEFINED_GLYPH) {
     set_char(g, f, env, w, nm);
-    if (widthp)
+    if (widthp != 0 /* nullptr */)
       *widthp = w;
   }
 }
@@ -208,26 +212,26 @@ glyph *printer::set_char_and_width(const char *nm,
 {
   glyph *g = name_to_glyph(nm);
   int fn = env->fontno;
-  if (fn < 0 || fn >= nfonts) {
+  if ((fn < 0) || (fn >= nfonts)) {
     error("invalid font position '%1'", fn);
     return UNDEFINED_GLYPH;
   }
   *f = font_table[fn];
-  if (*f == 0) {
+  if (0 /* nullptr */ == *f) {
     error("no font mounted at position %1", fn);
     return UNDEFINED_GLYPH;
   }
   if (!(*f)->contains(g)) {
-    if (nm[0] != '\0' && nm[1] == '\0')
-      error("font '%1' does not contain ordinary character '%2'",
-	    (*f)->get_name(), nm[0]);
+    if ((nm[0] != '\0') && ('\0' == nm[1]))
+      error("font description file '%1' lacks glyph for ordinary"
+	    " character '%2'", (*f)->get_filename(), nm[0]);
     else
-      error("font '%1' does not contain special character '%2'",
-	    (*f)->get_name(), nm);
+      error("font description file '%1' lacks glyph for special"
+	    " character '%2'", (*f)->get_filename(), nm);
     return UNDEFINED_GLYPH;
   }
   int w = (*f)->get_width(g, env->size);
-  if (widthp)
+  if (widthp != 0 /* nullptr */)
     *widthp = w;
   return g;
 }
@@ -237,23 +241,23 @@ void printer::set_numbered_char(int num, const environment *env, int
 {
   glyph *g = number_to_glyph(num);
   int fn = env->fontno;
-  if (fn < 0 || fn >= nfonts) {
+  if ((fn < 0) || (fn >= nfonts)) {
     error("invalid font position '%1'", fn);
     return;
   }
   font *f = font_table[fn];
-  if (f == 0) {
+  if (0 /* nullptr */ == f) {
     error("no font mounted at position %1", fn);
     return;
   }
   if (!f->contains(g)) {
-    error("font '%1' has no glyph at index %2", f->get_name(), num);
+    error("font '%1' has no glyph at index %2", f->get_filename(), num);
     return;
   }
   int w = f->get_width(g, env->size);
-  if (widthp)
+  if (widthp != 0 /* nullptr */)
     *widthp = w;
-  set_char(g, f, env, w, 0);
+  set_char(g, f, env, w, 0 /* nullptr */);
 }
 
 font *printer::get_font_from_index(int fontno)
@@ -261,7 +265,7 @@ font *printer::get_font_from_index(int fontno)
   if ((fontno >= 0) && (fontno < nfonts))
     return font_table[fontno];
   else
-    return 0;
+    return 0 /* nullptr */;
 }
 
 // Local Variables:

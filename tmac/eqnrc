@@ -1,7 +1,5 @@
-.\" Startup file for eqn.
+.\" startup file for eqn
 .\"
-.do if !d EQ .ds EQ
-.do if !d EN .ds EN
 .EQ
 sdefine << %{ < back 20 < }%
 sdefine >> %{ > back 20 > }%

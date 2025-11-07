@@ -75,8 +75,8 @@ to the standard output.
 .
 It furthermore translates
 .MR @g@eqn @MAN1EXT@
-constructs, so it can be used for generating images of mathematical
-formulae.
+constructs,
+so it can be used to generate images of mathematical formulae.
 .
 .
 .PP

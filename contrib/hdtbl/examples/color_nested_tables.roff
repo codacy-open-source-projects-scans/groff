@@ -1,10 +1,7 @@
 .ig
+This file is part of groff, the GNU roff typesetting system.
 
-color_nested_tables.roff
-
-This file is part of groff, the GNU roff type-setting system.
-
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -19,13 +16,17 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ..
 .
 .if !d sopath \
 .  ds sopath
 .
-.so \*[sopath]examples/common.roff
+.ds lib examples/common.roff
+.soquiet \*[sopath]\*[lib]
+.if !d common \{\
+.  tmc \n[.F]: cannot find "\*[lib]"; specify its location
+.  tm1 " with groff '-I' or '-d sopath=' option
+.\}
 .
 .
 .\" Seed the random number generator for reproducible builds.

@@ -1,5 +1,9 @@
 #
-# Predefined groff symbols for the dingbats font.
+# Map between PostScript glyph names and groff character identifiers
+# (ordinary ones have a one-character name; special character names are
+# longer).
+#
+# Use this map with the (unstyled) Zapf Dingbats font.
 #
 a19 OK
 a19 u2713

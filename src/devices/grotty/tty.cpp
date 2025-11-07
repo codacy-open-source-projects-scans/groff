@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
      OSC 8 support by G. Branden Robinson
 
@@ -17,8 +17,20 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "driver.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <limits.h> // CHAR_MAX
+#include <locale.h> // setlocale()
+#include <stdio.h> // EOF, FILE, fprintf(), fputs(), printf(),
+		   // putchar(), setbuf(), stderr, stdout
+#include <stdlib.h> // exit(), EXIT_SUCCESS, getenv(), strtol()
+
+#include <getopt.h> // getopt_long()
+
 #include "device.h"
+#include "driver.h"
 #include "ptable.h"
 
 typedef signed char schar;
@@ -56,7 +68,7 @@ static bool do_sgr_italics;
 static bool want_reverse_video_for_italics = false;
 static bool do_reverse_video;
 static bool use_overstriking_drawing_scheme = false;
-
+static bool want_sgr_truecolor = false;
 static void update_options();
 static void usage(FILE *stream);
 
@@ -96,7 +108,7 @@ static unsigned char bold_underline_mode;
 // 'CSI 0 m' exclusively
 #define SGR_DEFAULT CSI "0m"
 
-#define DEFAULT_COLOR_IDX -1
+const int DEFAULT_COLOR_IDX = -1;
 
 class tty_font : public font {
   tty_font(const char *);
@@ -157,8 +169,8 @@ public:
   int hpos;
   unsigned int code;
   unsigned char mode;
-  schar back_color_idx;
-  schar fore_color_idx;
+  long back_color_idx;
+  long fore_color_idx;
   inline int draw_mode() { return mode & (VDRAW_MODE|HDRAW_MODE); }
   inline int order() {
     return mode & (VDRAW_MODE|HDRAW_MODE|CU_MODE|COLOR_CHANGE); }
@@ -170,20 +182,20 @@ class tty_printer : public printer {
   int nlines;
   int cached_v;
   int cached_vpos;
-  schar curr_fore_idx;
-  schar curr_back_idx;
+  long curr_fore_idx;
+  long curr_back_idx;
   bool is_underlining;
   bool is_boldfacing;
   bool is_continuously_underlining;
   PTABLE(schar) tty_colors;
   void make_underline(int);
   void make_bold(output_character, int);
-  schar color_to_idx(color *);
+  long color_to_idx(color *);
   void add_char(output_character, int, int, int, color *, color *,
 		unsigned char);
   void simple_add_char(const output_character, const environment *);
   char *make_rgb_string(unsigned int, unsigned int, unsigned int);
-  bool tty_color(unsigned int, unsigned int, unsigned int, schar *,
+  bool has_color(unsigned int, unsigned int, unsigned int, long *,
 		 schar = DEFAULT_COLOR_IDX);
   void line(int, int, int, int, color *, color *);
   void draw_line(int *, int, const environment *);
@@ -198,7 +210,7 @@ public:
   void change_color(const environment * const);
   void change_fill_color(const environment * const);
   void put_char(output_character);
-  void put_color(schar, int);
+  void put_color(long, int);
   void begin_page(int) { }
   void end_page(int);
   font *make_font(const char *);
@@ -226,21 +238,26 @@ char *tty_printer::make_rgb_string(unsigned int r,
   return s;
 }
 
-bool tty_printer::tty_color(unsigned int r,
+bool tty_printer::has_color(unsigned int r,
 			    unsigned int g,
-			    unsigned int b, schar *idx, schar value)
+			    unsigned int b, long *idx, schar value)
 {
   bool is_known_color = true;
-  char *s = make_rgb_string(r, g, b);
-  schar *i = tty_colors.lookup(s);
-  if (!i) {
-    is_known_color = false;
-    i = new schar[1];
-    *i = value;
-    tty_colors.define(s, i);
+  if (!want_sgr_truecolor) {
+    char *s = make_rgb_string(r, g, b);
+    schar *i = tty_colors.lookup(s);
+    if (0 /* nullptr */ == i) {
+      is_known_color = false;
+      i = new schar[1];
+      *i = value;
+      tty_colors.define(s, i);
+    }
+    *idx = *i;
+    delete[] s;
   }
-  *idx = *i;
-  delete[] s;
+  else {
+    *idx=((r>>8)<<16) + ((g>>8)<<8) + (b>>8);
+  }
   return is_known_color;
 }
 
@@ -250,20 +267,25 @@ tty_printer::tty_printer() : cached_v(0)
     hline_char = 0x2500;
     vline_char = 0x2502;
   }
-  schar dummy;
+  // TODO: Skip color setup if terminfo `colors` capability is "-1".
+  long dummy;
+  // Create the eight ANSI X3.64/ECMA-48/ISO 6429 standard colors.
   // black, white
-  (void)tty_color(0, 0, 0, &dummy, 0);
-  (void)tty_color(color::MAX_COLOR_VAL,
-		  color::MAX_COLOR_VAL,
-		  color::MAX_COLOR_VAL, &dummy, 7);
+  (void) has_color(0, 0, 0, &dummy, 0);
+  (void) has_color(color::MAX_COLOR_VAL,
+                   color::MAX_COLOR_VAL,
+                   color::MAX_COLOR_VAL, &dummy, 7);
   // red, green, blue
-  (void)tty_color(color::MAX_COLOR_VAL, 0, 0, &dummy, 1);
-  (void)tty_color(0, color::MAX_COLOR_VAL, 0, &dummy, 2);
-  (void)tty_color(0, 0, color::MAX_COLOR_VAL, &dummy, 4);
+  (void) has_color(color::MAX_COLOR_VAL, 0, 0, &dummy, 1);
+  (void) has_color(0, color::MAX_COLOR_VAL, 0, &dummy, 2);
+  (void) has_color(0, 0, color::MAX_COLOR_VAL, &dummy, 4);
   // yellow, magenta, cyan
-  (void)tty_color(color::MAX_COLOR_VAL, color::MAX_COLOR_VAL, 0, &dummy, 3);
-  (void)tty_color(color::MAX_COLOR_VAL, 0, color::MAX_COLOR_VAL, &dummy, 5);
-  (void)tty_color(0, color::MAX_COLOR_VAL, color::MAX_COLOR_VAL, &dummy, 6);
+  (void) has_color(color::MAX_COLOR_VAL, color::MAX_COLOR_VAL, 0,
+		   &dummy, 3);
+  (void) has_color(color::MAX_COLOR_VAL, 0, color::MAX_COLOR_VAL,
+		   &dummy, 5);
+  (void) has_color(0, color::MAX_COLOR_VAL, color::MAX_COLOR_VAL,
+		   &dummy, 6);
   nlines = 66;
   lines = new tty_glyph *[nlines];
   for (int i = 0; i < nlines; i++)
@@ -317,16 +339,16 @@ void tty_printer::make_bold(output_character c, int w)
   }
 }
 
-schar tty_printer::color_to_idx(color *col)
+long tty_printer::color_to_idx(color *col)
 {
   if (col->is_default())
     return DEFAULT_COLOR_IDX;
   unsigned int r, g, b;
   col->get_rgb(&r, &g, &b);
-  schar idx;
-  if (!tty_color(r, g, b, &idx)) {
+  long idx;
+  if (!has_color(r, g, b, &idx)) {
     char *s = col->print_color();
-    error("unrecognized color '%1' mapped to default", s);
+    error("unsupported color '%1' mapped to default", s);
     delete[] s;
   }
   return idx;
@@ -471,7 +493,7 @@ void tty_printer::special_link(const char *arg, const environment *env)
   }
   else {
     // Our caller ensures that we see whitespace after 'link'.
-    assert(c == ' ' || c == '\t');
+    assert((' ' == c) || ('\t' == c));
     if (is_link_active) {
       warning("new hyperlink started without ending previous one;"
 	      " recovering");
@@ -483,13 +505,13 @@ void tty_printer::special_link(const char *arg, const environment *env)
     is_link_active = true;
     do
       c = *arg++;
-    while (c == ' ' || c == '\t');
+    while ((' ' == c) || ('\t' == c));
     arg--;
     // The first argument is the URI.
     const char *uri = arg;
     do
       c = *arg++;
-    while (c != '\0' && c != ' ' && c != '\t');
+    while ((c != '\0') && (c != ' ') && (c != '\t'));
     arg--;
     ptrdiff_t uri_len = arg - uri;
     // Any remaining arguments are "key=value" pairs.
@@ -504,7 +526,7 @@ void tty_printer::special_link(const char *arg, const environment *env)
 	c = *arg++;
 	if ('\0' == c)
 	  done = true;
-	else if (' ' == c || '\t' == c)
+	else if ((' ' == c) || ('\t' == c))
 	  in_pair = false;
 	else
 	  simple_add_char(c, env);
@@ -550,7 +572,7 @@ void tty_printer::draw_polygon(int *p, int np, const environment *env)
     error("no arguments for polygon");
     return;
   }
-  // We only draw polygons which consist entirely of horizontal and
+  // We draw only polygons that consist entirely of horizontal and
   // vertical lines.
   int hpos = 0;
   int vpos = 0;
@@ -685,33 +707,54 @@ void tty_printer::put_char(output_character wc)
     putchar(wc);
 }
 
-void tty_printer::put_color(schar color_index, int back)
+void tty_printer::put_color(long color_index, int back)
 {
-  if (color_index == DEFAULT_COLOR_IDX) {
-    putstring(SGR_DEFAULT);
-    // set bold and underline again
-    if (is_boldfacing)
-      putstring(SGR_BOLD);
-    if (is_underlining) {
-      if (do_sgr_italics)
-	putstring(SGR_ITALIC);
-      else if (do_reverse_video)
-	putstring(SGR_REVERSE);
-      else
-	putstring(SGR_UNDERLINE);
+  if (!want_sgr_truecolor) {
+    if (DEFAULT_COLOR_IDX == color_index) {
+      putstring(SGR_DEFAULT);
+      // set bold and underline again
+      if (is_boldfacing)
+        putstring(SGR_BOLD);
+      if (is_underlining) {
+        if (do_sgr_italics)
+          putstring(SGR_ITALIC);
+        else if (do_reverse_video)
+          putstring(SGR_REVERSE);
+        else
+          putstring(SGR_UNDERLINE);
+      }
+      // set other color again
+      back = !back;
+      color_index = back ? curr_back_idx : curr_fore_idx;
     }
-    // set other color again
-    back = !back;
-    color_index = back ? curr_back_idx : curr_fore_idx;
+    if (color_index != DEFAULT_COLOR_IDX) {
+      putstring(CSI);
+      if (back)
+        putchar('4');
+      else
+        putchar('3');
+      putchar(color_index + '0');
+      putchar('m');
+    }
   }
-  if (color_index != DEFAULT_COLOR_IDX) {
+  else {
+    if (DEFAULT_COLOR_IDX == color_index) {
+      putstring(SGR_DEFAULT);
+      back = !back;
+      color_index = back ? curr_back_idx : curr_fore_idx;
+      if (DEFAULT_COLOR_IDX == color_index)
+	return;
+    }
     putstring(CSI);
-    if (back)
-      putchar('4');
-    else
-      putchar('3');
-    putchar(color_index + '0');
-    putchar('m');
+    int fb = back ? 48 : 38;
+    const size_t buflen = sizeof "48;2;255;255;255m";
+    char buf[buflen];
+    size_t written = snprintf(buf, buflen, "%d;2;%lu;%lu;%lum", fb,
+			      (color_index >> 16),
+			      ((color_index >> 8) & 0xff),
+			      (color_index & 0xff));
+    assert(written < buflen);
+    putstring(buf);
   }
 }
 
@@ -820,7 +863,10 @@ void tty_printer::end_page(int page_length)
 		putstring(SGR_NO_UNDERLINE);
 	      is_underlining = false;
 	    }
-	    putchar('\t');
+	    if ((next_tab_pos - hpos) > 1)
+	      putchar('\t');
+	    else
+	      putchar(' ');
 	    hpos = next_tab_pos;
 	  }
 	}
@@ -938,13 +984,14 @@ int main(int argc, char **argv)
   setlocale(LC_CTYPE, "");
   int c;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((c = getopt_long(argc, argv, "bBcdfF:hiI:oruUv", long_options, NULL))
+  while ((c = getopt_long(argc, argv, ":bBcdfF:hiI:ortuUv",
+			  long_options, 0 /* nullptr */))
 	 != EOF)
-    switch(c) {
+    switch (c) {
     case 'v':
       printf("GNU grotty (groff) version %s\n", Version_string);
       exit(EXIT_SUCCESS);
@@ -998,12 +1045,24 @@ int main(int argc, char **argv)
       // Ignore \D commands.
       allow_drawing_commands = false;
       break;
+    case 't':
+      // Use SGR 38 and 48 sequences instead of SGR 30-37 and 40-47.
+      want_sgr_truecolor = true;
+      break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(EXIT_FAILURE);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+	    char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       assert(0 == "unhandled getopt_long return value");
@@ -1021,20 +1080,17 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream,
-"usage: %s [-dfho] [-i|-r] [-F font-directory] [file ...]\n"
+"usage: %s [-dfhot] [-i|-r] [-F font-directory] [file ...]\n"
 "usage: %s -c [-bBdfhouU] [-F font-directory] [file ...]\n"
 "usage: %s {-v | --version}\n"
 "usage: %s --help\n",
 	  program_name, program_name, program_name, program_name);
-  if (stdout == stream) {
-    fputs(
-"\n"
+  if (stdout == stream)
+    fputs("\n"
 "Translate the output of troff(1) into a form suitable for\n"
 "typewriter‐like devices, including terminal emulators.  See the\n"
 "grotty(1) manual page.\n",
 	  stream);
-    exit(EXIT_SUCCESS);
-  }
 }
 
 // Local Variables:

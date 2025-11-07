@@ -9,7 +9,7 @@ or TeX
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -126,7 +126,7 @@ and any of
 .BR .PE ,
 .BR .PF ,
 or
-.B .PY
+.BR .PY ,
 which it interprets as picture descriptions.
 .
 End a
@@ -281,14 +281,20 @@ mode.
 .
 .TP
 .B \-S
-Operate in
-.I safer mode;
-.B sh
-commands are ignored.
+Enable safer mode and ignore any subsequent
+.B \-U
+option.
 .
-This mode,
-enabled by default,
-can be useful when operating on untrustworthy input.
+In
+.I "safer mode,"
+.I @g@pic
+ignores
+.B sh
+commands,
+which can be useful when operating on untrustworthy input.
+.
+.I @g@pic
+operates in safer mode by default.
 .
 .
 .TP
@@ -758,7 +764,7 @@ is implied.
 .
 Attributes can be specified in the same way as for a normal text object.
 .
-.B Caution:
+.I Caution:
 be very careful that you specify an appropriate format string in
 .I text;
 .IR @g@pic 's
@@ -926,13 +932,13 @@ these have values 8.5 and 11,
 respectively.
 .
 .
-.LP
+.P
 Scientific notation is allowed for numbers,
 as with
 .RB \[lq] "x = 5e\-2" \[rq].
 .
 .
-.LP
+.P
 Text attributes can be compounded.
 .
 For example,
@@ -940,29 +946,27 @@ For example,
 is valid.
 .
 .
-.LP
+.P
 There is no limit to the depth to which blocks can be nested.
 .
 For example,
+.
 .RS
-.LP
 .EX
 [A: [B: [C: box ]]] with .A.B.C.sw at 1,2
 circle at last [].A.B.C
 .EE
 .RE
 .
-.
-.LP
 is acceptable.
 .
 .
-.LP
+.P
 Arcs have compass points determined by the circle of which the arc is a
 part.
 .
 .
-.LP
+.P
 Circles,
 ellipses,
 and arcs can be dotted or dashed.
@@ -971,7 +975,7 @@ In \*[tx] mode,
 splines can be dotted or dashed as well.
 .
 .
-.LP
+.P
 Boxes can have rounded corners.
 .
 The
@@ -1010,7 +1014,7 @@ and
 offsets of the box's upper right corner from its default position.
 .
 .
-.LP
+.P
 The
 .B .PS
 line accepts a second argument specifying a maximum height for the
@@ -1028,7 +1032,7 @@ This differs from DWB 2.0
 which may change the picture's aspect ratio if a height is specified.
 .
 .
-.LP
+.P
 Each text object has an associated invisible box that determines its
 compass points and implicit motion.
 .
@@ -1052,7 +1056,7 @@ and
 have values of\~0.
 .
 .
-.LP
+.P
 In
 (almost all)
 .\" XXX: So what _are_ the exceptions?
@@ -1072,25 +1076,26 @@ which should be a string as described in
 .MR printf 3 ,
 and appropriate to the quantity of arguments supplied.
 .
-Only the modifiers
+GNU
+.I pic
+supports only the conversion specifiers
+.BR e ,
+.BR E ,
+.BR f ,
+.BR g ,
+.BR G ,
+and
+.BR % ,
+modifiers
 .RB \[lq] # \[rq],
 .RB \[lq] \- \[rq],
 .RB \[lq] + \[rq],
 and \[lq]\~\[rq] [space]),
 a minimum field width,
-an optional precision,
-and the conversion specifiers
-.BR %e ,
-.BR %E ,
-.BR %f ,
-.BR %g ,
-.BR %G ,
-and
-.B %%
-are supported.
+and an optional precision.
 .
 .
-.LP
+.P
 The thickness of the lines used to draw objects is controlled by the
 .B linethick
 variable,
@@ -1140,7 +1145,7 @@ nor by the width or height given in the
 line.
 .
 .
-.LP
+.P
 Boxes
 (including boxes with rounded corners or slanted sides),
 circles,
@@ -1210,7 +1215,7 @@ assumes at the beginning of each picture that the stroke and fill colors
 are set to the device defaults.
 .
 .
-.LP
+.P
 To change the name of the vbox in \*[tx] mode,
 set the pseudo-variable
 .B \%figname
@@ -1231,7 +1236,7 @@ makes the picture available in the box
 .BR \[rs]foobar .
 .
 .
-.LP
+.P
 Arrow heads are drawn as solid triangles if the variable
 .B \%arrowhead
 is non-zero and either \*[tx] mode is enabled or the
@@ -1246,7 +1251,7 @@ Solid arrow heads are always filled with the current outline (stroke)
 color.
 .
 .
-.LP
+.P
 The
 .I troff
 output of
@@ -1264,7 +1269,7 @@ they are never interpreted as
 basic units.
 .
 .
-.LP
+.P
 Objects can have an
 .B \%aligned
 attribute,
@@ -1284,26 +1289,120 @@ points of the object.
 has no effect on objects whose start and end points are coincident.
 .
 .
-.LP
+.P
 In places where
 .IB n th
 is allowed,
-.BI \[aq] expr \[aq]th
+.BI \[ga] expr \[aq]th
 is also allowed.
 .
-.RB \[lq] \[aq]th \[lq]
+.RB \[lq] \[aq]th \[rq]
 is a single token:
 no space is allowed between the apostrophe and the
 .RB \[lq] th \[rq].
 .
+Consider the following example.
 .
-For example,
+.
 .IP
 .EX
 for i = 1 to 4 do {
-   line from \[aq]i\[aq]th box.nw to \[aq]i+1\[aq]th box.se
+   box
+   move right 0.5
+}
+for i = 1 to 3 do {
+   arrow from \[ga]i\[aq]th box.ne to \[ga]i+1\[aq]th box.sw
 }
 .EE
+.
+.
+.P
+Arbitrary polygons can be drawn using the
+.B polygon
+keyword followed by a series of
+.IR n \-1
+line segments,
+where
+.I n
+is the number of edges of the polygon.
+.
+This allows
+GNU
+.I troff \" GNU
+to interpret the line segments as a complete object such that the
+.B \%filled
+and
+.B \%shaded
+attributes may be used.
+.
+The last user-specified line segment determines the polygon's
+final drawing position and direction.
+.
+For example,
+draw and fill a triangle
+with the following.
+.
+.
+.RS
+.P
+.EX
+polygon up 1 then right 1 down 0.5 fill 0.5
+.EE
+.RE
+.
+.
+.P
+Two reference point suffixes permit the positioning
+of drawing elements relative to a polygon.
+.
+.RB \[lq] .vertex
+.IR expr \[rq]
+locates the vertices,
+and
+.RB \[lq] .midpoint
+.IR expr \[rq]
+for locating the midpoints of edges.
+.
+GNU
+.B pic
+numbers vertices and midpoints in drawing order starting from
+.B 1 .
+.
+You can abbreviate
+.B \%.vertex
+as
+.B .v
+or
+.BR .ver ,
+and
+.B \%.midpoint
+as
+.BR .mid .
+.
+.
+.P
+For example,
+.IP
+.EX
+arrow down
+polygon up 0.5 right 1 \[rs]
+then down 0.5 right 1 \[rs]
+then down 0.5 left 1 \[rs]
+with .v2 at last line.end
+arrow down from last polygon.v4
+.EE
+.
+.
+.P
+creates and correctly places a flowchart decision diamond.
+.
+.
+.P
+.B \%.center
+.RB ( .c )
+is also available,
+but compass points do not work as expected
+and should not be used with polygons.
 .
 .
 .\" ====================================================================
@@ -1326,17 +1425,16 @@ tokens.
 .I groff
 requests that don't produce formatted output may precede
 .BR .PS ,
-but no text should be formatted.
-.
-That restriction applies to the injection of text by macro packages,
+but format no text,
+not even any injected by a macro package,
 which may include a page number even on the first page,
 as
 .I mm
 does by default.
 .
-Writing a \[lq]raw\[rq]
+Consider writing a \[lq]raw\[rq]
 .I roff
-document that uses no macro package is an economical approach.
+document that uses no macro package.
 .
 .
 .P
@@ -1368,7 +1466,7 @@ One of these is
 the PostScript interpreter Ghostscript
 .RI ( gs (1)),
 which exposes format converters via its
-.B \-sDEVICE=
+.B \%\-sDEVICE=
 option.
 .
 .RB \[lq] "gs \-\-help" \[rq]
@@ -1408,6 +1506,21 @@ tools.
 .
 .
 .\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@pic
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
+.
+.
+.\" ====================================================================
 .SH Files
 .\" ====================================================================
 .
@@ -1442,13 +1555,14 @@ for a list)
 are rejected even in \*[tx] mode.
 .
 .
-.LP
-The interpretation of
+.P
+Research Tenth Edition Unix
+.IR pic 's \" AT&T
 .B \%fillval
-is incompatible with the
-.I pic \" AT&T
-in Research Tenth Edition Unix,
-which interprets 0 as black and 1 as white.
+interprets
+0 as black and 1 as white,
+incompatibly with GNU
+.IR pic .
 .
 .
 .\" ====================================================================

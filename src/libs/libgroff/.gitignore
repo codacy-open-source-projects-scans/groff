@@ -23,6 +23,7 @@
 /libgroff_a-iftoa.o
 /libgroff_a-invalid.o
 /libgroff_a-itoa.o
+/libgroff_a-json_encode.o
 /libgroff_a-lf.o
 /libgroff_a-lineno.o
 /libgroff_a-localcharset.o

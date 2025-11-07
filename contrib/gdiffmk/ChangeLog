@@ -1,3 +1,26 @@
+2025-08-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gdiffmk.sh (Usage): Update description, (roughly) syncing it
+	with man page.
+
+2024-12-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Track revisions to groff Autotools usage, prompted by the fact
+	that "test -ef" is now a POSIX-conforming usage.
+
+	* gdiffmk.am (gdiffmk): Textually replace Autofoo macro
+	`POSIX_SHELL_PROG` instead of `HAVE_TEST_EF_OPTION` and
+	`BASH_PROG`.
+	* gdiffmk.sh: Migrate shebang line from `BASH_PROG` to
+	`POSIX_SHELL_PROG`.
+	(WouldClobber): Test for `test -ef` functionality ourselves,
+	using `POSIX_SHELL_PROG`.  Not only does this reduce a point of
+	contact between gdiffmk and groff's Autotoolage, but it
+	accommodates scenarios where the build environment has a
+	POSIX-conforming "test -ef" (perhaps because GNU Bash was
+	installed and used as the shell), but the installation
+	environment does not.
+
 2023-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tests/runtests.sh: Test for "diff -D" support as gdiffmk
@@ -279,7 +302,10 @@
 
 	First import of gdiffmk files.
 
-Copyright 2004-2023 Free Software Foundation, Inc.
+________________________________________________________________________
+
+Copyright 2004-2018 Free Software Foundation, Inc.
+Copyright 2023-2024 G. Branden Robinson
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

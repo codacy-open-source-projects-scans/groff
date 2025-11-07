@@ -18,17 +18,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /* Unfortunately vendors seem to have problems writing a <signal.h>
    that is correct for C++, so we implement all signal handling in C. */
-// TODO: Revisit that 1993 claim in 2023.  Use gnulib?
+
+// TODO: Revisit the above 1993 claim in 2023.  Use gnulib?
+//
+// TODO: Also, operating system services proper (cf. the standard C/C++
+// runtime and libraries) should be abstracted through posix.h/
+// nonposix.h (if gnulib doesn't handle it for us).
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include <stdlib.h>
-#include <sys/types.h>
-#include <signal.h>
+#include <stdlib.h> // exit()
+
+#include <sys/types.h> // pid_t
+#include <signal.h> // kill(), SIG_DFL, SIG_IGN, signal()
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+#include <unistd.h> // getpid()
 #endif
 
 #ifdef __cplusplus

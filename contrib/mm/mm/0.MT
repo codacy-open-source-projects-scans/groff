@@ -1,6 +1,6 @@
 .ig
 
-Copyright (C) 1991-2024 Free Software Foundation, Inc.
+Copyright 1991-2025 Free Software Foundation, Inc.
 mm is written by Jörgen Hägg <jh@axis.com>
 
 Modified by G. Branden Robinson <g.branden.robinson@gmail.com> to more
@@ -38,14 +38,18 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	nr cov*column2-limit 4i
 .	nr cov*column3-hpos   4.3i \" "date", "from"
 .	nr cov*column4-hpos   4.65i \" date, author names, TM number
-.	nr cov*column4-limit 6i
+.	nr cov*user-width     0
+.	if r W .nr cov*user-width \n[W]u
+.	nr cov*column4-limit (6i>?\n[cov*user-width]u)
 .\}
 .el \{\
 .	nr cov*column2-hpos   9n
 .	nr cov*column2-limit 37n
 .	nr cov*column3-hpos  39n
 .	nr cov*column4-hpos  45n
-.	nr cov*column4-limit 60n
+.	nr cov*user-width     0
+.	if r W .nr cov*user-width \n[W]u
+.	nr cov*column4-limit (60n>?\n[cov*user-width]u)
 .\}
 .\"------------
 .de cov@print-title
@@ -204,7 +208,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ll \\n[cov*column4-limit]u
 .sp -1
 .ft \\*[@metadata-font]
-.nop \\*[cov*new-date]
+.nop \\*[cov*date]
 .ft
 .fi
 .ll
@@ -269,7 +273,10 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" definition.)
 .if !d cov*mt-printed \{\
 .	cov@print-title subject
-.	ie d AFX .AFX
+.	ie d AFX \{\
+.		if \n[D]>=5 .tm calling user-defined AFX macro
+.		AFX
+.	\}
 .	el       .cov@print-firm
 .	cov@print-date date
 .	cov@print-authors from

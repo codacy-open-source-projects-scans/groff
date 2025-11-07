@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021-2022 Free Software Foundation, Inc.
+# Copyright 2021 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
@@ -32,7 +31,8 @@ for d in ascii dvi html latin1 lbp lj4 pdf ps utf8
 do
   echo "verifying exit status of .ab request using $d device" >&2
   printf '.ab\n' | "$groff" -Z -T$d
-  test $? -eq 1 || exit 1
+  # 4 = (1 << 2)
+  test $? -eq 4 || exit 1
 done
 
 echo "verifying empty output of .ab request with no arguments" >&2

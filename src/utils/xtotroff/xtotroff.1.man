@@ -9,7 +9,7 @@ font metrics
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2004-2022 Free Software Foundation, Inc.
+.\" Copyright (C) 2004-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -186,6 +186,21 @@ Set the type size in points for all font patterns in
 .
 If not specified,
 a size of 10 points is assumed.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%xtotroff
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

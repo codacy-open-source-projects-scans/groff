@@ -1,3 +1,27 @@
+2025-10-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am (MOMPDFMOM): Add environment variable `GROFF_COMMAND`,
+	newly recognized by pdfmom(1), to make it run the build tree's
+	groff via "test-groff", rather than (potentially) a "groff" in
+	the build environment's $PATH.
+	($(MOMPROCESSEDEXAMPLEFILES)): Add dependency on "test-groff"
+	script, now required to generate the targets stored in this
+	macro.
+
+2025-07-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am (MOMPDFMOM): Append `-P -W` to `pdfmom` arguments.
+
+	Continues fixing Savannah #67268.
+
+2025-02-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am: Stop specifying `PDFMOM_BIN_PATH` environment
+	variable in `MOMPDFMOM` macro housing shell command.  Nothing
+	checks the environment for this variable, and according to `git
+	log -p` history going all the way back to 2012 when pdfmom(1)
+	landed, nothing ever has.
+
 2024-10-15
 
 	* om.tmac: [PDF_IMAGE]: remove superfluous \!
@@ -286,7 +310,7 @@
 	* mom.am: Delete one INSTALL_SHIPPED_HTML and one BUILD_EXAMPLES
 	conditional and use BUILD_PDFDOC instead of BUILD_PDFEXAMPLES.
 
-2021-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+2022-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mom.am: Eliminate `MOM_TFLAG` and `MOM_PFLAG` Make macros;
 	they were expanded in only one place.
@@ -392,7 +416,7 @@
 
 	o overhaul of control macro handling
 
-	o overhaul of cover and docheader management 
+	o overhaul of cover and docheader management
 
 	o general code cleanup to remove redundancies and reduce size of
 		om.tmac
@@ -428,7 +452,7 @@
 	o Makefile.sub: KFLAG to run pdfmom with -k
 
 	o Set utf-8 preconv coding tag in examples/typesetting.mom and
-		examples/letter.mom 
+		examples/letter.mom
 
 * Mon Oct 20 2014
 
@@ -1958,15 +1982,13 @@
 
 ________________________________________________________________________
 
-##### License
-
 Copyright 2004-2024 Free Software Foundation, Inc.
+Copyright 2022-2024 G. Branden Robinson
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.
 
-##### Editor settings
 Local Variables:
 coding: utf-8
 fill-column: 72

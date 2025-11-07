@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -15,6 +15,20 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <errno.h>
+#include <stdlib.h> // EXIT_SUCCESS, exit()
+#include <stdio.h> // EOF, FILE, fclose(), ferror(), fflush(), fopen(),
+		   // fprintf(), fputs(), getc(), printf(), putchar(),
+		   // setbuf(), stderr, stdin, stdout, ungetc()
+#include <string.h> // strerror()
+
+#include <getopt.h> // getopt_long()
 
 #include "table.h"
 
@@ -229,7 +243,7 @@ void process_input_file(FILE *fp)
 	putchar('T');
 	putchar(c);
 	if (c == '\n') {
- 	  current_lineno++;
+	  current_lineno++;
 	  state = START;
 	}
 	else
@@ -243,7 +257,7 @@ void process_input_file(FILE *fp)
 	putchar('S');
 	while (c != '\n') {
 	  if (c == EOF) {
-	    error("end of file at beginning of table");
+	    error("end of input encountered at beginning of table");
 	    return;
 	  }
 	  putchar(c);
@@ -284,7 +298,7 @@ void process_input_file(FILE *fp)
 	putchar('l');
 	putchar(c);
 	if (c == '\n') {
- 	  current_lineno++;
+	  current_lineno++;
 	  state = START;
 	}
 	else
@@ -303,7 +317,7 @@ void process_input_file(FILE *fp)
 	  c = getc(fp);
 	}
 	line += '\0';
-	interpret_lf_args(line.contents());
+	interpret_lf_request_arguments(line.contents());
 	printf(".lf%s", line.contents());
 	state = START;
       }
@@ -760,7 +774,7 @@ void input_entry_format::debug_print()
   if (expand)
     putc('x', stderr);
   if (separation >= 0)
-    fprintf(stderr, "%d", separation); 
+    fprintf(stderr, "%d", separation);
   for (i = 0; i < vrule; i++)
     putc('|', stderr);
   if (is_last_column)
@@ -869,7 +883,8 @@ format *process_format(table_input &in, options *opt,
     list = new input_entry_format(t, list);
     if (vrule_count > 2) {
       vrule_count = 2;
-      error("more than 2 vertical lines at beginning of row description");
+      warning("ignoring excess vertical lines at beginning of row"
+	      " description");
     }
     list->vrule_count = vrule_count;
     // Now handle modifiers.
@@ -1159,7 +1174,7 @@ format *process_format(table_input &in, options *opt,
     } while (is_valid_modifier_sequence);
     if (vrule_count > 2) {
       vrule_count = 2;
-      error("more than 2 vertical lines after column descriptor");
+      warning("ignoring excess vertical lines after column descriptor");
     }
     list->vrule += vrule_count;
     if (c == '\n' || c == ',') {
@@ -1265,7 +1280,7 @@ format *process_format(table_input &in, options *opt,
     if (!tem->width.empty()) {
       // use the last width
       if (!f->width[col].empty() && f->width[col] != tem->width)
-	error("multiple widths for column %1", col + 1);
+	error("multiple widths designated for column %1", col + 1);
       f->width[col] = tem->width;
     }
     if (tem->vrule_count)
@@ -1453,7 +1468,7 @@ table *process_data(table_input &in, format *f, options *opt)
 		      c = in.get();
 		    }
 		    args += '\0';
-		    interpret_lf_args(args.contents());
+		    interpret_lf_request_arguments(args.contents());
 		    // remove the '\0'
 		    args.set_length(args.length() - 1);
 		    input_entry += args;
@@ -1492,7 +1507,7 @@ table *process_data(table_input &in, format *f, options *opt)
 		}
 	      }
 	      if (c == EOF) {
-		error("end of data in middle of text block");
+		error("end of input in middle of text block");
 		give_up = true;
 		break;
 	      }
@@ -1553,7 +1568,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	  }
 	}
 	tbl->add_text_line(current_row, line, current_filename, ln);
-	if (line.length() >= 4 
+	if (line.length() >= 4
 	    && line[0] == '.' && line[1] == 'T' && line[2] == '&') {
 	  format *newf = process_format(in, opt, f);
 	  if (newf == 0)
@@ -1564,7 +1579,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	if (line.length() >= 3
 	    && line[0] == '.' && line[1] == 'l' && line[2] == 'f') {
 	  line += '\0';
-	  interpret_lf_args(line.contents() + 3);
+	  interpret_lf_request_arguments(line.contents() + 3);
 	}
       }
       break;
@@ -1581,7 +1596,7 @@ table *process_data(table_input &in, format *f, options *opt)
       break;
   }
   if (!give_up && current_row == 0) {
-    error("no real data");
+    error("no data in table");
     give_up = true;
   }
   if (give_up) {
@@ -1625,7 +1640,7 @@ void process_table(table_input &in)
   delete opt;
   delete fmt;
   if (!in.ended())
-    error("premature end of file");
+    error("unexpected end of input");
 }
 
 static void usage(FILE *stream)
@@ -1635,6 +1650,12 @@ static void usage(FILE *stream)
 "usage: %s {-v | --version}\n"
 "usage: %s --help\n",
 	 program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"GNU tbl is a filter that translates descriptions of tables embedded\n"
+"in roff(7) input into the language understood by GNU troff(1).  See\n"
+"the tbl(1) manual page.\n",
+	  stream);
 }
 
 int main(int argc, char **argv)
@@ -1644,11 +1665,12 @@ int main(int argc, char **argv)
   setbuf(stderr, stderr_buf);
   int opt;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "vC", long_options, NULL))
+  while ((opt = getopt_long(argc, argv, ":vC", long_options,
+			    0 /* nullptr */))
          != EOF)
     switch (opt) {
     case 'C':
@@ -1665,8 +1687,16 @@ int main(int argc, char **argv)
       exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(EXIT_FAILURE);
+      exit(2);
+      break;
+    // in case we ever accept options that take arguments
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       assert(0 == "unhandled getopt_long return value");
@@ -1676,11 +1706,13 @@ int main(int argc, char **argv)
 	 ".do if !dT& .ds T&\n"
 	 ".do if !dTE .ds TE\n");
   if (argc > optind) {
-    for (int i = optind; i < argc; i++) 
+    for (int i = optind; i < argc; i++)
       if (argv[i][0] == '-' && argv[i][1] == '\0') {
-	current_filename = "-";
 	current_lineno = 1;
-	printf(".lf 1 -\n");
+	current_filename = "-";
+	(void) printf(".lf %d %s%s\n", current_lineno,
+		      ('"' == current_filename[0]) ? "" : "\"",
+		      current_filename);
 	process_input_file(stdin);
       }
       else {
@@ -1688,27 +1720,33 @@ int main(int argc, char **argv)
 	FILE *fp = fopen(argv[i], "r");
 	if (fp == 0) {
 	  current_filename = 0 /* nullptr */;
-	  fatal("can't open '%1': %2", argv[i], strerror(errno));
+	  fatal("cannot open '%1': %2", argv[i], strerror(errno));
 	}
 	else {
-	  current_lineno = 1;
 	  string fn(argv[i]);
 	  fn += '\0';
-	  normalize_for_lf(fn);
+	  normalize_file_name_for_lf_request(fn);
+	  current_lineno = 1;
 	  current_filename = fn.contents();
-	  printf(".lf 1 %s\n", current_filename);
+	  (void) printf(".lf %d %s%s\n", current_lineno,
+			('"' == current_filename[0]) ? "" : "\"",
+			current_filename);
 	  process_input_file(fp);
 	}
       }
   }
   else {
-    current_filename = "-";
     current_lineno = 1;
-    printf(".lf 1 -\n");
+    current_filename = "-";
+    (void) printf(".lf %d %s%s\n", current_lineno,
+		  ('"' == current_filename[0]) ? "" : "\"",
+		  current_filename);
     process_input_file(stdin);
   }
-  if (ferror(stdout) || fflush(stdout) < 0)
-    fatal("output error");
+  if (ferror(stdout))
+    fatal("error status on standard output stream");
+  if (fflush(stdout) < 0)
+    fatal("cannot flush standard output stream: %1", strerror(errno));
   return 0;
 }
 

@@ -3,7 +3,7 @@
 # BuildFoundries: Given a Foundry file, generate groff font description
 # files and a "download" file so gropdf can embed fonts in PDF output.
 #
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2025 Free Software Foundation, Inc.
 #      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff.
@@ -29,10 +29,10 @@ my $pathsep='@PATH_SEPARATOR@';
 
 my $check=0;
 my $dirURW='';
-my $beStrict=0;
+my $downloadFile="download";
 
 GetOptions("check" => \$check, "dirURW=s" => \$dirURW,
-	   "strict" => \$beStrict);
+	   "download=s" => \$downloadFile);
 
 (my $progname = $0) =~s @.*/@@;
 my $where=shift||'';
@@ -42,6 +42,7 @@ chdir $where if $where ne '';
 my (%flg,@downloadpreamble,%download);
 my $GSpath=FindGSpath();
 my $lct=0;
+my $xitcd=0;
 my $foundry='';	# the default foundry
 my $notFoundFont=0;
 
@@ -52,11 +53,11 @@ if ($check)
 }
 else
 {
-    LoadDownload("download"); # not required
+    LoadDownload($downloadFile); # not required
     LoadFoundry("Foundry");
     WriteDownload();
 }
-exit 0;
+exit $xitcd;
 
 
 
@@ -89,7 +90,7 @@ sub LoadFoundry
 
 	if (lc($r[0]) eq 'foundry')
 	{
-	    Warn("\nThe path(s) used for searching:\n".join(':',@{$foundrypath})."\n") if $notFoundFont;
+	    Notice("\nThe path(s) used for searching:\n".join(':',@{$foundrypath})."\n") if $notFoundFont;
 	    $foundry=uc($r[1]);
 	    $foundrypath=[];
 	    push(@{$foundrypath},$dirURW) if $dirURW;
@@ -154,9 +155,7 @@ sub LoadFoundry
 		# Use afmtodit to create a groff font description file.
 		my $afmfile=LocateAF($foundrypath,$r[5]);
 		if (!$afmfile) {
-		    my $sub=\&Warn;
-		    $sub=\&Die if ($beStrict);
-		    &$sub("cannot locate AFM file for font '$gfont'");
+		    Warn("cannot locate AFM file for font '$gfont'");
 		    next;
 		}
 		my $psfont=RunAfmtodit($gfont,$afmfile,$r[2],$r[3],$r[4]);
@@ -182,7 +181,7 @@ sub LoadFoundry
     }
 
     close(F);
-    Warn("\nThe path(s) used for searching:\n".join(':',@{$foundrypath})."\n") if $notFoundFont;
+    Notice("\nThe path(s) used for searching:\n".join(':',@{$foundrypath})."\n") if $notFoundFont;
 }
 
 sub RunAfmtodit
@@ -197,7 +196,7 @@ sub RunAfmtodit
     $enc="-e 'enc/$enc'" if $enc;
     $map="'map/$map'" if $map;
 
-    my $cmd='afmtodit -c -dDESC';
+    my $cmd='afmtodit -cq -dDESC';
 
     foreach my $f (split('',$flags))
     {
@@ -212,8 +211,18 @@ sub RunAfmtodit
 
     system("$cmd $enc '$afmfile' $map $gfont");
 
+    if ($? == -1) {
+	Die("unable to run afmtodit: $!\n");
+    }
+    elsif ($? & 127) {
+	Die("afmtodit terminated by signal " . ($? & 127) . ", "
+	. (($? & 128) ? "with" : "without") . " core dump");
+    }
+
     if ($?)
     {
+	Warn("command \"$cmd $enc '$afmfile' $map $gfont\" exited"
+	. " with status $?");
 	unlink $gfont;
 	return('');
     }
@@ -385,21 +394,7 @@ sub UseGropsVersion
 
 	close(GF);
 
-	if ($psfont)
-	{
-	    if (open(GF,">$gfontbase"))
-	    {
-		local $"='';
-		print GF "@gf";
-		close(GF);
-	    }
-	    else
-	    {
-		$psfont='';
-		Warn("Failed to create new font '$gfont' for Foundry '$foundry'");
-	    }
-	}
-	else
+	if (!$psfont)
 	{
 	    Warn("Failed to locate postscript internalname in grops font '$gfont' for Foundry '$foundry'");
 	}
@@ -480,6 +475,7 @@ sub Notice {
 sub Warn {
     my $msg=shift;
     Msg("warning: line $lct: $msg");
+    $xitcd=2;
 }
 
 sub Die {

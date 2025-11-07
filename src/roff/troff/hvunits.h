@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -15,10 +15,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <stdckdint.h>
 
@@ -243,7 +239,7 @@ inline hunits operator -(const hunits & x)
   r = x;
   // Why?  Consider -(INT_MIN) in two's complement.
   if (ckd_mul(&r.n, x.n, -1))
-    warning(WARN_RANGE, "integer subtraction saturated");
+    warning(WARN_RANGE, "integer multiplication saturated");
   return r;
 }
 

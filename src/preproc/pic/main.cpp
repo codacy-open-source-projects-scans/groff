@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +16,21 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <errno.h>
+#include <locale.h> // setlocale()
+#include <stdio.h> // EOF, FILE, fclose(), ferror(), fflush(), fopen(),
+		   // fprintf(), fputs(), getc(), printf(), setbuf(),
+		   // stderr, stdin, stdout, ungetc()
+#include <stdlib.h> // exit(), EXIT_FAILURE, EXIT_SUCCESS, free()
+#include <string.h> // strerror()
+
+#include <getopt.h> // getopt_long()
+
 #include "pic.h"
 
 extern int yyparse();
@@ -31,7 +46,7 @@ int zero_length_line_flag = 0;
 // Non-zero means we're using a groff driver.
 int driver_extension_flag = 1;
 int compatible_flag = 0;
-int safer_flag = 1;
+bool want_unsafe_mode = false;
 int command_char = '.';		// the character that introduces lines
 				// that should be passed through transparently
 static int lf_flag = 1;		// non-zero if we should attempt to understand
@@ -81,11 +96,6 @@ int top_input::get()
     return c;
   }
   int c = getc(fp);
-  while (is_invalid_input_char(c)) {
-    error("invalid input character code %1", int(c));
-    c = getc(fp);
-    bol = 0;
-  }
   if (bol && c == '.') {
     c = getc(fp);
     if (c == 'P') {
@@ -154,11 +164,6 @@ int top_input::peek()
   if (push_back[0] != EOF)
     return push_back[0];
   int c = getc(fp);
-  while (is_invalid_input_char(c)) {
-    error("invalid input character code %1", int(c));
-    c = getc(fp);
-    bol = 0;
-  }
   if (bol && c == '.') {
     c = getc(fp);
     if (c == 'P') {
@@ -310,22 +315,19 @@ void do_file(const char *filename)
     fp = fopen(filename, "r");
     if (fp == 0) {
       delete out;
-      fatal("can't open '%1': %2", filename, strerror(errno));
+      fatal("cannot open '%1': %2", filename, strerror(errno));
     }
   }
   string fn(filename);
   fn += '\0';
-  normalize_for_lf(fn);
+  normalize_file_name_for_lf_request(fn);
   current_filename = fn.contents();
   out->set_location(current_filename, 1);
   current_lineno = 1;
-  enum { START, MIDDLE, HAD_DOT, HAD_P, HAD_PS, HAD_l, HAD_lf } state = START;
+  enum { START, MIDDLE, HAD_DOT, HAD_P, HAD_PS, HAD_l, HAD_lf } state
+    = START;
   for (;;) {
     int c = getc(fp);
-    while (is_invalid_input_char(c)) {
-      error("invalid input character code %1", int(c));
-      c = getc(fp);
-    }
     if (c == EOF)
       break;
     switch (state) {
@@ -419,7 +421,7 @@ void do_file(const char *filename)
 	  c = getc(fp);
 	}
 	line += '\0';
-	interpret_lf_args(line.contents());
+	interpret_lf_request_arguments(line.contents());
 	printf(".lf%s", line.contents());
 	state = START;
       }
@@ -430,7 +432,7 @@ void do_file(const char *filename)
       }
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled parser state");
     }
   }
   switch (state) {
@@ -470,7 +472,7 @@ void do_whole_file(const char *filename)
     errno = 0;
     fp = fopen(filename, "r");
     if (fp == 0)
-      fatal("can't open '%1': %2", filename, strerror(errno));
+      fatal("cannot open '%1': %2", filename, strerror(errno));
   }
   lex_init(new file_input(fp, filename));
   if (yyparse())
@@ -491,6 +493,22 @@ void usage(FILE *stream)
 #endif
   fprintf(stream, "usage: %s {-v | --version}\n", program_name);
   fprintf(stream, "usage: %s --help\n", program_name);
+  if (stdout == stream) {
+    fputs(
+"\n"
+"GNU pic is a troff(1) preprocessor that translates descriptions of\n"
+"diagrammatic pictures embedded in roff(7)"
+#ifdef TEX_SUPPORT
+" or TeX"
+#endif
+" input into the language\n"
+"understood by"
+#ifdef TEX_SUPPORT
+" TeX or"
+#endif
+" troff.  See the pic(1) manual page.\n",
+          stream);
+  }
 }
 
 #if defined(__MSDOS__) || defined(__EMX__)
@@ -528,6 +546,7 @@ int main(int argc, char **argv)
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int opt;
+  bool is_safer_mode_locked = false;
 #ifdef TEX_SUPPORT
   int tex_flag = 0;
   int tpic_flag = 0;
@@ -537,11 +556,12 @@ int main(int argc, char **argv)
   int fig_flag = 0;
 #endif
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "T:CDSUtcvnxzpf", long_options, NULL))
+  while ((opt = getopt_long(argc, argv, ":cCDfnpStT:Uvxz", long_options,
+			    0 /* nullptr */))
 	 != EOF)
     switch (opt) {
     case 'C':
@@ -551,17 +571,21 @@ int main(int argc, char **argv)
     case 'T':
       break;
     case 'S':
-      safer_flag = 1;
+      want_unsafe_mode = false;
+      is_safer_mode_locked = true;
       break;
     case 'U':
-      safer_flag = 0;
+      if (is_safer_mode_locked)
+	error("ignoring '-U' option; '-S' already specified");
+      else
+	want_unsafe_mode = true;
       break;
     case 'f':
 #ifdef FIG_SUPPORT
       whole_file_flag++;
       fig_flag++;
 #else
-      fatal("fig support not included");
+      fatal("fig support is not built into this configuration");
 #endif
       break;
     case 'n':
@@ -569,26 +593,27 @@ int main(int argc, char **argv)
       break;
     case 'p':
     case 'x':
-      warning("-%1 option is obsolete", char(opt));
+      warning("command-line option '-%1' is obsolete; ignoring",
+	      char(opt));
       break;
     case 't':
 #ifdef TEX_SUPPORT
       tex_flag++;
 #else
-      fatal("TeX support not included");
+      fatal("TeX support is not built into this configuration");
 #endif
       break;
     case 'c':
 #ifdef TEX_SUPPORT
       tpic_flag++;
 #else
-      fatal("TeX support not included");
+      fatal("TeX support is not built into this configuration");
 #endif
       break;
     case 'v':
       {
 	printf("GNU pic (groff) version %s\n", Version_string);
-	exit(0);
+	exit(EXIT_SUCCESS);
 	break;
       }
     case 'z':
@@ -597,14 +622,21 @@ int main(int argc, char **argv)
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled getopt_long return value");
     }
   parse_init();
 #ifdef TEX_SUPPORT
@@ -637,8 +669,9 @@ int main(int argc, char **argv)
       do_whole_file("-");
     else if (argc - optind > 1) {
       usage(stderr);
-      exit(1);
-    } else
+      exit(EXIT_FAILURE);
+    }
+    else
       do_whole_file(argv[optind]);
   }
   else {
@@ -652,8 +685,10 @@ int main(int argc, char **argv)
   }
 #endif
   delete out;
-  if (ferror(stdout) || fflush(stdout) < 0)
-    fatal("output error");
+  if (ferror(stdout))
+    fatal("error status on standard output stream");
+  if (fflush(stdout) < 0)
+    fatal("cannot flush standard output stream: %1", strerror(errno));
   return had_parse_error;
 }
 

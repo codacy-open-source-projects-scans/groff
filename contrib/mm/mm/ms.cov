@@ -1,6 +1,6 @@
 .ig
 
-Copyright (C) 1991-2020 Free Software Foundation, Inc.
+Copyright 1991-2020 Free Software Foundation, Inc.
 mm is written by Jörgen Hägg <jh@axis.com>
 
 mm is free software; you can redistribute it and/or modify it under
@@ -42,14 +42,13 @@ http://savannah.gnu.org/bugs/?group=groff.
 ..
 .\"------------
 .de cov@print-authors
-.ie !\\n[cov*au] .@error COVEND: no authors (AU) defined
-.el \{\
+.if \\n[cov*au] \{\
 .	SP
 .	nr cov*i 0 1
 .	while \\n+[cov*i]<=\\n[cov*au] \{\
 .		ds cov*aname \\*[cov*au!\\n[cov*i]!1]
 .		ce
-.		nop \fI\\*[cov*aname]\fP
+.		nop \f2\\*[cov*aname]\fP
 .		nr cov*j 0 1
 .		while \\n+[cov*j]<=\\n[cov*at!\\n[cov*i]] \{\
 .			ds cov*atitle \\*[cov*at!\\n[cov*i]!\\n[cov*j]]
@@ -80,7 +79,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .		ll -\\n[cov*abstract-indent]u
 .	\}
 .	ce
-\fI\\$1\fP
+\f2\\$1\fP
 .	SP 1.5
 .	fi
 .	cov*abstract
@@ -91,7 +90,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"------------
 .de cov@print-date
 .SP 2
-\f[\\*[@metadata-font]]\\*[cov*new-date]\fP
+\f[\\*[@metadata-font]]\\*[cov*date]\fP
 ..
 .\"-----------------
 .de COVEND

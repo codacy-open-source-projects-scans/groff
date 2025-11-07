@@ -128,11 +128,12 @@ The Vim digraph table is largely a subset of RFC 1345
 but,
 as a newer implementation,
 adds several mnemonics not specified in the RFC
-.\" W` w` Y` y` oo ,. 4' =e Eu =R =P
+.\" W` w` Y` y` oo ,. 4' .= =e Eu =R =P
 (Latin capital and small letters W and Y with grave accent,
 bullet,
 horizontal ellipsis,
 quadruple prime,
+\[lq]approaches the limit\[rq],
 and two mappings each for the Euro and rouble signs).
 .
 These have also been added to

@@ -1,4 +1,3 @@
-/* -*- C -*- */
 /* Copyright (C) 2000-2020 Free Software Foundation, Inc.
      Written by Eli Zaretskii (eliz@is.elta.co.il)
 
@@ -228,3 +227,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef _WAIT_CHILD
 # define _WAIT_CHILD	0
 #endif
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

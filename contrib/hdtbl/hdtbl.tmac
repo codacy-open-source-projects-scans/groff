@@ -1,10 +1,8 @@
 .ig
-
-hdtbl.tmac
-
-This file is part of groff, the GNU roff type-setting system.
+This file is part of groff, the GNU roff typesetting system.
 
 Copyright (C) 2005-2020 Free Software Foundation, Inc.
+              2025 G. Branden Robinson
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -19,7 +17,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ..
 .
 .
@@ -28,8 +25,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"	*			Vers. 0.91 December 2005		*
 .\"	*****************************************************************
 .
+.if !\n(.g \{\
+.  tm groff hdtbl macros require groff extensions; cannot load package
+.  nx
+.\}
+.
+.if \n(.C \{\
+.  tm groff hdtbl macros do not work in compatibility mode; cannot \
+load package
+.\}
+.
 .if d TBL \
 .  nx
+.
+.ds hdtbl hdtbl.tmac\"
+.
+.\" Check for name space collisions with full-service macro packages.
+.
+.if d TD \{\
+.  tm \*[hdtbl]: cannot load package; macro 'TD' is already defined
+.  nx
+.\}
+.
+.if d TH \{\
+.  tm \*[hdtbl]: cannot load package; macro 'TH' is already defined
+.  nx
+.\}
+.
+.if d TR \{\
+.  tm \*[hdtbl]: cannot load package; macro 'TR' is already defined
+.  nx
+.\}
+.
 .
 .mso hdmisc.tmac
 .mso 62bit.tmac
@@ -116,30 +143,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  ie "\\*[cols]"" \
 .    nr t*cols\\n[t*#] \\n[t*cols]
 .  el \{\
-.    ie \B\\*[cols] \
+.    ie \B"\\*[cols]" \
 .      nr t*cols\\n[t*#] \\*[cols]
-.    el \
-.      tm \\n[.F]:\\n[.c]: Invalid number of columns value '\\*[cols]'.
+.    el \{\
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid number of columns value
+.      tm1 " '\\*[cols]'.
+.    \}
 .  \}
 .
 .  t*getarg cpd \\*[args]                 \"	cell padding
 .  ie "\\*[cpd]"" \
 .    nr t*cpd\\n[t*#] \\n[t*cpd]
 .  el \{\
-.    ie \B\\*[cpd] \
+.    ie \B"\\*[cpd]" \
 .      nr t*cpd\\n[t*#] \\*[cpd]
-.    el \
-.      tm \\n[.F]:\\n[.c]: Invalid cell padding value '\\*[cpd]'.
+.    el \{\
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid cell padding value
+.      tm1 " '\\*[cpd]'.
+.    \}
 .  \}
 .
 .  t*getarg csp \\*[args]                 \"	cell spacing
 .  ie "\\*[csp]"" \
 .    nr t*csp\\n[t*#] \\n[t*csp]
 .  el \{\
-.    ie \B\\*[csp] \
+.    ie \B"\\*[csp]" \
 .      nr t*csp\\n[t*#] \\*[csp]
-.    el \
-.      tm \\n[.F]:\\n[.c]: Invalid cell spacing value '\\*[csp]'.
+.    el \{\
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid cell spacing value
+.      tm1 " '\\*[csp]'.
+.    \}
 .  \}
 .
 .  t*getarg border \\*[args]              \"	border thickness
@@ -149,10 +182,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    ie "\\*[border]"" \
 .      nr t*b\\n[t*#] \\n[t*b]
 .    el \{\
-.      ie \B\\*[border] \
+.      ie \B"\\*[border]" \
 .        nr t*b\\n[t*#] \\*[border]
-.      el \
-.        tm \\n[.F]:\\n[.c]: Invalid border thickness value '\\*[border]'.
+.      el \{\
+.        tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid border thickness
+.        tm1 " value '\\*[border]'.
+.      \}
 .  \}\}
 .
 .  t*getarg bc \\*[args]                  \"	border color
@@ -164,7 +199,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      ie "\\*[bc]"=" \
 .        ds t*bc\\n[t*#] =\"
 .      el \
-.        tm \\n[.F]:\\n[.c]: Invalid border color '\\*[bc]'.
+.        tm \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid border color '\\*[bc]'.
 .  \}\}
 .  ie "\\*[bc]"=" \
 .    ds t*bc\\n[t*#]
@@ -186,12 +221,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  ie "\\*[height]"" \
 .    nr t*height\\n[t*#] 0
 .  el \{\
-.    ie \B\\*[height] \
+.    ie \B"\\*[height]" \
 .      nr t*height\\n[t*#] (\\*[height] \
                             - ((2 * \\n[cscp\\n[t*#]]) \
                                 + (3 * \\n[b/2\\n[t*#]])))
 .    el \
-.      tm \\n[.F]:\\n[.c]: Invalid height value '\\*[height]'.
+.      tm \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid height value '\\*[height]'.
 .  \}
 .
 .  t*cl \\*[width]                      \"	get cell widths and offsets
@@ -209,8 +244,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      ie "\\*[tal]"r" \
 .        nr in\\n[t*#] (\\n[.l] - \\n[ll\\n[t*#]] + \\n[.i])
 .      el \{\
-.        tmc \\n[.F]:\\n[.c]: Invalid horizontal table alignment '\\*[tal]':
-.        tm1 " must be 'l', 'c' or 'r'.
+.        tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid horizontal table
+.        tm1 " alignment '\\*[tal]': must be 'l', 'c' or 'r'.
 .  \}\}\}
 .
 .  nr t*r#\\n[t*#] 0		        \"	initialize row index
@@ -228,7 +263,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .
 .  if "\\$0"CPTN" \
 .    if \\n[t*r#\\n[t*#]] \{\
-.      tmc \\n[.F]:\\n[.c]: Invalid placement of '.CPTN';
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid placement of '.CPTN';
 .      tm1 " must be called immediately after '.TBL'.
 .      return
 .    \}
@@ -274,7 +309,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .de TR
 .  ft 1
 .  if !\\n[t*#] \{\
-.    tm \\n[.F]:\\n[.c]: Table row (.TR) without preceding table start (.TBL).
+.    tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Table row (.TR) without preceding
+.    tm1 " table start (.TBL).
 .    return
 .  \}
 .
@@ -292,10 +328,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  ie "\\*[height]"" \
 .    nr t*height\\*[#t#r] 0
 .  el \{\
-.    ie \B\\*[height] \
+.    ie \B"\\*[height]" \
 .      nr t*height\\*[#t#r] \\*[height]
-.    el \
-.      tm \\n[.F]:\\n[.c]: Invalid table row height '\\*[height]'.
+.    el \{\
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid table row height
+.      tm1 " '\\*[height]'.
+.    \}
 .  \}
 .
 .  \"	If there is a TR with height 'height', the total height of the table
@@ -314,6 +352,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"		else like .TD
 .de TH
 .  ft 1
+.  if !\\n[t*#] \{\
+.    tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Table heading (.TH) without
+.    tm1 " preceding table start (.TBL).
+.    return
+.  \}
 .  t*getarg hal \\$@
 .  if "\\*[hal]"" \
 .    ds hal c\"
@@ -344,21 +387,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  t*getarg rowspan \\$@
 .  nr rowspan 1
 .  if !"\\*[rowspan]"" \{\
-.    ie \B\\*[rowspan] \{\
+.    ie \B"\\*[rowspan]" \{\
 .      nr rowspan (\\*[rowspan] >? 1)
 .      nr *rsp*\\*[*#trc*] (\\n[rowspan] - 1)
 .    \}
 .    el \
-.      tm \\n[.F]:\\n[.c]: Invalid value of 'rowspan' keyword.
+.      tm \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid value of 'rowspan' keyword.
 .  \}
 .
 .  t*getarg colspan \\*[args]
 .  nr colspan 1
 .  if !"\\*[colspan]"" \{\
-.    ie \B\\*[colspan] \
+.    ie \B"\\*[colspan]" \
 .      nr colspan (\\*[colspan] >? 1)
 .    el \
-.      tm \\n[.F]:\\n[.c]: Invalid value of 'colspan' keyword.
+.      tm \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid value of 'colspan' keyword.
 .  \}
 .
 .  t*args \\*[#trc] \\*[#t#r]           \"  look for common arguments
@@ -398,7 +441,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      ds * is\"
 .      ds ** column\"
 .    \}
-.    tmc \\n[.F]:\\n[.c]: There \\*[*] \\n[c#\\*[#t#r]] table \\*[**] (.TD)
+.    tmc \*[hdtbl]:\\n[.F]:\\n[.c]: There \\*[*] \\n[c#\\*[#t#r]] table
+.    tm1 " \*[**] (.TD)
 .
 .    ds * are\"
 .    if (\\n[t*cols\\n[t*#]] == 1) \
@@ -438,11 +482,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .de ETB
 .  ie \\n[t*#] \
 .    if !\\n[t*r#\\n[t*#]] \{\
-.      tmc \\n[.F]:\\n[.c]: Each table (.TBL)
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Each table (.TBL)
 .      tm1 " should contain at least one table row (.TR)!
 .    \}
 .  el \{\
-.    tmc \\n[.F]:\\n[.c]: Table end (.ETB)
+.    tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Table end (.ETB)
 .    tm1 " without corresponding table start (.TBL)!
 .  \}
 .
@@ -455,9 +499,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  t*cptn\\n[t*#]
 .  nr t*# -1
 .
-.  ll \\n[*cl\\n[t*#]]u          \"	restore ll outside this table
-.  in 0                          \"	reset indent
-.  gcolor \\*[t*m\\n[t*#]]       \"	reset previous fgc
+.  ll (u;\\n[.H]>?\\n[*cl\\n[t*#]]) \"	restore ll outside this table
+.  in 0                             \"	reset indent
+.  gcolor \\*[t*m\\n[t*#]]          \"	reset previous fgc
 .
 .  t*getarg hold \\$@
 .  if !\\n[t*#] \{\
@@ -474,7 +518,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    \}
 .    el \{\
 .      rn t*tbl0 t*hold\\n+[t*numb]
-.      tm \\n[.F]:\\n[.c]: Table t*hold\\n[t*numb] held.
+.      tm \*[hdtbl]:\\n[.F]:\\n[.c]: Table t*hold\\n[t*numb] held.
 .      ds t*held \\*[t*held] t*hold\\n[t*numb] \\n[dn]\"
 .    \}
 .
@@ -501,13 +545,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .de t*free
 .  if "\\$0"CPTN" \
 .    if \\n[t*r#\\n[t*#]] \{\
-.      tmc \\n[.F]:\\n[.c]: Invalid placement of '.t*free' within a table;
-.      tm1 " it must be called outside of any table.
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid placement of '.t*free'
+.      tm1 " within a table; it must be called outside of any table.
 .      return
 .    \}
 .
 .  if "\\*[t*held]"" \{\
-.    tm \\n[.F]:\\n[.c]: No held tables.
+.    tm \*[hdtbl]:\\n[.F]:\\n[.c]: No held tables.
 .    return
 .  \}
 .
@@ -744,16 +788,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      ie "\\*[*]"%" \{\
 .        ds ** \\$[\\n[*]]\"
 .        substring ** 0 -2
-.        ie \B\\*[**] \
+.        ie \B"\\*[**]" \
 .          nr $\\n[*] (\\*[**] * \\n[.l] / 100)
-.        el \
-.          tm \\n[.F]:\\n[.c]: Invalid relative cell width '\\*[**]%'.
+.        el \{\
+.          tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid relative cell width
+.          tm1 " '\\*[**]%'.
+.        \}
 .      \}
 .      el \{\
-.        ie \B\\$[\\n[*]] \
+.        ie \B"\\$[\\n[*]]" \
 .          nr $\\n[*] \\$[\\n[*]]
-.        el \
-.          tm \\n[.F]:\\n[.c]: Invalid cell width '\\$[\\n[*]]'.
+.        el \{\
+.          tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid cell width
+.          tm1 " '\\$[\\n[*]]'.
+.        \}
 .    \}\}
 .
 .    nr ll\\n[t*#] +\\n[$\\n[*]]
@@ -761,7 +809,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  \}
 .
 .  if (\\n[ll\\n[t*#]] > \\n[.l]) \
-.    tm \\n[.F]:\\n[.c]: Table width larger than column width.
+.    tm \*[hdtbl]:\\n[.F]:\\n[.c]: Table width larger than column width.
 .
 .  nr ** (0 >? \\n[t*b\\n[t*#]])
 .  nr * 0 1
@@ -796,8 +844,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      nr *** (\\n[*] % 10)
 .      if d nth-\\n[***] \
 .        ds * \\n[*]\\*[nth-\\n[***]]\"
-.      tmc \\n[.F]:\\n[.c]: The \\*[*] width value (\\$\\n[*]) is too small.
-.      tm1 " It should be greater than \\n[*h].
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: The \\*[*] width value (\\$\\n[*])
+.      tm1 " is too small.  It should be greater than \\n[*h].
 .    \}
 .
 .    nr in\\n[t*#]*\\n[*] \\n[**]	\"	cell offset
@@ -853,7 +901,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      ds * is\"
 .      ds ** column\"
 .    \}
-.    tmc \\n[.F]:\\n[.c]: There \\*[*] only \\n[c#\\*[#t#r]] \\*[**]
+.    tmc \*[hdtbl]:\\n[.F]:\\n[.c]: There \\*[*] only \\n[c#\\*[#t#r]]
+.    tm1 " \\*[**]
 .
 .    nr * \\n[t*r#\\n[t*#]]
 .    ds * \\n[*]th\"
@@ -898,8 +947,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    el \{\
 .      ie "\\*[bgc]"=" \
 .        ds t*bgc\\$1 =\"
-.      el \
-.        tm \\n[.F]:\\n[.c]: Invalid background color '\\*[bgc]'.
+.      el \{\
+.        tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid background color
+.        tm1 " '\\*[bgc]'.
+.      \}
 .  \}\}
 .  if "\\*[args]"" \
 .    return
@@ -911,8 +962,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    el \{\
 .      ie "\\*[fgc]"=" \
 .        ds t*fgc\\$1 =\"
-.      el \
-.        tm \\n[.F]:\\n[.c]: Invalid foreground color '\\*[fgc]'.
+.      el \{\
+.        tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid foreground color
+.        tm1 " '\\*[fgc]'.
+.      \}
 .  \}\}
 .  if "\\*[args]"" \
 .    return
@@ -935,8 +988,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    ie \\n[t*index] \
 .      ds t*hal\\$1 \\*[hal]\"
 .    el \{\
-.      tmc \\n[.F]:\\n[.c]: Invalid horizontal alignment '\\*[hal]':
-.      tm1 " must be 'b', 'c', 'l' or 'r'.
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid horizontal alignment
+.      tm1 " '\\*[hal]': must be 'b', 'c', 'l' or 'r'.
 .  \}\}
 .  if "\\*[args]"" \
 .    return
@@ -947,8 +1000,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    ie \\n[t*index] \
 .      ds t*val\\$1 \\*[val]\"
 .    el \{\
-.      tmc \\n[.F]:\\n[.c]: Invalid vertical alignment '\\*[val]':
-.      tm1 " must be 't', 'm' or 'b'.
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Invalid vertical alignment
+.      tm1 " '\\*[val]': must be 't', 'm' or 'b'.
 .  \}\}
 .  if "\\*[args]"" \
 .    return
@@ -980,14 +1033,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    pops * t*kept
 .    popr * t*kept
 .    if (\\n[*] - \\n[**]) \{\
-.      tm \\n[.F]:\\n[.c]: Table \\*[*] higher than page -- ignored!
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Table \\*[*] higher than page --
+.      tm1 " ignored!
 .      break
 .    \}
 .
 .    if (\\n[*] - \\n[.t]) \{\
 .      ds t*kept \\n[*] \\*[t*kept]\"
 .      ds t*kept \\*[*] \\*[t*kept]\"
-.      tmc \\n[.F]:\\n[.c]: Remaining table(s),
+.      tmc \*[hdtbl]:\\n[.F]:\\n[.c]: Remaining table(s),
 .      tm1 " because not all fit onto this page.
 .      break
 .    \}

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright 2022-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
@@ -42,18 +41,22 @@ Main matter goes here.'
 
 echo "checking that sample document fits using default length" >&2
 output=$(printf "%s\n" "$input" \
-    | "$groff" -b -mm -Tascii -P-cbou) || wail
+    | "$groff" -b -mm -Tascii -P-cbou | nl -ba)
+echo "$output"
+test "$(echo "$output" | wc -l)" -eq 132 || wail # 66 lines * 2 pages
 
 echo "checking that sample document fits using -rL5v" >&2
 output=$(printf "%s\n" "$input" \
-    | "$groff" -b -rL5v -mm -Tascii -P-cbou) || wail
+    | "$groff" -b -rL6v -mm -Tascii -P-cbou | nl -ba)
+echo "$output"
+test "$(echo "$output" | wc -l)" -eq 48 || wail # 6 lines * 8 pages
 
-echo "checking that sample document fails gracefully using -rL4v" >&2
+echo "checking that sample document fails gracefully using -rL5v" >&2
 error=$(printf "%s\n" "$input" \
-    | "$groff" -b -rL4v -mm -Tascii -P-cbou -z 2>&1)
+    | "$groff" -b -rL5v -mm -Tascii -P-cbou -z 2>&1)
 # Assume that >= 10 lines of stderr must be due to a giant backtrace.
 test $(echo "$error" | wc -l) -lt 10 || wail
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

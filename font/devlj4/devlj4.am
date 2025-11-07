@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of 'groff'.
 #
@@ -86,16 +86,13 @@ MOSTLYCLEANFILES += font/devlj4/DESC
 
 font/devlj4/DESC: $(devlj4_srcdir)/DESC.in
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
-	&& echo "res $(LJ4RES)" >$@ \
-	&& echo "unitwidth `expr 7620000 / $(LJ4RES)`" >>$@ \
-	&& cat $(devlj4_srcdir)/DESC.in >>$@ \
-	&& if test "$(PAGE)" = A4; then \
-	     echo "papersize a4" >>$@; \
-	   else \
-	     echo "papersize letter" >>$@; \
-	   fi \
+	&& echo "res $(LJ4RES)" >$@.tmp \
+	&& echo "unitwidth `expr 7620000 / $(LJ4RES)`" >>$@.tmp \
+	&& cat $(devlj4_srcdir)/DESC.in >>$@.tmp \
+	&& echo "papersize $(PAGE)" >>$@.tmp \
 	&& (test -z '$(LJ4PRINT)' \
-	    || echo print '$(LJ4PRINT)' >>$@)
+	    || echo print '$(LJ4PRINT)' >>$@.tmp)
+	$(AM_V_at)mv $@.tmp $@
 
 fonts: devlj4_fonts
 devlj4_fonts: hpftodit font/devlj4/DESC

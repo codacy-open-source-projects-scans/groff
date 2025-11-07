@@ -287,16 +287,10 @@ $(SPECIALFONTS): $(srcdir)/symbol.map
 $(GREEKFONTS): $(srcdir)/slanted-symbol.map
 $(FONTS): $(DESC)
 
-$(srcdir)/symbol.map: $(TEXTMAP) $(srcdir)/symbolchars
-	printf \
-	  '#\n# This is a list of all predefined groff symbols.\n#\n' \
-	  > $(OUTDIR)/$@ \
-	  && cat $(TEXTMAP) $(srcdir)/symbolchars >>$@
-
 clean:
 	cd $(OUTDIR) \
 	  && $(RM) freeeuro.afm freeeuro.pfa symbol.afm \
-	    $(srcdir)/symbol.map symbolsl.afm zapfdr.afm
+	    symbolsl.afm zapfdr.afm
 
 realclean: clean
 	cd $(OUTDIR) \

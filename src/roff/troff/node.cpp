@@ -1,4 +1,6 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2020 Free Software Foundation, Inc.
+             2021-2025 G. Branden Robinson
+
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,14 +18,15 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "troff.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include <errno.h> // errno
+#include <errno.h>
+#include <stdlib.h> // free(), malloc()
+#include <string.h> // strerror()
 
+#include "troff.h"
 #include "dictionary.h"
 #include "hvunits.h"
 #include "stringclass.h"
@@ -38,7 +41,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "charinfo.h"
 #include "input.h"
 #include "geometry.h"
+#include "json-encode.h" // json_encode_char()
 
+#include "posix.h"
 #include "nonposix.h"
 
 #ifdef _POSIX_VERSION
@@ -59,6 +64,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif /* not _POSIX_VERSION */
 
 #include <stack>
+
+static bool is_output_supressed = false;
 
 // declarations to avoid friend name injections
 class tfont;
@@ -96,6 +103,8 @@ struct special_font_list {
 special_font_list *global_special_fonts;
 static int global_ligature_mode = 1; // three-valued Boolean :-|
 static bool global_kern_mode = true;
+// Font mounting positions are non-negative integers.
+const int FONT_NOT_MOUNTED = -1;
 
 class track_kerning_function {
   int non_zero;
@@ -118,8 +127,8 @@ struct font_lookup_info {
   font_lookup_info();
 };
 
-font_lookup_info::font_lookup_info() : position(-1),
-  requested_position(-1), requested_name(0)
+font_lookup_info::font_lookup_info() : position(FONT_NOT_MOUNTED),
+  requested_position(FONT_NOT_MOUNTED), requested_name(0)
 {
 }
 
@@ -129,7 +138,7 @@ struct conditional_bold {
   conditional_bold *next;
   int fontno;
   hunits offset;
-  conditional_bold(int, hunits, conditional_bold * = 0);
+  conditional_bold(int, hunits, conditional_bold * = 0 /* nullptr */);
 };
 
 class font_info {
@@ -141,7 +150,7 @@ class font_info {
   symbol internal_name;
   symbol external_name;
   font *fm;
-  char is_bold;
+  bool has_emboldening;
   hunits bold_offset;
   track_kerning_function track_kern;
   constant_space_type is_constant_spaced;
@@ -166,11 +175,12 @@ public:
   hunits get_space_width(font_size, int);
   hunits get_narrow_space_width(font_size);
   hunits get_half_narrow_space_width(font_size);
-  int get_bold(hunits *);
+  bool is_emboldened(hunits *); // "by how many hunits?" in argument
   int is_special();
   int is_style();
   void set_zoom(int);
   int get_zoom();
+  font *get_font() const;
   friend symbol get_font_name(int, environment *);
   friend symbol get_style_name(int);
 };
@@ -181,8 +191,8 @@ protected:
   int input_position;
   font *fm;
   font_size size;
-  char is_bold;
-  char is_constant_spaced;
+  bool has_emboldening;
+  bool has_constant_spacing;
   int ligature_mode;
   int kern_mode;
   hunits bold_offset;
@@ -193,7 +203,7 @@ protected:
 public:
   tfont_spec(symbol, int, font *, font_size, int, int);
   tfont_spec plain();
-  int operator==(const tfont_spec &);
+  bool operator==(const tfont_spec &);
   friend tfont *font_info::get_tfont(font_size fs, int, int, int);
 };
 
@@ -205,15 +215,15 @@ public:
   tfont(tfont_spec &);
   int contains(charinfo *);
   hunits get_width(charinfo *c);
-  int get_bold(hunits *);
-  int get_constant_space(hunits *);
+  bool is_emboldened(hunits *); // "by how many hunits?" in argument
+  bool is_constantly_spaced(hunits *); // "by how many hunits?" in arg
   hunits get_track_kern();
   tfont *get_plain();
   font_size get_size();
   int get_zoom();
   symbol get_name();
   charinfo *get_lig(charinfo *c1, charinfo *c2);
-  int get_kern(charinfo *c1, charinfo *c2, hunits *res);
+  bool is_kerned(charinfo *c1, charinfo *c2, hunits *res);
   int get_input_position();
   int get_character_type(charinfo *);
   int get_height();
@@ -227,9 +237,9 @@ public:
   friend tfont *make_tfont(tfont_spec &);
 };
 
-inline int env_definite_font(environment *env)
+static inline int env_resolve_font(environment *env)
 {
-  return env->get_family()->make_definite(env->get_font());
+  return env->get_family()->resolve(env->get_font());
 }
 
 /* font_info functions */
@@ -238,31 +248,32 @@ static font_info **font_table = 0 /* nullptr */;
 static int font_table_size = 0;
 
 font_info::font_info(symbol nm, int n, symbol enm, font *f)
-: last_tfont(0), number(n), last_size(0),
+: last_tfont(0 /* nullptr */), number(n), last_size(0),
   internal_name(nm), external_name(enm), fm(f),
-  is_bold(0), is_constant_spaced(CONSTANT_SPACE_NONE), last_ligature_mode(1),
-  last_kern_mode(1), cond_bold_list(0), sf(0)
+  has_emboldening(false), is_constant_spaced(CONSTANT_SPACE_NONE),
+  last_ligature_mode(1), last_kern_mode(1),
+  cond_bold_list(0 /* nullptr */), sf(0 /* nullptr */)
 {
 }
 
 inline int font_info::contains(charinfo *ci)
 {
-  return fm != 0 && fm->contains(ci->as_glyph());
+  return (fm != 0 /* nullptr */) && fm->contains(ci->as_glyph());
 }
 
 inline int font_info::is_special()
 {
-  return fm != 0 && fm->is_special();
+  return (fm != 0 /* nullptr */) && fm->is_special();
 }
 
 inline int font_info::is_style()
 {
-  return fm == 0;
+  return (0 /* nullptr */ == fm);
 }
 
 void font_info::set_zoom(int zoom)
 {
-  assert(fm != 0);
+  assert(fm != 0 /* nullptr */);
   fm->set_zoom(zoom);
 }
 
@@ -273,9 +284,14 @@ inline int font_info::get_zoom()
   return fm->get_zoom();
 }
 
+font *font_info::get_font() const
+{
+  return fm;
+}
+
 tfont *make_tfont(tfont_spec &spec)
 {
-  for (tfont *p = tfont::tfont_list; p; p = p->next)
+  for (tfont *p = tfont::tfont_list; p != 0 /* nullptr */; p = p->next)
     if (*p == spec)
       return p;
   return new tfont(spec);
@@ -283,30 +299,36 @@ tfont *make_tfont(tfont_spec &spec)
 
 int env_get_zoom(environment *env)
 {
-  int fontno = env->get_family()->make_definite(env->get_font());
+  int fontno = env->get_family()->resolve(env->get_font());
   return font_table[fontno]->get_zoom();
 }
 
 // this is the current_font, fontno is where we found the character,
 // presumably a special font
 
-tfont *font_info::get_tfont(font_size fs, int height, int slant, int fontno)
+tfont *font_info::get_tfont(font_size fs, int height, int slant,
+			    int fontno)
 {
-  if (last_tfont == 0 || fs != last_size
-      || height != last_height || slant != last_slant
+  if (0 /* nullptr */ == last_tfont
+      || fs != last_size
+      || height != last_height
+      || slant != last_slant
       || global_ligature_mode != last_ligature_mode
       || global_kern_mode != last_kern_mode
       || fontno != number) {
 	font_info *f = font_table[fontno];
-	tfont_spec spec(f->external_name, f->number, f->fm, fs, height, slant);
-	for (conditional_bold *p = cond_bold_list; p; p = p->next)
+	tfont_spec spec(f->external_name, f->number, f->fm, fs, height,
+			slant);
+	for (conditional_bold *p = cond_bold_list;
+	     p != 0 /* nullptr */;
+	     p = p->next)
 	  if (p->fontno == fontno) {
-	    spec.is_bold = 1;
+	    spec.has_emboldening = true;
 	    spec.bold_offset = p->offset;
 	    break;
 	  }
-	if (!spec.is_bold && is_bold) {
-	  spec.is_bold = 1;
+	if (!spec.has_emboldening && has_emboldening) {
+	  spec.has_emboldening = true;
 	  spec.bold_offset = bold_offset;
 	}
 	spec.track_kern = track_kern.compute(fs.to_scaled_points());
@@ -316,15 +338,15 @@ tfont *font_info::get_tfont(font_size fs, int height, int slant, int fontno)
 	case CONSTANT_SPACE_NONE:
 	  break;
 	case CONSTANT_SPACE_ABSOLUTE:
-	  spec.is_constant_spaced = 1;
+	  spec.has_constant_spacing = true;
 	  spec.constant_space_width = constant_space;
 	  break;
 	case CONSTANT_SPACE_RELATIVE:
-	  spec.is_constant_spaced = 1;
+	  spec.has_constant_spacing = true;
 	  spec.constant_space_width
-	    = scale(constant_space*fs.to_scaled_points(),
+	    = scale(constant_space * fs.to_scaled_points(),
 		    units_per_inch,
-		    36*72*sizescale);
+		    36 * 72 * sizescale);
 	  break;
 	default:
 	  assert(0 == "unhandled case of constant spacing mode");
@@ -343,28 +365,28 @@ tfont *font_info::get_tfont(font_size fs, int height, int slant, int fontno)
   return last_tfont;
 }
 
-int font_info::get_bold(hunits *res)
+bool font_info::is_emboldened(hunits *res)
 {
-  if (is_bold) {
+  if (has_emboldening) {
     *res = bold_offset;
-    return 1;
+    return true;
   }
   else
-    return 0;
+    return false;
 }
 
 void font_info::unbold()
 {
-  if (is_bold) {
-    is_bold = 0;
+  if (has_emboldening) {
+    has_emboldening = false;
     flush();
   }
 }
 
 void font_info::set_bold(hunits offset)
 {
-  if (!is_bold || offset != bold_offset) {
-    is_bold = 1;
+  if (!has_emboldening || offset != bold_offset) {
+    has_emboldening = true;
     bold_offset = offset;
     flush();
   }
@@ -372,7 +394,9 @@ void font_info::set_bold(hunits offset)
 
 void font_info::set_conditional_bold(int fontno, hunits offset)
 {
-  for (conditional_bold *p = cond_bold_list; p; p = p->next)
+  for (conditional_bold *p = cond_bold_list;
+       p != 0 /* nullptr */;
+       p = p->next)
     if (p->fontno == fontno) {
       if (offset != p->offset) {
 	p->offset = offset;
@@ -390,7 +414,9 @@ conditional_bold::conditional_bold(int f, hunits h, conditional_bold *x)
 
 void font_info::conditional_unbold(int fontno)
 {
-  for (conditional_bold **p = &cond_bold_list; *p; p = &(*p)->next)
+  for (conditional_bold **p = &cond_bold_list;
+       *p != 0 /* nullptr */;
+       p = &(*p)->next)
     if ((*p)->fontno == fontno) {
       conditional_bold *tem = *p;
       *p = (*p)->next;
@@ -459,7 +485,7 @@ hunits font_info::get_space_width(font_size fs, int space_sz)
     return constant_space;
   else
     return scale(constant_space*fs.to_scaled_points(),
-		 units_per_inch, 36*72*sizescale);
+		 units_per_inch, 36 * 72 * sizescale);
 }
 
 hunits font_info::get_narrow_space_width(font_size fs)
@@ -485,14 +511,14 @@ hunits font_info::get_half_narrow_space_width(font_size fs)
 tfont_spec::tfont_spec(symbol nm, int n, font *f,
 		       font_size s, int h, int sl)
 : name(nm), input_position(n), fm(f), size(s),
-  is_bold(0), is_constant_spaced(0), ligature_mode(1), kern_mode(1),
-  height(h), slant(sl)
+  has_emboldening(false), has_constant_spacing(false), ligature_mode(1),
+  kern_mode(1), height(h), slant(sl)
 {
   if (height == size.to_scaled_points())
     height = 0;
 }
 
-int tfont_spec::operator==(const tfont_spec &spec)
+bool tfont_spec::operator==(const tfont_spec &spec)
 {
   if (fm == spec.fm
       && size == spec.size
@@ -500,19 +526,19 @@ int tfont_spec::operator==(const tfont_spec &spec)
       && name == spec.name
       && height == spec.height
       && slant == spec.slant
-      && (is_bold
-	  ? (spec.is_bold && bold_offset == spec.bold_offset)
-	  : !spec.is_bold)
+      && (has_emboldening
+	  ? (spec.has_emboldening && bold_offset == spec.bold_offset)
+	  : !spec.has_emboldening)
       && track_kern == spec.track_kern
-      && (is_constant_spaced
-	  ? (spec.is_constant_spaced
+      && (has_constant_spacing
+	  ? (spec.has_constant_spacing
 	     && constant_space_width == spec.constant_space_width)
-	  : !spec.is_constant_spaced)
+	  : !spec.has_constant_spacing)
       && ligature_mode == spec.ligature_mode
       && kern_mode == spec.kern_mode)
-    return 1;
+    return true;
   else
-    return 0;
+    return false;
 }
 
 tfont_spec tfont_spec::plain()
@@ -522,13 +548,15 @@ tfont_spec tfont_spec::plain()
 
 hunits tfont::get_width(charinfo *c)
 {
-  if (is_constant_spaced)
+  if (has_constant_spacing)
     return constant_space_width;
-  else if (is_bold)
-    return (hunits(fm->get_width(c->as_glyph(), size.to_scaled_points()))
+  else if (has_emboldening)
+    return (hunits(fm->get_width(c->as_glyph(),
+		   size.to_scaled_points()))
 	    + track_kern + bold_offset);
   else
-    return (hunits(fm->get_width(c->as_glyph(), size.to_scaled_points()))
+    return (hunits(fm->get_width(c->as_glyph(),
+		   size.to_scaled_points()))
 	    + track_kern);
 }
 
@@ -552,12 +580,14 @@ vunits tfont::get_char_depth(charinfo *c)
 
 hunits tfont::get_char_skew(charinfo *c)
 {
-  return hunits(fm->get_skew(c->as_glyph(), size.to_scaled_points(), slant));
+  return hunits(fm->get_skew(c->as_glyph(), size.to_scaled_points(),
+			     slant));
 }
 
 hunits tfont::get_italic_correction(charinfo *c)
 {
-  return hunits(fm->get_italic_correction(c->as_glyph(), size.to_scaled_points()));
+  return hunits(fm->get_italic_correction(c->as_glyph(),
+					  size.to_scaled_points()));
 }
 
 hunits tfont::get_left_italic_correction(charinfo *c)
@@ -587,24 +617,24 @@ inline int tfont::get_character_type(charinfo *ci)
   return fm->get_character_type(ci->as_glyph());
 }
 
-inline int tfont::get_bold(hunits *res)
+inline bool tfont::is_emboldened(hunits *res)
 {
-  if (is_bold) {
+  if (has_emboldening) {
     *res = bold_offset;
-    return 1;
+    return true;
   }
   else
-    return 0;
+    return false;
 }
 
-inline int tfont::get_constant_space(hunits *res)
+inline bool tfont::is_constantly_spaced(hunits *res)
 {
-  if (is_constant_spaced) {
+  if (has_constant_spacing) {
     *res = constant_space_width;
-    return 1;
+    return true;
   }
   else
-    return 0;
+    return false;
 }
 
 inline hunits tfont::get_track_kern()
@@ -650,9 +680,9 @@ symbol SYMBOL_Fl("Fl");
 
 charinfo *tfont::get_lig(charinfo *c1, charinfo *c2)
 {
-  if (ligature_mode == 0)
-    return 0;
-  charinfo *ci = 0;
+  if (0 == ligature_mode)
+    return 0 /* nullptr */;
+  charinfo *ci = 0 /* nullptr */;
   if (c1->get_ascii_code() == 'f') {
     switch (c2->get_ascii_code()) {
     case 'f':
@@ -681,29 +711,29 @@ charinfo *tfont::get_lig(charinfo *c1, charinfo *c2)
       break;
     }
   }
-  if (ci != 0 && fm->contains(ci->as_glyph()))
+  if (ci != 0 /* nullptr */ && fm->contains(ci->as_glyph()))
     return ci;
-  return 0;
+  return 0 /* nullptr */;
 }
 
-inline int tfont::get_kern(charinfo *c1, charinfo *c2, hunits *res)
+inline bool tfont::is_kerned(charinfo *c1, charinfo *c2, hunits *res)
 {
-  if (kern_mode == 0)
-    return 0;
+  if (0 == kern_mode)
+    return false;
   else {
     int n = fm->get_kern(c1->as_glyph(),
 			 c2->as_glyph(),
 			 size.to_scaled_points());
     if (n) {
       *res = hunits(n);
-      return 1;
+      return true;
     }
     else
-      return 0;
+      return false;
   }
 }
 
-tfont *tfont::tfont_list = 0;
+tfont *tfont::tfont_list = 0 /* nullptr */;
 
 tfont::tfont(tfont_spec &spec) : tfont_spec(spec)
 {
@@ -711,7 +741,7 @@ tfont::tfont(tfont_spec &spec) : tfont_spec(spec)
   tfont_list = this;
   tfont_spec plain_spec = plain();
   tfont *p;
-  for (p = tfont_list; p; p = p->next)
+  for (p = tfont_list; p != 0 /* nullptr */; p = p->next)
     if (*p == plain_spec) {
       plain_version = p;
       break;
@@ -723,14 +753,16 @@ tfont::tfont(tfont_spec &spec) : tfont_spec(spec)
 /* output_file */
 
 class real_output_file : public output_file {
-  int piped;
-  int printing;		// decision via optional page list
-  int output_on;	// \O[0] or \O[1] escape sequences
+  bool is_output_piped;		// as with `pi` request
+  bool want_page_printed;	// if selected with `troff -o`
+  bool is_output_on;		// as by \O[0], \O[1] escape sequences
   virtual void really_transparent_char(unsigned char) = 0;
   virtual void really_print_line(hunits x, vunits y, node *n,
-				 vunits before, vunits after, hunits width) = 0;
+				 vunits before, vunits after,
+				 hunits width) = 0;
   virtual void really_begin_page(int pageno, vunits page_length) = 0;
-  virtual void really_copy_file(hunits x, vunits y, const char *filename);
+  virtual void really_copy_file(hunits x, vunits y,
+				const char *filename);
   virtual void really_put_filename(const char *, int);
   virtual void really_on();
   virtual void really_off();
@@ -740,13 +772,14 @@ public:
   ~real_output_file();
   void flush();
   void transparent_char(unsigned char);
-  void print_line(hunits x, vunits y, node *n, vunits before, vunits after, hunits width);
+  void print_line(hunits x, vunits y, node *n,
+		  vunits before, vunits after, hunits width);
   void begin_page(int pageno, vunits page_length);
   void put_filename(const char *, int);
   void on();
   void off();
-  int is_on();
-  int is_printing();
+  bool is_on();
+  bool is_selected_for_printing();
   void copy_file(hunits x, vunits y, const char *filename);
 };
 
@@ -754,7 +787,8 @@ class suppress_output_file : public real_output_file {
 public:
   suppress_output_file();
   void really_transparent_char(unsigned char);
-  void really_print_line(hunits x, vunits y, node *n, vunits, vunits, hunits width);
+  void really_print_line(hunits x, vunits y, node *n,
+			 vunits, vunits, hunits width);
   void really_begin_page(int pageno, vunits page_length);
 };
 
@@ -762,7 +796,8 @@ class ascii_output_file : public real_output_file {
 public:
   ascii_output_file();
   void really_transparent_char(unsigned char);
-  void really_print_line(hunits x, vunits y, node *n, vunits, vunits, hunits width);
+  void really_print_line(hunits x, vunits y, node *n,
+			 vunits, vunits, hunits width);
   void really_begin_page(int pageno, vunits page_length);
   void outc(unsigned char c);
   void outs(const char *s);
@@ -778,7 +813,7 @@ void ascii_output_file::outs(const char *s)
 {
   if (fp != 0 /* nullptr */) {
     fputc('<', fp);
-    if (s)
+    if (s != 0 /* nullptr */)
       fputs(s, fp);
     fputc('>', fp);
   }
@@ -822,18 +857,21 @@ public:
   void flush();
   void trailer(vunits page_length);
   void put_char(charinfo *, tfont *, color *, color *);
-  void put_char_width(charinfo *, tfont *, color *, color *, hunits, hunits);
+  void put_char_width(charinfo *, tfont *, color *, color *, hunits,
+		      hunits);
   void right(hunits);
   void down(vunits);
   void moveto(hunits, vunits);
-  void start_device_extension(color * /* fcol */,
+  void start_device_extension(tfont * /* tf */,
+			      color * /* gcol */, color * /* fcol */,
 			      bool /* omit_command_prefix */ = false);
   void start_device_extension();
   void write_device_extension_char(unsigned char c);
   void end_device_extension();
   void word_marker();
   void really_transparent_char(unsigned char c);
-  void really_print_line(hunits x, vunits y, node *n, vunits before, vunits after, hunits width);
+  void really_print_line(hunits x, vunits y, node *n,
+			 vunits before, vunits after, hunits width);
   void really_begin_page(int pageno, vunits page_length);
   void really_copy_file(hunits x, vunits y, const char *filename);
   void really_put_filename(const char *, int);
@@ -847,6 +885,7 @@ public:
   int get_hpos() { return hpos; }
   int get_vpos() { return vpos; }
   void add_to_tag_list(string s);
+  void comment(string s);
   friend void space_char_hmotion_node::tprint(troff_output_file *);
   friend void unbreakable_space_node::tprint(troff_output_file *);
 };
@@ -886,18 +925,15 @@ inline void troff_output_file::put(unsigned int i)
   put_string(ui_to_a(i), fp);
 }
 
-void troff_output_file::start_device_extension(color *fcol,
+void troff_output_file::start_device_extension(tfont *tf, color *gcol,
+					       color *fcol,
 					       bool omit_command_prefix)
 {
   flush_tbuf();
-#if 0
   set_font(tf);
   stroke_color(gcol);
-#endif
   fill_color(fcol);
-#if 0
   do_motion();
-#endif
   if (!omit_command_prefix)
     put("x X ");
 }
@@ -927,7 +963,8 @@ inline void troff_output_file::moveto(hunits h, vunits v)
 }
 
 void troff_output_file::really_print_line(hunits x, vunits y, node *n,
-					  vunits before, vunits after, hunits)
+					  vunits before, vunits after,
+					  hunits)
 {
   moveto(x, y);
   while (n != 0 /* nullptr */) {
@@ -1035,9 +1072,9 @@ void troff_output_file::flush_tbuf()
     return;
   }
 
-  if (tbuf_len == 0)
+  if (0 == tbuf_len)
     return;
-  if (tbuf_kern == 0)
+  if (0 == tbuf_kern)
     put('t');
   else {
     put('u');
@@ -1079,7 +1116,7 @@ void troff_output_file::put_char_width(charinfo *ci, tfont *tf,
   }
   set_font(tf);
   unsigned char c = ci->get_ascii_code();
-  if (c == '\0') {
+  if (0U == c) {
     stroke_color(gcol);
     fill_color(fcol);
     flush_tbuf();
@@ -1092,7 +1129,7 @@ void troff_output_file::put_char_width(charinfo *ci, tfont *tf,
     else {
       put('C');
       const char *s = ci->nm.contents();
-      if (s[1] == 0) {
+      if (0 == s[1]) {
 	put('\\');
 	put(s[0]);
       }
@@ -1157,7 +1194,7 @@ void troff_output_file::put_char(charinfo *ci, tfont *tf,
     return;
   set_font(tf);
   unsigned char c = ci->get_ascii_code();
-  if (c == '\0') {
+  if (0U == c) {
     stroke_color(gcol);
     fill_color(fcol);
     flush_tbuf();
@@ -1169,7 +1206,7 @@ void troff_output_file::put_char(charinfo *ci, tfont *tf,
     else {
       put('C');
       const char *s = ci->nm.contents();
-      if (s[1] == 0) {
+      if (0 == s[1]) {
 	put('\\');
 	put(s[0]);
       }
@@ -1258,7 +1295,7 @@ void troff_output_file::set_font(tfont *tf)
   int height = tf->get_height();
   if (current_height != height) {
     put("x Height ");
-    put(height == 0 ? current_size : height);
+    put((0 == height) ? current_size : height);
     put('\n');
     current_height = height;
   }
@@ -1275,12 +1312,16 @@ void troff_output_file::fill_color(color *col)
   if (!want_color_output)
     return;
   flush_tbuf();
-  do_motion();
+  // In nroff-mode devices (grotty), the fill color is a property of the
+  // character cell; our drawing position has to be on the page, lest
+  // grotty grouse "output above first line discarded".
+  if (in_nroff_mode)
+    do_motion();
   put("DF");
   unsigned int components[4];
-  color_scheme cs;
-  cs = col->get_components(components);
-  switch (cs) {
+  color_scheme scheme;
+  scheme = col->get_components(components);
+  switch (scheme) {
   case DEFAULT:
     put('d');
     break;
@@ -1328,13 +1369,16 @@ void troff_output_file::stroke_color(color *col)
   if (!want_color_output)
     return;
   flush_tbuf();
-  // grotty doesn't like a color command if the vertical position is zero.
-  do_motion();
+  // In nroff-mode devices (grotty), the stroke color is a property of
+  // the character cell; our drawing position has to be on the page,
+  // lest grotty grouse "output above first line discarded".
+  if (in_nroff_mode)
+    do_motion();
   put("m");
   unsigned int components[4];
-  color_scheme cs;
-  cs = col->get_components(components);
-  switch (cs) {
+  color_scheme scheme;
+  scheme = col->get_components(components);
+  switch (scheme) {
   case DEFAULT:
     put('d');
     break;
@@ -1382,6 +1426,16 @@ void troff_output_file::add_to_tag_list(string s)
   }
 }
 
+void troff_output_file::comment(string s)
+{
+  flush_tbuf();
+  assert(s.search('\n') == -1); // Don't write a multi-line comment.
+  put("# ");
+  string t = s + '\0';
+  put(t.contents());
+  put('\n');
+}
+
 // determine_line_limits - works out the smallest box which will contain
 //			   the entity, code, built from the point array.
 void troff_output_file::determine_line_limits(char code, hvpair *point,
@@ -1397,16 +1451,16 @@ void troff_output_file::determine_line_limits(char code, hvpair *point,
   case 'C':
     // only the h field is used when defining a circle
     check_output_limits(output_hpos,
-			output_vpos - point[0].h.to_units()/2);
+			output_vpos - point[0].h.to_units() / 2);
     check_output_limits(output_hpos + point[0].h.to_units(),
-			output_vpos + point[0].h.to_units()/2);
+			output_vpos + point[0].h.to_units() / 2);
     break;
   case 'E':
   case 'e':
     check_output_limits(output_hpos,
-			output_vpos - point[0].v.to_units()/2);
+			output_vpos - point[0].v.to_units() / 2);
     check_output_limits(output_hpos + point[0].h.to_units(),
-			output_vpos + point[0].v.to_units()/2);
+			output_vpos + point[0].v.to_units() / 2);
     break;
   case 'P':
   case 'p':
@@ -1526,7 +1580,8 @@ void troff_output_file::really_off()
   flush_tbuf();
 }
 
-void troff_output_file::really_put_filename(const char *filename, int po)
+void troff_output_file::really_put_filename(const char *filename,
+					    int po)
 {
   flush_tbuf();
   put("x F ");
@@ -1538,7 +1593,8 @@ void troff_output_file::really_put_filename(const char *filename, int po)
   put('\n');
 }
 
-void troff_output_file::really_begin_page(int pageno, vunits page_length)
+void troff_output_file::really_begin_page(int pageno,
+					  vunits page_length)
 {
   flush_tbuf();
   if (has_page_begun) {
@@ -1551,7 +1607,7 @@ void troff_output_file::really_begin_page(int pageno, vunits page_length)
   else
     has_page_begun = true;
   current_tfont = 0;
-  current_font_number = -1;
+  current_font_number = FONT_NOT_MOUNTED;
   current_size = 0;
   // current_height = 0;
   // current_slant = 0;
@@ -1574,8 +1630,8 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
   flush_tbuf();
   do_motion();
   errno = 0;
-  FILE *ifp = include_search_path.open_file_cautious(filename);
-  if (ifp == 0)
+  FILE *ifp = include_search_path.open_file_cautiously(filename);
+  if (0 /* nullptr */ == ifp)
     error("cannot open '%1': %2", filename, strerror(errno));
   else {
     int c;
@@ -1586,7 +1642,7 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
   must_update_drawing_position = true;
   current_size = 0;
   current_tfont = 0;
-  current_font_number = -1;
+  current_font_number = FONT_NOT_MOUNTED;
   for (int i = 0; i < nfont_positions; i++)
     font_position[i] = NULL_SYMBOL;
 }
@@ -1613,7 +1669,7 @@ void troff_output_file::trailer(vunits page_length)
     }
   }
   else
-    warning(WARN_RANGE, "no pages in output page selection list");
+    warning(WARN_RANGE, "no pages match output page selection list");
   put("x stop\n");
 }
 
@@ -1672,16 +1728,16 @@ void output_file::off()
 }
 
 real_output_file::real_output_file()
-: printing(0), output_on(1)
+: want_page_printed(true), is_output_on(true)
 {
   if (pipe_command) {
     if ((fp = popen(pipe_command, POPEN_WT)) != 0 /* nullptr */) {
-      piped = 1;
+      is_output_piped = true;
       return;
     }
     error("pipe open failed: %1", strerror(errno));
   }
-  piped = 0;
+  is_output_piped = false;
   fp = stdout;
 }
 
@@ -1700,7 +1756,7 @@ real_output_file::~real_output_file()
     fp = 0 /* nullptr */;
     fatal("unable to flush output file: %1", strerror(errno));
   }
-  if (piped) {
+  if (is_output_piped) {
     int result = pclose(fp);
     fp = 0 /* nullptr */;
     if (result < 0)
@@ -1732,15 +1788,15 @@ void real_output_file::flush()
   }
 }
 
-int real_output_file::is_printing()
+bool real_output_file::is_selected_for_printing()
 {
-  return printing;
+  return want_page_printed;
 }
 
 void real_output_file::begin_page(int pageno, vunits page_length)
 {
-  printing = in_output_page_list(pageno);
-  if (printing) {
+  want_page_printed = in_output_page_list(pageno);
+  if (want_page_printed) {
     was_any_page_in_output_list = true;
     really_begin_page(pageno, page_length);
   }
@@ -1749,21 +1805,21 @@ void real_output_file::begin_page(int pageno, vunits page_length)
 void real_output_file::copy_file(hunits x, vunits y,
 				 const char *filename)
 {
-  if (printing && output_on)
+  if (want_page_printed && is_output_on)
     really_copy_file(x, y, filename);
   check_output_limits(x.to_units(), y.to_units());
 }
 
 void real_output_file::transparent_char(unsigned char c)
 {
-  if (printing && output_on)
+  if (want_page_printed && is_output_on)
     really_transparent_char(c);
 }
 
 void real_output_file::print_line(hunits x, vunits y, node *n,
 			     vunits before, vunits after, hunits width)
 {
-  if (printing)
+  if (want_page_printed)
     really_print_line(x, y, n, before, after, width);
   delete_node_list(n);
 }
@@ -1785,19 +1841,22 @@ void real_output_file::really_put_filename(const char *, int)
 void real_output_file::on()
 {
   really_on();
-  if (output_on == 0)
-    output_on = 1;
+  // XXX: Assertion fails when generating pic.html.  Find out why.
+  //assert(!is_output_on);
+  is_output_on = true;
 }
 
 void real_output_file::off()
 {
   really_off();
-  output_on = 0;
+  // XXX: Assertion fails when generating ms.html.  Find out why.
+  //assert(is_output_on);
+  is_output_on = false;
 }
 
-int real_output_file::is_on()
+bool real_output_file::is_on()
 {
-  return output_on;
+  return is_output_on;
 }
 
 void real_output_file::really_on()
@@ -1858,14 +1917,16 @@ void suppress_output_file::really_transparent_char(unsigned char)
 
 /* glyphs, ligatures, kerns, discretionary breaks */
 
+// abstract
 class charinfo_node : public node {
 protected:
   charinfo *ci;
 public:
   charinfo_node(charinfo *, statem *, int, node * = 0 /* nullptr */);
-  int ends_sentence();
-  int overlaps_vertically();
-  int overlaps_horizontally();
+  virtual int ends_sentence();
+  virtual bool overlaps_vertically();
+  virtual bool overlaps_horizontally();
+  virtual void dump_properties();
 };
 
 charinfo_node::charinfo_node(charinfo *c, statem *s, int divlevel,
@@ -1883,15 +1944,42 @@ int charinfo_node::ends_sentence()
   return 0;
 }
 
-int charinfo_node::overlaps_horizontally()
+bool charinfo_node::overlaps_horizontally()
 {
   return ci->overlaps_horizontally();
 }
 
-int charinfo_node::overlaps_vertically()
+bool charinfo_node::overlaps_vertically()
 {
   return ci->overlaps_vertically();
 }
+
+void charinfo_node::dump_properties()
+{
+  node::dump_properties();
+  // GNU troff multiplexes the distinction of ordinary vs. special
+  // characters though the special character code zero.
+  unsigned char c = ci->get_ascii_code();
+  if (c != 0U) {
+    fputs(", \"character\": ", stderr);
+    // It's not a `string` or `symbol` we can `.json_dump()`, so we have
+    // to write the quotation marks ourselves.
+    fputc('\"', stderr);
+    json_char jc = json_encode_char(c);
+    // Write out its JSON representation by character by character to
+    // keep libc string functions from interpreting C escape sequences.
+    for (size_t i = 0; i < jc.len; i++)
+      fputc(jc.buf[i], stderr);
+    fputc('\"', stderr);
+  }
+  else {
+    fputs(", \"special character\": ", stderr);
+    ci->nm.json_dump();
+  }
+  fflush(stderr);
+}
+
+// A glyph node corresponds to a glyph supplied by a device font.
 
 class glyph_node : public charinfo_node {
 protected:
@@ -1933,9 +2021,10 @@ public:
   const char *type();
   bool causes_tprint();
   bool is_tag();
-  void dump_node();
 };
 
+// Not derived from `container_node`; implements custom double container
+// dumper in dump_node().
 class ligature_node : public glyph_node {
   node *n1;
   node *n2;
@@ -1960,8 +2049,11 @@ public:
   const char *type();
   bool causes_tprint();
   bool is_tag();
+  void dump_node();
 };
 
+// Not derived from `container_node`; implements custom double container
+// dumper in dump_node().
 class kern_pair_node : public node {
   hunits amount;
   node *n1;
@@ -1989,8 +2081,12 @@ public:
   bool causes_tprint();
   bool is_tag();
   void vertical_extent(vunits *, vunits *);
+  void dump_properties();
+  void dump_node();
 };
 
+// Not derived from `container_node`; implements custom triple container
+// dumper in dump_node().
 class dbreak_node : public node {
   node *none;
   node *pre;
@@ -2144,14 +2240,14 @@ node *glyph_node::merge_glyph_node(glyph_node *gn)
 			       gn->div_nest_level, next1);
     }
     hunits kern;
-    if (tf->get_kern(ci, gn->ci, &kern)) {
+    if (tf->is_kerned(ci, gn->ci, &kern)) {
       node *next1 = next;
       next = 0 /* nullptr */;
       return new kern_pair_node(kern, this, gn, state,
 				gn->div_nest_level, next1);
     }
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 #ifdef STORE_WIDTH
@@ -2199,38 +2295,17 @@ hunits glyph_node::left_italic_correction()
 
 hyphenation_type glyph_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 void glyph_node::ascii_print(ascii_output_file *ascii)
 {
   unsigned char c = ci->get_ascii_code();
-  if (c != 0)
+  if (c != 0U)
     ascii->outc(c);
   else
     ascii->outs(ci->nm.contents());
 }
-
-// XXX: This and `composite_node::dump_node()` are identical.  C++
-// presumably has several different solutions for this.  Pick one.
-void glyph_node::dump_node()
-{
-  unsigned char c = ci->get_ascii_code();
-  fprintf(stderr, "{type: %s, character: ", type());
-  if (c)
-    fprintf(stderr, "\"%c\"", c);
-  else
-    fprintf(stderr, "\"\\%s\"", ci->nm.contents());
-  fputs(", ", stderr);
-  if (push_state)
-    fprintf(stderr, "push_state, ");
-  if (state)
-    state->display_state();
-  fprintf(stderr, "diversion level: %d", div_nest_level);
-  fputs("}", stderr);
-  fflush(stderr);
-}
-
 ligature_node::ligature_node(charinfo *c, tfont *t,
 			     color *gc, color *fc,
 			     node *gn1, node *gn2, statem *s,
@@ -2288,10 +2363,55 @@ node *ligature_node::add_self(node *n, hyphen_list **p)
   return n;
 }
 
+void ligature_node::dump_node()
+{
+  fputc('{', stderr);
+  // Flush so that in case something goes wrong with property dumping,
+  // we know that we traversed to a new node.
+  fflush(stderr);
+  node::dump_properties();
+  if (n1 != 0 /* nullptr */) {
+    fputs(", \"n1\": ", stderr);
+    n1->dump_node();
+  }
+  if (n2 != 0 /* nullptr */) {
+    fputs(", \"n2\": ", stderr);
+    n2->dump_node();
+  }
+  fputc('}', stderr);
+  fflush(stderr);
+}
+
 kern_pair_node::kern_pair_node(hunits n, node *first, node *second,
 			       statem* s, int divlevel, node *x)
 : node(x, s, divlevel), amount(n), n1(first), n2(second)
 {
+}
+
+void kern_pair_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"amount\": %d", amount.to_units());
+  fflush(stderr);
+}
+
+void kern_pair_node::dump_node()
+{
+  fputc('{', stderr);
+  // Flush so that in case something goes wrong with property dumping,
+  // we know that we traversed to a new node.
+  fflush(stderr);
+  dump_properties();
+  if (n1 != 0 /* nullptr */) {
+    fputs(", \"n1\": ", stderr);
+    n1->dump_node();
+  }
+  if (n2 != 0 /* nullptr */) {
+    fputs(", \"n2\": ", stderr);
+    n2->dump_node();
+  }
+  fputc('}', stderr);
+  fflush(stderr);
 }
 
 dbreak_node::dbreak_node(node *n, node *p, statem *s, int divlevel,
@@ -2302,7 +2422,7 @@ dbreak_node::dbreak_node(node *n, node *p, statem *s, int divlevel,
 
 node *dbreak_node::merge_glyph_node(glyph_node *gn)
 {
-  glyph_node *gn2 = (glyph_node *)gn->copy();
+  glyph_node *gn2 = static_cast<glyph_node *>(gn->copy());
   node *new_none = none ? none->merge_glyph_node(gn) : 0 /* nullptr */;
   node *new_post = post ? post->merge_glyph_node(gn2) : 0 /* nullptr */;
   if ((0 /* nullptr */ == new_none) && (0 /* nullptr */ == new_post)) {
@@ -2331,7 +2451,7 @@ node *kern_pair_node::merge_glyph_node(glyph_node *gn)
     return 0 /* nullptr */;
   n2 = nd;
   nd = n2->merge_self(n1);
-  if (nd) {
+  if (nd != 0 /* nullptr */) {
     nd->next = next;
     n1 = n2 = 0 /* nullptr */;
     delete this;
@@ -2364,7 +2484,7 @@ void kern_pair_node::vertical_extent(vunits *min, vunits *max)
 node *kern_pair_node::add_discretionary_hyphen()
 {
   tfont *tf = n1->get_tfont();
-  if (tf) {
+  if (tf != 0 /* nullptr */) {
     if (tf->contains(soft_hyphen_char)) {
       color *gcol = n2->get_stroke_color();
       color *fcol = n2->get_fill_color();
@@ -2432,6 +2552,25 @@ void delete_node_list(node *n)
   }
 }
 
+void dump_node_list(node *n)
+{
+  bool need_comma = false;
+  fputc('[', stderr);
+  while (n != 0 /* nullptr */) {
+    if (need_comma)
+      fputs(", ", stderr);
+    n->dump_node();
+    need_comma = true;
+    n = n->next;
+  }
+  // !need_comma implies that the list was empty.  JSON convention is to
+  // put a space between an empty pair of square brackets.
+  if (!need_comma)
+    fputc(' ', stderr);
+  fputc(']', stderr);
+  fflush(stderr);
+}
+
 node *dbreak_node::copy()
 {
   dbreak_node *p = new dbreak_node(copy_node_list(none),
@@ -2456,11 +2595,12 @@ hyphen_list *kern_pair_node::get_hyphen_list(hyphen_list *tail,
 class hyphen_inhibitor_node : public node {
 public:
   hyphen_inhibitor_node(node * = 0 /* nullptr */);
+  void asciify(macro *);
   node *copy();
-  bool is_same_as(node *);
-  const char *type();
   bool causes_tprint();
   bool is_tag();
+  bool is_same_as(node *);
+  const char *type();
   hyphenation_type get_hyphenation_type();
 };
 
@@ -2473,16 +2613,6 @@ node *hyphen_inhibitor_node::copy()
   return new hyphen_inhibitor_node;
 }
 
-bool hyphen_inhibitor_node::is_same_as(node *)
-{
-  return true;
-}
-
-const char *hyphen_inhibitor_node::type()
-{
-  return "hyphen_inhibitor_node";
-}
-
 bool hyphen_inhibitor_node::causes_tprint()
 {
   return false;
@@ -2493,9 +2623,19 @@ bool hyphen_inhibitor_node::is_tag()
   return false;
 }
 
+bool hyphen_inhibitor_node::is_same_as(node *)
+{
+  return true;
+}
+
+const char *hyphen_inhibitor_node::type()
+{
+  return "hyphen_inhibitor_node";
+}
+
 hyphenation_type hyphen_inhibitor_node::get_hyphenation_type()
 {
-  return HYPHEN_INHIBIT;
+  return HYPHENATION_INHIBITED;
 }
 
 /* add_discretionary_hyphen methods */
@@ -2512,7 +2652,7 @@ node *dbreak_node::add_discretionary_hyphen()
 node *node::add_discretionary_hyphen()
 {
   tfont *tf = get_tfont();
-  if (!tf)
+  if (0 /* nullptr */ == tf)
     return new hyphen_inhibitor_node(this);
   if (tf->contains(soft_hyphen_char)) {
     color *gcol = get_stroke_color();
@@ -2523,7 +2663,7 @@ node *node::add_discretionary_hyphen()
     glyph_node *gn = new glyph_node(soft_hyphen_char, tf, gcol, fcol,
 				    state, div_nest_level);
     node *n1 = n->merge_glyph_node(gn);
-    if (n1 == 0 /* nullptr */) {
+    if (0 /* nullptr */ == n1) {
       gn->next = n;
       n1 = gn;
     }
@@ -2587,30 +2727,96 @@ units node::size()
   return points_to_units(10);
 }
 
-void node::dump_node()
+void node::dump_properties()
 {
-  fprintf(stderr, "{type: %s, ", type());
-  if (push_state)
-    fputs("<push_state>, ", stderr);
-  if (state)
-    fputs("<state>, ", stderr);
-  fprintf(stderr, "diversion level: %d", div_nest_level);
-  fputs("}", stderr);
+  fprintf(stderr, "\"type\": \"%s\"", type());
+  fprintf(stderr, ", \"diversion level\": %d", div_nest_level);
+  fprintf(stderr, ", \"is_special_node\": %s",
+	  is_special ? "true" : "false");
+  if (push_state) {
+    fputs(", \"push_state\": ", stderr);
+    push_state->display_state();
+  }
+  if (state) {
+    fputs(", \"state\": ", stderr);
+    state->display_state();
+  }
   fflush(stderr);
 }
 
-void node::dump_node_list()
+void node::dump_node()
+{
+  fputc('{', stderr);
+  // Flush so that in case something goes wrong with property dumping,
+  // we know that we traversed to a new node.
+  fflush(stderr);
+  dump_properties();
+  fputc('}', stderr);
+  fflush(stderr);
+}
+
+container_node::container_node(node *contents)
+: node(), nodes(contents)
+{
+}
+
+container_node::container_node(node *nxt, node *contents)
+: node(nxt), nodes(contents)
+{
+}
+
+// `left_italic_corrected_node` uses an initially empty container.
+container_node::container_node(node *nxt, statem *s, int divl)
+: node(nxt, s, divl), nodes(0 /* nullptr */)
+{
+}
+
+#if 0
+container_node::container_node(node *nxt, statem *s, node *contents)
+: node(nxt, s), nodes(contents)
+{
+}
+#endif
+
+container_node::container_node(node *nxt, statem *s, int divl,
+			       node *contents)
+: node(nxt, s, divl), nodes(contents)
+{
+}
+
+container_node::container_node(node *nxt, statem *s, int divl,
+			       bool special, node *contents)
+: node(nxt, s, divl, special), nodes(contents)
+{
+}
+
+container_node::~container_node()
+{
+  delete_node_list(nodes);
+}
+
+void container_node::dump_node()
+{
+  fputc('{', stderr);
+  dump_properties();
+  fputs(", \"contains\": ", stderr);
+  dump_node_list(nodes);
+  fputc('}', stderr);
+  fflush(stderr);
+}
+
+void dump_node_list_in_reverse(node *nlist)
 {
   // It's stored in reverse order already; this puts it forward again.
   std::stack<node *> reversed_node_list;
-  node *n = next;
-  bool need_comma = false;
+  node *n = nlist;
 
-  assert(next != 0 /* nullptr */);
-  do {
+  while (n != 0 /* nullptr */) {
     reversed_node_list.push(n);
     n = n->next;
-  } while (n != 0 /* nullptr */);
+  }
+  fputc('[', stderr);
+  bool need_comma = false;
   while (!reversed_node_list.empty()) {
     if (need_comma)
       fputs(",\n", stderr);
@@ -2618,7 +2824,11 @@ void node::dump_node_list()
     reversed_node_list.pop();
     need_comma = true;
   }
-  fputc('\n', stderr);
+  // !need_comma implies that the list was empty.  JSON convention is to
+  // put a space between an empty pair of square brackets.
+  if (!need_comma)
+    fputc(' ', stderr);
+  fputs("]\n", stderr);
   fflush(stderr);
 }
 
@@ -2630,7 +2840,7 @@ hunits kern_pair_node::width()
 node *kern_pair_node::last_char_node()
 {
   node *nd = n2->last_char_node();
-  if (nd)
+  if (nd != 0 /* nullptr */)
     return nd;
   return n1->last_char_node();
 }
@@ -2645,12 +2855,12 @@ hunits dbreak_node::width()
 
 node *dbreak_node::last_char_node()
 {
-  for (node *n = none; n; n = n->next) {
+  for (node *n = none; n != 0 /* nullptr */; n = n->next) {
     node *last_node = n->last_char_node();
     if (last_node)
       return last_node;
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 hunits dbreak_node::italic_correction()
@@ -2663,12 +2873,11 @@ hunits dbreak_node::subscript_correction()
   return none ? none->subscript_correction() : H0;
 }
 
-class italic_corrected_node : public node {
-  node *n;
+class italic_corrected_node : public container_node {
   hunits x;
 public:
-  italic_corrected_node(node *, hunits, statem *, int, node * = 0);
-  ~italic_corrected_node();
+  italic_corrected_node(node *, hunits, statem *, int,
+			node * = 0 /* nullptr */);
   node *copy();
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
@@ -2676,8 +2885,8 @@ public:
   node *last_char_node();
   void vertical_extent(vunits *, vunits *);
   int ends_sentence();
-  int overlaps_horizontally();
-  int overlaps_vertically();
+  bool overlaps_horizontally();
+  bool overlaps_vertically();
   bool is_same_as(node *);
   hyphenation_type get_hyphenation_type();
   tfont *get_tfont();
@@ -2690,6 +2899,7 @@ public:
   const char *type();
   bool causes_tprint();
   bool is_tag();
+  void dump_properties();
 };
 
 node *node::add_italic_correction(hunits *wd)
@@ -2699,96 +2909,101 @@ node *node::add_italic_correction(hunits *wd)
     return this;
   else {
     node *next1 = next;
-    next = 0;
+    next = 0 /* nullptr */;
     *wd += ic;
-    return new italic_corrected_node(this, ic, state, div_nest_level, next1);
+    return new italic_corrected_node(this, ic, state, div_nest_level,
+				     next1);
   }
 }
 
-italic_corrected_node::italic_corrected_node(node *nn, hunits xx, statem *s,
-					     int divlevel, node *p)
-: node(p, s, divlevel), n(nn), x(xx)
+italic_corrected_node::italic_corrected_node(node *nn, hunits xx,
+					     statem *s, int divlevel,
+					     node *p)
+: container_node(p, s, divlevel, nn), x(xx)
 {
-  assert(n != 0 /* nullptr */);
+  assert(nodes != 0 /* nullptr */);
 }
 
-italic_corrected_node::~italic_corrected_node()
+void italic_corrected_node::dump_properties()
 {
-  delete n;
+  node::dump_properties();
+  fprintf(stderr, ", \"hunits\": %d", x.to_units());
+  fflush(stderr);
 }
 
 node *italic_corrected_node::copy()
 {
-  return new italic_corrected_node(n->copy(), x, state, div_nest_level);
+  return new italic_corrected_node(nodes->copy(), x, state,
+				   div_nest_level);
 }
 
 hunits italic_corrected_node::width()
 {
-  return n->width() + x;
+  return nodes->width() + x;
 }
 
 void italic_corrected_node::vertical_extent(vunits *min, vunits *max)
 {
-  n->vertical_extent(min, max);
+  nodes->vertical_extent(min, max);
 }
 
 void italic_corrected_node::tprint(troff_output_file *out)
 {
-  n->tprint(out);
+  nodes->tprint(out);
   out->right(x);
 }
 
 hunits italic_corrected_node::skew()
 {
-  return n->skew() - x/2;
+  return nodes->skew() - (x / 2);
 }
 
 hunits italic_corrected_node::subscript_correction()
 {
-  return n->subscript_correction() - x;
+  return nodes->subscript_correction() - x;
 }
 
 void italic_corrected_node::ascii_print(ascii_output_file *out)
 {
-  n->ascii_print(out);
+  nodes->ascii_print(out);
 }
 
 int italic_corrected_node::ends_sentence()
 {
-  return n->ends_sentence();
+  return nodes->ends_sentence();
 }
 
-int italic_corrected_node::overlaps_horizontally()
+bool italic_corrected_node::overlaps_horizontally()
 {
-  return n->overlaps_horizontally();
+  return nodes->overlaps_horizontally();
 }
 
-int italic_corrected_node::overlaps_vertically()
+bool italic_corrected_node::overlaps_vertically()
 {
-  return n->overlaps_vertically();
+  return nodes->overlaps_vertically();
 }
 
 node *italic_corrected_node::last_char_node()
 {
-  return n->last_char_node();
+  return nodes->last_char_node();
 }
 
 tfont *italic_corrected_node::get_tfont()
 {
-  return n->get_tfont();
+  return nodes->get_tfont();
 }
 
 hyphenation_type italic_corrected_node::get_hyphenation_type()
 {
-  return n->get_hyphenation_type();
+  return nodes->get_hyphenation_type();
 }
 
 node *italic_corrected_node::add_self(node *nd, hyphen_list **p)
 {
-  nd = n->add_self(nd, p);
+  nd = nodes->add_self(nd, p);
   hunits not_interested;
   nd = nd->add_italic_correction(&not_interested);
-  n = 0;
+  nodes = 0 /* nullptr */;
   delete this;
   return nd;
 }
@@ -2796,23 +3011,22 @@ node *italic_corrected_node::add_self(node *nd, hyphen_list **p)
 hyphen_list *italic_corrected_node::get_hyphen_list(hyphen_list *tail,
 						    int *count)
 {
-  return n->get_hyphen_list(tail, count);
+  return nodes->get_hyphen_list(tail, count);
 }
 
 int italic_corrected_node::character_type()
 {
-  return n->character_type();
+  return nodes->character_type();
 }
 
-class break_char_node : public node {
-  node *ch;
+class break_char_node : public container_node {
   char break_code;
   char prev_break_code;
   color *col;
 public:
-  break_char_node(node *, int, int, color *, node * = 0);
-  break_char_node(node *, int, int, color *, statem *, int, node * = 0);
-  ~break_char_node();
+  break_char_node(node *, int, int, color *, node * = 0 /* nullptr */);
+  break_char_node(node *, int, int, color *, statem *, int,
+		  node * = 0 /* nullptr */);
   node *copy();
   hunits width();
   vunits vertical_width();
@@ -2826,8 +3040,8 @@ public:
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
   hyphenation_type get_hyphenation_type();
-  int overlaps_vertically();
-  int overlaps_horizontally();
+  bool overlaps_vertically();
+  bool overlaps_horizontally();
   units size();
   tfont *get_tfont();
   bool is_same_as(node *);
@@ -2835,54 +3049,61 @@ public:
   bool causes_tprint();
   bool is_tag();
   int get_break_code();
+  void dump_properties();
 };
 
-break_char_node::break_char_node(node *n, int bc, int pbc, color *c, node *x)
-: node(x), ch(n), break_code(bc), prev_break_code(pbc), col(c)
+break_char_node::break_char_node(node *n, int bc, int pbc, color *c,
+				 node *x)
+: container_node(x, n), break_code(bc), prev_break_code(pbc), col(c)
 {
 }
 
 break_char_node::break_char_node(node *n, int bc, int pbc, color *c,
 				 statem *s, int divlevel, node *x)
-: node(x, s, divlevel), ch(n), break_code(bc), prev_break_code(pbc),
-  col(c)
+: container_node(x, s, divlevel, n), break_code(bc),
+  prev_break_code(pbc), col(c)
 {
 }
 
-break_char_node::~break_char_node()
+void break_char_node::dump_properties()
 {
-  delete ch;
+  node::dump_properties();
+  fprintf(stderr, ", \"break code before\": %d", break_code);
+  fprintf(stderr, ", \"break code after\": %d", prev_break_code);
+  fputs(", \"terminal_color\": ", stderr);
+  col->nm.json_dump();
+  fflush(stderr);
 }
 
 node *break_char_node::copy()
 {
-  return new break_char_node(ch->copy(), break_code, prev_break_code,
+  return new break_char_node(nodes->copy(), break_code, prev_break_code,
 			     col, state, div_nest_level);
 }
 
 hunits break_char_node::width()
 {
-  return ch->width();
+  return nodes->width();
 }
 
 vunits break_char_node::vertical_width()
 {
-  return ch->vertical_width();
+  return nodes->vertical_width();
 }
 
 node *break_char_node::last_char_node()
 {
-  return ch->last_char_node();
+  return nodes->last_char_node();
 }
 
 int break_char_node::character_type()
 {
-  return ch->character_type();
+  return nodes->character_type();
 }
 
 int break_char_node::ends_sentence()
 {
-  return ch->ends_sentence();
+  return nodes->ends_sentence();
 }
 
 // Keep these symbol names in sync with the superset used in an
@@ -2899,7 +3120,7 @@ enum break_char_type {
 node *break_char_node::add_self(node *n, hyphen_list **p)
 {
   bool have_space_node = false;
-  assert((*p)->hyphenation_code == 0);
+  assert(0U == (*p)->hyphenation_code);
   if (break_code & ALLOWS_BREAK_BEFORE) {
     if (((*p)->is_breakable)
 	|| (break_code & IGNORES_SURROUNDING_HYPHENATION_CODES)) {
@@ -2943,32 +3164,32 @@ hyphen_list *break_char_node::get_hyphen_list(hyphen_list *tail, int *)
 
 hyphenation_type break_char_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 void break_char_node::ascii_print(ascii_output_file *ascii)
 {
-  ch->ascii_print(ascii);
+  nodes->ascii_print(ascii);
 }
 
-int break_char_node::overlaps_vertically()
+bool break_char_node::overlaps_vertically()
 {
-  return ch->overlaps_vertically();
+  return nodes->overlaps_vertically();
 }
 
-int break_char_node::overlaps_horizontally()
+bool break_char_node::overlaps_horizontally()
 {
-  return ch->overlaps_horizontally();
+  return nodes->overlaps_horizontally();
 }
 
 units break_char_node::size()
 {
-  return ch->size();
+  return nodes->size();
 }
 
 tfont *break_char_node::get_tfont()
 {
-  return ch->get_tfont();
+  return nodes->get_tfont();
 }
 
 node *extra_size_node::copy()
@@ -2977,13 +3198,20 @@ node *extra_size_node::copy()
 }
 
 extra_size_node::extra_size_node(vunits i, statem *s, int divlevel)
-: node(0, s, divlevel), n(i)
+: node(0 /* nullptr */, s, divlevel), n(i)
 {
 }
 
 extra_size_node::extra_size_node(vunits i)
 : n(i)
 {
+}
+
+void extra_size_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"vunits\": %d", n.to_units());
+  fflush(stderr);
 }
 
 node *vertical_size_node::copy()
@@ -2993,7 +3221,7 @@ node *vertical_size_node::copy()
 
 vertical_size_node::vertical_size_node(vunits i, statem *s,
 				       int divlevel)
-: node(0, s, divlevel), n(i)
+: node(0 /* nullptr */, s, divlevel), n(i)
 {
 }
 
@@ -3002,9 +3230,28 @@ vertical_size_node::vertical_size_node(vunits i)
 {
 }
 
+void vertical_size_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"vunits\": %d", n.to_units());
+  fflush(stderr);
+}
+
+void hmotion_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"hunits\": %d", n.to_units());
+  fprintf(stderr, ", \"was_tab\": %s", was_tab ? "true" : "false");
+  fprintf(stderr, ", \"unformat\": %s", unformat ? "true" : "false");
+  fputs(", \"terminal_color\": ", stderr);
+  col->nm.json_dump();
+  fflush(stderr);
+}
+
 node *hmotion_node::copy()
 {
-  return new hmotion_node(n, was_tab, unformat, col, state, div_nest_level);
+  return new hmotion_node(n, was_tab, unformat, col, state,
+			  div_nest_level);
 }
 
 node *space_char_hmotion_node::copy()
@@ -3018,8 +3265,17 @@ vmotion_node::vmotion_node(vunits i, color *c)
 }
 
 vmotion_node::vmotion_node(vunits i, color *c, statem *s, int divlevel)
-: node(0, s, divlevel), n(i), col(c)
+: node(0 /* nullptr */, s, divlevel), n(i), col(c)
 {
+}
+
+void vmotion_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"vunits\": %d", n.to_units());
+  fputs(", \"terminal_color\": ", stderr);
+  col->nm.json_dump();
+  fflush(stderr);
 }
 
 node *vmotion_node::copy()
@@ -3037,26 +3293,29 @@ node *transparent_dummy_node::copy()
   return new transparent_dummy_node;
 }
 
-hline_node::~hline_node()
-{
-  if (n)
-    delete n;
-}
-
 hline_node::hline_node(hunits i, node *c, node *nxt)
-: node(nxt), x(i), n(c)
+: container_node(nxt, c), x(i)
 {
 }
 
 hline_node::hline_node(hunits i, node *c, statem *s, int divlevel,
 		       node *nxt)
-: node(nxt, s, divlevel), x(i), n(c)
+: container_node(nxt, s, divlevel, c), x(i)
 {
+}
+
+void hline_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"hunits\": %d", x.to_units());
+  fflush(stderr);
 }
 
 node *hline_node::copy()
 {
-  return new hline_node(x, n ? n->copy() : 0, state, div_nest_level);
+  return new hline_node(x, (nodes != 0 /* nullptr */) ? nodes->copy()
+						      : 0 /* nullptr */,
+			state, div_nest_level);
 }
 
 hunits hline_node::width()
@@ -3065,63 +3324,62 @@ hunits hline_node::width()
 }
 
 vline_node::vline_node(vunits i, node *c, node *nxt)
-: node(nxt), x(i), n(c)
+: container_node(nxt, c), x(i)
 {
 }
 
 vline_node::vline_node(vunits i, node *c, statem *s,
 		       int divlevel, node *nxt)
-: node(nxt, s, divlevel), x(i), n(c)
+: container_node(nxt, s, divlevel, c), x(i)
 {
 }
 
-vline_node::~vline_node()
+void vline_node::dump_properties()
 {
-  if (n)
-    delete n;
+  node::dump_properties();
+  fprintf(stderr, ", \"vunits\": %d", x.to_units());
+  fflush(stderr);
 }
 
 node *vline_node::copy()
 {
-  return new vline_node(x, n ? n->copy() : 0, state, div_nest_level);
+  return new vline_node(x, (nodes != 0 /* nullptr */) ? nodes->copy()
+						      : 0 /* nullptr */,
+			state, div_nest_level);
 }
 
 hunits vline_node::width()
 {
-  return n == 0 ? H0 : n->width();
+  return (0 /* nullptr */ == nodes) ? H0 : nodes->width();
 }
 
 zero_width_node::zero_width_node(node *nd, statem *s, int divlevel)
-: node(0, s, divlevel), n(nd)
+: container_node(0 /* nullptr */, s, divlevel, nd)
 {
 }
 
 zero_width_node::zero_width_node(node *nd)
-: n(nd)
+: container_node(nd)
 {
-}
-
-zero_width_node::~zero_width_node()
-{
-  delete_node_list(n);
 }
 
 node *zero_width_node::copy()
 {
-  return new zero_width_node(copy_node_list(n), state, div_nest_level);
+  return new zero_width_node(copy_node_list(nodes), state,
+			     div_nest_level);
 }
 
 int node_list_character_type(node *p)
 {
   int t = 0;
-  for (; p; p = p->next)
+  for (; p != 0 /* nullptr */; p = p->next)
     t |= p->character_type();
   return t;
 }
 
 int zero_width_node::character_type()
 {
-  return node_list_character_type(n);
+  return node_list_character_type(nodes);
 }
 
 void node_list_vertical_extent(node *p, vunits *min, vunits *max)
@@ -3130,7 +3388,7 @@ void node_list_vertical_extent(node *p, vunits *min, vunits *max)
   *max = V0;
   vunits cur_vpos = V0;
   vunits v1, v2;
-  for (; p; p = p->next) {
+  for (; p != 0 /* nullptr */; p = p->next) {
     p->vertical_extent(&v1, &v2);
     v1 += cur_vpos;
     if (v1 < *min)
@@ -3144,43 +3402,45 @@ void node_list_vertical_extent(node *p, vunits *min, vunits *max)
 
 void zero_width_node::vertical_extent(vunits *min, vunits *max)
 {
-  node_list_vertical_extent(n, min, max);
+  node_list_vertical_extent(nodes, min, max);
 }
 
 overstrike_node::overstrike_node()
-: list(0), max_width(H0)
+: container_node(0 /* nullptr */), max_width(H0)
 {
 }
 
 overstrike_node::overstrike_node(statem *s, int divlevel)
-: node(0, s, divlevel), list(0), max_width(H0)
+: container_node(0 /* nullptr */, s, divlevel), max_width(H0)
 {
 }
 
-overstrike_node::~overstrike_node()
+void overstrike_node::dump_properties()
 {
-  delete_node_list(list);
+  node::dump_properties();
+  fprintf(stderr, ", \"max_width\": %d", max_width.to_units());
+  fflush(stderr);
 }
 
 node *overstrike_node::copy()
 {
   overstrike_node *on = new overstrike_node(state, div_nest_level);
-  for (node *tem = list; tem; tem = tem->next)
+  for (node *tem = nodes; tem != 0 /* nullptr */; tem = tem->next)
     on->overstrike(tem->copy());
   return on;
 }
 
 void overstrike_node::overstrike(node *n)
 {
-  if (n == 0)
+  if (0 /* nullptr */ == n)
     return;
   hunits w = n->width();
   if (w > max_width)
     max_width = w;
   node **p;
-  for (p = &list; *p; p = &(*p)->next)
+  for (p = &nodes; *p != 0 /* nullptr */; p = &(*p)->next)
     ;
-  n->next = 0;
+  n->next = 0 /* nullptr */;
   *p = n;
 }
 
@@ -3190,46 +3450,48 @@ hunits overstrike_node::width()
 }
 
 bracket_node::bracket_node()
-: list(0), max_width(H0)
+: container_node(0 /* nullptr */), max_width(H0)
 {
 }
 
 bracket_node::bracket_node(statem *s, int divlevel)
-: node(0, s, divlevel), list(0), max_width(H0)
+: container_node(0 /* nullptr */, s, divlevel), max_width(H0)
 {
 }
 
-bracket_node::~bracket_node()
+void bracket_node::dump_properties()
 {
-  delete_node_list(list);
+  node::dump_properties();
+  fprintf(stderr, ", \"max_width\": %d", max_width.to_units());
+  fflush(stderr);
 }
 
 node *bracket_node::copy()
 {
   bracket_node *on = new bracket_node(state, div_nest_level);
-  node *last_node = 0;
+  node *last_node = 0 /* nullptr */;
   node *tem;
-  if (list)
-    list->last = 0;
-  for (tem = list; tem; tem = tem->next) {
+  if (nodes != 0 /* nullptr */)
+    nodes->last = 0 /* nullptr */;
+  for (tem = nodes; tem != 0 /* nullptr */; tem = tem->next) {
     if (tem->next)
       tem->next->last = tem;
     last_node = tem;
   }
-  for (tem = last_node; tem; tem = tem->last)
+  for (tem = last_node; tem != 0 /* nullptr */; tem = tem->last)
     on->bracket(tem->copy());
   return on;
 }
 
 void bracket_node::bracket(node *n)
 {
-  if (n == 0)
+  if (0 /* nullptr */ == n)
     return;
   hunits w = n->width();
   if (w > max_width)
     max_width = w;
-  n->next = list;
-  list = n;
+  n->next = nodes;
+  nodes = n;
 }
 
 hunits bracket_node::width()
@@ -3249,7 +3511,8 @@ bool node::did_space_merge(hunits, hunits, hunits)
 
 
 space_node::space_node(hunits nn, color *c, node *p)
-: node(p, 0, 0), n(nn), set(0), was_escape_colon(0), col(c)
+: node(p, 0 /* nullptr */, 0), n(nn), set('\0'),
+  was_escape_colon(false), col(c)
 {
 }
 
@@ -3257,6 +3520,18 @@ space_node::space_node(hunits nn, int s, int flag, color *c, statem *st,
 		       int divlevel, node *p)
 : node(p, st, divlevel), n(nn), set(s), was_escape_colon(flag), col(c)
 {
+}
+
+void space_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"hunits\": %d", n.to_units());
+  fprintf(stderr, ", \"undiscardable\": %s", set ? "true" : "false");
+  fprintf(stderr, ", \"is hyphenless breakpoint\": %s",
+	  was_escape_colon ? "true" : "false");
+  fputs(", \"terminal_color\": ", stderr);
+  col->nm.json_dump();
+  fflush(stderr);
 }
 
 #if 0
@@ -3267,7 +3542,8 @@ space_node::~space_node()
 
 node *space_node::copy()
 {
-  return new space_node(n, set, was_escape_colon, col, state, div_nest_level);
+  return new space_node(n, set, was_escape_colon, col, state,
+			div_nest_level);
 }
 
 bool space_node::causes_tprint()
@@ -3314,7 +3590,7 @@ void space_node::spread_space(int *n_spaces, hunits *desired_space)
       n += extra;
     }
     *n_spaces -= 1;
-    set = 1;
+    set = true;
   }
 }
 
@@ -3324,7 +3600,7 @@ void node::freeze_space()
 
 void space_node::freeze_space()
 {
-  set = 1;
+  set = true;
 }
 
 void node::is_escape_colon()
@@ -3333,7 +3609,7 @@ void node::is_escape_colon()
 
 void space_node::is_escape_colon()
 {
-  was_escape_colon = 1;
+  was_escape_colon = true;
 }
 
 diverted_space_node::diverted_space_node(vunits d, statem *s,
@@ -3345,6 +3621,13 @@ diverted_space_node::diverted_space_node(vunits d, statem *s,
 diverted_space_node::diverted_space_node(vunits d, node *p)
 : node(p), n(d)
 {
+}
+
+void diverted_space_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"vunits\": %d", n.to_units());
+  fflush(stderr);
 }
 
 node *diverted_space_node::copy()
@@ -3361,6 +3644,14 @@ diverted_copy_file_node::diverted_copy_file_node(symbol s, statem *st,
 diverted_copy_file_node::diverted_copy_file_node(symbol s, node *p)
 : node(p), filename(s)
 {
+}
+
+void diverted_copy_file_node::dump_properties()
+{
+  node::dump_properties();
+  fputs(", \"filename\": ", stderr);
+  filename.json_dump();
+  fflush(stderr);
 }
 
 node *diverted_copy_file_node::copy()
@@ -3409,24 +3700,24 @@ int dbreak_node::ends_sentence()
   return node_list_ends_sentence(none);
 }
 
-int node::overlaps_horizontally()
+bool node::overlaps_horizontally()
 {
-  return 0;
+  return false;
 }
 
-int node::overlaps_vertically()
+bool node::overlaps_vertically()
 {
-  return 0;
+  return false;
 }
 
-int node::discardable()
+bool node::discardable()
 {
-  return 0;
+  return false;
 }
 
-int space_node::discardable()
+bool space_node::discardable()
 {
-  return set ? 0 : 1;
+  return !set;
 }
 
 vunits node::vertical_width()
@@ -3491,12 +3782,12 @@ void node::vertical_extent(vunits *min, vunits *max)
 
 void vline_node::vertical_extent(vunits *min, vunits *max)
 {
-  if (n == 0)
+  if (0 /* nullptr */ == nodes)
     node::vertical_extent(min, max);
   else {
     vunits cmin, cmax;
-    n->vertical_extent(&cmin, &cmax);
-    vunits h = n->size();
+    nodes->vertical_extent(&cmin, &cmax);
+    vunits h = nodes->size();
     if (x < V0) {
       if (-x < h) {
 	*min = x;
@@ -3528,14 +3819,29 @@ void vline_node::vertical_extent(vunits *min, vunits *max)
   }
 }
 
-/* ascii_print methods */
+// `ascii_print()` represents a node for `troff -a`
 
-static void ascii_print_reverse_node_list(ascii_output_file *ascii, node *n)
+static void ascii_print_node_list(ascii_output_file *ascii, node *n)
 {
-  if (n == 0)
+  node *nn = n;
+  while(nn != 0 /* nullptr */) {
+    nn->ascii_print(ascii);
+    nn = nn->next;
+  }
+}
+
+static void ascii_print_reverse_node_list(ascii_output_file *ascii,
+					  node *n)
+{
+  if (0 /* nullptr */ == n)
     return;
   ascii_print_reverse_node_list(ascii, n->next);
   n->ascii_print(ascii);
+}
+
+void bracket_node::ascii_print(ascii_output_file *ascii)
+{
+  ascii_print_reverse_node_list(ascii, nodes);
 }
 
 void dbreak_node::ascii_print(ascii_output_file *ascii)
@@ -3551,6 +3857,11 @@ void kern_pair_node::ascii_print(ascii_output_file *ascii)
 
 void node::ascii_print(ascii_output_file *)
 {
+}
+
+void overstrike_node::ascii_print(ascii_output_file *ascii)
+{
+  ascii_print_node_list(ascii, nodes);
 }
 
 void space_node::ascii_print(ascii_output_file *ascii)
@@ -3571,88 +3882,140 @@ void space_char_hmotion_node::ascii_print(ascii_output_file *ascii)
   ascii->outc(' ');
 }
 
-/* asciify methods */
-
-void node::asciify(macro *m)
+void zero_width_node::ascii_print(ascii_output_file *out)
 {
-  m->append(this);
+  ascii_print_node_list(out, nodes);
 }
+
+// `asciify()` extracts the simple character content of a node; this is
+// a plain text (but not necessarily plain "ASCII") representation
+// suitable for storage in a groff string or embedding in a device
+// extension command escape sequence (as for PDF metadata).
 
 void glyph_node::asciify(macro *m)
 {
-  unsigned char c = ci->get_asciify_code();
-  if (c == 0)
-    c = ci->get_ascii_code();
-  if (c != 0) {
-    m->append(c);
-    delete this;
+  if (!is_output_supressed) {
+    unsigned char c = ci->get_asciify_code();
+    if (c != 0U)
+      m->append(c);
+    else {
+      c = ci->get_ascii_code();
+      if (c != 0U)
+	m->append(c);
+      else {
+	// Also see input.cpp::charinfo::dump().
+	int unicode_mapping = ci->get_unicode_mapping();
+	if (unicode_mapping >= 0) {
+	  // We must write out an escape sequence.  Use the default
+	  // escape character.  TODO: Make `escape_char` global?
+	  //
+	  // First, handle the Basic Latin characters that don't map to
+	  // themselves.
+	  switch (unicode_mapping) {
+	  case 34:
+	    m->append_str("\\[dq]");
+	    break;
+	  case 39:
+	    m->append_str("\\[aq]");
+	    break;
+	  case 45:
+	    m->append_str("\\[-]");
+	    break;
+	  case 92:
+	    m->append_str("\\[rs]");
+	    break;
+	  case 94:
+	    m->append_str("\\[ha]");
+	    break;
+	  case 96:
+	    m->append_str("\\[ga]");
+	    break;
+	  case 126:
+	    m->append_str("\\[ti]");
+	    break;
+	  default:
+	    m->append_str("\\[u");
+	    const size_t buflen = 6; // five hex digits + '\0'
+	    char hexbuf[buflen];
+	    (void) memset(hexbuf, '\0', buflen);
+	    (void) snprintf(hexbuf, buflen, "%.4X", unicode_mapping);
+	    m->append_str(hexbuf);
+	    m->append(']');
+	    break;
+	  }
+	}
+	else {
+	  error("unable to asciify glyph; charinfo data follows");
+	  // This is garrulous as hell, but by the time we have hold of
+	  // a glyph's charinfo, it no longer has a "name"--it's already
+	  // been looked up in the dictionary.  (Also, multiple names
+	  // can refer to the same charinfo datum.)  And this racket
+	  // beats telling the user nothing at all about the glyph.
+	  ci->dump();
+	}
+      }
+    }
   }
-  else
-    m->append(this);
 }
 
 void kern_pair_node::asciify(macro *m)
 {
-  n1->asciify(m);
-  n2->asciify(m);
-  n1 = n2 = 0;
-  delete this;
-}
-
-static void asciify_reverse_node_list(macro *m, node *n)
-{
-  if (n == 0)
-    return;
-  asciify_reverse_node_list(m, n->next);
-  n->asciify(m);
+  if (!is_output_supressed) {
+    if (n1 != 0 /* nullptr */)
+      n1->asciify(m);
+    if (n2 != 0 /* nullptr */)
+      n2->asciify(m);
+  }
 }
 
 void dbreak_node::asciify(macro *m)
 {
-  asciify_reverse_node_list(m, none);
-  none = 0;
-  delete this;
+  assert(m != 0 /* nullptr */);
+  if (!is_output_supressed) {
+    if (m != 0 /* nullptr */)
+      none->asciify(m);
+    none = 0 /* nullptr */;
+  }
 }
 
 void ligature_node::asciify(macro *m)
 {
-  n1->asciify(m);
-  n2->asciify(m);
-  n1 = n2 = 0;
-  delete this;
+  assert(n1 != 0 /* nullptr */);
+  assert(n2 != 0 /* nullptr */);
+  if (!is_output_supressed) {
+    if (n1 != 0 /* nullptr */)
+      n1->asciify(m);
+    if (n2 != 0 /* nullptr */)
+      n2->asciify(m);
+  }
 }
 
 void break_char_node::asciify(macro *m)
 {
-  ch->asciify(m);
-  ch = 0;
-  delete this;
+  assert(nodes != 0 /* nullptr */);
+  if (!is_output_supressed && (nodes != 0 /* nullptr */))
+    nodes->asciify(m);
+  nodes = 0 /* nullptr */;
 }
 
 void italic_corrected_node::asciify(macro *m)
 {
-  n->asciify(m);
-  n = 0;
-  delete this;
+  assert(nodes != 0 /* nullptr */);
+  if (!is_output_supressed && (nodes != 0 /* nullptr */))
+    nodes->asciify(m);
+  nodes = 0 /* nullptr */;
 }
 
 void left_italic_corrected_node::asciify(macro *m)
 {
-  if (n) {
-    n->asciify(m);
-    n = 0;
-  }
-  delete this;
+  assert(nodes != 0 /* nullptr */);
+  if (!is_output_supressed && (nodes != 0 /* nullptr */))
+    nodes->asciify(m);
+  nodes = 0 /* nullptr */;
 }
 
-void hmotion_node::asciify(macro *m)
+void hmotion_node::asciify(macro *)
 {
-  if (was_tab) {
-    m->append('\t');
-    delete this;
-  }
-  else
-    m->append(this);
 }
 
 space_char_hmotion_node::space_char_hmotion_node(hunits i, color *c,
@@ -3664,48 +4027,118 @@ space_char_hmotion_node::space_char_hmotion_node(hunits i, color *c,
 }
 
 space_char_hmotion_node::space_char_hmotion_node(hunits i, color *c,
- 						 node *nxt)
-: hmotion_node(i, c, 0, 0, nxt)
+						 node *nxt)
+: hmotion_node(i, c, 0 /* nullptr */, 0, nxt)
 {
 }
 
 void space_char_hmotion_node::asciify(macro *m)
 {
-  m->append(ESCAPE_SPACE);
-  delete this;
+  if (!is_output_supressed)
+    m->append(' ');
 }
 
-void space_node::asciify(macro *m)
+void space_node::asciify(macro *)
 {
-  if (was_escape_colon) {
-    m->append(ESCAPE_COLON);
-    delete this;
-  }
-  else
-    m->append(this);
 }
 
 void word_space_node::asciify(macro *m)
 {
-  for (width_list *w = orig_width; w; w = w->next)
-    m->append(' ');
-  delete this;
+  if (!is_output_supressed) {
+    for (width_list *w = orig_width; w != 0 /* nullptr */; w = w->next)
+      m->append(' ');
+  }
 }
 
 void unbreakable_space_node::asciify(macro *m)
 {
-  m->append(ESCAPE_TILDE);
-  delete this;
+  if (!is_output_supressed)
+    m->append(' ');
 }
 
 void line_start_node::asciify(macro *)
 {
-  delete this;
 }
 
 void vertical_size_node::asciify(macro *)
 {
-  delete this;
+}
+
+void dummy_node::asciify(macro *)
+{
+}
+
+void transparent_dummy_node::asciify(macro *)
+{
+}
+
+void tag_node::asciify(macro *)
+{
+}
+
+void device_extension_node::asciify(macro *)
+{
+}
+
+void vmotion_node::asciify(macro *)
+{
+}
+
+void bracket_node::asciify(macro *)
+{
+}
+
+void diverted_copy_file_node::asciify(macro *)
+{
+}
+
+void diverted_space_node::asciify(macro *)
+{
+}
+
+void draw_node::asciify(macro *)
+{
+}
+
+void extra_size_node::asciify(macro *)
+{
+}
+
+void hline_node::asciify(macro *)
+{
+}
+
+void hyphen_inhibitor_node::asciify(macro *)
+{
+}
+
+void overstrike_node::asciify(macro *)
+{
+}
+
+void suppress_node::asciify(macro *)
+{
+  is_output_supressed = (is_on == 0); // it's a three-valued Boolean :-/
+}
+
+void vline_node::asciify(macro *)
+{
+}
+
+// We probably would asciify zero-width nodes as nothing, but they're
+// used internally to represent some forms of combining character, as
+// with \[u015E] -> S<ac>.
+void zero_width_node::asciify(macro *m)
+{
+  assert(nodes != 0 /* nullptr */);
+  if (!is_output_supressed) {
+    node *n = nodes;
+    while (n != 0 /* nullptr */) {
+      n->asciify(m);
+      n = n->next;
+    }
+    nodes = 0 /* nullptr */;
+  }
 }
 
 breakpoint *node::get_breakpoints(hunits /* width */, int /* nspaces */,
@@ -3770,7 +4203,7 @@ breakpoint *dbreak_node::get_breakpoints(hunits wd, int ns,
   breakpoint *bp = new breakpoint;
   bp->next = rest;
   bp->width = wd;
-  for (node *tem = pre; tem != 0; tem = tem->next)
+  for (node *tem = pre; tem != 0 /* nullptr */; tem = tem->next)
     bp->width += tem->width();
   bp->nspaces = ns;
   bp->hyphenated = 1;
@@ -3789,7 +4222,7 @@ breakpoint *dbreak_node::get_breakpoints(hunits wd, int ns,
 int dbreak_node::nbreaks()
 {
   int i = 1;
-  for (node *tem = none; tem != 0; tem = tem->next)
+  for (node *tem = none; tem != 0 /* nullptr */; tem = tem->next)
     i += tem->nbreaks();
   return i;
 }
@@ -3801,15 +4234,16 @@ void node::split(int /*where*/, node ** /*prep*/, node ** /*postp*/)
 
 void space_node::split(int where, node **pre, node **post)
 {
-  assert(where == 0);
+  assert(0 == where);
   *pre = next;
-  *post = 0;
+  *post = 0 /* nullptr */;
   delete this;
 }
 
-static void node_list_split(node *p, int *wherep, node **prep, node **postp)
+static void node_list_split(node *p, int *wherep,
+			    node **prep, node **postp)
 {
-  if (p == 0)
+  if (0 /* nullptr */ == p)
     return;
   int nb = p->nbreaks();
   node_list_split(p->next, wherep, prep, postp);
@@ -3831,110 +4265,126 @@ static void node_list_split(node *p, int *wherep, node **prep, node **postp)
 void dbreak_node::split(int where, node **prep, node **postp)
 {
   assert(where >= 0);
-  if (where == 0) {
+  if (0 == where) {
     *postp = post;
-    post = 0;
-    if (pre == 0)
+    post = 0 /* nullptr */;
+    if (0 /* nullptr */ == pre)
       *prep = next;
     else {
       node *tem;
-      for (tem = pre; tem->next != 0; tem = tem->next)
+      for (tem = pre; tem->next != 0 /* nullptr */; tem = tem->next)
 	;
       tem->next = next;
       *prep = pre;
     }
-    pre = 0;
+    pre = 0 /* nullptr */;
     delete this;
   }
   else {
     *prep = next;
     where -= 1;
     node_list_split(none, &where, prep, postp);
-    none = 0;
+    none = 0 /* nullptr */;
     delete this;
   }
 }
 
+// TODO: Make this member function pure virtual to force consideration
+// of this question for each node type.
 hyphenation_type node::get_hyphenation_type()
 {
-  return HYPHEN_BOUNDARY;
+  return HYPHENATION_UNNECESSARY;
 }
 
 hyphenation_type dbreak_node::get_hyphenation_type()
 {
-  return HYPHEN_INHIBIT;
+  return HYPHENATION_INHIBITED;
 }
 
 hyphenation_type kern_pair_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 hyphenation_type dummy_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 hyphenation_type transparent_dummy_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 hyphenation_type hmotion_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 hyphenation_type space_char_hmotion_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 hyphenation_type overstrike_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 hyphenation_type space_node::get_hyphenation_type()
 {
   if (was_escape_colon)
-    return HYPHEN_MIDDLE;
-  return HYPHEN_BOUNDARY;
+    return HYPHENATION_PERMITTED;
+  return HYPHENATION_UNNECESSARY;
 }
 
 hyphenation_type unbreakable_space_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
-int node::interpret(macro *)
+bool node::interpret(macro *)
 {
-  return 0;
+  return false;
 }
 
 device_extension_node::device_extension_node(const macro &m, bool b)
-: mac(m), lacks_command_prefix(b)
+: node(0 /* nullptr */, 0 /* nullptr */, 0, true), mac(m),
+  lacks_command_prefix(b)
 {
   font_size fs = curenv->get_font_size();
   int char_height = curenv->get_char_height();
   int char_slant = curenv->get_char_slant();
-  int fontno = env_definite_font(curenv);
-  tf = font_table[fontno]->get_tfont(fs, char_height, char_slant, fontno);
+  int fontno = env_resolve_font(curenv);
+  tf = font_table[fontno]->get_tfont(fs, char_height, char_slant,
+				     fontno);
   if (curenv->is_composite())
     tf = tf->get_plain();
   gcol = curenv->get_stroke_color();
   fcol = curenv->get_fill_color();
-  is_special = 1;
 }
 
 device_extension_node::device_extension_node(const macro &m, tfont *t,
 			   color *gc, color *fc,
 			   statem *s, int divlevel,
 			   bool b)
-: node(0, s, divlevel), mac(m), tf(t), gcol(gc), fcol(fc),
-  lacks_command_prefix(b)
+: node(0 /* nullptr */, s, divlevel, true), mac(m), tf(t), gcol(gc),
+  fcol(fc), lacks_command_prefix(b)
 {
-  is_special = 1;
+}
+
+void device_extension_node::dump_properties()
+{
+  node::dump_properties();
+  fputs(", \"macro\": ", stderr);
+  mac.json_dump();
+  fputs(", \"tfont\": ", stderr);
+  tf->get_name().json_dump();
+  fputs(", \"stroke_color\": ", stderr);
+  gcol->nm.json_dump();
+  fputs(", \"fill_color\": ", stderr);
+  fcol->nm.json_dump();
+  fflush(stderr);
 }
 
 bool device_extension_node::is_same_as(node *n)
@@ -3963,6 +4413,11 @@ bool device_extension_node::causes_tprint()
   return false;
 }
 
+hyphenation_type device_extension_node::get_hyphenation_type()
+{
+  return HYPHENATION_PERMITTED;
+}
+
 bool device_extension_node::is_tag()
 {
   return false;
@@ -3977,7 +4432,7 @@ node *device_extension_node::copy()
 
 void device_extension_node::tprint_start(troff_output_file *out)
 {
-  out->start_device_extension(fcol, lacks_command_prefix);
+  out->start_device_extension(tf, gcol, fcol, lacks_command_prefix);
 }
 
 void device_extension_node::tprint_char(troff_output_file *out,
@@ -4005,26 +4460,47 @@ suppress_node::suppress_node(int on_or_off, int issue_limits)
 }
 
 suppress_node::suppress_node(symbol f, char p, int id)
-: is_on(2), emit_limits(0), filename(f), position(p), image_id(id)
+: node(0 /* nullptr */, 0 /* nullptr */, 0, true), is_on(2),
+  emit_limits(false), filename(f), position(p), image_id(id)
 {
-  is_special = 1;
 }
 
 suppress_node::suppress_node(int issue_limits, int on_or_off,
 			     symbol f, char p, int id,
 			     statem *s, int divlevel)
-: node(0, s, divlevel), is_on(on_or_off), emit_limits(issue_limits),
-  filename(f), position(p), image_id(id)
+: node(0 /* nullptr */, s, divlevel), is_on(on_or_off),
+  emit_limits(issue_limits), filename(f), position(p), image_id(id)
 {
+}
+
+void suppress_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"is_on\": %d", is_on);
+  fprintf(stderr, ", \"emit_limits\": %s",
+	  emit_limits ? "true" : "false");
+  if (filename.contents() != 0 /* nullptr */) {
+    fputs(", \"filename\": ", stderr);
+    filename.json_dump();
+  }
+  fputs(", \"position\": \"", stderr);
+  json_char jc = json_encode_char(position);
+  // Write out its JSON representation by character by character to
+  // keep libc string functions from interpreting C escape sequences.
+  for (size_t i = 0; i < jc.len; i++)
+    fputc(jc.buf[i], stderr);
+  fputc('\"', stderr);
+  fprintf(stderr, ", \"image_id\": %d", image_id);
+  fflush(stderr);
 }
 
 bool suppress_node::is_same_as(node *n)
 {
-  return ((is_on == ((suppress_node *)n)->is_on)
-	  && (emit_limits == ((suppress_node *)n)->emit_limits)
-	  && (filename == ((suppress_node *)n)->filename)
-	  && (position == ((suppress_node *)n)->position)
-	  && (image_id == ((suppress_node *)n)->image_id));
+  return ((is_on == static_cast<suppress_node *>(n)->is_on)
+	  && (emit_limits == static_cast<suppress_node *>(n)->emit_limits)
+	  && (filename == static_cast<suppress_node *>(n)->filename)
+	  && (position == static_cast<suppress_node *>(n)->position)
+	  && (image_id == static_cast<suppress_node *>(n)->image_id));
 }
 
 const char *suppress_node::type()
@@ -4034,16 +4510,15 @@ const char *suppress_node::type()
 
 node *suppress_node::copy()
 {
-  return new suppress_node(emit_limits, is_on, filename, position, image_id,
-			   state, div_nest_level);
+  return new suppress_node(emit_limits, is_on, filename, position,
+			   image_id, state, div_nest_level);
 }
 
 /* tag_node */
 
 tag_node::tag_node()
-: delayed(0)
+: node(0 /* nullptr */, 0 /* nullptr */, 0, true), delayed(false)
 {
-  is_special = 1;
 }
 
 tag_node::tag_node(string s, int delay)
@@ -4053,9 +4528,18 @@ tag_node::tag_node(string s, int delay)
 }
 
 tag_node::tag_node(string s, statem *st, int divlevel, int delay)
-: node(0, st, divlevel), tag_string(s), delayed(delay)
+: node(0 /* nullptr */, st, divlevel), tag_string(s), delayed(delay)
 {
   is_special = !delay;
+}
+
+void tag_node::dump_properties()
+{
+  node::dump_properties();
+  fputs(", \"string\": ", stderr);
+  tag_string.json_dump();
+  fprintf(stderr, ", \"delayed\": %s", delayed ? "true" : "false");
+  fflush(stderr);
 }
 
 node *tag_node::copy()
@@ -4073,8 +4557,8 @@ void tag_node::tprint(troff_output_file *out)
 
 bool tag_node::is_same_as(node *nd)
 {
-  return tag_string == ((tag_node *)nd)->tag_string
-	 && delayed == ((tag_node *)nd)->delayed;
+  return ((tag_string == static_cast<tag_node *>(nd)->tag_string)
+	  && (delayed == static_cast<tag_node *>(nd)->delayed));
 }
 
 const char *tag_node::type()
@@ -4102,7 +4586,7 @@ int tag_node::ends_sentence()
 static int get_register(const char *p)
 {
   assert(p != 0 /* nullptr */);
-  reg *r = (reg *)register_dictionary.lookup(p);
+  reg *r = static_cast<reg *>(register_dictionary.lookup(p));
   assert(r != 0 /* nullptr */);
   units value;
   assert(r->get_value(&value));
@@ -4114,7 +4598,7 @@ static int get_register(const char *p)
 static const char *get_string(const char *p)
 {
   assert(p != 0 /* nullptr */);
-  reg *r = (reg *)register_dictionary.lookup(p);
+  reg *r = static_cast<reg *>(register_dictionary.lookup(p));
   assert(r != 0 /* nullptr */);
   return r->get_string();
 }
@@ -4122,7 +4606,7 @@ static const char *get_string(const char *p)
 void suppress_node::put(troff_output_file *out, const char *s)
 {
   int i = 0;
-  while (s[i] != (char)0) {
+  while (s[i] != '\0') {
     out->write_device_extension_char(s[i]);
     i++;
   }
@@ -4134,7 +4618,7 @@ void suppress_node::put(troff_output_file *out, const char *s)
  *  produce a bounding box with no associated image or position thereof.
  */
 
-static char last_position = 0;
+static char last_position = 'i';
 static const char *image_filename = "";
 static size_t image_filename_len = 0;
 static int subimage_counter = 0;
@@ -4183,12 +4667,15 @@ void suppress_node::tprint(troff_output_file *out)
 	subimage_counter++;
 	assert(sizeof subimage_counter <= 8);
 	// A 64-bit signed int produces up to 19 decimal digits.
-	char *subimage_number = (char *)malloc(20); // 19 digits + \0
+	const size_t ndigits = 19;
+	// Reserve enough for that plus null terminator.
+	char *subimage_number
+	  = static_cast<char *>(malloc(ndigits + 1));
 	if (0 == subimage_number)
 	  fatal("memory allocation failure");
 	// Replace the %d in the filename with this number.
-	size_t enough = image_filename_len + 19 - format_len;
-	char *new_name = (char *)malloc(enough);
+	size_t enough = image_filename_len + ndigits - format_len;
+	char *new_name = static_cast<char *>(malloc(enough));
 	if (0 == new_name)
 	  fatal("memory allocation failure");
 	ptrdiff_t prefix_length = percent_position - image_filename;
@@ -4206,7 +4693,7 @@ void suppress_node::tprint(troff_output_file *out)
 	if (len > (namebuflen - 1))
 	  error("constructed file name in suppressed output escape"
 		" sequence is too long (>= %1 bytes); skipping image",
-		(int)namebuflen);
+		int(namebuflen));
 	else
 	  strncpy(name, new_name, (namebuflen - 1));
 	free(new_name);
@@ -4215,7 +4702,7 @@ void suppress_node::tprint(troff_output_file *out)
       else {
 	if (image_filename_len > (namebuflen - 1))
 	  error("file name in suppressed output escape sequence is too"
-		" long (>= %1 bytes); skipping image", (int)namebuflen);
+		" long (>= %1 bytes); skipping image", int(namebuflen));
 	else
 	  strcpy(name, image_filename);
       }
@@ -4299,8 +4786,13 @@ hunits suppress_node::width()
 
 /* composite_node */
 
+// A composite (glyph) node corresponds to a user-defined GNU troff
+// character with a macro definition.
+
+// Not derived from `container_node`; implements custom contained node
+// dumper in dump_node().
 class composite_node : public charinfo_node {
-  node *n;
+  node *nodes;
   tfont *tf;
 public:
   composite_node(node *, charinfo *, tfont *, statem *, int,
@@ -4323,35 +4815,37 @@ public:
   bool is_tag();
   void vertical_extent(vunits *, vunits *);
   vunits vertical_width();
+  void dump_properties();
   void dump_node();
 };
 
-composite_node::composite_node(node *p, charinfo *c, tfont *t, statem *s,
-			       int divlevel, node *x)
-: charinfo_node(c, s, divlevel, x), n(p), tf(t)
+composite_node::composite_node(node *p, charinfo *c, tfont *t,
+			       statem *s, int divlevel, node *x)
+: charinfo_node(c, s, divlevel, x), nodes(p), tf(t)
 {
 }
 
 composite_node::~composite_node()
 {
-  delete_node_list(n);
+  delete_node_list(nodes);
 }
 
 node *composite_node::copy()
 {
-  return new composite_node(copy_node_list(n), ci, tf, state, div_nest_level);
+  return new composite_node(copy_node_list(nodes), ci, tf, state,
+			    div_nest_level);
 }
 
 hunits composite_node::width()
 {
   hunits x;
-  if (tf->get_constant_space(&x))
+  if (tf->is_constantly_spaced(&x))
     return x;
   x = H0;
-  for (node *tem = n; tem; tem = tem->next)
+  for (node *tem = nodes; tem != 0 /* nullptr */; tem = tem->next)
     x += tem->width();
   hunits offset;
-  if (tf->get_bold(&offset))
+  if (tf->is_emboldened(&offset))
     x += offset;
   x += tf->get_track_kern();
   return x;
@@ -4365,7 +4859,7 @@ node *composite_node::last_char_node()
 vunits composite_node::vertical_width()
 {
   vunits v = V0;
-  for (node *tem = n; tem; tem = tem->next)
+  for (node *tem = nodes; tem != 0 /* nullptr */; tem = tem->next)
     v += tem->vertical_width();
   return v;
 }
@@ -4377,33 +4871,29 @@ units composite_node::size()
 
 hyphenation_type composite_node::get_hyphenation_type()
 {
-  return HYPHEN_MIDDLE;
+  return HYPHENATION_PERMITTED;
 }
 
 void composite_node::asciify(macro *m)
 {
-  unsigned char c = ci->get_asciify_code();
-  if (c == 0)
-    c = ci->get_ascii_code();
-  if (c != 0) {
-    m->append(c);
-    delete this;
+  if (!is_output_supressed) {
+    unsigned char c = ci->get_asciify_code();
+    if (0U == c)
+      c = ci->get_ascii_code();
+    if (c != 0U)
+      m->append(c);
+    else
+      m->append(this);
   }
-  else
-    m->append(this);
 }
 
 void composite_node::ascii_print(ascii_output_file *ascii)
 {
-  unsigned char c = ci->get_ascii_code();
-  if (c != 0)
-    ascii->outc(c);
-  else
-    ascii->outs(ci->nm.contents());
-
+  ascii_print_reverse_node_list(ascii, nodes);
 }
 
-hyphen_list *composite_node::get_hyphen_list(hyphen_list *tail, int *count)
+hyphen_list *composite_node::get_hyphen_list(hyphen_list *tail,
+					     int *count)
 {
   (*count)++;
   return new hyphen_list(ci->get_hyphenation_code(), tail);
@@ -4429,8 +4919,8 @@ tfont *composite_node::get_tfont()
 
 node *reverse_node_list(node *n)
 {
-  node *r = 0;
-  while (n) {
+  node *r = 0 /* nullptr */;
+  while (n != 0 /* nullptr */) {
     node *tem = n;
     n = n->next;
     tem->next = r;
@@ -4441,13 +4931,13 @@ node *reverse_node_list(node *n)
 
 void composite_node::vertical_extent(vunits *minimum, vunits *maximum)
 {
-  n = reverse_node_list(n);
-  node_list_vertical_extent(n, minimum, maximum);
-  n = reverse_node_list(n);
+  nodes = reverse_node_list(nodes);
+  node_list_vertical_extent(nodes, minimum, maximum);
+  nodes = reverse_node_list(nodes);
 }
 
 width_list::width_list(hunits w, hunits s)
-: width(w), sentence_width(s), next(0)
+: width(w), sentence_width(s), next(0 /* nullptr */)
 {
 }
 
@@ -4456,7 +4946,27 @@ width_list::width_list(width_list *w)
 {
 }
 
-word_space_node::word_space_node(hunits d, color *c, width_list *w, node *x)
+void width_list::dump()
+{
+  fputc('[', stderr);
+  bool need_comma = false;
+  fprintf(stderr, "{ \"width\": %d", width.to_units());
+  fprintf(stderr, ", \"sentence_width\": %d }",
+	  sentence_width.to_units());
+  fflush(stderr);
+  width_list *n = this;
+  while (n->next != 0 /* nullptr */) {
+    if (need_comma)
+      fputs(", ", stderr);
+    need_comma = true;
+    n = n->next;
+  }
+  fputc(']', stderr);
+  fflush(stderr);
+}
+
+word_space_node::word_space_node(hunits d, color *c, width_list *w,
+				 node *x)
 : space_node(d, c, x), orig_width(w), unformat(false)
 {
 }
@@ -4466,6 +4976,17 @@ word_space_node::word_space_node(hunits d, int s, color *c,
 				 int divlevel, node *x)
 : space_node(d, s, 0, c, st, divlevel, x), orig_width(w), unformat(flag)
 {
+}
+
+void word_space_node::dump_properties()
+{
+  space_node::dump_properties();
+  if (orig_width != 0 /* nullptr */) {
+    fputs(", \"width_list\": ", stderr);
+    orig_width->dump();
+  }
+  fprintf(stderr, ", \"unformat\": %s", unformat ? "true" : "false");
+  fflush(stderr);
 }
 
 word_space_node::~word_space_node()
@@ -4512,13 +5033,14 @@ bool word_space_node::did_space_merge(hunits h, hunits sw, hunits ssw)
   n += h;
   assert(orig_width != 0);
   width_list *w = orig_width;
-  for (; w->next; w = w->next)
+  for (; w->next != 0 /* nullptr */; w = w->next)
     ;
   w->next = new width_list(sw, ssw);
   return true;
 }
 
-unbreakable_space_node::unbreakable_space_node(hunits d, color *c, node *x)
+unbreakable_space_node::unbreakable_space_node(hunits d, color *c,
+					       node *x)
 : word_space_node(d, c, 0, x)
 {
 }
@@ -4583,23 +5105,39 @@ draw_node::draw_node(char c, hvpair *p, int np, font_size s,
 
 draw_node::draw_node(char c, hvpair *p, int np, font_size s,
 		     color *gc, color *fc, statem *st, int divlevel)
-: node(0, st, divlevel), npoints(np), sz(s), gcol(gc), fcol(fc), code(c)
+: node(0 /* nullptr */, st, divlevel), npoints(np), sz(s), gcol(gc),
+  fcol(fc), code(c)
 {
   point = new hvpair[npoints];
   for (int i = 0; i < npoints; i++)
     point[i] = p[i];
 }
 
+void draw_node::dump_properties()
+{
+  node::dump_properties();
+  fprintf(stderr, ", \"code\": \"%c\"", code);
+  fprintf(stderr, ", \"npoints\": %d", npoints);
+  fprintf(stderr, ", \"font_size\": %d", sz.to_units());
+  fputs(", \"stroke color\": ", stderr);
+  gcol->nm.json_dump();
+  fputs(", \"fill color\": ", stderr);
+  fcol->nm.json_dump();
+  fprintf(stderr, ", \"point\": \"(%d, %d)\"",
+	  point->h.to_units(), point->v.to_units());
+  fflush(stderr);
+}
+
 bool draw_node::is_same_as(node *n)
 {
-  draw_node *nd = (draw_node *)n;
+  draw_node *nd = static_cast<draw_node *>(n);
   if (code != nd->code || npoints != nd->npoints || sz != nd->sz
       || gcol != nd->gcol || fcol != nd->fcol)
-    return 0;
+    return false;
   for (int i = 0; i < npoints; i++)
     if (point[i].h != nd->point[i].h || point[i].v != nd->point[i].v)
-      return 0;
-  return 1;
+      return false;
+  return true;
 }
 
 const char *draw_node::type()
@@ -4661,22 +5199,22 @@ void glyph_node::tprint(troff_output_file *out)
     out->put_char_width(ci, ptf, gcol, fcol, width(), H0);
   else {
     hunits offset;
-    int bold = tf->get_bold(&offset);
+    bool is_emboldened = tf->is_emboldened(&offset);
     hunits w = ptf->get_width(ci);
     hunits k = H0;
     hunits x;
-    int cs = tf->get_constant_space(&x);
-    if (cs) {
+    bool is_constantly_spaced = tf->is_constantly_spaced(&x);
+    if (is_constantly_spaced) {
       x -= w;
-      if (bold)
+      if (is_emboldened)
 	x -= offset;
-      hunits x2 = x/2;
+      hunits x2 = (x / 2);
       out->right(x2);
       k = x - x2;
     }
     else
       k = tf->get_track_kern();
-    if (bold) {
+    if (is_emboldened) {
       out->put_char(ci, ptf, gcol, fcol);
       out->right(offset);
     }
@@ -4688,34 +5226,34 @@ void glyph_node::zero_width_tprint(troff_output_file *out)
 {
   tfont *ptf = tf->get_plain();
   hunits offset;
-  int bold = tf->get_bold(&offset);
+  bool is_emboldened = tf->is_emboldened(&offset);
   hunits x;
-  int cs = tf->get_constant_space(&x);
-  if (cs) {
+  bool is_constantly_spaced = tf->is_constantly_spaced(&x);
+  if (is_constantly_spaced) {
     x -= ptf->get_width(ci);
-    if (bold)
+    if (is_emboldened)
       x -= offset;
-    x = x/2;
+    x = (x / 2);
     out->right(x);
   }
   out->put_char(ci, ptf, gcol, fcol);
-  if (bold) {
+  if (is_emboldened) {
     out->right(offset);
     out->put_char(ci, ptf, gcol, fcol);
     out->right(-offset);
   }
-  if (cs)
+  if (is_constantly_spaced)
     out->right(-x);
 }
 
 void break_char_node::tprint(troff_output_file *t)
 {
-  ch->tprint(t);
+  nodes->tprint(t);
 }
 
 void break_char_node::zero_width_tprint(troff_output_file *t)
 {
-  ch->zero_width_tprint(t);
+  nodes->zero_width_tprint(t);
 }
 
 void hline_node::tprint(troff_output_file *out)
@@ -4724,31 +5262,31 @@ void hline_node::tprint(troff_output_file *out)
     out->right(x);
     x = -x;
   }
-  if (n == 0) {
+  if (0 /* nullptr */ == nodes) {
     out->right(x);
     return;
   }
-  hunits w = n->width();
+  hunits w = nodes->width();
   if (w <= H0) {
     error("horizontal line drawing character must have positive width");
     out->right(x);
     return;
   }
-  int i = int(x/w);
-  if (i == 0) {
+  int i = int(x / w);
+  if (0 == i) {
     hunits xx = x - w;
-    hunits xx2 = xx/2;
+    hunits xx2 = (xx / 2);
     out->right(xx2);
     if (out->is_on())
-      n->tprint(out);
+      nodes->tprint(out);
     out->right(xx - xx2);
   }
   else {
-    hunits rem = x - w*i;
+    hunits rem = x - (w * i);
     if (rem > H0) {
-      if (n->overlaps_horizontally()) {
+      if (nodes->overlaps_horizontally()) {
 	if (out->is_on())
-	  n->tprint(out);
+	  nodes->tprint(out);
 	out->right(rem - w);
       }
       else
@@ -4756,42 +5294,42 @@ void hline_node::tprint(troff_output_file *out)
     }
     while (--i >= 0)
       if (out->is_on())
-	n->tprint(out);
+	nodes->tprint(out);
   }
 }
 
 void vline_node::tprint(troff_output_file *out)
 {
-  if (n == 0) {
+  if (0 /* nullptr */ == nodes) {
     out->down(x);
     return;
   }
-  vunits h = n->size();
-  int overlaps = n->overlaps_vertically();
+  vunits h = nodes->size();
+  bool overlaps = nodes->overlaps_vertically();
   vunits y = x;
   if (y < V0) {
     y = -y;
     int i = y / h;
     vunits rem = y - i*h;
-    if (i == 0) {
-      out->right(n->width());
+    if (0 == i) {
+      out->right(nodes->width());
       out->down(-rem);
     }
     else {
       while (--i > 0) {
-	n->zero_width_tprint(out);
+	nodes->zero_width_tprint(out);
 	out->down(-h);
       }
       if (overlaps) {
-	n->zero_width_tprint(out);
+	nodes->zero_width_tprint(out);
 	out->down(-rem);
 	if (out->is_on())
-	  n->tprint(out);
+	  nodes->tprint(out);
 	out->down(-h);
       }
       else {
 	if (out->is_on())
-	  n->tprint(out);
+	  nodes->tprint(out);
 	out->down(-h - rem);
       }
     }
@@ -4799,36 +5337,36 @@ void vline_node::tprint(troff_output_file *out)
   else {
     int i = y / h;
     vunits rem = y - i*h;
-    if (i == 0) {
+    if (0 == i) {
       out->down(rem);
-      out->right(n->width());
+      out->right(nodes->width());
     }
     else {
       out->down(h);
       if (overlaps)
-	n->zero_width_tprint(out);
+	nodes->zero_width_tprint(out);
       out->down(rem);
       while (--i > 0) {
-	n->zero_width_tprint(out);
+	nodes->zero_width_tprint(out);
 	out->down(h);
       }
       if (out->is_on())
-	n->tprint(out);
+	nodes->tprint(out);
     }
   }
 }
 
 void zero_width_node::tprint(troff_output_file *out)
 {
-  if (!n)
+  if (!nodes)
     return;
-  if (!n->next) {
-    n->zero_width_tprint(out);
+  if (!nodes->next) {
+    nodes->zero_width_tprint(out);
     return;
   }
   int hpos = out->get_hpos();
   int vpos = out->get_vpos();
-  node *tem = n;
+  node *tem = nodes;
   while (tem) {
     tem->tprint(out);
     tem = tem->next;
@@ -4839,8 +5377,8 @@ void zero_width_node::tprint(troff_output_file *out)
 void overstrike_node::tprint(troff_output_file *out)
 {
   hunits pos = H0;
-  for (node *tem = list; tem; tem = tem->next) {
-    hunits x = (max_width - tem->width())/2;
+  for (node *tem = nodes; tem != 0 /* nullptr */; tem = tem->next) {
+    hunits x = (max_width - tem->width()) / 2;
     out->right(x - pos);
     pos = x;
     tem->zero_width_tprint(out);
@@ -4850,17 +5388,17 @@ void overstrike_node::tprint(troff_output_file *out)
 
 void bracket_node::tprint(troff_output_file *out)
 {
-  if (list == 0)
+  if (0 /* nullptr */ == nodes)
     return;
   int npieces = 0;
   node *tem;
-  for (tem = list; tem; tem = tem->next)
+  for (tem = nodes; tem != 0 /* nullptr */; tem = tem->next)
     ++npieces;
-  vunits h = list->size();
+  vunits h = nodes->size();
   vunits totalh = h*npieces;
-  vunits y = (totalh - h)/2;
+  vunits y = (totalh - h) / 2;
   out->down(y);
-  for (tem = list; tem; tem = tem->next) {
+  for (tem = nodes; tem != 0 /* nullptr */; tem = tem->next) {
     tem->zero_width_tprint(out);
     out->down(-h);
   }
@@ -4921,7 +5459,7 @@ void kern_pair_node::tprint(troff_output_file *out)
 
 static void tprint_reverse_node_list(troff_output_file *out, node *n)
 {
-  if (n == 0)
+  if (0 /* nullptr */ == n)
     return;
   tprint_reverse_node_list(out, n->next);
   n->tprint(out);
@@ -4935,63 +5473,79 @@ void dbreak_node::tprint(troff_output_file *out)
 void composite_node::tprint(troff_output_file *out)
 {
   hunits bold_offset;
-  int is_bold = tf->get_bold(&bold_offset);
+  bool is_emboldened = tf->is_emboldened(&bold_offset);
   hunits track_kern = tf->get_track_kern();
   hunits constant_space;
-  int is_constant_spaced = tf->get_constant_space(&constant_space);
+  bool is_constantly_spaced = tf->is_constantly_spaced(&constant_space);
   hunits x = H0;
-  if (is_constant_spaced) {
+  if (is_constantly_spaced) {
     x = constant_space;
-    for (node *tem = n; tem; tem = tem->next)
+    for (node *tem = nodes; tem != 0 /* nullptr */; tem = tem->next)
       x -= tem->width();
-    if (is_bold)
+    if (is_emboldened)
       x -= bold_offset;
-    hunits x2 = x/2;
+    hunits x2 = x / 2;
     out->right(x2);
     x -= x2;
   }
-  if (is_bold) {
+  if (is_emboldened) {
     int hpos = out->get_hpos();
     int vpos = out->get_vpos();
-    tprint_reverse_node_list(out, n);
+    tprint_reverse_node_list(out, nodes);
     out->moveto(hpos, vpos);
     out->right(bold_offset);
   }
-  tprint_reverse_node_list(out, n);
-  if (is_constant_spaced)
+  tprint_reverse_node_list(out, nodes);
+  if (is_constantly_spaced)
     out->right(x);
   else
     out->right(track_kern);
 }
 
-// XXX: This and `glyph_node::dump_node()` are identical.  C++
-// presumably has several different solutions for this.  Pick one.
+void composite_node::dump_properties()
+{
+  node::dump_properties();
+  // GNU troff multiplexes the distinction of ordinary vs. special
+  // characters though the special character code zero.
+  unsigned char c = ci->get_ascii_code();
+  if (c != 0U) {
+    fputs(", \"character\": ", stderr);
+    // It's not a `string` or `symbol` we can `.json_dump()`, so we have
+    // to write the quotation marks ourselves.
+    fputc('\"', stderr);
+    json_char jc = json_encode_char(c);
+    // Write out its JSON representation by character by character to
+    // keep libc string functions from interpreting C escape sequences.
+    for (size_t i = 0; i < jc.len; i++)
+      fputc(jc.buf[i], stderr);
+    fputc('\"', stderr);
+  }
+  else {
+    fputs(", \"special character\": ", stderr);
+    ci->nm.json_dump();
+  }
+  fflush(stderr);
+}
+
 void composite_node::dump_node()
 {
-  unsigned char c = ci->get_ascii_code();
-  fprintf(stderr, "{type: %s, character: ", type());
-  if (c)
-    fprintf(stderr, "\"%c\"", c);
-  else
-    fprintf(stderr, "\"\\%s\"", ci->nm.contents());
-  fputs(", ", stderr);
-  if (push_state)
-    fprintf(stderr, "push_state, ");
-  if (state)
-    state->display_state();
-  fprintf(stderr, "diversion level: %d", div_nest_level);
-  fputs("}", stderr);
+  fputc('{', stderr);
+  dump_properties();
+  fputs(", \"contents\": ", stderr);
+  dump_node_list_in_reverse(nodes);
+  fputc('}', stderr);
   fflush(stderr);
 }
 
 static node *make_composite_node(charinfo *s, environment *env)
 {
-  int fontno = env_definite_font(env);
+  int fontno = env_resolve_font(env);
   if (fontno < 0) {
     error("cannot format composite glyph: no current font");
-    return 0;
+    return 0 /* nullptr */;
   }
-  assert(fontno < font_table_size && font_table[fontno] != 0);
+  assert((fontno < font_table_size)
+	 && font_table[fontno] != 0 /* nullptr*/);
   node *n = charinfo_to_node_list(s, env);
   font_size fs = env->get_font_size();
   int char_height = env->get_char_height();
@@ -5006,12 +5560,13 @@ static node *make_composite_node(charinfo *s, environment *env)
 static node *make_glyph_node(charinfo *s, environment *env,
 			     bool want_warnings = true)
 {
-  int fontno = env_definite_font(env);
+  int fontno = env_resolve_font(env);
   if (fontno < 0) {
     error("cannot format glyph: no current font");
     return 0 /* nullptr */;
   }
-  assert(fontno < font_table_size && font_table[fontno] != 0);
+  assert((fontno < font_table_size)
+	 && font_table[fontno] != 0 /* nullptr*/);
   int fn = fontno;
   bool found = font_table[fontno]->contains(s);
   if (!found) {
@@ -5058,14 +5613,14 @@ static node *make_glyph_node(charinfo *s, environment *env,
 	if (font_table[fn]
 	    && font_table[fn]->is_special()
 	    && font_table[fn]->contains(s)) {
-	  found = 1;
+	  found = true;
 	  break;
 	}
     }
     if (!found) {
       if (want_warnings && s->first_time_not_found()) {
 	unsigned char input_code = s->get_ascii_code();
-	if (input_code != 0) {
+	if (input_code != 0U) {
 	  if (csgraph(input_code))
 	    warning(WARN_CHAR, "character '%1' not defined",
 		    input_code);
@@ -5090,12 +5645,14 @@ static node *make_glyph_node(charinfo *s, environment *env,
   font_size fs = env->get_font_size();
   int char_height = env->get_char_height();
   int char_slant = env->get_char_slant();
-  tfont *tf = font_table[fontno]->get_tfont(fs, char_height, char_slant, fn);
+  tfont *tf = font_table[fontno]->get_tfont(fs, char_height, char_slant,
+					    fn);
   if (env->is_composite())
     tf = tf->get_plain();
   color *gcol = env->get_stroke_color();
   color *fcol = env->get_fill_color();
-  return new glyph_node(s, tf, gcol, fcol, 0, 0);
+  return new glyph_node(s, tf, gcol, fcol, 0 /* nullptr */,
+			0 /* nullptr */);
 }
 
 node *make_node(charinfo *ci, environment *env)
@@ -5114,7 +5671,7 @@ node *make_node(charinfo *ci, environment *env)
     break;
   }
   charinfo *tem = ci->get_translation();
-  if (tem)
+  if (tem != 0 /* nullptr */)
     ci = tem;
   macro *mac = ci->get_macro();
   if (mac && ci->is_normal())
@@ -5128,7 +5685,7 @@ bool character_exists(charinfo *ci, environment *env)
   if (ci->get_special_translation() != charinfo::TRANSLATE_NONE)
     return true;
   charinfo *tem = ci->get_translation();
-  if (tem)
+  if (tem != 0 /* nullptr */)
     ci = tem;
   if (ci->get_macro())
     return true;
@@ -5163,7 +5720,7 @@ node *node::add_char(charinfo *ci, environment *env,
     return add_discretionary_hyphen();
   }
   charinfo *tem = ci->get_translation();
-  if (tem)
+  if (tem != 0 /* nullptr */)
     ci = tem;
   macro *mac = ci->get_macro();
   if (mac && ci->is_normal()) {
@@ -5182,12 +5739,12 @@ node *node::add_char(charinfo *ci, environment *env,
   }
   else {
     node *gn = make_glyph_node(ci, env);
-    if (gn == 0)
+    if (0 /* nullptr */ == gn)
       return this;
     else {
       hunits old_width = width();
       node *p = gn->merge_self(this);
-      if (p == 0) {
+      if (0 /* nullptr */ == p) {
 	*widthp += gn->width();
 	gn->next = this;
 	res = gn;
@@ -5213,19 +5770,16 @@ node *node::add_char(charinfo *ci, environment *env,
     break_code |= PROHIBITS_BREAK_AFTER;
   if (ci->is_interword_space())
     break_code |= IS_INTERWORD_SPACE;
-  if (break_code) {
+  if (break_code != 0) {
     node *next1 = res->next;
-    res->next = 0;
+    res->next = 0 /* nullptr */;
     res = new break_char_node(res, break_code, get_break_code(),
 			      env->get_fill_color(), next1);
   }
   return res;
 }
 
-#ifdef __GNUG__
-inline
-#endif
-int same_node(node *n1, node *n2)
+static inline int same_node(node *n1, node *n2)
 {
   if (n1 != 0 /* nullptr */) {
     if (n2 != 0 /* nullptr */)
@@ -5234,7 +5788,7 @@ int same_node(node *n1, node *n2)
       return false;
   }
   else
-    return n2 == 0;
+    return 0 /* nullptr */ == n2;
 }
 
 int same_node_list(node *n1, node *n2)
@@ -5250,7 +5804,7 @@ int same_node_list(node *n1, node *n2)
 
 bool extra_size_node::is_same_as(node *nd)
 {
-  return n == ((extra_size_node *)nd)->n;
+  return (n == static_cast<extra_size_node *>(nd)->n);
 }
 
 const char *extra_size_node::type()
@@ -5270,7 +5824,7 @@ bool extra_size_node::is_tag()
 
 bool vertical_size_node::is_same_as(node *nd)
 {
-  return n == ((vertical_size_node *)nd)->n;
+  return (n == static_cast<vertical_size_node *>(nd)->n);
 }
 
 const char *vertical_size_node::type()
@@ -5295,8 +5849,8 @@ bool vertical_size_node::is_tag()
 
 bool hmotion_node::is_same_as(node *nd)
 {
-  return n == ((hmotion_node *)nd)->n
-	 && col == ((hmotion_node *)nd)->col;
+  return ((n == static_cast<hmotion_node *>(nd)->n)
+	  && (col == static_cast<hmotion_node *>(nd)->col));
 }
 
 const char *hmotion_node::type()
@@ -5336,8 +5890,8 @@ hyphen_list *hmotion_node::get_hyphen_list(hyphen_list *tail, int *)
 
 bool space_char_hmotion_node::is_same_as(node *nd)
 {
-  return n == ((space_char_hmotion_node *)nd)->n
-	 && col == ((space_char_hmotion_node *)nd)->col;
+  return ((n == static_cast<space_char_hmotion_node *>(nd)->n
+	  && col == static_cast<space_char_hmotion_node *>(nd)->col));
 }
 
 const char *space_char_hmotion_node::type()
@@ -5372,8 +5926,8 @@ hyphen_list *space_char_hmotion_node::get_hyphen_list(hyphen_list *tail,
 
 bool vmotion_node::is_same_as(node *nd)
 {
-  return n == ((vmotion_node *)nd)->n
-	 && col == ((vmotion_node *)nd)->col;
+  return ((n == static_cast<vmotion_node *>(nd)->n)
+	  && col == static_cast<vmotion_node *>(nd)->col);
 }
 
 const char *vmotion_node::type()
@@ -5393,8 +5947,8 @@ bool vmotion_node::is_tag()
 
 bool hline_node::is_same_as(node *nd)
 {
-  return x == ((hline_node *)nd)->x
-	       && same_node(n, ((hline_node *)nd)->n);
+  return ((x == static_cast<hline_node *>(nd)->x)
+	  && same_node(nodes, static_cast<hline_node *>(nd)->nodes));
 }
 
 const char *hline_node::type()
@@ -5414,8 +5968,8 @@ bool hline_node::is_tag()
 
 bool vline_node::is_same_as(node *nd)
 {
-  return x == ((vline_node *)nd)->x
-	       && same_node(n, ((vline_node *)nd)->n);
+  return ((x == static_cast<vline_node *>(nd)->x)
+	  && same_node(nodes, static_cast<vline_node *>(nd)->nodes));
 }
 
 const char *vline_node::type()
@@ -5480,7 +6034,7 @@ int transparent_dummy_node::ends_sentence()
 
 bool zero_width_node::is_same_as(node *nd)
 {
-  return same_node_list(n, ((zero_width_node *)nd)->n);
+  return same_node_list(nodes, ((zero_width_node *)nd)->nodes);
 }
 
 const char *zero_width_node::type()
@@ -5500,8 +6054,9 @@ bool zero_width_node::is_tag()
 
 bool italic_corrected_node::is_same_as(node *nd)
 {
-  return (x == ((italic_corrected_node *)nd)->x
-	  && same_node(n, ((italic_corrected_node *)nd)->n));
+  return ((x == static_cast<italic_corrected_node *>(nd)->x)
+	  && same_node(nodes,
+	       static_cast<italic_corrected_node *>(nd)->nodes));
 }
 
 const char *italic_corrected_node::type()
@@ -5520,49 +6075,51 @@ bool italic_corrected_node::is_tag()
 }
 
 left_italic_corrected_node::left_italic_corrected_node(node *xx)
-: node(xx), n(0)
+: container_node(xx)
 {
 }
 
 left_italic_corrected_node::left_italic_corrected_node(statem *s,
 						       int divlevel,
 						       node *xx)
-: node(xx, s, divlevel), n(0)
+: container_node(xx, s, divlevel)
 {
 }
 
-left_italic_corrected_node::~left_italic_corrected_node()
+void left_italic_corrected_node::dump_properties()
 {
-  delete n;
+  node::dump_properties();
+  fprintf(stderr, ", \"hunits\": %d", x.to_units());
+  fflush(stderr);
 }
 
 node *left_italic_corrected_node::merge_glyph_node(glyph_node *gn)
 {
-  if (n == 0) {
+  if (0 /* nullptr */ == nodes) {
     hunits lic = gn->left_italic_correction();
     if (!lic.is_zero()) {
       x = lic;
-      n = gn;
+      nodes = gn;
       return this;
     }
   }
   else {
-    node *nd = n->merge_glyph_node(gn);
-    if (nd) {
-      n = nd;
-      x = n->left_italic_correction();
+    node *nd = nodes->merge_glyph_node(gn);
+    if (nd != 0 /* nullptr */) {
+      nodes = nd;
+      x = nodes->left_italic_correction();
       return this;
     }
   }
-  return 0;
+  return 0 /* nullptr */;
 }
 
 node *left_italic_corrected_node::copy()
 {
   left_italic_corrected_node *nd =
     new left_italic_corrected_node(state, div_nest_level);
-  if (n) {
-    nd->n = n->copy();
+  if (nodes != 0 /* nullptr */) {
+    nd->nodes = nodes->copy();
     nd->x = x;
   }
   return nd;
@@ -5570,9 +6127,9 @@ node *left_italic_corrected_node::copy()
 
 void left_italic_corrected_node::tprint(troff_output_file *out)
 {
-  if (n) {
+  if (nodes != 0 /* nullptr */) {
     out->right(x);
-    n->tprint(out);
+    nodes->tprint(out);
   }
 }
 
@@ -5593,90 +6150,97 @@ bool left_italic_corrected_node::is_tag()
 
 bool left_italic_corrected_node::is_same_as(node *nd)
 {
-  return (x == ((left_italic_corrected_node *)nd)->x
-	  && same_node(n, ((left_italic_corrected_node *)nd)->n));
+  return ((x == static_cast<left_italic_corrected_node *>(nd)->x)
+	  && same_node(nodes,
+	       static_cast<left_italic_corrected_node *>(nd)->nodes));
 }
 
 void left_italic_corrected_node::ascii_print(ascii_output_file *out)
 {
-  if (n)
-    n->ascii_print(out);
+  if (nodes != 0 /* nullptr */)
+    nodes->ascii_print(out);
 }
 
 hunits left_italic_corrected_node::width()
 {
-  return n ? n->width() + x : H0;
+  return (nodes != 0 /* nullptr */) ? (nodes->width() + x) : H0;
 }
 
 void left_italic_corrected_node::vertical_extent(vunits *minimum,
 						 vunits *maximum)
 {
-  if (n)
-    n->vertical_extent(minimum, maximum);
+  if (nodes != 0 /* nullptr */)
+    nodes->vertical_extent(minimum, maximum);
   else
     node::vertical_extent(minimum, maximum);
 }
 
 hunits left_italic_corrected_node::skew()
 {
-  return n ? n->skew() + x/2 : H0;
+  return (nodes != 0 /* nullptr */) ? (nodes->skew() + x / 2) : H0;
 }
 
 hunits left_italic_corrected_node::subscript_correction()
 {
-  return n ? n->subscript_correction() : H0;
+  return (nodes != 0 /* nullptr */) ? nodes->subscript_correction()
+				    : H0;
 }
 
 hunits left_italic_corrected_node::italic_correction()
 {
-  return n ? n->italic_correction() : H0;
+  return (nodes != 0 /* nullptr */) ? nodes->italic_correction() : H0;
 }
 
 int left_italic_corrected_node::ends_sentence()
 {
-  return n ? n->ends_sentence() : 0;
+  return (nodes != 0 /* nullptr */) ? nodes->ends_sentence() : 0;
 }
 
-int left_italic_corrected_node::overlaps_horizontally()
+bool left_italic_corrected_node::overlaps_horizontally()
 {
-  return n ? n->overlaps_horizontally() : 0;
+  return (nodes != 0 /* nullptr */) ? nodes->overlaps_horizontally()
+				    : false;
 }
 
-int left_italic_corrected_node::overlaps_vertically()
+bool left_italic_corrected_node::overlaps_vertically()
 {
-  return n ? n->overlaps_vertically() : 0;
+  return (nodes != 0 /* nullptr */) ? nodes->overlaps_vertically()
+				    : false;
 }
 
 node *left_italic_corrected_node::last_char_node()
 {
-  return n ? n->last_char_node() : 0;
+  return (nodes != 0 /* nullptr */) ? nodes->last_char_node()
+				    : 0 /* nullptr */;
 }
 
 tfont *left_italic_corrected_node::get_tfont()
 {
-  return n ? n->get_tfont() : 0;
+  return (nodes != 0 /* nullptr */) ? nodes->get_tfont()
+				    : 0 /* nullptr */;
 }
 
 hyphenation_type left_italic_corrected_node::get_hyphenation_type()
 {
-  if (n)
-    return n->get_hyphenation_type();
+  if (nodes != 0 /* nullptr */)
+    return nodes->get_hyphenation_type();
   else
-    return HYPHEN_MIDDLE;
+    return HYPHENATION_PERMITTED;
 }
 
-hyphen_list *left_italic_corrected_node::get_hyphen_list(hyphen_list *tail,
-							 int *count)
+hyphen_list *left_italic_corrected_node::get_hyphen_list(
+    hyphen_list *tail, int *count)
 {
-  return n ? n->get_hyphen_list(tail, count) : tail;
+  return (nodes != 0 /* nullptr */)
+          ? nodes->get_hyphen_list(tail, count) : tail;
 }
 
 node *left_italic_corrected_node::add_self(node *nd, hyphen_list **p)
 {
-  if (n) {
+  if (nodes != 0 /* nullptr */) {
     nd = new left_italic_corrected_node(state, div_nest_level, nd);
-    nd = n->add_self(nd, p);
-    n = 0;
+    nd = nodes->add_self(nd, p);
+    nodes = 0 /* nullptr */;
     delete this;
     return nd;
   }
@@ -5688,12 +6252,12 @@ node *left_italic_corrected_node::add_self(node *nd, hyphen_list **p)
 
 int left_italic_corrected_node::character_type()
 {
-  return n ? n->character_type() : 0;
+  return (nodes != 0 /* nullptr */) ? nodes->character_type() : 0;
 }
 
 bool overstrike_node::is_same_as(node *nd)
 {
-  return same_node_list(list, ((overstrike_node *)nd)->list);
+  return same_node_list(nodes, ((overstrike_node *)nd)->nodes);
 }
 
 const char *overstrike_node::type()
@@ -5711,9 +6275,9 @@ bool overstrike_node::is_tag()
   return false;
 }
 
-node *overstrike_node::add_self(node *n, hyphen_list **p)
+node *overstrike_node::add_self(node *more_nodes, hyphen_list **p)
 {
-  next = n;
+  next = more_nodes;
   hyphen_list *pp = *p;
   *p = (*p)->next;
   delete pp;
@@ -5722,12 +6286,12 @@ node *overstrike_node::add_self(node *n, hyphen_list **p)
 
 hyphen_list *overstrike_node::get_hyphen_list(hyphen_list *tail, int *)
 {
-  return new hyphen_list(0, tail);
+  return new hyphen_list(0U, tail);
 }
 
 bool bracket_node::is_same_as(node *nd)
 {
-  return same_node_list(list, ((bracket_node *)nd)->list);
+  return same_node_list(nodes, ((bracket_node *)nd)->nodes);
 }
 
 const char *bracket_node::type()
@@ -5747,8 +6311,9 @@ bool bracket_node::is_tag()
 
 bool composite_node::is_same_as(node *nd)
 {
-  return ci == ((composite_node *)nd)->ci
-    && same_node_list(n, ((composite_node *)nd)->n);
+  return ((ci == static_cast<composite_node *>(nd)->ci)
+	  && same_node(nodes,
+	               static_cast<composite_node *>(nd)->nodes));
 }
 
 const char *composite_node::type()
@@ -5768,10 +6333,10 @@ bool composite_node::is_tag()
 
 bool glyph_node::is_same_as(node *nd)
 {
-  return ci == ((glyph_node *)nd)->ci
-	 && tf == ((glyph_node *)nd)->tf
-	 && gcol == ((glyph_node *)nd)->gcol
-	 && fcol == ((glyph_node *)nd)->fcol;
+  return ((ci == static_cast<glyph_node *>(nd)->ci)
+	  && (tf == static_cast<glyph_node *>(nd)->tf)
+	  && (gcol == static_cast<glyph_node *>(nd)->gcol)
+	  && (fcol == static_cast<glyph_node *>(nd)->fcol));
 }
 
 const char *glyph_node::type()
@@ -5813,9 +6378,9 @@ bool ligature_node::is_tag()
 
 bool kern_pair_node::is_same_as(node *nd)
 {
-  return (amount == ((kern_pair_node *)nd)->amount
-	  && same_node(n1, ((kern_pair_node *)nd)->n1)
-	  && same_node(n2, ((kern_pair_node *)nd)->n2));
+  return ((amount == static_cast<kern_pair_node *>(nd)->amount)
+	  && same_node(n1, static_cast<kern_pair_node *>(nd)->n1)
+	  && same_node(n2, static_cast<kern_pair_node *>(nd)->n2));
 }
 
 const char *kern_pair_node::type()
@@ -5857,33 +6422,33 @@ bool dbreak_node::is_tag()
 
 void dbreak_node::dump_node()
 {
-  fprintf(stderr, "{type: %s, ", type());
-  if (push_state)
-    fprintf(stderr, "<push_state>, ");
-  if (state)
-    fprintf(stderr, "<state>, ");
-  fprintf(stderr, "diversion level: %d", div_nest_level);
+  fputc('{', stderr);
+  // Flush so that in case something goes wrong with property dumping,
+  // we know that we traversed to a new node.
+  fflush(stderr);
+  node::dump_properties();
   if (none != 0 /* nullptr */) {
-    fputs(", none: ", stderr);
+    fputs(", \"none\": ", stderr);
     none->dump_node();
   }
   if (pre != 0 /* nullptr */) {
-    fputs(", pre: ", stderr);
+    fputs(", \"pre\": ", stderr);
     pre->dump_node();
   }
   if (post != 0 /* nullptr */) {
-    fputs(", post: ", stderr);
+    fputs(", \"post\": ", stderr);
     post->dump_node();
   }
-  fprintf(stderr, "}");
+  fputc('}', stderr);
   fflush(stderr);
 }
 
 bool break_char_node::is_same_as(node *nd)
 {
-  return break_code == ((break_char_node *)nd)->break_code
-	 && col == ((break_char_node *)nd)->col
-	 && same_node(ch, ((break_char_node *)nd)->ch);
+  return (break_code == static_cast<break_char_node *>(nd)->break_code)
+	 && (col == static_cast<break_char_node *>(nd)->col)
+	 && (same_node(nodes,
+	               static_cast<break_char_node *>(nd)->nodes));
 }
 
 const char *break_char_node::type()
@@ -5928,9 +6493,9 @@ bool line_start_node::is_tag()
 
 bool space_node::is_same_as(node *nd)
 {
-  return n == ((space_node *)nd)->n
-	      && set == ((space_node *)nd)->set
-	      && col == ((space_node *)nd)->col;
+  return ((n == static_cast<space_node *>(nd)->n)
+	  && (set == static_cast<space_node *>(nd)->set)
+	  && (col == static_cast<space_node *>(nd)->col));
 }
 
 const char *space_node::type()
@@ -5940,9 +6505,9 @@ const char *space_node::type()
 
 bool word_space_node::is_same_as(node *nd)
 {
-  return n == ((word_space_node *)nd)->n
-	 && set == ((word_space_node *)nd)->set
-	 && col == ((word_space_node *)nd)->col;
+  return ((n == static_cast<word_space_node *>(nd)->n)
+	  && (set == static_cast<word_space_node *>(nd)->set)
+	  && (col == static_cast<word_space_node *>(nd)->col));
 }
 
 const char *word_space_node::type()
@@ -5996,7 +6561,8 @@ node *unbreakable_space_node::add_self(node *nd, hyphen_list **p)
   return this;
 }
 
-hyphen_list *unbreakable_space_node::get_hyphen_list(hyphen_list *tail, int *)
+hyphen_list *unbreakable_space_node::get_hyphen_list(hyphen_list *tail,
+						     int *)
 {
   return new hyphen_list(0, tail);
 }
@@ -6048,7 +6614,7 @@ static void grow_font_table(int n)
   assert(n >= font_table_size);
   font_info **old_font_table = font_table;
   int old_font_table_size = font_table_size;
-  font_table_size = font_table_size ? (font_table_size*3)/2 : 10;
+  font_table_size = font_table_size ? ((font_table_size * 3) / 2) : 10;
   if (font_table_size <= n)
     font_table_size = n + 10;
   font_table = new font_info *[font_table_size];
@@ -6057,7 +6623,7 @@ static void grow_font_table(int n)
 	   old_font_table_size*sizeof(font_info *));
   delete[] old_font_table;
   for (int i = old_font_table_size; i < font_table_size; i++)
-    font_table[i] = 0;
+    font_table[i] = 0 /* nullptr */;
 }
 
 dictionary font_translation_dictionary(17);
@@ -6065,53 +6631,73 @@ dictionary font_translation_dictionary(17);
 static symbol get_font_translation(symbol nm)
 {
   void *p = font_translation_dictionary.lookup(nm);
-  return p ? symbol((char *)p) : nm;
+  return p ? symbol(static_cast<char *>(p)) : nm;
 }
 
 dictionary font_dictionary(50);
+// We store the address of this font in `font_dictionary` to indicate
+// that we've previously tried to mount the font and failed.
+font nonexistent_font = font("\0");
 
 // Mount font at position `n` with troff identifier `name` and
-// description file name `external_name`.  If `check_only`, just look up
-// `name` in the existing list of mounted fonts.
-static bool mount_font_no_translate(int n, symbol name,
-				    symbol external_name,
+// description file name `filename` (these are often identical).  If
+// `check_only`, just look up `name` in the existing list of mounted
+// fonts.
+static bool mount_font_no_translate(int n, symbol name, symbol filename,
 				    bool check_only = false)
 {
   assert(n >= 0);
-  // We store the address of this char in `font_dictionary` to indicate
-  // that we've previously tried to mount the font and failed.
-  static char a_char;
   font *fm = 0 /* nullptr */;
-  void *p = font_dictionary.lookup(external_name);
+  void *p = font_dictionary.lookup(filename);
   if (0 /* nullptr */ == p) {
-    fm = font::load_font(external_name.contents(), check_only);
+    fm = font::load_font(filename.contents(), check_only);
     if (check_only)
       return fm != 0 /* nullptr */;
     if (0 /* nullptr */ == fm) {
-      (void)font_dictionary.lookup(external_name, &a_char);
+      (void) font_dictionary.lookup(filename, &nonexistent_font);
       return false;
     }
-    (void)font_dictionary.lookup(name, fm);
+    (void) font_dictionary.lookup(name, fm);
   }
-  else if (p == &a_char) {
+  else if (&nonexistent_font == p)
     return false;
-  }
   else
-    fm = (font*)p;
+    fm = static_cast<font *>(p);
   if (check_only)
     return true;
   if (n >= font_table_size) {
-    if (n - font_table_size > 1000) {
-      error("font position too much larger than first unused position");
+    if ((n - font_table_size) > 1000) {
+      error("requested font mounting position %1 too much larger than"
+	    " first unused position %2", n,
+	    next_available_font_position());
       return false;
     }
     grow_font_table(n);
   }
   else if (font_table[n] != 0 /* nullptr */)
     delete font_table[n];
-  font_table[n] = new font_info(name, n, external_name, fm);
+  font_table[n] = new font_info(name, n, filename, fm);
   font_family::invalidate_fontno(n);
   return true;
+}
+
+void print_font_mounting_position_request()
+{
+  for (int i = 0; i < font_table_size; i++) {
+    font_info *fi = font_table[i];
+    if (0 /* nullptr */ == fi) // No font mounted here.
+      continue;
+    errprint("%1\t%2", i, fi->get_name().contents());
+    font *f = font_table[i]->get_font();
+    if (f != 0 /* nullptr */) { // It's not an abstract style.
+      errprint("\t%1", f->get_filename());
+      if (f->get_internal_name() != 0 /* nullptr */)
+	errprint("\t%1", f->get_internal_name());
+    }
+    errprint("\n");
+    fflush(stderr);
+  }
+  skip_line();
 }
 
 bool mount_font(int n, symbol name, symbol external_name)
@@ -6143,13 +6729,13 @@ bool mount_style(int n, symbol name)
 {
   assert(n >= 0);
   if (n >= font_table_size) {
-    if (n - font_table_size > 1000) {
+    if ((n - font_table_size) > 1000) {
       error("font position too much larger than first unused position");
       return false;
     }
     grow_font_table(n);
   }
-  else if (font_table[n] != 0)
+  else if (font_table[n] != 0 /* nullptr */)
     delete font_table[n];
   font_table[n] = new font_info(get_font_translation(name), n,
 				NULL_SYMBOL, 0);
@@ -6192,6 +6778,19 @@ static void translate_font()
   skip_line();
 }
 
+static void print_font_translation_request()
+{
+  dictionary_iterator iter(font_translation_dictionary);
+  symbol from, to;
+  // We must use the nuclear `reinterpret_cast` operator because GNU
+  // troff's dictionary types use a pre-STL approach to containers.
+  while (iter.get(&from, reinterpret_cast<void **>(&to)))
+    errprint("%1\t%2\n", from.contents(), to.contents());
+  fflush(stderr);
+  skip_line();
+  return;
+}
+
 static void mount_font_at_position()
 {
   if (!has_arg()) {
@@ -6206,14 +6805,14 @@ static void mount_font_at_position()
     else {
       symbol internal_name = get_name(true /* required */);
       if (!internal_name.is_null()) {
-	symbol external_name = get_long_name();
-	if (!mount_font(n, internal_name, external_name)) {
+	symbol filename = get_long_name();
+	if (!mount_font(n, internal_name, filename)) {
 	  string msg;
-	  if (external_name != 0 /* nullptr */)
-	    msg += string(" from file '") + external_name.contents()
+	  if (filename != 0 /* nullptr */)
+	    msg += string(" from file '") + filename.contents()
 	      + string("'");
 	  msg += '\0';
-	  error("cannot load font '%1'%2 for mounting",
+	  error("cannot load font description '%1'%2 for mounting",
 		internal_name.contents(), msg.contents());
 	}
       }
@@ -6227,7 +6826,7 @@ font_family::font_family(symbol s)
 {
   map = new int[map_size];
   for (int i = 0; i < map_size; i++)
-    map[i] = -1;
+    map[i] = FONT_NOT_MOUNTED;
 }
 
 font_family::~font_family()
@@ -6238,17 +6837,19 @@ font_family::~font_family()
 // Resolve a requested font mounting position to a mounting position
 // usable by the output driver.  (Positions 1 through 4 are typically
 // allocated to styles, and are not usable thus.)  A return value of
-// `-1` indicates failure.
-int font_family::make_definite(int mounting_position)
+// `FONT_NOT_MOUNTED` indicates failure.
+int font_family::resolve(int mounting_position)
 {
   assert(mounting_position >= 0);
   int pos = mounting_position;
+  assert((pos >= 0) || (FONT_NOT_MOUNTED == pos));
   if (pos < 0)
-    return -1;
+    return FONT_NOT_MOUNTED;
   if (pos < map_size && map[pos] >= 0)
     return map[pos];
-  if (!(pos < font_table_size && font_table[pos] != 0))
-    return -1;
+  if (!((pos < font_table_size)
+	&& (font_table[pos] != 0 /* nullptr */)))
+    return FONT_NOT_MOUNTED;
   if (pos >= map_size) {
     int old_map_size = map_size;
     int *old_map = map;
@@ -6260,7 +6861,7 @@ int font_family::make_definite(int mounting_position)
     memcpy(map, old_map, old_map_size * sizeof (int));
     delete[] old_map;
     for (int j = old_map_size; j < map_size; j++)
-      map[j] = -1;
+      map[j] = FONT_NOT_MOUNTED;
   }
   if (!(font_table[pos]->is_style()))
     return map[pos] = pos;
@@ -6270,13 +6871,13 @@ int font_family::make_definite(int mounting_position)
   // Don't use symbol_fontno, because that might return a style and
   // because we don't want to translate the name.
   for (n = 0; n < font_table_size; n++)
-    if (font_table[n] != 0 && font_table[n]->is_named(f)
+    if ((font_table[n] != 0 /* nullptr */) && font_table[n]->is_named(f)
 	&& !font_table[n]->is_style())
       break;
   if (n >= font_table_size) {
     n = next_available_font_position();
     if (!mount_font_no_translate(n, f, f))
-      return -1;
+      return FONT_NOT_MOUNTED;
   }
   return map[pos] = n;
 }
@@ -6285,10 +6886,11 @@ dictionary family_dictionary(5);
 
 font_family *lookup_family(symbol nm)
 {
-  font_family *f = (font_family *)family_dictionary.lookup(nm);
+  font_family *f
+    = static_cast<font_family *>(family_dictionary.lookup(nm));
   if (!f) {
     f = new font_family(nm);
-    (void)family_dictionary.lookup(nm, f);
+    (void) family_dictionary.lookup(nm, f);
   }
   return f;
 }
@@ -6302,10 +6904,10 @@ void font_family::invalidate_fontno(int n)
   while (iter.get(&nam, (void **)&fam)) {
     int mapsize = fam->map_size;
     if (n < mapsize)
-      fam->map[n] = -1;
+      fam->map[n] = FONT_NOT_MOUNTED;
     for (int i = 0; i < mapsize; i++)
       if (fam->map[i] == n)
-	fam->map[i] = -1;
+	fam->map[i] = FONT_NOT_MOUNTED;
   }
 }
 
@@ -6339,23 +6941,31 @@ static void font_lookup_error(font_lookup_info& finfo,
 			      const char *msg)
 {
   if (finfo.requested_name)
-    error("cannot load font '%1' %2", finfo.requested_name, msg);
+    error("cannot select font '%1' %2", finfo.requested_name, msg);
+  else if (finfo.position == FONT_NOT_MOUNTED)
+    error("cannot select font %1", msg); // don't report position `-1`
   else
-    error("cannot load font at position %1 %2",
+    error("cannot select font at position %1 %2",
 	  finfo.requested_position, msg);
+}
+
+bool is_valid_font_mounting_position(int n)
+{
+  return ((n >= 0)
+	  && (n < font_table_size)
+	  && (font_table[n] != 0 /* nullptr */));
 }
 
 // Read the next token and look it up as a font name or position number.
 // Return lookup success.  Store, in the supplied struct argument, the
-// requested name or position, and the position actually resolved; -1
-// means not found (see `font_lookup_info` constructor).
-static bool has_font(font_lookup_info *finfo)
+// requested name or position, and the position actually resolved.
+static bool read_font_identifier(font_lookup_info *finfo)
 {
   int n;
   tok.skip();
   if (tok.is_usable_as_delimiter()) {
     symbol s = get_name(true /* required */);
-    finfo->requested_name = (char *)s.contents();
+    finfo->requested_name = const_cast<char *>(s.contents());
     if (!s.is_null()) {
       n = symbol_fontno(s);
       if (n < 0) {
@@ -6363,15 +6973,15 @@ static bool has_font(font_lookup_info *finfo)
 	if (mount_font(n, s))
 	  finfo->position = n;
       }
-      finfo->position = curenv->get_family()->make_definite(n);
+      finfo->position = curenv->get_family()->resolve(n);
     }
   }
   else if (get_integer(&n)) {
     finfo->requested_position = n;
-    if (!(n < 0 || n >= font_table_size || font_table[n] == 0))
-      finfo->position = curenv->get_family()->make_definite(n);
+    if (is_valid_font_mounting_position(n))
+      finfo->position = curenv->get_family()->resolve(n);
   }
-  return (finfo->position != -1);
+  return (finfo->position != FONT_NOT_MOUNTED);
 }
 
 static int underline_fontno = 2;
@@ -6385,7 +6995,7 @@ static void select_underline_font()
     return;
   }
   font_lookup_info finfo;
-  if (!has_font(&finfo))
+  if (!read_font_identifier(&finfo))
     font_lookup_error(finfo, "to make it the underline font");
   else
     underline_fontno = finfo.position;
@@ -6406,16 +7016,17 @@ static void define_font_specific_character()
     return;
   }
   font_lookup_info finfo;
-  if (!has_font(&finfo)) {
-    font_lookup_error(finfo, "to define font-specific fallback glyph");
+  if (!read_font_identifier(&finfo)) {
+    font_lookup_error(finfo, "to define font-specific fallback"
+		      " character");
     // Normally we skip the remainder of the line unconditionally at the
-    // end of a request-implementing function, but do_define_character()
+    // end of a request-implementing function, but define_character()
     // will eat the rest of it for us.
     skip_line();
   }
   else {
     symbol f = font_table[finfo.position]->get_name();
-    do_define_character(CHAR_FONT_SPECIAL, f.contents());
+    define_character(CHAR_FONT_SPECIFIC_FALLBACK, f.contents());
   }
 }
 
@@ -6428,8 +7039,9 @@ static void remove_font_specific_character()
     return;
   }
   font_lookup_info finfo;
-  if (!has_font(&finfo))
-    font_lookup_error(finfo, "to remove font-specific fallback glyph");
+  if (!read_font_identifier(&finfo))
+    font_lookup_error(finfo, "to remove font-specific fallback"
+		      " character");
   else {
     symbol f = font_table[finfo.position]->get_name();
     while (!tok.is_newline() && !tok.is_eof()) {
@@ -6443,7 +7055,7 @@ static void remove_font_specific_character()
 	if (!ci)
 	  break;
 	macro *m = ci->set_macro(0 /* nullptr */);
-	if (m)
+	if (m != 0 /* nullptr */)
 	  delete m;
       }
       tok.next();
@@ -6464,12 +7076,12 @@ static void read_special_fonts(special_font_list **sp)
   special_font_list **p = sp;
   while (has_arg()) {
     font_lookup_info finfo;
-    if (!has_font(&finfo))
+    if (!read_font_identifier(&finfo))
       font_lookup_error(finfo, "to mark it as special");
     else {
       special_font_list *tem = new special_font_list;
       tem->n = finfo.position;
-      tem->next = 0;
+      tem->next = 0 /* nullptr */;
       *p = tem;
       p = &(tem->next);
     }
@@ -6485,7 +7097,7 @@ static void set_font_specific_special_fonts()
     return;
   }
   font_lookup_info finfo;
-  if (!has_font(&finfo))
+  if (!read_font_identifier(&finfo))
     font_lookup_error(finfo, "to mark other fonts as special"
 			     " contingently upon it"); // a mouthful :-/
   else
@@ -6562,7 +7174,9 @@ static void zoom_font()
 int next_available_font_position()
 {
   int i;
-  for (i = 1; i < font_table_size && font_table[i] != 0; i++)
+  for (i = 1;
+       (i < font_table_size) && (font_table[i] != 0 /* nullptr */);
+       i++)
     ;
   return i;
 }
@@ -6571,33 +7185,30 @@ int symbol_fontno(symbol s)
 {
   s = get_font_translation(s);
   for (int i = 0; i < font_table_size; i++)
-    if (font_table[i] != 0 && font_table[i]->is_named(s))
+    if ((font_table[i] != 0 /* nullptr */)
+	&& font_table[i]->is_named(s))
       return i;
-  return -1;
+  return FONT_NOT_MOUNTED;
 }
 
-int is_good_fontno(int n)
+hunits env_font_emboldening_offset(environment *env, int n)
 {
-  return n >= 0 && n < font_table_size && font_table[n] != 0;
-}
-
-int get_bold_fontno(int n)
-{
-  if (n >= 0 && n < font_table_size && font_table[n] != 0) {
+  if (is_valid_font_mounting_position(n)) {
     hunits offset;
-    if (font_table[n]->get_bold(&offset))
+    int fontno = env->get_family()->resolve(env->get_font());
+    if (font_table[fontno]->is_emboldened(&offset))
       return offset.to_units() + 1;
     else
-      return 0;
+      return H0;
   }
   else
-    return 0;
+    return H0;
 }
 
 hunits env_digit_width(environment *env)
 {
   node *n = make_glyph_node(charset_table['0'], env);
-  if (n) {
+  if (n != 0 /* nullptr */) {
     hunits x = n->width();
     delete n;
     return x;
@@ -6608,40 +7219,41 @@ hunits env_digit_width(environment *env)
 
 hunits env_space_width(environment *env)
 {
-  int fn = env_definite_font(env);
+  int fn = env_resolve_font(env);
   font_size fs = env->get_font_size();
-  if (fn < 0 || fn >= font_table_size || font_table[fn] == 0)
-    return scale(fs.to_units()/3, env->get_space_size(), 12);
+  if (!is_valid_font_mounting_position(fn))
+    return scale(fs.to_units() / 3, env->get_space_size(), 12);
   else
     return font_table[fn]->get_space_width(fs, env->get_space_size());
 }
 
 hunits env_sentence_space_width(environment *env)
 {
-  int fn = env_definite_font(env);
+  int fn = env_resolve_font(env);
   font_size fs = env->get_font_size();
-  if (fn < 0 || fn >= font_table_size || font_table[fn] == 0)
-    return scale(fs.to_units()/3, env->get_sentence_space_size(), 12);
+  units sss = env->get_sentence_space_size();
+  if (!is_valid_font_mounting_position(fn))
+    return scale(fs.to_units() / 3, sss, 12);
   else
-    return font_table[fn]->get_space_width(fs, env->get_sentence_space_size());
+    return font_table[fn]->get_space_width(fs, sss);
 }
 
 hunits env_half_narrow_space_width(environment *env)
 {
-  int fn = env_definite_font(env);
+  int fn = env_resolve_font(env);
   font_size fs = env->get_font_size();
-  if (fn < 0 || fn >= font_table_size || font_table[fn] == 0)
-    return 0;
+  if (!is_valid_font_mounting_position(fn))
+    return H0;
   else
     return font_table[fn]->get_half_narrow_space_width(fs);
 }
 
 hunits env_narrow_space_width(environment *env)
 {
-  int fn = env_definite_font(env);
+  int fn = env_resolve_font(env);
   font_size fs = env->get_font_size();
-  if (fn < 0 || fn >= font_table_size || font_table[fn] == 0)
-    return 0;
+  if (!is_valid_font_mounting_position(fn))
+    return H0;
   else
     return font_table[fn]->get_narrow_space_width(fs);
 }
@@ -6650,7 +7262,6 @@ hunits env_narrow_space_width(environment *env)
 // not position.  Does ".bd 1 2" mean "embolden font position 1 by 2
 // units" (really one unit), or "stop conditionally emboldening font 2
 // when font 1 is selected"?
-
 static void embolden_font()
 {
   if (!(has_arg())) {
@@ -6662,17 +7273,51 @@ static void embolden_font()
     skip_line();
     return;
   }
+  if ((!tok.is_character())
+      || tok.is_special_character()
+      || tok.is_indexed_character()) {
+    error("emboldening request expects font name or mounting position"
+	  " as first argument, got %1", tok.description());
+    skip_line();
+    return;
+  }
+  // If the 1st argument starts with a non-numeral, we must be prepared
+  // to expect a third argument to specify an emboldening amount...
+  // .bd S TB 3 \" embolden S when `TB` selected
+  // ...or removal of conditional emboldening.
+  // .bd S TB \" don't embolden S when `TB` selected
+  //
+  // XXX: Our approach forecloses the emboldening of fonts whose names
+  // _start_ with numerals but _contain_ non-numerals, like '3foo'.  If
+  // one agrees that Kernighan's grammar for the extended `bd` request
+  // of device-independent troff is ambiguous, there may not be a
+  // perfect solution.  (This approach could be improved by scanning
+  // ahead in the input, but is it worth the trouble?)
+  bool emboldening_may_be_conditional = false;
+  if (!csdigit(tok.ch()))
+    emboldening_may_be_conditional = true;
   font_lookup_info finfo;
-  if (!has_font(&finfo)) {
+  if (!read_font_identifier(&finfo)) {
     font_lookup_error(finfo, "for emboldening");
     skip_line();
     return;
   }
   int n = finfo.position;
   if (has_arg()) {
-    if (tok.is_usable_as_delimiter()) {
+    if ((!tok.is_character())
+	|| tok.is_special_character()
+	|| tok.is_indexed_character()) {
+      error("emboldening request expects font name or emboldening"
+	    " amount as second argument, got %1", tok.description());
+      skip_line();
+      return;
+    }
+    // If both arguments start with numerals, assume this form.
+    // .bd 2 4 \" embolden font position 2 by 3 (yes, 3) units
+    // ...otherwise...
+    if (emboldening_may_be_conditional && !(csdigit(tok.ch()))) {
       font_lookup_info finfo2;
-      if (!has_font(&finfo2)) {
+      if (!read_font_identifier(&finfo2)) {
 	font_lookup_error(finfo2, "for conditional emboldening");
 	skip_line();
 	return;
@@ -6680,18 +7325,23 @@ static void embolden_font()
       int f = finfo2.position;
       units offset;
       if (has_arg()
-	  && read_measurement(&offset, 'u') && offset >= 1)
+	  && read_measurement(&offset, 'u')
+	  && (offset >= 1))
 	font_table[f]->set_conditional_bold(n, hunits(offset - 1));
       else
 	font_table[f]->conditional_unbold(n);
     }
     else {
-      // A numeric second argument must be an emboldening amount.
+      // The second argument must be an emboldening amount.
       units offset;
-      if (read_measurement(&offset, 'u') && offset >= 1)
+      if (read_measurement(&offset, 'u') && (offset >= 1))
 	font_table[n]->set_bold(hunits(offset - 1));
       else
 	font_table[n]->unbold();
+      if (has_arg())
+	warning(WARN_FONT, "ignoring third argument to font emboldening"
+		" request when first interpreted as mounting position"
+		" and second as emboldening amount");
     }
   }
   else
@@ -6759,7 +7409,7 @@ static void configure_track_kerning()
     return;
   }
   font_lookup_info finfo;
-  if (!has_font(&finfo))
+  if (!read_font_identifier(&finfo))
     font_lookup_error(finfo, "for track kerning");
   else {
     int n = finfo.position, min_s, max_s;
@@ -6788,7 +7438,7 @@ static void constantly_space_font()
     return;
   }
   font_lookup_info finfo;
-  if (!has_font(&finfo))
+  if (!read_font_identifier(&finfo))
     font_lookup_error(finfo, "for constant spacing");
   else {
     int n = finfo.position, x, y;
@@ -6801,7 +7451,7 @@ static void constantly_space_font()
 	font_table[n]->set_constant_space(CONSTANT_SPACE_ABSOLUTE,
 					  scale(y*x,
 						units_per_inch,
-						36*72*sizescale));
+						36 * 72 * sizescale));
     }
   }
   skip_line();
@@ -6827,10 +7477,16 @@ static void set_kerning_mode()
   skip_line();
 }
 
-static void set_soft_hyphen_character()
+// Set (soft) hyphenation character, used to mark where a discretionary
+// break ("dbreak") has occurred in formatted output, conventionally
+// within a word at a syllable boundary.
+//
+// XXX: The soft hyphen character is global; shouldn't it be
+// environmental?
+static void soft_hyphen_character_request()
 {
-  soft_hyphen_char = get_optional_char();
-  if (!soft_hyphen_char)
+  soft_hyphen_char = read_character();
+  if (0 /* nullptr */ == soft_hyphen_char)
     soft_hyphen_char = get_charinfo(HYPHEN_SYMBOL);
   skip_line();
 }
@@ -6863,7 +7519,7 @@ public:
 const char *printing_reg::get_string()
 {
   if (the_output)
-    return the_output->is_printing() ? "1" : "0";
+    return the_output->is_selected_for_printing() ? "1" : "0";
   else
     return "0";
 }
@@ -6879,8 +7535,10 @@ void init_node_requests()
   init_request("ftr", translate_font);
   init_request("kern", set_kerning_mode);
   init_request("lg", set_ligature_mode);
+  init_request("pfp", print_font_mounting_position_request);
+  init_request("pftr", print_font_translation_request);
   init_request("rfschar", remove_font_specific_character);
-  init_request("shc", set_soft_hyphen_character);
+  init_request("shc", soft_hyphen_character_request);
   init_request("special", set_special_fonts);
   init_request("sty", associate_style_with_font_position);
   init_request("tkf", configure_track_kerning);

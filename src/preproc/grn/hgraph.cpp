@@ -1,8 +1,18 @@
 /* Last non-groff version: hgraph.c  1.14 (Berkeley) 84/11/27
  *
+ * Originally written by Barry Roitblat, 1982.
+ * Adapted to GNU troff by Daniel Senderowicz 99/12/29.
+ * Modified 2000-2024 by the Free Software Foundation, Inc.
+ *
+ * This file contains no AT&T code and is in the public domain.
+ *
  * This file contains the graphics routines for converting gremlin
  * pictures to troff input.
  */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "lib.h"
 

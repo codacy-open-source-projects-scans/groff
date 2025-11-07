@@ -35,3 +35,8 @@ unsigned hash(const char *s, int len)
   return h;
 }
 
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

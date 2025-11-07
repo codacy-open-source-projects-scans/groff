@@ -10,7 +10,7 @@ or MathML
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -242,7 +242,7 @@ argument as a pair of equation delimiters.
 .I eqn
 input consists of tokens.
 .
-Consider a form of Newton's second law of motion.
+Consider a form of Newton's second law of motion for constant mass.
 .
 The input
 .
@@ -433,10 +433,10 @@ and
 .
 GNU
 .I eqn
-imputes types to the components of an equation,
-adjusting the spacing between them accordingly.
+imputes a type to each equation component,
+adjusting the space around it accordingly.
 .
-Recognized types are as follows;
+Recognized types follow;
 most affect spacing only,
 whereas the
 .RB \%\[lq] letter \[rq]
@@ -703,7 +703,6 @@ beginning with
 or
 .BR .EN .
 .
-If a relative path name,
 .I file
 is sought relative to the current working directory.
 .
@@ -824,6 +823,8 @@ It has no effect if the equation is part of a
 picture.
 .
 .
+.br
+.ne 4v
 .TP
 .BI special\~ "troff-macro e"
 Construct an object by calling
@@ -1897,13 +1898,27 @@ is
 .I @g@eqn
 produces output in that language rather than
 .IR roff ,
-and
-.I eqnrc
-is not loaded.
+and does not load
+.IR eqnrc .
 .\" XXX: why NOT load eqnrc?
 .
 The default device is
-.BR @DEVICE@ .
+.BR @DEFAULT_DEVICE@ .
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@eqn
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================
@@ -2016,9 +2031,11 @@ the
 .I eqn \" generic
 command
 .RB \%\[lq]\^ "gifont PI" \^\[rq]
-does not select
-.IR groff 's
-Palatino italic font for the global italic face;
+does not select the
+.MR gropdf @MAN1EXT@
+or
+.MR grops @MAN1EXT@
+device's Palatino italic font as the global italic face;
 you must use
 .RB \%\[lq]\^ "gifont \[dq]PI\[dq]" \^\[rq]
 instead.
@@ -2202,6 +2219,8 @@ Independently,
 we can define a macro \[lq]frac\[rq] for setting fractions.
 .
 .
+.br
+.ne 5v
 .RS
 .P
 .EX

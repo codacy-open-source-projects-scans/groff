@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -19,13 +19,11 @@ libgroff_srcdir = $(top_srcdir)/src/libs/libgroff
 noinst_LIBRARIES += libgroff.a
 libgroff_a_CPPFLAGS = \
   $(AM_CPPFLAGS) \
-  -D__GETOPT_PREFIX=groff_ \
   -DENABLE_RELOCATABLE=1 \
   -DLIBDIR=\"$(libdir)\"
 
 # Build from OBJS
 libgroff_a_SOURCES = \
-  src/libs/libgroff/assert.cpp \
   src/libs/libgroff/change_lf.cpp \
   src/libs/libgroff/cmap.cpp \
   src/libs/libgroff/color.cpp \
@@ -39,14 +37,13 @@ libgroff_a_SOURCES = \
   src/libs/libgroff/font.cpp \
   src/libs/libgroff/fontfile.cpp \
   src/libs/libgroff/geometry.cpp \
-  src/libs/libgroff/getopt.c \
-  src/libs/libgroff/getopt1.c \
   src/libs/libgroff/glyphuni.cpp \
   src/libs/libgroff/htmlhint.cpp \
   src/libs/libgroff/hypot.cpp \
   src/libs/libgroff/iftoa.c \
   src/libs/libgroff/invalid.cpp \
   src/libs/libgroff/itoa.c \
+  src/libs/libgroff/json_encode.cpp \
   src/libs/libgroff/lf.cpp \
   src/libs/libgroff/lineno.cpp \
   src/libs/libgroff/localcharset.c \
@@ -79,15 +76,14 @@ libgroff_a_SOURCES += \
 endif
 nodist_libgroff_a_SOURCES = src/libs/libgroff/version.cpp
 
+libgroff_a_LIBADD = lib/libgnu.a
+
 # TODO: these .c files could be removed (use gnulib instead).
 EXTRA_DIST += \
   src/libs/libgroff/mkstemp.cpp \
   src/libs/libgroff/fmod.c \
   src/libs/libgroff/getcwd.c \
   src/libs/libgroff/putenv.c \
-  src/libs/libgroff/strcasecmp.c \
-  src/libs/libgroff/strerror.c \
-  src/libs/libgroff/strncasecmp.c \
   src/libs/libgroff/strtol.c \
   src/libs/libgroff/config.charset \
   src/libs/libgroff/ref-add.sin \

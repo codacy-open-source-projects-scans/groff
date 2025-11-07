@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,8 +16,13 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
 // diversions
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h> // exit(), EXIT_SUCCESS
 
 #include "troff.h"
 #include "dictionary.h"
@@ -48,9 +53,9 @@ static bool honor_vertical_position_traps = true;
 static vunits truncated_space;
 static vunits needed_space;
 
-diversion::diversion(symbol s)
+diversion::diversion(symbol s, bool boxing)
 : prev(0 /* nullptr */), nm(s), vertical_position(V0),
-  high_water_mark(V0), is_in_no_space_mode(false),
+  high_water_mark(V0), is_box(boxing), is_in_no_space_mode(false),
   saved_seen_break(false), saved_seen_space(false),
   saved_seen_eol(false), saved_suppress_next_eol(false),
   marked_place(V0)
@@ -98,7 +103,13 @@ void do_divert(bool appending, bool boxing)
   tok.skip();
   symbol nm = get_name();
   if (nm.is_null()) {
-    if (curdiv->prev) {
+    // Why the asymmetric diagnostic severity?  See Savannah #67139.
+    if (!(curdiv->is_box) && boxing)
+      fatal("cannot close ordinary diversion with box request");
+    if (curdiv->is_box && !boxing)
+      error("cannot close box diversion with ordinary diversion"
+	    " request");
+    else if (curdiv->prev) {
       curenv->seen_break = curdiv->saved_seen_break;
       curenv->seen_space = curdiv->saved_seen_space;
       curenv->seen_eol = curdiv->saved_seen_eol;
@@ -109,8 +120,8 @@ void do_divert(bool appending, bool boxing)
 	curenv->space_total = curdiv->saved_space_total;
 	curenv->saved_indent = curdiv->saved_saved_indent;
 	curenv->target_text_length = curdiv->saved_target_text_length;
-	curenv->prev_line_interrupted
-	  = curdiv->saved_prev_line_interrupted;
+	curenv->was_previous_line_interrupted
+	  = curdiv->saved_was_previous_line_interrupted;
       }
       diversion *temp = curdiv;
       curdiv = curdiv->prev;
@@ -120,24 +131,24 @@ void do_divert(bool appending, bool boxing)
       warning(WARN_DI, "diversion stack underflow");
   }
   else {
-    macro_diversion *md = new macro_diversion(nm, appending);
+    macro_diversion *md = new macro_diversion(nm, appending, boxing);
     md->prev = curdiv;
     curdiv = md;
     curdiv->saved_seen_break = curenv->seen_break;
     curdiv->saved_seen_space = curenv->seen_space;
     curdiv->saved_seen_eol = curenv->seen_eol;
     curdiv->saved_suppress_next_eol = curenv->suppress_next_eol;
-    curenv->seen_break = 0;
-    curenv->seen_space = 0;
-    curenv->seen_eol = 0;
+    curenv->seen_break = false;
+    curenv->seen_space = false;
+    curenv->seen_eol = false;
     if (boxing) {
       curdiv->saved_line = curenv->line;
       curdiv->saved_width_total = curenv->width_total;
       curdiv->saved_space_total = curenv->space_total;
       curdiv->saved_saved_indent = curenv->saved_indent;
       curdiv->saved_target_text_length = curenv->target_text_length;
-      curdiv->saved_prev_line_interrupted
-	= curenv->prev_line_interrupted;
+      curdiv->saved_was_previous_line_interrupted
+	= curenv->was_previous_line_interrupted;
       curenv->line = 0 /* nullptr */;
       curenv->start_line();
     }
@@ -162,7 +173,7 @@ void box()
 
 void box_append()
 {
-  do_divert(true /* appending */, true /* appending */);
+  do_divert(true /* appending */, true /* boxing */);
 }
 
 void diversion::need(vunits n)
@@ -175,8 +186,8 @@ void diversion::need(vunits n)
   }
 }
 
-macro_diversion::macro_diversion(symbol s, bool appending)
-: diversion(s), max_width(H0), diversion_trap(0 /* nullptr */),
+macro_diversion::macro_diversion(symbol s, bool appending, bool boxing)
+: diversion(s, boxing), max_width(H0), diversion_trap(0 /* nullptr */),
   diversion_trap_pos(0)
 {
 #if 0
@@ -246,7 +257,7 @@ macro_diversion::~macro_diversion()
   dn_reg_contents = vertical_position.to_units();
 }
 
-static int DIVERSION_LENGTH_MAX = INT_MAX;
+static const int DIVERSION_LENGTH_MAX = INT_MAX;
 
 vunits macro_diversion::distance_to_next_trap()
 {
@@ -622,6 +633,8 @@ void end_diversions()
   }
 }
 
+// TODO: This might be better named `write_trailer_and_exit()`.  Most
+// formatter state is "cleaned up" in input.cpp:exit_troff().
 void cleanup_and_exit(int exit_code)
 {
   if (the_output != 0 /* nullptr */) {
@@ -885,6 +898,12 @@ void need_space()
 
 void page_number()
 {
+  if (!has_arg()) {
+    warning(WARN_MISSING, "page number assignment request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
   int n = 0;
   // the ps4html register is set if we are using -Tps
   // to generate images for html

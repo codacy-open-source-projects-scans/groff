@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -17,39 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "lib.h"
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <assert.h>
-#include <errno.h>
-#include <math.h>
-#include <stdlib.h>
-
-#ifdef NEED_DECLARATION_RAND
-#undef rand
-extern "C" {
-  int rand();
-}
-#endif /* NEED_DECLARATION_RAND */
-
-#ifdef NEED_DECLARATION_SRAND
-#undef srand
-extern "C" {
-#ifdef RET_TYPE_SRAND_IS_VOID
-  void srand(unsigned int);
-#else
-  int srand(unsigned int);
-#endif
-}
-#endif /* NEED_DECLARATION_SRAND */
-
-#ifndef HAVE_FMOD
-extern "C" {
-  double fmod(double, double);
-}
-#endif
 
 #include "cset.h"
 #include "stringclass.h"
@@ -122,7 +89,7 @@ extern int command_char;
 extern int zero_length_line_flag;
 extern int driver_extension_flag;
 extern int compatible_flag;
-extern int safer_flag;
+extern bool want_unsafe_mode;
 extern char *graphname;
 
 // Local Variables:

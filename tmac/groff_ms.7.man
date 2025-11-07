@@ -10,7 +10,7 @@ manuscript macro package for formatting documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -102,17 +102,18 @@ and
 preprocessors for inclusion of tables,
 mathematical equations,
 diagrams,
-and standardized bibliographic citations.
+and consistently formatted bibliographic citations.
 .
 .
-.LP
-This implementation is mostly compatible with the documented interface
+.P
+.I "groff ms"
+is mostly compatible with the documented interface
 and behavior of AT&T Unix Version\~7
 .IR ms .
 .
-Many extensions from 4.2BSD (Berkeley)
+It recreates most extensions from 4.2BSD (Berkeley)
 .\" Few changes were made in 4.3, Reno, Tahoe, or 4.4.
-and Research Tenth Edition Unix have been recreated.
+and Research Tenth Edition Unix.
 .
 .
 .\" ====================================================================
@@ -129,9 +130,9 @@ macro call.
 .\" information" section from ms.ms.
 To compose a simple document from scratch,
 begin it by calling
-.B .LP
+.B LP
 or
-.BR .PP .
+.BR PP .
 .
 Organize longer documents as follows.
 .
@@ -207,15 +208,13 @@ Macros enable the collection of entries for a table of contents
 (or index)
 as the material they discuss appears in the document.
 .
-You then call a macro to emit the table of contents at the end of
-your document.
+A macro call at the end of the document emits the collected entries.
 .
-The table of contents must necessarily follow the rest of the text since
-GNU
+This material necessarily follows the rest of the text since GNU
 .I troff \" GNU
 is a single-pass formatter;
-it thus cannot determine the page number of a division of the text until
-it has been set and output.
+it cannot determine the page number of a division of the text
+until it has been set and output.
 .
 Since
 .I ms
@@ -447,9 +446,9 @@ macros.
 .
 Define information describing the document by calling the macros below
 in the order shown;
-.B .DA
+.B DA
 or
-.B .ND
+.B ND
 can be called to set the document date
 (or other identifier)
 at any time before (a) the abstract,
@@ -458,18 +457,18 @@ or (b) its information is required in a header or footer.
 .
 Use of these macros is optional,
 except that
-.B .TL
+.B TL
 is mandatory if any of
-.BR .RP ,
-.BR .AU ,
-.BR .AI ,
+.BR RP ,
+.BR AU ,
+.BR AI ,
 or
-.B .AB
+.B AB
 is called,
 and
-.B .AE
+.B AE
 is mandatory if
-.B .AB
+.B AB
 is called.
 .
 .
@@ -498,7 +497,7 @@ subsequently
 macro below regarding the date).
 .
 Normally,
-.B .RP
+.B RP
 sets the page number following the cover page to\~1.
 .
 Specifying the optional
@@ -507,10 +506,16 @@ argument suppresses this alteration.
 .
 Optional arguments can occur in any order.
 .
-.RB \[lq] no \[rq]
-is recognized as a synonym of
+.I ms
+recognizes
+.B no
+as a synonym of
 .B no\-\:\%repeat\-\:\%info
-for AT&T compatibility.
+to maintain AT&T compatibility.
+.
+Options other than
+.B no
+are GNU extensions.
 .
 .
 .TP
@@ -520,8 +525,8 @@ Specify the document title.
 .I ms
 collects text on input lines following this call into the title until
 reaching
-.BR .AU ,
-.BR .AB ,
+.BR AU ,
+.BR AB ,
 or a heading or paragraphing macro call.
 .
 .
@@ -532,10 +537,10 @@ Specify an author's name.
 .I ms
 collects text on input lines following this call into the author's name
 until reaching
-.BR .AI ,
-.BR .AB ,
+.BR AI ,
+.BR AB ,
 another
-.BR .AU ,
+.BR AU ,
 or a heading or paragraphing macro call.
 .
 Call it repeatedly to specify multiple authors.
@@ -546,20 +551,20 @@ Call it repeatedly to specify multiple authors.
 Specify the preceding author's institutional affiliation.
 .
 An
-.B .AU
+.B AU
 call is usefully followed by at most one
-.B .AI
+.B AI
 call;
 if there are more,
 the last
-.B .AI
+.B AI
 call controls.
 .
 .I ms
 collects text on input lines following this call into the author's
 institution until reaching
-.BR .AU ,
-.BR .AB ,
+.BR AU ,
+.BR AB ,
 or a heading or paragraphing macro call.
 .
 .
@@ -572,7 +577,7 @@ or any
 in the center footer,
 and,
 if
-.B .RP
+.B RP
 is also called,
 left-aligned at the end of the document description on the cover page.
 .
@@ -584,7 +589,7 @@ Typeset the current date,
 or any
 .RI arguments\~ x ,
 if
-.B .RP
+.B RP
 is also called,
 left-aligned at the end of the document description on the cover page.
 .
@@ -600,7 +605,7 @@ Begin the abstract.
 .I ms
 collects text on input lines following this call into the abstract until
 reaching an
-.B .AE
+.B AE
 call.
 .
 By default,
@@ -663,9 +668,7 @@ request.
 Setting
 .B \[rs]n[HY]
 .RB to\~ 0
-is equivalent to using the
-.B nh
-request.
+disables automatic hyphenation.
 .
 This is a Research Tenth Edition Unix extension.
 .
@@ -738,7 +741,7 @@ If a new paragraph starts close to the bottom of a page,
 and there is insufficient space to accommodate
 .B \[rs]n[PORPHANS]
 lines before an automatic page break,
-.I ms
+.I "groff ms"
 forces a page break before formatting the paragraph.
 .
 This is a GNU extension.
@@ -764,7 +767,8 @@ Set a paragraph with a left indentation.
 .
 The optional
 .I marker
-is not indented and is empty by default.
+is not indented and is empty by default;
+it is useful in the construction of lists.
 .
 .I width
 overrides the indentation amount in
@@ -775,7 +779,7 @@ its default unit is
 Once specified,
 .I width
 applies to further
-.B .IP
+.B IP
 calls until specified again or a heading or different paragraphing macro
 is called.
 .
@@ -798,9 +802,9 @@ a region where each paragraph is indented from both margins by
 .BR \[rs]n[QI] .
 .
 The text between
-.B .QS
+.B QS
 and
-.B .QE
+.B QE
 can be structured further by use of other paragraphing macros.
 .
 .
@@ -898,7 +902,7 @@ This feature is a Berkeley extension.
 .ne 3v
 .P
 After
-.B .NH
+.B NH
 is called,
 the assigned number is made available in the strings
 .B SN\-DOT
@@ -931,7 +935,7 @@ you may alias it to
 .
 Any such change in numbering style becomes effective from the next use
 of
-.B .NH
+.B NH
 following redefinition of the alias for
 .BR \[rs]*[SN\-STYLE] .
 .
@@ -943,7 +947,7 @@ for example,
 table captions,
 equation labels,
 and
-.BR .XS / .XA / .XE
+.BR XS / XA / XE
 table of contents entries.
 .
 .
@@ -958,7 +962,7 @@ argument is a GNU extension indicating the heading depth corresponding
 to the
 .I depth
 argument of
-.BR .NH .
+.BR NH .
 .
 It matches the type size at which the heading is set to that of a
 numbered heading at the same depth when the
@@ -1007,9 +1011,9 @@ if the value of
 register is greater than the
 .I depth
 argument to a
-.B .NH
+.B NH
 or
-.B .SH
+.B SH
 call,
 the type size of a heading produced by these macros increases by
 .B \[rs]n[PSINCR]
@@ -1027,20 +1031,22 @@ are GNU extensions.
 .
 .
 .P
-The
-.B \[rs]n[HORPHANS]
-register operates in conjunction with the
+In
+.I "groff ms,"
+the
 .B NH
 and
 .B SH
-macros to inhibit the printing of isolated headings at the bottom of a
+macros consult the
+.B HORPHANS
+register to prevent the output of isolated headings at the bottom of a
 page;
 it specifies the minimum number of lines of the subsequent paragraph
 that must be kept on the same page as the heading.
 .
 If insufficient space remains on the current page to accommodate the
 heading and this number of lines of paragraph text,
-.I ms
+.I "groff ms"
 forces a page break before setting the heading.
 .
 Any display macro call or
@@ -1101,7 +1107,7 @@ or no-argument typeface macro call.
 .BR .R \~[\c
 .IR text \~[ post \~[ pre ]]]
 As
-.BR .B ,
+.BR B ,
 but use the roman style
 (upright text of normal weight)
 instead of bold.
@@ -1113,7 +1119,7 @@ Argument recognition is a GNU extension.
 .BR .I \~[\c
 .IR text \~[ post \~[ pre ]]]
 As
-.BR .B ,
+.BR B ,
 but use an italic or oblique style instead of bold.
 .
 .
@@ -1121,7 +1127,7 @@ but use an italic or oblique style instead of bold.
 .BR .BI \~[\c
 .IR text \~[ post \~[ pre ]]]
 As
-.BR .B ,
+.BR B ,
 but use a bold italic or bold oblique style instead of upright bold.
 .
 This is a Research Tenth Edition Unix extension.
@@ -1132,7 +1138,7 @@ This is a Research Tenth Edition Unix extension.
 .BR .CW \~[\c
 .IR text \~[ post \~[ pre ]]]
 As
-.BR .B ,
+.BR B ,
 but use a constant-width (monospaced) roman typeface instead of bold.
 .
 This is a Research Tenth Edition Unix extension.
@@ -1346,32 +1352,33 @@ End boxed keep.
 Boxed keep macros cause breaks;
 to box words within a line,
 recall
-.B .BX
+.B BX
 in section \[lq]Highlighting\[rq] above.
 .
-Box lines are drawn as close as possible to the text they enclose so
-that they are usable within paragraphs.
+.I ms
+draws box lines close to the text they enclose
+so that they are usable within paragraphs.
 .
 When boxing entire paragraphs thus,
 you may improve their appearance by calling
-.B .B1
+.B B1
 after the first paragraphing macro,
 and invoking the
 .B sp
 request before calling
-.B .B2 .
+.B B2 .
 .
 .
 .P
 If you want a boxed keep to float,
 enclose the
-.B .B1
+.B B1
 and
-.B .B2
+.B B2
 calls within a pair of
-.B .KF
+.B KF
 and
-.B .KE
+.B KE
 calls.
 .
 .
@@ -1472,9 +1479,9 @@ The
 .B DI
 register is a GNU extension;
 its value is an indentation applied to displays created with
-.B .DS
+.B DS
 and
-.B .ID
+.B ID
 without arguments,
 to
 .RB \[lq] .DS\~I \[rq]
@@ -1548,15 +1555,15 @@ examples of its use.
 .B .PE
 .TQ
 .B .PF
-.B .PS
+.B PS
 marks the start of a
 .MR @g@pic @MAN1EXT@
 preprocessor
 diagram;
 either of
-.B .PE
+.B PE
 or
-.B .PF
+.B PF
 ends it,
 the latter with \[lq]flyback\[rq] to the vertical position at its top.
 .
@@ -1570,7 +1577,7 @@ supplies them automatically.
 .
 .TP
 .BR .EQ \~[\c
-.IR align \~[\c]
+.IR align \~[\c
 .IR label ]]
 .TQ
 .B .EN
@@ -1680,7 +1687,7 @@ of a text column or page.
 Begin a footnote.
 .
 The
-.B .FS\-MARK
+.B FS\-MARK
 hook
 (see below)
 is called with any supplied
@@ -1712,13 +1719,13 @@ for user-determined operations to be performed when the
 macro is called.
 .
 It is passed the same arguments as
-.B .FS
+.B FS
 itself.
 .
 By default,
 this macro has an empty definition.
 .
-.B .FS\-MARK
+.B FS\-MARK
 is a GNU extension.
 .
 .
@@ -1752,7 +1759,7 @@ The
 register controls the formatting of automatically numbered footnote
 paragraphs,
 and those for which
-.B .FS
+.B FS
 is given a
 .I marker
 argument,
@@ -1773,12 +1780,12 @@ or surrounded by square brackets
 (on terminals).
 .
 The footnote paragraph is indented as with
-.B .PP
+.B PP
 if there is an
-.B .FS
+.B FS
 argument or an automatic number,
 and as with
-.B .LP
+.B LP
 otherwise.
 .
 This is the default.
@@ -1798,7 +1805,7 @@ As
 .BR 1 ,
 but without indentation
 (like
-.BR .LP ).
+.BR LP ).
 .
 .
 .TP
@@ -1807,7 +1814,7 @@ As
 .BR 1 ,
 but set the footnote paragraph with the marker hanging
 (like
-.BR .IP ).
+.BR IP ).
 .RE
 .
 .
@@ -1981,9 +1988,9 @@ sets up to format the header also calls the
 (normally undefined)
 .B HD
 macro after
-.BR .PT ;
+.BR PT ;
 you can define
-.B .HD
+.B HD
 if you need additional processing after setting the header.
 .
 .\" Although undocumented in Tuthill's 4.2BSD ms.diffs paper...
@@ -2105,7 +2112,7 @@ The
 .B XA
 macro,
 used within
-.BR .XS / .XE
+.BR XS / XE
 pairs,
 supplements an entry\[em]for instance,
 when it requires multiple output lines,
@@ -2120,9 +2127,9 @@ or by providing a second argument to the
 .B XA
 macro.
 .
-.B .XS
+.B XS
 and
-.B .XA
+.B XA
 automatically associate the page number where they are called with the
 text following them,
 but they accept arguments to override this behavior.
@@ -2133,7 +2140,7 @@ call
 or
 .B PX
 to emit the table of contents;
-.B .TC
+.B TC
 resets the page number
 .RB to\~ i
 (Roman numeral one),
@@ -2165,9 +2172,9 @@ of
 prevents a leader and page number from being emitted for that entry.
 .
 Use of
-.B .XA
+.B XA
 within
-.BR .XS / .XE
+.BR XS / XE
 is optional;
 it can be repeated.
 .
@@ -2178,11 +2185,11 @@ a supplemental entry is indented by that amount;
 ens are assumed if no unit is indicated.
 .
 Text on input lines between
-.B .XS
+.B XS
 and
-.B .XE
+.B XE
 is stored for later recall by
-.BR .PX .
+.BR PX .
 .
 .
 .TP
@@ -2216,17 +2223,17 @@ The remaining features in this subsection are GNU extensions.
 .
 .I groff ms
 obviates the need to repeat heading text after
-.B .XS
+.B XS
 calls.
 .
 Call
-.B .XN
+.B XN
 and
-.B .XH
+.B XH
 after
-.B .NH
+.B NH
 and
-.BR .SH ,
+.BR SH ,
 respectively.
 .
 Text to be appended to the formatted section heading,
@@ -2249,7 +2256,7 @@ call.
 .TP
 .BI .XH\~ "depth heading-text"
 As
-.BR .XN ,
+.BR XN ,
 but use
 .I depth
 to determine the indentation.
@@ -2267,9 +2274,9 @@ encourages customization of table of contents entry production.
 .TQ
 .BI \%.XH\-REPLACEMENT\~ "depth heading-text"
 These hook macros implement
-.B .XN
+.B XN
 and
-.BR .XH ,
+.BR XH ,
 and call
 .B \%XN\-INIT
 and
@@ -2342,10 +2349,12 @@ and adds several of its own.
 .IP \[bu] 3n
 The internals of
 .I groff ms
-differ from the internals of AT&T
+differ from those of
+AT&T
 .IR ms .
 .
-Documents that depend upon implementation details of AT&T
+Documents that depend upon implementation details of
+AT&T
 .I ms
 may not format properly with
 .IR "groff ms" .
@@ -2435,9 +2444,9 @@ This can cause problems for documents that define additional macros of
 their own that manipulate indentation.
 .
 Use
-.B .RS
+.B RS
 and
-.B .RE
+.B RE
 instead of the
 .B in
 request.
@@ -2483,6 +2492,16 @@ For example,
 at the shell prompt is equivalent to placing
 .RB \[lq] ".nr PS 10.5p" \[rq]
 at the beginning of the document.
+.\" Note to document maintainers:
+.\"
+.\" We use the integral point scaling unit `p` instead of the
+.\" typographical point `z` because this is a register assignment; the
+.\" value gets converted to scaled points automatically.
+.\" Observe:
+.\"    $ printf '.nr PS 10.5p\n.pnr PS\n' | groff # 1.24 or later
+.\"    PS      10500   +0      0
+.\"
+.\" groff ms users can thus remain innocent of the z unit if they like.
 .
 .
 .IP \[bu]
@@ -2552,7 +2571,7 @@ and desire special treatment of certain page numbers\[em]like
 may need to handle a non-Arabic page number format,
 as
 .IR "groff ms" 's
-.B .PT
+.B PT
 does;
 see the macro package source.
 .
@@ -2573,14 +2592,14 @@ and
 as setting the default column width and \[lq]intercolumn gap\[rq],
 respectively,
 and which applied when
-.B .MC
+.B MC
 was called with fewer than two arguments.
 .
 .I groff ms
 instead treats
-.B .MC
+.B MC
 without arguments as synonymous with
-.BR .2C ;
+.BR 2C ;
 there is thus no occasion for a default column width register.
 .
 Further,
@@ -2588,7 +2607,7 @@ the
 .B MINGW
 register
 and the second argument to
-.B .MC
+.B MC
 specify a
 .I minimum
 space between columns,
@@ -2752,8 +2771,8 @@ _
 \[rs]*[8]	Interpolate small letter sharp s.
 \[rs]*[q]	Interpolate small letter o with hook accent (ogonek).
 \[rs]*[3]	Interpolate small letter yogh.
-\[rs]*[d-]	Interpolate small letter eth.
-\[rs]*[D-]	Interpolate capital letter eth.
+\[rs]*[d\-]	Interpolate small letter eth.
+\[rs]*[D\-]	Interpolate capital letter eth.
 \[rs]*[th]	Interpolate small letter thorn.
 \[rs]*[TH]	Interpolate capital letter thorn.
 \[rs]*[ae]	Interpolate small ae ligature.
@@ -2767,30 +2786,59 @@ _
 .SH "Naming conventions"
 .\" ====================================================================
 .
-The following conventions are used for names of macros,
-strings,
-and registers.
-.
 External names available to documents that use the
-.I groff ms
+.I "groff ms"
 macros contain only uppercase letters and digits.
 .
+The package reserves for internal use the following identifiers:
 .
-.LP
-Internally,
-the macros are divided into modules.
 .
-Conventions for identifier names are as follows.
+.IP \[bu] 3n
+those containing the characters
+.BR * ,
+.BR @ ,
+and\~\c
+.BR : ;
+and
+.
+.
+.IP \[bu]
+those containing only uppercase letters and digits.
+.
+.
+.P
+When selecting a name for your document's own macros,
+strings,
+and
+registers,
+avoid those reserved by
+.I "groff ms"
+and those defined by
+GNU
+.IR troff ;\" GNU
+see
+.MR groff @MAN7EXT@
+for complete lists thereof.
+.
+.
+.P
+.I "groff ms"
+organizes most of its internal names into modules.
+.
+The naming convenion is as follows.
+.
 .
 .IP \[bu] 3n
 Names used only within one module are of the form
 .IB \%module * name\c
 \&.
 .
+.
 .IP \[bu]
 Names used outside the module in which they are defined are of the form
 .IB \%module @ name\c
 \&.
+.
 .
 .IP \[bu]
 Names associated with a particular environment are of the form
@@ -2800,31 +2848,16 @@ these are used only within the
 .B par
 module.
 .
+.
 .IP \[bu]
 .I name
 does not have a module prefix.
 .
+.
 .IP \[bu]
-Constructed names used to implement arrays are of the form
+Names constructed to implement arrays are of the form
 .IB \%array ! index\c
 \&.
-.
-.
-.PP
-Thus the
-.I groff ms
-macros reserve the following identifiers:
-.
-.IP \[bu] 3n
-those containing the characters
-.BR * ,
-.BR @ ,
-and\~\c
-.BR : ,
-and
-.
-.IP \[bu]
-those containing only uppercase letters and digits.
 .
 .
 .\" ====================================================================

@@ -1,6 +1,8 @@
 .ig
 
-Copyright (C) 1991-2024 Free Software Foundation, Inc.
+Copyright 1991-2018 Free Software Foundation, Inc.
+          2021-2025 G. Branden Robinson
+
 groff mm is written by Jörgen Hägg <jh@axis.com>
 based on groff ms by James Clark <jjc@jclark.com>
 and further developed by Werner Lemberg <wl@gnu.org>
@@ -50,6 +52,12 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .mso devtag.tmac
 .
+.\" for warnings thrown due to invalid command-line options
+.de @usage
+.tm \\*[@mm]: warning: \\$*
+..
+.
+.\" for all other kinds of warning
 .de @warning
 .tm \\*[@mm]:\\n[.F]:\\n[.c]: warning: \\$*
 .if r D .if \\n[D] .backtrace
@@ -80,7 +88,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r D \{\
 .	if \n[D]<0 \{\
-.		@warning ignoring out-of-range D register value: \n[D]
+.		@usage ignoring out-of-range D register value: \n[D]
 .		rr D
 .	\}
 .\}
@@ -88,7 +96,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r E \{\
 .	if (\n[E]<0):(\n[E]>1) \{\
-.		@warning ignoring out-of-range E register value: \n[E]
+.		@usage ignoring out-of-range E register value: \n[E]
 .		rr E
 .	\}
 .\}
@@ -98,7 +106,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r L \{\
 .	if \n[L]<=0 \{\
-.		@warning ignoring out-of-range L register value: \n[L]u
+.		@usage ignoring out-of-range L register value: \n[L]u
 .		rr L
 .	\}
 .\}
@@ -106,7 +114,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r O \{\
 .	if \n[O]<0 \{\
-.		@warning ignoring out-of-range O register value: \n[O]u
+.		@usage ignoring out-of-range O register value: \n[O]u
 .		rr O
 .	\}
 .\}
@@ -118,7 +126,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r W \{\
 .	if \n[W]<=0 \{\
-.		@warning ignoring out-of-range W register value: \n[W]u
+.		@usage ignoring out-of-range W register value: \n[W]u
 .		rr W
 .	\}
 .\}
@@ -129,7 +137,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"	command line, these have already been converted to basic units.
 .if r S \{\
 .	if \n[S]<=0 \{\
-.		@warning ignoring out-of-range S register value: \n[S]z
+.		@usage ignoring out-of-range S register value: \n[S]z
 .		rr S
 .	\}
 .\}
@@ -140,7 +148,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .if r V \{\
 .	if \n[V]<=0 \{\
-.		@warning ignoring out-of-range V register value: \n[V]u
+.		@usage ignoring out-of-range V register value: \n[V]u
 .		rr V
 .	\}
 .\}
@@ -151,8 +159,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .
 .nr @ps \n[.ps]
 .nr @vs \n[.v]
-.if \n[D]>1 .tm @ps=\n[@ps], @vs=\n[@vs]
-.if \n[D]>3 .tm INIT: l:\n[.l] p:\n[.p] o:\n[.o]
+.if \n[D]>=4 .tm Initialization
+.if \n[D]>=5 .tm initialization: @ps=\n[@ps]u, @vs=\n[@vs]u
+.if \n[D]>=6 .tm initialization: .l=\n[.l]u, .p=\n[.p]u, .o=\n[.o]u
 .nr @pl \n[.p]
 .nr @ll \n[.l]
 .nr @cur-ll \n[@ll]
@@ -329,20 +338,30 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds H1txt \" empty
 .\" caption for the index
 .ds Index INDEX
+.\" use ISO 8601 date format?
+.nr Isodate 0
+.aln Iso Isodate \" for groff <= 1.23 compatibility
 .\" flag for mkindex (XXX: undocumented: do we need this?)
 .if !r Idxf .nr Idxf 0
 .\" captions for displays
-.ds Lifg Figure
-.ds Litb Table
-.ds Liex Exhibit
-.ds Liec Equation
+.ds Capec Equation
+.ds Capex Exhibit
+.ds Capfg Figure
+.ds Captb Table
 .\" caption for the table of contents
-.ds Licon CONTENTS
+.ds Captc CONTENTS
+.\" aliases for groff <= 1.23 compatibility
+.als Licon Captc
+.als Liec Capec
+.als Liex Capex
+.als Lifg Capfg
+.als Litb Captb
 .\" Lsp controls the height of an empty line. Normally 0.5v
 .\" Normally used for nroff compatibility.
 .ie t .nr Lsp 0.5v
 .el   .nr Lsp 1v
 .
+.\" Note: See comment under `cov*set-date` macro definition.
 .ds MO1 January
 .ds MO2 February
 .ds MO3 March
@@ -375,7 +394,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" 0 = auto (nroff/troff); 1 = bracket; 2 = superscript; 3 = both
 .nr Rfstyle 0
 .\" reference list page ejection policy
-.nr Rpe 0
+.nr Rpej 0
+.aln Rpe Rpej \" for groff <= 1.23 compatibility
 .\" reference list format (arguments to `LB`)
 .ds Rpfmt \\n[Li] 0 1 0 \& 0\"
 .\" use section-page page numbering?
@@ -390,7 +410,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" state of TOC formatting
 .\" This is empty outside the table of contents; inside it is set to co,
 .\" fg, tb, ec, ex, or ap.
-.ds Tcst \" empty
+.ds Tcstatus \" empty
+.\" alias for groff <= 1.23 compatibility
+.als Tcst Tcstatus
 .\" argument(s) for VERBON to give to `nm` request
 .ds Verbnm 1\"
 .\" indentation of verbatim regions (VERBON)
@@ -462,18 +484,69 @@ http://savannah.gnu.org/bugs/?group=groff.
 .br
 ..
 .\" ####### module debug #################################
+.\"
+.\" A sketch of debugging level meanings:
+.\"   0: no non-diagnostic output
+.\"   1: gross formatting progress: report each page start
+.\"   2: report output of conditional structural elements*
+.\"   3: report output of headers/footers
+.\"   4: report init, EOI macro, population and emission of diversions
+.\"   5: trace API macro calls, sprung traps, and init/shutdown
+.\"   6: dump internal computations
+.\"
+.\" * headings, footnotes, captioned items, references
+.de debug@dump-args
+.if \\n[D]>=5 \{\
+.	tmc \\$0:
+.	ie \\n[.$] .tm1 " \\$@
+.	el         .tm1 " no arguments
+.\}
+..
+.
+.de debug@box
+.if \\n[D]>=4 \{\
+.  ie \\n[.$] .tm Starting box diversion "\\$*"
+.  el         .tm Closing box diversion "\\n[.z]"
+.\}
+.box \\$*
+..
+.
+.de debug@di
+.if \\n[D]>=4 \{\
+.  ie \\n[.$] .tm Starting diversion "\\$*"
+.  el         .tm Closing diversion "\\n[.z]"
+.\}
+.di \\$*
+..
+.
+.de debug@da
+.if \\n[D]>=4 \{\
+.  ie \\n[.$] .tm Appending to diversion "\\$*"
+.  el         .tm Closing diversion "\\n[.z]"
+.\}
+.da \\$*
+..
+.
+.de debug@emit
+.if \\n[D]>=4 .tm Emitting diversion "\\$*"
+.\\$*
+..
+.
+.\" We assume that people calling these macros understand that register
+.\" values are stored in basic units.
 .de debug@little-dump
-.tmc \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s],\\n[.ps]
+.tmc \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s]z,\\n[.ps]s
 .tm1 " in=\\n[.i] fi=\\n[.u] .d=\\n[.d] nl=\\n[nl] pg=\\n[%]
 ..
 .de debug@big-dump
 .nr debug*n 1n
 .nr debug*m 1m
-.tmc \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s] in=\\n[.i]
+.tmc \\$1:\\n[.F]:\\n[c.] ll=\\n[.l] vs=\\n[.v] ps=\\n[.s]z in=\\n[.i]
 .tm1 " ad=\\n[.j] fi=\\n[.u] pl=\\n[.p] page=\\n[%] .o=\\n[.o]
 .tmc _______ .d=\\n[.d] .f=\\n[.f] .h=\\n[.h] .k=\\n[.k] .n=\\n[.n]
 .tmc " .p=\\n[.p] .t=\\n[.t] .z=\\n[.z] nl=\\n[nl] dn=\\n[dn]
-.tm1 " n=\\n[debug*n]
+.tm1 " n=\\n[debug*n], m=\\n[debug*m]
+.rr debug*n debug*m
 ..
 .\" ####### module par #################################
 .nr par*indentation-eligible 1		\" indent following P if Pt=2
@@ -487,6 +560,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"------------
 .\" paragraph
 .de P
+\\*[debug@dump-args]\\
 .if \\n[.$] \{\
 .	ie !\B'\\$1' \{\
 .		@warning \\$0: ignoring non-numeric argument: '\\$1'
@@ -497,9 +571,10 @@ http://savannah.gnu.org/bugs/?group=groff.
 '\\$1'
 .\}
 .\"	skip P if previous heading
-.if \\n[D]>2 \{\
-.	tm Paragraph nl=\\n[nl], last=\\n[hd*last-pos]
-.	tm Paragraph .k=\\n[.k], hsize=\\n[hd*last-hsize]
+.if \\n[D]>=6 \{\
+.	tm \\$0: paragraph nl=\\n[nl]u, hd*last-pos=\\n[hd*last-pos]u
+.	tm \\$0: paragraph .k=\\n[.k]u, \
+hd*last-hsize=\\n[hd*last-hsize]u
 .\}
 .nr par*indentation-eligible 1-\\n[par@suppress-indentation]
 .par@doit \\$*
@@ -507,9 +582,11 @@ http://savannah.gnu.org/bugs/?group=groff.
 ..
 .\"------------
 .de nP
-.if \\n[D]>2 \{\
-.	tm Paragraph nl=\\n[nl], last=\\n[hd*last-pos]
-.	tm Paragraph .k=\\n[.k], hsize=\\n[hd*last-hsize]
+\\*[debug@dump-args]\\
+.if \\n[D]>=6 \{\
+.	tm \\$0: paragraph nl=\\n[nl]u, hd*last-pos=\\n[hd*last-pos]u
+.	tm \\$0: paragraph .k=\\n[.k]u, \
+hd*last-hsize=\\n[hd*last-hsize]u
 .\}
 .\" `nP` handles indentation differently from `P`.
 .nr par*indentation-eligible 0
@@ -633,12 +710,12 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"-------------
 .\" .PGFORM linelength [ pagelength [ pageoffset [1]]]
 .de PGFORM
+\\*[debug@dump-args]\\
 .\" Break here to avoid problems with new linesetting of the previous line.
 .\" Hope this doesn't break anything else :-)
 .\" Don't break if arg_4 is a '1'.
-.if \\n[D]>2 .tm PGFORM: \\$@
 .if ''\\$4' .br
-.if \\n[D]>3 .tm PGFORM: IN l:\\n[.l] p:\\n[.p] o:\\n[.o]
+.if \\n[D]>=6 .tm \\$0: IN l:\\n[.l] p:\\n[.p] o:\\n[.o]
 .ie !''\\$1' \{\
 .	ll \\$1
 .	nr @ll \\n[.l]
@@ -661,11 +738,11 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	nr @po \\n[.o]
 .\}
 .el .po \\n[@po]u
-.if \\n[D]>3 .tm PGFORM: OUT l:\\n[.l] p:\\n[.p] o:\\n[.o]
-.if \\n[D]>2 .tm PGFORM: ll=\\n[@ll], pl=\\n[@pl], po=\\n[@po]
+.if \\n[D]>=6 .tm \\$0: OUT l:\\n[.l] p:\\n[.p] o:\\n[.o]
+.if \\n[D]>=6 .tm \\$0: ll=\\n[@ll], pl=\\n[@pl], po=\\n[@po]
 'in 0
 .pg@move-trap
-.if \\n[D]>2 \{\
+.if \\n[D]>=6 \{\
 .	tm Traps:
 .	ptr
 .\}
@@ -709,7 +786,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .nr misc*S-vs1 \n[@vs]
 .ds misc*a
 .ds misc*b
+.
 .de S
+\\*[debug@dump-args]\\
 .ie !\\n[.$] \{\
 .	ds misc*a P
 .	ds misc*b P
@@ -729,9 +808,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	ie '\\*[misc*a]'P' .ps \\n[misc*S-ps]u
 .	el \{\
 .		ie '\\*[misc*a]'D' .ps \\n[S]
-.		el .ps \\*[misc*a]
-.		if \\n[D]>2 .tm S: .ps \\*[misc*a]
+.		el                 .ps \\*[misc*a]
 .	\}
+.	if \\n[D]>=6 .tm \\$0: .ps=\\n[.ps]u
 .\}
 .\"
 .\" set vertical spacing
@@ -739,22 +818,23 @@ http://savannah.gnu.org/bugs/?group=groff.
 .	ie '\\*[misc*b]'P' .vs \\n[misc*S-vs]u
 .	el \{\
 .		ie '\\*[misc*b]'D' .vs \\n[.ps]s+2p
-.		el .vs \\*[misc*b]
-.		if \\n[D]>2 .tm S: .vs \\*[misc*b]
+.		el                 .vs \\*[misc*b]
 .	\}
+.	if \\n[D]>=6 .tm \\$0: .v=\\n[.v]u
 .\}
-.nr @ps \\n[.ps]
+.nr @ps  \\n[.ps]
 .nr @psu \\n[.ps]s
-.nr @vs \\n[.v]
+.nr @vs  \\n[.v]
 .nr @vsp \\n[.v]u/1p
 .nr @res 1i
 .\"
-.if \\n[D]>1 \{\
-.	tmc "S(\\$*): ma:\\*[misc*a], mb:\\*[misc*b]
-.	tm1 " => ps:\\n[.s]p (\\n[@psu]u), vs:\\n[@vsp]p (\\n[@vs]u) (res:\\n[@res])
+.if \\n[D]>=6 \{\
+.	tmc \\$0: misc*a=\\*[misc*a], misc*b=\\*[misc*b]
+.	tmc " => ps:\\n[.s]z (\\n[@psu]u), vs:\\n[@vsp]p (\\n[@vs]u),
+.	tm1 " (res:\\n[@res])
 .\}
-.nr misc*S-ps \\n[misc*S-ps1]
-.nr misc*S-vs \\n[misc*S-vs1]
+.nr misc*S-ps  \\n[misc*S-ps1]
+.nr misc*S-vs  \\n[misc*S-vs1]
 .nr misc*S-ps1 \\n[@ps]
 .nr misc*S-vs1 \\n[@vs]
 .pg@move-trap
@@ -773,23 +853,24 @@ http://savannah.gnu.org/bugs/?group=groff.
 ..
 .\"------------
 .de RD
-.di misc*rd
+\\*[debug@dump-args]\\
+.debug@di misc*rd \" never emitted
 'fl
 .rd \\$1\t
 .br
-.di
+.debug@di
 .if !''\\$3' \{\
-.	di misc*rd2
+.	debug@di misc*rd2 \" never emitted
 .	ds \\$3 "\\*[misc*rd]
 .	br
-.	di
+.	debug@di
 .\}
 .if !''\\$2' .rn misc*rd \\$2
 .rm misc*rd misc*rd2
 ..
 .\"------------
-.\" VERBON [flag [type-size [font]]]
-.\"	flag
+.\" VERBON [format [type-size [font]]]
+.\"	format
 .\"	bit	function
 .\"	0	escape character disablement
 .\"	1	add an empty line before verbatim text
@@ -797,23 +878,29 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\"	3	number output lines using Verbnm string for .nm args
 .\"	4	indent text by amount in register Verbin
 .de VERBON
+\\*[debug@dump-args]\\
+.nr misc*verb 0
+.if !'\\$1'' \{\
+.	ie \B'\\$2' .nr misc*verb \\$1
+.	el          .@error \\$0: format argument is not numeric; got \
+'\\$1'
+.\}
 .br
-.nr misc*verb 0\\$1
-.if (0\\n[misc*verb]%4)/2 .SP \\n[Lsp]u
+.if (\\n[misc*verb]%4)/2 .SP \\n[Lsp]u
 .misc@ev-keep misc*verb-ev
 .nf
-.if (0\\n[misc*verb]%16)/8 .nm \\*[Verbnm]
+.if (\\n[misc*verb]%16)/8 .nm \\*[Verbnm]
 .ie !'\\$3'' .if F \\$3 .ft \\$3
 .el          .if F CR   .ft CR
-.ie 0\\$2 \{\
+.ie !'\\$2'' \{\
 .	ss \\$2
 .	ps \\$2
 .	vs \\$2
 .\}
 .el .ss 12
 .ta T 8u*\w@n@u
-.if (0\\n[misc*verb]%32)/16 .in +\\n[Verbin]u
-.if 0\\n[misc*verb]%2 \{\
+.if (\\n[misc*verb]%32)/16 .in +\\n[Verbin]u
+.if \\n[misc*verb]%2 \{\
 .	eo
 .	nr @in-verbatim-region 1
 .\}
@@ -821,9 +908,9 @@ http://savannah.gnu.org/bugs/?group=groff.
 .de VERBOFF
 .ec
 .br
-.if (0\\n[misc*verb]%8)/4 .SP \\n[Lsp]u
-.if (0\\n[misc*verb]%16)/8 .nm
-.if (0\\n[misc*verb]%32)/16 .in
+.if (\\n[misc*verb]%8)/4 .SP \\n[Lsp]u
+.if (\\n[misc*verb]%16)/8 .nm
+.if (\\n[misc*verb]%32)/16 .in
 .ev
 .nr @in-verbatim-region 0
 ..
@@ -1076,6 +1163,7 @@ numeric; got '\\$1'
 .ds \\$1 \\$[\\n[hd*sp-tmp]]
 ..
 .de HU
+\\*[debug@dump-args]\\
 .if \\n[.$]=0 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .H 0 \\$@
 ..
@@ -1085,6 +1173,7 @@ numeric; got '\\$1'
 ..
 .\"-------------
 .de H
+\\*[debug@dump-args]\\
 .if !r hd*cur-bline .nr hd*cur-bline \\n[nl]
 .br
 .df@print-float 2\"	$$$ could be wrong...
@@ -1139,7 +1228,8 @@ numeric; got '\\$1'
 .as hd*mark \ \ \"	add spaces between heading mark and title
 .if !\\n[hd*arg1] .ds hd*mark \" empty; no mark for unnumbered heading
 .\"
-.if \\n[D]>1 .tm At header \\*[hd*mark] "\\$2"
+.if \\n[D]>=2 .tm Heading "\\$2"
+.if \\n[D]>=6 .tm \\$0: hd*mark="\\*[hd*mark]"
 .nr hd*htype 0			\" hd*htype = check break and space
 .				\" 0 = run-in, 1 = break only, 2 = space
 .if \\n[hd*level]<=\\n[Hb] .nr hd*htype 1
@@ -1161,10 +1251,10 @@ numeric; got '\\$1'
 .if \\$1=1&\\n[Np] .nr par*Np-counter 0
 .if \\$1<3         .nr par*nP-counter 0
 .\" start diversion to measure size of header
-.di hd*div
+.debug@di hd*div \" never emitted
 \\*[hd*mark]\\$2\\$3\\*[hd*suf-space]
 .br
-.di
+.debug@di
 .rm hd*div
 .if \\n[hd*htype] .na \"	do not adjust heading if not run-in
 .if \\n[hd*htype]<2 .nr hd*need +\\n[Lsp]u \"	add some extra space
@@ -1282,7 +1372,7 @@ numeric; got '\\$1'
 .nr pg*top-margin 0
 .nr pg*foot-margin 0
 .nr pg*block-size 0
-.nr pg*footer-size 5v\"			 1v+footer+even/odd footer+2v
+.nr pg*footer-size 6v\"			 1v+footer+even/odd footer+3v
 .nr pg*header-size 7v\"			 3v+header+even/odd header+2v
 .nr pg*extra-footer-size 0
 .nr pg*extra-header-size 0
@@ -1298,21 +1388,32 @@ numeric; got '\\$1'
 .\"-------------------------
 .\" footer TRAPS: set, enable and disable
 .de pg@set-new-trap
-.nr pg*foot-trap \\n[@pl]u-(\\n[pg*block-size]u+\\n[ft*note-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\\n[pg*extra-footer-size]u)
+.nr pg*foot-trap \\n[@pl]u-(\\n[pg*block-size]u+\
+\\n[ft*note-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
+\\n[pg*extra-footer-size]u)
 .\"
-.if \\n[D]>2 .tm pg*foot-trap \\n[@pl]u-(\\n[pg*block-size]u+\\n[ft*note-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\\n[pg*extra-footer-size]u) = \\n[pg*foot-trap]
+.if \\n[D]>=6 .tm \\$0: pg*foot-trap=\\n[@pl]u-(\\n[pg*block-size]u+\
+\\n[ft*note-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
+\\n[pg*extra-footer-size]u)=\\n[pg*foot-trap]u
 .\"
 .\" last-pos points to the position of the footer and bottom
 .\" block below foot-notes.
-.nr pg*last-pos \\n[@pl]u-(\\n[pg*block-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\\n[pg*extra-footer-size]u)
-.if \\n[D]>2 .tm pg*last-pos \\n[@pl]u-(\\n[pg*block-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\\n[pg*extra-footer-size]u) = \\n[pg*last-pos]
+.nr pg*last-pos \\n[@pl]u-(\\n[pg*block-size]u+\
+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
+\\n[pg*extra-footer-size]u)
+.if \\n[D]>=6 .tm \\$0: pg*last-pos=\\n[@pl]u-(\\n[pg*block-size]u+\
+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
+\\n[pg*extra-footer-size]u)=\\n[pg*last-pos]u
 ..
 .de pg@enable-trap
 .\" Disable in HTML mode
 .if !'\*[.T]'html' \{\
-.wh \\n[pg*foot-trap]u pg@footer
-.if \\n[D]>2 .tm pg@enable-trap .t=\\n[.t] nl=\\n[nl]
-.if \\n[D]>2 .ptr
+.	wh \\n[pg*foot-trap]u pg@footer
+.	if \\n[D]>=6 \{\
+.		tm \\$0: .t=\\n[.t]u, nl=\\n[nl]u
+.		tm Traps:
+.		ptr
+.	\}
 .\}
 ..
 .de pg@disable-trap
@@ -1367,12 +1468,12 @@ numeric; got '\\$1'
 .\"------------------------------------------------------------
 .\" HEADER
 .de pg@header
+.if \\n[D] .tm Page #\\n[%] (\\n[.F]:\\n[c.])
 .\" Disable in HTML mode
 .if !'\*[.T]'html' \{\
-.if \\n[D]>1 .tm Page# \\n[%] (\\n[.F]:\\n[c.])
 .	if (u;(\\n[pg*header-size] + \\n[pg*extra-header-size] \
-       + \\n[pg*footer-size] + \\n[pg*extra-footer-size] \
-       + \\n[.V]) >= \\n[.p]) \{\
+            +  \\n[pg*footer-size] + \\n[pg*extra-footer-size] \
+            +  \\n[.V]) >= \\n[.p]) \{\
 .		pl \\n[nl]u
 .		@error insufficient page length; aborting
 .	\}
@@ -1394,24 +1495,36 @@ numeric; got '\\$1'
 .\".	pg@disable-top-trap
 .	if \\n[pg*extra-header-size] 'sp \\n[pg*extra-header-size]u
 .	if \\n[pg*top-margin] 'sp \\n[pg*top-margin]u
-.	ev pg*tl-ev
-.	pg@set-env
 .	ie d let@header .let@header
 .	el \{\
+.		ev pg*tl-ev
+.		pg@set-env
 .		ie d TP .TP
 .		el \{\
 '			sp 3
 .			ds hd*format \\g[P]
 .			af P 0
 .			ie (\\n[P]=1)&((\\n[N]=1):(\\n[N]=2)) .sp
-.			el .tl \\*[pg*header]
+.			el \{\
+.				if \\n[D]>=3 \
+.					tm Header "\\*[pg*header]"
+.				tl \\*[pg*header]
+.			\}
 .			af P \\*[hd*format]
-.			ie o .tl \\*[pg*odd-header]
-.			el .tl \\*[pg*even-header]
+.			ie o \{\
+.				if \\n[D]>=3 \
+.					tm Header "\\*[pg*odd-header]"
+.				tl "\\*[pg*odd-header]"
+.			\}
+.			el \{\
+.				if \\n[D]>=3 \
+.					tm Header "\\*[pg*even-header]"
+.				tl \\*[pg*even-header]
+.			\}
 '			sp 2
 .		\}
+.		ev
 .	\}
-.	ev
 .	\" why no-space??
 .	if d PX \{\
 .		ns
@@ -1443,7 +1556,12 @@ numeric; got '\\$1'
 .\" FOOTER
 .de pg@footer
 .ec
-.if \\n[D]>2 .tm Footer# \\n[%] (\\n[.F]:\\n[c.]) nl=\\n[nl]
+.if \\n[D]>=3 \{\
+.	ie !\\n[pg*at-end-of-input] .tm End of page #\\n% \
+(\\n[.F]:\\n[c.])
+.	el                          .tm End of page #\\n%
+.\}
+.if \\n[D]>=6 .tm \\$0: nl=\\n[nl]u
 .pg@disable-trap
 .\".debug@little-dump footer
 .tbl@bottom-hook
@@ -1451,7 +1569,7 @@ numeric; got '\\$1'
 .\" move to the exact start of footer.
 'sp |\\n[pg*foot-trap]u+1v
 .\"
-.if \\n[D]>3 .tm FOOTER after .sp, nl=\\n[nl]
+.if \\n[D]>=6 .tm FOOTER after .sp, nl=\\n[nl]u
 .\" print footnotes
 .if d ft*div .ft@print
 .\"
@@ -1466,7 +1584,7 @@ numeric; got '\\$1'
 .de pg@print-footer
 .\" jump to the position just below the foot-notes.
 'sp |\\n[pg*last-pos]u+1v
-.if \\n[D]>3 .tm print-footer nl=\\n[nl]
+.if \\n[D]>=6 .tm \\$0: nl=\\n[nl]u
 .\" check if there are any bottom block
 .if d pg*block-div .pg@block
 .\"
@@ -1475,14 +1593,29 @@ numeric; got '\\$1'
 .pg@set-env
 .vpt 0
 .\" user defined end-of-page macro
-.ie d EOP .EOP
+.ie d EOP \{\
+.	if \\n[D]>=5 .tm \\$0: calling user-defined EOP macro
+.	EOP
+.\}
 .el \{\
-.	ie o .tl \\*[pg*odd-footer]
-.	el .tl \\*[pg*even-footer]
+.	ie o \{\
+.		if \\n[D]>=3 .tm Footer "\\*[pg*odd-footer]"
+.		tl \\*[pg*odd-footer]
+.	\}
+.	el \{\
+.		if \\n[D]>=3 .tm Footer "\\*[pg*even-footer]"
+.		tl \\*[pg*even-footer]
+.	\}
 .	ds hd*format \\g[P]
 .	af P 0
-.	ie (\\n[P]=1)&(\\n[N]=1) .tl \\*[pg*header]
-.	el                       .tl \\*[pg*footer]
+.	ie (\\n[P]=1)&(\\n[N]=1) \{\
+.		if \\n[D]>=3 .tm Footer "\\*[pg*header]" \" that's right
+.		tl \\*[pg*header]
+.	\}
+.	el \{\
+.		if \\n[D]>=3 .tm Footer "\\*[pg*footer]"
+.		tl \\*[pg*footer]
+.	\}
 .	af P \\*[hd*format]
 .	tl ''\\*[Pg_type!\\n[@copy_type]]''
 .\}
@@ -1518,26 +1651,32 @@ numeric; got '\\$1'
 ..
 .\"-------------------------
 .de PH
+\\*[debug@dump-args]\\
 .ds pg*header "\\$1
 .pg@set-new-size
 ..
 .de PF
+\\*[debug@dump-args]\\
 .ds pg*footer "\\$1
 .pg@set-new-size
 ..
 .de OH
+\\*[debug@dump-args]\\
 .ds pg*odd-header "\\$1
 .pg@set-new-size
 ..
 .de EH
+\\*[debug@dump-args]\\
 .ds pg*even-header "\\$1
 .pg@set-new-size
 ..
 .de OF
+\\*[debug@dump-args]\\
 .ds pg*odd-footer "\\$1
 .pg@set-new-size
 ..
 .de EF
+\\*[debug@dump-args]\\
 .ds pg*even-footer "\\$1
 .pg@set-new-size
 ..
@@ -1570,7 +1709,7 @@ numeric; got '\\$1'
 'nf
 'in 0
 .ll 100i
-.pg*block-div
+.debug@emit pg*block-div
 .br
 .ev
 ..
@@ -1579,13 +1718,12 @@ numeric; got '\\$1'
 .de BS
 .misc@ev-keep pg*block-ev
 .@reset
-.br
-.di pg*block-div
+.debug@box pg*block-div
 ..
 .\"-------------------------
 .de BE
-.br
-.di
+.br \" in case the user forgot
+.debug@box
 .nr pg*block-size \\n[dn]u
 .ev
 .pg@move-trap
@@ -1593,8 +1731,9 @@ numeric; got '\\$1'
 .\"-------------------------
 .\" print out all pending text
 .de pg@end-of-text
+.if \\n[D]>=5 .tm \\$0: end-of-input macro: shutting down
+.if \\n[D]>=4 .tm End of document text
 .nr pg*at-end-of-input 1
-.if \\n[D]>2 .tm ---------- End of text processing ----------------
 .df@eot-print
 .ref@eot-print
 ..
@@ -1618,9 +1757,9 @@ numeric; got '\\$1'
 .	\}
 .	if \\n[.$]>0 .nr pg*extra-header-size (v;\\$1)
 .	if \\n[.$]>1 .nr pg*extra-footer-size (v;\\$2)
-.	if \\n[D]>2 \{\
-.		tm extra top \\n[pg*extra-footer-size]
-.		tm extra bottom \\n[pg*extra-header-size]
+.	if \\n[D]>=6 \{\
+.		tm \\$0: extra top \\n[pg*extra-footer-size]
+.		tm \\$0: extra bottom \\n[pg*extra-header-size]
 .	\}
 .\}
 .pg@move-trap
@@ -1757,7 +1896,7 @@ breaking page
 .ft \\n[pg*mul-font]
 .fi
 .@enable-hyphenation
-.di pg*mul-div
+.debug@di pg*mul-div
 .MULN
 ..
 .\"-----------
@@ -1780,12 +1919,12 @@ breaking page
 .de MULE
 .br
 .if \\n[.d]>\\n[pg*mul-last] .nr pg*mul-last \\n[.d]
-.di
+.debug@di
 .ev
 .ne \\n[pg*mul-last]u
 .nf
 .mk
-.pg*mul-div
+.debug@emit pg*mul-div
 .rt
 .sp \\n[pg*mul-last]u
 .fi
@@ -1803,7 +1942,8 @@ breaking page
 .nr ft*note-size 0
 .nr ft*busy 0
 .nr ft*nr 0 1
-.aln :p ft*nr
+.aln Ftnum ft*nr
+.aln :p ft*nr		\" for DWB mm compatibility
 .nr ft*wide 0
 .nr ft*hyphen 0\"	hyphenation value
 .nr ft*adjust 1\"	>0 if adjust true
@@ -1858,6 +1998,7 @@ breaking page
 .\"---------------
 .\" Footnote and display width control $$$
 .de WC
+\\*[debug@dump-args]\\
 .nr ft*i 0 1
 .while \\n+[ft*i]<=\\n[.$] \{\
 .	ds ft*x \\$[\\n[ft*i]]
@@ -1885,19 +2026,20 @@ breaking page
 .	\}
 .	if '\\*[ft*x]'-FB' .nr ds*float-break 0
 .	if '\\*[ft*x]'FB' .nr ds*float-break 1
-.	if \\n[D]>1 .tm WC WF=\\n[ft*wide] WD=\\n[ds*wide]
+.	if \\n[D]>=6 .tm \\$0: WF=\\n[ft*wide] WD=\\n[ds*wide]
 .\}
 ..
 .\"-----------------
 .\" begin footnote
 .\" Change environment, switch to diversion and print the foot-note mark.
 .de FS
+\\*[debug@dump-args]\\
 .if \\n[ft*busy] .@error \\$0: cannot nest; missing FE?
 .nr ft*busy 1
 .ev ft*ev
 .ft@init
 .if !\\n[ft*wide] .pg@set-po
-.di ft*tmp-div
+.debug@di ft*tmp-div
 .nr ft*space (u;\\n[Fs]*\\n[Lsp])
 .sp \\n[ft*space]u
 .\" print mark
@@ -1911,10 +2053,10 @@ breaking page
 .\"-----------------
 .\" init footnote diversion
 .de ft@init-footnote
-.di ft*div
+.debug@di ft*div
 \l'20n'
 .br
-.di
+.debug@di
 .nr ft*note-size \\n[dn]
 ..
 .\"-----------------
@@ -1922,25 +2064,27 @@ breaking page
 .\" End the diversion, back to previous environment, and adjust
 .\" the trap to the new foot-note size.
 .de FE
+\\*[debug@dump-args]\\
 .nr ft*busy 0
 .br
-.di
+.debug@di
 'in 0
 'nf
 .if \\n[@pl]u<\\n[dn]u .@error \\$0: footnote bigger than page area
 .if !d ft*div .nr dn +1v
-.if \\n[D]>3 .tm FE: foot-trap=\\n[pg*foot-trap] .d=\\n[.d] dn=\\n[dn]
+.if \\n[D]>=6 .tm \\$0: foot-trap=\\n[pg*foot-trap] .d=\\n[.d] \
+dn=\\n[dn]
 .ie (\\n[pg*foot-trap]u-\\n[.d]u)<\\n[dn]u \{\
-.	da ft*next-div
-.	ft*tmp-div
+.	debug@da ft*next-div
+.	debug@emit ft*tmp-div
 .	br
-.	di
+.	debug@di
 .\}
 .el \{\
 .	if !d ft*div .ft@init-footnote
-.	da ft*div
-.	ft*tmp-div
-.	di
+.	debug@da ft*div
+.	debug@emit ft*tmp-div
+.	debug@di
 .	nr ft*note-size +\\n[dn]
 .\}
 .rm ft*tmp-div
@@ -1954,7 +2098,8 @@ breaking page
 'nf
 'in 0
 .ll 100i
-.ft*div
+.if \\n[D]>=2 .tm Footnote(s)
+.debug@emit ft*div
 .br
 .ev
 .rm ft*div
@@ -1970,9 +2115,9 @@ breaking page
 .	ft@init-footnote
 .	nf
 .	in 0
-.	da ft*div
-.	ft*next-div
-.	di
+.	debug@da ft*div
+.	debug@emit ft*next-div
+.	debug@di
 .	nr ft*note-size +\\n[dn]
 .	rm ft*next-div
 .	ev
@@ -2011,7 +2156,7 @@ breaking page
 .ft \\n[ds*ftmp]
 .\"
 .@reset
-.di df*div
+.debug@di df*div
 'in 0
 .\"
 .ds@set-new-ev \\n[df*old-ll]
@@ -2022,14 +2167,14 @@ breaking page
 .de df@end
 .br
 .SP \\n[Lsp]u
-.di
+.debug@di
 .nr df*width!\\n+[df*fnr] \\n[dl]
 .nr df*height!\\n[df*fnr] \\n[dn]
 .nr df*wide!\\n[df*fnr] \\n[ds*wide]
 .nr df*format!\\n[df*fnr] \\n[ds*format]
 .ev
-.if \\n[D]>2 .tm DF:fnr=\\n[df*fnr] w=\\n[dl] h=\\n[dn] wide=\\n[ds*wide] \
- form=\\n[ds*format]
+.if \\n[D]>=6 .tm \\$0: fnr=\\n[df*fnr] w=\\n[dl] h=\\n[dn] \
+wide=\\n[ds*wide] form=\\n[ds*format]
 .\"	move div to the floating display list
 .rn df*div df*fdiv!\\n[df*fnr]
 .\"
@@ -2044,7 +2189,7 @@ breaking page
 .de df@eot-print
 .br
 .if \\n[df*o-fnr]<=\\n[df*fnr] \{\
-.	if \\n[D]>2 .tm Print remaining displays.
+.	if \\n[D]>=2 .tm Floating display(s)
 .\" still some floats left, make non-empty environment
 .	misc@ev-keep ne
 .	@reset
@@ -2067,10 +2212,10 @@ breaking page
 .if !\\n[ds*float-busy] \{\
 .	nr ds*float-busy 1
 .\" at .DE
-.	if \\n[D]>3 \{\
-.		tmc print-float: .t=\\n[.t]
+.	if \\n[D]>=6 \{\
+.		tmc \\$0: .t=\\n[.t]u
 .		if r df*height!\\n[df*o-fnr] \
-.			tmc , h=\\n[df*height!\\n[df*o-fnr]]
+.			tmc , h=\\n[df*height!\\n[df*o-fnr]]u
 .		tm
 .	\}
 .	\" Df = 1 or 5
@@ -2132,7 +2277,7 @@ breaking page
 .if \\n[df*f]=5  'in (u;\\n[.l]-\\n[df*width!\\n[df*i]])
 .\"
 .\"
-.df*fdiv!\\n[df*o-fnr]
+.debug@emit df*fdiv!\\n[df*o-fnr]
 .\"
 .if \\n[df*f]=2 'ce 0
 .if \\n[df*f]=4 'rj 0
@@ -2147,7 +2292,8 @@ breaking page
 .\" print one floating display if there is one.
 .de ds@print-one-float
 .if \\n[df*o-fnr]<=\\n[df*fnr] \{\
-.	if \\n[D]>3 .tm print-one-float: .t=\\n[.t], h=\\n[df*height!\\n[df*o-fnr]]
+.	if \\n[D]>=6 .tm \\$0: .t=\\n[.t], \
+h=\\n[df*height!\\n[df*o-fnr]]
 .	if \\n[.t]<\\n[df*height!\\n[df*o-fnr]] .pg@next-page
 .	ds@output-float
 .	if \\n[De] .pg@next-page
@@ -2158,7 +2304,8 @@ breaking page
 .\" if De>0 do a page eject between the floats.
 .de ds@print-all-floats
 .while \\n[df*o-fnr]<=\\n[df*fnr] \{\
-.	if \\n[D]>3 .tm print-all-floats: .t=\\n[.t], h=\\n[df*height!\\n[df*o-fnr]]
+.	if \\n[D]>=6 .tm \\$0: .t=\\n[.t], \
+h=\\n[df*height!\\n[df*o-fnr]]
 .	if \\n[.t]<\\n[df*height!\\n[df*o-fnr]] .pg@next-page
 .	br
 \c
@@ -2170,7 +2317,8 @@ breaking page
 .\" print as many floats as will fit on the current page
 .de ds@print-this-page
 .while \\n[df*o-fnr]<=\\n[df*fnr] \{\
-.	if \\n[D]>3 .tm print-this-page: .t=\\n[.t], h=\\n[df*height!\\n[df*o-fnr]]
+.	if \\n[D]>=6 .tm \\$0-this-page: .t=\\n[.t], \
+h=\\n[df*height!\\n[df*o-fnr]]
 .	if \\n[.t]<\\n[df*height!\\n[df*o-fnr]] .break
 .	ds@output-float
 .\}
@@ -2183,17 +2331,17 @@ breaking page
 .	el .@error \\*[ds@macro]: unrecognized format '\\$1'
 .\}
 .el .nr ds*format 0
-.if \\n[D]>2 .tm set format=\\n[ds*format]
+.if \\n[D]>=6 .tm \\$0: ds*format=\\n[ds*format]
 .\" fill or not to fill, that is the...
 .nr ds*fill 0
 .if \\n[.$]>1 \{\
 .	ie r ds*fill!\\$2 .nr ds*fill \\n[ds*fill!\\$2]
 .	el .@error \\*[ds@macro]: unrecognized fill style '\\$2'
 .\}
-.if \\n[D]>2 .tm set fill=\\n[ds*fill]
+.if \\n[D]>=6 .tm \\$0: ds*fill=\\n[ds*fill]
 .nr ds*rindent 0
 .if \\n[.$]>2 .nr ds*rindent (n;\\$3)
-.if \\n[D]>2 .tm set indent=\\n[ds*rindent]
+.if \\n[D]>=6 .tm \\$0: ds*rindent=\\n[ds*rindent]
 ..
 .\"-----------------------------
 .\" .ds@set-new-ev previous-line-length
@@ -2255,7 +2403,7 @@ breaking page
 .@reset
 .\" indent in a diversion doesn't seem like a good idea.
 'in 0
-.di ds*div!\\n[ds*snr]
+.debug@di ds*div!\\n[ds*snr]
 .\"
 .nr ds*div-ll \\n[ds*old-ll]
 .if \\n[ds*format]=1 .nr ds*div-ll -\\n[Si]n
@@ -2269,7 +2417,7 @@ breaking page
 .\" because df@end is called otherwise.  See `DE`.
 .if \\n-[ds*lvl]<0 .@error DE: no corresponding DS
 .br
-.di
+.debug@di
 .\" **********
 .nr ds*width \\n[dl]
 .nr ds*height \\n[dn]
@@ -2304,7 +2452,7 @@ breaking page
 .if \\n[ds*format]=5  'in (u;\\n[.l]-\\n[ds*width])
 .\" **********
 .\"
-.ds*div!\\n[ds*snr]
+.debug@emit ds*div!\\n[ds*snr]
 .if \\n[Ds] .SP \\n[ds*i]u \" Space after display
 .\"
 .if \\n[ds*format]=2 'ce 0
@@ -2329,7 +2477,7 @@ breaking page
 .\"	the major list-begin macro.
 .\"	If type is -1, a break occurs.
 .de LB
-.if \\n[D]>2 .tm LB \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]<4 .@error \\$0: expected at least 4 arguments, got \\n[.$]
 .misc@push cind \\n[.i]
 .misc@push tind \\n[li*tind]
@@ -2357,17 +2505,19 @@ breaking page
 .	ie '\?\\*[li*mf]\?'\?\&\?' .af li*cnt!\\n[li*lvl] 0
 .	el \{\
 .		nr li*is-format-valid 0
-.		if \B'\\*[li*mf]'&\\*[li*mf]>-1 .nr li*is-format-valid 1
 .		if '\?\\*[li*mf]\?'\?a\?'       .nr li*is-format-valid 1
 .		if '\?\\*[li*mf]\?'\?A\?'       .nr li*is-format-valid 1
 .		if '\?\\*[li*mf]\?'\?i\?'       .nr li*is-format-valid 1
-.		if '\?\\*[li*mf]\?'\?i\?'       .nr li*is-format-valid 1
+.		if '\?\\*[li*mf]\?'\?I\?'       .nr li*is-format-valid 1
+.		if \B'\\*[li*mf]' \
+.			if \\*[li*mf]>-1        .nr li*is-format-valid 1
 .		if !\\n[li*is-format-valid] \{\
 .			@warning \\$0: type argument is \\n[li*type] \
 but mark argument '\\*[li*mf]' is not a valid register format; \
 assuming '0'
 .			ds li*mf 0\"
 .		\}
+.		af li*cnt!\\n[li*lvl] \\*[li*mf]
 .	\}
 .\}
 .\"
@@ -2376,6 +2526,7 @@ assuming '0'
 ..
 .\"---------------
 .de LI
+\\*[debug@dump-args]\\
 .if \\n[li*lvl]<1 .@error \\$0: no list active; call AL, BL, BVL, DL, \
 ML, RL, VL, or LB first
 .if \\n[li*li-spc]&(\\n[li*lvl]<=\\n[Ls]) \
@@ -2474,6 +2625,7 @@ ML, RL, VL, or LB first
 .ds li*mark \\*[li*mark-list!\\n[li*lvl]]
 ..
 .de LE
+\\*[debug@dump-args]\\
 .if \\n[li*lvl]<1 .@error \\$0: no list active; call AL, BL, BVL, ... \
 and LI first
 .li@pop
@@ -2484,6 +2636,7 @@ and LI first
 .\"	list status clear.
 .\"	terminate all lists to level i
 .de LC
+\\*[debug@dump-args]\\
 .nr li*i 0
 .if \\n[.$] \{\
 .	ie \B'\\$1' .nr li*i \\$1
@@ -2498,7 +2651,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" List types `AL` and `RL` combine enumerators with punctuation, and
 .\" use register `Li` to determine text indentation.
 .de AL
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .ie \\n[.$]<=1 .LB              \\n[Li] 0 1 1 "\\$1"
 .el \{\
@@ -2510,7 +2663,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\}
 ..
 .de RL
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .LB      \\n[Li] 0 1 4
 .if \\n[.$]=1 .LB      0\\$1   0 1 4
@@ -2522,7 +2675,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" List types `VL` and `BVL` set a user-specified tag (idiomatically a
 .\" word or phrase) and use register `Pi` to determine text indentation.
 .de VL
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .ie \\n[.$]<1 .nr li*text-indent \\n[Pi]
 .el           .nr li*text-indent \\$1
@@ -2532,7 +2685,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\" `BVL` always breaks after the tag, so the mark cannot overset.
 .de BVL
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .ie \\n[.$]<1 .nr li*text-indent \\n[Pi]
 .el           .nr li*text-indent \\$1
@@ -2543,7 +2696,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" List types `BL` and `DL` use bullets and em dashes, respectively, as
 .\" the item marks, and use register `Pi` to determine text indentation.
 .de BL
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \\*[BU]
 .if \\n[.$]=1 .LB 0\\$1 0 1 0 \\*[BU]
@@ -2553,7 +2706,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\}
 ..
 .de DL
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .LB \\n[Pi] 0 1 0 \*[EM]
 .if \\n[.$]=1 .LB 0\\$1   0 1 0 \*[EM]
@@ -2566,7 +2719,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" their text indentations to either \n[Li] or \n[Pi]; `ML` instead
 .\" measures its mark argument to determine text indentation.
 .de ML
-.if \\n[D]>2 .tm \\$0: \\$@
+\\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
 .nr li*text-indent \w@\\$1@u+1n
@@ -2593,7 +2746,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .de TS
 .br
 .if ''\\n[.z]' .SP
-.if '\\$1'H' .di tbl*header-div
+.if '\\$1'H' .debug@di tbl*header-div
 ..
 .de tbl@top-hook
 .if \\n[tbl*have-header] \{\
@@ -2612,7 +2765,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .de tbl@print-header
 .ev tbl*ev
 'nf
-.tbl*header-div
+.debug@emit tbl*header-div
 .ev
 .mk #T
 .nr tbl*header-written 1
@@ -2622,7 +2775,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	nr T. 0
 .	T#
 .	br
-.	di
+.	debug@di
 .	nr tbl*header-ht \\n[dn]
 .	ne \\n[dn]u+1v
 .	nr tbl*have-header 1
@@ -2710,7 +2863,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \w@\\$4@>0 .nr toc*tab \\$4
 .if \\n[pg*cols-per-page]>1 .1C
 .ds H1txt \\*[Licon]
-.ds Tcst co
+.ds Tcstatus co
 .pg@clear-hd
 .EF ""
 .OF ""
@@ -2870,6 +3023,8 @@ exceeds depth of nested lists (\\n[li*lvl])
 .el          .ds lix*ds-form "\ \[em]\ \"
 .nr lix*in \\n[.i]
 .ds lix*label \\*[Li\\$1]\ \\*[lix*numb]\\*[lix*ds-form]
+.if \\n[D]>=2 .tm \\*[Li\\$1] "\\$4"
+.if \\n[D]>=6 .tm \\$0: lix*label="\\*[lix*label]"
 .if !'\\$5'' \{\
 .	if !0\\$6 .ds lix*label \\*[Li\\$1]\ \\$5\\*[lix*numb]\\*[lix*ds-form]
 .	if 0\\$6=1 .ds lix*label \\*[Li\\$1]\ \\*[lix*numb]\\$5\\*[lix*ds-form]
@@ -2942,7 +3097,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .de lix@print-ds
 .\" arg: fg,tb,ec,ex text
 .ds H1txt \\$3
-.ds Tcst \\$1
+.ds Tcstatus \\$1
 .if !\\n[Cp] .pg@next-page
 .\" print LIST OF XXXX
 .\" execute user-defined macros
@@ -3043,7 +3198,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"
 .\" jump to new environment.
 .ev box*ev
-.di box*div
+.debug@di box*div
 .ps \\n[@ps]u
 .vs \\n[@vs]u
 .in 1n
@@ -3053,14 +3208,14 @@ exceeds depth of nested lists (\\n[li*lvl])
 .de B2
 .if !\\n[box*ll] .@error \\$0: no corresponding B1
 .br
-.di
+.debug@di
 .nr box*height \\n[dn]
 .ne \\n[dn]u+1v
 .ll \\n[box*ll]u
 .in \\n[box*ind]u
 .nr box*y-pos \\n[.d]u
 .nf
-.box*div
+.debug@emit box*div
 .fi
 \v'-1v+.25m'\
 \D'l \\n[box*wid]u 0'\
@@ -3079,9 +3234,10 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"########################### module ref ############################
 .mso refer-mm.tmac
 .nr ref*nr 0 1
-.aln :R ref*nr
+.aln Rfnum ref*nr
+.aln :R ref*nr		\" for DWB mm compatibility
 .nr ref*nr-width 5n
-.nr ref*was-RS-used 0 \" for end-of-text
+.nr ref*was-RS-used 0	\" for end-of-text
 .ds ref*nroff-( [
 .ds ref*troff-( \v'-.4m'\s-3
 .ds ref*nroff-) ]
@@ -3115,6 +3271,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\" start reference
 .\"------------
 .de RS
+\\*[debug@dump-args]\\
 .ref*set-mark-style \" in case the document changed it
 .if !''\\$1' .ds \\$1 \\*[ref*(]\\n[ref*nr]\\*[ref*)]
 .nr ref*was-RS-used 1
@@ -3133,24 +3290,25 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\"------------
 .de ref@start-print
-.di ref*div
+.debug@di ref*div
 .LB \\*[Rpfmt]
 .LI "\\$1."
 ..
 .\"------------
 .de ref@stop-print
 .LE
-.di
+.debug@di
 .ne \\n[dn]u
 .ev ref*ev2
 .nf
-.ref*div
+.debug@emit ref*div
 .ev
 .rm ref*div
 .if \\n[Ls] .SP \\n[Lsp]u
 ..
 .\"-----------
 .de RP
+\\*[debug@dump-args]\\
 .if !d ref*mac \{\
 .	@warning \\$0: ignoring; no references defined
 .	return
@@ -3164,7 +3322,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 argument '\\$1' as '1'
 .\}
 .if \\n[ref*reset-counter] .nr ref*nr 0 1
-.nr ref*i \\n[Rpe]
+.nr ref*i \\n[Rpej]
 .if !''\\$2' \{\
 .	ie \B'\\$2' .nr ref*i \\$2
 .	el          .@warning \\$0: ignoring non-numeric second \
@@ -3180,7 +3338,7 @@ argument: '\\$2'
 .de ref@eot-print
 .\".if \\n[ref*was-RS-used] \{\
 .if d ref*mac \{\
-.	if \\n[D]>2 .tm Print references, called by eot
+.	if \\n[D]>=2 .tm References
 .	nr ref*was-RS-used 0
 .	br
 .	misc@ev-keep ne
@@ -3195,7 +3353,10 @@ argument: '\\$2'
 .\" prints the references
 .de ref@print-refs
 .toc@save 1 "" "\\*[Rp]" \\n[%]
-.ie d RPX .RPX
+.ie d RPX \{\
+.	if \\n[D]>=5 .tm \\$0: calling user-defined RPX macro
+.	RPX
+.\}
 .el \{\
 .	SP 2
 .	ce
@@ -3225,7 +3386,7 @@ argument: '\\$2'
 .\" .if \\n[.$]<2 .@error "APP: too few arguments"
 .app@set-ind "\\$1"
 .\"
-.ds Tcst ap
+.ds Tcstatus ap
 .ds Apptxt \\$2
 .\"
 .ie \\n[Aph] .app@header \\*[app*ind] "\\$2"
@@ -3239,7 +3400,7 @@ argument: '\\$2'
 .if \\n[.$]<2 .@error \\$0: expected 2 or 3 arguments, got \\n[.$]
 .app@set-ind "\\$1"
 .\"
-.ds Tcst ap
+.ds Tcstatus ap
 .ds Apptxt \\$3
 .\"
 .ie \\n[Aph] .app@header \\*[app*ind] "\\$3"
@@ -3293,11 +3454,12 @@ argument: '\\$2'
 .\" title(s) of author(s) stored in cov*at!x!y
 .\" 	x is the author-index [1-cov*au], y is the argument-index [1-9].
 .\" author(s) firm stored in cov*firm
-.\" new date (if .ND exists) is stored in cov*new-date
+.\" date (if .ND was called) is stored in cov*date
 .\"
 .\"
 .nr cov*au 0
 .de TL
+\\*[debug@dump-args]\\
 .ds @cover \\$0
 .@disable IA IE WA WE LO LT \" can't use with LT and friends
 .if \\n[.$]>0 .ds cov*title-charge-case \\$1
@@ -3313,6 +3475,7 @@ argument: '\\$2'
 .\"-------------------
 .\" .AU [name [initials [loc [dept [ext [room [arg [arg [arg]]]]]]]]]
 .de AU
+.\"\\*[debug@dump-args]\\
 .cov@title-end
 .if !\\n[.$] .return \" AU is being used only to end a TL.
 .pg@disable-top-trap
@@ -3334,6 +3497,7 @@ argument: '\\$2'
 .\" Any quantity of titles may be declared.
 .\" Must be called directly after the corresponding .AU.
 .de AT
+\\*[debug@dump-args]\\
 .if !\\n[.$] \{\
 .	@warning \\$0: ignoring; no arguments specified
 .	return
@@ -3346,14 +3510,16 @@ argument: '\\$2'
 ..
 .\"-------------------
 .de AF
+\\*[debug@dump-args]\\
 .if !''\\$1' .ds cov*firm \\$1
 ..
-.\" Kill this macro off in groff 1.25.
+.\" TODO: Kill this off in groff 1.24.0 release + 2 years.
 .de AST
 .@warning \\$0: macro is deprecated; define string 'Abstract' instead
 .ds Abstract "\\$1\"
 ..
 .de AS
+\\*[debug@dump-args]\\
 .pg@disable-top-trap
 .if d cov*abstract .@error \\$0: only one abstract allowed
 .if !''\\n[.z]' .@error \\$0: no diversion allowed (previous .AS?)
@@ -3362,31 +3528,44 @@ argument: '\\$2'
 .de cov*abstract AE
 ..
 .de AE
+\\*[debug@dump-args]\\
 ..
-.\" fixed for 2000, now uses \n[year].
+.\" XXX: In principle, a localization file can (and should be able to)
+.\" customize the month's register format, but we look up the string for
+.\" the month name assuming that `mo`'s format will be '0'.  To date,
+.\" however, no one has submitted a localization file for groff that
+.\" uses an alternative register format for `mo` (or `dy`).  If that day
+.\" comes, we might rename MO1 to MO01 (and so on) and look up the
+.\" string with a dedicated register using a format of '00'.
+.ds cov*local-date-format \E*[MO\En[mo]] \En[dy], \En[year]
+.af cov*iso-mm 00
+.af cov*iso-dd 00
+.ds cov*iso-date-format   \En[year]-\En[cov*iso-mm]-\En[cov*iso-dd]
+.\" TODO: After `ISODATE` is removed for groff 1.25, this macro can stop
+.\" handling an argument, instead testing the `Isodate` register.
+.de cov*set-date
+.\" In case the document has changed `mo` or `dy`, make sure their
+.\" alternatives using ISO 8601 format are synchronized.
+.nr cov*iso-mm \\n[mo]
+.nr cov*iso-dd \\n[dy]
+.ie '0'\\$1' .ds cov*date \\*[cov*local-date-format]
+.el          .ds cov*date \\*[cov*iso-date-format]
+..
 .de ISODATE
-.	\" support for ISO-date
-.	nr cov*mm \\n[mo]
-.	nr cov*dd \\n[dy]
-.	af cov*mm 01
-.	af cov*dd 01
-.	ie '0'\\$1' \{\
-.		ds cov*new-date \\*[MO\\n[mo]] \\n[dy], \\n[year]
-.	\}
-.	el \{\
-.		ds cov*new-date \\n[year]-\\n[cov*mm]-\\n[cov*dd]
-.	\}
+.@warning \\$0: macro is deprecated; define register 'Isodate' instead
+.cov*set-date \\$@
 ..
-.ISODATE 0
-.als DT cov*new-date
 .de ND
-.ds cov*new-date \\$1
+\\*[debug@dump-args]\\
+.ie \\n[.$] .ds cov*date "\\$1\"
+.el         .cov*set-date \\n[Isodate]
 ..
-.\" switch to ISO-date if register Iso exist: YYYY-MM-DD
-.if r Iso .ISODATE 1
+.ND
+.als DT cov*date
 .\"-------------------
 .\" Save technical memorandum numbers.
 .de TM
+\\*[debug@dump-args]\\
 .if !\\n[.$] \{\
 .	@warning \\$0: ignoring; no arguments specified
 .	return
@@ -3461,10 +3640,11 @@ argument: '\\$2'
 .\" INITR id
 .\" Initialize reference system.  Read/write file id.qrf.
 .de INITR
+\\*[debug@dump-args]\\
 .if \\n[.$]<1 .@error \\$0: expected an argument
 .ds qrf*file \\$1.qrf
 .nr qrf*pass 2 \" magic number
-.if \\n[D]>1 .tm INITR: source \\*[qrf*file]
+.if \\n[D]>=6 .tm \\$0: source \\*[qrf*file]
 .ie \\n[Ref] \{\
 .	tm .\\\\" Rfilename: \\*[qrf*file]
 .\}
@@ -3474,13 +3654,14 @@ argument: '\\$2'
 .\" SETR ref-name [string]
 .\" Set (define) a reference ref-name; store auxiliary datum in string.
 .de SETR
+\\*[debug@dump-args]\\
 .if \\n[.$]<1 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .if !r qrf*pass .@error \\$0: references uninitialized; call INITR first
 .ds qrf*caller \\$0\"
 .if \\n[Ref] \{\
 .	qrf*validate-identifier \\$1
 .	ds qrf*name qrf*ref-\\$1
-.	if \\n[D]>2 \
+.	if \\n[D]>=6 \
 .		tm \\$0: ref \\*[qrf*name]=\\*[hd@mark-trimmed],\\n[%]
 .	\" heading-number
 .	ds \\*[qrf*name]-hn \\*[hd@mark-trimmed]
@@ -3577,6 +3758,7 @@ argument: '\\$2'
 .\" [2] Just "name" would be a better term for it since we
 .\" unconditionally suffix it with ".ind".
 .de INITI
+\\*[debug@dump-args]\\
 .if \\n[.$]<2 .@error \\$0: expected 2 or 3 arguments, got \\n[.$]
 .ds ind*ref \" empty
 .ds ind*type \\$1
@@ -3586,11 +3768,11 @@ argument: '\\$2'
 .if '\\*[ind*type]'B' .nr ind*type-is-valid 1
 .if !\\n[ind*type-is-valid] .@error \\$0: invalid index type '\\$1'
 .rr ind*type-is-valid
-.if \\n[D]>1 .tm INITI: type=\\*[ind*type]
+.if \\n[D]>=6 .tm INITI: type=\\*[ind*type]
 .if '\\$2'' .@error \\$0: index file name not specified
 .if d ind*file .@error \\$0: index file name already set
 .ds ind*file \\$2.ind
-.if \\n[D]>1 .tm INITI: source \\*[ind*file]
+.if \\n[D]>=6 .tm INITI: source \\*[ind*file]
 .if \\n[Ref] \{\
 .	if \\n[.$]>2 .tm .\\\\" Imacro: \\$3
 .\}
@@ -3664,6 +3846,7 @@ argument: '\\$2'
 .nr let*sg-suppress-all 0
 .nr let*sg-suppress-annotation 0
 .de SG
+\\*[debug@dump-args]\\
 .if \\n[let*sg-suppress-all] .return
 .ie d let*type .let*lt-sign \\$@
 .el            .let*mt-sign \\$@
@@ -3730,6 +3913,11 @@ undefined
 ..
 .\"------------------------
 .\" Approval signature
+.nr let*name-line-length 40n
+.nr let*date-line-length 15n
+.ds let*name-line \l'\n[let*name-line-length]u'
+.ds let*date-line \l'\n[let*date-line-length]u'
+.nr let*approval-gap 5m
 .de AV
 .ne 6v
 .nf
@@ -3737,10 +3925,15 @@ undefined
 .ie \\n[.$]<2 \\*[Letapp]
 .el           .sp
 .sp 2
-.ie n ______________________________      ______________
-.el   \D'l 25m 0'\h'4m'\D'l 12m 0'
-\Z'\\$1'\h'29m'\f[\\*[@metadata-font]]\\*[Letdate]\fP
+.\" Center the `Letdate` label below its line.
+.ie \w'\\*[Letdate]'>=\\n[let*date-line-length] .nr let*extra-gap 0
+.el .nr let*extra-gap \\n[let*date-line-length]-\w'\\*[Letdate]'/2
+.nop \\*[let*name-line]\h'\\n[let*approval-gap]u'\\*[let*date-line]
+.nop \Z'\\$1'\h'\\n[let*name-line-length]u'\
+\h'\\n[let*approval-gap]u+\\n[let*extra-gap]u'\
+\\*[Letdate]
 .fi
+.rr let*extra-gap
 ..
 .\"------------------------
 .\" Letter signature
@@ -3748,9 +3941,8 @@ undefined
 .ne 6v
 .nf
 .sp 3
-.ie n ______________________________
-.el   \D'l 25m 0'
-\Z'\\$1'
+.nop \\*[let*name-line]
+.nop \Z'\\$1'
 .fi
 ..
 .\"------------------------
@@ -3758,6 +3950,7 @@ undefined
 .\" let@header is called from the header. It is supposed
 .\" to remove the alias itself.
 .de LT
+\\*[debug@dump-args]\\
 .ds @cover LT
 .@disable AF AS AE AT AU COVER CS OK TL MT \" same list as LO
 .ds let*type BL
@@ -3768,7 +3961,7 @@ undefined
 .shift
 .als let@header let@head_\\*[let*type]
 .let@init_\\*[let*type] \\$@
-.if \n[D]>1 .tm Letter type \\*[let*type]
+.if \n[D]>=6 .tm \\$0: let*type="\\*[let*type]"
 ..
 .\"-----------
 .\" Blocked letter
@@ -3776,7 +3969,7 @@ undefined
 ..
 .de let@head_BL
 .rm let@header
-.let@print-head 1
+.let@print-head 1 1
 ..
 .de let@sg_BL
 .ne 5v
@@ -3848,31 +4041,34 @@ undefined
 .sp 2
 ..
 .\"--------------------------------------
-.\" Print the letter-head
+.\" format everything up to the body text of a letter
+.\"
+.\" let@print-head [want-indent] [want-space-before-date-line]
 .de let@print-head
 .nf
 .sp |11
 .if '1'\\$1' .in (u;\\n[.l]/2)
-.\" ---- WA
-.ie d let@wa-div .let@wa-div
+.\" ---- writer's (name and) address
+.ie d let@wa-div .debug@emit let@wa-div
 .el              .sp 3
-.\" ---- datum
-\\*[cov*new-date]
+.\" ---- date
+.if '1'\\$2' .sp
+.nop \\*[cov*date]
 .sp
 .if '1'\\$1' .if !d let*lo-CN .if !d let*lo-RN .sp 2
-.\" ---- Confidential
+.\" ---- confidential notation
 .if d let*lo-CN \{\
 .	ti 0
 .	ie !''\\*[let*lo-CN]' \\*[let*lo-CN]
 .	el \\*[LetCN]
 .	sp
 .\}
-.\" ---- Reference
+.\" ---- reference notation
 .if d let*lo-RN \{\
 \\*[LetRN] \\*[let*lo-RN]
 .	sp
 .\}
-.\" ---- IA
+.\" ---- recipient's (name and) address
 .sp
 .in 0
 .nr let*i 0 1
@@ -3880,20 +4076,20 @@ undefined
 \\*[let*ia-name!\\n[let*i]]
 \\*[let*ia-title!\\n[let*i]]
 .\}
-.if d let@ia-div .let@ia-div
-.\" ---- Attention
+.if d let@ia-div .debug@emit let@ia-div
+.\" ---- attention notation
 .if d let*lo-AT \{\
 .	sp
 \\*[LetAT] \\*[let*lo-AT]
 .\}
-.\" ---- Salutation
+.\" ---- salutation
 .if !'\\*[let*type]'SP' .if d let*lo-SA \{\
 .	sp
 .	ti 0
 .	ie !''\\*[let*lo-SA]' \\*[let*lo-SA]
 .	el \\*[LetSA]
 .\}
-.\" ---- Subject
+.\" ---- subject notation
 .if d let*lo-SJ \{\
 .	ie '\\*[let*type]'SP' \{\
 .		sp 2
@@ -3907,48 +4103,51 @@ undefined
 .	sp
 .\}
 .sp
+.fi
 ..
 .\"-------------------
 .\" .IA [name [title]]
 .nr let*ia-n 0 1
 .de IA
+\\*[debug@dump-args]\\
 .if \\n[.$] .ds let*ia-name!\\n+[let*ia-n] \\$1
 .if \\n[.$]>1 .ds let*ia-title!\\n[let*ia-n] \\$2
 .ev let@ev
 .@reset
 'nf
-.di let@ia-div
+.debug@di let@ia-div
 .eo
 ..
 .de IE
-.di
 .ec
+.debug@di
 .ev
 ..
 .\"-------------------
 .\" .WA [name [title]]
 .nr let*wa-n 0 1
 .de WA
+\\*[debug@dump-args]\\
 .if \\n[.$] .ds let*wa-name!\\n+[let*wa-n] \\$1
 .if \\n[.$]>1 .ds let*wa-title!\\n[let*wa-n] \\$2
 .ev let@ev
 .@reset
 'nf
-.di let@wa-div
+.debug@di let@wa-div
 .it \\n[Letwam] let@wa-drain
 .eo
 ..
 .\"------
 .de let@wa-drain
 .it
-.di
-.di let@wa-junk
+.debug@di
+.debug@di let@wa-junk \" never emitted
 ..
 .\"------
 .de WE
 .it
 .ec
-.di
+.debug@di
 .ev
 .if d let@wa-junk .rm let@wa-junk
 ..
@@ -3956,9 +4155,10 @@ undefined
 .\" Notations ("Copy to", etc.)
 .nr let*ns-suppress 0
 .de NS
+\\*[debug@dump-args]\\
 .if \\n[let*ns-suppress] \{\
 .	ie \\n[.$] .return
-.	el         .box let*ns-discard
+.	el         .debug@box let*ns-discard
 .\}
 .sp
 .ie !''\\$2' .ds let*str \\$1
@@ -3977,8 +4177,9 @@ undefined
 \\*[let*str]
 ..
 .de NE
+\\*[debug@dump-args]\\
 .if \\n[let*ns-suppress] \{\
-.	box
+.	debug@box
 .	return
 .\}
 .fi
@@ -3986,6 +4187,7 @@ undefined
 .\"-------------------
 .\" Letter options
 .de LO
+\\*[debug@dump-args]\\
 .ds @cover \\$0
 .@disable AF AS AE AT AU COVER CS OK TL MT \" same list as LT
 .if !\\n[.$] \{\
@@ -3994,7 +4196,7 @@ undefined
 .\}
 .if !d Let\\$1 .@error \\$0: unrecognized option '\\$1'
 .ds let*lo-\\$1 \\$2
-.if \n[D]>1 .tm Letter option \\$1 \\$2
+.if \n[D]>=6 .tm \\$0: let*lo-\\$1="\\$2"
 ..
 .\"--------------------
 .\" Start with a clean slate

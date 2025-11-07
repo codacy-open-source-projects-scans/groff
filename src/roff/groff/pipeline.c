@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -20,20 +20,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <signal.h>
 #include <errno.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include <stdbool.h>
+#include <stdio.h> // sprintf()
+#include <string.h> // strerror(), strsignal()
 
-#ifdef HAVE_STRERROR
-#include <string.h>
-#else
-extern char *strerror();
-#endif
+#include <signal.h> // kill(), SIGINT, signal()
+
+// needed for dup(), open(), pipe(), STDIN_FILENO, STDOUT_FILENO,
+// unlink()
+#include "posix.h"
+#include "nonposix.h"
 
 #ifdef _POSIX_VERSION
 
@@ -94,25 +91,14 @@ extern const char *i_to_a(int);		/* from libgroff */
 #endif
 
 static void sys_fatal(const char *);
-static const char *xstrsignal(int);
-
 
 #if defined(__MSDOS__) \
     || (defined(_WIN32) && !defined(_UWIN) && !defined(__CYGWIN__)) \
     || defined(__EMX__)
 
-#include <process.h>
-#include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include "nonposix.h"
-
 static const char *sh = "sh";
 static const char *cmd = "cmd";
 static const char *command = "command";
-
-extern int strcasecmp(const char *, const char *);
 
 char *sbasename(const char *path)
 {
@@ -341,7 +327,7 @@ int run_pipeline(int ncommands, char ***commands, bool no_pipe)
   return ret;
 }
 
-#else  /* not _WIN32 */
+#else  /* not _WIN32 but __MSDOS__, _UWIN, __CYWGIN__, or __EMX__ */
 
 /* MS-DOS doesn't have 'fork', so we need to simulate the pipe by
    running the programs in sequence with standard streams redirected to
@@ -511,6 +497,7 @@ int run_pipeline(int ncommands, char ***commands, bool no_pipe)
 	pids[i] = -1;
 	--proc_count;
 	if (WIFSIGNALED(status)) {
+	  ret |= 2;
 	  int sig = WTERMSIG(status);
 #ifdef SIGPIPE
 	  if (sig == SIGPIPE) {
@@ -532,13 +519,10 @@ int run_pipeline(int ncommands, char ***commands, bool no_pipe)
 	  }
 	  else
 #endif /* SIGPIPE */
-	  {
 	    c_error("%1: %2%3",
 		    commands[i][0],
-		    xstrsignal(sig),
+		    strsignal(sig),
 		    WCOREDUMP(status) ? " (core dumped)" : "");
-	    ret |= 2;
-	  }
 	}
 	else if (WIFEXITED(status)) {
 	  int exit_status = WEXITSTATUS(status);
@@ -562,25 +546,6 @@ int run_pipeline(int ncommands, char ***commands, bool no_pipe)
 static void sys_fatal(const char *s)
 {
   c_fatal("%1: %2", s, strerror(errno), (char *)0);
-}
-
-static const char *xstrsignal(int n)
-{
-  static char buf[sizeof("Signal ") + 1 + sizeof(int) * 3];
-
-#ifdef NSIG
-#if HAVE_DECL_STRSIGNAL
-  if (n >= 0 && n < NSIG && strsignal(n) != 0)
-    return strsignal(n);
-#else
-#if HAVE_DECL_SYS_SIGLIST
-  if (n >= 0 && n < NSIG && sys_siglist[n] != 0)
-    return sys_siglist[n];
-#endif /* HAVE_DECL_SYS_SIGLIST */
-#endif /* HAVE_DECL_STRSIGNAL */
-#endif /* NSIG */
-  sprintf(buf, "Signal %d", n);
-  return buf;
 }
 
 // Local Variables:

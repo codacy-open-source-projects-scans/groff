@@ -24,7 +24,7 @@
 \# with the documents when the PRINTSTYLE is TYPEWRITE, change
 \# PRINTSTYLE TYPESET, below, to PRINTSTYLE TYPEWRITE and re-run with
 \#
-\#  pdfmom -Tps sample_docs.mom > sample_docs.pdf 
+\#  pdfmom -Tps sample_docs.mom > sample_docs.pdf
 \#
 \# ===================================================================
 \#
@@ -83,7 +83,7 @@
 .DOC_COVER_TITLE_STYLE \
   SIZE +8 \
   SMALLCAPS \
-  UNDERLINE 1 3p 
+  UNDERLINE 1 3p
 .DOC_COVER_SUBTITLE_STYLE \
   FONT I \
   SIZE +2 \

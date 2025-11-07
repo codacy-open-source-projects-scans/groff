@@ -56,15 +56,17 @@ input='.EQ
 error=$(printf '%s\n' "$input" | "$eqn" 2>&1 > /dev/null)
 echo "$error" | grep -Eq '^[^:]+:[^:]+:2: fatal' || wail
 
-echo "checking for correct line number in invalid input character" \
-    "diagnostic" >&2
-error=$(printf '.EQ\nx\n.EN\n\200\n' | "$eqn" 2>&1 > /dev/null)
-echo "$error" | grep -Eq '^[^:]+:[^:]+:4: error' || wail
-
-echo "checking for correct line number in invalid input character" \
-    "diagnostic when 'lf' request used beforehand" >&2
-error=$(printf '.EQ\nx\n.EN\n.lf 99\n\200\n' | "$eqn" 2>&1 > /dev/null)
-echo "$error" | grep -Eq '^[^:]+:[^:]+:99: error' || wail
+# Per Savannah #67285, eqn no longer emits this diagnostic.
+#
+#echo "checking for correct line number in invalid input character" \
+#    "diagnostic" >&2
+#error=$(printf '.EQ\nx\n.EN\n\200\n' | "$eqn" 2>&1 > /dev/null)
+#echo "$error" | grep -Eq '^[^:]+:[^:]+:4: error' || wail
+#
+#echo "checking for correct line number in invalid input character" \
+#    "diagnostic when 'lf' request used beforehand" >&2
+#error=$(printf '.EQ\nx\n.EN\n.lf 99\n\200\n' | "$eqn" 2>&1 > /dev/null)
+#echo "$error" | grep -Eq '^[^:]+:[^:]+:99: error' || wail
 
 echo "checking for correct line number when invalid 'lf' request used" \
     >&2

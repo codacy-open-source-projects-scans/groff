@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of 'groff'.
 #
@@ -52,7 +52,15 @@ DEVDVIFONTFILES = \
   font/devdvi/EX \
   font/devdvi/SA \
   font/devdvi/SB \
-  font/devdvi/SC
+  font/devdvi/SC \
+  font/devdvi/CSH \
+  font/devdvi/CSS \
+  font/devdvi/CTH \
+  font/devdvi/CTS \
+  font/devdvi/JPG \
+  font/devdvi/JPM \
+  font/devdvi/KOG \
+  font/devdvi/KOM
 devdvifontdir = $(fontdir)/devdvi
 devdvifont_DATA = $(DEVDVIFONTFILES) font/devdvi/DESC
 
@@ -79,14 +87,11 @@ MOSTLYCLEANFILES += font/devdvi/DESC
 
 font/devdvi/DESC: $(devdvi_srcdir)/DESC.in
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
-	&& cat $(devdvi_srcdir)/DESC.in >$@ \
-	&& if test "$(PAGE)" = A4; then \
-	     echo "papersize a4" >>$@; \
-	   else \
-	     echo "papersize letter" >>$@; \
-	   fi \
+	&& cat $(devdvi_srcdir)/DESC.in >$@.tmp \
+	&& echo "papersize $(PAGE)" >>$@.tmp \
 	&& (test -z '$(DVIPRINT)' \
-	    || echo print '$(DVIPRINT)' >>$@)
+	    || echo print '$(DVIPRINT)' >>$@.tmp)
+	$(AM_V_at)mv $@.tmp $@
 
 
 # Local Variables:

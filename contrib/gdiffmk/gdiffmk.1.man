@@ -9,7 +9,7 @@ files
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2004-2023 Free Software Foundation, Inc.
+.\" Copyright (C) 2004-2025 Free Software Foundation, Inc.
 .\"
 .\" This file is part of gdiffmk, which is part of groff, the GNU roff
 .\" typesetting system.
@@ -96,17 +96,29 @@ documents,
 .I file1
 and
 .IR file2 ,
-and writes a
-.I roff
+and writes another,
+derived from both,
 to the standard output stream
 (or
-.IR output-file )
-consisting of
-.I file2
-with added margin character
-.RB ( .mc )
-requests indicating output lines that differ from
-.I file1.
+.IR output-file ),
+adding margin character
+.RB ( mc )
+requests at places in the output
+where the input documents differ.
+.
+.I gdiffmk
+does not interpret the source documents;
+it treats
+.I roff
+comments and nilpotent changes to formatting as meaningful.
+.
+For example,
+it does not know that
+.BR \[rs]h\[aq]3m\[aq] ,
+.BR \[rs]h\[aq](1\~*\~3m)\[aq] ,
+and
+.B \[rs]h\[aq]3m+0\[aq]
+all mean the same thing.
 .
 If the
 .I file1
@@ -147,91 +159,88 @@ both exit afterward.
 .
 .TP
 .BI \-a\~ add-mark
-Use
-.I add-mark
-for source lines not in
+Annotate material absent from
 .I file1
 but present in
-.IR file2 .
-.
-Default:
-.RB \[lq] + \[rq].
+.I file2
+with
+.I add-mark
+(default:
+.RB \[lq] + \[rq]).
 .
 .
 .TP
 .B \-B
-By default,
-the deleted texts marked by the
+Suppress
+.B br
+requests normally inserted by
 .B \-D
-option end with an added
-.I roff
-break request,
-.BR .br ,
-to ensure that the deletions are marked properly.
+option.
 .
-This is the only way to guarantee that deletions and small
-changes get flagged.
-.
-This option directs the program not to insert these breaks;
-it makes no sense to use it without
-.BR \-D .
+Use with caution;
+such requests are the only way to guarantee that deletions and small
+changes are marked.
 .
 .
 .TP
 .BI \-c\~ change-mark
-Use
+Annotate material differing between
+.I file1
+and
+.I file2
+with
 .I change-mark
-for changed source lines.
-.
-Default:
-.RB \[lq] | \[rq].
+(default:
+.RB \[lq] | \[rq]).
 .
 .
 .TP
 .BI \-d\~ delete-mark
-Use the
+Annotate material present in
+.I file1
+but absent from
+.I file2
+with
 .I delete-mark
-for deleted source lines.
-.
-Default:
-.RB \[lq] * \[rq].
+(default:
+.RB \[lq] * \[rq]).
 .
 .TP
 .B \-D
-Show the deleted portions from changed and deleted text.
+Mark changed and deleted material with surrounding delimiters.
 .
 .
 .TP
 .BI \-M\~ "mark1 mark2"
-Change the delimiting marks for the
+Use
+.I mark1
+(default:
+.RB \[lq] [[ \[rq])
+and
+.I mark2
+(default:
+.RB \[lq] ]] \[rq])
+as delimiters when using the
 .B \-D
 option.
-.
-It makes no sense to use this option without
-.BR \-D .
-.
-Default delimiting marks:
-.RB \[lq] [[ "\[rq] .\|.\|.\& \[lq]" ]] \[rq].
 .
 .
 .TP
 .BI \-x\~ diff-command
 Use the
 .I diff-command
-command to perform the comparison of
+program to perform the comparison of
 .I file1
 and
 .IR file2 .
 .
-In particular,
 .I diff-command
-should accept the GNU
-.MR diff 1
+(default:
+.BR diff )
+must accept GNU
+.MR diff 1 's
 .B \-D
-option.
-.
-Default:
-.BR diff .
+extension option.
 .
 .
 .TP
@@ -271,7 +280,7 @@ or
 .IR file2 .
 .
 .\" ====================================================================
-.SH Bugs
+.SH Caveats
 .\" ====================================================================
 .
 The output is not necessarily compatible with all macro packages or
@@ -282,13 +291,13 @@ A reliable workaround is to run
 on the output of the final preprocessor instead of the input source.
 .
 .
-.LP
+.PP
 .I gdiffmk
 relies on the
 .B \-D
 option of GNU
 .I diff
-to make a merged \[lq]#ifdef\[rq] output format.
+to make a merged \[lq]#ifdef\^\[rq] output format.
 .
 Busybox
 .I diff

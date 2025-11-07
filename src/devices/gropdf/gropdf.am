@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2024 Free Software Foundation, Inc.
 #  Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #  Automake migration by Bertrand Garrigues
 #
@@ -9,8 +9,8 @@
 # Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# groff is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
@@ -26,6 +26,12 @@ EXTRA_DIST += \
   src/devices/gropdf/pdfmom.pl \
   src/devices/gropdf/gropdf.1.man \
   src/devices/gropdf/pdfmom.1.man
+
+GROPDFTMACFILES = \
+  tmac/pdf.tmac \
+  tmac/pdfpic.tmac
+gropdftmacdir = $(tmacdir)
+dist_gropdftmac_DATA = $(GROPDFTMACFILES)
 
 man1_MANS += \
   src/devices/gropdf/gropdf.1 \
@@ -50,6 +56,20 @@ pdfmom: $(gropdf_dir)/pdfmom.pl $(SH_DEPS_SED_SCRIPT)
 	       >$@ \
 	&& chmod +x $@
 
+gropdf_TESTS = \
+  tmac/tests/pdf_bookmark-starting-with-control-char-works.sh \
+  tmac/tests/pdfpic_does-not-choke-on-bad-pdfinfo-output.sh \
+  tmac/tests/pdfpic_falls-back-to-PSPIC.sh
+TESTS += $(gropdf_TESTS)
+EXTRA_DIST += $(gropdf_TESTS)
+
+gropdf_XFAIL_TESTS = \
+  tmac/tests/pdf_bookmark-starting-with-control-char-works.sh
+XFAIL_TESTS += $(gropdf_XFAIL_TESTS)
+
+uninstall_groffdirs: uninstall_gropdf_hook
+uninstall_gropdf_hook:
+	-rmdir $(DESTDIR)$(tmacdir)
 
 # Local Variables:
 # fill-column: 72

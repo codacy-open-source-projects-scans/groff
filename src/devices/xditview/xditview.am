@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -58,6 +58,12 @@ XDITVIEW_GENHDRS = \
 gxditview_SOURCES = $(GXDITVIEWSOURCES)
 nodist_gxditview_SOURCES = $(XDITVIEW_GENHDRS)
 CLEANFILES += $(XDITVIEW_GENHDRS)
+
+GXDITVIEWTMACFILES = \
+  tmac/tty.tmac \
+  tmac/tty-char.tmac
+gxditviewtmacdir = $(tmacdir)
+dist_gxditviewtmac_DATA = $(GXDITVIEWTMACFILES)
 
 man1_MANS += $(GXDITVIEW_MAN1)
 
@@ -119,9 +125,8 @@ uninstall_xditview:
 	$(RM) $(DESTDIR)$(appdefdir)/GXditview-color
 	$(RM) $(DESTDIR)$(fontdir)/FontMap-X11
 	-rmdir $(DESTDIR)$(fontdir) 2>/dev/null
-
+	-rmdir $(DESTDIR)$(tmacdir) 2>/dev/null
 endif
-
 
 # Local Variables:
 # fill-column: 72

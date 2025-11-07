@@ -266,15 +266,15 @@ their interpretation.
 .Pp
 Macros in GNU
 .Xr troff
-accept an unlimited number of arguments,
-in contrast to other
+accept an unlimited number of arguments;
+other
 .Xr troff Ns No s
-that often can't handle more than nine.
+often can't handle more than nine.
 .
-In limited cases,
-arguments may be continued or extended on the next input line without
-resort to the
-.Ql \[rs] Ns Em newline
+In some cases,
+arguments may continue or extend onto the next input line
+without resort to the
+.Ql \e Ns Em newline
 escape sequence;
 see subsection
 .Sx "Extended arguments"
@@ -636,12 +636,12 @@ below.
 .
 .Pp
 A comment in the source file of a man page can begin with
-.Sq Li .\e"
+.Ql .\e\[dq]
 at the start of an input line,
-.Sq Li \e"
+.Ql \e\[dq]
 after other input,
 or
-.Sq Li \e#
+.Ql \e#
 anywhere
 (the last is a
 .Xr groff
@@ -908,8 +908,8 @@ manuals to automatically insert the current date when committing.
 This macro is neither callable nor parsed.
 .
 .
-.br
-.ne 5v
+.\"br
+.\"ne 5v
 .It Li .Dt Ar identifier Op Ar section-id \
 Op Ar section-keyword-or-title
 .
@@ -1042,8 +1042,8 @@ attempted,
 is used.
 .
 .
-.br
-.ne 10v \" Keep explanatory paragraph with the following table.
+.\"br
+.\"ne 10v \" Keep explanatory paragraph with the following table.
 .Pp
 The effects of varying
 .Ql .Dt
@@ -1209,8 +1209,8 @@ This macro is neither callable nor parsed.
 .El
 .
 .
-.br
-.ne 4v
+.\"br
+.\"ne 4v
 .Sh "Introduction to manual and general text domains"
 .
 .
@@ -1946,7 +1946,7 @@ Typically,
 in a
 .Dq Synopsis
 section,
-the function delcaration will begin the line.
+the function declaration will begin the line.
 .
 If more than one function is presented in the
 .Dq Synopsis
@@ -2468,6 +2468,8 @@ are:
 .St -isoC-99
 .It Li \-isoC\-2011
 .St -isoC-2011
+.It Li \-isoC\-2023
+.St -isoC-2023
 .El
 .Pp
 .
@@ -2555,8 +2557,8 @@ X/Open
 .El
 .Pp
 .
-.br
-.ne 4v
+.\"br
+.\"ne 4v
 Miscellaneous
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
@@ -4853,21 +4855,21 @@ for a full discussion of these special character escape sequences.
 Cb Lb2 Lb2 Lb Lb Lb
 Lf(CR) L2 L2 L Lf(CR) L.
 String	7-bit	8-bit	UCS	Prefer	Meaning
-\[rs]*(<=	<=  	<=	\*[<=]	\[rs](<=	less than or equal to
-\[rs]*(>=	>=  	>=	\*[>=]	\[rs](>=	greater than or equal to
-\[rs]*(Rq	"  	"	\*[Rq]	\[rs](rq	right double quote
-\[rs]*(Lq	"  	"	\*[Lq]	\[rs](lq	left double quote
+\[rs]*(<=	<=	<=	\*[<=]	\[rs](<=	less than or equal to
+\[rs]*(>=	>=	>=	\*[>=]	\[rs](>=	greater than or equal to
+\[rs]*(Rq	"	"	\*[Rq]	\[rs](rq	right double quote
+\[rs]*(Lq	"	"	\*[Lq]	\[rs](lq	left double quote
 \[rs]*(ua	\[ha]	\[ha]	\*[ua]	\[rs](ua	vertical arrow up
 \[rs]*(aa	\[aq]	\'	\*[aa]	\[rs](aa	acute accent
-\[rs]*(ga	\`  	\`	\*[ga]	\[rs](ga	grave accent
-\[rs]*(q 	\&" 	\&"	\*[q] 	\[rs](dq	neutral double quote
-\[rs]*(Pi	pi  	pi	\*[Pi]	\[rs](*p	lowercase pi
-\[rs]*(Ne	!=  	!=	\*[Ne]	\[rs](!=	not equals
-\[rs]*(Le	<=  	<=	\*[Le]	\[rs](<=	less than or equal to
-\[rs]*(Ge	>=  	>=	\*[Ge]	\[rs](>=	greater than or equal to
-\[rs]*(Lt	<   	<	\*[Lt]	<	less than
-\[rs]*(Gt	>   	>	\*[Gt]	>	greater than
-\[rs]*(Pm	+\- 	\[+-]	\*[Pm]	\[rs](+\-	plus or minus
+\[rs]*(ga	\`	\`	\*[ga]	\[rs](ga	grave accent
+\[rs]*(q	\&"	\&"	\*[q]	\[rs](dq	neutral double quote
+\[rs]*(Pi	pi	pi	\*[Pi]	\[rs](*p	lowercase pi
+\[rs]*(Ne	!=	!=	\*[Ne]	\[rs](!=	not equals
+\[rs]*(Le	<=	<=	\*[Le]	\[rs](<=	less than or equal to
+\[rs]*(Ge	>=	>=	\*[Ge]	\[rs](>=	greater than or equal to
+\[rs]*(Lt	<	<	\*[Lt]	<	less than
+\[rs]*(Gt	>	>	\*[Gt]	>	greater than
+\[rs]*(Pm	+\-	\[+-]	\*[Pm]	\[rs](+\-	plus or minus
 \[rs]*(If	infinity	infinity	\*[If]	\[rs](if	infinity
 \[rs]*(Am	\*[Am]	\*[Am]	\*[Am]	&	ampersand
 \[rs]*(Na	\*[Na]	\*[Na]	\*[Na]	.Em NaN	not a number (slanted)
@@ -5211,8 +5213,8 @@ request in
 .Xr groff @MAN7EXT@ ) .
 .
 .
-.br
-.ne 4v
+.\"br
+.\"ne 4v
 .Sh Files
 .
 .Bl -tag
@@ -5379,7 +5381,7 @@ As of
 1.23,
 .Ql \&Tn
 no longer changes the type size;
-this functionality may return in the next release.
+this functionality may return in a future release.
 .\" Note what happens if the parameter list overlaps a newline
 .\" boundary.
 .\" to make sure a line boundary is crossed:

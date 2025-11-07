@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2024 Free Software Foundation, Inc.
+/* Copyright 2003-2024 Free Software Foundation, Inc.
      Written by Gaius Mulley (gaius@glam.ac.uk)
 
 This file is part of groff.
@@ -17,6 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 // mtsm: minimum troff state machine
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 extern bool want_html_debugging;
 
@@ -465,26 +469,26 @@ void mtsm::flush(FILE *fp, statem *s, string tag_list)
 
 void statem::display_state()
 {
-  fprintf(stderr, " <state ");
+  fprintf(stderr, "\"<state");
   if (bool_values[MTSM_BR].is_known) {
     if (bool_values[MTSM_BR].value)
-      fprintf(stderr, "[br]");
+      fprintf(stderr, " [br]");
     else
-      fprintf(stderr, "[!br]");
+      fprintf(stderr, " [!br]");
   }
   if (bool_values[MTSM_EOL].is_known) {
     if (bool_values[MTSM_EOL].value)
-      fprintf(stderr, "[eol]");
+      fprintf(stderr, " [eol]");
     else
-      fprintf(stderr, "[!eol]");
+      fprintf(stderr, " [!eol]");
   }
   if (int_values[MTSM_SP].is_known) {
     if (int_values[MTSM_SP].value)
-      fprintf(stderr, "[sp %d]", int_values[MTSM_SP].value);
+      fprintf(stderr, " [sp %d]", int_values[MTSM_SP].value);
     else
-      fprintf(stderr, "[!sp]");
+      fprintf(stderr, " [!sp]");
   }
-  fprintf(stderr, ">");
+  fprintf(stderr, ">\"");
   fflush(stderr);
 }
 
@@ -550,62 +554,62 @@ state_set::~state_set()
 
 void state_set::incl(bool_value_state b)
 {
-  boolset |= 1 << (int)b;
+  boolset |= 1 << b;
 }
 
 void state_set::incl(int_value_state i)
 {
-  intset |= 1 << (int)i;
+  intset |= 1 << i;
 }
 
 void state_set::incl(units_value_state u)
 {
-  unitsset |= 1 << (int)u;
+  unitsset |= 1 << u;
 }
 
 void state_set::incl(string_value_state s)
 {
-  stringset |= 1 << (int)s;
+  stringset |= 1 << s;
 }
 
 void state_set::excl(bool_value_state b)
 {
-  boolset &= ~(1 << (int)b);
+  boolset &= ~(1 << b);
 }
 
 void state_set::excl(int_value_state i)
 {
-  intset &= ~(1 << (int)i);
+  intset &= ~(1 << i);
 }
 
 void state_set::excl(units_value_state u)
 {
-  unitsset &= ~(1 << (int)u);
+  unitsset &= ~(1 << u);
 }
 
 void state_set::excl(string_value_state s)
 {
-  stringset &= ~(1 << (int)s);
+  stringset &= ~(1 << s);
 }
 
 int state_set::is_in(bool_value_state b)
 {
-  return (boolset & (1 << (int)b)) != 0;
+  return (boolset & (1 << b)) != 0;
 }
 
 int state_set::is_in(int_value_state i)
 {
-  return (intset & (1 << (int)i)) != 0;
+  return (intset & (1 << i)) != 0;
 }
 
 int state_set::is_in(units_value_state u)
 {
-  return (unitsset & (1 << (int)u)) != 0;
+  return (unitsset & (1 << u)) != 0;
 }
 
 int state_set::is_in(string_value_state s)
 {
-  return (stringset & (1 << (int)s)) != 0;
+  return (stringset & (1 << s)) != 0;
 }
 
 void state_set::add(units_value_state, int n)

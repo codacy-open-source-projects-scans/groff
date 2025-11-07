@@ -9,7 +9,7 @@ output driver for HTML
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1999-2022 Free Software Foundation, Inc.
+.\" Copyright (C) 1999-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -53,21 +53,21 @@ output driver for HTML
 .
 .SY pre\-grohtml
 .RB [ \-epV ]
-.RB [ \-a
+.RB [ \-a\~\c
 .IR anti-aliasing-text-bits ]
-.RB [ \-D
+.RB [ \-D\~\c
 .IR image-directory ]
-.RB [ \-F
+.RB [ \-F\~\c
 .IR font-directory ]
-.RB [ \-g
+.RB [ \-g\~\c
 .IR anti-aliasing-graphic-bits ]
-.RB [ \-i
+.RB [ \-i\~\c
 .IR resolution ]
-.RB [ \-I
+.RB [ \-I\~\c
 .IR image-stem ]
-.RB [ \-o
+.RB [ \-o\~\c
 .IR image-vertical-offset ]
-.RB [ \-x
+.RB [ \-x\~\c
 .IR  html-dialect ]
 .I troff-command
 .I troff-argument
@@ -94,15 +94,17 @@ output driver for HTML
 .P
 .SY post\-grohtml
 .RB [ \-bCGhlnrVy ]
-.RB [ \-F
+.RB [ \-F\~\c
 .IR font-directory ]
-.RB [ \-j
+.RB [ \-j\~\c
 .IR output-stem ]
-.RB [ \-s
+.RB [ \-k\~\c
+.IR encoding ]
+.RB [ \-s\~\c
 .IR base-point-size ]
-.RB [ \-S
+.RB [ \-S\~\c
 .IR heading-level ]
-.RB [ \-x
+.RB [ \-x\~\c
 .IR html-dialect ]
 .RI [ file\~ .\|.\|.]
 .YS
@@ -151,7 +153,7 @@ or
 options.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 Use
@@ -197,8 +199,15 @@ to HTML.
 .
 .P
 .I \%grohtml
-writes \%UTF-8-\:encoded output and has built-in HTML entities for all
-non-composite Unicode characters.
+writes \%UTF-8-\:encoded output
+(but see the
+.B \-k
+option)
+and produces HTML character references
+for most non-composite,
+non-basic Latin
+Unicode characters.
+.\" XXX: Exception: ˚.  Why?
 .
 In spite of this,
 .I groff
@@ -207,6 +216,7 @@ found during the first pass.
 .
 You can ignore these warnings unless the special characters appear
 inside a table or equation.
+.\" XXX: or pic(1) description?
 .
 .
 .\" ====================================================================
@@ -273,6 +283,59 @@ A special font,
 is also provided to accommodate
 .I roff
 documents that expect it to always be available.
+.
+.
+.P
+.I \%grohtml
+furthermore supports a naming scheme for East Asian typefaces
+shared with
+.MR gropdf @MAN1EXT@ ,
+.MR grops @MAN1EXT@ ,
+and
+.MR grotty @MAN1EXT@ .
+.
+.
+.RS
+.TP
+.B CSH
+Simplified Chinese,
+Hei style
+.
+.TQ
+.B CSS
+Simplified Chinese,
+Song style
+.
+.TQ
+.B CTH
+Traditional Chinese,
+Hei style
+.
+.TQ
+.B CTS
+Traditional Chinese,
+Song style
+.
+.TQ
+.B JPG
+Japanese,
+Gothic style
+.
+.TQ
+.B JPM
+Japanese,
+Mincho style
+.
+.TQ
+.B KOG
+Korean,
+Gothic style
+.
+.TQ
+.B KOM
+Korean,
+Mincho style
+.RE
 .
 .
 .\" ====================================================================
@@ -489,6 +552,20 @@ named
 .IR output-stem\- n .html .
 .
 .
+.br
+.ne 4v
+.TP
+.BI \-k \~encoding
+Select the character encoding used in the generated document,
+affecting the declared encoding in the preamble
+and the form of character entity references.
+.
+.\" XXX: Don't present "mixed" until we know what it's for.
+Valid values are \[lq]ASCII\[rq] and \[lq]UTF\-8\[rq].
+.
+The default is \[lq]UTF-8\[rq].
+.
+.
 .TP
 .B \-l
 Turn off the production of automatic section links at the top of the
@@ -598,6 +675,23 @@ signature at the end of the document
 (only if
 .B \-V
 is also specified).
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%pre\-grohtml
+and
+.I \%post\-grohtml
+each exit with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

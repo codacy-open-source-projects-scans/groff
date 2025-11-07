@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright 2024 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -258,7 +258,7 @@ echo "checking indentation of ML list with text indent, second line" >&2
 echo "$output" | grep -Eq "^ {12}e17" || wail
 
 echo "checking indentation of RL list, first line" >&2
-echo "$output" | grep -Eq "^ {8}\[1\] f1" || wail
+echo "$output" | grep -Eq "^ {8}\[1] f1" || wail
 
 echo "checking indentation of RL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}f17" || wail
@@ -288,7 +288,7 @@ echo "checking indentation of prefixed DL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}j17" || wail
 
 echo "checking indentation of prefixed RL list, first line" >&2
-echo "$output" | grep -Eq "^ {7}\* \[1\] k1" || wail
+echo "$output" | grep -Eq "^ {7}\* \[1] k1" || wail
 
 echo "checking indentation of prefixed RL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}k17" || wail
@@ -312,7 +312,7 @@ echo "checking indentation of padless prefixed DL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}n17" || wail
 
 echo "checking indentation of padless prefixed RL list, first line" >&2
-echo "$output" | grep -Eq "^ {7}\*\[1\] o1" || wail
+echo "$output" | grep -Eq "^ {7}\*\[1] o1" || wail
 
 echo "checking indentation of padless prefixed RL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}o17" || wail

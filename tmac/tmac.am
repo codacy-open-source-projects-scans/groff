@@ -1,4 +1,4 @@
-# Copyright (C) 1989-2020 Free Software Foundation, Inc.
+# Copyright (C) 1989-2024 Free Software Foundation, Inc.
 #      Written by James Clark <jjc@jclark.com>
 #      Automake migration by Bertrand Garrigues
 #        <bertrand.garrigues@laposte.net>
@@ -30,6 +30,7 @@ man7_MANS += \
   tmac/groff_trace.7 \
   tmac/groff_www.7
 
+# See dist_tmac_DATA below regarding "an.tmac" and "s.tmac".
 TMACNORMALFILES = \
   tmac/man.tmac \
   tmac/mandoc.tmac \
@@ -41,21 +42,11 @@ TMACNORMALFILES = \
   tmac/doc-old.tmac \
   tmac/doc.tmac \
   tmac/mdoc.tmac \
-  tmac/pic.tmac \
   tmac/papersize.tmac \
   tmac/62bit.tmac \
   tmac/ec.tmac \
   tmac/trace.tmac \
-  tmac/ps.tmac \
-  tmac/psold.tmac \
-  tmac/pdfpic.tmac \
-  tmac/pspic.tmac \
-  tmac/psatk.tmac \
   tmac/ptx.tmac \
-  tmac/pdf.tmac \
-  tmac/dvi.tmac \
-  tmac/tty.tmac \
-  tmac/tty-char.tmac \
   tmac/latin1.tmac \
   tmac/latin2.tmac \
   tmac/latin5.tmac \
@@ -63,16 +54,9 @@ TMACNORMALFILES = \
   tmac/koi8-r.tmac \
   tmac/X.tmac \
   tmac/Xps.tmac \
-  tmac/lj4.tmac \
-  tmac/lbp.tmac \
-  tmac/html.tmac \
-  tmac/html-end.tmac \
   tmac/devtag.tmac \
-  tmac/europs.tmac \
   tmac/composite.tmac \
   tmac/fallbacks.tmac \
-  tmac/eqnrc \
-  tmac/refer.tmac \
   tmac/refer-me.tmac \
   tmac/refer-ms.tmac \
   tmac/troffrc \
@@ -141,7 +125,6 @@ EXTRA_DIST += \
   tmac/hyphenex.pl \
   tmac/LOCALIZATION \
   tmac/man.ultrix \
-  tmac/psfig.tmac \
   tmac/ptx.tmac \
   tmac/TESTING-HINTS \
   tmac/TODO \
@@ -152,6 +135,8 @@ tmac_TESTS = \
   tmac/tests/an-ext_MT-works.sh \
   tmac/tests/an-ext_SY-and-YS-work.sh \
   tmac/tests/an-ext_UR-works.sh \
+  tmac/tests/an-ext_synopses_do_not_automatically_adjust.sh \
+  tmac/tests/an-ext_synopses_do_not_automatically_hyphenate.sh \
   tmac/tests/an_AT-and-UC-footer-saved-and-restored.sh \
   tmac/tests/an_CS-register-works.sh \
   tmac/tests/an_CT-register-works.sh \
@@ -159,11 +144,15 @@ tmac_TESTS = \
   tmac/tests/an_HY-register-works.sh \
   tmac/tests/an_LL-register-initializes-sanely.sh \
   tmac/tests/an_ME-second-argument-hyphenates.sh \
+  tmac/tests/an_MR-internal-hyperlinks-work-with-pdfmom.sh \
   tmac/tests/an_MR-works.sh \
   tmac/tests/an_MT-body-hyphenates.sh \
   tmac/tests/an_MT-works.sh \
   tmac/tests/an_P-register-works.sh \
   tmac/tests/an_PD-restores-spacing.sh \
+  tmac/tests/an_S-register-works.sh \
+  tmac/tests/an_SH-works-with-pending-input-trap.sh \
+  tmac/tests/an_SS-works-with-pending-input-trap.sh \
   tmac/tests/an_TH-repairs-ad-damage.sh \
   tmac/tests/an_TH-repairs-hy-damage.sh \
   tmac/tests/an_TP-works.sh \
@@ -176,10 +165,16 @@ tmac_TESTS = \
   tmac/tests/an_X-register-works.sh \
   tmac/tests/an_adjust-link-text-correctly.sh \
   tmac/tests/an_adjustment-mode-preserved-after-paragraph-tag.sh \
+  tmac/tests/an_adjustment-mode-restoration-works.sh \
   tmac/tests/an_avoid-two-font-denial-of-service.sh \
+  tmac/tests/an_degenerate-documents-work.sh \
+  tmac/tests/an_degenerate-input-uses-sane-page-length.sh \
   tmac/tests/an_do-not-abbreviate-escape-using-TH-arguments.sh \
+  tmac/tests/an_do-not-hyphenate-hyperlink-with-no-link-text.sh \
   tmac/tests/an_font-remapping-does-not-affect-titles.sh \
+  tmac/tests/an_format-degenerate-input-sanely.sh \
   tmac/tests/an_handle-degenerate-input-quietly.sh \
+  tmac/tests/an_hyphenation-mode-restoration-works.sh \
   tmac/tests/an_inner-footer-abbreviation-works.sh \
   tmac/tests/an_link-macros-work-in-paragraph-tags.sh \
   tmac/tests/an_link-trailing-text-hugs-previous.sh \
@@ -187,14 +182,21 @@ tmac_TESTS = \
   tmac/tests/an_output-footer-when-continuously-rendering.sh \
   tmac/tests/an_page-footers-present.sh \
   tmac/tests/an_page-header-has-current-data.sh \
+  tmac/tests/an_paragraph-reset-preserves-line-length.sh \
+  tmac/tests/an_paragraph-reset-restores-hyphenation-mode.sh \
+  tmac/tests/an_report-useful-line-numbers-in-diagnostics.sh \
   tmac/tests/an_reset-hyphenation-correctly.sh \
   tmac/tests/an_title-abbreviation-works.sh \
   tmac/tests/an_use-input-traps-correctly.sh \
+  tmac/tests/an_vertical-margins-are-correct.sh \
   tmac/tests/an_works-with-ec.sh \
   tmac/tests/andoc_P-register-works.sh \
   tmac/tests/andoc_check-an-to-doc-transition.sh \
   tmac/tests/andoc_clear-doc-traps.sh \
   tmac/tests/andoc_flush-between-packages.sh \
+  tmac/tests/andoc_internal-hyperlinks-work-with-pdfmom.sh \
+  tmac/tests/andoc_report-useful-line-numbers-in-diagnostics.sh \
+  tmac/tests/doc-old_vertical-margins-are-correct.sh \
   tmac/tests/doc_CS-register-works.sh \
   tmac/tests/doc_CT-register-works.sh \
   tmac/tests/doc_D-register-places-page-numbers-correctly.sh \
@@ -206,15 +208,24 @@ tmac_TESTS = \
   tmac/tests/doc_Rs-works.sh \
   tmac/tests/doc_TS-do-not-keep-tables-when-cR-set.sh \
   tmac/tests/doc_X-register-works.sh \
+  tmac/tests/doc_Xr-internal-hyperlinks-work-with-pdfmom.sh \
   tmac/tests/doc_Xr-works.sh \
   tmac/tests/doc_accept-mixed-case-section-headings.sh \
+  tmac/tests/doc_adjustment-mode-restoration-works.sh \
+  tmac/tests/doc_degenerate-input-uses-sane-page-length.sh \
+  tmac/tests/doc_do-not-hyphenate-hyperlink-with-no-link-text.sh \
   tmac/tests/doc_do-not-loop-infinitely-when-shortening-headers.sh \
+  tmac/tests/doc_format-degenerate-input-sanely.sh \
   tmac/tests/doc_heading-font-remapping-works.sh \
+  tmac/tests/doc_hyphenation-mode-restoration-works.sh \
   tmac/tests/doc_indents-correctly.sh \
+  tmac/tests/doc_infer-correct-type-of-dot-T-string.sh \
   tmac/tests/doc_output-footer-when-continuously-rendering.sh \
+  tmac/tests/doc_report-useful-line-numbers-in-diagnostics.sh \
   tmac/tests/doc_reset-data-between-documents.sh \
   tmac/tests/doc_smoke-test.sh \
   tmac/tests/doc_synopsis-is-not-adjusted.sh \
+  tmac/tests/doc_vertical-margins-are-correct.sh \
   tmac/tests/e_chapter-titles-work.sh \
   tmac/tests/e_columns-work-on-long-pages.sh \
   tmac/tests/e_delayed-text-marks-work.sh \
@@ -228,9 +239,6 @@ tmac_TESTS = \
   tmac/tests/latin5_works.sh \
   tmac/tests/latin9_works.sh \
   tmac/tests/localization-works.sh \
-  tmac/tests/pdf_bookmark-starting-with-control-char-works.sh \
-  tmac/tests/pdfpic_does-not-choke-on-bad-pdfinfo-output.sh \
-  tmac/tests/pdfpic_falls-back-to-PSPIC.sh \
   tmac/tests/s_EQ-handles-empty-first-arg.sh \
   tmac/tests/s_IP-indents-using-paragraph-type-size.sh \
   tmac/tests/s_IP-respects-inter-sentence-space-in-tags.sh \
@@ -246,14 +254,16 @@ tmac_TESTS = \
   tmac/tests/s_honor-page-break-in-text.sh \
   tmac/tests/s_mark-column-start-correctly.sh \
   tmac/tests/s_no-excess-space-around-displays.sh \
-  tmac/tests/s_rejects-too-short-page-lengths.sh
+  tmac/tests/s_rejects-too-short-page-lengths.sh \
+  tmac/tests/s_start-document-with-keep-quietly.sh \
+  tmac/tests/s_vertical-margins-are-correct.sh
 TESTS += $(tmac_TESTS)
 EXTRA_DIST += $(tmac_TESTS)
 
 tmac_XFAIL_TESTS = \
   tmac/tests/an-ext_ME-punct-hyphenates.sh \
-  tmac/tests/an-ext_UE-punct-hyphenates.sh \
   tmac/tests/an-ext_UE-breaks-before-long-URIs.sh \
+  tmac/tests/an-ext_UE-punct-hyphenates.sh \
   tmac/tests/e_footnotes-work-with-columns.sh \
   tmac/tests/pdf_bookmark-starting-with-control-char-works.sh
 XFAIL_TESTS += $(tmac_XFAIL_TESTS)
@@ -277,10 +287,12 @@ $(M4CHECK): tmac/groff_man.7.man.in
 
 tmac/groff_man.7.man: tmac/groff_man.7.man.in $(M4CHECK)
 	$(AM_V_GEN)$(M4) -D_groff_man_not_style \
+	  -DREVISION_DATE=`$(PERL) $(top_srcdir)/mdate.pl $(top_srcdir)/tmac/groff_man.7.man.in` \
 	  $(tmac_srcdir)/groff_man.7.man.in > $@
 
 tmac/groff_man_style.7.man: tmac/groff_man.7.man.in $(M4CHECK)
 	$(AM_V_GEN)$(M4) -D_groff_man_style \
+	  -DREVISION_DATE=`$(PERL) $(top_srcdir)/mdate.pl $(top_srcdir)/tmac/groff_man.7.man.in` \
 	  $(tmac_srcdir)/groff_man.7.man.in > $@
 
 # The installation of groff compatibility wrappers for vendor-provided
@@ -377,13 +389,11 @@ uninstall_tmac_hook:
 	fi
 	if test -d $(DESTDIR)$(mdocdir); then \
 	  rmdir $(DESTDIR)$(mdocdir); \
-	fi
-	if test -d $(DESTDIR)$(tmacdir); then \
-	  rmdir $(DESTDIR)$(tmacdir); \
-	fi
+	fi; \
 	if test -d $(DESTDIR)$(localtmacdir); then \
 	  rmdir $(DESTDIR)$(localtmacdir); \
 	fi
+	-rmdir $(DESTDIR)$(tmacdir)
 
 # Define convenience macros for in-tree documents to depend on.  Don't
 # use these above.

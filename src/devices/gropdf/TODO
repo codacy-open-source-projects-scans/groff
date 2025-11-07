@@ -25,7 +25,3 @@ No equiv for gropdf.
 -w : set line width
 
 Another \X : \X'ps: exec 0 setlinejoin'\X'ps: exec 0 setlinecap' for mom
-
-Cater for fonts with >255 glyphs (currently  accessing a glyph above 255
-(i.e. \N[260]) causes a fail).  This will be fixed when font subsetting is
-implemented.

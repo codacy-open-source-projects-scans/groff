@@ -1,13 +1,14 @@
 .\" groff extension macros for man(7) package
 .\"
-.\" Copyright (C) 2007-2024 Free Software Foundation, Inc.
+.\" Copyright 2007-2014 Free Software Foundation, Inc.
+.\"           2021-2024 G. Branden Robinson
 .\"
 .\" Written by Eric S. Raymond <esr@thyrsus.com>
 .\"            Werner Lemberg <wl@gnu.org>
 .\"            G. Branden Robinson <g.branden.robinson@gmail.com>
 .\"
 .\" You may freely use, modify and/or distribute this file.
-.\"
+.
 .\" The code below provides extension macros for the 'man' macro
 .\" package.  Care has been taken to make the code portable; groff
 .\" extensions are properly hidden so that all troff implementations can
@@ -15,12 +16,12 @@
 .\"
 .\" With groff, this file is sourced by the 'man' macro package itself.
 .\" Man page authors who are concerned about portability might add the
-.\" used macros directly to the prologue of the man page(s).
-.
-.
-.\" Convention: Auxiliary macros and registers start with 'm' followed
-.\"             by an uppercase letter or digit.
-.
+.\" used macros directly to the prologue of their man page(s), after
+.\" calling `TH`.
+.\"
+.\" Convention: Auxiliary string, macros, and registers start with 'm'
+.\"             followed by an uppercase letter or digit.
+.\"
 .\" Setting the `mG` register to a positive value (e.g., on the command
 .\" line) enables usage of macros defined here that have alternative
 .\" definitions in the main groff man macro file.  This is for testing.
@@ -33,11 +34,12 @@
 .if \n(mZ>1 \
 .  nx
 .
-.\" Set `mC` to your implementation's constant-width typeface.  There is
-.\" no globally portable choice; `CW`, `C`, and `CR` are all seen.  AT&T
-.\" troff offers no mechanism to query font availability.
+.\" Set `mC` to your implementation's constant-width typeface for
+.\" typesetter (not terminal) output.  (You can do so either here or in
+.\" "man.local"; see groff_man(7).)  There is no globally portable
+.\" choice; `CW`, `C`, and `CR` are all seen.  AT&T troff offers no
+.\" mechanism to query font availability.
 .ds mC CW
-.if n .ds mC R
 .
 .\" Save the automatic hyphenation mode.
 .\"
@@ -84,7 +86,7 @@
 .      \" rules set forth in CSTR #54 §6.
 .      if \\n(.g=0:\\n(.X \
 '        ti -\\n(mTu
-.      B \\$1\ \c
+.      B \\$1
 .    \}
 .    if \\n(.$>1 \
 .      B \\$1\\$2\c
@@ -195,6 +197,9 @@
 ..
 .
 .
+.\" `EX` and `EE` are Ninth Edition Unix extensions that survived into
+.\" Plan 9 troff but other AT&T troff descendants did not adopt.
+.
 .\" Start example.
 .if \n(.g-\n(mG \{\
 .de EX
@@ -204,7 +209,8 @@
 .    nr mP \\n(PD
 .    nr PD 1v
 .    nf
-.    ft \\*(mC
+.    ie n .ft \\*(mC
+.    el   .ft R
 .    nr mE 1
 .  \}
 ..

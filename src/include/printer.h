@@ -1,7 +1,3 @@
-// -*- C++ -*-
-
-// <groff_src_dir>/src/include/printer.h
-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
 
    Written by James Clark (jjc@jclark.com)
@@ -24,11 +20,11 @@
 
 /* Description
 
-   The class 'printer' performs the postprocessing.  Each
-   postprocessor only needs to implement a derived class of 'printer' and
-   a suitable function 'make_printer' for the device-dependent tasks.
-   Then the methods of class 'printer' are called automatically by
-   'do_file()' in 'input.cpp'.
+   The class 'printer' performs the postprocessing.  Each postprocessor
+   only needs to implement a derived class of 'printer' and a suitable
+   function 'make_printer' for the device-dependent tasks.  Then the
+   methods of class 'printer' are called automatically by 'do_file()' in
+   'input.cpp'.
 */
 
 #include "color.h"
@@ -65,9 +61,9 @@ public:
 			    int *, font **);
   font *get_font_from_index(int);
   virtual void draw(int, int *, int, const environment *);
-  // perform change of line color (text, outline) in the print-out 
+  // perform change of line color (text, outline) in the print-out
   virtual void change_color(const environment * const);
-  // perform change of fill color in the print-out 
+  // perform change of fill color in the print-out
   virtual void change_fill_color(const environment * const);
   virtual void begin_page(int) = 0;
   virtual void end_page(int) = 0;
@@ -95,3 +91,9 @@ private:
 };
 
 printer *make_printer();
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

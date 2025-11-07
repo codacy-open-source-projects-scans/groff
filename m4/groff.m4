@@ -1,5 +1,5 @@
 # Autoconf macros for groff.
-# Copyright (C) 1989-2023 Free Software Foundation, Inc.
+# Copyright (C) 1989-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -15,6 +15,42 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Construct a short form of the groff version string.
+#
+# SHORT_VERSION contains the MAJOR_VERSION, MINOR_VERSION, and a portion
+# of the REVISION, separated by dots.  Only the part of REVISION before
+# the first '.' is used.  For example, if REVISION is
+# '3.real.434-5aafd', then SHORT_VERSION is 'x.yy.3', where x and yy are
+# MAJOR_VERSION and MINOR_VERSION, respectively.
+AC_DEFUN([GROFF_MAKE_SHORT_VERSION], [
+  AC_SUBST([SHORT_VERSION],
+	   m4_bregexp(AC_PACKAGE_VERSION,[^\(\w+\.\w+\.\w+\).*$],[\1]))
+])
+
+# Verify that the package versioning scheme is useful; GNU troff
+# requires a strictly numeric one in the first three components x.y.z.
+
+AC_DEFUN([GROFF_CHECK_VERSION_FORMAT], [
+  AC_REQUIRE([GROFF_MAKE_SHORT_VERSION])
+  groff_version_format_validity=invalid
+  AC_MSG_CHECKING([that groff version string has valid format])
+  if expr "$SHORT_VERSION" : \
+      '[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*\.[[0-9]][[0-9]]*' \
+    > /dev/null
+  then
+    groff_version_format_validity=valid
+  fi
+  AC_MSG_RESULT([$SHORT_VERSION $groff_version_format_validity])
+
+  if test "$groff_version_format_validity" = invalid
+  then
+    AC_MSG_NOTICE([groff's version string must start with three decimal
+integers separated by dots.  "$SHORT_VERSION" does not match.
+    ])
+    AC_MSG_ERROR([Aborting.], 1)
+  fi
+])
 
 # Locate a print spooler for certain output formats.
 
@@ -94,10 +130,10 @@ AC_DEFUN([GROFF_PERL], [
 # We need m4 to generate some man pages.
 
 AC_DEFUN([GROFF_PROG_M4], [
-  AC_CHECK_PROGS([M4], [m4], [missing])
+  AC_CHECK_PROGS([M4], [m4 gm4], [missing])
   if test "$M4" = missing
   then
-    AC_MSG_ERROR([could not find 'm4'], 1)
+    AC_MSG_ERROR([could not find an m4 program], 1)
   fi
 ])
 
@@ -128,22 +164,13 @@ AC_DEFUN([GROFF_PROG_MAKEINFO], [
       expr ${makeinfo_version_major}000 + $makeinfo_version_minor`
     if test $makeinfo_version_numeric -lt 5000
     then
-      missing="'makeinfo' is too old."
+      missing="'makeinfo' is too old; version 5.0 or newer needed"
       MAKEINFO=
     fi
   fi
 
-  if test -n "$missing"
-  then
-    infofile=doc/groff.info
-    test -f $infofile || infofile="$srcdir"/$infofile
-    if test ! -f $infofile \
-     || test "$srcdir"/doc/groff.texi -nt $infofile
-    then
-      AC_MSG_ERROR($missing
-[Get the 'texinfo' package version 5.0 or newer.])
-    fi
-  fi
+  groff_have_makeinfo=yes
+  test -n "$missing" && groff_have_makeinfo=no
   AC_SUBST([MAKEINFO])
 ])
 
@@ -238,55 +265,6 @@ AC_DEFUN([GROFF_GROHTML_PROGRAM_NOTICE], [
   fi
 ])
 
-dnl pdfroff uses awk, and we use it in GROFF_URW_FONTS_CHECK.
-
-AC_DEFUN([GROFF_AWK_NOTICE], [
-  AC_REQUIRE([GROFF_AWK_PATH])
-
-  awk_names=awk
-  if test -n "$ALT_AWK_PROGS"
-  then
-    awk_names="$ALT_AWK_PROGS"
-  fi
-
-  if test "$AWK" = missing
-  then
-    AC_MSG_NOTICE([No awk program was found in \$PATH.
-
-  It was sought under the name(s) "$awk_names".
-    ])
-  fi
-])
-
-AC_DEFUN([GROFF_PDFROFF_DEPENDENCIES_CHECK], [
-  AC_REQUIRE([GROFF_AWK_PATH])
-  AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
-
-  use_pdfroff=no
-  pdfroff_missing_deps=
-
-  test "$AWK" = missing && pdfroff_missing_deps="awk"
-
-  if test "$GHOSTSCRIPT" = missing
-  then
-    verb=is
-
-    if test -n "$pdfroff_missing_deps"
-    then
-      pdfroff_missing_deps="$pdfroff_missing_deps and "
-      verb=are
-    fi
-    pdfroff_missing_deps="${pdfroff_missing_deps}Ghostscript $verb"
-  fi
-
-  if test -z "$pdfroff_missing_deps"
-  then
-    use_pdfroff=yes
-  fi
-
-  AC_SUBST([use_pdfroff])
-])
-
 AC_DEFUN([GROFF_GROPDF_DEPENDENCIES_CHECK], [
   AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
   AC_REQUIRE([GROFF_URW_FONTS_CHECK])
@@ -303,18 +281,22 @@ AC_DEFUN([GROFF_GROPDF_DEPENDENCIES_CHECK], [
   AC_SUBST([use_gropdf])
 ])
 
-AC_DEFUN([GROFF_PDFROFF_PROGRAM_NOTICE], [
-  AC_REQUIRE([GROFF_PDFROFF_DEPENDENCIES_CHECK])
+AC_DEFUN([GROFF_MAKEINFO_PROGRAM_NOTICE], [
+  AC_REQUIRE([GROFF_PROG_MAKEINFO])
 
-  if test "$use_pdfroff" = no
+  if test "$groff_have_makeinfo" = no
   then
-    AC_MSG_NOTICE(['pdfroff' will not be functional.
+    AC_MSG_NOTICE([groff's Texinfo manual will not be generated.
 
-  Because $pdfroff_missing_deps missing, 'pdfroff' will not operate
-  and the 'pdfmark.pdf' document will not be available.
+  Because 'makeinfo' is either outdated or missing, the Texinfo manual
+  will not be generated in any of its output formats (GNU Info, HTML,
+  plain text, TeX DVI, or PDF).
+
+  Get the 'texinfo' package version 5.0 or newer to build the manual.
 ])
   fi
 ])
+
 
 AC_DEFUN([GROFF_GROPDF_PROGRAM_NOTICE], [
   AC_REQUIRE([GROFF_GROPDF_DEPENDENCIES_CHECK])
@@ -364,6 +346,7 @@ dnl Keep this list in sync with font/devpdf/Foundry.in.
     /usr/share/fonts/default/Type1/adobestd35/ \
     /usr/share/fonts/type1/urw-base35/ \
     /usr/share/fonts/urw-base35 \
+    /usr/share/ghostscript/Resource/Font \
     /opt/local/share/fonts/urw-fonts/ \
     /usr/local/share/fonts/ghostscript/"
 
@@ -628,29 +611,6 @@ AC_DEFUN([GROFF_GHOSTSCRIPT_VERSION_NOTICE], [
   fi
 ])
 
-# Check location of 'awk'; allow '--with-awk=PROG' option to override.
-
-AC_DEFUN([GROFF_AWK_PATH],
-  [AC_REQUIRE([GROFF_AWK_PREFS])
-   AC_ARG_WITH([awk],
-     [AS_HELP_STRING([--with-awk=PROG],
-       [actual [/path/]name of awk executable])],
-     [AWK=$withval],
-     [AC_CHECK_TOOLS(AWK, [$ALT_AWK_PROGS], [missing])])
-   test "$AWK" = no && AWK=missing])
-
-
-# Preferences for choice of 'awk' program; allow --with-alt-awk="LIST"
-# to override.
-
-AC_DEFUN([GROFF_AWK_PREFS],
-  [AC_ARG_WITH([alt-awk],
-    [AS_HELP_STRING([--with-alt-awk=LIST],
-      [alternative names for awk executable])],
-    [ALT_AWK_PROGS="$withval"],
-    [ALT_AWK_PROGS="gawk mawk nawk awk"])
-   AC_SUBST([ALT_AWK_PROGS])])
-
 
 # GROFF_CSH_HACK(if hack present, if not present)
 
@@ -674,18 +634,6 @@ EOF
    fi
    rm -f conftest.sh])
 
-
-# From udodo!hans@relay.NL.net (Hans Zuidam)
-
-AC_DEFUN([GROFF_ISC_SYSV3],
-  [AC_MSG_CHECKING([for ISC 3.x or 4.x])
-   if grep ['[34]\.'] /usr/options/cb.name >/dev/null 2>&1
-   then
-     AC_MSG_RESULT([yes])
-     AC_DEFINE([_SYSV3], [1], [Define if you have ISC 3.x or 4.x.])
-   else
-     AC_MSG_RESULT([no])
-   fi])
 
 AC_DEFUN([GROFF_POSIX],
   [AC_MSG_CHECKING([whether -D_POSIX_SOURCE is necessary])
@@ -983,7 +931,7 @@ AC_DEFUN([GROFF_PAGE], [
   papersize=/etc/papersize
   if test -z "$PAGE" && test -r "$papersize"
   then
-    sedexpr='s/#.*//;s/[ \t]\+/ /;s/ \+$//;s/^ \+//;/^$/d;p'
+    sedexpr='s/#.*//;s/[ \t]\{1,\}/ /;s/  *$//;s/^  *//;/^$/d;p'
     PAGE=`sed -n "$sedexpr" "$papersize"`
     test -n "$PAGE" && whence=$papersize
   fi
@@ -1010,10 +958,10 @@ AC_DEFUN([GROFF_PAGE], [
 
     if test -n "$descfile"
     then
-      if grep -q ['^paperlength[	 ]\+841890'] "$descfile"
+      if grep -q ['^paperlength[	 ]\{1,\}841890'] "$descfile"
       then
 	PAGE=A4
-      elif grep -q ['^papersize[	 ]\+[aA]4'] "$descfile"
+      elif grep -q ['^papersize[	 ]\{1,\}[aA]4'] "$descfile"
       then
 	PAGE=A4
       fi
@@ -1027,7 +975,7 @@ AC_DEFUN([GROFF_PAGE], [
     domains=
     if test -r "$resolvconf"
     then
-      sedexpr='s/#.*//;s/[ \t]\+/ /;s/ \+$//;s/^ \+//;/^$/d;
+      sedexpr='s/#.*//;s/[ \t]\{1,\}/ /;s/  *$//;s/^  *//;/^$/d;
 /^\(domain\|search\)/!d;s/\(domain\|search\) //;p'
       domains=`sed -n "$sedexpr" "$resolvconf"`
     fi
@@ -1790,7 +1738,7 @@ AC_DEFUN([GROFF_PROG_XPMTOPPM],
 # Check for make built-in variable RM.
 
 AC_DEFUN([GROFF_MAKE_DEFINES_RM], [
-  AC_MSG_CHECKING(whether make defines 'RM')
+  AC_MSG_CHECKING(whether 'make' defines 'RM')
   make=make
   if test -n "$MAKE"
   then
@@ -1830,27 +1778,56 @@ AC_DEFUN([GROFF_DIFF_D],
       fi
     fi
   fi
-  AC_MSG_RESULT([$groff_has_diff_d_option])
+  AC_MSG_RESULT([$DIFF_PROG])
   AC_SUBST([DIFF_PROG])])
 
-# Check if 'test' supports the option -ef.
 
-AC_DEFUN([GROFF_HAVE_TEST_EF_OPTION],
-  [AC_MSG_CHECKING(whether test supports option -ef)
-  HAVE_TEST_EF_OPTION=no
-  test /dev/null -ef /dev/null > /dev/null 2>&1 && HAVE_TEST_EF_OPTION=yes
-  AC_MSG_RESULT([$HAVE_TEST_EF_OPTION])
-  AC_SUBST([HAVE_TEST_EF_OPTION])])
+# Check if 'test' supports the option `-ef`.  POSIX Issue 8 (2024)
+# mandates it.  It could be a shell builtin or a separate executable; we
+# don't care as long as it works.
+#
+# We want to truly test /bin/sh here, because that's what our script
+# programs identify as the interpreter unless overridden by
+# POSIX_SHELL_PROG; determination of that depends on _this_ test.
+#
+# Using plain 'sh' leads to false positives because Autoconf is good at
+# locating a capable shell.  But we want to test the rattletrap jalopy
+# that a system might have installed as /bin/sh (hello, Solaris 10).
 
-# gdiffmk will attempt to use bash (for option -ef of 'test'). If bash
-# is not available it will use /bin/sh.
+AC_DEFUN([GROFF_PROG_TEST_SUPPORTS_EF_OPTION],
+  [AC_MSG_CHECKING(whether 'test' supports '-ef' option)
+  test_ef_works=no
+  /bin/sh -c 'test /dev/null -ef /dev/null > /dev/null 2>&1' \
+   && test_ef_works=yes
+  AC_MSG_RESULT([$test_ef_works])
+])
 
-AC_DEFUN([GROFF_BASH],
-  [AC_PATH_PROGS([BASH_PROG], [bash], [no])
-  if test "$BASH_PROG" = no; then
-     BASH_PROG=/bin/sh
+
+# gdiffmk needs a working 'test' `-ef` option.  If one is not available
+# in the default /bin/sh or /bin/test, use Bash to get it.
+#
+# This test could be made more general by testing other POSIX Issue 8
+# (or earlier) shell features, if we happen to rely upon them.  Solaris
+# 10 /bin/sh is notoriously incapable.
+
+AC_DEFUN([GROFF_PROG_SH], [
+  AC_REQUIRE([GROFF_PROG_TEST_SUPPORTS_EF_OPTION])
+  POSIX_SHELL_PROG=no
+  if test "$test_ef_works" = no
+  then
+    # Try to find a shell that is likely to be more modern than the
+    # system's /bin/sh; otherwise programs must complain at runtime if
+    # the environment is non-conforming to POSIX.
+    AC_PATH_PROGS([POSIX_SHELL_PROG], [bash ksh ksh93 ksh88 mksh dash \
+                                       ash yash], [no])
   fi
-  AC_SUBST([BASH_PROG])])
+  if test "$POSIX_SHELL_PROG" = no
+  then
+    POSIX_SHELL_PROG=/bin/sh
+  fi
+  AC_SUBST([POSIX_SHELL_PROG])
+])
+
 
 # Search for uchardet library used by preconv.
 

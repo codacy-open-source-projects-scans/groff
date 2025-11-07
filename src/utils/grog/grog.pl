@@ -76,7 +76,7 @@ sub fail {
 }
 
 
-sub warn {
+sub gripe {
   my $text = shift;
   print STDERR "$program_name: warning: $text\n";
 }
@@ -134,12 +134,12 @@ sub process_arguments {
     }
 
     # Handle options that cause an early exit.
-    &version() if ($arg eq '-v' || $arg eq '--version');
-    &usage(0) if ($arg eq '-h' || $arg eq '--help');
+    version() if ($arg eq '-v' || $arg eq '--version');
+    usage(0) if ($arg eq '-h' || $arg eq '--help');
 
     if ($arg =~ '^--.') {
-      &fail("unrecognized grog option '$arg'; ignored");
-      &usage(1);
+      fail("unrecognized grog option '$arg'; ignored");
+      usage(1);
       next;
     }
 
@@ -176,7 +176,7 @@ sub process_arguments {
 sub read_input {
   foreach my $file (@input_file) {
     unless (open(FILE, $file eq "-" ? $file : "< $file")) {
-      &fail("cannot open '$file': $!");
+      fail("cannot open '$file': $!");
       next;
     }
 
@@ -184,7 +184,7 @@ sub read_input {
 
     while (my $line = <FILE>) {
       chomp $line;
-      &interpret_line($line);
+      interpret_line($line);
     }
 
     close(FILE);
@@ -327,17 +327,18 @@ sub interpret_line {
 		 'linetabs', 'lf', 'lg', 'll', 'lsm', 'ls', 'lt', 'mc',
 		 'mk', 'mso', 'msoquiet', 'na', 'ne', 'nf', 'nh', 'nm',
 		 'nn', 'nop', 'nr', 'nroff', 'ns', 'nx', 'open',
-		 'opena', 'os', 'output', 'pc', 'pcolor', 'pcomposite',
-		 'pev', 'phw', 'pi', 'pl', 'pline', 'pm', 'pn', 'pnr',
-		 'po', 'ps', 'psbb', 'pso', 'ptr', 'pvs', 'rchar', 'rd',
-		 'return', 'rfschar', 'rj', 'rm', 'rn', 'rnn', 'rr',
-		 'rs', 'rt', 'schar', 'shc', 'shift', 'sizes', 'so',
-		 'soquiet', 'sp', 'special', 'spreadwarn', 'ss',
-		 'stringdown', 'stringup', 'sty', 'substring', 'sv',
-		 'sy', 'ta', 'tc', 'ti', 'tkf', 'tl', 'tm', 'tm1',
-		 'tmc', 'tr', 'trf', 'trin', 'trnt', 'troff', 'uf',
-		 'ul', 'unformat', 'vpt', 'vs', 'warn', 'warnscale',
-		 'wh', 'while', 'write', 'writec', 'writem');
+		 'opena', 'os', 'output', 'pc', 'pchar', 'pcolor',
+		 'pcomposite', 'pev', 'pfp', 'pftr', 'phw', 'pi', 'pl',
+		 'pline', 'pm', 'pn', 'pnr', 'po', 'ps', 'psbb', 'pso',
+		 'ptr', 'pvs', 'rchar', 'rd', 'return', 'rfschar', 'rj',
+		 'rm', 'rn', 'rnn', 'rr', 'rs', 'rt', 'schar', 'shc',
+		 'shift', 'sizes', 'so', 'soquiet', 'sp', 'special',
+		 'spreadwarn', 'ss', 'stringdown', 'stringup', 'sty',
+		 'substring', 'sv', 'sy', 'ta', 'tc', 'ti', 'tkf', 'tl',
+		 'tm', 'tm1', 'tmc', 'tr', 'trf', 'trin', 'trnt',
+		 'troff', 'uf', 'ul', 'unformat', 'vpt', 'vs', 'warn',
+		 'warnscale', 'wh', 'while', 'write', 'writec',
+		 'writem');
 
   # Ignore all other requests.  Again, macro names can contain Perl
   # regex metacharacters, so be careful.
@@ -368,14 +369,14 @@ sub interpret_line {
   ##########
   # mdoc
   if ($macro =~ /^Dd$/) {
-    &push_main_package('doc');
+    push_main_package('doc');
     return;
   }
 
   ##########
   # old mdoc
   if ($macro =~ /^(Tp|Dp|De|Cx|Cl)$/) {
-    &push_main_package('doc-old');
+    push_main_package('doc-old');
     return;
   }
 
@@ -386,7 +387,7 @@ sub interpret_line {
 		   n[12]|
 		   sh
 		  )$/x) {
-    &push_main_package('e');
+    push_main_package('e');
     return;
   }
 
@@ -409,16 +410,16 @@ sub interpret_line {
     # www.tmac muddies the waters, so omit it.  `MT` also used by man.
     if ($macro =~ /^LO$/) {
       if ($args =~ /^(DNAMN|MDAT|BIL|KOMP|DBET|BET|SIDOR)/) {
-	&push_main_package('mse');
+	push_main_package('mse');
 	return;
       }
     } elsif ($macro =~ /^LT$/) {
       if ($args =~ /^(SVV|SVH)/) {
-	&push_main_package('mse');
+	push_main_package('mse');
 	return;
       }
     }
-    &push_main_package('m');
+    push_main_package('m');
     return;
   }
 
@@ -454,7 +455,7 @@ sub interpret_line {
 		   TOC|
 		   T_MARGIN|
 		  )$/x) {
-    &push_main_package('om');
+    push_main_package('om');
     return;
   }
 } # interpret_line()
@@ -551,16 +552,16 @@ sub infer_man_or_ms_package {
   } elsif ($ms_score == $man_score) {
     # If there was no TH call, it's not a (valid) man(7) document.
     if (!$score{'TH'}) {
-      &push_main_package('s');
+      push_main_package('s');
     } else {
-      &warn("document ambiguous; disambiguate with -man or -ms option");
+      gripe("document ambiguous; disambiguate with -man or -ms option");
       $had_inference_problem = 1;
     }
     return 0;
   } elsif ($ms_score > $man_score) {
-    &push_main_package('s');
+    push_main_package('s');
   } else {
-    &push_main_package('an');
+    push_main_package('an');
   }
 
   return 1;
@@ -619,7 +620,7 @@ sub construct_command {
     for my $pkg (@main_package) {
       if (grep(/$pkg/, @inferred_main_package)) {
 	$main_package = $pkg;
-	&warn("document ambiguous (choosing '$main_package'"
+	gripe("document ambiguous (choosing '$main_package'"
 	      . " from '@inferred_main_package'); disambiguate with -m"
 	      . " option");
 	$had_inference_problem = 1;
@@ -637,11 +638,11 @@ sub construct_command {
     my $is_auxiliary_package = 1;
     if (grep(/$pkg/, @main_package)) {
       $is_auxiliary_package = 0;
-      if ($pkg ne $main_package) {
-	&warn("overriding inferred package '$main_package'"
+      if ($main_package && ($pkg ne $main_package)) {
+	gripe("overriding inferred package '$main_package'"
 	      . " with requested package '$pkg'");
-	$main_package = $pkg;
       }
+      $main_package = $pkg;
     }
     if ($is_auxiliary_package) {
       push @auxiliary_package_argument, "-m" . $pkg;
@@ -665,7 +666,7 @@ sub usage {
     "usage: $grog {-h | --help}\n";
   unless ($had_error) {
     print $stream "\n" .
-"Read each roff(7) input FILE and attempt to infer an appropriate\n" .
+"Read each roff(7) input file and attempt to infer an appropriate\n" .
 "groff(1) command to format it.  See the grog(1) manual page.\n";
   }
   exit $had_error;
@@ -688,13 +689,13 @@ my $in_unbuilt_source_tree = 0;
 
 $groff_version = '@VERSION@' unless ($in_unbuilt_source_tree);
 
-&process_arguments();
-&read_input();
+process_arguments();
+read_input();
 
 if ($have_any_valid_operands) {
-  &infer_preprocessors();
-  &infer_man_or_ms_package() if (scalar @inferred_main_package != 1);
-  &construct_command();
+  infer_preprocessors();
+  infer_man_or_ms_package() if (scalar @inferred_main_package != 1);
+  construct_command();
 }
 
 exit 2 if ($had_processing_problem);

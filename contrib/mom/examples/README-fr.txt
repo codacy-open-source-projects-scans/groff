@@ -21,7 +21,7 @@ avec pdfmom(1).
 
     pdfmom mom-pdf.mom > mom-pdf.pdf
     pdfmom sample_docs.mom > sample_docs.pdf
-    pdfmom slide-demo.mom > slide-demo.pdf
+    pdfmom -t -p -e slide-demo.mom > slide-demo.pdf
     pdfmom -K utf8 letter.mom > letter.pdf
     pdfmom -K utf8 mon_premier_doc.mom > mon_premier_doc.pdf
     pdfmom -K utf8 typesetting.mom > typesetting.pdf
@@ -32,7 +32,7 @@ Les fichiers
 Tous les fichiers sont configurés pour le format lettre US, exceptés
 mom-pdf.mom et mon_premier_doc.mom, qui utilisent le format A4.
 
-***typesetting.mom**
+***typesetting.mom***
 
 Le fichier typesetting.mom montre l'utilisation d'éléments de
 composition typographique: tabulations, tabulations intégrées dans des
@@ -77,7 +77,7 @@ Le fichier slide-demo.mom montre une présentation de diapositives
 avec des effets PAUSE et TRANSITION.  Le fichier .pdf généré avec
 pdfmom devrait être ouvert en mode Présentation d'un lecteur PDF
 (Okular, Evince, Acroread).  Notez que pas tous les effets de
-transition sont disponibles pour tous les lecteurs PDF.  
+transition sont disponibles pour tous les lecteurs PDF.
 
 ***mon_premier_doc.mom***
 

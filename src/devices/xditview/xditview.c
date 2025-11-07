@@ -1,5 +1,6 @@
 /*
  * Copyright 1991 Massachusetts Institute of Technology
+ * Copyright (C) 1990-2024 Free Software Foundation, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -20,7 +21,7 @@
  *
  */
 /*
- * xditview -- 
+ * xditview --
  *
  *   Display ditroff output in an X window
  */
@@ -50,10 +51,13 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.17 89/12/10 17:05:08 rws Exp
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSB.h>
 
+#include <signal.h> // SIGPIPE, SIG_IGN, signal()
 #include <stdbool.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <stdio.h>
+#include <stdio.h> // FILE, fclose(), fopen(), fprintf(), fputs(),
+		   // pclose(), popen(), printf(), sprintf(), stderr,
+		   // stdin, stdout
+#include <stdlib.h> // exit(), EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // strcmp(), strcpy(), strncpy()
 
 #include "Dvi.h"
 #include "groff_version.h"
@@ -143,9 +147,13 @@ Syntax(const char *progname, bool had_error)
 	(void) fprintf (stream, "usage: %s {-help | --help}\n",
 			progname);
 	if (had_error)
-		exit(EXIT_FAILURE);
-	else
+		exit(2);
+	else {
+		fputs("\n"
+"View the output of troff(1) in an X11 window.  See the gxditview(1)\n"
+"manual page.\n", stream);
 		exit(EXIT_SUCCESS);
+	}
 }
 
 static void	NewFile (const char *);
@@ -252,11 +260,11 @@ int main(int argc, char **argv)
 				     XtScreen(toplevel)->root,
 				     (char *)xdit_bits,
 				     xdit_width, xdit_height));
-				    
+
     XtSetArg (topLevelArgs[1], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
 				     XtScreen(toplevel)->root,
-				     (char *)xdit_mask_bits, 
+				     (char *)xdit_mask_bits,
 				     xdit_mask_width, xdit_mask_height));
     XtSetValues (toplevel, topLevelArgs, 2);
     if (argc > 1)
@@ -268,7 +276,7 @@ int main(int argc, char **argv)
     simpleMenu = XtCreatePopupShell ("menu", simpleMenuWidgetClass, toplevel,
 				    NULL, 0);
     for (i = 0; i < XtNumber (menuEntries); i++) {
-	entry = XtCreateManagedWidget(menuEntries[i].name, 
+	entry = XtCreateManagedWidget(menuEntries[i].name,
 				      smeBSBObjectClass, simpleMenu,
 				      NULL, (Cardinal) 0);
 	XtAddCallback(entry, XtNcallback, menuEntries[i].function, NULL);
@@ -498,7 +506,7 @@ RerasterizeAction (Widget widget, XEvent *event,
     if (current_file_name[0] == 0) {
 	/* XXX display an error message */
 	return;
-    } 
+    }
     XtSetArg (args[0], XtNpageNumber, &number);
     XtGetValues (dvi, args, 1);
     NewFile(current_file_name);
@@ -588,7 +596,7 @@ QuitAction (Widget widget, XEvent *event,
     params = params;
     num_params = num_params;
 
-    exit (0);
+    exit (EXIT_SUCCESS);
 }
 
 Widget		promptShell, promptDialog;
@@ -634,7 +642,7 @@ MakePrompt(Widget centerw, const char *prompt,
     Dimension center_width, center_height;
     Dimension prompt_width, prompt_height;
     Widget  valueWidget;
-    
+
     CancelAction ((Widget)NULL, (XEvent *) 0, (String *) 0, (Cardinal *) 0);
     promptShell = XtCreatePopupShell ("promptShell", transientShellWidgetClass,
 				      toplevel, NULL, (Cardinal) 0);

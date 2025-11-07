@@ -1,13 +1,13 @@
 .TH @g@indxbib @MAN1EXT@ "@MDATE@" "groff @VERSION@"
 .SH Name
-@g@indxbib \- make inverted index for bibliographic databases
+@g@indxbib \- make inverted index of bibliographic databases
 .
 .
 .\" ====================================================================
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -96,17 +96,17 @@
 .\" ====================================================================
 .
 .I @g@indxbib
-makes an inverted index for the bibliographic databases in each
+makes an inverted index of the bibliographic databases in each
 .I file
-for use with
+to speed their access by
 .MR @g@refer @MAN1EXT@ ,
 .MR @g@lookbib @MAN1EXT@ ,
 and
 .MR lkbib @MAN1EXT@ .
 .
-Each created index is named
-.RI file @INDEX_SUFFIX@ ;
-writing is done to a temporary file which is then renamed to this.
+The program writes to a temporary file
+that it later renames to
+.RI file @INDEX_SUFFIX@ .
 .
 If no
 .I file
@@ -114,12 +114,12 @@ operands are present
 and no
 .B \-o
 option is given,
-.I @g@refer
+.I @g@indxbib
 names the index
 .IR \%@DEFAULT_INDEX_NAME@@INDEX_SUFFIX@ .
 .
 .
-.LP
+.PP
 Bibliographic databases are divided into records by blank lines.
 .
 Within a record,
@@ -127,24 +127,24 @@ each field starts with a
 .B %
 character at the beginning of a line.
 .
-Fields have a one letter name that follows the
+Fields have a one-letter name that follows the
 .B %
 character.
 .
 .
-.LP
-The values set by the
+.PP
+.I @g@indxbib
+stores the values set by the
 .BR \-c ,
 .BR \-l ,
 .BR \-n ,
 and
 .B \-t
-options are stored in the index:
-when the index is searched,
-keys will be discarded and truncated in a
-manner appropriate to these options;
-the original keys will be used for verifying that any record
-found using the index actually contains the keys.
+options in the index:
+programs that search the index interpret them,
+discarding and truncating keys appropriately,
+and using the original keys to verify
+that any record found using the index actually contains the keys.
 .
 This means that a user of an index need not know whether these
 options were used in the creation of the index,
@@ -153,10 +153,11 @@ would have been discarded during indexing
 and that the user supplies at least the part of each key
 that would have remained after being truncated during indexing.
 .
-The value set by the
+.I @g@indxbib
+also stores the value set by the
 .B \-i
-option is also stored in the index
-and will be used in verifying records found using the index.
+option in the index
+for use in verifying records found using it.
 .
 .
 .\" ====================================================================
@@ -290,6 +291,21 @@ keys are truncated to 6 characters.
 Index whole files.
 .
 Each file is a separate record.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@indxbib
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

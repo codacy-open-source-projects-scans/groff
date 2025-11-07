@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,13 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#ifndef GROFF_STRINGCLASS_H
+#define GROFF_STRINGCLASS_H
 
 #include <assert.h>
-#include <string.h>
-#include <stdio.h>
+#include <string.h> // memcmp(), strlen()
+#include <stdio.h> // FILE
 
 // Ensure that the first declaration of functions that are later
 // declared as inline declares them as inline.
@@ -70,6 +69,9 @@ public:
   int search(const char) const;
   int find(const char *) const;
   char *extract() const;
+  size_t json_length() const;
+  const char *json_extract() const;
+  void json_dump() const;
   void remove_spaces();
   void clear();
   void move(string &);
@@ -99,13 +101,13 @@ private:
 
 inline char &string::operator[](int i)
 {
-  assert(i >= 0 && i < len);
+  assert((i >= 0) && (i < len));
   return ptr[i];
 }
 
 inline char string::operator[](int i) const
 {
-  assert(i >= 0 && i < len);
+  assert((i >= 0) && (i < len));
   return ptr[i];
 }
 
@@ -116,7 +118,7 @@ inline int string::length() const
 
 inline int string::empty() const
 {
-  return len == 0;
+  return (len == 0);
 }
 
 inline int string::operator*() const
@@ -136,26 +138,14 @@ inline string operator+(const string &s1, const string &s2)
 
 inline string operator+(const string &s1, const char *s2)
 {
-#ifdef __GNUG__
-  if (s2 == 0)
-    return s1;
-  else
-    return string(s1.ptr, s1.len, s2, strlen(s2));
-#else
-  return s2 == 0 ? s1 : string(s1.ptr, s1.len, s2, strlen(s2));
-#endif
+  return (0 /* nullptr */ == s2)
+	 ? s1 : string(s1.ptr, s1.len, s2, strlen(s2));
 }
 
 inline string operator+(const char *s1, const string &s2)
 {
-#ifdef __GNUG__
-  if (s1 == 0)
-    return s2;
-  else
-    return string(s1, strlen(s1), s2.ptr, s2.len);
-#else
-  return s1 == 0 ? s2 : string(s1, strlen(s1), s2.ptr, s2.len);
-#endif
+  return (0 /* nullptr */ == s1)
+	 ? s2 : string(s1, strlen(s1), s2.ptr, s2.len);
 }
 
 inline string operator+(const string &s, char c)
@@ -182,7 +172,7 @@ inline int operator!=(const string &s1, const string &s2)
 
 inline string string::substring(int i, int n) const
 {
-  assert(i >= 0 && i + n <= len);
+  assert((i >= 0) && ((i + n) <= len));
   return string(ptr + i, n);
 }
 
@@ -197,6 +187,8 @@ inline string &string::operator+=(char c)
 void put_string(const string &, FILE *);
 
 string as_string(int);
+
+#endif // GROFF_STRINGCLASS_H
 
 // Local Variables:
 // fill-column: 72

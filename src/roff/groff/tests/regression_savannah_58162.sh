@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -20,7 +20,7 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-set -e
-
 # Compatibility mode should not get shut off by macro file inclusion.
-printf '.ds FOO FAIL\n\\*[FOO]' | "$groff" -C -Tutf8 | grep -Fx 'FOO]'
+printf '.ds FOO FAIL\n\\*[FOO]' | "$groff" -C -Tutf8 | grep -Fqx 'FOO]'
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

@@ -41,12 +41,16 @@
 .\"
 .\" Translated to French by Grégoire Babey <gibux@gmx.ch>
 .\"UC 7
-.if t .ll 6.5i
-.if t .lt 6.5i
+.if t \{\
+.  ll 6.5i
+.  lt 6.5i
+.\}
+.if n .po 10n
 .nr sx 0
 .ds MO @VERSION@
 .nr si 3n
 .he '\f(BIgroff\fP en option \f(BI\-me\fP''%'
+.fo ''\f(BIgroff\fP \*(MO''
 .\"eh 'USD:19-%''Writing Papers with NROFF using \-me'
 .\"oh 'Writing Papers with NROFF using \-me''USD:19-%'
 .ds U Unix
@@ -545,7 +549,8 @@ qui présente en traduction (anglaise)
 les phrases les plus délicieuses de Confucius.
 Décidément un passage obligé
 pour tous ceux qui s'intéressent
-au fondements primitifs de la philosophie chinoise.
+au fondements primitifs
+de la philosophie chinoise.
 .)b
 produira:
 .sp 2
@@ -553,10 +558,13 @@ produira:
 .ti \n($iu
 Ware, James R. The Best of Confucius,
 Halcyon House, 1950.
-Un livre excellent, qui présente
-en traduction (anglaise) les phrases les plus délicieuses de Confucius.
-Décidément un passage obligé pour tous ceux
-qui s'intéressent au fondements primitifs de la philosophie chinoise.
+Un livre excellent,
+qui présente en traduction (anglaise)
+les phrases les plus délicieuses de Confucius.
+Décidément un passage obligé
+pour tous ceux qui s'intéressent
+au fondements primitifs
+de la philosophie chinoise.
 .pp
 Les lignes de texte peuvent être centrées en utilisant la requête
 .b .ce .
@@ -623,18 +631,22 @@ l'entrée:
 .(b
 Comme l'indique Weizenbaum:
 \&.(q
-On dit qu'expliquer, c'est expliquer en s'éloignant.
+On dit qu'expliquer, c'est expliquer
+en s'éloignant.
 Cette maxime ne s'accomplit nulle part aussi bien
-que dans le domaine de la programmation informatique,...
+que dans le domaine
+de la programmation informatique,...
 \&.)q
 .)b
 génère comme sortie:
 .lp
 Comme l'indique Weizenbaum:
 .(q
-On dit qu'expliquer, c'est expliquer en s'éloignant.
+On dit qu'expliquer, c'est expliquer
+en s'éloignant.
 Cette maxime ne s'accomplit nulle part aussi bien
-que dans le domaine de la programmation informatique,...
+que dans le domaine
+de la programmation informatique,...
 .)q
 .sh 2 "Listes"
 .pp
@@ -832,13 +844,15 @@ tapez
 L'entrée:
 .(b
 \&.(l
-première ligne d'une mise en évidence non-justifiée
+première ligne d'une mise
+en évidence non-justifiée
 lignes suivantes
 \&.)l
 .)b
 produit un texte indenté:
 .(b
-première ligne d'une mise en évidence non-justifiée
+première ligne d'une mise
+en évidence non-justifiée
 lignes suivantes
 .)b
 En tapant
@@ -847,16 +861,19 @@ après la requête
 .b .(l
 cela produira le même résultat, mais aligné à gauche:
 .(b L
-première ligne d'une mise en évidence non-justifiée
+première ligne d'une mise
+en évidence non-justifiée
 lignes suivantes
 .)b
+.ne 2v
 Si vous utilisez
 .b C
 à la place de
 .b L
 vous obtenez une liste centrée:
 .(b C
-première ligne d'une mise en évidence non-justifiée
+première ligne d'une mise
+en évidence non-justifiée
 lignes suivantes
 .)b
 .pp
@@ -893,7 +910,8 @@ utilisez:
 .(b
 \&.(b L
 \&.(c
-première ligne d'une mise en évidence non-justifiée
+première ligne d'une mise
+en évidence non-justifiée
 lignes suivantes
 \&.)c
 \&.)b
@@ -902,7 +920,8 @@ lignes suivantes
 ce qui produira:
 .(b L
 .(c
-première ligne d'une mise en évidence non-justifiée
+première ligne d'une mise
+en évidence non-justifiée
 lignes suivantes
 .)c
 .)b
@@ -978,7 +997,8 @@ un homme qui n'est pas attentif
 et qui, en même temps, est ignorant;
 un homme qui est rempli de mensonge
 et qui, en même temps, est incompétent;
-un tel homme ne fait pas partie de mes relations.\e**
+un tel homme ne fait pas partie
+de mes relations.\e**
 \&.(f
 \e**Traduit de :James R. Ware,
 \&.ul
@@ -996,7 +1016,8 @@ un homme qui n'est pas attentif
 et qui, en même temps, est ignorant;
 un homme qui est rempli de mensonge
 et qui, en même temps, est incompétent;
-un tel homme ne fait pas partie de mes relations.\**
+un tel homme ne fait pas partie
+de mes relations.\**
 .(f
 \**Traduit de: James R. Ware,
 .ul
@@ -1127,8 +1148,10 @@ Si les cochons avaient des ailes
 \&.(x
 Ceci est une entrée d'index terriblement longue,
 comme on pourrait en avoir besoin pour
-une liste d'illustrations, de tableaux, ou de figures;
-je m'attends à ce qu'elle fasse au moins deux lignes.
+une liste d'illustrations, de tableaux,
+ou de figures;
+je m'attends à ce qu'elle fasse
+au moins deux lignes.
 \&.)x
 \&.xp
 .)b
@@ -1148,8 +1171,10 @@ Si les cochons avaient des ailes
 .(x
 Ceci est une entrée d'index terriblement longue,
 comme on pourrait en avoir besoin pour
-une liste d'illustrations, de tableaux, ou de figures;
-je m'attends à ce qu'elle fasse au moins deux lignes.
+une liste d'illustrations, de tableaux,
+ou de figures;
+je m'attends à ce qu'elle fasse
+au moins deux lignes.
 .)x
 .xp
 .pp
@@ -1398,7 +1423,8 @@ l'entrée:
 \&.bu
 \&Une c.-à-s. de crème
 \&.bu
-\&Sel, poivre de Cayenne et jus de citron pour assaisonner
+\&Sel, poivre de Cayenne et jus de citron
+pour assaisonner
 \&.bu
 \&Deux bonnes c.-à-s. de beurre
 .)b
@@ -1420,7 +1446,8 @@ Un jaune d'oeuf
 .bu
 Une c.-à-s. de crème
 .bu
-Sel, poivre de Cayenne et jus de citron pour assaisonner
+Sel, poivre de Cayenne et jus de citron
+pour assaisonner
 .bu
 Deux bonnes c.-à-s. de beurre
 .sh 2 "Titres de chapitres"
@@ -1675,9 +1702,9 @@ les commentaires débutent par la requête
 .hl
 .if t .in 0.5i
 .if t .ta 2i
-.if n .ta \w'.+c "CHAPITRE SUIVANT"'u+1n
-\&.fo \(aq\(aqÉBAUCHE\(aq\(aq	\e" définir un pied de page pour chaque\
- page
+.if n .ta 23n
+\&.fo \(aq\(aqÉBAUCHE\(aq\(aq	\e" définir un pied de page...
+\&.				\e" ...pour chaque page
 \&.tp			\e" commencer la page de titre
 \&.(l C			\e" liste centrée
 LA CROISSANCE
@@ -1688,7 +1715,8 @@ par
 \&.sp
 Frank Furter
 \&.)l			\e" fin de la liste centrée
-\&.+c INTRODUCTION	\e" début du chapitre intitulé "INTRODUCTION"
+\&.+c INTRODUCTION	\e" début du chapitre intitulé...
+\&.			\e" ..."INTRODUCTION"
 \&.(x t			\e" faire une entrée pour l\(aqindex "t"
 Introduction
 \&.)x 			\e" fin de l\(aqentrée d\(aqindex
@@ -1709,12 +1737,13 @@ texte du chapitre 3	\e" =Conclusions
 Bibliographie
 \&.)x
 texte de la bibliographie
-\&.++ P			\e" commencer la partie préliminaire...
-\&.	\e" ...du document
+\&.++ P			\e" commencer la partie...
+\&.			\e" ...préliminaire du document
 \&.+c "TABLE DES MATIÈRES"
-\&.xp t			\e" imprimer l\(aqindex "t" collecté en amont
+\&.xp t			\e" imprimer l\(aqindex "t" collecté...
+\&.			\e" ...en amont
 \&.+c PREFACE		\e" commencer un nouveau chapitre...
-\&.	\e" ...dans la partie préliminaire.
+\&.			\e" ...dans la partie préliminaire.
 texte de la préface
 .sp 2
 .in 0
@@ -2305,6 +2334,7 @@ par leurs idées ou leur soutien.
 .uh "Annexe: petit lexique des noms de requêtes"
 Par ordre d'apparition dans le texte
 .sp
+.na
 .TS
 tab(|);
 L L Lx.

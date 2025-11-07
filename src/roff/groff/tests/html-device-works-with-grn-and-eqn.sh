@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -26,7 +26,7 @@ for cmd in pnmcrop pamcut pnmtopng pnmtops ps2ps
 do
     if ! command -v $cmd >/dev/null
     then
-        echo "cannot locate '$cmd' command; skipping test" >&2
+        echo "$0: cannot locate '$cmd' command; skipping" >&2
         exit 77 # skip
     fi
 done
@@ -34,13 +34,20 @@ done
 # Commit c71b4ef4aa provoked an infinite loop in post-grohtml with these
 # preprocessors.
 
-input='.EQ
+input='.
+.pp
+Hello, world!
+.EQ
 gsize 12
 delim $$
 .EN
 .pp
 .pp
-The faster clocks are $ PN $'
+The faster clocks are $ PN $
+.'
 
-output=$("$groff" -b -ww -Thtml -eg -me "$input")
-test -n "$output"
+output=$(printf "%s\n" | "$groff" -b -ww -Thtml -eg -me)
+echo "$output"
+echo "$output" | grep -q 'faster clocks'
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

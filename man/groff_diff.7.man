@@ -11,7 +11,7 @@ and AT&T
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -69,7 +69,7 @@ The GNU
 .I roff
 text processing system,
 .IR groff ,
-is an extension of AT&T
+is a reimplementation and extension of AT&T
 .IR troff , \" AT&T
 the typesetting system originating in Unix systems of the 1970s.
 .
@@ -80,15 +80,22 @@ by the
 .I troff \" generic
 formatter.
 .
-Differences arising from
+We also note here differences arising from
 .IR groff 's
 implementation of AT&T
 .I troff \" AT&T
-features are also noted.
+features.
 .
 See
 .MR roff @MAN7EXT@
 for background.
+.
+GNU
+.I troff \" GNU
+can operate in a manner that increases support
+for documents written for AT&T
+.IR troff ; \" AT&T
+see section \[lq]Compatibility mode\[rq] below.
 .
 .
 .\" ====================================================================
@@ -100,7 +107,8 @@ GNU
 features identifiers of arbitrary length;
 supports color output,
 non-integral type sizes,
-and user-defined characters;
+user-defined characters,
+and automatic hyphenation of languages other than English;
 adds more conditional expression operators;
 recognizes additional scaling units and numeric operators;
 enables general file I/O
@@ -128,6 +136,7 @@ environments,
 special characters,
 character classes,
 streams,
+hyphenation language codes,
 and colors can be of any length.
 .
 Anywhere AT&T
@@ -154,13 +163,17 @@ ships with support for families containing each of the styles
 .RB \[lq] I \[rq],
 .RB \[lq] B \[rq],
 and
-.RB \[lq] BI \[rq].
+.RB \[lq] BI \[rq]
+(roman [upright],
+bold,
+italic [slanted],
+and bold-italic).
 .
 So that a document need not be coupled to a specific font family,
 an output device can associate a style in the abstract sense with a
 mounting position.
 .
-Thus the default family can be combined with a style dynamically,
+Thus the default family can combine with a style dynamically,
 producing a
 .I "resolved font name."
 .
@@ -247,12 +260,10 @@ registers exercise color support.
 .SS Hyphenation
 .\" ====================================================================
 .
-.\" BEGIN Keep (roughly) parallel with relevant material from groff.texi
-.\" nodes "Hyphenation" and "Manipulating Hyphenation".
 GNU
 .I troff \" GNU
 uses a hyphenation algorithm and language-specific pattern files
-(based on those used in \*[tx])
+(based on \*[tx]'s)
 to decide which words can be hyphenated and where.
 .
 AT&T
@@ -278,9 +289,8 @@ whereas
 .B hpf
 and
 .B hpfa
-load
-(or append to)
-the language's hyphenation patterns.
+respectively
+load and append to the language's hyphenation patterns.
 .
 If no hyphenation language is set or no patterns are loaded,
 GNU
@@ -288,6 +298,8 @@ GNU
 does not perform automatic hyphenation.
 .
 .
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Manipulating
+.\" Hyphenation".
 .P
 For automatic hyphenation to work,
 the formatter must know which letters are equivalent;
@@ -311,26 +323,33 @@ in one-to-one correspondence,
 and assigns a code of zero to all other characters.
 .
 .
+.br
+.ne 2v
 .P
 The
 .B hcode
-request extends this principle to letters
-outside the Unicode basic Latin alphabet;
-without it,
+request enables application of hyphenation codes
+to characters outside the Unicode basic Latin set;
+without doing so,
 words containing such letters
-won't be hyphenated properly
+won't hyphenate properly
 even if the corresponding hyphenation patterns contain them.
+.
+Localization files for the input character set and language
+configure hyphenation codes;
+see
+.MR groff_tmac @MAN5EXT@ .
+.\" END Keep (roughly) parallel with groff.texi node "Manipulating
+.\" Hyphenation".
 .
 .
 .P
 GNU
 .IR troff 's \" GNU
 .B \[rs]:
-escape sequence is analogous to the
+escape sequence works like
 .B \[rs]%
-sequence but produces no hyphen if the word breaks at that location.
-.\" END Keep (roughly) parallel with relevant material from groff.texi
-.\" nodes "Hyphenation" and "Manipulating Hyphenation".
+but produces no hyphen if the word breaks at that location.
 .
 .
 .\" ====================================================================
@@ -339,49 +358,61 @@ sequence but produces no hyphen if the word breaks at that location.
 .
 .\" BEGIN Keep (roughly) parallel with groff.texi node "Using Fractional
 .\" Type Sizes".
+When configuring the type size,
 AT&T
 .I troff \" AT&T
-interpreted all type size measurements in points.
-.
+ignored scaling units and intepreted all measurements in points.
 Combined with integer arithmetic,
 this design choice made it impossible to support,
 for instance,
-ten and a half-point type.
+ten-and-a-half-point type.
 .
 In GNU
-.IR troff , \" GNU
-an output device can select a scaling factor that subdivides a point
-into \[lq]scaled points\[rq].
-.
-A type size expressed in scaled points can thus represent a non-integral
-size in points.
+.I troff \" GNU
+an output device can select a scaling factor
+that subdivides a point into \[lq]scaled points\[rq].
+A type size expressed in scaled points
+can thus represent a non-integral size in points.
 .
 .
 .P
 A
-.I scaled point
+.I "scaled point,"
+scaling unit
+.BR s ,
 is equal to
 .RI 1/ sizescale
 points,
-where
-.I sizescale
-is specified in the device description file,
+where the device description file,
 .IR DESC ,
-and defaults to\~1;
+specifies
+.I sizescale
+and otherwise defaults to\~1;
 see
 .MR groff_font @MAN5EXT@ .
 .
-Requests and escape sequences in GNU
+GNU
 .I troff \" GNU
-interpret arguments that represent a type size in points,
-which the formatter multiplies by
+also defines the
+.I "typographical point,"
+scaling unit
+.BR z ,
+which explicitly specifies a type size of potentially
+non-integral measure.
+The program multiplies typographical points by
 .I sizescale
-and converts to an integer.
+and converts the value to an integer.
 .
-Arguments treated in this way comprise those to the escape sequences
+Arguments GNU
+.I troff \" GNU
+interprets in
+.B z
+units by default comprise those to the escape sequences
 .B \[rs]H
 and
 .BR \[rs]s ,
+.\" Legacy forms of the `\s` escape sequence don't accept numerical
+.\" expressions--only integers.
 to the request
 .BR ps ,
 the third argument to the
@@ -391,19 +422,22 @@ and the second and fourth arguments to the
 .B tkf
 request.
 .
-Scaled points may be specified explicitly with the
-.B z
-scaling unit.
-.
 In GNU
 .IR troff , \" GNU
 the register
 .B \[rs]n[.s]
-can interpolate a non-integral type size.
-.
-The register
+interpolates the type size in typographical points
+.RB ( z ),
+whereas the register
 .B \[rs]n[.ps]
-interpolates the type size in scaled points.
+interpolates it in scaled points
+.RB ( s ).
+.
+.RB \[lq] \[rs]n[.ps]s \[rq],
+.RB \[lq] \[rs]n[.s]z \[rq],
+and
+.RB \[lq] 1m \[rq]
+are co-equal by definition.
 .
 .
 .P
@@ -417,28 +451,8 @@ Consequently,
 .RB \[lq] ".ps 10.5" \[rq]
 is synonymous with
 .RB \[lq] ".ps 10.5z" \[rq];
-both set the type size to 10,500\~scaled points,
-or 10.5\~points.
-.
-.
-.br
-.ne 2v
-.P
-Another new scaling unit,
-.RB \[lq] s \[rq],
-multiplies by the number of basic units in a scaled point.
-.
-Thus,
-.RB \[lq]\^ \[rs]n[.ps]s \[rq]
-is equal to
-.RB \[lq] 1m \[rq]
-by definition.
-.
-Do not confuse the
-.RB \[lq] s \[rq]
-and
-.RB \[lq] z \[rq]
-scaling units.
+both set the type size to 10,500\~scaled points
+or 10.5\~typographical points.
 .
 .
 .P
@@ -470,8 +484,29 @@ disallows those as well.
 .P
 Output devices may be limited in the type sizes they can employ.
 .
+The
+.B .s
+and
+.B .ps
+registers represent the type size selected by the formatter
+as it understands a device's capability.
+.
+The last
+.I requested
+type size is interpolated in scaled points
+by the read-only register
+.B .psr
+and in points as a decimal fraction by the read-only string-valued
+register
+.BR .sr .
+.
+Like the actual current and previous type size,
+the requested ones are properties of an environment.
+.
+.
+.P
 For example,
-if a type size of 10.95\~points is requested,
+if a document requests a type size of 10.95\~points,
 and the nearest size permitted by a
 .B sizes
 request
@@ -483,24 +518,8 @@ directives in the device's
 .I DESC
 file)
 is 11\~points,
-the output driver uses the latter value.
-.
-The
-.B .s
-and
-.B .ps
-registers represent the type size selected by the formatter as it
-understands a device's capability.
-.
-The last
-.I requested
-type size is interpolated in scaled points by the read-only register
-.B .psr
-and in points as a decimal fraction by the read-only string-valued
-register
-.BR .sr .
-.
-Both are associated with the environment.
+.I groff
+uses the latter value.
 .\" END Keep (roughly) parallel with groff.texi node "Using Fractional
 .\" Type Sizes".
 .
@@ -551,7 +570,7 @@ and
 .
 .TP
 .BI ( c ; e )
-Evaluate expression
+Interpolate expression
 .I e
 using
 .I c
@@ -587,16 +606,15 @@ request.
 .BI c\~ chr
 True if a character
 .I chr
-is available,
-where
+is available;
 .I chr
-is an ordinary character
-(Unicode basic Latin excluding control characters and the space),
-a special character
-(whether built-in or user-defined),
+is an
+ordinary,
+special,
 or
-.BI \[rs]N\[aq] index\c
-.BR \[aq] .
+indexed
+character,
+whether defined by a font description file or a request.
 .
 .
 .TP
@@ -658,13 +676,14 @@ Font translations apply.
 .B v
 Always false.
 .
-This condition is for compatibility with certain other
+This condition exists for compatibility with certain other
 .I troff
-implementations only.
+implementations.
 .
-(This refers to
+(We refer to
 .IR vtroff ,
-a translator that would convert the C/A/T output from early-vintage AT&T
+a translator that converted the C/A/T command stream
+produced by early-vintage AT&T
 .I troff \" AT&T
 to a form suitable for Versatec and Benson-Varian plotters.)
 .
@@ -677,7 +696,10 @@ to a form suitable for Versatec and Benson-Varian plotters.)
 .
 GNU
 .I troff \" GNU
-offers drawing commands to create filled
+extends the
+.B \[rs]D
+escape sequence
+with drawing commands to create filled
 circles and ellipses,
 and polygons.
 .\" CSTR #54 did not countenance polygons, but DWB 3.3 had outlined ones
@@ -689,14 +711,13 @@ filled (solid) ones shaded with the fill color.
 These are independent properties;
 if you want a filled,
 stroked figure,
-you must draw the same figure twice using each drawing command.
+you must draw the same figure twice using each command.
 .
-A filled figure is always smaller
+A filled figure is smaller
 than a stroked one using the same parameters
 because the former is drawn only within its defined area,
-whereas strokes have a line thickness
-(set with another new drawing command,
-.BR \[rs]D\[aq]t\[aq] ).
+whereas strokes have a line thickness,
+set with another new drawing command.
 .
 .
 .\" ====================================================================
@@ -732,11 +753,19 @@ and
 and alters the behavior of
 .BR \[rs]X .
 .
-In the following list,
-escape sequences are collated alphabetically at first,
+The following list collates
+escape sequences alphabetically at first,
 and then by symbol roughly in Unicode code point order.
 .\" Exceptions are made to group closely-related escape sequences in an
 .\" order more agreeable to the development of a topic.
+.
+Neutral apostrophes
+.B \[aq]
+illustrate escape sequences with a user-selectable delimiter.
+.
+Many others are available;
+see subsection \[lq]Miscellaneous\[rq]
+and section \[lq]Compatibility Mode\[rq] below.
 .
 .
 .\"TP 10n \" "\D'E h v'" + 2n + hand-tuned for PDF
@@ -784,19 +813,19 @@ with its leftmost point at the drawing position.
 .
 .TP
 .BI \[rs]D\[aq]E\~ "h v" \[aq]
-Draw filled ellipse with
+Draw filled ellipse of axis lengths
 .I h
 and
-.I v
-as the axis lengths and its leftmost point at the drawing position.
+.IR v ,
+with its leftmost point at the drawing position.
 .
 .
 .TP
 .BI \[rs]D\[aq]p\~ "h1 v1"\~\c
 .RI .\|.\|.\~ "hn vn"\c
 .B \[aq]
-Draw polygon with vertices at drawing position and each point
-in sequence.
+Draw polygon with vertices at the drawing position
+and each point in sequence.
 .
 GNU
 .I troff \" GNU
@@ -841,8 +870,8 @@ selects the minimum supported thickness.
 .
 A negative
 .I n
-selects a thickness proportional to the type size;
-this is the default.
+(the default)
+selects a thickness proportional to the type size.
 .
 .
 .TP
@@ -859,7 +888,7 @@ It is also convenient to define strings containing escape sequences that
 need to work when used in copy mode
 (for example,
 as macro arguments),
-or which will be interpolated at varying macro nesting depths.
+or that will be interpolated at varying macro nesting depths.
 .
 .
 .TP
@@ -870,13 +899,16 @@ which may be a mounting position,
 abstract style,
 or font name.
 .
-.B \[rs]f\^[]
+.BR \[rs]f\^[] ,
+.BR \[rs]f\^[P] ,
 and
 .B \[rs]f\^P
 are synonyms;
-we recommend the former.
+we recommend the first.
 .
 .
+.br
+.ne 4v
 .TP
 .BI \[rs]F f
 .TQ
@@ -898,12 +930,16 @@ See the
 request below.
 .
 .
+.br
+.ne 3v
 .TP
 .BI \[rs]k( rg
 .TQ
 .BI \[rs]k[ reg ]
-Mark horizontal drawing position in
-two-character register
+Store the horizontal drawing position,
+relative to that corresponding to the start of the input line
+(ignoring page offset and indentation),
+in two-character register
 .RI name\~ rg
 or arbitrary register
 .RI name\~ reg .
@@ -915,7 +951,8 @@ or arbitrary register
 .BI \[rs]m( cl
 .TQ
 .BI \[rs]m[ col ]
-Set the stroke color.
+Set stroke color to
+.IR col .
 .
 .B \[rs]m[]
 restores the previous stroke color,
@@ -928,7 +965,8 @@ or the default if there is none.
 .BI \[rs]M( cl
 .TQ
 .BI \[rs]M[ col ]
-Set the fill color.
+Set fill color to
+.IR col .
 .
 .B \[rs]M[]
 restores the previous fill color,
@@ -1073,6 +1111,12 @@ Synonymous with
 .RB \[lq] .nr
 .IR name\~\[+-]n \[rq].
 .
+.TP
+.B \[rs]s[0]
+.TQ
+.B \[rs]s\[aq]0\[aq]
+Restore the previous type size;
+no operation if there is none.
 .
 .TP
 .BI \[rs]s[ \[+-]n ]
@@ -1084,8 +1128,8 @@ Synonymous with
 .BI \[rs]s \[+-] \[aq] n \[aq]
 Set the type size to,
 or increment or decrement it by,
-.I n
-scaled points.
+.IR n \~typographical
+points.
 .
 .
 .br
@@ -1096,8 +1140,12 @@ scaled points.
 .BI \[rs]V( ev
 .TQ
 .BI \[rs]V[ env ]
-Interpolate contents of the environment variable
-.IR env ,
+Interpolate contents of the system environment variable
+.I env
+(one-character
+.RI name\~ e ,
+two-character
+.RI name\~ ev)
 as returned by
 .MR getenv 3 .
 .
@@ -1106,14 +1154,27 @@ is interpreted even in copy mode.
 .
 .
 .\" TODO: When we get this giant headache generalized and adapted to the
-.\" `\!` escape sequence and `device`, `output`, `cf`, and `trf`
-.\" requests, move this discussion into a dedicated subsection above.
+.\" `device` request, move this discussion into a dedicated subsection
+.\" above.
 .TP
-.BI \[rs]X\[aq] contents \[aq]
-The
-.I groff
-special character repertoire is unknown to output drivers outside of
-glyphs named in a device's fonts,
+.BI \[rs]X\[aq] character-sequence \[aq]
+Unlike AT&T
+.IR troff , \" AT&T
+GNU
+.I troff \"
+performs some limited processing of the sequence of ordinary characters,
+special characters,
+and spaces in
+.IR character-sequence .
+.
+.
+.\" XXX: Force paragraph spacing here.  I know--it's terrible.  And
+.\" unnecessary once we get this giant discussion moved to its own
+.\" (sub)section.
+.sp \n[PD]u
+.\"IP
+The formatter's special character repertoire is unknown
+to output drivers outside of glyphs named in a device's fonts,
 and even then they may not possess complete coverage of the names
 documented in
 .MR groff_char @MAN7EXT@ .
@@ -1125,26 +1186,43 @@ or that are dummy characters may appear in strings
 or be converted to nodes,
 particularly in diversions. \" (@pxref{Gtroff Internals})
 .
+When they occur in a device extension command,
+they produce warnings in category
+.RB \[lq] char \[rq].
+.
 These are not representable when interpolated directly into
 device-independent output,
 as might be done when writing out tag names for PDF bookmarks,
 which can appear in a viewer's navigation pane.
 .
+This is also the case for a small number of special characters,
+such as
+.BR \[rs][ru] ,
+the baseline rule,
+that lack a Unicode definition.
 .
-.\" XXX: Force paragraph spacing here.  I know--it's terrible.  And
-.\" unnecessary once we get this giant discussion moved to its own
-.\" (sub)section.
+.
 .sp \n[PD]u
 .\"IP
-So that documents or macro packages do not have to laboriously
-\[lq]sanitize\[rq] strings destined for interpolation
-in device extension commands,
-this escape sequence
-.\" XXX: and soon other things
-performs certain transformations on its argument.
+So that any Unicode code point can be represented in device extension
+commands,
+for example in an author's name in document metadata
+or as a usefully named bookmark or hyperlink anchor,
+GNU
+.I troff \" GNU
+transforms its argument to represent characters
+outside the Unicode Basic Latin range
+as Unicode code points expressed in
+.IR groff 's
+notation for these,
+\[lq]\|\c
+.BI \[rs][u XXXX ]\c
+\|\[rq];
+see
+.MR groff_char @MAN7EXT@ .
 .
 For these transformations,
-character translations and definitions are ignored.
+the formatter ignores character translations and definitions.
 .
 .
 .sp \n[PD]u
@@ -1154,7 +1232,7 @@ GNU
 converts several ordinary characters that typeset as non-basic Latin
 code points to code points outside that range so that they are used
 consistently whether they are formatted as glyphs or used in a device
-control command argument.
+extension command argument.
 .
 These ordinary characters are
 .RB \[lq]\| \[aq] \|\[rq],
@@ -1165,25 +1243,29 @@ and
 .RB \[lq]\| \[ti] \|\[rq];
 others are written as-is.
 .
+Thus,
+.RB \[lq]\| \[aq] \|\[rq]
+transforms to
+.RB \[lq]\| \[rs][u2019] \|\[rq].
+.
 .
 .sp \n[PD]u
 .\"IP
-Special characters that typeset as Unicode basic Latin characters
-are translated to basic Latin characters accordingly.
-.
-So that any Unicode code point can be represented in device extension
-commands,
-for example in an author's name in document metadata
-or as a usefully named bookmark or hyperlink anchor,
+Contrariwise,
 GNU
 .I troff \" GNU
-maps other special characters to Unicode special character notation.
+translates special characters that typeset
+as Unicode basic Latin characters
+to basic Latin characters accordingly.
 .
-Special characters without a Unicode representation,
-and escape sequences that do not interpolate a sequence
-of ordinary and/or special characters,
-produce warnings in category
-.RB \[lq] char \[rq].
+Thus,
+.RB \[lq]\| \[rs][ga] \|\[rq]
+transforms to
+.RB \[lq]\| \[ga] \|\[rq],
+.RB \[lq]\| \[rs][Do] \|\[rq]
+to
+.RB \[lq]\| $ \|\[rq],
+and so on.
 .
 .
 .br
@@ -1194,24 +1276,27 @@ produce warnings in category
 .BI \[rs]Y( ma
 .TQ
 .BI \[rs]Y[ mac ]
-Interpolate a macro as a device extension command.
+Interpolate a macro or string as a device extension command.
 .
-This is similar to
-.BI \[rs]X\[aq]\[rs]*[ mac ]\[aq]\f[R],
-except the contents of
-.I mac
-are not interpreted,
-and
+As
+.BI \[rs]X\[aq]\[rs]*[ mac ]\[aq]\c
+,
+except that GNU
+.I troff \" GNU
+does not interpret the contents of
+.IR mac ;
+further,
 .I mac
 can be a macro and thus contain newlines,
-whereas the argument to
-.B \[rs]X
-cannot.
+unlike the argument to
+.B \[rs]X .
 .
 This inclusion of newlines requires an extension to the AT&T
 .I troff \" AT&T
-page description language,
-and confuses postprocessors that do not know about it.
+device-independent page description language,
+and their presence confuses drivers that do not know about it
+(see subsection \[lq]Device control commands\[rq] of
+.MR groff_out @MAN5EXT@ ).
 .
 .
 .TP
@@ -1263,7 +1348,9 @@ or
 .IR nnn th
 argument.
 .
-Macros and strings can have an unlimited number of arguments.
+In GNU
+.IR troff , \" GNU
+macros and strings can have an unlimited number of arguments.
 .
 .
 .TP
@@ -1328,14 +1415,15 @@ as arguments.
 .B \[rs]\|/
 Apply an
 .IR "italic correction" :
-modify the spacing of the preceding glyph so that the distance between
-it and the following glyph is correct if the latter is of upright shape.
+modify the spacing of the preceding glyph
+so that the distance between it and the following glyph
+is correct if the latter is of upright shape.
 .
 For example,
-if an italic\~\[lq]f\^\[rq] is followed immediately by a roman right
-parenthesis,
-then in many fonts the top right portion of the\~\[lq]f\^\[rq] overlaps
-the top left of the right parenthesis,
+if an italic\~\[lq]f\^\[rq] is followed immediately
+by a roman right parenthesis,
+then in many fonts the top right portion of the\~\[lq]f\^\[rq]
+overlaps the top of the right parenthesis,
 .if t producing \f[I]f\f[R]),
 which is ugly.
 .
@@ -1350,20 +1438,24 @@ between them
 .\}
 avoids this problem.
 .
-Use this escape sequence whenever an oblique glyph is immediately
-followed by an upright glyph without any intervening space.
+Consider using
+.B \[rs]\^/
+whenever a slanted glyph
+is immediately followed by an upright glyph
+without any intervening space.
 .
 .
 .TP
 .B \[rs],
 Apply a
 .IR "left italic correction" :
-modify the spacing of the following glyph so that the distance between
-it and the preceding glyph is correct if the latter is of upright shape.
+modify the spacing of the following glyph
+so that the distance between it and the preceding glyph
+is correct if the latter is of upright shape.
 .
 For example,
-if a roman left parenthesis is immediately followed by an
-italic\~\[lq]f\^\[rq],
+if a roman left parenthesis is immediately followed
+by an italic\~\[lq]f\^\[rq],
 then in many fonts the bottom left portion of the\~\[lq]f\^\[rq]
 overlaps the bottom of the left parenthesis,
 .if t producing \f[R](\f[I]f\f[R],
@@ -1380,8 +1472,11 @@ between them
 .\}
 avoids this problem.
 .
-Use this escape sequence whenever an upright glyph is followed
-immediately by an oblique glyph without any intervening space.
+Consider using
+.B \[rs]\^,
+whenever an upright glyph
+is followed immediately by a slanted glyph
+without any intervening space.
 .
 .
 .TP
@@ -1406,11 +1501,15 @@ This feature has two applications.
 .
 .
 .IP
-Use it with the output comparison operator to compare its operands
+Surround operands to the output comparison operator
+with
+.B \[rs]?\&
+to compare them
 by character rather than as formatted output.
 .
 Since
-.MR @g@troff
+GNU
+.I troff \" GNU
 reads comparands protected with
 .B \[rs]?\&
 in copy mode,
@@ -1480,9 +1579,14 @@ for a list of components used in composite glyph names.
 .
 .TP
 .B \[rs]\[ti]
-Insert an unbreakable space that is adjustable like an ordinary space.
+Insert an adjustable,
+unbreakable space.
 .
-It is discarded from the end of an output line if a break is forced.
+As with ordinary spaces,
+GNU
+.I troff \" GNU
+discards any sequence of these at the end of an output line
+if a break occurs.
 .
 .
 .\" ====================================================================
@@ -1490,23 +1594,300 @@ It is discarded from the end of an output line if a break is forced.
 .\" ====================================================================
 .
 To mitigate risks from untrusted input documents,
-the
-.B pi
+GNU
+.I troff \" GNU
+disables the
+.BR cf ,
+.BR pi ,
 and
 .B sy
-requests are disabled by default.
+requests by default.
 .
-.MR @g@troff @MAN1EXT@ 's
+Its
 .B \-U
-option enables the formatter's \[lq]unsafe mode\[rq],
+option enables \[lq]unsafe mode\[rq],
 restoring their function
 (and enabling additional
 .I groff
 extension requests,
-.BR open ,
+.RB \[lq] open \[rq],
 .BR opena ,
 and
 .BR pso ).
+.
+.
+.br
+.ne 6v
+.\" ====================================================================
+.SS "Altered requests"
+.\" ====================================================================
+.
+.TP
+.BI .bd\~ "special-font font"
+Stop emboldening
+.I special-font
+when
+.I font
+is selected.
+.
+.\" XXX:
+.\" Possibly allow prefixing an integer with `\&` to force
+.\" interpretation of this form.
+.I special-font
+must be a font name,
+not a mounting position.
+.
+.TP
+.BR .cf\~ [ \[dq] ]\c
+.I file
+Break and copy the contents of
+.I file
+as \[lq]throughput\[rq] to
+GNU
+.IR troff 's \" GNU
+output.
+.
+If a diversion is in use,
+GNU
+.I troff \" GNU
+performs the copy only when the diversion is emitted.
+.
+In AT&T
+.IR troff , \" AT&T
+the contents of
+.I file
+are immediately copied to the output regardless of whether a diversion
+is being written to;
+this behavior is so anomalous that it must be considered a bug.
+.
+.
+.IP
+GNU
+.I troff \" GNU
+removes a leading neutral double quote
+.RB \[oq] \[dq] \[cq]
+from the argument,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
+.
+If
+.I file
+does not exist or is not readable,
+a warning in category
+.RB \[lq] file \[rq]
+is emitted
+and the request has no other effect.
+.
+.
+.\" BEGIN Keep in sync with groff.texi node "Compatibility Mode".
+.br
+.ne 6v
+.TP
+.BI .de\~ name\~\c
+.RI [ end-name ]
+.TQ
+.BI .am\~ name\~\c
+.RI [ end-name ]
+.TQ
+.BI .ds\~ name\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
+.TQ
+.BI .as\~ name\~\c
+.RB [[ \[dq] ]\c
+.IR contents ]
+In compatibility mode,
+these requests behave as
+.BR de1 ,
+.BR am1 ,
+.BR ds1 ,
+and
+.BR as1 ,
+respectively:
+GNU
+.I troff \" GNU
+inserts a
+.I "compatibility save"
+token at the beginning of the macro,
+string,
+or appendment thereto as applicable
+and a
+.I "compatibility restore"
+token at its end,
+enabling compatibility mode during its interpolation.
+.
+Thus they work as expected
+even if the interpolation context disables compatibility mode.
+.\" END Keep in sync with groff.texi node "Compatibility Mode".
+.
+.
+.TP
+.BI .hy\~ n
+New values 16 and\~32 are available;
+the former enables hyphenation before the last character in a word,
+and the latter enables hyphenation after the first character in a word.
+.
+If invoked without an argument,
+the mode configured by the
+.B hydefault
+request is selected.
+.
+.
+.TP
+.BI .lf\~ input-line-number\~\c
+.RB [[ \[dq] ]\c
+.IR file-identifier ]
+In GNU
+.I troff \" GNU
+the first argument becomes the input line number of the
+.I next
+line the formatter reads.
+It also
+removes a leading neutral double quote
+.RB \[oq] \[dq] \[cq]
+from
+.I file-identifier,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
+.
+.
+.TP
+.BR .nx\~ [[ \[dq] ]\c
+.IR file ]
+GNU
+.I troff \" GNU
+removes a leading neutral double quote
+.RB \[oq] \[dq] \[cq]
+from
+.IR file ,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
+.
+.
+.TP
+.BR .pi\~ [ \[dq] ]\c
+.I command
+GNU
+.I troff \" GNU
+strips a leading neutral double quote from the argument,
+permitting initial embedded spaces in it.
+.
+.
+.TP
+.BI .pm\~ name\~\c
+\&.\|.\|.
+GNU
+.I troff \" GNU
+reports,
+to the standard error stream,
+the JSON-encoded name and contents of each macro,
+string,
+or diversion
+.IR name .
+.
+.
+.TP
+.BR .so\~ [ \[dq] ]\c
+.I file
+GNU
+.I troff \" GNU
+removes a leading neutral double quote
+.RB \[oq] \[dq] \[cq]
+from
+.IR file ,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
+.
+GNU
+.I troff \" GNU
+searches for
+.I file
+in any directories specified by
+.B \-I
+command-line options,
+followed by the current working directory.
+.
+If
+.I file
+does not exist or is not readable,
+GNU
+.I troff \" GNU
+emits a warning in category
+.RB \[lq] file \[rq].
+.
+.
+.TP
+.BI .ss\~ word-space-size\~\c
+.RI [ additional-sentence-space-size ]
+A second argument sets the amount of additional space separating
+sentences on the same output line.
+.
+If omitted,
+this amount is set to
+.IR word-space-size .
+.
+Both arguments are in twelfths of current font's space width
+(typically one-fourth to one-third em for Western scripts;
+see
+.MR groff_font @MAN5EXT@ ).
+.
+The default for both parameters is\~12.
+.
+Negative values are erroneous.
+.
+.
+.TP
+.BR .sy\~ [ \[dq] ]\c
+.I command
+GNU
+.I troff \" GNU
+strips a leading neutral double quote from the argument,
+permitting initial embedded spaces in it.
+.
+.
+.TP
+.BR .ta\~ [[\c
+.IR "n1 n2\~" .\|.\|.\~ nn \~]\c
+.BR T \~\c \" space in roman because we must use 2-font macro with \c
+.IR "r1 r2\~" .\|.\|.\~ rn ]
+GNU
+.I troff \" GNU
+supports an extended syntax to specify repeating tab stops after
+the
+.RB \[lq] T \[rq]
+mark.
+.
+These values are always taken as relative distances from the previous
+tab stop.
+.
+This is the idiomatic way to specify tab stops at equal intervals in
+.IR groff .
+.
+GNU
+.IR troff 's \" GNU
+startup value is
+.RB \[lq] "T 0.5i" \[rq].
+.
+.
+.IP
+The syntax summary above instructs
+.I groff
+to set tabs at positions
+.IR n1 ,
+.IR n2 ,
+\&.\|.\|.\|,
+.IR nn ,
+then at
+.IR nn \|+\| r1 ,
+.IR nn \|+\| r2 ,
+\&.\|.\|.\|,
+.IR nn \|+\| rn ,
+then at
+.IR nn \|+\| rn \|+\| r1 ,
+.IR nn \|+\| rn \|+\| r2 ,
+\&.\|.\|.\|,
+.IR nn \|+\| rn \|+\| rn ,
+and so on.
 .
 .
 .\" ====================================================================
@@ -1521,31 +1902,37 @@ requests work like AT&T
 and
 .B ds
 requests,
-accepting an optional leading neutral double-quote
-.B \[dq]
-in an argument that extends to the end of the input line,
+accepting an optional leading neutral double quote,
+notated
+.\" Use single quotes here for quotation to avoid the perversity of an
+.\" output device lacking directional double quotes rendering the
+.\" following as `"["]"`.
+.RB \[oq][ \[dq] ]\[cq],
+in an argument that the formatter reads
+in copy mode to the end of the input line,
 permitting inclusion of leading spaces.
-.
-Such arguments are labeled
-.I contents,
-are read in copy mode,
-and cosume the rest of the input line.
 .
 .
 .TP 8n \" ".break" + 2n
-.BI .aln\~ "new old"
+.BI .aln\~ "new-register existing-register"
 Create alias
-.I new
-for existing register named
-.IR old ,
-causing the names to refer to the same stored value.
+(additional name)
+.I new-register
+of
+.IR existing-register .
 .
 If
-.I old
+.I existing-register
 is undefined,
-a warning in category
-.B reg
-is generated and the request is ignored.
+GNU
+.I troff \" GNU
+produces a warning in category
+.RB \[lq] reg \[rq]
+and ignores the request.
+.
+See section \[lq]Warnings\[rq] of
+.MR @g@groff 1
+regarding the enablement and suppression of warnings.
 .
 To remove a register alias,
 invoke
@@ -1557,40 +1944,34 @@ names.
 .
 .
 .TP
-.BI .als\~ "new old"
+.BI .als\~ "new-name existing-name"
 Create alias
-.I new
-for existing request,
+(additional name)
+.I new-name
+of request,
 string,
 macro,
-or diversion named
-.IR old ,
+or diversion
+.IR existing-name ,
 causing the names to refer to the same stored object.
 .
 If
-.I old
+.I existing-name
 is undefined,
-a warning in category
-.B mac
-is produced,
-and the request is ignored.
+GNU
+.I troff \" GNU
+produces a warning in category
+.RB \[lq] mac \[rq]
+and ignores the request.
 .
-The
-.RB \[lq] am \[rq],
-.RB \[lq] as \[rq],
-.BR da ,
-.BR de ,
-.BR di ,
-and
-.B ds
-requests
-(together with their variants)
-create a new object only if the name of the macro,
-diversion,
-or string is currently undefined
-or if it is defined as a request;
-normally,
-they modify the value of an existing object.
+If
+.I new-name
+already exists,
+its contents are lost unless already aliased.
+.
+See section \[lq]Warnings\[rq] of
+.MR @g@groff 1
+regarding the enablement and suppression of warnings.
 .
 To remove an alias,
 invoke
@@ -1608,9 +1989,7 @@ or diversion is aliased,
 redefinitions and appendments \[lq]write through\[rq] alias names.
 .
 To replace an alias with a separately defined object,
-you must use the
-.B rm
-request on its name first.
+remove its name first.
 .
 .
 .TP
@@ -1618,20 +1997,26 @@ request on its name first.
 .RI [ end-name ]
 As
 .RB \[lq] am \[rq],
-but compatibility mode is disabled while the appendment to
-.I name
-is interpreted:
-a \[lq]compatibility save\[rq] token is inserted at its beginning,
-and a \[lq]compatibility restore\[rq] token at its end.
+but
+GNU
+.I troff \" GNU
+disables compatibility mode while interpreting the appendment to
+.I name:
+it inserts a
+.I "compatibility save"
+token at the beginning of the appendment,
+and a
+.I "compatibility restore"
+token at its end.
 .
-As a consequence,
-the requests
+The requests
 .RB \[lq] am \[rq],
 .BR am1 ,
 .BR de ,
 and
 .B de1
-can be intermixed freely since the compatibility save/\:restore tokens
+can thus be intermixed freely
+since the compatibility save/\:restore tokens
 affect only the parts of the macro populated by
 .B am1
 and
@@ -1653,8 +2038,16 @@ below.
 .RI [ end-name ]
 As
 .BR ami ,
-but compatibility mode is disabled during interpretation of the
-appendment.
+but
+GNU
+.I troff \" GNU
+disables compatibility mode
+while interpreting the appendment to the macro
+named by the contents of string
+.I name;
+see
+.B am1
+above.
 .
 .
 .TP
@@ -1663,22 +2056,28 @@ appendment.
 .IR contents ]
 As
 .RB \[lq] as \[rq],
-but compatibility mode is disabled while the appendment to
-.I name
-is interpreted:
-a \[lq]compatibility save\[rq] token is inserted at the beginning of
-.IR contents ,
-and a \[lq]compatibility restore\[rq] token after it.
+but
+GNU
+.I troff \" GNU
+disables compatibility mode
+while interpreting the appendment to the string
+.I name:
+it inserts a
+.I "compatibility save"
+token at the beginning of the appendment,
+and a
+.I "compatibility restore"
+token at its end.
 .
-As a consequence,
-the requests
+The requests
 .RB \[lq] as \[rq],
 .BR as1 ,
 .BR ds ,
 and
 .B ds1
-can be intermixed freely since the compatibility save/\:restore tokens
-affect only the portions of the strings populated by
+can thus be intermixed freely
+since the compatibility save/\:restore tokens
+affect only the portions of the string populated by
 .B as1
 and
 .BR ds1 .
@@ -1707,19 +2106,32 @@ request.
 .
 .
 .IP
-.B asciify
-cannot return all items in a diversion to their source equivalent:
-nodes such as those produced by
-.BR \[rs]N[ .\|.\|.\& ]
-will remain nodes,
-so the result cannot be guaranteed to be a pure string.
+When transforming a glyph node back into an input sequence
+that demands expression as a special character escape sequence,
+GNU
+.I troff
+uses the default escape character.
 .
-See section \[lq]Copy mode\[rq] in
-.MR groff @MAN7EXT@ .
+.
+.IP
+.B \%asciify
+cannot return all nodes in a diversion to their source equivalents:
+those produced by indexed characters
+.RB ( \[rs]N ),
+for example,
+remain nodes,
+so the result cannot be guaranteed to be a character sequence
+as a macro or string is.
+.\" TODO: We _could_ store the integer argument to the `\N` escape
+.\" sequence in the node data, enabling such reversal.
+.
+Give the diversion name as an argument to the
+.B pm
+request to inspect its contents and node list.
 .
 Glyph parameters such as the type face and size are not preserved;
 use
-.B unformat
+.RB \%\[lq] unformat \[rq]
 to achieve that.
 .
 .
@@ -1752,6 +2164,8 @@ If no argument is supplied,
 the default blank line behavior is (re-)established.
 .
 .
+.br
+.ne 4v
 .TP
 .BR .box\~ [\c
 .IR name ]
@@ -1812,16 +2226,13 @@ to characters
 .IR c2 ,
 and so on.
 .
-Ordinary and special characters have certain associated properties.
-.
-(Glyphs don't:
-to GNU
-.IR troff , \" GNU
-like AT&T device-independent
-.IR troff , \" AT&T
-a glyph is an identifier corresponding to a rectangle with some metrics;
-see
-.MR groff_font @MAN5EXT@ .)
+Characters,
+whether
+ordinary,
+special,
+or
+indexed,
+have certain associated properties.
 .
 The first argument is the sum of the desired flags and the remaining
 arguments are the characters to be assigned those properties.
@@ -1995,15 +2406,21 @@ character on the right doesn't get examined.
 .BI .char\~ c\~\c
 .RB [[ \[dq] ]\c
 .IR contents ]
-Define an ordinary or special
-.RI character\~ c
+Define an
+ordinary,
+special,
+or
+indexed
+character
+.I c
 as
 .I contents.
 .
-If
+Omitting
 .I contents
-is absent,
-an existing character definition made with the same request is deleted.
+gives
+.I c
+an empty definition.
 .
 .
 .IP
@@ -2011,36 +2428,39 @@ Defining
 (or redefining)
 a
 .RI character\~ c
-creates a formatter object that is recognized like any other
-ordinary or special character on input,
+creates a formatter object
+that is recognized like any other ordinary,
+special,
+or indexed character on input,
 and produces
 .I contents
 on output.
 .
-Every time
-.I c
-is to be output,
+When
+formatting
+.IR c ,
+GNU
+.I troff \" GNU
+processes
 .I contents
-is processed in a temporary environment and the result encapsulated in a
-node.
-.
-(See section \[lq]Gtroff Internals\[rq] in
+in a temporary environment and encapsulates the result
+in a node
+(see section \[lq]Gtroff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
-Texinfo manual.)
-.
-Compatibility mode is disabled and the escape character set
+Texinfo manual);
+disabling compatibility mode
+and setting the escape character to
 .RB to\~ \[rs]
-while
-.I contents
-is processed.
+while interpreting
+.I contents.
 .
 Any emboldening,
 constant spacing,
-or track kerning is applied to this object as a whole,
-not to each character in
-.IR contents .
+or track kerning applies to this object
+rather than to individual glyphs resulting from the formatting of
+.I contents.
 .
 .
 .IP
@@ -2071,13 +2491,27 @@ it is subject to automatic hyphenation.
 .
 .
 .IP
-To prevent infinite recursion,
-occurrences of
+However,
+a user-defined character
 .I c
-within its own definition are treated normally
-(as if it were not being defined with
-.BR char ).
+does not participate at its boundaries
+in kerning adjustments or italic corrections.
 .
+.
+.IP
+The formatter prevents infinite recursion
+by treating an occurrence
+of a character in its own definition
+as if were undefined;
+when interpolating such a character,
+GNU
+.I troff \" GNU
+emits a warning in category
+.RB \[lq] char \[rq].
+(Mutually recursive character definitions are handled similarly.)
+.
+.
+.IP
 The
 .B tr
 and
@@ -2087,9 +2521,9 @@ requests take precedence if
 also applies
 .RI to\~ c .
 .
-A character definition can be removed with the
+The
 .B rchar
-request.
+request removes character definitions.
 .
 .
 .TP
@@ -2196,11 +2630,11 @@ definitions.
 .
 .
 .IP
-A typical use of the
-.B class
-request is to control line-breaking and hyphenation rules as defined by
-the
-.B cflags
+Typically,
+one sets up a character class
+to then apply breaking and hyphenation properties
+to it with the
+.B \%cflags
 request.
 .
 .
@@ -2209,11 +2643,11 @@ request.
 Close the named
 .IR stream ,
 invalidating it as an argument to the
-.B write
+.RB \[lq] write \[rq]
 request.
 .
 See
-.BR open .
+.RB \[lq] open \[rq].
 .
 .
 .TP
@@ -2242,7 +2676,8 @@ loop's body,
 immediately retesting its conditional expression.
 .
 See
-.BR break .
+.RB \[lq] break \[rq]
+above.
 .
 .
 .TP
@@ -2331,14 +2766,21 @@ A device's default stroke and fill colors are not necessarily the same.
 .RI [ end-name ]
 As
 .RB \[lq] de \[rq],
-but compatibility mode is disabled while the macro
-.I ident
-is interpreted:
-a \[lq]compatibility save\[rq] token is inserted at its beginning,
-and a \[lq]compatibility restore\[rq] token at its end.
+but
+GNU
+.I troff \" GNU
+disables compatibility mode while interpreting
+.I name:
+it inserts a
+.I "compatibility save"
+token at the beginning of the macro definition,
+and a
+.I "compatibility restore"
+token at its end.
 .
 See
-.BR .am1 .
+.B .am1
+above.
 .
 .
 .TP
@@ -2356,22 +2798,32 @@ and the name of the end macro terminating its definition in string
 .RI [ end-name ]
 As
 .BR dei ,
-but compatibility mode is disabled while the definition of the macro
-named in string
-.I name
-is interpreted.
+but
+GNU
+.I troff \" GNU
+disables compatibility mode
+while interpreting the macro
+named by the contents of string
+.I name.
+.
+See
+.B am1
+and
+.B de1
+above.
 .
 .
 .TP
 .BR .device\~ [\c
 .RB [ \[dq] ]\c
-.IR contents ]
+.IR character-sequence ]
 Write
-.IR contents ,
+.IR character-sequence ,
+a sequence of ordinary or special characters and spaces
 read in copy mode,
 to
 .I @g@troff
-output as a device extension command.
+output as the argument to a device extension command.
 .
 .
 .TP
@@ -2380,42 +2832,42 @@ Write contents of macro or string
 .I name
 to
 .I @g@troff
-output as a device extension command.
+output as the argument to a device extension command.
 .
 .
 .TP
 .BI .do\~ name\~\c
-.RI [ arg \~.\|.\|.]
+.RI [ argument \~.\|.\|.]
 Interpret the string,
 request,
 diversion,
 or macro
 .I name
-(along with any arguments)
+(along with any further arguments)
 with compatibility mode disabled.
 .
 Compatibility mode is restored
 (only if it was active)
-when the
-.I expansion
-of
+when the interpolation of
 .I name
 is interpreted;
 that is,
-the restored compatibility state applies to the contents of the macro,
+the restored compatibility state applies to the request or
+contents of the macro,
 string,
 or diversion
+.IR name ,
+its arguments,
+and data read from files or pipes if
 .I name
-as well as data read from files or pipes if
-.I name
-is any of the
-.BR so ,
+is the
+.RB \[lq] so \[rq],
 .BR soquiet ,
 .BR mso ,
 .BR msoquiet ,
 or
 .B pso
-requests.
+request.
 .
 .
 .TP
@@ -2447,6 +2899,8 @@ if none has been saved.
 Save the current escape character.
 .
 .
+.br
+.ne 5v
 .TP
 .BI .evc\~ env
 Copy the properties of environment
@@ -2541,17 +2995,20 @@ definitions are used only if the font
 lacks a glyph for
 .IR c .
 .
-This test happens before special fonts are searched.
+GNU
+.I troff \" GNU
+performs this test before searching special fonts.
 .
 .
 .TP
 .BR .fcolor\~ [\c
 .IR col ]
-Set the fill color to
-.IR col ,
+Select
+.I col
+as the environment's fill color,
 or,
 without an argument,
-restore the previous stroke color,
+restore the previous fill color,
 or the default if there is none.
 .
 .
@@ -2568,41 +3025,48 @@ as
 .
 As
 .BR char ,
-but a character defined by
+but GNU
+.I troff \" GNU
+locates a character defined by
 .B fschar
-is located after the list of fonts declared with
+after any fonts named as arguments to the
 .B \%fspecial
-is searched and before those declared with the
+are searched and before those named as arguments to the
 .RB \%\[lq] special \[rq]
 request.
 .
 .TP
-.BI .fspecial\~ f\~\c
-.RI [ s\~ .\|.\|.]
+.BI .fspecial\~ fnt\~\c
+.RI [ sfnt\~ .\|.\|.]
 When
-.RI font\~ f
+.RI font\~ fnt
 is selected,
 treat each font
-.I s
-as special;
+.I sfnt
+as
+.I special;
 that is,
 search it for any glyph not found in
 .IR f .
 .
-Fonts specified by the
+GNU
+.I troff \" GNU
+searches fonts specified as arguments to the
 .RB \%\[lq] special \[rq]
-request are searched after those
-listed in the
+request after those given as arguments to the
 .B fspecial
 request.
 .
 Without
-.I s
+.I sfnt
 arguments,
 .B \%fspecial
 empties the list of fonts treated as special when
-.I f
+.RI font\~ fnt
 is selected.
+.
+Initially,
+this list is empty for all fonts.
 .
 .
 .TP
@@ -2628,7 +3092,7 @@ or in the
 .BR bd ,
 .BR cs ,
 .BR tkf ,
-.BR \%special ,
+.RB \%\[lq] special \[rq],
 .BR \%fspecial ,
 .BR fp ,
 or
@@ -2669,8 +3133,9 @@ not an abstract style or mounting position.
 .TP
 .BR .gcolor\~ [\c
 .IR col ]
-Set the stroke color to
-.IR col ,
+Select
+.I col
+as the environment's stroke color,
 or,
 without an argument,
 restore the previous stroke color,
@@ -2764,7 +3229,8 @@ explicit hyphens are not.
 .
 .
 .TP
-.BI .hpf\~ pattern-file
+.BR .hpf\~ [ \[dq] ]\c
+.I pattern-file
 Read hyphenation patterns from
 .IR pattern-file .
 .
@@ -2855,7 +3321,7 @@ character is still recognized as the start of a comment).
 Use the
 .B hcode
 request
-(see below)
+(see above)
 to map the encoding used in hyphenation pattern files to
 .IR groff 's
 input encoding.
@@ -2877,24 +3343,9 @@ By default,
 .I troffrc
 loads the localization file for English.
 .
-(As of
-.I groff
-1.23.0,
-localization files for Czech
-.RI ( cs ),
-German
-.RI ( de ),
-English
-.RI ( en ),
-French
-.RI ( fr ),
-Japanese
-.RI ( ja ),
-Swedish
-.RI ( sv ),
-and Chinese
-.RI ( zh )
-exist.)
+See subsection \[lq]Localization packages\[rq] of
+.MR groff_tmac @MAN5EXT@
+for a list of available localization files.
 .
 For Western languages,
 the localization file sets the hyphenation mode and loads hyphenation
@@ -2927,7 +3378,8 @@ won't automatically hyphenate at all.
 .
 .
 .TP
-.BI .hpfa\~ pattern-file
+.BR .hpfa\~ [ \[dq] ]\c
+.I pattern-file
 As
 .BR hpf ,
 except that the hyphenation patterns and exceptions from
@@ -2939,7 +3391,7 @@ of the environment.
 .TP
 .BI .hpfcode\~ "a b"\c
 .RI \~[ "c d" "] .\|.\|."
-.B Caution:
+.I Caution:
 This request will be withdrawn in a future
 .I groff
 release.
@@ -2995,7 +3447,7 @@ The formatter's default is
 .B 1
 for AT&T
 .I troff \" AT&T
-compatiblity.
+compatibility.
 .
 .I groff
 locale files generally set a more appropriate one;
@@ -3058,7 +3510,8 @@ emitting a warning in category
 .
 .
 .TP
-.BI .itc\~ n\~name
+.BR .itc\~ n\~\c
+.RI [ name ]
 As
 .RB \[lq] it \[rq],
 but lines interrupted with the
@@ -3081,7 +3534,7 @@ is omitted.
 .
 .TP
 .BI .length\~ reg\~\c
-.RB [[ \[dq]\c
+.RB [[ \[dq] ]\c
 .IR contents ]
 Compute the number of characters in
 .I contents
@@ -3091,7 +3544,37 @@ and store the count in the register
 If
 .I reg
 doesn't exist,
-it is created.
+GNU
+.I troff \" GNU
+creates it.
+.
+.
+.IP
+.I Caution:
+If you interpolate a macro or diversion in
+.I contents
+(see section \[lq]Punning Names\[rq] in
+.MR groff @MAN7EXT@ ),
+the
+.B length
+request counts characters
+(or nodes)
+only up to the first newline,
+and leaves the rest on the input stream.
+.
+In conventional circumstances,
+that means the remainder is interpreted,
+and may be formatted.
+.
+To discover the length of any
+string,
+macro,
+or diversion,
+use the
+.B pm
+request.
+.
+See section \[lq]Debugging\[rq] below.
 .
 .
 .TP
@@ -3152,22 +3635,27 @@ word spaces).
 .
 .
 .TP
-.BI .mso\~ file
+.BR .mso\~ [ \[dq] ]\c
+.I file
 As
 .RB \[lq] so \[rq],
-except that
+except that GNU
+.I troff \" GNU
+searches for the specified
 .I file
-is sought in the same directories as arguments to the
+in the same directories as macro files;
+see
+.I GROFF_TMAC_PATH
+in section \[lq]Environment\[rq] of
 .MR groff @MAN1EXT@
 and
-.MR @g@troff @MAN1EXT@
 .B \-m
-command-line option are
-(the \[lq]tmac path\[rq]).
+in section \[lq]Options\[rq]
+of the same page.
 .
 If
 .I file
-does not exist,
+does not exist or is not readable,
 a warning in category
 .RB \[lq] file \[rq]
 is emitted
@@ -3175,7 +3663,8 @@ and the request has no other effect.
 .
 .
 .TP
-.BI .msoquiet\~ file
+.BR .msoquiet\~ [ \[dq] ]\c
+.I file
 As
 .BR mso ,
 but no warning is emitted if
@@ -3218,49 +3707,88 @@ See
 .
 .
 .TP
-.BI .open\~ "stream file"
+.BI .open\~ "ident\~\c
+.RB [ \[dq] ]\c
+.I file
 Open
 .I file
-for writing and associate
-.I stream
-with it.
+for writing and associate a stream named
+.I ident
+with it,
+making it available for
+.RB \[lq] write \[rq]
+requests.
 .
-See
-.B write
+Unsafe request;
+disabled by default.
+.
+Also see
+.B writec
 and
-.BR close .
-.
+.RB \[lq] close \[rq].
 .
 .TP
-.BI .opena\~ "stream file"
+.BI .opena\~ "ident\~\c
+.RB [ \[dq] ]\c
+.I file
 As
-.BR open ,
+.RB \[lq] open \[rq],
 but if
 .I file
-exists,
-append to it instead of truncating it.
+already exists,
+GNU
+.I troff \" GNU
+appends to it instead of overwriting it.
 .
 .
 .TP
-.BR .output \~[[ \[dq] ]\c
-.IR contents ]
+.BR .output \~[ \[dq] ]\c
+.I character-sequence
 Emit
-.I contents
+.IR character-sequence ,
+a sequence of ordinary characters and spaces read in copy mode,
 \[lq]transparently\[rq]
 (directly) to
 .IR @g@troff 's
-output;
-this usage is similar to that of
+output.
+.
+This usage is similar to that of
 .B \[rs]!\&
 in the top-level diversion.
 .
 .
 .TP
-.B .pcolor
-Report, to the standard error stream,
-each defined color name,
+.BI .pchar\~ c\~\c
+\&.\|.\|.
+Report,
+to the standard error stream,
+information about each ordinary,
+special,
+or indexed
+.RI character\~ c .
+.
+A character defined by a request
+.RB ( char ,
+.BR \%fchar ,
+.BR \%fschar ,
+or
+.BR \%schar )
+reports its contents as a JSON-encoded string,
+but the output is not otherwise in JSON format.
+.
+.
+.TP
+.BR .pcolor \~[\c
+.IR col \~\&.\|.\|.]
+Report,
+to the standard error stream,
+each defined color named
+.IR col ,
 its color space identifier,
-and channel value assignments.
+and channel value assignments,
+or,
+without arguments,
+those of all defined colors.
 .
 A device's default stroke and/or fill colors,
 \[lq]default\[rq],
@@ -3272,7 +3800,11 @@ formatter.
 .B .pcomposite
 Report,
 to the standard error stream,
-the list of defined composite characters.
+the list of configured composite character mappings.
+.
+See
+.RB \%\[lq] composite \[rq]
+above.
 .
 The \[lq]from\[rq] code point is listed first,
 followed by its \[lq]to\[rq] mapping.
@@ -3285,22 +3817,46 @@ other environments to the standard error stream.
 .
 .
 .TP
-.BI .phcode\~ c\~\c
-\&.\|.\|.
+.B .pfp
 Report,
 to the standard error stream,
-the hyphenation code of each ordinary or special
-.RI character\~ c .
+the list of occupied font mounting positions.
+.\" Recall the @code{fp} request description in @ref{Selecting Fonts}.
 .
-Special characters are listed in bracketed syntax using the default
-escape character.
+Occupied mounting positions are listed,
+one per line,
+in increasing order,
+followed by the typeface name;
+if the name corresponds to an abstract style,
+the entry ends there.
+.
+Otherwise,
+the name of the font description file
+and the font's \[lq]internal name\[rq] datum,
+the meaning of which varies by output device,
+follow.
+.
+.
+.TP
+.B .pftr
+Report,
+to the standard error stream,
+the list of font translations.
+.
+See
+.B pftr
+above.
+.
+The \[lq]from\[rq] font identifier is listed first,
+followed by its \[lq]to\[rq] translation.
 .
 .
 .TP
 .B .phw
 Report,
 to the standard error stream,
-the list of hyphenation exceptions.
+the list of hyphenation exceptions
+associated with the current hyphenation language.
 .
 Each hyphenation point is marked with
 .RB \[lq] \- \[rq].
@@ -3319,18 +3875,27 @@ are suffixed with a tab and asterisk
 .TP
 .B .pline
 Report,
-to the standard error stream,
+in JSON syntax to the standard error stream,
 the list of output nodes corresponding to the pending output line.
 .
-The list is empty if there are none.
+In JSON,
+a pair of empty brackets
+.RB \[lq] "[ ]" \[rq]
+represents an empty list.
+.
+A
+.I pending
+output line has not yet undergone adjustment,
+and lacks a line number and margin character
+(all as applicable).
 .
 .
 .TP
 .BR .pnr \~[\c
 .IR reg \~.\|.\|.]
 Report the name and value and,
-if the value is numeric,
-the assigned format of each register
+if its type is numeric,
+the autoincrement amount and assigned format of each register
 .IR reg ,
 or,
 without arguments,
@@ -3368,18 +3933,24 @@ these four registers are set to zero.
 .
 .
 .TP
-.BI .pso \~command
+.BR .pso\~ [ \[dq] ]\c
+.I command
 As
 .RB \[lq] so \[rq],
 except that input comes from the standard output stream of
-.IR command .
+.IR command ,
+which is passed to
+.MR popen 3 .
 .
 .
 .TP
 .B .pstream
 Report,
-to the standard error stream,
-the name of each opened stream,
+in
+JSON
+syntax to the standard error stream,
+the list of open streams,
+including the name of each open stream,
 the name of the file backing it,
 and its mode
 (writing or appending).
@@ -3427,30 +3998,42 @@ and the post-vertical line spacing set by this request.
 .TP
 .BI .rchar\~ c\~\c
 \&.\|.\|.
-Remove definition of each ordinary or special character
+Remove definition of each
+ordinary,
+special,
+or
+indexed
+character
 .IR c ,
 undoing the effect of a
 .BR char ,
-.BR fchar ,
+.BR \%fchar ,
 or
-.B schar
+.B \%schar
 request.
+The character definition removed
+(if any)
+is the first encountered in the resolution process documented
+in section \[lq]Using Symbols\[rq] of
+.IR "Groff: The GNU Implementation of troff" .
+.\" TODO: Get that information into this man page!
 .
 Glyphs,
 which are defined by font description files,
 cannot be removed.
 .
-Spaces and tabs may separate
-.I c
+Spaces need not separate the
+.I cn
 arguments.
 .
 .
 .TP
 .BR .return\~ [\c
 .IR anything ]
-.\" XXX: useless request warning?
-Stop interpreting a macro,
-skipping to the end of its definition.
+.\" XXX: useless request warning if not interpreting a macro?
+In a macro definition,
+stop interpretation,
+skipping to its end.
 .
 Do not confuse
 .RB \[lq] return \[rq]
@@ -3460,11 +4043,8 @@ with
 If called with an argument
 .I anything,
 the skip is performed twice\[em]once within the macro being interpreted
-and once in an enclosing macro.
-.
-.I trace.tmac
-uses this feature to define a wrapper macro for
-.RB \[lq] return \[rq].
+and once in an enclosing macro,
+permitting a macro to wrap the request.
 .
 .
 .TP
@@ -3486,12 +4066,12 @@ See
 .TP
 .BR .rj\~ [\c
 .IR n ]
-Right-align the
+Break,
+right-align the
 .RI next\~ n
-input lines.
-.
-Without an argument,
-right-align the next input line.
+(default: 1)
+input lines,
+then break again.
 .
 .B rj
 implies
@@ -3500,6 +4080,10 @@ and
 .B ce
 implies
 .RB \[lq] ".rj 0" \[rq].
+.
+Invoking the request
+with the no-break control character
+suppresses the first break.
 .
 .
 .TP
@@ -3526,10 +4110,12 @@ as
 .
 As
 .BR char ,
-but a character defined with
+but GNU
+.I troff \" GNU
+locates a character defined with
 .B schar
-is located after the list of fonts declared with the
-.B \%special
+after any fonts named as arguments to the
+.RB \%\[lq] special \[rq]
 request and before any mounted special fonts.
 .
 .
@@ -3561,9 +4147,11 @@ are considered when assigning the soft hyphen character.
 .
 .
 .TP
-.BI .shift\~ n
+.BR .shift\~ [\c
+.\" XXX: useless request warning if not interpreting a macro?
+.IR n ]
 In a macro definition,
-shift the arguments by
+shift arguments by
 .I n
 positions:
 .RI argument\~ i
@@ -3576,9 +4164,6 @@ are no longer available.
 .RI If\~ n
 is missing,
 arguments are shifted by\~1.
-.
-No effect otherwise.
-.\" XXX: useless request warning?
 .
 .
 .TP
@@ -3607,7 +4192,8 @@ the argument list can't extend over more than one line.
 .
 .
 .TP
-.BI .soquiet\~ file
+.BR .soquiet\~ [ \[dq] ]\c
+.I file
 As
 .RB \[lq] so \[rq],
 but no warning is emitted if
@@ -3620,12 +4206,16 @@ does not exist.
 .IR s\~ .\|.\|.]
 Declare each font
 .I s
-as special,
+as
+.I special,
 searching it for glyphs not found in the selected font.
 .
 Without arguments,
 .RB \[lq] \%special \[rq]
 empties this list of special fonts.
+.
+Initially,
+this list is empty.
 .
 .
 .TP
@@ -3748,28 +4338,38 @@ the increase in width is a linear function of the type size.
 .IR message ]
 As
 .BR tm ,
-but recognizes and strips a leading neutral double quote,
-allowing embedded leading spaces in
-.IR message .
+but
+removes a leading neutral double quote
+.RB \[oq] \[dq] \[cq]
+from
+.IR message ,
+permitting initial embedded spaces in it.
 .
 .
 .TP
 .BR .tmc \~[[ \[dq] ]\c
 .IR message ]
 As
-.B tm1
-request,
+.BR tm1 ,
 but does not append a newline.
 .
 .
 .TP
 .BI .trf\~ file
-Transparently output the contents of
-.IR file .
+Break and copy
+.I file
+as \[lq]throughput\[rq] to GNU
+.I troff \" GNU
+output,
+discarding characters that are invalid as input;
+contrast with
+.BR cf .
 .
-Each line is output as if preceded by
+Each line of
+.I file
+is output as if preceded by
 .BR \[rs]! ,
-but is not read in copy mode.
+but is not interpreted by the formatter.
 .
 If
 .I file
@@ -3777,26 +4377,18 @@ does not end with a newline,
 .B trf
 appends one.
 .
-Like
-.BR cf ,
-.B trf
-breaks the line unless invoked with the no-break control character.
-.
-Characters in
-.I file
-that are invalid as input to GNU
-.I troff \" GNU
-are discarded;
-contrast with
-.BR cf .
+Invoking the request
+with the no-break control character
+suppresses the break.
 .
 .
 .TP
 .BI .trin\~ abcd
-This is the same as the
+As the
 .B tr
-request except that the
-.B asciify
+request,
+but the
+.B \%asciify
 request uses the character code
 (if any)
 before the character translation.
@@ -3804,9 +4396,10 @@ before the character translation.
 .
 .TP
 .BI .trnt\~ abcd
-This is the same as the
+As the
 .B tr
-request except that the translations do not apply to text that is
+request,
+but the translations do not apply to text that is
 transparently throughput into a diversion with
 .BR \[rs]! .
 .
@@ -3831,8 +4424,8 @@ Unformat the diversion
 .IR div .
 .
 Unlike
-.BR asciify ,
-.B unformat
+.BR \%asciify ,
+.RB \%\[lq] unformat \[rq]
 handles only tabs and spaces between words,
 the latter usually arising from spaces or newlines in the input.
 .
@@ -3898,19 +4491,23 @@ all warning categories are enabled.
 .
 .
 .TP
-.BI .warnscale\~ si
-Set the scaling unit used in warnings to
-.IR si .
-.
-Valid values for
-.I si
-are
+.BI .warnscale\~ scaling-unit
+Select scaling unit used in certain warnings \" `output_warning()`
+(one of
 .BR u ,
-.B i
-(the default),
+.BR i ,
 .BR c ,
 .BR p ,
-.RB and\~ P .
+or
+.BR P ;
+default:
+.BR i ).
+.
+Ignored on
+.IR nroff -mode
+output devices,
+for which these diagnostics report the vertical page location in lines,
+and the horizontal page location in ens.
 .
 .
 .TP
@@ -3926,15 +4523,16 @@ evaluates false.
 .I anything,
 which is often a conditional block,
 is referred to as the
-.B while
+.RB \[lq] while \[rq]
 request's
 .I body.
 .
 .
 .IP
-.I @g@troff
+GNU
+.I troff \" GNU
 treats the body of a
-.B while
+.RB \[lq] while \[rq]
 request similarly to that of a
 .B de
 request
@@ -3943,21 +4541,20 @@ but stores it under an internal name and deletes it when the loop
 finishes.
 .
 The operation of a macro containing a
-.B while
-request can slow significantly if the
-.B while
+.RB \[lq] while \[rq]
+request can slow significantly if its
 body is large.
 .
 Each time the macro is executed,
 the
-.B while
+.RB \[lq] while \[rq]
 body is parsed and stored again.
 .
 An often better solution\[em]and one that is more portable,
 since AT&T
 .I troff \" AT&T
 lacked the
-.B while
+.RB \[lq] while \[rq]
 request\[em]is to instead write a recursive macro.
 .
 It will be parsed only once (unless you redefine it).
@@ -3977,31 +4574,39 @@ See section \[lq]Debugging\[rq] below.
 .
 .IP
 If a
-.B while
+.RB \[lq] while \[rq]
 body begins with a conditional block,
 its closing brace must end an input line.
 .
 .
 .IP
 The
-.B break
+.RB \[lq] break \[rq]
 and
-.B continue
+.RB \[lq] continue \[rq]
 requests alter a
-.B while
+.RB \[lq] while \[rq]
 loop's flow of control.
 .
 .
 .TP
 .BI .write\~ stream\~\c
 .RB [[ \[dq] ]\c
-.IR contents ]
+.IR character-sequence ]
 Write
-.I contents
+.IR character-sequence ,
+a sequence of ordinary characters,
+spaces,
+or tabs
+.\" ...or, technically, backspace and delete characters, but let's not
+.\" dwell on that.
+read in copy mode,
 to
 .IR stream ,
 which must previously have been the subject of an
-.B open
+.RB \[lq] open \[rq]
+(or
+.BR opena )
 request,
 followed by a newline.
 .
@@ -4013,9 +4618,9 @@ flushes the stream after writing to it.
 .TP
 .BI .writec\~ stream\~\c
 .RB [[ \[dq] ]\c
-.IR contents ]
+.IR character-sequence ]
 As
-.BR write ,
+.RB \[lq] write \[rq],
 but does not append a newline to
 .IR contents .
 .
@@ -4027,9 +4632,9 @@ Write the contents of the macro or string
 to
 .IR stream ,
 which must previously have been the subject of an
-.B open
+.RB \[lq] open \[rq]
 (or
-.B \%opena )
+.BR \%opena )
 request.
 .
 The contents of
@@ -4038,139 +4643,7 @@ are read in copy mode.
 .
 .
 .br
-.ne 6v
-.\" ====================================================================
-.SS "Altered requests"
-.\" ====================================================================
-.
-.TP
-.BI .cf\~ file
-In a diversion,
-embed an object which,
-when interpolated,
-will cause the contents of
-.I file
-to be copied verbatim to the output.
-.
-In AT&T
-.IR troff ,
-the contents of
-.I file
-are immediately copied to the output regardless of whether a diversion
-is being written to;
-this behavior is so anomalous that it must be considered a bug.
-.
-.
-.br
-.ne 6v
-.TP
-.BI .de\~ name\~\c
-.RI [ end-name ]
-.TQ
-.BI .am\~ name\~\c
-.RI [ end-name ]
-.TQ
-.BI .ds\~ name\~\c
-.RB [[ \[dq] ]\c
-.IR contents ]
-.TQ
-.BI .as\~ name\~\c
-.RB [[ \[dq] ]\c
-.IR contents ]
-In compatibility mode,
-these requests behave similarly to
-.BR de1 ,
-.BR am1 ,
-.BR ds1 ,
-and
-.BR as1 ,
-respectively:
-a \[lq]compatibility save\[rq] token is inserted at the beginning,
-and a \[lq]compatibility restore\[rq] token at the end,
-with compatibility mode switched on during interpolation of the
-applicable macro definition,
-appendment,
-or string
-.I contents.
-.
-.
-.TP
-.BI .hy\~ n
-New values 16 and\~32 are available;
-the former enables hyphenation before the last character in a word,
-and the latter enables hyphenation after the first character in a word.
-.
-If invoked without an argument,
-the mode configured by the
-.B hydefault
-request is selected.
-.
-.
-.TP
-.BI .ss\~ word-space-size\~\c
-.RI [ additional-sentence-space-size ]
-A second argument sets the amount of additional space separating
-sentences on the same output line.
-.
-If omitted,
-this amount is set to
-.IR word-space-size .
-.
-Both arguments are in twelfths of current font's space width
-(typically one-fourth to one-third em for Western scripts;
-see
-.MR groff_font @MAN5EXT@ ).
-.
-The default for both parameters is\~12.
-.
-Negative values are erroneous.
-.
-.
-.TP
-.BR .ta\~ [[\c
-.IR "n1 n2\~" .\|.\|.\~ nn \~]\c
-.BR T \~\c \" space in roman because we must use 2-font macro with \c
-.IR "r1 r2\~" .\|.\|.\~ rn ]
-GNU
-.I troff \" GNU
-supports an extended syntax to specify repeating tab stops after
-the
-.RB \[lq] T \[rq]
-mark.
-.
-These values are always taken as relative distances from the previous
-tab stop.
-.
-This is the idiomatic way to specify tab stops at equal intervals in
-.IR groff .
-.
-GNU
-.IR troff 's \" GNU
-startup value is
-.RB \[lq] "T 0.5i" \[rq].
-.
-.
-.IP
-The syntax summary above instructs
-.I groff
-to set tabs at positions
-.IR n1 ,
-.IR n2 ,
-\&.\|.\|.\|,
-.IR nn ,
-then at
-.IR nn \|+\| r1 ,
-.IR nn \|+\| r2 ,
-\&.\|.\|.\|,
-.IR nn \|+\| rn ,
-then at
-.IR nn \|+\| rn \|+\| r1 ,
-.IR nn \|+\| rn \|+\| r2 ,
-\&.\|.\|.\|,
-.IR nn \|+\| rn \|+\| rn ,
-and so on.
-.
-.
+.ne 4v
 .\" ====================================================================
 .SS "Altered registers"
 .\" ====================================================================
@@ -4185,8 +4658,19 @@ it repurposes the
 register
 to interpolate the maximum integer representable in the formatter.
 .
-Favor its use over numeric literals with many zeros or nines
+Favor its use over numeric literals with many zeroes or nines
 to indicate an arbitrary large quantity.
+.
+.
+.TP
+.B \[rs]n[.s]
+In GNU
+.IR troff , \" GNU
+the
+.B .s
+register is string-valued;
+it interpolates the type size in typographical points,
+which can be represented as a decimal fraction.
 .
 .
 .\" ====================================================================
@@ -4208,9 +4692,11 @@ if the macro is called with the \[lq]normal\[rq] control character
 (\[lq].\[rq] by default),
 and\~0 otherwise.
 .
-This facility allows the reliable modification of requests.
+This facility allows requests to be reliably wrapped by a macro.
 .
-Using this register outside of a macro definition makes no sense.
+Interpolating the
+.B .br
+register outside of a macro definition makes no sense.
 .
 .
 .TP
@@ -4233,7 +4719,7 @@ It is positive if the glyph extends below the baseline.
 .
 .TP
 .B \[rs]n[.ce]
-Interpolate number of input lines remaining to be centered
+Interpolate count of input lines remaining to be centered
 in the environment.
 .
 .
@@ -4312,7 +4798,11 @@ is the formatter.
 .
 .TP
 .B \[rs]n[.height]
-Interpolate height of the environment's selected font.
+Interpolate the rescaled height
+of the environment's selected font,
+in scaled points.
+.
+It is zero if the font height is not rescaled.
 .
 See
 .BR \[rs]H .
@@ -4367,14 +4857,14 @@ in the environment.
 .B \[rs]n[.int]
 Interpolate\~1 if the text most recently formatted in the environment
 was \[lq]interrupted\[rq] or continued with
-.BR \[rs]c ),
+.BR \[rs]c ,
 0\~otherwise.
 .
 .
 .TP
 .B \[rs]n[.it]
-Interpolate the count of lines remaining in the environment's
-pending input trap.
+Interpolate count of input lines remaining
+in the environment's pending input trap.
 .
 .
 .TP
@@ -4406,7 +4896,7 @@ Interpolate ligature mode.
 .
 .TP
 .B \[rs]n[.linetabs]
-Interpolate\~1 if line-tabs mode is enabled the environment,
+Interpolate\~1 if line-tabs mode is enabled in the environment,
 0\~otherwise.
 .
 .
@@ -4423,14 +4913,14 @@ Interpolate the environment's title line length.
 .
 .TP
 .B \[rs]n[.m]
-Interpolate name of the selected stroke color.
+Interpolate name of the environment's selected stroke color.
 .
 This is a string-valued register.
 .
 .
 .TP
 .B \[rs]n[.M]
-Interpolate name of the selected fill color.
+Interpolate name of the environment's selected fill color.
 .
 This is a string-valued register.
 .
@@ -4439,7 +4929,7 @@ This is a string-valued register.
 .B \[rs]n[.ne]
 Interpolate amount of space demanded by the most recent
 .B ne
-request that caused a page location trap to be sprung.
+request that sprang a page location trap.
 .
 See
 .BR \[rs]n[.trunc] .
@@ -4454,8 +4944,9 @@ Interpolate\~1 if output line numbering is enabled in the environment
 .
 .TP
 .B \[rs]n[.nn]
-Interpolate count of output lines remaining in the environment
-to have numbering suppressed.
+Interpolate count of lines remaining in the environment
+for which numbering is suppressed
+while output line numbering is enabled.
 .
 .
 .TP
@@ -4474,7 +4965,8 @@ See
 .
 .TP
 .B \[rs]n[.P]
-Interpolate\~1 if the current page is selected for output.
+Interpolate\~1 if the current page is selected for output,
+0\~otherwise.
 .
 See
 .B \-o
@@ -4514,7 +5006,7 @@ Interpolate the environment's post-vertical line spacing amount.
 .
 .TP
 .B \[rs]n[.rj]
-Interpolate number of input lines remaining to be right-aligned
+Interpolate count of input lines remaining to be right-aligned
 in the environment.
 .
 .
@@ -4529,7 +5021,7 @@ See
 .TP
 .B \[rs]n[.sr]
 Interpolate the environment's most recently requested type size
-in points as a decimal fraction.
+in typographical points.
 .
 This is a string-valued register.
 .
@@ -4539,7 +5031,7 @@ This is a string-valued register.
 .TQ
 .B \[rs]n[.sss]
 Interpolate values of the environment's minimum inter-word space
-and additional inter-sentence space,
+and supplemental inter-sentence space,
 respectively,
 in twelfths of the space width of the selected font.
 .
@@ -4613,7 +5105,7 @@ Interpolate\~1 if vertical position traps are enabled,
 .
 .TP
 .B \[rs]n[.warn]
-Interpolate warning mode.
+Interpolate warning mask.
 .
 See section \[lq]Warnings\[rq] of
 .MR @g@troff @MAN1EXT@ .
@@ -4763,6 +5255,11 @@ Interpolate number of hours elapsed since midnight.
 .
 .
 .TP
+.\" The `hp` register was documented in the original 1976 Ossanna troff
+.\" "Nroff/Troff User's Manual" and in the January 1981 "Addendum to
+.\" the Nroff/Troff User's Manual" (presumably by Kernighan), and is
+.\" widely supported by descendants of his device-independent troff, but
+.\" appears to have been overlooked in his 1992 revision of CSTR #54.
 .B \[rs]n[hp]
 Interpolate horizontal position relative to that at the start of the
 input line.
@@ -4824,33 +5321,6 @@ interpolates the Gregorian year minus 1900.
 .SS Miscellaneous
 .\" ====================================================================
 .
-GNU
-.I troff \" GNU
-predefines one string,
-.BR .T ,
-containing the argument given to the
-.B \-T
-command-line option,
-namely the output device
-(for example,
-.B pdf
-or
-.BR utf8 ).
-.
-The (read-only)
-.I register
-.B .T
-interpolates\~1 if GNU
-.I troff \" GNU
-is run with the
-.B \-T
-command-line option,
-and 0\~otherwise.
-.
-.
-.br
-.ne 3v
-.P
 A font not listed in the output device's
 .I DESC
 file's
@@ -4901,6 +5371,8 @@ See section \[lq]Punning Names\[rq] in
 .
 .
 .\" XXX: Is this really not an AT&T troff feature?
+.br
+.ne 2v
 .P
 If a font description file contains pairwise kerning information,
 glyphs from that font are kerned.
@@ -4998,7 +5470,9 @@ as well as by the
 .
 Translation of a character to
 .B \[rs]\[ti]
-is unnecessary.
+is generally unnecessary,
+but might be employed to obtain an unbreakable space when the escape
+character will subsequently be disabled.
 .
 .
 .P
@@ -5282,13 +5756,6 @@ at the polygon's
 drawing position.
 .
 .
-.IP
-At the moment,
-GNU
-.I pic \" GNU
-uses this command only to generate triangles and rectangles.
-.
-.
 .TP
 .BR DP\~ "$dx sub 1 ~ dy sub 1 ~ ldots ~ dx sub n ~ dy sub n$"
 As
@@ -5390,9 +5857,15 @@ and its output drivers may abandon the application of this assumption to
 drawing commands not explicitly specified in the AT&T \[lq]Troff User's
 Manual\[rq].
 .
+You can ensure predictable output by enclosing drawing commands
+in the zero-motion escape sequence
+.BR \[rs]Z .
+.
 .
 .P
-Fill color selection is implemented with another set of extensions.
+GNU
+.I troff \" GNU
+implements fill color selection with another set of extensions.
 .
 .
 .TP
@@ -5496,13 +5969,22 @@ and
 options of
 .MR @g@troff @MAN1EXT@ .
 .
-Backtraces can be automatically produced when errors or warnings occur
-(the
+.
+.\" BEGIN Keep (roughly) parallel with relevant material from groff.texi
+.\" node "Debugging".
+.P
+A trace of the formatter's input processing stack
+can be emitted when errors or warnings occur
+by means of
+GNU
+.I troff \" GNU
 .B \-b
-option of
-.MR @g@troff @MAN1EXT@ )
-or generated on demand
-.RB ( backtrace ).
+option,
+or produced on demand with the
+.B \%backtrace
+request.
+.\" END Keep (roughly) parallel with relevant material from groff.texi
+.\" node "Debugging".
 .
 .
 .P
@@ -5512,38 +5994,55 @@ also adds more flexible diagnostic output requests
 and
 .BR tm1 ).
 .
-More aspects of formatter state can be examined with requests that write
-lists of
-defined colors
+.\" BEGIN Keep (roughly) parallel with relevant material from groff.texi
+.\" node "Debugging".
+Examine the state of the formatter with requests that write lists of
+.\" Deliberate desync with Texinfo: this is groff_diff(7); AT&T troff
+.\" already had `pm`.
+defined \" names---macros, strings, and diversions---
+colors
 .RB ( pcolor ),
-composite characters
+composite character mappings
 .RB ( pcomposite ),
 environments
 .RB ( pev ),
-hyphenation codes
-.RB ( phcode ),
-hyphenation exceptions
+font translations
+.RB ( pftr ),
+automatic hyphenation codes
+.RB ( pchar )
+and exceptions
 .RB ( phw ),
 registers
 .RB ( pnr ),
 open streams
 .RB ( pstream ),
+and
 page location traps
-.RB ( ptr ),
-and a list of output nodes corresponding to the pending input
-line
-.RB ( pline )
-to the standard error stream.
+.RB ( ptr ).
+.
+Requests can also disclose
+to the standard error stream
+the internal properties and representations of
+characters
+.RB ( pchar ),
+macros
+(and strings and diversions)
+.RB ( pm ),
+and the list of output nodes corresponding to the pending input line
+.RB ( pline ).
+.\" END Keep (roughly) parallel with relevant material from groff.texi
+.\" node "Debugging".
 .
 .
 .\" ====================================================================
 .SH "Compatibility mode"
 .\" ====================================================================
 .
-Some implementation differences between GNU and AT&T
+Some syntactical and behavioral differences between AT&T and GNU
 .IR troff s \" generic
 are thought too important to neglect;
-.I groff
+GNU
+.I troff \" GNU
 therefore makes available a
 .I "compatibility mode"
 in an effort to keep documents prepared for AT&T
@@ -5552,7 +6051,8 @@ rendering well.
 .
 .
 .P
-Identifier names of arbitrary length may be GNU
+Identifier names of arbitrary length may be
+GNU
 .IR troff 's \" GNU
 most obvious innovation.
 .
@@ -5568,7 +6068,7 @@ with contents
 Normally,
 GNU
 .I troff \" GNU
-interprets this as a call of a macro named
+interprets this input as calling a macro named
 .RB \[lq] dsabcd \[rq].
 .
 AT&T
@@ -5577,23 +6077,26 @@ also interprets
 .B \[rs]*[
 and
 .B \[rs]n[
-as an interpolation of a string or register,
+as interpolating a string or register,
 respectively,
-called
+named
 .RB \[lq] [ \[rq].
 .
-In GNU
+GNU
 .IR troff , \" GNU
 however,
-the
+normally interprets
 .RB \[lq] [ \[rq]
-is normally interpreted as beginning the enclosure of a long identifier.
+as bracketing a long name
+(with
+.RB \[lq] ] \[rq]
+at the distal end).
 .
 In compatibility mode,
 GNU
 .I troff \" GNU
 interprets names in the traditional way,
-which means that they are limited to one or two characters.
+they thus can be two characters long at most.
 .
 See the
 .B \-C
@@ -5652,24 +6155,21 @@ You cannot use the same register name everywhere lest you
 .
 The two-character register name space of AT&T
 .I troff \" AT&T
-is confining and mnemonically challenging;
-you may wish to use
+is confining,
+but employing
 GNU
 .IR troff 's \" GNU
-more capacious name space.
-.
-However,
-attempting
+more capacious one,
+as with
 .RB \[lq] ".nr _my_saved_C \[rs]n(.C" \[rq]
-will not work in compatibility mode;
+does not work in compatibility mode;
 the register name is too long.
 .
-\[lq]This is exactly what
-.B .do
-is for,\[rq] you think,
-.RB \[lq] ".do nr _my_saved_C \[rs]n(.C" \[rq].
-.
-The foregoing will always save zero to your register,
+Employing the
+.RB \[lq] do \[rq]
+request is no help:
+.RB \[lq] ".do nr _my_saved_C \[rs]n(.C" \[rq]
+always saves zero to the register,
 because
 .RB \[lq] do \[rq]
 turns compatibility mode
@@ -5681,182 +6181,17 @@ while it interprets its argument list.
 .SH "Other differences"
 .\" ====================================================================
 .
-.\" TODO: Resync with the node of this name in our Texinfo manual.
 GNU
 .IR troff 's \" GNU
 features sometimes cause incompatibilities with documents written
 assuming old implementations of
 .IR troff . \" generic
-.
-Some GNU extensions to
-.I troff \" generic
-are supported by other implementations.
-.
-.
-.P
-AT&T
-.I troff \" AT&T
-discards trailing spaces from input lines,
-like GNU
-.IR troff , \" GNU
-but when it does so,
-AT&T
-.I troff \" AT&T
-also cancels end-of-sentence detection.
-.
-Use of the dummy character escape sequence
-.B \[rs]&
-is more portable.
-.
-.
-.P
-When adjusting to both margins,
-AT&T
-.I troff \" AT&T
-at first adjusts spaces starting from the right;
-GNU
-.I troff \" GNU
-begins from the left.
-.
-Both implementations adjust spaces from opposite ends on alternating
-output lines to prevent \[lq]rivers\[rq] in the text.
-.
-.
-.P
-GNU
-.I troff \" GNU
-does not always hyphenate words as AT&T
-.I troff \" AT&T
-does.
-.
-The AT&T implementation uses a set of hard-coded rules specific to
-U.S.\& English,
-while GNU
-.I troff \" GNU
-uses language-specific hyphenation pattern files derived from \*[tx].
-.
-In some versions of
-.I troff \" generic
-there was limited space to store hyphenation exceptions
-(arguments to the
-.B hw
-request);
-GNU
-.I troff \" GNU
-has no such restriction.
-.
-.
-.P
-GNU
-.I troff \" GNU
-handles the dummy character
-.B \[rs]&
-differently from AT&T
-.I troff \" AT&T
-when it is followed by the hyphenation control escape sequence
-.B \[rs]%
-at the beginning of a word.
-.
-GNU
-.I troff \" GNU
-does not regard the dummy character as \[lq]starting\[rq] the word;
-AT&T
-.I troff \" AT&T
-does.
-.
-Further,
-Heirloom Doctools
-.I troff \" Heirloom
-does not honor an explicit hyphenation point marked with
-.B \[rs]%
-after a word-initial one.
-.
-.
-.P
-The existence of the
-.B .T
-string is a common feature of post-CSTR\~#54
-.IR troff s\[em]DWB\~3.3, \" others
-Solaris,
-Heirloom Doctools,
-and Plan\~9
-.I troff \" foreign
-all support it\[em]but valid values are specific to each implementation.
-.
-The behavior of the
-.B .T
-register in GNU
-.I troff \" GNU
-differs from AT&T
-.IR troff , \" AT&T
-which interpolated\~1 only if
-.I nroff \" AT&T
-was the formatter and was called with
-.BR \-T .
-.
-.
-.P
-The
-.B lf
-request sets the number of the
-.I current
-input line in AT&T
-.IR troff ,\" AT&T
-and the
-.I next
-in GNU
-.IR troff .\" GNU
-.
-.
-.br
-.ne 2v
-.P
-AT&T
-.I troff
-had only environments named
-.RB \[lq] 0 \[rq],
-.RB \[lq] 1 \[rq],
-and
-.RB \[lq] 2 \[rq].
-.
-In GNU
-.IR troff ,
-any number of environments may exist,
-using any valid identifiers for their names.
-.
-.
-.P
-GNU
-.I troff \" GNU
-normally tracks the interpolation depth of escape sequence parameters
-and other delimited structures,
-but not in compatibility mode.
-.
-See section \[lq]Miscellaneous\[rq] above.
-.
-.
-.P
-Further,
-the escape sequences
-.BR \[rs]f ,
-.BR \[rs]H ,
-.BR \[rs]m ,
-.BR \[rs]M ,
-.BR \[rs]R ,
-.BR \[rs]s ,
-and
-.B \[rs]S
-are transparent at the beginning of an input line only in compatibility
-mode.
-.
-.
-.P
 GNU
 .I troff \" GNU
 request names unrecognized by other
 .I troff \" generic
-implementations will likely be ignored;
-escape sequences that are GNU
+implementations will likely be ignored by them,
+and escape sequences that are GNU
 .I troff \" GNU
 extensions are liable to format their function selector character.
 .
@@ -5878,10 +6213,11 @@ and Plan\~9 from User Space
 .I troff \" Plan 9
 (commit 93f8143600,
 2022-08-12),
-but not by Solaris/Illumos
-.IR troff s, \" Solaris/Illumos
-which will render it as
-.BR \[ti] .
+but not by Solaris\~10
+or Documenter's Workbench
+.IR troff s, \" DWB, Solaris 10
+which both render it as
+.RB \[lq] \[ti] \[rq].
 .\" as of this writing, 2022-08-13
 .\" END Keep in sync with groff.texi node "Other Differences" and
 .\" groff_man_style(7).
@@ -5919,6 +6255,248 @@ may be helpful in avoiding their use.
 .
 .
 .P
+AT&T
+.I troff \" AT&T
+discards trailing spaces from input lines,
+like GNU
+.IR troff , \" GNU
+but when it does so,
+AT&T
+.I troff \" AT&T
+also cancels end-of-sentence detection.
+.
+Use of the dummy character escape sequence
+.B \[rs]&
+is more portable.
+.
+.
+.P
+When adjusting output lines to both margins,
+AT&T
+.I troff \" AT&T
+at first adjusts spaces starting from the right;
+GNU
+.I troff \" GNU
+begins from the left.
+.
+Both implementations adjust spaces
+from opposite ends on alternating output lines
+in this adjustment mode
+to prevent \[lq]rivers\[rq] in the text.
+.
+.
+.P
+GNU
+.I troff \" GNU
+does not always hyphenate words as AT&T
+.I troff \" AT&T
+does.
+.
+The AT&T implementation uses a set of hard-coded rules
+specific to U.S.\& English,
+while GNU
+.I troff \" GNU
+uses language-specific hyphenation pattern files derived from \*[tx].
+.
+In some versions of
+.I troff \" generic
+there was limited space to store hyphenation exceptions
+(arguments to the
+.B hw
+request);
+GNU
+.I troff \" GNU
+has no such restriction.
+.
+When the
+.B hy
+request is invoked without an argument,
+GNU
+.I troff \" GNU
+sets the automatic hyphenation mode to the value of the
+.B \%.hydefault
+register;
+the AT&T implementation sets it to
+.RB \[lq] 1 \[rq],
+which is not suitable in GNU
+.I troff \" GNU
+for some languages,
+including English.
+.
+.
+.P
+GNU
+.I troff \" GNU
+handles the dummy character
+.B \[rs]&
+differently from AT&T
+.I troff \" AT&T
+when it is followed by the hyphenation control escape sequence
+.B \[rs]%
+at the beginning of a word.
+.
+GNU
+.I troff \" GNU
+does not regard the dummy character as \[lq]starting\[rq] the word;
+AT&T
+.I troff \" AT&T
+does.
+.
+Further,
+Heirloom Doctools
+.I troff \" Heirloom
+does not honor an explicit hyphenation point marked with
+.B \[rs]%
+after a word-initial one.
+.
+.
+.P
+GNU
+.I troff \" GNU
+interprets request arguments representing file names
+and system commands
+in the same way it does the
+.I contents
+argument to the
+.B ds
+and
+.RB \[lq] as \[rq]
+requests:
+it removes a leading neutral double quote
+.RB \[oq] \[dq] \[cq]
+from the argument to the
+.BR cf ,
+.BR nx ,
+.BR pi ,
+.RB \[lq] so \[rq],
+and
+.B sy
+requests,
+and the second argument
+(if present)
+to the
+.B lf
+request,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
+This difference permits the formatter to handle files
+with spaces in their names,
+but requires more care with trailing comments,
+and doubling of an initial neutral double quote
+.RB \[lq] \[dq] \[rq]
+if the file name has one.
+.
+.
+.P
+The existence of the
+.B .T
+string is a common feature of device-independent
+.IR troff s\[em]DWB\~3.3, \" others
+Solaris\~10,
+Heirloom Doctools,
+and Plan\~9
+.I troff \" foreign
+all support it\[em]but valid values are specific to each implementation.
+.
+.
+.P
+The (read-only) register
+.B .T
+interpolates\~1
+if GNU
+.I troff \" GNU
+is run with the
+.B \-T
+option,
+and\~0 otherwise.
+In contrast,
+AT&T
+.I troff \" AT&T
+interpolated\~1 only if
+.I nroff \" AT&T
+was the formatter and was run with
+.BR \-T .
+.
+.
+.P
+AT&T
+.I troff \" AT&T
+ignored attempts to remove read-only registers;
+GNU
+.I troff \" GNU
+honors such requests.
+.
+.
+.P
+The
+.B lf
+request sets the number of the
+.I current
+input line in AT&T
+.IR troff ,\" AT&T
+and the
+.I next
+in GNU
+.IR troff .\" GNU
+.
+.
+.br
+.ne 2v
+.P
+AT&T
+.I troff
+had only environments named
+.RB \[lq] 0 \[rq],
+.RB \[lq] 1 \[rq],
+and
+.RB \[lq] 2 \[rq].
+.
+In GNU
+.IR troff ,
+any number of environments may exist,
+using any valid identifiers for their names.
+.
+.
+.\" TODO: Resume Texinfo "Other Differences" synchronization work here.
+.P
+GNU
+.I troff \" GNU
+normally tracks the interpolation depth of escape sequence parameters
+and other delimited structures,
+but not in compatibility mode.
+.
+See section \[lq]Miscellaneous\[rq] above.
+.
+.
+.P
+The escape sequences
+.BR \[rs]f ,
+.BR \[rs]H ,
+.BR \[rs]m ,
+.BR \[rs]M ,
+.BR \[rs]R ,
+.BR \[rs]s ,
+and
+.B \[rs]S
+are transparent at the beginning of an input line,
+or after the conditional expression of an
+.RB \[lq] if \^\[rq]
+or
+.B ie
+request,
+only in compatibility mode.
+.
+That is,
+upon interpreting them,
+GNU
+.I troff \" GNU
+no longer recognizes a control character on the input line;
+AT&T
+.I troff \" AT&T
+does.
+.
+.
+.P
 Normally,
 the syntax form
 .BI \[rs]s n
@@ -5943,7 +6521,7 @@ a
 .RI non-zero\~ n
 must be in the range 4\[en]39.
 .
-Legacy documents relying upon this quirk of parsing should be migrated
+Legacy documents relying upon this quirk of parsing should migrate
 to another
 .B \[rs]s
 form.
@@ -5966,9 +6544,9 @@ Fractional type size support causes an incompatibility.
 .
 In AT&T
 .IR troff , \" AT&T
-the
 .B ps
-request ignores scaling units and thus
+ignores scaling units
+and thus
 .RB \[lq] .ps\~10u \[rq]
 sets the type size to 10\~points,
 whereas in GNU
@@ -5976,7 +6554,13 @@ whereas in GNU
 it sets the type size to
 .RI 10\~ scaled
 points,
-which may be a much smaller measurement.
+possibly a much smaller measurement.
+.
+AT&T's behavior also means that
+.RB \[lq] .ps\~10p \[rq]
+and
+.RB \[lq] .ps\~10z \[rq]
+are portable.
 .
 See subsection \[lq]Fractional type sizes and new scaling units\[rq]
 above.
@@ -6003,9 +6587,7 @@ GNU
 .I troff \" GNU
 does not accept a scaling unit on the argument,
 a page number;
-the former
-(somewhat uselessly)
-does.
+the former does (uselessly).
 .
 .
 .P
@@ -6024,7 +6606,9 @@ units.
 .
 GNU
 .I troff \" GNU
-ignores any arguments and reports the sizes in bytes.
+reports their lengths in characters or nodes if given no arguments,
+and otherwise dumps
+the JSON-encoded name and contents of each named argument.
 .
 .
 .P
@@ -6039,46 +6623,70 @@ rounds down the values of minimum inter-word and additional
 inter-sentence space each to the nearest multiple of\~12.
 .
 .
+.\" TODO: A lot of this discussion should move to "Using Symbols" and
+.\" "Gtroff Internals" (or whatever those sections get named once ported
+.\" to this man page).
 .P
-In GNU
+GNU
 .I troff \" GNU
-there is a fundamental difference between (unformatted) characters and
-(formatted) glyphs.
+distinguishes characters from glyphs.
 .
-Everything that affects how a glyph is output is stored with the glyph
-node;
-once a glyph node has been constructed,
-it is unaffected by any subsequent requests that are executed,
+Characters can be ordinary,
+special,
+or indexed,
+and populate strings and macros.
+.
+Characters
+.I "per se"
+have not (yet) been formatted.
+.
+Glyphs represent graphemes
+(supplied by the output device)
+and populate diversions
+or the pending output line.
+.
+Formatting converts characters into
+(sequences of)
+glyphs.
+.
+GNU
+.I troff \" GNU
+stores properties of the environment
+that affect how a glyph is rendered with the glyph node's data.
+.
+Thus,
+subsequent formatting operations do not affect it,
 including
 .BR bd ,
 .BR cs ,
 .BR tkf ,
 .BR tr ,
-or
+and
 .B fp
 requests.
 .
 Normally,
-glyphs are constructed from characters immediately before the glyph is
-added to an output line.
+a macro or string
+contains only a list of characters
+and a diversion
+contains only a list of nodes.
+However,
+applying the
+.B \%asciify
+or
+.B \%unformat
+requests to a diversion converts some of its nodes back into characters.
 .
-Macros,
-diversions,
-and strings are all,
-in fact,
-the same type of object;
-they contain a sequence of intermixed character and glyph nodes.
+Where the formatter cannot recover the character representation
+of a node,
+it stores a null character in the character list
+corresponding to a single node in the node list.
 .
-Special characters transform from one to the other:
-before being added to the output,
-they behave as characters;
-afterward,
-they are glyphs.
-.
-A glyph node does not behave like a character node when it is processed
-by a macro:
-it does not inherit any of the special properties that the character
-from which it was constructed might have had.
+Consequently,
+a glyph node does not behave as a character does
+in macro interpolation:
+it does not inherit special properties
+that the character from which it was constructed might have had.
 .
 .
 .P
@@ -6105,19 +6713,31 @@ The other correct way,
 appropriate in contexts independent of the backslash's common use as a
 .I roff
 escape character\[em]perhaps in discussion of character sets or other
-programming languages\[em]is the character escape
+programming languages\[em]is the special character escape sequence
 .B \[rs](rs
 or
 .BR \[rs][rs] ,
 for \[lq]reverse solidus\[rq],
-from its name in the ECMA-6 (ISO/IEC\~646) standard.
+from its name in the ECMA-6 and ISO\~10646 standards.
 .
-[This escape sequence is not portable to AT&T
-.IR troff , \" AT&T
-but is to its lineal descendant,
-Heirloom Doctools
-.IR troff ,
+[AT&T
+.I troff 's \" AT&T
+font description files
+did not define the
+.B rs
+special character,
+but those of
+its descendant Heirloom Doctools
+.I troff \" Heirloom
+do,
 as of its 060716 release (July 2006).]
+.\" The foregoing once said "lineal" descendant; that appears not to be
+.\" true.  Heirloom Doctools troff is based on Open Solaris troff, which
+.\" descends from DWB 2.0 troff (effectively a fork).  "Lineal"
+.\" descendants of DWB 2.0 troff would be DWB 3.3 and, possibly, Plan 9
+.\" troff.  (The accuracy of this last claim depends on the degree of
+.\" resemblance between Research Unix troff--the version maintained by
+.\" Kernighan--and DWB troff, of which 3.4 was the final release.)
 .
 .
 .P

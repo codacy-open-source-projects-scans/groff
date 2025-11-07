@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021 Free Software Foundation, Inc.
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -19,13 +19,30 @@
 #
 
 grog="${abs_top_builddir:-.}/grog"
-doc="${abs_top_srcdir:-..}/src/utils/grog/tests/foo.man"
 
 # Regression test Savannah #59622.
 #
 # Recognize the strongly-accented dialect of man(7) produced by
 # pod2man(1).
 
-"$grog" "$doc" | grep '^groff -man .*/src/utils/grog/tests/foo\.man'
+# Locate directory containing our test artifacts.
+artifact_dir=
+
+for buildroot in . .. ../..
+do
+    d=$buildroot/src/utils/grog/tests/artifacts
+    if [ -d "$d" ]
+    then
+        artifact_dir=$d
+        break
+    fi
+done
+
+# If we can't find it, we can't test.
+test -z "$artifact_dir" && exit 77 # skip
+
+input="$artifact_dir"/foo.man
+"$grog" "$input" \
+    | grep '^groff -man .*/src/utils/grog/tests/artifacts/foo\.man'
 
 # vim:set ai et sw=4 ts=4 tw=72:

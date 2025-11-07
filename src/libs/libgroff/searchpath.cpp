@@ -16,8 +16,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -30,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "lib.h"
 
 #include "searchpath.h"
 #include "nonposix.h"
@@ -172,8 +172,8 @@ FILE *search_path::open_file(const char *name, char **pathp)
   return 0 /* nullptr */;
 }
 
-FILE *search_path::open_file_cautious(const char *name, char **pathp,
-				      const char *mode)
+FILE *search_path::open_file_cautiously(const char *name, char **pathp,
+					const char *mode)
 {
   if (0 /* nullptr */ == mode)
     mode = "r";

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -23,7 +23,13 @@ groff="${abs_top_builddir:-.}/test-groff"
 # troff should not segfault when its standard output is closed.
 # Savannah #59202.
 
-# If a core file already exists, it should be dealt with; skip test.
-test -e core && exit 77
+if [ -e core ]
+then
+  echo "$0: 'core' file already exists; skipping" >&2
+  exit 77 # skip
+fi
+
 echo | "$groff" >&-
 ! test -e core
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

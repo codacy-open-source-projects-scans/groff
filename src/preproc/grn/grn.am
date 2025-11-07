@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -27,6 +27,10 @@ grn_LDADD = libgroff.a lib/libgnu.a $(LIBM)
 PREFIXMAN1 += src/preproc/grn/grn.1
 EXTRA_DIST += src/preproc/grn/README src/preproc/grn/grn.1.man
 
+grn_TESTS = \
+  src/preproc/grn/tests/passes-through-input-with-eighth-bit-set.sh
+TESTS += $(grn_TESTS)
+EXTRA_DIST += $(grn_TESTS)
 
 # Local Variables:
 # fill-column: 72

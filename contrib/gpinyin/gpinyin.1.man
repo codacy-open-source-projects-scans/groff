@@ -318,7 +318,9 @@ Useful documents on the World Wide Web related to Pinyin include
 .I Pinyin.info: a guide to the writing of Mandarin Chinese in \
 romanization
 .UE ,
-.ad \*[AD]
+.\" XXX: cringe
+.ie d AD .ad \*[AD]
+.el      .ad b
 .
 .br
 .UR http://\:www\:.pinyin\:.info/\:rules/\:where.html
@@ -344,7 +346,9 @@ and
 .I pinyin.sty
 from the CJK macro package for \*[TeX]
 .UE .
-.ad \*[AD]
+.\" XXX: cringe
+.ie d AD .ad \*[AD]
+.el      .ad b
 .
 .RE
 .

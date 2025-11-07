@@ -39,6 +39,7 @@
 .\" Modified by jjc@jclark.com and g.branden.robinson@gmail.com for
 .\" groff.
 .\"UC 7
+.if n .po 10n
 .nr fi 1n
 .nr sx 0
 .\"pn 0
@@ -76,6 +77,7 @@
 .\" the length of the longest entry.
 .nr DI \w'.sh \(+-N T a b c d e f'+2n
 .he '\*(MR''%'
+.fo ''\f(BIgroff\fP \*(MO''
 .de NR
 .b "\en\\$1" "\\$2"
 ..
@@ -1870,26 +1872,27 @@ otherwise resume using number
 .DE
 Leave the next output page blank
 except for titles.
-This can reserve space
-for a full-page diagram
-produced externally
-and composited in later.
-(To reserve only a partial page,
-use \[lq]\c
-.b .sv \~\c
-.bi n \[rq],
-where
-.i n
-is the amount of space required.
-This space will be output immediately
-if there is room,
-and otherwise
-at the top of the next page.
-If
-.i n
-is greater than the space available
-on an empty page,
-none will be output.)
+.\" TODO: Move this advice to an intermediate "me" user's guide.
+.\"This can reserve space
+.\"for a full-page diagram
+.\"produced externally
+.\"and composited in later.
+.\"(To reserve only a partial page,
+.\"use \[lq]\c
+.\".b .sv \~\c
+.\".bi n \[rq],
+.\"where
+.\".i n
+.\"is the amount of space required.
+.\"This space will be output immediately
+.\"if there is room,
+.\"and otherwise
+.\"at the top of the next page.
+.\"If
+.\".i n
+.\"is greater than the space available
+.\"on an empty page,
+.\"none will be output.)
 .sh 1 "Predefined Strings"
 .TL
 .ST *
@@ -1909,22 +1912,27 @@ Interpolate delayed text number surrounded by square brackets:
 .TL
 .ST {
 .DE
-Begin superscripting:
-move upward and reduce type size.
-The line height increases above by
+Begin superscript:
+in \*T mode,
+move upward,
+reduce type size,
+and increase line height above by
 .NR (sx
-[0.2m]
-to accommodate the superscript.
-In \*N mode,
-output a left square bracket.
+[0.2m];
+in \*N mode,
+output
+.q [ .
 .TL
 .ST }
 .DE
-End superscripting:
-reverse motion and type size change of
-.ST { .
-In \*N mode,
-output a right square bracket.
+End superscript:
+in \*T mode,
+reverse
+.ST {
+motion and size change;
+in \*N mode,
+output
+.q ] .
 .\" TODO: Move this example to a section on super- and subscripting in
 .\" meintro.
 .\"For example,
@@ -1942,21 +1950,27 @@ output a right square bracket.
 .TL
 .ST <
 .DE
-Begin subscripting:
-move downward and reduce type size.
-The line height increases below by
+Begin subscript:
+in \*T mode,
+move downward,
+reduce type size,
+and increase line height below by
 .NR (sx
-to accommodate the subscript.
-In \*N mode,
-output a left angle bracket.
+[0.2m];
+in \*N mode,
+output
+.q < .
 .TL
 .ST >
 .DE
-End subscripting:
-reverse motion and type size change of
-.ST < .
-In \*N mode,
-output a right angle bracket.
+End subscript:
+in \*T mode,
+reverse
+.ST <
+motion and size change;
+in \*N mode,
+output
+.q > .
 .\" dead-tree pagination
 .br
 .ne 6v

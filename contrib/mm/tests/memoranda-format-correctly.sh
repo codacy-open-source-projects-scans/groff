@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright 2024-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
@@ -66,12 +65,20 @@ input="$examples_dir"/memorandum.mm
 for t in 0 1 2 3 4 5 custom
 do
     echo "checking formatting of MT type '$t'" >&2
-    expected=$(cksum "$artifacts_dir"/memorandum.$t | cut -d' ' -f1-2)
-    actual=$("$groff" -mm -dmT=$t -Tascii -P-cbou "$input" | cksum \
-        | cut -d' ' -f1-2)
+    output=$("$groff" -ww -m m -d mT=$t -T ascii -P -cbou "$input" \
+        | nl -ba | sed 's/[	 ]*$//') # That's [tab space].
+    echo "$output"
+    # We _would_ use "cut -d' ' -f1-2" here, but Solaris 10 cksum writes
+    # tabs between fields instead of spaces, nonconformantly with POSIX
+    # Issue 4 (1994); see XCU p. 195, PDF p. 217.  Quality!  So fire up
+    # big old AWK instead.  We're sure to be running on "enterprise"
+    # hardware with that fancy proprietary OS.
+    expected=$(cksum "$artifacts_dir"/memorandum.$t \
+        | awk '{ print $1, $2 }')
+    actual=$(echo "$output" | cksum | awk '{ print $1, $2 }')
     test "$actual" = "$expected" || wail
 done
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

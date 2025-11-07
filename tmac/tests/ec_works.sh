@@ -40,6 +40,7 @@ input='.ec @
 .EM CWI'
 
 output=$(printf "%s\n" "$input" | "$groff" -mec -Tdvi -z 2>&1)
+echo "$output"
 test -z "$output"
 
 # vim:set ai et sw=4 ts=4 tw=72:

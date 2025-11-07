@@ -46,6 +46,10 @@ typesetting
 .\}
 .rr do-fallback
 .
+.\" define a string tx for the TeX logo
+.ie t .ds tx T\h'-.1667m'\v'.224m'E\v'-.224m'\h'-.125m'X
+.el   .ds tx TeX
+.
 .
 .\" ====================================================================
 .SH Description
@@ -166,7 +170,7 @@ The exceptions separate words.
 A
 .I roff
 formatter attempts to detect boundaries between sentences,
-and supplies additional inter-sentence space between them.
+and supplies supplemental inter-sentence space between them.
 .
 It flags certain characters
 (normally
@@ -196,17 +200,13 @@ immediately after an end-of-sentence
 character cancels detection of the end of a sentence.
 .
 However,
-several characters are treated
+the formatter treats several characters
 .I transparently
-after the occurrence of an end-of-sentence character.
+after the occurrence of an end-of-sentence character\[em]it does not
+cancel end-of-sentence status upon encountering them.
 .
-That is,
-a
-.I roff
-does not cancel end-of-sentence detection when it processes them.
-.
-This is because such characters are often used as footnote markers or to
-close quotations and parentheticals.
+Such characters are often used as footnote markers
+or to close quotations and parentheticals.
 .
 The default set is
 .BR \[dq] ,
@@ -226,27 +226,30 @@ escape sequences whose purpose is to obtain glyphs that are not easily
 typed at the keyboard,
 or which have special meaning to the formatter
 (like
-.BR \[rs] ).
-.\" slack wording: itself).
+.B \[rs]
+itself).
 .
 .
 .P
 When an output line is nearly full,
-it is uncommon for the next word collected from the input to exactly
-fill it\[em]typically,
-there is room left over only for part of the next word.
+it is uncommon for the next word collected from the input
+to exactly fill it\[em]often,
+there is room left over for only part of the next word.
 .
 .I Hyphenation
 is the process of splitting a word so that it appears partially on one
 line,
 followed by a hyphen to indicate to the reader that the word has been
 broken,
-and its remainder on the next.
+and that its remainder lies on the next.
 .
 Hyphenation break points can be manually specified;
-.I groff
-also uses a hyphenation algorithm and language-specific pattern files to
-decide which words can be hyphenated and where.
+GNU
+.I troff
+also uses a hyphenation algorithm and language-specific pattern files
+(based on
+\*[tx]'s)
+to decide which words can be hyphenated and where.
 .
 Hyphenation does not always occur even when the hyphenation rules for a
 word allow it;
@@ -257,9 +260,9 @@ in certain circumstances.
 .
 .P
 Once an output line is full,
-the next word
+the formatter places the next word
 (or remainder of a hyphenated one)
-is placed on a different output line;
+on a different output line;
 this is called a
 .I break.
 .
@@ -328,8 +331,8 @@ Trailing spaces on
 (see below)
 are discarded.
 .
-The formatter flushes any pending output line upon encountering the end
-of input.
+The formatter breaks the pending output line without adjustment
+upon encountering the end of input.
 .
 .
 .P
@@ -588,15 +591,33 @@ preventing a glyph from lying partially or wholly off the page.
 .
 .P
 Further,
-it is conventional not to write or draw at the extreme edges of the
-page.
+it is conventional not to write or draw
+at the extreme edges of the page.
 .
 Typesetters configure a
 .I "page offset,"
-a rightward shift from the left edge.
+a rightward shift from the left edge
+that defines the zero point
+from which the formatter reckons the line indentation
+and length.
 .
 .RI ( groff 's
 terminal output devices have page offsets of zero.)
+.
+.
+.P
+Combining the foregoing facts results in an origin that lies
+at the page offset in the horizontal dimension
+and at the text baseline (using the default vertical spacing)
+in the vertical dimension.
+A document can change these prior to the first written or drawn output.
+.\" see @ref{Line Layout} and
+.\" @ref{Manipulating Type Size and Vertical Spacing}.
+.\" This origin isn't necessarily--and generally is not--the one used by
+.\" the device-independent output, but that coordinate system is not
+.\" exposed in the *roff language, though it can be expressed in
+.\" formatter instructions that construct device-independent output
+.\" commands (`\!`, `\X`, `.output`, `.device`).
 .
 .
 .P
@@ -604,30 +625,30 @@ Vertical spacing has an impact on page-breaking decisions.
 .
 Generally,
 when a break occurs,
-the formatter moves the drawing position to the next text baseline
-automatically.
+the formatter automatically moves the drawing position
+to the next text baseline.
 .
-If the formatter were already writing to the last line that would fit on
-the page,
+If the formatter were already writing
+to the last line that fits on the page,
 advancing by one vee would place the next text baseline off the page.
 .
 Rather than let that happen,
 .I roff
 formatters instruct the output driver to eject the page,
 start a new one,
-and again set the drawing position to one vee below the page top;
+and again place the drawing position one vee below the page top;
 this is a
-.I page break.
+.I "page break."
 .
 .
 .P
-When the last line of input text corresponds to the last output line
-that fits on the page,
-the break caused by the end of input will also break the page,
+When the last line of input text
+corresponds to the last output line that fits on the page,
+the break caused by the end of input also breaks the page,
 producing a useless blank one.
 .
-Macro packages keep users from having
-to confront this difficulty by setting \[lq]traps\[rq];
+Macro packages keep users from having to confront this difficulty
+by setting \[lq]traps\[rq];
 .\" (@pxref{Traps});
 moreover,
 all but the simplest page layouts tend to have headers and footers,
@@ -841,7 +862,7 @@ after body text nearly fills the page,
 the trap springs.
 .
 The macro called by the trap draws a line across the page
-and emits the stored diversion.
+and emits the stored diversion by calling it like a macro.
 .
 Thus,
 the footnote is rendered.
@@ -912,13 +933,16 @@ The abbreviations will be familiar to
 veterans.
 .
 .
+.br
+.if t .ne 10v
+.if n .ne 11v
 .P
-.ne 10v
 .TS
 center;
-r l
-rB l.
+R  L
+Rb L.
 Abbreviation	Control word
+_
 \&.ad	.adjust
 \&.bp	.begin page
 \&.br	.break
@@ -2130,9 +2154,8 @@ after
 .RB \[lq] ?\& \[rq],
 and
 .RB \[lq] .\& \[rq]
-if they are followed by space,
-tab,
-or newline characters and don't end a sentence.
+if they are followed by space or newline characters
+and don't end a sentence.
 .
 .
 .IP \[bu]
@@ -2150,6 +2173,15 @@ so that revisions to the input don't turn them into control lines.
 .IP \[bu]
 Do not use spaces to perform indentation or align columns of a table.
 Leading spaces are reliable when text is not being filled.
+.
+(Exception:
+when laying out a table with
+GNU
+.IR tbl , \" GNU
+specifying the
+.B \%nospaces
+region option
+causes the program to ignore spaces at the boundaries of table cells.)
 .
 .
 .IP \[bu]
@@ -2592,7 +2624,7 @@ the
 man page enumerates all man pages distributed with the system,
 and individual pages frequently refer to external resources as well as
 manuals on a variety of topics
-distributed with
+imbricated with
 .IR groff .
 .
 .
@@ -2604,6 +2636,9 @@ but
 .MR troff 1 \" foreign troff
 might be a good starting point.
 .
+.
+.\" Clean up.
+.rm tx
 .
 .\" Restore compatibility mode (for, e.g., Solaris 10/11).
 .cp \n[*groff_roff_7_man_C]

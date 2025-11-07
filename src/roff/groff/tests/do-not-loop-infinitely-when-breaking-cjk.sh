@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -20,10 +20,19 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-set -e
-
-DOC='ン
+input='.
+The next line is 65n long.
+.br
+12345678901234567890123456789012345678901234567890123456789012345
+ン
 ああAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-'
+foo
+bar
+baz
+qux
+.pl \n(nlu
+.'
 
-echo "$DOC" | "$groff" -D utf8 -Tutf8 -mja
+printf '%s\n' "$input" | "$groff" -K utf8 -T utf8 -m ja -w w
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

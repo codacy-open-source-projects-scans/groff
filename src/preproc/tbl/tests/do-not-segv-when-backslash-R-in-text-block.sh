@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2022 Free Software Foundation, Inc.
+# Copyright 2022-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -32,7 +32,11 @@ wail () {
 # Do not SEGV when a text block begins with a repeating glyph token, and
 # do not malformat the output if it ends with one.
 
-test -f core && exit 77 # skip
+if [ -e core ]
+then
+    echo "$0: 'core' file already exists; skipping" >&2
+    exit 77 # skip
+fi
 
 input='.TS
 L.
@@ -72,4 +76,4 @@ echo "$output" | sed -n 3p | grep -qx 'foo a bar' || wail
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

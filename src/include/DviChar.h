@@ -1,4 +1,3 @@
-/* -*- C -*- */
 /* Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
 This file is part of groff.
@@ -53,3 +52,9 @@ char			*DviCharName (DviCharNameMap *, int, int);
 #define DviCharName(map,index,synonym)	((map)->dvi_names[index][synonym])
 #endif
 int			DviCharIndex (DviCharNameMap *, const char *);
+
+// Local Variables:
+// fill-column: 72
+// mode: C
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

@@ -1138,6 +1138,13 @@ hierarchically and concatenatively, e.g.
   2.2.1
 </span>
 By default, a blank line precedes headings, regardless of the level.
+In addition, mom
+<a href="docprocessing.html#shim">SHIM</a>s
+the heading, if necessary, to ensure conformity with the
+<a href="definitions.html#baseline-grid">baseline grid</a>.
+</p>
+
+<p>
 Mom initially sets up a very basic style for nine levels of heading,
 of which you can have an infinite number, although as has been said,
 if you need more than four levels of heading, you should consider
@@ -1208,7 +1215,7 @@ PDF_LINK usage is explained in the manual,
 The final argument is the text of the heading, surrounded by double
 quotes.  Long headings that are likely to exceed the current
 line length should be broken into chunks, each surrounded by
-double-quotes, like this:
+double-quotes, like this, producing a multi-line heading:
 <br/>
 <span class="pre-in-pp">
   .HEADING 1 "A needlessly long but instructive" "first level heading"
@@ -1225,7 +1232,9 @@ it, she will set the head at the top of the next page.
 </div>
 
 <div class="box-tip">
-<h3 id="head-spacing-notes" class="docs" style="padding-top: 9px; font-size: 100%; text-transform: none">Spacing of headings</h3>
+<h3 id="head-spacing-notes" class="docs"
+  style="padding-top: 9px; font-size: 100%; text-transform: none">
+Spacing of headings</h3>
 
 <p>
 As described above, mom inserts a blank line before each heading.
@@ -1285,6 +1294,56 @@ it can be re-enabled for the heading level with
 </p>
 </div>
 
+<div class="box-tip" style="margin-top: 2em">
+<h3 id="head-spacing-notes" class="docs"
+  style="padding-top: 9px; font-size: 100%; text-transform: none">
+Multi-line headings</h3>
+
+<p>
+Multi-line headings grow upwards, encroaching on the space above
+them.  The reason is that multi-line headings with
+<kbd>LEAD</kbd> given to <kbd>HEADING_STYLE</kbd> deviate from the
+<a href="definitions.html#baseline-grid">baseline grid</a>.
+If headings were set downwards, the compensation mom would have to
+apply afterwards (shimming; see
+<a href="docprocessing.html#vertical-whitespace-management">vertical whitespace management</a>)
+would introduce a gaping hole after the heading.  Since mom always
+deposits a blank line before a heading, it makes more sense
+typographically to steal from the space above rather than to add
+space below.  If the space stolen is too much, precede the heading
+with <kbd>SP</kbd> (mom) or <kbd>sp</kbd> (groff) to introduce an
+additional linespace beforehand.
+</p>
+
+<p style="margin-top: -.5em">
+Multi-line headings at the top of a page sometimes have too much
+whitespace afterwards, a by-product of shimming, which mom always
+applies after multi-line headings that have a <kbd>LEAD</kbd>
+argument in their heading style.  If there are other shimmed elements
+on the page, (see
+<a href="docprocessing.html#">SHIM</a>),
+you may remove the excess space after the heading with a negative
+spacing command, e.g. <kbd><span class="nobr">.SP -.5</span></kbd>
+or <kbd><span class="nobr">.sp -.5</span></kbd>.  If there are no
+other shimmed elements, use the <kbd>BASELINE_ADJUST</kbd> argument
+to <kbd>HEADING_STYLE</kbd>, passing it a negative value to lower
+the heading.
+</p>
+
+<p style="margin-top: -.5em">
+Boxed headings with <kbd>LEAD</kbd> given to their heading style
+will not be centred vertically within the box.  Raise or lower the
+heading into a blanaced position with <kbd>BASELINE_ADJUST</kbd>.
+</p>
+
+<p class="tip-bottom" style="margin-top: -.5em">
+If flex is enabled and it introduces unwanted space on a page,
+which it certainly will if a heading near the bottom of a page
+gets deferred to the next, pass <kbd>HEADING_STYLE</kbd> the
+<kbd>NO_FLEX</kbd> option, either globally for the heading level, or
+on a one-off basis, restoring flexing afterwards.
+</div>
+
 <div class="defaults-container" style="background-color: #ded4bd; border: none;">
 <h3 id="heading-control" class="defaults" style="margin-left: 6px; margin-bottom: -1em">HEADING control and defaults</h3>
 
@@ -1327,7 +1386,7 @@ which may be given in any order:
   UNDERSCORE2 &lt;weight&gt; &lt;gap1&gt; &lt;gap2&gt; | NO_UNDERSCORE2 \
   CAPS | NO_CAPS \
   SMALLCAPS | NO_SMALLCAPS \
-  BASELINE_ADJUST &lt;amount to raise heading from the baseline&gt; \
+  BASELINE_ADJUST &lt;amount to raise or lower heading from the baseline&gt; \
   NEEDS &lt;lines of text required beneath the heading&gt; \
   PREFIX_CHAPTER [&lt;n&gt;] \
   SPACE_AFTER | NO_SPACE_AFTER \
@@ -1362,7 +1421,8 @@ by which you wish to increase or decrease the leading, preceded by a
 plus (+) or minus (-) sign.  Note that there is no need to append
 the
 <a href="definitions.html#unitofmeasure">unit of measure</a>
-<kbd>p</kbd> to the argument.
+<kbd>p</kbd> to the argument.  Please see the
+<a href="#multi-line-heading">Multi-line headings</a>.
 </p>
 
 <p class="defaults" style="margin-bottom: 1em">
@@ -1383,16 +1443,18 @@ Contents, where capitalization of entries is controlled by
 </p>
 
 <p class="defaults" style="margin-bottom: 1em">
-<kbd>BASELINE_ADJUST</kbd> allows you to raise a heading slightly
-above the baseline on which it would otherwise sit.  For aesthetic
-reasons, it is often desirable to introduce a small amount of space
-between a heading and the text following it.  Since headings are
-preceded by a blank line, it is preferable to move the heading
-upward than to lower the text following it.  The argument to
-BASELINE_ADJUST is the amount by which to raise the heading.  It
-requires no <kbd>+</kbd> or <kbd>-</kbd> sign, and must have a
+<kbd>BASELINE_ADJUST</kbd> allows you to raise or lower a heading
+slightly from the baseline on which it would otherwise sit.  For
+aesthetic reasons, it is often desirable to introduce a small
+amount of space between a heading and the text following it.  Since
+headings are preceded by a blank line, it is preferable to move the
+heading upward slightly rather than lowering the text following it.
+Used for this purpose, no <kbd>+</kbd> sign is required.  The
+argument must have a
 <a href="definitions.html#unitofmeasure">unit of measure</a>
-appended to it.
+appended to it, usually <kbd>p</kbd>.  It is also possible to lower
+the position of headings by prepending a <kbd>-</kbd> sign to the
+argument.
 </p>
 
 <p class="defaults" style="margin-bottom: 1em">
@@ -1414,13 +1476,12 @@ to match the number of dropcap lines.
 <kbd>PREFIX_CHAPTER</kbd> instructs mom to prefix the current
 chapter number to numbered headings.  If mom is unable to determine
 a chapter number, she will ask for one.
-</p>
-
-<p class="defaults" style="margin-bottom: 1em">
+If you want to disable the prefixing of chapter numbers to headings,
+you must use
+<a href="#prefix-chapter-number">PREFIX_CHAPTER_NUMBER</a>.
 Note that using <kbd>PREFIX_CHAPTER</kbd> with an explicit chapter
 number will also set the chapter number for subsequent
-<a href="images.html#autolabel">automatically-generated image and pre-processor labels</a>
-as well.
+<a href="images.html#autolabel">automatically-generated image and pre-processor labels</a>.
 </p>
 
 <p class="defaults" style="margin-bottom: 1em">
@@ -1568,7 +1629,7 @@ elements by invoking the macro
 <a href="docprocessing.html#chapter"><kbd>.CHAPTER</kbd></a>
 with a
 <a href="definitions.html#numericargument">numeric argument</a>
-in your document setup. 
+in your document setup.
 </p>
 </div>
 <div class="rule-short"><hr/></div>
@@ -1746,7 +1807,7 @@ The former style defaults for HEAD were:
   FAMILY     = prevailing document family
   FONT       = bold (TYPESET); roman (TYPEWRITE)
   SIZE       = +1 (TYPESET); +0 (TYPEWRITE)
-  QUAD       = C 
+  QUAD       = C
   UNDERSCORE .5 2p
   CAPS
 </span>
@@ -1788,7 +1849,7 @@ The former style defaults for SUBHEAD were:
   FAMILY          = prevailing document family
   FONT            = bold (TYPESET); italic, i.e. underlined (TYPEWRITE)
   SIZE            = +.5 (TYPESET); +0 (TYPEWRITE)
-  QUAD            = L 
+  QUAD            = L
   BASELINE_ADJUST = 1/8 the current leading
 </span>
 </p>
@@ -1830,7 +1891,7 @@ The former style defaults for SUBSUBHEAD were:
   FAMILY          = prevailing document family
   FONT            = italic (TYPESET); roman (TYPEWRITE)
   SIZE            = +.5 (TYPESET); +0 (TYPEWRITE)
-  QUAD            = L 
+  QUAD            = L
   BASELINE_ADJUST = 1/8 the current leading
 </span>
 </p>
@@ -2826,7 +2887,7 @@ centred on the page as a block, based on the longest line of list
 text.  Equally, if <kbd>QUAD RIGHT</kbd> in in effect, the list is
 set flush left but quadded right as a block.  If you want a centred
 or right-quadded list in an otherwise left-quadded or justified
-document, simply invoke <kbd>.QUAD&nbsp;&lt;direction&gt;</kbd> 
+document, simply invoke <kbd>.QUAD&nbsp;&lt;direction&gt;</kbd>
 before the list and reset the quad afterwards.  Do not use
 <kbd><a href="typesetting.html#lrc">CENTER</a></kbd>
 or
@@ -3078,7 +3139,7 @@ in parentheses, you&#8217;d enter
   .ITEM
   The second item on the list.
 </span>
-which would produce 
+which would produce
 <br/>
 <span class="pre-in-pp">
   (1) The first item on the list.
@@ -3482,7 +3543,7 @@ use the macros
 <a href="#number-quote-lines">NUMBER_QUOTE_LINES</a>
 or
 <a href="#number-quote-lines">NUMBER_BLOCKQUOTE_LINES</a>.
-Do not use NUMBER_LINES inside 
+Do not use NUMBER_LINES inside
 <a href="#quote">QUOTE</a>
 or
 <a href="#blockquote">BLOCKQUOTE</a>.
@@ -3732,9 +3793,9 @@ after
 
 <p>
 If you&#8217;d like mom to number lines in a
-<a href="#quote">QUOTE</a> 
+<a href="#quote">QUOTE</a>
 or
-<a href="#blockquote">BLOCKQUOTE</a> 
+<a href="#blockquote">BLOCKQUOTE</a>
 as part of the same order and sequence as paragraph text,
 invoke
 <span class="pre-in-pp">
@@ -3933,7 +3994,7 @@ always flush with the document&#8217;s bottom margin.
 </p>
 
 <p>
-When 
+When
 <a href="docprocessing.html#flex-vs-shim">flex-spacing</a>
 is enabled, the distance between the last line of text and the
 first footnote is always the same.
@@ -4448,7 +4509,7 @@ get with
 </p>
 </div>
 
-<h4 id="footnotes-by-linenumber" class="docs" style="margin-top: -.25em;">4. Footnotes by line number &ndash; FOOTNOTE_MARKER_STYLE LINE</h4> 
+<h4 id="footnotes-by-linenumber" class="docs" style="margin-top: -.25em;">4. Footnotes by line number &ndash; FOOTNOTE_MARKER_STYLE LINE</h4>
 
 <p>
 FOOTNOTE_MARKER_STYLE with the argument, <kbd>LINE</kbd> lets you
@@ -4682,7 +4743,7 @@ is how you&#8217;d get it.
 
 <p>
 The footnote separator rule is a rule whose bottom edge falls
-on the 
+on the
 <a href="definitions.html#baseline">baseline</a>
 (at the footnote
 <a href="definitions.html#leading">leading</a>)
@@ -5246,7 +5307,7 @@ Macro: <b>SINGLESPACE_ENDNOTES</b> <kbd class="macro-args">&lt;toggle&gt;</kbd>
 </div>
 
 <p>
-If your 
+If your
 <a href="docprocessing.html#printstyle">PRINTSTYLE</a>
 is <kbd>TYPEWRITE</kbd> and you use TYPEWRITE&#8217;s default
 double-spacing, endnotes are double-spaced.  If your document is
@@ -5468,7 +5529,7 @@ by default, mom does not print the header/footer centre string
 is what you want.  However, should you not want mom to remove
 the centre string from the endnotes page(s) headers/footers, invoke
 <kbd><a href="#endnotes-hdrftr-center">.ENDNOTES_HEADER_CENTER</a></kbd>
-with no argument. 
+with no argument.
 </p>
 
 <p>
@@ -5698,13 +5759,13 @@ Some examples:
   .ENDNOTES_HEADER_UNDERSCORE 1 3p
       - turn underscoring on; set the rule weight to 1 point; set
         the gap between the title and the underscore to 3 points
-  
+
   .ENDNOTES_HEADER_UNDERSCORE DOUBLE .75 3p
       - turn double-underscoring on; set the rule weight to 3/4 of
         a point; set the gap between the title and the upper
         underscore to 3 points; leave the gap between the upper
         and the lower underscore at the default
-  
+
   .ENDNOTES_HEADER_UNDERSCORE DOUBLE 1.5 1.5p 1.5p
       - turn double-underscoring on; set the rule weight to 1-1/2
         points; set the gap between the title and the upper
@@ -5804,7 +5865,7 @@ using ENDNOTE_TITLE_STYLE_STYLE.
 .ENDNOTE_TITLE_QUAD   default = left
 .ENDNOTE_TITLE_CAPS
 .ENDNOTE_TITLE_SMALLCAPS
-.ENDNOTE_TITLE_UNDERSCORE default = single underscore 
+.ENDNOTE_TITLE_UNDERSCORE default = single underscore
 
 *Relative to the size of the endnotes text (set with ENDNOTE_PT_SIZE)
 </span>
@@ -6320,7 +6381,7 @@ a separate line is recommended, e.g.
 </span>
 All arguments are optional, but since mom requires you to run
 MN_INIT before entering margin notes, you should, at a minimum, set
-the <kbd>RAGGED</kbd> or <kbd>SYMMETRIC</kbd> parameter.  
+the <kbd>RAGGED</kbd> or <kbd>SYMMETRIC</kbd> parameter.
 You will almost certainly want to set <kbd>L_WIDTH</kbd>, <kbd>R_WIDTH</kbd>,
 <kbd>SIZE</kbd> and <kbd>LEAD</kbd> as well.
 </p>
@@ -6567,7 +6628,7 @@ Since FINIS is only used once in a document, it has few control
 macros.  It is expected that you will make changes to style
 parameters such as family, font, and size with
 <a href="definitions.html#inlines">inline escapes</a>
-in the FINIS string itself (see below).  
+in the FINIS string itself (see below).
 </p>
 
 <h4 id="finis-string" class="docs" style="margin-top: -.5em">Changing the FINIS string</h4>

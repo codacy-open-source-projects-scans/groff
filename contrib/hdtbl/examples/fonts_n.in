@@ -1,10 +1,7 @@
 .ig
+This file is part of groff, the GNU roff typesetting system.
 
-font_n.roff
-
-This file is part of groff, the GNU roff type-setting system.
-
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -19,7 +16,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ..
 .
 .
@@ -38,12 +34,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .if !d sopath \
 .  ds sopath
 .
-.so \*[sopath]examples/common.roff
+.ds lib examples/common.roff
+.soquiet \*[sopath]\*[lib]
+.if !d common \{\
+.  tmc \n[.F]: cannot find "\*[lib]"; specify its location
+.  tm1 " with groff '-I' or '-d sopath=' option
+.  ab
+.\}
+.
 .
 .if !d fontpath \
 .  ds fontpath @fontdir@
 .
-.tm \*[fonts_n]: listing fonts in \*[fontpath]/dev\*[.T]
+.if !\n[.U] \{\
+.  tmc \*[fonts_n]: document requires unsafe mode;
+.  tm1 " use groff's '-U' option
+.  ab
+.\}
 .
 .de fontdump
 .  ie \\n[.$] \
@@ -51,11 +58,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  el \
 .    ds *args \\n[.fn]
 .
+.\" Solaris 10 `tr` barfs if POSIX character classes are used in a
+.\" locale other than "C".
 .  pso sh -c \
        "printf '%s' '.ds *f ' ; \
         ls \\*[fontpath]/dev\*[.T] \
-        | tr '[:cntrl:]' '[ *]'"
-.  \"	This dummy line is necessary; the preceding line eats it.
+        | env LC_ALL=C tr '[:cntrl:]' '[ *]'; \
+        echo"
 .
 .  while !"\\*[*args]"" \{\
 .    pops *$1 *args
@@ -63,14 +72,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    if "\\*[*$1]"all" \{\
 .      ds *args \\*[*f] \\*[*args]
 .      pops *$1 *args
-.      nr *all 1 
+.      nr *all 1
 .    \}
 .
 .    if \\n[*all] \{\
 .      if "\\*[*$1]"." \
 .        nr *all 0
 .      if !F \\*[*$1] \
-.        continue 
+.        continue
 .    \}
 .
 .    t*index "\\*[*f]" \\*[*$1]
@@ -92,7 +101,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .      ft
 .
 .      if (\\n[**] == \\n[*]) \
-.        continue 
+.        continue
 .    \}
 .
 .    if \\n[t*cptn] \
@@ -101,10 +110,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    tm \\*[fonts_n]: listing font '\\*[*$1]'...
 .
 .    TBL border=.1n bc=red cpd=0 csp=.1n bgc=
-.      CPTN groff font \\*[*$1] \
+.      CPTN groff font name \\*[*$1]; \
             .br \
-            val=b ".pso @EGREP@ internalname \\*[fontpath]/dev\*[.T]/\\*[*$1]"
-.      TR 
+            val=b ".pso @EGREP@ internalname \\*[fontpath]/dev\*[.T]/\\*[*$1]" \
+            .br \
+            Grid is blank if font is not installed.
+.      TR
 .        TD
 .          TBL cols=12 border=.1n bc=red csp=.1n cpd=.2n fgc=red4 bgc=beige \
                hal=c fsz='1.2 1.2' fst=\\*[*$1]
@@ -129,17 +140,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                ".TD fgc=blue fst=HB" \
                  \\\\n[y#].
 .
-.            TR fst=HB fgc=blue 
-.              TD 
+.            TR fst=HB fgc=blue
+.              TD
 .                nr x# 0-1 1
 .              PN 10 .TD \
                  \&..\\\\n+[x#]
-.              TD 
-.          ETB 
-.    ETB 
+.              TD
+.          ETB
+.    ETB
 .  \}
 ..
 .
+.tm \*[fonts_n]: listing fonts in \*[fontpath]/dev\*[.T]
 .fontdump all
 .
 .\" Local Variables:

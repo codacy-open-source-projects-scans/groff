@@ -10,7 +10,7 @@ groff_hdtbl \- Heidelberger table macros for GNU
 .\"
 .\" Copyright (C) 2005-2020 Free Software Foundation, Inc.
 .\"
-.\" This file is part of groff, the GNU roff type-setting system.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" Permission is granted to copy, distribute and/or modify this
 .\" document under the terms of the GNU Free Documentation License,
@@ -196,7 +196,7 @@ flexible:
 you can write sequences of tokens
 (macro calls with their arguments and content data),
 separated by blanks and beginning with a macro call,
-into the same line to get compact and cleanly arrranged input.
+into the same line to get compact and cleanly arranged input.
 .
 An advantage of
 .I hdtbl

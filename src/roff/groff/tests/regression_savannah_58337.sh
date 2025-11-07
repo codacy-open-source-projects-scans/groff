@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -20,8 +20,6 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-set -e
-
 # groff should ignore negative inter-word and inter-sentence space
 # sizes.  And certainly not fail an assertion.  Savannah #58337.
 "$groff" -Tascii <<EOF | grep -Fqx 'A B.  C.'
@@ -30,3 +28,5 @@ set -e
 A B.
 C.
 EOF
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

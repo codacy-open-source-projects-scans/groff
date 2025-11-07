@@ -23,9 +23,16 @@ the Subject line or you risk my spam filters nuking your message.
 
 Version 2.6_d
 =============
-PDF_IMAGE after only one line text after START is moves the image to
+FLOAT captions not going into selected List of ...
+---Fixed---
+
+'LISTS_STYLE TITLE_QUAD CENTER' setting titles quad right.
+---Fixed---
+
+PDF_IMAGE after only one line text after START moves the image to
 the next page.
 ---Fixed---
+
 Some graphical objects not recognising colours initialized with
 .XCOLOR.
 ---Fixed---
@@ -128,8 +135,8 @@ page unless B_MARGIN has been set explicitly.
 Version 2.4-4_e
 ===============
 
-LANDSCAPE arg to PAPER not being appended to $PAPER so PAPER 
-isn't picking it up when PAPER is called at the top of DEFAULTS. 
+LANDSCAPE arg to PAPER not being appended to $PAPER so PAPER
+isn't picking it up when PAPER is called at the top of DEFAULTS.
 ---Fixed---
 
 BLANKPAGE with NULL arg printing incorrect page number when page
@@ -414,7 +421,7 @@ Superfluous blank line before paragraphs with paraheads.
 Paraheads causing line numbering to overprint two line numbers.
 ---Fixed---
 
-Endless loop when DOC_LEAD_ADJUST is disabled. 
+Endless loop when DOC_LEAD_ADJUST is disabled.
 ---Fixed---
 
 In the case where the list doesn't fit the page, -mom inserts
@@ -792,7 +799,7 @@ page element or tag.
 Heads and subheads at the start of docs are printing one line lower
 than they should.
 ---Fixed---
- 
+
 Gaps are appearing at the bottom of pages when there's a linebreak
 followed by a subhead.
 ---Fixed---

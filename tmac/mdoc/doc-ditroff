@@ -1,7 +1,7 @@
 .\" Copyright (c) 1991, 1993
 .\"   The Regents of the University of California.  All rights reserved.
 .\"
-.\" Copyright (C) 1994-2024 Free Software Foundation, Inc.
+.\" Copyright (C) 1994-2025 Free Software Foundation, Inc.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -53,32 +53,32 @@
 .
 .\" the 'doc-xx-font' strings must not be empty!
 .
-.ds doc-page-identifier-font \f[\*[MF]]
-.ds doc-page-section-font \f[R]
-.ds doc-Ad-font \f[I]
-.ds doc-Ar-font \f[I]
-.ds doc-Cm-font \f[B]
-.ds doc-Em-font \f[I]
-.ds doc-Er-font \f[R]
-.ds doc-Ev-font \f[I]
-.ds doc-Fa-font \f[I]
-.ds doc-Fd-font \f[B]
-.ds doc-Fl-font \f[B]
-.ds doc-Fn-font \f[B]
-.ds doc-Ft-font \f[I]
-.ds doc-Ic-font \f[B]
-.ds doc-Li-font \f[B]
-.ds doc-Lk-font \f[R]
-.ds doc-Me-font \f[B]
-.ds doc-Mt-font \f[R]
-.ds doc-Nm-font \f[B]
-.ds doc-No-font \f[R]
-.ds doc-Pa-font \f[I]
-.ds doc-Sh-font \f[\*[HF]]
-.ds doc-Sy-font \f[B]
-.ds doc-Tn-font \f[R]
-.ds doc-Va-font \f[I]
-.ds doc-Xr-font \f[\*[MF]]
+.ds doc-page-identifier-font \*[MF]\"
+.ds doc-page-section-font R\"
+.ds doc-Ad-font I\"
+.ds doc-Ar-font I\"
+.ds doc-Cm-font B\"
+.ds doc-Em-font I\"
+.ds doc-Er-font R\"
+.ds doc-Ev-font I\"
+.ds doc-Fa-font I\"
+.ds doc-Fd-font B\"
+.ds doc-Fl-font B\"
+.ds doc-Fn-font B\"
+.ds doc-Ft-font I\"
+.ds doc-Ic-font B\"
+.ds doc-Li-font B\"
+.ds doc-Lk-font R\"
+.ds doc-Me-font B\"
+.ds doc-Mt-font R\"
+.ds doc-Nm-font B\"
+.ds doc-No-font R\"
+.ds doc-Pa-font I\"
+.ds doc-Sh-font \*[HF]\"
+.ds doc-Sy-font B\"
+.ds doc-Tn-font R\"
+.ds doc-Va-font I\"
+.ds doc-Xr-font \*[MF]\"
 .
 .ds doc-left-parenthesis \f[R](\f[]
 .ds doc-right-parenthesis \f[R])\f[]
@@ -259,12 +259,12 @@
 .      doc-report-usage .Ql argument ...
 .  \}
 .
-.    ds doc-saved-family-Ql \n[.fam]
+.  ds doc-saved-family-Ql \n[.fam]
 .
-.    ds doc-quote-left \F[C]
-.    ds doc-quote-right \F[\*[doc-saved-family-Ql]]
+.  ds doc-quote-left \F[C]
+.  ds doc-quote-right \F[\*[doc-saved-family-Ql]]
 .
-.    doc-enclose-string \$@
+.  doc-enclose-string \$@
 ..
 .ec
 .

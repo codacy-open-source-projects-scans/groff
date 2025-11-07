@@ -1,6 +1,11 @@
-/* Last non-groff version: hpoint.c  1.1  84/10/08 */
-
-/*
+/* Last non-groff version: hpoint.c  1.1  84/10/08
+ *
+ * Originally written by Barry Roitblat, 1982.
+ * Adapted to GNU troff by Daniel Senderowicz 99/12/29.
+ * Modified 2000-2024 by the Free Software Foundation, Inc.
+ *
+ * This file contains no AT&T code and is in the public domain.
+ *
  * This file contains routines for manipulating the point data
  * structures for the gremlin picture editor.
  */
@@ -9,7 +14,6 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
 #include "gprint.h"
 
 /* imports from main.cpp */

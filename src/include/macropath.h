@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -20,3 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 extern search_path macro_path;
 extern search_path safer_macro_path;
 extern search_path config_macro_path;
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

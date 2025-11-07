@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -24,9 +24,11 @@ public:
   virtual void increment();
   virtual void decrement();
   virtual void set_increment(units);
+  virtual int get_increment() const;
   virtual void alter_format(char f, int w = 0);
   virtual const char *get_format();
   virtual void set_value(units);
+  virtual bool can_autoincrement() const;
 };
 
 // TODO: Use template to parameterize class in the pointed-to data type?
@@ -56,6 +58,8 @@ public:
   void decrement();
   void alter_format(char f, int w = 0);
   void set_increment(units);
+  int get_increment() const;
+  bool can_autoincrement() const;
   const char *get_format();
   void add_value(units);
 

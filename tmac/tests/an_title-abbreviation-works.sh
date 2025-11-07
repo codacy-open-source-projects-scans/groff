@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021-2024 Free Software Foundation, Inc.
+# Copyright (C) 2021-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -56,6 +56,30 @@ title_abbv="CosNotif...hSupplier(3erl)"
 # 2 spaces each before "Erlang" and after "Definition"
 pattern="$title_abbv  Erlang Module Definition  $title_abbv"
 echo "$output" | grep -Fq "$pattern" || wail
+
+input='.
+.TH SSL_CTX_sess_set_remove_cb 3 2025-01-09 "groff test suite"
+.SH Name
+SSL_CTX_sess_set_remove_cb \- use a brilliantly designed API
+.'
+
+# Check every line length between 64 and 68 inclusive.  Some of these
+# values elicit crowding in groff 1.23.
+
+echo "checking that known troublesome man page title abbreviates well" \
+    >&2
+for width in 64 65 66 67 68
+do
+    echo "...at width ${width}n" >&2
+    output=$(echo "$input" \
+        | "$groff" -r LL=${width}n -m an -T ascii -P -cbou)
+    echo "$output"
+    if ! echo "$output" | sed -n 1p | grep ' Library Functions Manual '
+    then
+        wail
+        break
+    fi
+done
 
 test -z "$fail"
 

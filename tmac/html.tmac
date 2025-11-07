@@ -1,4 +1,4 @@
-.\" html.tmac
+.\" Configure grohtml(1) output devices: "html" and "xhtml".
 .\"
 .do nr *groff_html_tmac_C \n[.cp]
 .cp 0
@@ -10,6 +10,8 @@
 .fchar \[ff] ff
 .fchar \[Fi] ffi
 .fchar \[Fl] ffl
+.\" Unicode does not encode a character for a baseline rule.
+.char \[ru] _
 .
 .\"
 .\" remove hyphenation

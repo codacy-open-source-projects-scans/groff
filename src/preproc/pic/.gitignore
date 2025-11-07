@@ -12,3 +12,6 @@
 /pic.cpp
 /pic.hpp
 /pic.output
+# test ("make check") artifacts
+/tests/*.log
+/tests/*.trs

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,17 +16,20 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h> // INT_MAX, INT_MIN, LONG_MAX
 #include <math.h>
 #include <stdlib.h>
+#include <string.h> // strerror()
 #include <wchar.h>
+
+#include "lib.h" // array_length()
 
 #include "errarg.h"
 #include "error.h"
@@ -47,6 +50,8 @@ struct font_char_metric {
   int italic_correction;
   int subscript_correction;
   char *special_device_coding;
+  struct font_char_metric *next;
+  int end_code;
 };
 
 struct font_kern_list {
@@ -116,20 +121,24 @@ bool text_file::next_line()
     int length = 0;
     for (;;) {
       int c = getc(fp);
-      if (c == EOF)
+      if (EOF == c)
 	break;
       if (is_invalid_input_char(c))
 	error("invalid input character code %1", int(c));
       else {
 	if (length + 1 >= linebufsize) {
+	  int newbufsize = linebufsize * 2;
+	  if (newbufsize < 0) // integer multiplication wrapped
+	    fatal("line length exceeds %1 bytes; aborting",
+		  linebufsize);
 	  char *old_buf = buf;
-	  buf = new char[linebufsize * 2];
+	  buf = new char[newbufsize];
 	  memcpy(buf, old_buf, linebufsize);
 	  delete[] old_buf;
-	  linebufsize *= 2;
+	  linebufsize = newbufsize;
 	}
 	buf[length++] = c;
-	if (c == '\n')
+	if ('\n' == c)
 	  break;
       }
     }
@@ -163,6 +172,19 @@ void text_file::fatal(const char *format,
     fatal_with_file_and_line(path, lineno, format, arg1, arg2, arg3);
 }
 
+static int glyph_to_ucs_codepoint(glyph *g)
+{
+  const char *nm = glyph_to_name(g);
+  if (nm != 0 /* nullptr */) {
+    if ((valid_unicode_code_sequence(nm) != 0 /* nullptr */)
+	&& (strchr(nm, '_') == 0)) {
+      char *ignore;
+      return static_cast<int>(strtol(nm + 1, &ignore, 16));
+    }
+  }
+  return -1;
+}
+
 int glyph_to_unicode(glyph *g)
 {
   const char *nm = glyph_to_name(g);
@@ -185,7 +207,7 @@ int glyph_to_unicode(glyph *g)
       }
     }
     // Unicode character?
-    if (valid_unicode_code_sequence(nm)) {
+    if (valid_unicode_code_sequence(nm) != 0 /* nullptr */) {
       char *ignore;
       return (int)strtol(nm + 1, &ignore, 16);
     }
@@ -208,15 +230,15 @@ int glyph_to_unicode(glyph *g)
 
 /* font functions */
 
-font::font(const char *s) : ligatures(0),
+font::font(const char *fn) : ligatures(0),
   kern_hash_table(0 /* nullptr */),
   space_width(0), special(false), internalname(0 /* nullptr */),
   slant(0.0), zoom(0), ch_index(0 /* nullptr */), nindices(0),
-  ch(0 /* nullptr */), ch_used(0), ch_size(0),
+  ch(0 /* nullptr */), wch(0 /* nullptr */), ch_used(0), ch_size(0),
   widths_cache(0 /* nullptr */)
 {
-  name = new char[strlen(s) + 1];
-  strcpy(name, s);
+  filename = new char[strlen(fn) + 1];
+  strcpy(filename, fn);
 }
 
 font::~font()
@@ -237,12 +259,19 @@ font::~font()
     }
     delete[] kern_hash_table;
   }
-  delete[] name;
+  delete[] filename;
   delete[] internalname;
   while (widths_cache) {
     font_widths_cache *tem = widths_cache;
     widths_cache = widths_cache->next;
     delete tem;
+  }
+  struct font_char_metric *wcp, *nwcp;
+  for (wcp = wch; wcp != 0 /* nullptr */; wcp = nwcp) {
+    nwcp = wcp->next;
+    if (wcp->special_device_coding)
+      delete[] wcp->special_device_coding;
+    delete wcp;
   }
 }
 
@@ -326,6 +355,12 @@ bool font::contains(glyph *g)
   // Explicitly enumerated glyph?
   if (idx < nindices && ch_index[idx] >= 0)
     return true;
+  int uc = glyph_to_ucs_codepoint(g);
+  if (uc > 0) {
+    font_char_metric *wcp = get_font_wchar_metric(uc);
+    if (wcp != 0 /* nullptr */)
+      return true;
+  }
   if (is_unicode) {
     // Unicode font
     // ASCII or Unicode character, or groff glyph name that maps to Unicode?
@@ -357,6 +392,17 @@ font_widths_cache::~font_widths_cache()
   delete[] width;
 }
 
+struct font_char_metric *font::get_font_wchar_metric(int uc)
+{
+  struct font_char_metric *wcp;
+  for (wcp = wch; wcp != 0 /* nullptr */; wcp = wcp->next) {
+    if (wcp->code <= uc && uc <= wcp->end_code) {
+      return wcp;
+    }
+  }
+  return 0 /* nullptr */;
+}
+
 int font::get_width(glyph *g, int point_size)
 {
   int idx = glyph_to_index(g);
@@ -370,6 +416,13 @@ int font::get_width(glyph *g, int point_size)
       real_size = (point_size * zoom + 500) / 1000;
     else
       real_size = int(point_size * double(zoom) / 1000.0 + .5);
+  }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 && !(idx < nindices && ch_index[idx] >= 0)) {
+    return scale(wcp->width, point_size);
   }
   if (idx < nindices && ch_index[idx] >= 0) {
     // Explicitly enumerated glyph
@@ -403,7 +456,7 @@ int font::get_width(glyph *g, int point_size)
     // Unicode font
     int width = 24; // XXX: Add a request to override this.
     int w = wcwidth(get_code(g));
-    if (w > 1)
+    if (w > 1 && !font::use_unscaled_charwidths)
       width *= w;
     if (real_size == unitwidth || font::use_unscaled_charwidths)
       return width;
@@ -422,6 +475,13 @@ int font::get_height(glyph *g, int point_size)
     // Explicitly enumerated glyph
     return scale(ch[ch_index[idx]].height, point_size);
   }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return scale(wcp->height, point_size);
+  }
   if (is_unicode) {
     // Unicode font
     return 0;
@@ -437,6 +497,13 @@ int font::get_depth(glyph *g, int point_size)
   if (idx < nindices && ch_index[idx] >= 0) {
     // Explicitly enumerated glyph
     return scale(ch[ch_index[idx]].depth, point_size);
+  }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return scale(wcp->depth, point_size);
   }
   if (is_unicode) {
     // Unicode font
@@ -454,6 +521,13 @@ int font::get_italic_correction(glyph *g, int point_size)
     // Explicitly enumerated glyph
     return scale(ch[ch_index[idx]].italic_correction, point_size);
   }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return scale(wcp->italic_correction, point_size);
+  }
   if (is_unicode) {
     // Unicode font
     return 0;
@@ -465,10 +539,17 @@ int font::get_italic_correction(glyph *g, int point_size)
 int font::get_left_italic_correction(glyph *g, int point_size)
 {
   int idx = glyph_to_index(g);
-  assert(idx >= 0);
+  assert(idx >= 0 /* nullptr */);
   if (idx < nindices && ch_index[idx] >= 0) {
     // Explicitly enumerated glyph
     return scale(ch[ch_index[idx]].pre_math_space, point_size);
+  }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0 )
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return scale(wcp->pre_math_space, point_size);
   }
   if (is_unicode) {
     // Unicode font
@@ -485,6 +566,13 @@ int font::get_subscript_correction(glyph *g, int point_size)
   if (idx < nindices && ch_index[idx] >= 0) {
     // Explicitly enumerated glyph
     return scale(ch[ch_index[idx]].subscript_correction, point_size);
+  }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return scale(wcp->subscript_correction, point_size);
   }
   if (is_unicode) {
     // Unicode font
@@ -560,6 +648,13 @@ int font::get_character_type(glyph *g)
     // Explicitly enumerated glyph
     return ch[ch_index[idx]].type;
   }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return wcp->type;
+  }
   if (is_unicode) {
     // Unicode font
     return 0;
@@ -575,6 +670,13 @@ int font::get_code(glyph *g)
   if (idx < nindices && ch_index[idx] >= 0) {
     // Explicitly enumerated glyph
     return ch[ch_index[idx]].code;
+  }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */) {
+    return uc;
   }
   if (is_unicode) {
     // Unicode font
@@ -592,9 +694,9 @@ int font::get_code(glyph *g)
   abort(); // -Wreturn-type
 }
 
-const char *font::get_name()
+const char *font::get_filename()
 {
-  return name;
+  return filename;
 }
 
 const char *font::get_internal_name()
@@ -610,6 +712,12 @@ const char *font::get_special_device_encoding(glyph *g)
     // Explicitly enumerated glyph
     return ch[ch_index[idx]].special_device_coding;
   }
+  int uc = glyph_to_ucs_codepoint(g);
+  font_char_metric *wcp = 0 /* nullptr */;
+  if (uc > 0)
+    wcp = get_font_wchar_metric(uc);
+  if (wcp != 0 /* nullptr */)
+    return wcp->special_device_coding;
   if (is_unicode) {
     // Unicode font
     return 0;
@@ -708,9 +816,9 @@ void font::copy_entry(glyph *new_glyph, glyph *old_glyph)
   ch_index[new_index] = ch_index[old_index];
 }
 
-font *font::load_font(const char *s, bool load_header_only)
+font *font::load_font(const char *fn, bool load_header_only)
 {
-  font *f = new font(s);
+  font *f = new font(fn);
   if (!f->load(load_header_only)) {
     delete f;
     return 0 /* nullptr */;
@@ -788,7 +896,7 @@ again:
 bool font::load(bool load_header_only)
 {
   char *path;
-  FILE *fp = open_file(name, &path);
+  FILE *fp = open_file(filename, &path);
   if (0 /* nullptr */ == fp)
     return false;
   text_file t(fp, path);
@@ -803,9 +911,9 @@ bool font::load(bool load_header_only)
 	t.error("'name' directive requires an argument");
 	return false;
       }
-      if (strcmp(p, name) != 0) {
+      if (strcmp(p, filename) != 0) {
 	t.error("font description file name '%1' does not match 'name'"
-		" argument '%2'", name, p);
+		" argument '%2'", filename, p);
 	return false;
       }
       saw_name_directive = true;
@@ -877,7 +985,8 @@ bool font::load(bool load_header_only)
     else if (strcmp(p, "special") == 0) {
       special = true;
     }
-    else if (strcmp(p, "kernpairs") != 0 && strcmp(p, "charset") != 0) {
+    else if (strcmp(p, "kernpairs") != 0 && strcmp(p, "charset") != 0 &&
+             strcmp(p, "charset-range") != 0) {
       char *directive = p;
       p = strtok(0 /* nullptr */, "\n");
       handle_unknown_font_command(directive, trim_arg(p), t.path,
@@ -921,6 +1030,84 @@ bool font::load(bool load_header_only)
 	glyph *g1 = name_to_glyph(c1);
 	glyph *g2 = name_to_glyph(c2);
 	add_kern(g1, g2, n);
+      }
+    }
+    // TODO: Rename this directive to "ranged-charset".
+    else if (strcmp(directive, "charset-range") == 0) {
+      if (load_header_only)
+	return true;
+      saw_charset_directive = true;
+      bool had_range = false;
+      for (;;) {
+	if (!t.next_line()) {
+	  directive = 0 /* nullptr */;
+	  break;
+	}
+	char *nm = strtok(t.buf, WS);
+	assert(nm != 0 /* nullptr */);
+	p = strtok(0 /* nullptr */, WS);
+	if (0 /* nullptr */ == p) {
+	  directive = nm;
+	  break;
+	}
+	unsigned int start_code = 0;
+	unsigned int end_code = 0;
+	int nrange = sscanf(nm, "u%X..u%X", &start_code, &end_code);
+	// TODO: Check for backwards range: end_code < start_code.
+	if (2 == nrange) {
+	  had_range = true;
+	  font_char_metric *wcp = new font_char_metric;
+	  wcp->code = start_code;
+	  wcp->end_code = end_code;
+	  wcp->height = 0;
+	  wcp->depth = 0;
+	  wcp->pre_math_space = 0;
+	  wcp->italic_correction = 0;
+	  wcp->subscript_correction = 0;
+	  int nparms = sscanf(p, "%d,%d,%d,%d,%d,%d",
+			      &wcp->width, &wcp->height, &wcp->depth,
+			      &wcp->italic_correction,
+			      &wcp->pre_math_space,
+			      &wcp->subscript_correction);
+	  if (nparms < 1) {
+	    t.error("missing or invalid width for character range '%1'",
+		    nm);
+	    return false;
+	  }
+	  p = strtok(0 /* nullptr */, WS);
+	  if (0 /* nullptr */ == p) {
+	    t.error("missing character type for '%1'", nm);
+	    return false;
+	  }
+	  int type;
+	  if (sscanf(p, "%d", &type) != 1) {
+	    t.error("invalid character type for '%1'", nm);
+	    return false;
+	  }
+	  if ((type < 0) || (type > 255)) {
+	    t.error("character type '%1' out of range for '%2'", type,
+	            nm);
+	    return false;
+	  }
+	  wcp->type = type;
+
+	  p = strtok(0 /* nullptr */, WS);
+	  if ((0 /* nullptr */ == p) || (strcmp(p, "--") == 0)) {
+	    wcp->special_device_coding = 0 /* nullptr */;
+	  }
+	  else {
+	    wcp->special_device_coding = new char[strlen(p) + 1];
+	    strcpy(wcp->special_device_coding, p);
+	  }
+	  wcp->next = wch;
+	  wch = wcp;
+	  p = 0 /* nullptr */;
+	}
+      }
+      // TODO: Parallelize wording of "charset"'s diagnostic.
+      if (!had_range) {
+	t.error("no glyphs described after 'charset-range' directive");
+	return false;
       }
     }
     else if (strcmp(directive, "charset") == 0) {
@@ -988,20 +1175,34 @@ bool font::load(bool load_header_only)
 	  metric.type = type;
 	  p = strtok(0 /* nullptr */, WS);
 	  if (0 /* nullptr */ == p) {
-	    t.error("missing code for '%1'", nm);
+	    t.error("missing index for '%1'", nm);
 	    return false;
 	  }
 	  char *ptr;
-	  metric.code = (int)strtol(p, &ptr, 0);
+	  long index;
+	  errno = 0;
+	  index = strtol(p, &ptr, 0);
 	  if (ptr == p) {
-	    t.error("invalid code '%1' for character '%2'", p, nm);
+	    t.error("invalid index '%1' for character '%2'", p, nm);
 	    return false;
 	  }
-	  if (is_unicode) {
-	    int w = wcwidth(metric.code);
-	    if (w > 1)
-	      metric.width *= w;
+	  if (INT_MAX != LONG_MAX) {
+	    if ((index > INT_MAX) || (index < INT_MIN)) {
+	      // This is a fib since INT_MIN's absolute value is one
+	      // greater than INT_MAX's (on two's complement machines),
+	      // but we can pass 3 arguments at most to the error()
+	      // function.  Also, 31 bits ought to be enough for anyone.
+	      t.error("index %1 for character '%2' is out of range;"
+		      " must be within +/-%3", p, nm, INT_MAX);
+	      return false;
+	    }
 	  }
+	  if (errno != 0) {
+	    t.error("cannot convert index '%1' to integer for character"
+		    " '%2': %3", p, nm, strerror(errno));
+	    return false;
+	  }
+	  metric.code = static_cast<int>(index);
 	  p = strtok(0 /* nullptr */, WS);
 	  if ((0 /* nullptr */ == p) || (strcmp(p, "--") == 0)) {
 	    metric.special_device_coding = 0;
@@ -1055,10 +1256,10 @@ bool font::load(bool load_header_only)
   return true;
 }
 
-static struct {
-  const char *numeric_directive;
+static struct numeric_directive {
+  const char *name;
   int *ptr;
-} table[] = {
+} numeric_directive_table[] = {
   { "res", &font::res },
   { "hor", &font::hor },
   { "vert", &font::vert },
@@ -1085,10 +1286,12 @@ const char *font::load_desc()
     char *p = strtok(t.buf, WS);
     assert(p != 0 /* nullptr */);
     bool numeric_directive_found = false;
-    unsigned int idx;
-    for (idx = 0; !numeric_directive_found
-		  && idx < sizeof(table) / sizeof(table[0]); idx++)
-      if (strcmp(table[idx].numeric_directive, p) == 0)
+    size_t idx;
+    for (idx = 0;
+	 (!numeric_directive_found
+	  && (idx < array_length(numeric_directive_table)));
+	 idx++)
+      if (strcmp(numeric_directive_table[idx].name, p) == 0)
 	numeric_directive_found = true;
     if (numeric_directive_found) {
       char *q = strtok(0 /* nullptr */, WS);
@@ -1113,7 +1316,7 @@ const char *font::load_desc()
 		" positive number, got '%2'", p, val);
 	return 0 /* nullptr */;
       }
-      *(table[idx-1].ptr) = val;
+      *(numeric_directive_table[idx - 1].ptr) = val;
     }
     else if (strcmp("family", p) == 0) {
       p = strtok(0 /* nullptr */, WS);

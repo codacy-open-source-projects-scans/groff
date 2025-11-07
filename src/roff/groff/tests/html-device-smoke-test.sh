@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020-2024 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -55,7 +55,7 @@ foobar
 
 echo "checking production of inline image for tbl(1) table" >&2
 output=$(echo "$input" | "$groff" -t -Thtml)
-echo "$output" | grep -q '<img src="grohtml-[0-9]\+-1.png"' || wail
+echo "$output" | grep -q '<img src="grohtml-[0-9]\{1,\}-1.png"' || wail
 
 input='.EQ
 x sup 2 + y sup 2 = z sup 2
@@ -63,7 +63,7 @@ x sup 2 + y sup 2 = z sup 2
 
 echo "checking production of inline image for eqn(1) equation" >&2
 output=$(echo "$input" | "$groff" -e -Thtml)
-echo "$output" | grep -q '<img src="grohtml-[0-9]\+-2.png"' || wail
+echo "$output" | grep -q '<img src="grohtml-[0-9]\{1,\}-2.png"' || wail
 
 cleanup
 
@@ -103,9 +103,9 @@ printf '\303\241' | "$groff" -k -Thtml | grep -qx '<p>&aacute;</p>' \
 # We test compatibility-mode HTML output somewhat differently since
 # preconv only emits groffish \[uXXXX] escapes for non-ASCII codepoints.
 echo "checking -C -k -Thtml" >&2
-printf "\('a" | "$groff" -C -k -Thtml | grep -qx '<p>&aacute;</p>' \
+printf '\\('"'"a | "$groff" -C -k -Thtml | grep -qx '<p>&aacute;</p>' \
     || wail
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

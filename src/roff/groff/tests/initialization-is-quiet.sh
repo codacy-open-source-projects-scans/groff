@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021-2023 Free Software Foundation, Inc.
+# Copyright 2021-2023 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -43,7 +43,7 @@ fi
 
 for compat in "" " -C"
 do
-  for locale in cs de en fr it ja sv zh
+  for locale in cs de en es fr it ja ru sv zh
   do
     echo testing \"-m $locale$compat\" >&2
     output=$("$groff" -ww -m $locale$compat -a -Tutf8 </dev/null \

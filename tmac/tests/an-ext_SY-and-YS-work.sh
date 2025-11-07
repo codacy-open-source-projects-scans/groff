@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2023-2024 Free Software Foundation, Inc.
+# Copyright (C) 2023-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -29,7 +29,7 @@ wail () {
 
 input='.TH foo 1 2023-05-13 "groff test suite"
 .SH Name
-foo \\- a command with a very short name
+foo \- a command with a very short name
 .
 .
 .SH Synopsis
@@ -46,11 +46,11 @@ This pre-synopsis text is not often used in practice.
 .
 .P
 .SY foo
-.B \\-h
+.B \-h
 .YS
 .
 .SY foo
-.B \\-\\-help
+.B \-\-help
 .YS
 .
 This post-synopsis text is not often used in practice.
@@ -60,7 +60,7 @@ This post-synopsis text is not often used in practice.
 The real work is done by
 .MR bar 1 .'
 
-output=$(echo "$input" | "$groff" -man -T ascii -P -cbou)
+output=$(printf "%s\n" "$input" | "$groff" -man -T ascii -P -cbou)
 echo "$output"
 
 echo 'checking for 1v of space before non-nested SY request' >&2
@@ -98,7 +98,7 @@ echo "$output" \
 
 input2='.TH foo 3 2024-05-06 "groff test suite"
 .SH Name
-foo \\- a small library for converting strings to integers
+foo \- a small library for converting strings to integers
 .
 .
 .SH Synopsis
@@ -136,15 +136,37 @@ foo \\- a small library for converting strings to integers
 .BI TYPE\~ max );
 .YS'
 
-output2=$(echo "$input2" | "$groff" -rLL=80n -man -T ascii -P -cbou)
+output2=$(printf "%s\n" "$input2" \
+    | "$groff" -rLL=80n -man -T ascii -P -cbou)
 echo "$output2"
 
 echo 'checking for indentation reuse' >&2
-echo "$output2" | grep -Eq '^ {13}char \*\*_NotNullable' || wail
+echo "$output2" | grep -Eq '^ {13}[A-Za-z*_]' || wail
 
 echo 'checking for automatic hyphenation disablement inside synopsis' \
     >&2
 echo "$output2" | grep -q 're-$' && wail
+
+input3='.
+.TH foo 1 2025-06-06 "groff test suite"
+.SH Name
+foo \- frobnicate a bar
+.SH Synopsis
+.SY foo
+.B \-\-baz
+.YS \&
+.
+.P
+.SY \%ridiculously\-long\-command\-name\-can\-you\-believe\-it
+\%\-\-equally\-bafflingly\-garrulous\-and\-interminable\-option
+.'
+
+output3=$(printf "%s\n" "$input3" \
+    | "$groff" -rLL=80n -man -T ascii -P -cbou)
+echo "$output3"
+
+echo 'checking that long unbreakable words do not overset' >&2
+echo "$output3" | grep -Eq '^ {9}--equally-bafflingly' || wail
 
 test -z "$fail"
 

@@ -260,7 +260,7 @@ In general, the order of command arguments and modifiers like \[lq]width
 1.2\[rq] or \[lq]dashed\[rq] doesn't matter, except that the order of
 text arguments is significant.
 .PP
-Here are all but one of the basic \fBpic\fP objects at their default sizes:
+Here are all but two of the basic \fBpic\fP objects at their default sizes:
 .KS
 .PS
 box "box";
@@ -277,14 +277,16 @@ arc; down; move; "arc"
 .PE
 .CE "2: Basic \fBpic\fP objects"
 .PP
-The missing simple object type is a \fIspline\fP.
+The missing simple object types are \fIspline\fP and \fIpolygon\fP.
 There is also a way to collect objects into \fIblock composites\fP which
 allows you to treat the whole group as a single object (resembling a
 box) for many purposes.
-We'll describe both of these later on.
+We'll describe all of these later on.
 .PP
 The box, ellipse, circle, and block composite objects are \fIclosed\/\fR;
 lines, arrows, arcs and splines are \fIopen\fP.
+Polygons are a special case drawn using the syntax of open objects,
+but with most of the attributes of closed objects.
 This distinction is often important in explaining command modifiers.
 .PP
 Figure \n[H1]-2 was produced by the following \fBpic\fP program,
@@ -350,8 +352,10 @@ line "1" "2" "3";
 line "1" "2" "3" "4";
 line "1" "2" "3" "4" "5";
 .PE
+.rs
 .sp 2
 .CE "4: Effects of multiple text arguments"
+.KS
 .PP
 The last line of Figure 3-2's program, `\fBarc; down; move;
 "arc"\fP', describing the captioned arc, introduces several new ideas.
@@ -359,7 +363,6 @@ Firstly, we see how to change the direction in which objects are
 joined.
 Had we written \fBarc; move; "arc"\fP, omitting \fBdown\fP the caption
 would have been joined to the top of the arc, like this:
-.KS
 .PS
 arc; move; "arc";
 .PE
@@ -413,6 +416,7 @@ If you don't like inches, it's possible to set a global style variable
 Setting \fBscale = 2.54\fP effectively changes the internal unit to
 centimeters (all other size variable values are scaled correspondingly).
 .
+.bp
 .NH 2
 Default Sizes of Objects
 .PP
@@ -483,13 +487,13 @@ There is also a \[lq]height\[rq] modifier that changes a box's height.
 The \fBwidth\fP keyword may be abbreviated to \fBwid\fP; the
 \fBheight\fP keyword to \fBht\fP.
 .
+.KS
 .NH 2
 Resizing Other Object Types
 .PP
 To change the size of a circle, give it a \fBrad[ius]\fP or
 \fBdiam[eter]\fP modifier; this changes the radius or diameter of the
 circle, according to the numeric argument that follows.
-.KS
 .PS
 {circle rad 0.1; move down 0.2 from last circle .s; "0.1"};
 move; circle rad 0.2 "0.2"; move; circle rad 0.3 "0.3";
@@ -544,6 +548,7 @@ box; box wid 1 ht 1; box same; box
 .CE "5: The \fBsame\fP keyword"
 .
 .
+.KS
 .NH 1
 Generalized Lines and Splines
 .
@@ -555,7 +560,6 @@ It is possible to specify diagonal lines or arrows by adding multiple \fBup\fP,
 Any of these can have a multiplier.
 To understand the effects, think of the drawing area as being gridded
 with standard-sized boxes.
-.KS
 .PS
 # Draw a demonstration up left arrow with grid box overlay
 define gridarrow
@@ -644,6 +648,21 @@ Arrowheads can be applied naturally to any path-based object, line or
 spline.
 We'll see how in the next section.
 .
+.NH 2
+Polygon Objects
+.PP
+GNU \fBgpic\fP supports arbitrary polygons constructed with the same syntax as multi-segment lines. The final line segment connecting back to the starting point is included automatically and should be omitted.
+.KS
+.PS
+POLY: polygon up 1 then down 0.5 right 1;
+"up 1" rjust at POLY.mid`1' + (-0.1, 0.0);
+"down 0.5 right 1" ljust at POLY.mid`2' + (0.0, 0.1);
+"automatically drawn" ljust at POLY.mid`3' + (0.0, -0.1);
+.PE
+.CE "5: \fBpolygon up 1 then down 0.5 right 1\fP"
+.LP
+Polygons are decorated like closed objects as described in the next section.
+.
 .
 .NH 1
 Decorating Objects
@@ -702,6 +721,7 @@ box dashed 0.2 "0.2";
 .PE
 .CE "1: Dashed objects"
 .
+.KS
 .NH 2
 Dotted Objects
 .PP
@@ -711,7 +731,6 @@ GNU \fBgpic\fP permits you to dot or dash ellipses, circles, and arcs
 dashing of lines and boxes.
 It too can be suffixed with a number to specify the interval between
 dots:
-.KS
 .PS
 box dotted "default";
 move;
@@ -835,7 +854,7 @@ this way.
 .NH 2
 Filled Objects
 .PP
-It is possible to fill boxes, circles, and ellipses.
+It is possible to fill boxes, circles, ellipses, and polygons.
 The modifier \fBfill[ed]\fP accomplishes this.
 You can suffix it with a fill value; the default is given by the style
 variable \fBfillval\fP.
@@ -1059,12 +1078,12 @@ Objects are also numbered backward by type from the last one.
 You can say \fB2nd last box\fP to get the second-to-last box, or
 \fB3rd last ellipse\fP to get the third-to-last ellipse.
 .PP
-In places where \fIn\/\fBth\fR is allowed, \fB`\fIexpr\/\fB'th\fR is
+In places where \fIn\/\fBth\fR is allowed, \fB\[ga]\fIexpr\/\fB\[aq]th\fR is
 also allowed.
 Note that
-.B 'th
+.B \[aq]th
 is a single token: no space is allowed between the
-.B '
+.B \[aq]
 and the \fBth\fP.
 For example,
 .IP
@@ -1072,7 +1091,7 @@ For example,
 .DS
 .CW
 for i = 1 to 4 do {
-   line from `i'th box.nw to `i+1'th box.se
+   line from \[ga]i\[aq]th box.nw to \[ga]i+1\[aq]th box.se
 }
 .DE
 .R
@@ -1261,6 +1280,69 @@ critical(spline right 1 then up right then left then left 1);
 .PE
 .CE "2: Special points on open objects"
 .PP
+.
+.NH 4
+Locations Relative to Polygons
+.PP
+Polygons have three types of reference points:
+.I vertices
+(\fB.vertex\fP, \fB.ver\fP, \fB.v\fP),
+.I midpoints
+of edges between the vertices
+(\fB.midpoint\fP, \fB.mid\fP),
+and a
+.I center
+(\fB.center\fP, \fB.c\fP).
+Reference points can be used
+without leading dots in the \fBof\fP prefix form.
+The center of a polygon is the centroid,
+and may give unexpected results for non-simple polygons.
+.PP
+GNU
+.B pic
+numbers vertices and midpoints in drawing order starting from
+.B 1 .
+Express them in the forms \fB.v\fP \fIexpr\fR
+or
+\fB.v\fP \[ga]\fIexpr\fR\[aq].
+The latter is required when the vertex/point expression is followed
+by an additional expression,
+as \fBpic\fP otherwise attempts to reduce them
+to a single expression.
+For example,
+.IP
+.KS
+.DS
+.CW
+for i = 1 to n do {
+   circle rad 0.05 fill 1 at last polygon.vi
+}
+circle rad 0.05 fill 1 at last polygon.mid \[ga]1\[aq] + (0.0,0.1)
+.DE
+.R
+.KE
+.LP
+would draw a dot 0.1i above the mid-point of the first edge at the default scale, and one at each vertex for a polygon with n vertices.
+.KS
+.PS
+define vertices {
+	[ VER: $1;
+		dot(VER.c);	"\fB.center\fP"	at VER.center + (0.0, 0.1)
+		for i = 1 to $2 do {
+			dot(VER.vi);
+			dot(VER.midi);
+		}
+		"\fB.v1\fP" at VER.v`1' + (-0.1, -0.1);
+		"\fB.v2\fP" at VER.v`2' + (-0.1, 0.1);
+		"\fB.v3\fP" at VER.v`3' + (0.1, 0.1);
+		"\fB.mid1\fP" at VER.mid`1' + (-0.1, 0.1);
+		"\fB.mid2\fP" at VER.mid`2' + (0.1, 0.1);
+		"\fB.mid3\fP" at VER.mid`3' + (0.1, -0.1);
+	]
+}
+vertices(polygon up 1 then down 0.5 right 1, 3);
+.PE
+.CE "3: Special points on polygons"
 .
 .NH 2
 Ways of Composing Positions
@@ -2658,6 +2740,65 @@ tblock(.5, 1, "Slave");
 .ft R
 .KE
 .
+.KS
+.PP
+Here is a flow chart with source code to demonstrate how a polygon attaches to other objects:
+.DS
+.CW
+\&.PS
+down;
+h = 0.25;
+w = 0.375;
+l = 0.75;
+r = 0.1;
+box rad r fill 0.3 outlined "green";
+"Start" at last box;
+arrow down l from last box.s;
+polygon \e
+	down h right w \e
+	then down h left w \e
+	then up h left w \e
+	with .v1 at last arrow.end \e
+	fill 0.3 outlined "blue";
+"Done?" at last polygon.c;
+arrow down l from last polygon.v3 " Yes" ljust;
+box rad r fill 0.3 outlined "green";
+"End" at last box.c;
+move to last polygon.v2;
+line right "" "No";
+arrow up l - h/2 then left lineht + w;
+\&.PE
+.
+.DE
+.ft R
+.KE
+.
+.KS
+.PS
+down;
+h = 0.25;
+w = 0.375;
+l = 0.75;
+r = 0.1;
+box rad r fill 0.3 outlined "green";
+"Start" at last box;
+arrow down l from last box.s;
+polygon \
+	down h right w \
+	then down h left w \
+	then up h left w \
+	with .v1 at last arrow.end \
+	fill 0.3 outlined "blue";
+"Done?" at last polygon.c;
+arrow down l from last polygon.v3 " Yes" ljust;
+box rad r fill 0.3 outlined "green";
+"End" at last box.c;
+move to last polygon.v2;
+line right "" "No";
+arrow up l - h/2 then left 0.5 + w;
+.PE
+.CE "3: Flowchart for demonstrating polygon attachment"
+.bp
 .
 .
 .NH 1
@@ -2878,6 +3019,7 @@ empty string is considered as `false' for `&&' and `|\||'.
   box                   \fR# closed object \[em] rectangle\fP
   circle                \fR# closed object \[em] circle\fP
   ellipse               \fR# closed object \[em] ellipse\fP
+  polygon               \fR# closed object \[em] polygon\fP
   arc                   \fR# open object \[em] quarter-circle\fP
   line                  \fR# open object \[em] line\fP
   arrow                 \fR# open object \[em] line with arrowhead\fP
@@ -3012,7 +3154,9 @@ There are lots of different ways to specify positions:
 <place> ::=
   <label>
   <label> <corner>
+  <label> <reference-point>
   <corner> [of] <label>
+  <reference-point> of <label>
   Here
 .R
 .DE
@@ -3038,6 +3182,15 @@ There are lots of different ways to specify positions:
 .DE
 .DS
 .CW
+<reference-point> ::=
+  .v[er[tex]] <expr>
+  .v[er[tex]] \[ga] <expr> \[aq]
+  .mid[point] <expr>
+  .mid[point] \[ga] <expr> \[aq]
+.R
+.DE
+.DS
+.CW
 <\,\f(CIxxx\/\fP-of> ::=
   \f(CIxxx\fP                   \fR# followed by `of'\fP
 .R
@@ -3054,7 +3207,7 @@ There are lots of different ways to specify positions:
 <ordinal> ::=
   INT th
   INT st | INT nd | INT rd
-  ` <any-expr> 'th
+  \[ga] <any-expr> \[aq]th
 .R
 .DE
 .DS
@@ -3063,6 +3216,7 @@ There are lots of different ways to specify positions:
   box
   circle
   ellipse
+  polygon
   arc
   line
   arrow
@@ -3077,7 +3231,7 @@ barbaric, synonyms like \fB1st\fP and \fB3rd\fP are accepted as well.\[rq]
 Objects of a given type are numbered from 1 upward in order of
 declaration; the \fBlast\fP modifier counts backward.
 .PP
-The \[lq]'th\[rq] form (which allows you to select a previous object with
+The \[lq]\^\[aq]th\[rq] form (which allows you to select a previous object with
 an expression, as opposed to a numeric literal) is not documented in DWB's
 \fIpic\/\fR(1).
 .PP
@@ -3119,6 +3273,7 @@ Here the special rules for the `with' keyword using a path:
   . LABEL [. LABEL ...] [<corner>]
 .R
 .DE
+.bp
 .PP
 The following style variables control output:
 .TS H

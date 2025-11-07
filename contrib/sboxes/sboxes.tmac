@@ -136,9 +136,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  nr bx*PD 0
 ..
 .de BOXSTOP
+.  vpt 0
 .  sp \\*[bx*ind\\n[bx*stack]]u-\\n[.psr]u
+.  vpt 1
 .  pdfbackground off
 .  nr bx*stack \\n[bx*stack]-1u
+.  fl
 ..
 .\" Local Variables:
 .\" mode: nroff

@@ -20,6 +20,12 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
+if ! echo foobar | grep -Fqx foobar >/dev/null 2>&1
+then
+    echo "$0: grep command does not support -Fqx options; skipping" >&2
+    exit 77 # skip
+fi
+
 fail=
 
 wail() {
@@ -40,6 +46,12 @@ figure 1
 Or
 .UR http://\:bar\:.example\:.com
 .UE .
+.
+.
+.TP
+.UR http://\:baz\:.example\:.com
+.UE
+Frumious!
 .'
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU0)
@@ -54,6 +66,10 @@ echo "checking formatting of web URI with no link text" \
     "(ascii device; hyperlinks disabled)" >&2
 echo "$output" | grep -Fq 'Or <http://bar.example.com>.' || wail
 
+echo "checking formatting of web URI with no link text as paragraph" \
+     "tag (ascii device; hyperlinks disabled)" >&2
+echo "$output" | grep -Fq ' <http://baz.example.com>' || wail
+
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
 
@@ -64,6 +80,10 @@ echo "$output" | grep -Fq 'See figure 1.' || wail
 echo "checking formatting of web URI with no link text" \
     "(ascii device; hyperlinks enabled)" >&2
 echo "$output" | grep -Fq 'Or http://bar.example.com.' || wail
+
+echo "checking formatting of web URI with no link text as paragraph" \
+     "tag (ascii device; hyperlinks enabled)" >&2
+echo "$output" | grep -Fq ' http://baz.example.com' || wail
 
 html_input='.
 .TH foo 1 2022-12-04 "groff test suite"
@@ -115,10 +135,12 @@ else
 fi
 echo "$output"
 
+# The version of pdftotext on Solaris 10 writes 'figure' with an 'fi'
+# ligature.
 echo "checking formatting of web URI with link text" \
     "(pdf device; hyperlinks disabled)" >&2
 # expected: See figure 1 〈http://foo.example.com〉.
-echo "$output" | grep -q 'See figure 1 .*http://foo.example.com.*\.' \
+echo "$output" | grep -q 'See .*gure 1 .*http://foo.example.com.*\.' \
     || wail
 
 echo "checking formatting of web URI with no link text" \
@@ -138,10 +160,12 @@ else
 fi
 echo "$output"
 
+# The version of pdftotext on Solaris 10 writes 'figure' with an 'fi'
+# ligature.
 echo "checking formatting of web URI with link text" \
     "(pdf device; hyperlinks enabled)" >&2
 # expected: See figure 1. Or http://bar.example.com.
-echo "$output" | grep -Fq 'See figure 1. Or' || wail
+echo "$output" | grep -q 'See .*gure 1. Or' || wail
 
 echo "checking formatting of web URI with no link text" \
     "(pdf device; hyperlinks enabled)" >&2

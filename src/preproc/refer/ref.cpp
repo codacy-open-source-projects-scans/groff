@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
 Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,7 +15,11 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-     
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "refer.h"
 #include "refid.h"
 #include "ref.h"
@@ -27,7 +30,7 @@ static int find_month(const char *start, const char *end);
 static void abbreviate_names(string &);
 
 #define DEFAULT_ARTICLES "the\000a\000an"
-     
+
 string articles(DEFAULT_ARTICLES, sizeof(DEFAULT_ARTICLES));
 
 // Multiple occurrences of fields are separated by FIELD_SEPARATOR.
@@ -314,7 +317,7 @@ void sortify_other(const char *s, int len, string &key)
 void sortify_title(const char *s, int len, string &key)
 {
   const char *end = s + len;
-  for (; s < end && (*s == ' ' || *s == '\n'); s++) 
+  for (; s < end && (*s == ' ' || *s == '\n'); s++)
     ;
   const char *ptr = s;
   for (;;) {
@@ -534,7 +537,7 @@ int same_reference(const reference &r1, const reference &r2)
     return 0;
   if (r1.nfields != r2.nfields)
     return 0;
-  int i = 0; 
+  int i = 0;
   for (i = 0; i < 256; i++)
     if (r1.field_index[i] != r2.field_index[i])
       return 0;
@@ -816,7 +819,7 @@ void reference::output(FILE *fp)
 	      // should check for overflow
 	      n = n*10 + reverse_fields[j] - '0';
 	  }
-	  else 
+	  else
 	    n = INT_MAX;
 	  reverse_names(f, n);
 	}
@@ -1159,3 +1162,8 @@ const char *reference::get_sort_field(int i, int si, int ssi,
   return start;
 }
 
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

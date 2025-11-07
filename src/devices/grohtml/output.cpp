@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2000-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2025 Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote output.cpp
  *  but it owes a huge amount of ideas and raw code from
@@ -26,16 +25,20 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "driver.h"
-#include "stringclass.h"
-#include "cset.h"
-
-#include <time.h>
-#include "html.h"
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
 #endif
+
+#include <stdio.h> // EOF, FILE, fflush(), fputc(), fputs(), fwrite(),
+		   // getc(), putc(), sprintf()
+#include <string.h> // strlen(), strncpy()
+
+#include "cset.h"
+#include "driver.h"
+#include "lib.h" // INT_DIGITS
+#include "stringclass.h"
+
+#include "html.h"
 
 #if !defined(TRUE)
 #   define TRUE  (1==1)
@@ -65,7 +68,7 @@ word::word (const char *w, int n)
 {
   s = new char[n+1];
   strncpy(s, w, n);
-  s[n] = (char)0;
+  s[n] = '\0';
 }
 
 /*
@@ -361,3 +364,9 @@ void simple_output::flush_last_word (void)
     }
   }
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

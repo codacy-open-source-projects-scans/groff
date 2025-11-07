@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021-2024 Free Software Foundation, Inc.
+# Copyright 2021-2024 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
@@ -124,4 +123,4 @@ echo "$output" | grep -Fqx "ABC   DEF" || wail # 3 spaces
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:

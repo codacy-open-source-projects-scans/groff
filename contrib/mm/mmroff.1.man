@@ -9,7 +9,7 @@ macro package
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2023 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -77,7 +77,8 @@ macro package
 is a simple wrapper for
 .IR groff ,
 used to expand cross references in
-.IR m@TMAC_M_PREFIX@m ;
+.I m@TMAC_M_PREFIX@m
+documents;
 see
 .MR groff_mm @MAN7EXT@ .
 .
@@ -92,7 +93,7 @@ and
 .B \-rRef=1
 to populate cross-reference and index files with their corresponding
 entries,
-and then again to produce the document.
+and then without to produce the document.
 .
 It also handles the inclusion of PostScript images with the
 .B PIC
@@ -165,6 +166,32 @@ executables,
 .IR @BINDIR@ ,
 is searched before
 .IR PATH .
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I mmroff
+exits with status
+.B 0
+if the
+.B \-\-help
+or
+.B \%\-\-version
+options were specified,
+or if
+.B \-x
+was specified and the program successfully
+created or updated the cross-reference file.
+.
+It exits with status
+.B 1
+if it was unable to create necessary files.
+.
+Otherwise,
+it exits with the status of
+.IR groff .
 .
 .
 .\" ====================================================================

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,17 +16,18 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "troff.h"
-#include "dictionary.h"
-#include "token.h"
-#include "request.h"
-#include "reg.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include <assert.h> // assert()
+#include <assert.h>
+
+#include "troff.h"
+#include "dictionary.h"
+#include "lib.h" // INT_DIGITS
+#include "token.h"
+#include "request.h"
+#include "reg.h"
 
 object_dictionary register_dictionary(101);
 
@@ -50,6 +51,11 @@ void reg::set_increment(units /*n*/)
   error("cannot automatically increment read-only register");
 }
 
+int reg::get_increment() const
+{
+  return 0;
+}
+
 void reg::alter_format(char /*f*/, int /*w*/)
 {
   error("cannot assign format of read-only register");
@@ -63,6 +69,11 @@ const char *reg::get_format()
 void reg::set_value(units /*n*/)
 {
   error("cannot write read-only register");
+}
+
+bool reg::can_autoincrement() const
+{
+  return false;
 }
 
 general_reg::general_reg() : format('1'), width(0), inc(0)
@@ -235,6 +246,16 @@ void general_reg::set_increment(units n)
   inc = n;
 }
 
+int general_reg::get_increment() const
+{
+  return inc;
+}
+
+bool general_reg::can_autoincrement() const
+{
+  return true;
+}
+
 void general_reg::alter_format(char f, int w)
 {
   format = f;
@@ -314,8 +335,8 @@ void define_register_request()
     return;
   }
   symbol nm = get_name();
-  assert(nm != 0 /* nullptr */);
   if (nm.is_null()) {
+    // get_name() has already thrown an error diagnostic on bogus input.
     skip_line();
     return;
   }
@@ -418,7 +439,11 @@ void assign_register_format_request()
     return;
   }
   symbol nm = get_name();
-  assert(nm != 0 /* nullptr */);
+  if (nm.is_null()) {
+    // get_name() has already thrown an error diagnostic on bogus input.
+    skip_line();
+    return;
+  }
   reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
   if (0 /* nullptr */ == r) {
     r = new number_reg;
@@ -436,7 +461,7 @@ void assign_register_format_request()
   }
   else if (c == 'i' || c == 'I' || c == 'a' || c == 'A')
     r->alter_format(c);
-  else if (tok.is_newline() || tok.is_eof())
+  else if (!has_arg())
     warning(WARN_MISSING, "register interpolation format assignment"
 	    " request register format as second argument");
   else
@@ -455,9 +480,12 @@ void remove_register_request()
   }
   for (;;) {
     symbol s = get_name();
+    // get_name() has already thrown an error diagnostic on bogus input.
     if (s.is_null())
       break;
     register_dictionary.remove(s);
+    if (!has_arg())
+      break;
   }
   skip_line();
 }
@@ -471,15 +499,19 @@ void alias_register_request()
     return;
   }
   symbol s1 = get_name();
-  assert(s1 != 0 /* nullptr */);
+  // get_name() has already thrown an error diagnostic on bogus input.
   if (!s1.is_null()) {
-    symbol s2 = get_name();
-    if (s2.is_null())
+    if (!has_arg())
       warning(WARN_MISSING, "register aliasing request expects"
 	      " identifier of existing register as second argument");
     else {
-      if (!register_dictionary.alias(s1, s2))
-	error("cannot alias undefined register '%1'", s2.contents());
+      symbol s2 = get_name();
+      // get_name() has already thrown an error diagnostic on bogus
+      // input.
+      if (!s2.is_null()) {
+	if (!register_dictionary.alias(s1, s2))
+	  error("cannot alias undefined register '%1'", s2.contents());
+      }
     }
   }
   skip_line();
@@ -494,12 +526,14 @@ void rename_register_request()
     return;
   }
   symbol s1 = get_name();
-  if (!s1.is_null()) {
+  // get_name() has already thrown an error diagnostic on bogus input.
+  if (!has_arg())
+    warning(WARN_MISSING, "register renaming request exepects new"
+	    " identifier as second argument");
+  else if (!s1.is_null()) {
     symbol s2 = get_name();
-    if (s2.is_null())
-      warning(WARN_MISSING, "register renaming request exepects new"
-	      " identifier as second argument");
-    else
+    // get_name() has already thrown an error diagnostic on bogus input.
+    if (!s2.is_null())
       register_dictionary.rename(s1, s2);
   }
   skip_line();
@@ -508,9 +542,15 @@ void rename_register_request()
 static void dump_register(symbol *id, reg *r)
 {
   int n;
+  const size_t sz = INT_DIGITS + 1 /* leading sign */;
+  char inc[sz];
   errprint("%1\t", id->contents());
   if (r->get_value(&n)) {
     errprint("%1", n);
+    if (r->can_autoincrement()) {
+      (void) snprintf(inc, sz, "%+d", r->get_increment());
+      errprint("\t%1", inc);
+    }
     const char *f = r->get_format();
     assert(f != 0 /* nullptr */);
     if (f != 0 /* nullptr*/)
@@ -523,7 +563,7 @@ static void dump_register(symbol *id, reg *r)
   errprint("\n");
 }
 
-void dump_register_request()
+void print_register_request()
 {
   reg *r;
   symbol identifier;
@@ -537,6 +577,8 @@ void dump_register_request()
   }
   else {
     object_dictionary_iterator iter(register_dictionary);
+    // We must use the nuclear `reinterpret_cast` operator because GNU
+    // troff's dictionary types use a pre-STL approach to containers.
     while (iter.get(&identifier, reinterpret_cast<object **>(&r))) {
       assert(!identifier.is_null());
       dump_register(&identifier, r);
@@ -553,7 +595,7 @@ void init_reg_requests()
   init_request("af", assign_register_format_request);
   init_request("aln", alias_register_request);
   init_request("rnn", rename_register_request);
-  init_request("pnr", dump_register_request);
+  init_request("pnr", print_register_request);
 }
 
 // Local Variables:

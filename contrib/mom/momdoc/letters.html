@@ -2,7 +2,7 @@
 <!--
 This file is part of groff, the GNU roff type-setting system.
 
-Copyright (C) 2004-2020 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 Written by Peter Schaffter (peter@schaffter.ca).
 
 Permission is granted to copy, distribute and/or modify this document
@@ -120,6 +120,7 @@ The macros for entering the headers are simple (they&#8217;re not even
 <span class="pre-in-pp">
   .DATE
   .TO
+  .CC
   .FROM
   .GREETING
 </span>
@@ -139,15 +140,18 @@ macro.
 </p>
 
 <p>
-At the end of the letter, should you wish a closing (&#8220;Yours
+Letters are concluded with the
+<a href="#closing">CLOSING</a>
+macro.  If you want a complimentary closing (&#8220;Yours
 truly,&#8221; &#8220;Sincerely,&#8221; &#8220;Hugs and
-kisses&#8221;), invoke the macro <kbd>.CLOSING</kbd> on a line
-by itself, and follow it with the text of the closing. <b>N.B.</b>
-Don&#8217;t put your name here; mom supplies it automatically from
+kisses&#8221;), invoke CLOSING on a line by itself and follow
+it with the text of the closing. <b>N.B.</b> Don&#8217;t
+add your name; mom supplies it automatically (from
 <a href="docprocessing.html#author">AUTHOR</a>),
-with enough space to leave room for your signature.  If you omit the
-closing, mom simply adds your name (from AUTHOR), again with enough
-space for your signature.
+leaving room above it for your signature.  If you'd prefer not to have a
+complimentary closing, place <kbd>\&</kbd> immediately underneath
+<kbd>.CLOSING</kbd>.  Mom then just adds your name (from AUTHOR),
+again leaving room for your signature.
 </p>
 
 <p>
@@ -166,6 +170,10 @@ here&#8217;s what the complete letter looks like.
   Minidoux Corporation
   5000 Pannes Drive
   Redmond, Virginia
+  .CC
+  John Doe
+  Jane Deere
+  Joe Blough
   .FROM
   Y.P. GUIQUE
   022 Umask Road
@@ -209,9 +217,13 @@ letter like this:
   Minidoux Corporation
   5000 Pannes Drive
   Redmond, Virginia
+  .CC
+  John Doe
+  Jane Deere
+  Joe Blough
   .DATE
   .RIGHT
-  August 25, 2004
+  August 25, 2010
   .GREETING
   Dear Mr. Barrières,
 </span>
@@ -233,7 +245,7 @@ In letters, if the order of header macros is
   <li><kbd>.GREETING</kbd>&nbsp;&nbsp;(&#8220;Dear Whoever,&#8221; &#8220;To Whom It May Concern,&#8221; etc.)</li>
 </ol>
 <p style="margin-top: -.5em;">
-mom sets
+Mom sets
 </p>
 <ul style="margin-top: -.5em;">
   <li>the date flush right, page right, at the top of page one,
@@ -251,6 +263,8 @@ mom sets
 </ul>
 <p style="margin-top: -.5em;">
 which is the standard for North American business correspondence.
+The <kbd>.CC</kbd> macro, followed by a list of carbon copy
+recipients, may go anywhere before <kbd>.GREETING</kbd>
 </p>
 
 <p>
@@ -332,6 +346,7 @@ and before
 <ul class="macro-list" style="margin-top: -.75em;">
   <li><a href="#date">DATE</a></li>
   <li><a href="#to">TO</a></li>
+  <li><a href="#cc">CC</a></li>
   <li><a href="#from">FROM</a></li>
   <li><a href="#greeting">GREETING</a></li>
   <li><a href="#closing">CLOSING</a>
@@ -355,17 +370,31 @@ underneath, like this:
 <br/>
 <span class="pre-in-pp">
   .DATE
-  October 31, 2012
+  October 31, 2024
 </span>
+You may also enter the date symbolically using groff&#8217;s
+<b>.pso</b> request and the system <b>date</b> command, like
+this:
+<br/>
+<span class="pre-in-pp">
+  .DATE
+  .pso date "+%B %-e, %Y%n"
+</span>
+Consult the date(1) manpage for details of date formatting.  Note
+that you must pass <b>pdfmom</b> or <b>groff</b> the <b>-U</b> flag
+when you use the <b>.pso</b> request.
+</p>
+
+<p>
 If you wish to change the default quad direction for the date,
 enter <kbd>.LEFT</kbd> or <kbd>.RIGHT</kbd>, on a line by itself,
 immediately after <kbd>.DATE</kbd>.
 </p>
 
 <p>
-If you wish to insert additional space between the date and any
-letter header that comes after it, do so after inputting the date,
-not at the top of the next header macro, like this:
+If you want additional space between the date and any letter header
+that comes after it, do so after inputting the date, not at the top
+of the next header macro, like this:
 <br/>
 <span class="pre-in-pp">
   .DATE
@@ -402,9 +431,9 @@ immediately after <kbd>.TO</kbd>.
 </p>
 
 <p>
-If you wish to insert additional space between the address and
-any letter header that comes after it, do so after inputting the
-address, not at the top of the next header macro, like this:
+If you want additional space between the address and any letter
+header that comes after it, do so after inputting the address, not
+at the top of the next header macro, like this:
 <br/>
 <span class="pre-in-pp">
   .TO
@@ -419,6 +448,34 @@ If you wish to remove the default space,
   .SPACE -1v  \"Or, more simply, .SP -1v
 </span>
 will do the trick.
+</p>
+
+<!-- -CC- -->
+
+<div id="cc" class="box-macro-args">
+Macro: <b>CC</b>
+</div>
+
+<p>
+The <kbd>.CC</kbd> macro, invoked on a line by itself and followed
+by the names of carbon copy recipients, one to a line, creates a CC
+list that is set at the bottom of letters, underneath the signature
+line.  If the list runs deep, mom shifts it to the next page.
+</p>
+
+<p>
+Mom&#8217;s default is to introduce the list of CC recipients with
+<kbd>CC:</kbd>.  The default can be changed with the CC_STRING
+macro, e.g.
+<br/>
+<span class="pre-in-pp">
+  .CC_STRING "Copies to:"
+</span>
+
+</p>
+<p>
+When setting up letter headers, the CC macro may go anywhere before
+<a href="#greeting">GREETING</a>.
 </p>
 
 <!-- -FROM- -->
@@ -443,9 +500,9 @@ immediately after <kbd>.FROM</kbd>.
 </p>
 
 <p>
-If you wish to insert additional space between the address and
-any letter header that comes after it, do so after inputting the
-address, not at the top of the next header macro, like this:
+If you want additional space between the address and any letter
+header that comes after it, do so after inputting the address, not
+at the top of the next header macro, like this:
 <br/>
 <span class="pre-in-pp">
   .FROM
@@ -485,14 +542,19 @@ Macro: <b>CLOSING</b>
 </div>
 
 <p>
-Invoke <kbd>.CLOSING</kbd> on a line by itself after the body of
-the letter, with the closing you&#8217;d like (e.g. &#8220;Yours
-truly,&#8221;) underneath, like this:
+Mom-formatted letters must end with <kbd>.CLOSING</kbd>.  Follow
+it on the next line with your preferred complimentary closing
+(e.g. &#8220;Yours truly,&#8221;), like this:
 <br/>
 <span class="pre-in-pp">
   .CLOSING
   Yours truly,
 </span>
+If you&#8217;d rather not have a complimentary closing, follow
+<kbd>.CLOSING</kbd> with <kbd>\&</kbd> on a line by itself.  Mom
+will still automatically supply the signature line, whose position
+you may want to adjust with
+<a href="signature-space">SIGNATURE_SPACE</a>.
 </p>
 
 <div class="box-tip" style="background-color: #E3D2B1;">

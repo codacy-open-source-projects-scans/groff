@@ -78,7 +78,7 @@ R.display and then R.  Probably necessary to be able to specify a
 separate unitwidth for each sizesuffix (e.g., uuu for X).
 
 Make it possible to suppress hyphenation on a word-by-word basis.
-(Perhaps store hyphenation flags in tfont.)
+(Perhaps store hyphenation mode in tfont.)
 
 Possibly allow multiple simultaneous input line traps.
 

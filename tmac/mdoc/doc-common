@@ -1,7 +1,7 @@
 .\" Copyright (c) 1991, 1993
 .\"   The Regents of the University of California.  All rights reserved.
 .\"
-.\" Copyright (C) 1999-2024 Free Software Foundation, Inc.
+.\" Copyright (C) 1999-2025 Free Software Foundation, Inc.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -217,43 +217,20 @@
 .\" because they might be called from a context where compatibility mode
 .\" is enabled.  For other macros, `de` suffices.
 .
-.\" Define replacements for requests to handle continuous rendering.
-.\"
-.\" This .ne replacement avoids page breaks; instead, the page length is
-.\" increased to the necessary amount (this is needed for tables).
-.
 .eo
-.de doc-ne
-.  ie \n[.$] .nr doc-amount (v;\$*)
-.  el        .nr doc-amount 1v
-.  if (\n[doc-amount] >= \n[.t]) \
-.    pl +(\n[doc-amount]u - \n[.t]u + 1v)
-.  rr doc-amount
-..
-.ec
-.
-.\" This .bp replacement for continuous rendering mode adjusts the page
-.\" length to the current position so that no empty lines are inserted.
-.
-.eo
-.de doc-bp
-.  pl \n[nl]u
+.de1 doc-bp
+.  if \n[.br] .br
 ..
 .ec
 .
 .
-.\" NS doc-set-up-continuous-rendering
-.\"   Move macros into place for continuous rendering.  An end-of-input
-.\"   macro is set up by doc-set-up-titles.
-.de doc-set-up-continuous-rendering
-.  rn ne doc-real-ne
+.\" In continuous rendering mode, make page breaks less potent and the
+.\" page length "infinite".
+.if \n[cR] \{\
 .  rn bp doc-real-bp
-.  rn doc-ne ne
 .  rn doc-bp bp
-..
-.
-.if \n[cR] \
-.  doc-set-up-continuous-rendering
+.  pl \n[.R]u/1v
+.\}
 .
 .
 .\" header assembly macros
@@ -294,8 +271,6 @@
 .    wh (\n[doc-footer-location]u - .5i) doc-break-body-text
 .    rr doc-footer-location
 .  \}
-.
-.  e@ doc-end-macro
 ..
 .ec
 .
@@ -322,16 +297,24 @@
 .  \" If also continuously rendering, cause a page transition to a new
 .  \" mdoc(7) document.
 .  if \n[doc-end-previous-document] \{\
-.    if \n[cR] .doc-end-macro
+.    if \n[cR] .doc-end-document
 .
 .    \" Clear the page header trap so it is not sprung with stale
 .    \" information.
 .    ch doc-header
-.    doc-break-page-with-new-number
+.    if !\n[cR] .doc-break-page-with-new-number
 .  \}
 .  if \n[C] .rr P
 .
+.  \" When rendering multiple documents, we want to clear any page-local
+.  \" manipulation of hyphenation and adjustment modes from the previous
+.  \" document.
+.  rr HY
+.  rm AD
+.
 .  doc-reset-titles
+.  doc-reset-hyphenation-mode \n[andoc*HY]
+.  doc-reset-adjustment-mode \*[andoc*AD]
 .
 .  if !\n[.$] \
 .    doc-warn .Dd directive expects an argument
@@ -1012,15 +995,6 @@
 .ec
 .
 .
-.\" NS doc-hyphen-flags global register
-.\" NS   the parameter for the '.hy' request
-.ie \n[HY] \{\
-.  ie \n[cR] .nr doc-hyphen-flags \n[\*[locale]*hyphenation-mode-base]
-.  el        .nr doc-hyphen-flags \n[\*[locale]*hyphenation-mode-trap]
-.\}
-.el .nr doc-hyphen-flags 0
-.
-.
 .\" NS doc-header macro
 .\" NS   print page header
 .\" NS
@@ -1034,23 +1008,23 @@
 .
 .eo
 .de1 doc-header
-.  ds doc-xref \*[doc-page-identifier-font]\*[doc-page-identifier]\f[]\"
-.  as doc-xref \*[doc-page-section-font](\*[doc-section])\f[]\"
+.  ds doc-xref \f[\*[doc-page-identifier-font]]\*[doc-page-identifier]\f[]\"
+.  as doc-xref \f[\*[doc-page-section-font]](\*[doc-section])\f[]\"
 .  ds doc-abbv \*[doc-page-identifier]\"
 .  ev doc-env-dh
 .  doc-setup-page-layout
 .  ie \n[cR] .pl +1v
 .  el        .sp |(.5i - .5m)
-.  nr doc-reg-dh \w'\*[doc-page-identifier-font]\*[doc-xref]\f[]'
+.  nr doc-reg-dh \w'\f[\*[doc-page-identifier-font]]\*[doc-xref]\f[]'
 .  nr doc-reg-dh1 \w'\*[doc-volume]'
 .  if (\n[doc-reg-dh] + \n[doc-reg-dh1] + \n[doc-reg-dh] >= \n[.lt]) \{\
 .    while (\n[doc-reg-dh] + \n[doc-reg-dh1] + \n[doc-reg-dh] >= \n[.lt]) \{\
-.      ds doc-xref \*[doc-page-identifier-font]\*[doc-abbv]\f[]\"
-.      as doc-xref \*[doc-page-section-font](\*[doc-section])\f[]\"
+.      ds doc-xref \f[\*[doc-page-identifier-font]]\*[doc-abbv]\f[]\"
+.      as doc-xref \f[\*[doc-page-section-font]](\*[doc-section])\f[]\"
 .      length doc-abbv-len-prev \*[doc-abbv]
 .      substring doc-abbv 0 -2
 .      length doc-abbv-len \*[doc-abbv]
-.      nr doc-reg-dh \w'\*[doc-page-identifier-font]\*[doc-abbv]\|.\|.\|.\f[]'
+.      nr doc-reg-dh \w'\f[\*[doc-page-identifier-font]]\*[doc-abbv]\|.\|.\|.\f[]'
 .      \" If header string didn't actually get shorter, stop trying.
 .      if (\n[doc-abbv-len-prev] <= \n[doc-abbv-len]) \
 .        break
@@ -1064,7 +1038,7 @@
 .    pl +1v
 .    sp 1v
 .  \}
-.  el .sp |(1i - 1m)
+.  el .sp .5i
 .  ev
 .  ns
 .  rm doc-xref
@@ -1090,8 +1064,8 @@
 .
 .eo
 .de1 doc-footer
-.  ds doc-xref \*[doc-page-identifier-font]\*[doc-page-identifier]\f[]\"
-.  as doc-xref \*[doc-page-section-font](\*[doc-section])\f[]\"
+.  ds doc-xref \f[\*[doc-page-identifier-font]]\*[doc-page-identifier]\f[]\"
+.  as doc-xref \f[\*[doc-page-section-font]](\*[doc-section])\f[]\"
 .  ds doc-page-id \n[%]
 .  if r X \{\
 .    if (\n[%] > \n[X]) \{\
@@ -1158,26 +1132,102 @@
 .ec
 .
 .
-.\" NS doc-end-macro macro
-.\" NS   finish output
+.\" NS doc-reset-adjustment-mode
+.\" NS   Repair output line adjustment after man page meddling.
+.\"
+.\" Resetting the adjustment mode is a complicated dance.
+.\"   1.  Man pages sometimes disable adjustment--when they do, they
+.\"       often forget to put it back the way it was.
+.\"   2.  When they do remember to put it back, they often fail to do
+.\"       so correctly because of the `ad` request's quirky semantics
+.\"       starting from Seventh Edition Unix troff/nroff.  Briefly, the
+.\"       `ad` request without arguments turns adjustment back on after
+.\"       an `na` even if the previous adjustment mode was `l` (align to
+.\"       the left with NO adjustment).
+.\"   3.  The default adjustment mode historically has not been
+.\"       predictable; it can depend on nroff vs. troff mode and on the
+.\"       vendor of the *roff system in use.
+.\"   4.  It's possible (and portable) to obtain the previous adjustment
+.\"       mode via the `.j` register so that it can be saved prior to
+.\"       meddling and restored later, but in practice man page authors
+.\"       neglect to do so.
+.\"   5.  groff mdoc(7)'s `AD` string isn't supported everywhere.
+.\"   6.  We want user preferences, if expressed, to override the page
+.\"       author's.
+.\"   7.  Even if we didn't want (6), one page author's can override
+.\"       another's when formatting multiple mdoc(7) documents in
+.\"       sequence--we thus keep track of the initial adjustment mode.
+.\"
+.\" So we recover the "page's" preferred adjustment mode, if expressed
+.\" via `AD`, at every paragraph (and (sub)sectioning) macro call; and
+.\" recover the user's preferred adjustment mode at each new document by
+.\" accepting it as an argument (see the `Dd` macro definition).  Also
+.\" see the initialization logic in "tmac/doc.tmac".
+.\"
+.\" This macro is at pains to distinguish alignment from adjustment.
+.
+.eo
+.de doc-reset-adjustment-mode
+.  if \n[.$] .ds AD \$1\"
+.  nr doc-want-adjustment 1
+.  if d AD .if '\?\*[AD]\?'\?l\?' .nr doc-want-adjustment 0
+.  if d AD .if '\?\*[AD]\?'\?c\?' .nr doc-want-adjustment 0
+.  if d AD .if '\?\*[AD]\?'\?r\?' .nr doc-want-adjustment 0
+.  ie \n[doc-want-adjustment] .ds doc-adjustment-mode b
+.  el                         .ds doc-adjustment-mode l
+.  ad \*[doc-adjustment-mode]
+.  rr doc-want-adjustment
+..
+.ec
+.
+.
+.\" NS doc-reset-hyphenation-mode
+.\" NS   Repair automatic hyphenation after man page meddling.
+.\"
+.\" Resetting the hyphenation mode is a complicated dance.
+.\"   1.  Man pages sometimes disable automatic hyphenation--when they
+.\"       do, they nearly always forget to put it back the way it was.
+.\"   2.  In AT&T troff there was no register exposing the hyphenation
+.\"       mode (nor the enablement status of automatic hyphenation), so
+.\"       no idioms for performing such restoration have arisen.
+.\"   3.  groff mdoc(7)'s `HY` register isn't supported everywhere.
+.\"   4.  We want user preferences, if expressed, to override the page
+.\"       author's.
+.\"   5.  Even if we didn't want (4), one page author's can override
+.\"       another's when formatting multiple mdoc(7) documents in
+.\"       sequence--we thus keep track of the initial hyphenation mode.
+.\"
+.\" So we recover the "page's" preferred hyphenation mode, if expressed
+.\" via `HY`, at every paragraph (and (sub)sectioning) macro call; and
+.\" recover the user's preferred hyphenation mode at each new document
+.\" by accepting it as an argument (see the `Dd` macro definition).
+.\" Also see the initialization logic in "tmac/doc.tmac".
+.
+.eo
+.de doc-reset-hyphenation-mode
+.  if \n[.$] .if \B'\$1' .nr HY \$1
+.  nr doc-want-hyphenation 1
+.  if r HY .ie !\n[HY] .nr doc-want-hyphenation 0
+.  ie \n[doc-want-hyphenation] \
+.    nr doc-hyphenation-mode \n[\*[locale]*hyphenation-mode-trap]
+.  el .nr doc-hyphenation-mode 0
+.  hy \n[doc-hyphenation-mode]
+.  rr doc-want-hyphenation
+..
+.ec
+.
+.
+.\" NS doc-end-document macro
+.\" NS   Finish document output.
 .\" NS
 .\" NS modifies:
 .\" NS   doc-end-previous-document
 .
 .eo
-.de1 doc-end-macro
+.de1 doc-end-document
 .  doc-check-depth
 .
 .  if \n[cR] \{\
-.    \" We might have a pending output line that is not yet broken, and
-.    \" also be 1v from the bottom of the page.  If we break (or flush)
-.    \" the output line now, the page will get ejected afterward and
-.    \" troff will exit because we're in an end-of-input macro--our
-.    \" footer will never be output.  So, if that is the case, further
-.    \" extend the page length by 1v.
-.    if ((\n[.p] - \n[nl]) <= \n[.V]) .pl +1v
-.    br
-.    pl +1v
 .    sp 1v
 .    doc-footer
 .    \" If we're processing multiple documents and have started a new
@@ -1186,14 +1236,16 @@
 .      pl +1v
 .      nf
 .      ti 0
-\D'l \n[doc-line-length]u 0'
+.      nop \D'l \n[doc-line-length]u 0'
 .      fi
 .    \}
-.    \" suppress empty lines after the footer
-.    pl \n[nl]u
 .  \}
 .  ch doc-header
-.  doc-break-page-with-new-number
+.  \" At the end of the last document, the file name becomes empty;
+.  \" force the page length to match the vertical drawing position in
+.  \" continuous rendering mode.
+.  ie \n[cR] .if '\n[.F]'' .pl \n[nl]u
+.  el        .doc-break-page-with-new-number
 ..
 .ec
 .
@@ -1282,6 +1334,8 @@
 .
 .eo
 .de Nd
+.  doc-reset-adjustment-mode
+.  doc-reset-hyphenation-mode
 .  nop \[em] \$*
 ..
 .ec
@@ -1427,7 +1481,7 @@
 .      nr doc-arg-ptr +1
 .      ie (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
 .        nr doc-curr-font \n[.f]
-.        nop \*[doc-Sh-font]\c
+.        nop \f[\*[doc-Sh-font]]\c
 .        doc-print-recursive
 .      \}
 .      el \{\
@@ -1443,79 +1497,82 @@
 .      doc-report-usage .Sh section_name ...
 .      return
 .    \}
+.  \}
 .
-.    ds doc-macro-name Sh
-.    doc-parse-args \$@
+.  ds doc-macro-name Sh
+.  doc-parse-args \$@
 .
-.    ad \*[AD]
-.    hy \n[HY]
+.  ie "\*[doc-sec-head]"\*[doc-section-name]" \{\
+.    doc-set-up-titles
+.    in 0
+.  \}
+.  el \{\
+.    nr doc-in-name-section 0
+.    nr doc-in-synopsis-section 0
+.    nr doc-in-library-section 0
+.    nr doc-in-see-also-section 0
+.    nr doc-in-files-section 0
+.    nr doc-in-authors-section 0
 .
-.    ie "\*[doc-sec-head]"\*[doc-section-name]" \{\
-.      doc-set-up-titles
-.      in 0
+.    ie        "\*[doc-sec-head]"\*[doc-section-synopsis]" \{\
+.      nr doc-in-synopsis-section 1
+.      nr doc-indent-synopsis 0
+.      nr doc-indent-synopsis-active 0
 .    \}
-.    el \{\
-.      nr doc-in-name-section 0
-.      nr doc-in-synopsis-section 0
-.      nr doc-in-library-section 0
-.      nr doc-in-see-also-section 0
-.      nr doc-in-files-section 0
-.      nr doc-in-authors-section 0
-.
-.      ie        "\*[doc-sec-head]"\*[doc-section-synopsis]" \{\
-.        na
-.        nh
-.        nr doc-in-synopsis-section 1
-.        nr doc-indent-synopsis 0
-.        nr doc-indent-synopsis-active 0
-.      \}
-.      el \{ .ie "\*[doc-sec-head]"\*[doc-section-library]" \{\
-.        nr doc-in-library-section 1
-.      \}
-.      el \{ .ie "\*[doc-sec-head]"\*[doc-section-description]" \{\
-.        nr doc-is-func 0
-.        nr doc-func-count 0
-.        nr doc-func-args-processed 0
-.        nr doc-num-func-args 0
-.      \}
-.      el \{ .ie "\*[doc-sec-head]"\*[doc-section-see-also]" \{\
-.        if t \
-.          na
-.        nr doc-in-see-also-section 1
-.      \}
-.      el \{ .ie "\*[doc-sec-head]"\*[doc-section-files]" \
-.        nr doc-in-files-section 1
-.      el .if    "\*[doc-sec-head]"\*[doc-section-authors]" \
-.        nr doc-in-authors-section 1
-.      \}\}\}\}
-.
-.      in 0
-.      nr doc-have-author 0
+.    el \{ .ie "\*[doc-sec-head]"\*[doc-section-library]" \{\
+.      nr doc-in-library-section 1
 .    \}
+.    el \{ .ie "\*[doc-sec-head]"\*[doc-section-description]" \{\
+.      nr doc-is-func 0
+.      nr doc-func-count 0
+.      nr doc-func-args-processed 0
+.      nr doc-num-func-args 0
+.    \}
+.    el \{ .ie "\*[doc-sec-head]"\*[doc-section-see-also]" \{\
+.      nr doc-in-see-also-section 1
+.    \}
+.    el \{ .ie "\*[doc-sec-head]"\*[doc-section-files]" \
+.      nr doc-in-files-section 1
+.    el .if    "\*[doc-sec-head]"\*[doc-section-authors]" \
+.      nr doc-in-authors-section 1
+.    \}\}\}\}
 .
-.    doc-setup-page-layout
-.    sp \n[doc-paragraph-space]u
-.    ns
-.    ta T .5i
-.    if !\n[cR] \
-.      ne 3
-.    fi
+.    in 0
+.    nr doc-have-author 0
+.  \}
+.
+.  ie \n[doc-in-synopsis-section] \{\
+.    na
+.    nh
+.  \}
+.  el \{\
+.    doc-reset-adjustment-mode
+.    doc-reset-hyphenation-mode
+.  \}
+.
+.  doc-setup-page-layout
+.  sp \n[doc-paragraph-space]u
+.  ns
+.  ta T .5i
+.  if !\n[cR] \
+.    ne 3
+.  fi
 .
 .  if '\*[.T]'pdf' \
 .    pdfbookmark 2 "\*[doc-sec-head]"
 .
-.    if t \{\
-.      nr doc-reg-Sh \n[.ss]
-.      nr doc-reg-Sh1 \n[.sss]
-.      ss (\n[.ss] * 5 / 3) (\n[.sss] * 5 / 3)
-.    \}
+.  if t \{\
+.    nr doc-reg-Sh \n[.ss]
+.    nr doc-reg-Sh1 \n[.sss]
+.    ss (\n[.ss] * 5 / 3) (\n[.sss] * 5 / 3)
+.  \}
 .
-.  if \n[doc-remap-I-style-in-headings] \
+.  if \n[doc-remap-I-style-in-headings] \{\
 .    ftr \*[doc-heading-family]I \*[doc-heading-family]BI
 .
 .    nr doc-arg-ptr +1
 .    nr doc-curr-font \n[.f]
-.    nop \*[doc-Sh-font]\c
+.    nop \f[\*[doc-Sh-font]]\c
 .    doc-print-recursive
 .
 .    if t \
@@ -1525,10 +1582,10 @@
 .    ns
 .
 .    doc-check-depth
-.  if \n[doc-remap-I-style-in-headings] \
-.    ftr \*[doc-heading-family]I \*[doc-heading-family]I
-.  \}
 .
+.    if \n[doc-remap-I-style-in-headings] \
+.      ftr \*[doc-heading-family]I \*[doc-heading-family]I
+.  \}
 .
 .  \" Don't let doc-print-recursive force caps on anything else.
 .  nr doc-do-capitalize 0
@@ -1557,7 +1614,7 @@
 .      nr doc-arg-ptr +1
 .      ie (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
 .        nr doc-curr-font \n[.f]
-.        nop \*[doc-Sh-font]\c
+.        nop \f[\*[doc-Sh-font]]\c
 .        doc-print-recursive
 .      \}
 .      el \{\
@@ -1573,42 +1630,52 @@
 .      doc-report-usage .Ss subsection_name ...
 .      return
 .    \}
+.  \}
 .
-.    ds doc-macro-name Ss
-.    doc-parse-args \$@
+.  ds doc-macro-name Ss
+.  doc-parse-args \$@
 .
-.    ds doc-subsection-heading \$*
+.  ds doc-subsection-heading \$*
 .
-.    sp \n[doc-paragraph-space]u
-.    if !\n[cR] \
-.      ne 3
-.    in \n[SN]u
+.  ie \n[doc-in-synopsis-section] \{\
+.    na
+.    nh
+.  \}
+.  el \{\
+.    doc-reset-adjustment-mode
+.    doc-reset-hyphenation-mode
+.  \}
 .
-.    if '\*[.T]'pdf' \
-.      pdfbookmark 3 "\*[doc-subsection-heading]"
+.  sp \n[doc-paragraph-space]u
+.  if !\n[cR] \
+.    ne 3
+.  in \n[SN]u
 .
-.    nr doc-reg-Ss \n[.ss]
-.    nr doc-reg-Ss1 \n[.sss]
-.    ss (\n[.ss] * 5 / 4) (\n[.sss] * 5 / 4)
+.  if '\*[.T]'pdf' \
+.    pdfbookmark 3 "\*[doc-subsection-heading]"
+.
+.  nr doc-reg-Ss \n[.ss]
+.  nr doc-reg-Ss1 \n[.sss]
+.  ss (\n[.ss] * 5 / 4) (\n[.sss] * 5 / 4)
 .
 .  if \n[doc-remap-I-style-in-headings] \
 .    ftr \*[doc-heading-family]I \*[doc-heading-family]BI
 .
-.    nr doc-arg-ptr +1
-.    nr doc-curr-font \n[.f]
-.    nop \*[doc-Sh-font]\c
-.    doc-print-recursive
+.  nr doc-arg-ptr +1
+.  nr doc-curr-font \n[.f]
+.  nop \f[\*[doc-Sh-font]]\c
+.  doc-print-recursive
 .
-.    ss \n[doc-reg-Ss] \n[doc-reg-Ss1]
+.  ss \n[doc-reg-Ss] \n[doc-reg-Ss1]
 .
-.    ta T .5i
-.    in
-.    if !\n[cR] \
-.      ne 2
-.    br
-.    ns
+.  ta T .5i
+.  in
+.  if !\n[cR] \
+.    ne 2
+.  br
+.  ns
 .
-.    doc-check-depth
+.  doc-check-depth
 .  if \n[doc-remap-I-style-in-headings] \
 .    ftr \*[doc-heading-family]I \*[doc-heading-family]I
 .  \}

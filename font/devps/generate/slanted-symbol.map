@@ -1,5 +1,9 @@
 #
-# This is the list of greek symbols for the SS special font.
+# Map between PostScript glyph names and groff character identifiers
+# (ordinary ones have a one-character name; special character names are
+# longer).
+#
+# Use this map with the (unstyled) slanted Symbol font.
 #
 alpha *a
 beta *b

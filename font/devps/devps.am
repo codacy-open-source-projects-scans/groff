@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2022 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of 'groff'.
 #
@@ -56,6 +56,14 @@ DEVPSFONTFILES = \
   font/devps/TI \
   font/devps/TR \
   font/devps/EURO \
+  font/devps/CSH \
+  font/devps/CSS \
+  font/devps/CTH \
+  font/devps/CTS \
+  font/devps/JPG \
+  font/devps/JPM \
+  font/devps/KOG \
+  font/devps/KOM \
   font/devps/freeeuro.afm \
   font/devps/symbolsl.afm \
   font/devps/text.enc \
@@ -114,7 +122,7 @@ DEVPSGENFILES = \
   font/devps/generate/dingbats-reversed.map \
   font/devps/generate/slanted-symbol.map \
   font/devps/generate/symbol.map \
-  font/devps/generate/symbolchars \
+  font/devps/generate/symbolsl.awk \
   font/devps/generate/text.map
 DEVPSGENSCRIPTS = \
   font/devps/generate/afmname \
@@ -140,14 +148,10 @@ EXTRA_DIST += \
   font/devps/generate/zapfdr.sed
 
 font/devps/DESC: $(devps_srcdir)/DESC.in
-	$(AM_V_GEN)$(MKDIR_P) font/devps \
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
 	&& cat $(devps_srcdir)/DESC.in >$@.tmp \
 	&& echo broken $(BROKEN_SPOOLER_FLAGS) >>$@.tmp \
-	&& if test "$(PAGE)" = A4; then \
-	     echo "papersize a4" >>$@.tmp; \
-	   else \
-	     echo "papersize letter" >>$@.tmp; \
-	   fi \
+	&& echo "papersize $(PAGE)" >>$@.tmp \
 	&& (test -z '$(PSPRINT)' \
 	    || echo print '$(PSPRINT)' >>$@.tmp)
 	$(AM_V_at)mv $@.tmp $@

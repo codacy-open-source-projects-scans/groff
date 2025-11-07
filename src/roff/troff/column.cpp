@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -652,7 +651,7 @@ class vjustify_node : public node {
   symbol typ;
 public:
   vjustify_node(symbol);
-  int reread(int *);
+  bool need_reread(bool *);
   const char *type();
   int same(node *);
   node *copy();
@@ -675,14 +674,14 @@ const char *vjustify_node::type()
 
 int vjustify_node::same(node *nd)
 {
-  return typ == ((vjustify_node *)nd)->typ;
+  return typ == static_cast<vjustify_node *>(nd)->typ;
 }
 
-int vjustify_node::reread(int *bolp)
+bool vjustify_node::need_reread(bool *bolp)
 {
   curdiv->vjustify(typ);
-  *bolp = 1;
-  return 1;
+  *bolp = true;
+  return true;
 }
 
 void macro_diversion::vjustify(symbol type)
@@ -729,3 +728,9 @@ void init_column_requests()
 }
 
 #endif /* COLUMN */
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

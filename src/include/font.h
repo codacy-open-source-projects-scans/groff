@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +15,8 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#include <stdio.h> // FILE
 
 // A function of this type can be registered to define the semantics of
 // arbitrary commands in a font DESC file.
@@ -105,6 +106,7 @@ public:
     LIG_ffl = 16
   };
 
+  font(const char *);	// Load font description from file name.
   virtual ~font();	// Destructor.
   bool contains(glyph *);	// This font contains the given glyph.
   bool is_special();	// This font is searched for glyphs not defined
@@ -188,7 +190,8 @@ public:
 			// special device-dependent information about
 			// the given glyph.  Return null pointer if
 			// there is no special information.
-  const char *get_name();	// Return the name of this font.
+  const char *get_filename();	// Return file name containing font
+			// description.
   const char *get_internal_name();	// Return the 'internalname'
 			// attribute of this font or null pointer if it
 			// has none.
@@ -212,14 +215,23 @@ public:
   static void command_line_font_dir(const char *);	// Prepend given
 			// path (arg1) to the list of directories in which
 			// to look up fonts.
-  static FILE *open_file(const char *, char **);	// Open
-			// a font file with the given name (arg1),
-			// searching along the current font path.  If
-			// arg2 points to a string pointer, set it to
-			// the found file name (this depends on the
-			// device also).  Return the opened file.  If
-			// not found, arg2 is unchanged, and a null
-			// pointer is returned.
+  static FILE *open_file(const char *, char **); // Open a font
+			// description file with the given name (arg1),
+			// searching along the current font path, and
+			// rejecting `arg1` if it contains a slash (see
+			// Savannah #61424).  If arg2 points to a string
+			// pointer, set it to the found file name (this
+			// depends on the device also).  Return the
+			// opened file's stream pointer.  If not found,
+			// arg2 is unchanged, and a null pointer is
+			// returned.
+  static FILE *open_resource_file(const char *, char **); // Open an
+			// externally supplied (non-groff) file required
+			// by the output driver, possibly to embed
+			// content in the generated file.  Like
+			// `open_file()` except that it accepts slashes
+			// in `arg1`.  Examples include Type 1 fonts
+			// embedded in PostScript output.
 
   // Open the DESC file (depending on the device) and initialize some
   // static variables with info from there.
@@ -274,7 +286,7 @@ private:
   int space_width;	// The normal width of a space.  Used by
 			// get_space_width().
   bool special;		// See public is_special() above.
-  char *name;		// The name of this font.  Used by get_name().
+  char *filename;	// File name of font description.
   char *internalname;	// The 'internalname' attribute of this font, or
 			// a null pointer.  Used by get_internal_name().
   double slant;		// The natural slant angle (in degrees) of this font.
@@ -287,6 +299,7 @@ private:
 			// font (if !is_unicode) or for just some characters
 			// (if is_unicode).  The indices of this array are
 			// font-specific, found as values in ch_index[].
+  font_char_metric *wch;// Metrics for wide characters.
   int ch_used;
   int ch_size;
   font_widths_cache *widths_cache;	// A cache of scaled character
@@ -326,9 +339,10 @@ private:
 					   const char *,	// file
 					   int);		// lineno
 
-protected:
-  font(const char *);	// Initialize a font with the given name.
+  // Get font metric for wide characters indexed by Unicode code point.
+  font_char_metric *get_font_wchar_metric(int);
 
+protected:
   // Load the font description file with the name in member variable
   // `name` into this object.  If arg1 is true, only the part of the
   // font description file before the 'charset' and 'kernpairs' sections

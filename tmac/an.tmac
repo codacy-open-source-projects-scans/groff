@@ -1,6 +1,7 @@
 .\" groff implementation of man(7) package
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2024 Free Software Foundation, Inc.
+.\"           2020-2025 G. Branden Robinson
 .\"      Written by James Clark (jjc@jclark.com)
 .\" Enhanced by: Werner Lemberg <wl@gnu.org>
 .\"              Larry Kollar <kollar@alltel.net>
@@ -86,48 +87,23 @@
 .  nop \h'\\n[lss]u'\c
 ..
 .
-.\" Define alternate requests to handle continuous rendering.
-.\"
-.\" This .ne replacement avoids page breaks; instead, the page length is
-.\" increased to the necessary amount.
-.de an-ne
-.  ie \\n[.$] .nr an-amount (v;\\$*)
-.  el         .nr an-amount 1v
-.  if (\\n[an-amount] >= \\n[.t]) \
-.    pl +(\\n[an-amount]u - \\n[.t]u + 1v)
-.  rr an-amount
-..
-.
-.\" This .bp replacement for continuous rendering mode adjusts the page
-.\" length to the current position so that no empty lines are inserted.
-.de an-bp
-.  pl \\n[nl]u
+.de1 an*bp
+.  if \\n[.br] .br
 ..
 .
 .\" We need an end-of-input macro to flush any pending output line and
 .\" write the footer for the final man page rendered.  We can also be
 .\" called by andoc when switching to an mdoc(7) page, irrespective of
 .\" continuous rendering mode.
-.de1 an-end
-.  if !r an-TH-was-called .return
-.  an-input-trap
+.de1 an*end-document
+.  an*input-trap
 .  if '\\n[.z]'an*paragraph-tag' .an*TP-trap
 .  if \\n[cR] \{\
-.    \" We might have a pending output line that is not yet broken, and
-.    \" also be 1v from the bottom of the page.  If we break (or flush)
-.    \" the output line now, the page will get ejected afterward and
-.    \" troff will exit because we're in an end-of-input macro--our
-.    \" footer will never be output.  So, if that is the case, further
-.    \" extend the page length by 1v.
-.    if ((\\n[.p] - \\n[nl]) <= \\n[.V]) .pl +1v
-.    br
-.    pl +1v
 .    sp 1v
 .    an-footer
 .    \" If we're processing multiple documents and have started a new
 .    \" one, draw a line between this footer and the next header.
 .    if !'\\n[.F]'' \{\
-.      pl +1v
 .      nf
 .      ti 0
 .      nr an*rule-length (\\n[LL]u - 1n)
@@ -135,52 +111,153 @@
 .      rr an*rule-length
 .      fi
 .    \}
+.    \" suppress empty lines after the footer
+.    pl \n[nl]u
 .  \}
-.  rr an-TH-was-called
 .  ds an*previous-page-ref-string \" empty
 .  ch an-header
-.  an*break-page-with-new-number
+.  \" At the end of the last document, the file name becomes empty;
+.  \" force the page length to match the vertical drawing position in
+.  \" continuous rendering mode.
+.  ie \\n[cR] .if '\\n[.F]'' .pl \\n[nl]u
+.  el         .an*break-page-with-new-number
 ..
 .
-.\" Move macros into place for continuous rendering.
-.de an-set-up-continuous-rendering
-.  rn ne an-real-ne
-.  rn bp an-real-bp
-.  rn an-ne ne
-.  rn an-bp bp
-..
+.de an*reset-text-parameters
+.  nr PS    10z \" default type size
+.  nr VS    12p \" default vertical spacing
 .
-.de an*reset-hyphenation-mode
-.  ie \\n[HY] \{\
-.    \" No page breaks occur in continuous rendering.
-.    ie \\n[cR] \
-.      nr an*hyphenation-mode \\n[\\*[locale]*hyphenation-mode-base]
-.    el \
-.      nr an*hyphenation-mode \\n[\\*[locale]*hyphenation-mode-trap]
+.  nr PS-SS 10z
+.  nr PS-SH 10.95z
+.
+.  \" Use sizes similar to LaTeX.
+.  if t \{\
+.    ie (\\n[S] = 11) \{\
+.      nr PS    10.95z
+.      nr PS-SS 10.95z
+.      nr PS-SH 12z
+.      nr VS    13.6p
+.    \}
+.    el \{\
+.      if (\\n[S] = 12) \{\
+.        nr PS    12z
+.        nr PS-SS 12z
+.        nr PS-SH 14.4z
+.        nr VS    14.5p
+.      \}
+.    \}
 .  \}
-.  el \
-.    nr an*hyphenation-mode 0
-.  hy \\n[an*hyphenation-mode]
+.
+.  ft R
+.  ps \\n[PS]u
+.  vs \\n[VS]u
 ..
 .
-.de an-reset-tab-stops
+.\" Resetting the adjustment mode is a complicated dance.
+.\"   1.  Man pages sometimes disable adjustment--when they do, they
+.\"       often forget to put it back the way it was.
+.\"   2.  When they do remember to put it back, they often fail to do
+.\"       so correctly because of the `ad` request's quirky semantics
+.\"       starting from Seventh Edition Unix troff/nroff.  Briefly, the
+.\"       `ad` request without arguments turns adjustment back on after
+.\"       an `na` even if the previous adjustment mode was `l` (align to
+.\"       the left with NO adjustment).
+.\"   3.  The default adjustment mode historically has not been
+.\"       predictable; it can depend on nroff vs. troff mode and on the
+.\"       vendor of the *roff system in use.
+.\"   4.  It's possible (and portable) to obtain the previous adjustment
+.\"       mode via the `.j` register so that it can be saved prior to
+.\"       meddling and restored later, but in practice man page authors
+.\"       neglect to do so.
+.\"   5.  groff man(7)'s `AD` string isn't supported everywhere.
+.\"   6.  We want user preferences, if expressed, to override the page
+.\"       author's.
+.\"   7.  Even if we didn't want (6), one page author's can override
+.\"       another's when formatting multiple man(7) documents in
+.\"       sequence--we thus keep track of the initial adjustment mode.
+.\"
+.\" So we recover the "page's" preferred adjustment mode, if expressed
+.\" via `AD`, at every paragraph (and (sub)sectioning) macro call; and
+.\" recover the user's preferred adjustment mode at each new document by
+.\" accepting it as an argument (see the `TH` macro definition).  Also
+.\" see the initialization logic below.
+.\"
+.\" This macro is at pains to distinguish alignment from adjustment.
+.de an*reset-adjustment-mode
+.  if \\n[.$] .ds AD \\$1\"
+.  nr an*want-adjustment 1
+.  if d AD .if '\?\\*[AD]\?'\?l\?' .nr an*want-adjustment 0
+.  if d AD .if '\?\\*[AD]\?'\?c\?' .nr an*want-adjustment 0
+.  if d AD .if '\?\\*[AD]\?'\?r\?' .nr an*want-adjustment 0
+.  ie \\n[an*want-adjustment] .ds an*adjustment-mode b
+.  el                         .ds an*adjustment-mode \\*[AD]
+.  ad \\*[an*adjustment-mode]
+.  rm an*adjustment-mode
+.  rr an*want-adjustment
+..
+.
+.\" Resetting the hyphenation mode is a complicated dance.
+.\"   1.  Man pages sometimes disable automatic hyphenation--when they
+.\"       do, they nearly always forget to put it back the way it was.
+.\"   2.  In AT&T troff there was no register exposing the hyphenation
+.\"       mode (nor the enablement status of automatic hyphenation), so
+.\"       no idioms for performing such restoration have arisen.
+.\"   3.  groff man(7)'s `HY` register isn't supported everywhere.
+.\"   4.  We want user preferences, if expressed, to override the page
+.\"       author's.
+.\"   5.  Even if we didn't want (4), one page author's can override
+.\"       another's when formatting multiple man(7) documents in
+.\"       sequence--we thus keep track of the initial hyphenation mode.
+.\"
+.\" So we recover the "page's" preferred hyphenation mode, if expressed
+.\" via `HY`, at every paragraph (and (sub)sectioning) macro call; and
+.\" recover the user's preferred hyphenation mode at each new document
+.\" by accepting it as an argument (see the `TH` macro definition).
+.\" Also see the initialization logic below.
+.de an*reset-hyphenation-mode
+.  if \\n[.$] .if \B'\\$1' .nr HY \\$1
+.  nr an*want-hyphenation 1
+.  if r HY .if !\\n[HY] .nr an*want-hyphenation 0
+.  ie \\n[an*want-hyphenation] \
+.    nr an*hyphenation-mode \\n[\\*[locale]*hyphenation-mode-trap]
+.  el .nr an*hyphenation-mode 0
+.  hy \\n[an*hyphenation-mode]
+.  rr an*want-hyphenation
+..
+.
+.de an*reset-tab-stops
 .  ta T .5i
 ..
 .
-.de an-reset-paragraph-spacing
-.  ie \\n[.$] .nr PD (v;\\$1)
-.  el         .nr PD (.4v >? \n[.V])
-.  \" Restore spacing to handle a "belated" `PD` call immediately after
-.  \" a paragraphing macro (`P`, `HP`, or `IP` with no marker argument).
-.  rs
-..
-.
-.de an-reset-margin-and-inset-level
+.de an*reset-section-parameters
+.  fam \\*[an*body-family]
 .  nr an-inset-level 1
 .  nr an-margin \\n[BP]
 .  nr an-saved-margin!1 \\n[BP]
 .  nr an-prevailing-indent \\n[IN]
 .  nr an-saved-prevailing-indent!1 \\n[IN]
+..
+.
+.\" We don't handle the line length here because its handling differs
+.\" between (P, LP, PP, HP) and (IP, TP) paragraphs.
+.de an*reset-paragraph-parameters
+.  an*reset-text-parameters
+.  an*reset-adjustment-mode
+.  an*reset-hyphenation-mode
+..
+.
+.\" This logic would be part of `an*reset-paragraph-parameters`, but
+.\" unfortunately we have to support the legacy `PD` macro, which
+.\" permits unseemly fiddling at arbitrary places in the text.  (99
+.\" times out of 100, all people want is a "compact list" macro.)
+.de an*reset-paragraph-spacing
+.  ie \\n[.$] .nr PD (v;\\$1)
+.  el         .nr PD (.4v >? \n[.V])
+.  \" Restore spacing to handle a "belated" `PD` call immediately after
+.  \" a paragraphing macro (`P`, `HP`, or `IP` with no marker argument),
+.  \" maintaining compatibility with Unix Version 7 man and descendants.
+.  \" See Savannah #64267.
+.  rs
 ..
 .
 .\" Break the page and update its number depending on the C (consecutive
@@ -251,55 +328,18 @@
 .  \" If batch processing (rendering multiple) man page documents, we
 .  \" must handle the end of a previous document.
 .  if \\n[an*need-titles-reset] \{\
-.    if \\n[cR] .an-end
+.    if \\n[cR] .an*end-document
 .
 .    \" Clear the page header trap so it is not sprung with stale
 .    \" information.
 .    ch an-header
-.    an*break-page-with-new-number
+.    if !\\n[cR] .an*break-page-with-new-number
 .  \}
 .  if \\n[C] .rr P
-.
-.  nr an-TH-was-called 1 \" an-end can make certain assumptions.
-.
-.  \" Set up rendering parameters.  We do this in TH instead of only
-.  \" once when initializing the package because when rendering multiple
-.  \" pages, a previous page might have changed them.
-.
-.  fam \\*[an*body-family]
-.  ft R
-.
-.  nr PS    10z \" default type size
-.  nr PS-SS 10z
-.  nr PS-SH 10.95z
-.  nr VS    12p
-.
-.  \" use sizes similar to LaTeX
-.  if t \{\
-.    ie (\\n[S] == 11) \{\
-.      nr PS    10.95z
-.      nr PS-SS 10.95z
-.      nr PS-SH 12z
-.      nr VS    13.6p
-.    \}
-.    el \{\
-.      if (\\n[S] == 12) \{\
-.        nr PS    12z
-.        nr PS-SS 12z
-.        nr PS-SH 14.4z
-.        nr VS    14.5p
-.      \}
-.    \}
-.  \}
 .
 .  \" The previous document rendered in a batch may have been in a
 .  \" different language.
 .  if '\\*[locale]'english' .an*localize-strings
-.
-.  ps \\n[PS]u
-.  vs \\n[VS]u
-.  ad \\*[AD]
-.  ll \\n[LL]u
 .
 .  \" Reset any lingering state from extensions in an-ext.tmac.
 .  nr mE 0
@@ -309,10 +349,20 @@
 .  rr TW
 .  nr an-was-tbl-failure-reported 0
 .
-.  an*reset-hyphenation-mode
-.  an-reset-tab-stops
-.  an-reset-paragraph-spacing
-.  an-reset-margin-and-inset-level
+.  \" When rendering multiple documents, we want to clear any page-local
+.  \" manipulation of hyphenation and adjustment modes from the previous
+.  \" document.
+.  rr HY
+.  rm AD
+.
+.  an*reset-hyphenation-mode \\n[andoc*HY]
+.  an*reset-adjustment-mode \\*[andoc*AD]
+.  an*reset-section-parameters
+.  an*reset-paragraph-parameters
+.  ll \\n[LL]u
+.  in 0 \" Well-formed documents call `SH` after `TH`.
+.  an*reset-tab-stops
+.  an*reset-paragraph-spacing
 .
 .  nr an-need-no-space-mode 0
 .  nr an-need-break 0
@@ -360,10 +410,8 @@
 .
 .  \" Initialize environment for headers and footers.
 .  ev an*env-header-and-footer
-.  ps \\n[PS]u
-.  vs \\n[VS]u
 .  lt \\n[LT]u
-.  an*abbreviate-page-topic
+.  an*abbreviate-page-identifier
 .  \" If AT or UC is called, we will need to abbreviate again.
 .  an*abbreviate-inner-footer
 .  ev
@@ -387,7 +435,6 @@
 .    \}
 .  \}
 .
-.  em an-end
 .  nr an*need-titles-reset 1
 ..
 .
@@ -427,24 +474,20 @@
 .\" Restore tab stops to defaults.
 .de1 DT
 .  nop \\*[an-deprecation-warn]\\
-.  an-reset-tab-stops
+.  an*reset-tab-stops
 ..
 .
 .\" Restore inter-paragraph spacing to default (or set it to argument).
 .\" .PD [distance]
 .de1 PD
 .  nop \\*[an-deprecation-warn]\\
-.  nop \\*[an-reset-paragraph-spacing]\\
+.  nop \\*[an*reset-paragraph-spacing]\\
 ..
 .
 .\" Write the page header; can be redefined by man.local.
-.\"
-.\" In continuous rendering mode, we need to extend the page length to
-.\" accommodate the vertical size of our header (plus any spacing).
 .if d PT .ig
 .de1 PT
-.  ie \\n[cR] .pl +1v
-.  el         .sp (.5i - .5m)
+.  if !\\n[cR] .sp (.5i - .5m)
 .  \" Attach a bookmark to the page header on the first page of a new
 .  \" man(7) document; a changed identifier or section indicates this.
 .  if !'\\*[an*page-ref-string]'\\*[an*previous-page-ref-string]' \{\
@@ -453,20 +496,13 @@
 .    ds an*previous-page-ref-string "\\*[an*page-ref-string]
 .  \}
 .  tl '\\*[an-pageref]'\\*[an-extra3]'\\*[an-pageref]'
-.  ie \\n[cR] \{\
-.    pl +1v
-.    sp 1v
-.  \}
-.  el .sp |(1i - 1m)
+.  ie \\n[cR] .sp 1v
+.  el         .sp .5i
 ..
 .
 .\" Write the page footer; can be redefined by man.local.
-.\"
-.\" In continuous rendering mode, we need to extend the page length to
-.\" accommodate the vertical size of our footer (plus any spacing).
 .if d BT .ig
 .de1 BT
-.  if \\n[cR] .pl +1v
 .  ie \\n[D] \{\
 .    if o .tl '\\*[an*ifoot]'\\*[an-extra1]'\\*[an*ofoot]'
 .    if e .tl '\\*[an*ofoot]'\\*[an-extra1]'\\*[an*ifoot]'
@@ -475,11 +511,11 @@
 .    tl '\\*[an*ifoot]'\\*[an-extra1]'\\*[an*ofoot]'
 ..
 .
-.\" Abbreviate the page topic if it's too long for the header.  Leaves
+.\" Abbreviate page identifier if it's too long for the header.  Leaves
 .\" string an-pageref defined for use in .PT and .an-footer.  Also
 .\" leaves an*ident-abbv for possible use by .PT and .BT re-definers.
 .\" Call this only from within the header/footer environment.
-.de an*abbreviate-page-topic
+.de an*abbreviate-page-identifier
 .  ds an*ident-abbv \\*[an*ident]\" might not get abbreviated at all
 .  ds an*ident-string \\*[an*ident]\"
 .  ds an-ellipsis \|.\|.\|.\|\"
@@ -487,8 +523,11 @@
 .  \" PDF bookmarks.
 .  ds an*page-ref-string \\*[an*ident](\\*[an*section])\"
 .  ds an-pageref \\*[an*ident-abbv](\\*[an*section])\"
-.  nr an-header-width \\w'\\*[an-pageref]\\*[an-extra3]\\*[an-pageref]'
-.  while (\\n[an-header-width] >= \\n[.lt]) \{\
+.  \" Computer width of title text, plus 2n for minimal spacing on
+.  \" either side of the center header.
+.  nr an-header-width \
+     (\\w'\\*[an-pageref]\\*[an-extra3]\\*[an-pageref]' + 2n)
+.  while (\\n[an-header-width] > \\n[.lt]) \{\
 .    \" The page topic is too long; trim some bits out of the middle.
 .    length an*ident-length \\*[an*ident-string]
 .    \" roff uses truncating division.  Remove an additional character
@@ -510,8 +549,9 @@
 .    ie (\\n[an*ident-new-length] >= \\n[an*ident-length]) \
 .      break
 .    ds an-pageref \\*[an*ident-abbv](\\*[an*section])\"
+.    \" Recompute header width now that it's shorter.
 .    nr an-header-width \
-       \\w'\\*[an-pageref]\\*[an-extra3]\\*[an-pageref]'
+       (\\w'\\*[an-pageref]\\*[an-extra3]\\*[an-pageref]' + 2n)
 .  \}
 .  ds an-pageref \\*[an-lic]\f[\\*[MF]]\\*[an*ident-abbv]\\*[an-ic]\
 \f[R](\\*[an*section])\"
@@ -678,14 +718,12 @@ contains unsupported escape sequence
 .\" Handle macros that may take an "argument" on the next input line
 .\" producing written or drawn output: .SH, .SS, .B, .I, .SM, .SB.
 .\" For .TP, see below.
-.de1 an-input-trap
+.de1 an*input-trap
 .  if \\n[an-devtag-needs-end-of-heading] .DEVTAG-EO-H
 .  nr an-devtag-needs-end-of-heading 0
 .  if \\n[an-devtag-needs-second-column] .DEVTAG-COL 2
 .  nr an-devtag-needs-second-column 0
-.  ft R
-.  ps \\n[PS]u
-.  vs \\n[VS]u
+.  an*reset-text-parameters
 .  if \\n[an-need-break] \{\
 .    br
 .    nr an-need-break 0
@@ -715,10 +753,8 @@ contains unsupported escape sequence
 ..
 .
 .\" Break a paragraph.  Restore defaults, except for indentation.
-.de an-break-paragraph
-.  ft R
-.  ps \\n[PS]u
-.  vs \\n[VS]u
+.de an*break-paragraph
+.  an*reset-paragraph-parameters
 .  sp \\n[PD]u
 .  ns
 ..
@@ -726,15 +762,14 @@ contains unsupported escape sequence
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) as a section heading.
 .de1 SH
-.  fam \\*[an*body-family]
-.  an-break-paragraph
-.  an-reset-margin-and-inset-level
+.  an*reset-section-parameters
+.  an*break-paragraph
 .  fi
 .  in \\n[BP]u
 .  ti 0
 .  nr an-devtag-needs-end-of-heading 1
 .  DEVTAG-SH 1
-.  it 1 an-input-trap
+.  it 1 an*input-trap
 .  nr an-need-no-space-mode 1
 .  nr an-need-break 1
 .  ps \\n[PS-SH]u
@@ -748,21 +783,21 @@ contains unsupported escape sequence
 .    nr an*bookmark-level (\\n[an*bookmark-base-level] + 2)
 .    an*bookmark \\n[an*bookmark-level] "\\*[an-section-heading]"
 .    nop \&\\*[an-section-heading]
+.  \}
 .  if \\n[an-remap-I-style-in-headings] .ftr I I
 ..
 .
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) as a subsection heading.
 .de1 SS
-.  fam \\*[an*body-family]
-.  an-break-paragraph
-.  an-reset-margin-and-inset-level
+.  an*reset-section-parameters
+.  an*break-paragraph
 .  fi
 .  in \\n[BP]u
 .  ti \\n[SN]u
 .  nr an-devtag-needs-end-of-heading 1
 .  DEVTAG-SH 2
-.  it 1 an-input-trap
+.  it 1 an*input-trap
 .  nr an-need-no-space-mode 1
 .  nr an-need-break 1
 .  ps \\n[PS-SS]u
@@ -781,7 +816,7 @@ contains unsupported escape sequence
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) in bold style.
 .de1 B
-.  it 1 an-input-trap
+.  it 1 an*input-trap
 .  ft B
 .  if \\n[.$] \&\\$*
 ..
@@ -789,7 +824,7 @@ contains unsupported escape sequence
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) in italic style.
 .de1 I
-.  it 1 an-input-trap
+.  it 1 an*input-trap
 .  ft I
 .  if \\n[.$] \,\\$*\/
 ..
@@ -797,7 +832,7 @@ contains unsupported escape sequence
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) at smaller type size.
 .de1 SM
-.  it 1 an-input-trap
+.  it 1 an*input-trap
 .  ps -1
 .  if \\n[.$] \&\\$*
 ..
@@ -820,7 +855,7 @@ contains unsupported escape sequence
 .\" .SB [text]
 .de1 SB
 .  nop \\*[an-deprecation-warn]\\
-.  it 1 an-input-trap
+.  it 1 an*input-trap
 .  ps -1
 .  ft B
 .  if \\n[.$] \&\\$*
@@ -828,7 +863,8 @@ contains unsupported escape sequence
 .
 .\" Set an ordinary paragraph.
 .de1 P
-.  an-break-paragraph
+.  an*break-paragraph
+.  ll \\n[LL]u
 .  in \\n[an-margin]u
 .  nr an-prevailing-indent \\n[IN]
 ..
@@ -841,14 +877,14 @@ contains unsupported escape sequence
 .\" producing written or drawn output.
 .\" .TP [indent]
 .de1 TP
-.  an-break-paragraph
+.  an*break-paragraph
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
 .  if '\\n[.z]'an*paragraph-tag' \{\
 .    an-warn cannot nest .\\$0 or .TQ inside .\\$0; supply a tag
 .    return
 .  \}
 .  nr an*have-paragraph-tag 1
-.  itc 1 an-input-trap
+.  itc 1 an*input-trap
 .  in 0
 .  ll -\\n[an-margin]u
 .  nr an*saved-adjustment-mode \\n[.j]
@@ -860,7 +896,7 @@ contains unsupported escape sequence
 .\" .IP [marker[ indentation-amount]]
 .de1 IP
 .  nr an*enforce-tag-separation 0
-.  an-break-paragraph
+.  an*break-paragraph
 .  ie !\\n[.$] \{\
 .    ne (1v + 1u)
 .    in (\\n[an-margin]u + \\n[an-prevailing-indent]u)
@@ -876,7 +912,8 @@ contains unsupported escape sequence
 .\" Set a paragraph with a hanging indentation.
 .\" .HP [indent]
 .de1 HP
-.  an-break-paragraph
+.  an*break-paragraph
+.  ll \\n[LL]u
 .  ne (1v + 1u)
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
 .  in (\\n[an-margin]u + \\n[an-prevailing-indent]u)
@@ -1061,7 +1098,8 @@ contains unsupported escape sequence
 .\" Deprecated: Style an option with an argument (mandatory if
 .\" specified) for a command synopsis.
 .\"
-.\" This is a Documenter's Workbench troff extension.  It is not
+.\" This macro's name is a Documenter's Workbench troff extension, but
+.\" the implementation has different syntax and semantics.  Neither is
 .\" flexible enough to handle GNU-style options like
 .\" `--input=file-name`.  Use font alternation macros instead.
 .\"
@@ -1188,7 +1226,15 @@ contains unsupported escape sequence
 .      chop an*link-text
 .      as an*link-text \&\c
 .      an*link-text
-.      nop \"
+\" This is deliberately a blank line with a comment.
+.\" XXX: We would use the `nop` request here to put a break on the
+.\" output (with nice indentation to boot), but interpolating a chopped
+.\" diversion, even with a string appendment, manipulates the input
+.\" parser a little too powerfully, and the formatter thinks ".nop"
+.\" appears on the input line literally after the `\c` at the end of
+.\" `an*link-text`.  (We need that `\c`, else multiple tests fail.)
+.\" String/macro/diversion manipulation needs closer attention in the
+.\" formatter.
 .      if '\*[.T]'html' \
 .        nop \X'html:</a>'\c
 .      if \\n[an*is-output-terminal] \
@@ -1201,13 +1247,13 @@ contains unsupported escape sequence
 .    \" uses some means of indicating the hyperlinked text.
 .    el \{\
 .      if '\*[.T]'html' \
-.        nop \X'html:<a href="\\*[an*hyperlink]">\
+.        nop \%\X'html:<a href="\\*[an*hyperlink]">\
 \\*[an*visible-hyperlink]</a>'\c
 .      if '\*[.T]'pdf' \
 .        pdfhref W -D \\*[an*hyperlink] -A "\\*[an*trailing-text]" \
 -- \\*[an*visible-hyperlink]\c
 .      if \\n[an*is-output-terminal] \
-.        nop \X'tty: link \\*[an*hyperlink]'\
+.        nop \%\X'tty: link \\*[an*hyperlink]'\
 \\*[an*visible-hyperlink]\X'tty: link'\c
 .      if !'\*[.T]'pdf' \
 .        nop \&\\*[an*trailing-text]\"
@@ -1407,10 +1453,23 @@ contains unsupported escape sequence
 .
 .\" === Define/remap characters. ===
 .
-.\" For UTF-8, map the minus sign to the hyphen-minus to facilitate
-.\" copy and paste of code examples, file names, and URLs embedding it.
+.\" On output devices that typically have separate hyphen and minus sign
+.\" glyphs _and_ a glyph for ASCII/ISO Latin's hybrid "hyphen-minus",
+.\" remap the (text) minus sign to the hyphen-minus to facilitate copy
+.\" and paste of code examples, file names, and URLs embedding it.  We
+.\" do this for man pages but not for general typesetting.  See
+.\" groff_char(7) for further background.
+.\"
+.\" PDF's "CMap" feature solves this problem so we don't have to.
 .if '\*[.T]'utf8' \
 .  char \- \N'45'
+.if '\*[.T]'html' \
+.  char \- \N'45'
+.
+.\" Man pages more often use the neutral double quote `"` as a "code
+.\" literal" than as a quotation character.  Give it the same (empty)
+.\" set of character flags as its special character equivalent, \[dq].
+.cflags 0 "
 .
 .\" === Initialize. ===
 .
@@ -1426,6 +1485,16 @@ contains unsupported escape sequence
 .\" reconfigured.  This happens when batch-rendering and starting a new
 .\" page.
 .nr an*need-titles-reset 0
+.
+.\" Initialize registers and strings that trap-called macros access, to
+.\" avoid warnings when formatting degenerate man(7) documents.
+.an*reset-paragraph-spacing
+.nr an-margin 0
+.nr an-need-no-space-mode 0
+.nr an-need-break 0
+.ds an-pageref \" empty
+.ds an*ifoot \" empty
+.ds an-extra1 \" empty
 .
 .\" We don't have to worry about "xhtml" (it's mapped to "html"), but we
 .\" do need to account for pre-grohtml(1)'s use of "groff -Tps".
@@ -1458,15 +1527,26 @@ contains unsupported escape sequence
 .  ftr CBI BI
 .\}
 .
-.\" undocumented register; unset to test an-ext.tmac extension macros
+.\" undocumented register; unset it to test an-ext.tmac extension macros
 .if !r mG \
 .  nr mG 1
 .
 .\" Load man macro extensions.
 .mso an-ext.tmac
 .
-.\" Load site modifications.
-.msoquiet man.local
+.\" Load site-local configuration.
+.ie d msoquiet .msoquiet man.local
+.el            .mso      man.local
+.
+.\" Save `HY` value and `AD` contents configured by {man,mdoc}.local or
+.\" command line.
+.if !r andoc*is-initialized \{\
+.  ie r HY .nr andoc*HY \n[HY]
+.  el      .nr andoc*HY 1
+.  ie d AD .ds andoc*AD \*[AD]\"
+.  el      .ds andoc*AD b\"
+.  nr andoc*is-initialized 1
+.\}
 .
 .\" Set each rendering parameter only if its -[dr] option or man.local
 .\" did not.
@@ -1563,10 +1643,6 @@ contains unsupported escape sequence
 .  \}
 .\}
 .
-.\" hyphenation enablement
-.if !r HY \
-.  nr HY 1
-.
 .\" standard indentation
 .if !r IN \{\
 .  \" We select an integer indentation value in nroff mode because this
@@ -1650,7 +1726,7 @@ contains unsupported escape sequence
 .if !r TS \
 .  nr TS 2n
 .
-.\" subsection indentation
+.\" subsection heading indentation
 .if !r SN \
 .  nr SN 3n
 .
@@ -1678,10 +1754,6 @@ contains unsupported escape sequence
 .  rr X
 .  rm an-msg
 .\}
-.
-.\" adjustment mode
-.if !d AD \
-.  ds AD b\"
 .
 .\" (sub)section heading font
 .if !d HF \
@@ -1718,12 +1790,19 @@ contains unsupported escape sequence
 .\}
 .rm an*ident-style
 .
-.if \n[cR] \
-.  an-set-up-continuous-rendering
+.\" In continuous rendering mode, make page breaks less potent and the
+.\" page length "infinite".
+.if \n[cR] \{\
+.  rn bp an*real-bp
+.  rn an*bp bp
+.  pl \n[.R]u/1v
+.\}
 .
 .\" If rendering HTML, suppress headers and footers.
 .nr an-suppress-header-and-footer 0
 .if \n[an*is-output-html] .nr an-suppress-header-and-footer 1
+.
+.em an*end-document
 .
 .cp \n[*groff_an_tmac_C]
 .do rr *groff_an_tmac_C

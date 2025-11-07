@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,13 +16,21 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "driver.h"
-#include "stringclass.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <errno.h>
+#include <stdio.h> // EOF, FILE, fclose(), fgets(), getc(), ungetc()
+#include <stdlib.h> // getenv(), putenv(), strtoul()
+#include <string.h> // strerror(), strtok()
+
 #include "cset.h"
+#include "driver.h"
+#include "lib.h" // array_length(), strsave()
+#include "stringclass.h"
 
 #include "ps.h"
-
-#include <errno.h> // errno
 
 #ifdef NEED_DECLARATION_PUTENV
 extern "C" {
@@ -290,18 +298,13 @@ void resource_manager::output_prolog(ps_output &out)
     e += GROPS_PROLOGUE;
     e += '\0';
     if (putenv(strsave(e.contents())))
-      fatal("unable to update environment: %1", strerror(errno));
+      fatal("cannot update environment: %1", strerror(errno));
   }
   char *prologue = getenv("GROPS_PROLOGUE");
-  FILE *fp = font::open_file(prologue, &path);
-  if (0 /* nullptr */ == fp) {
-    // If errno not valid, assume file rejected due to '/'.
-    if (errno <= 0)
-      fatal("refusing to traverse directories to open PostScript"
-	    " prologue file '%1'");
-    fatal("unable to open PostScript prologue file '%1': %2", prologue,
+  FILE *fp = font::open_resource_file(prologue, &path);
+  if (0 /* nullptr */ == fp)
+    fatal("cannot open PostScript prologue file '%1': %2", prologue,
 	  strerror(errno));
-  }
   fputs("%%BeginResource: ", outfp);
   procset_resource->print_type_and_name(outfp);
   putc('\n', outfp);
@@ -335,24 +338,19 @@ void resource_manager::supply_resource(resource *r, int rank,
   FILE *fp = 0 /* nullptr */;
   if (r->filename != 0 /* nullptr */) {
     if (r->type == RESOURCE_FONT) {
-      fp = font::open_file(r->filename, &path);
+      fp = font::open_resource_file(r->filename, &path);
       if (0 /* nullptr */ == fp) {
-	// If errno not valid, assume file rejected due to '/'.
-	if (errno <= 0)
-	  error("refusing to traverse directories to open PostScript"
-		" resource file '%1'");
-	else
-	  error("unable to open PostScript resource file '%1': %2",
+	  error("cannot open PostScript font file '%1': %2",
 		r->filename, strerror(errno));
 	delete[] r->filename;
 	r->filename = 0 /* nullptr */;
       }
     }
     else {
-      fp = include_search_path.open_file_cautious(r->filename);
+      fp = include_search_path.open_file_cautiously(r->filename);
       if (0 /* nullptr */ == fp) {
-	error("unable to open file '%1': %2", r->filename,
-	      strerror(errno));
+	error("cannot open PostScript resource file '%1': %2",
+	      r->filename, strerror(errno));
 	delete[] r->filename;
 	r->filename = 0 /* nullptr */;
       }
@@ -1069,7 +1067,7 @@ void resource_manager::read_download_file()
   char *path = 0 /* nullptr */;
   FILE *fp = font::open_file("download", &path);
   if (0 /* nullptr */ == fp)
-    fatal("unable to open 'download' file: %1", strerror(errno));
+    fatal("cannot open 'download' file: %1", strerror(errno));
   char buf[512];
   int lineno = 0;
   while (fgets(buf, sizeof buf, fp)) {

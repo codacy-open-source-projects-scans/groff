@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -17,7 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "lib.h"
+
 #include "searchpath.h"
 #include "macropath.h"
 #include "defs.h"
@@ -27,3 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 search_path macro_path(MACROPATH_ENVVAR, MACROPATH, 1, 1);
 search_path safer_macro_path(MACROPATH_ENVVAR, MACROPATH, 1, 0);
 search_path config_macro_path(MACROPATH_ENVVAR, MACROPATH, 0, 0);
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

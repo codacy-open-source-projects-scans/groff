@@ -1399,22 +1399,22 @@ Version 1.22.4 released 2018-12-23
 2017-07-31  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	See bug at: https://savannah.gnu.org/bugs/?51568
-	
+
 	* src/devices/gropdf/gropdf: previous 'fix' was too narrow, all
 	'\' characters should be escaped. Also there was an unwanted 
 	interaction with code in routine 'do_t'. Sometimes, do_C, when 
 	the named glyph is mapped to a chr < 32, this is encoded as octal
 	\nnn, so in this case the '\' must not be escaped.
-	
+
 2017-07-25  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	If input text contained string which could be interpreted as
 	escaped octal (\ddd) a pdf viewer would interpret as an octal
 	character.  See bug at: https://savannah.gnu.org/bugs/?51568
-	
+
 	* src/devices/gropdf/gropdf: protect text which resembles \ddd
 	by escaping with extra '\'.
-	
+
 2017-07-12  Bertrand Garrigues <bertrand.garrigues@laposte.net>
 
 	Use uchardet library in `preconv' to detect input file encoding
@@ -1487,11 +1487,11 @@ Version 1.22.4 released 2018-12-23
 2017-05-04  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Fixes for gropdf
-	
+
 	* src/devices/gropdf/gropdf.pl: Escape '(' and ')' if
 	used in a bookmark, and ignore relative move 'h' if 
 	followed by absolute move 'H' in groff intermediate output.
-	
+
 2017-04-29  Ingo Schwarze  <schwarze@usta.de>
 
 	groff_char(7): improve description of ASCII characters
@@ -1674,16 +1674,16 @@ Version 1.22.4 released 2018-12-23
 2016-12-29  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Remove duplicate '-e' from gropdf manual.
-	
+
 	* src/devices/gropdf/gropdf.1.man: Remove first '-e'.
-	
+
 2016-11-25  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Remove incorrect info from gropdf manual.
-	
+
 	* src/devices/gropdf/gropdf.1.man: Remove references
 	to postscript.
-	
+
 2016-11-22  George HELFFRICH  <ghfbsd@gmail.com>
 
 	[me]: Fix alignment of `(c' macro (#43306).
@@ -1709,13 +1709,13 @@ Version 1.22.4 released 2018-12-23
 2016-11-01  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	gropdf remaps characters to position 13 (#48986).
-	
+
 	* src/devices/gropdf/gropdf: Do not remap anything to chr(13).
 
 2016-11-01  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	pdfmom was not including $preconv in the initial groff run.
-	
+
 	* src/devices/gropdf/pdfmom.pl: Include $preconv in first 
 	groff run which resolves forward pdf references.
 
@@ -1976,14 +1976,14 @@ Version 1.22.4 released 2018-12-23
 
 	gropdf was choking on -I flag passed by groff, now uses
 	these directories to search for included pdfs.
-	
+
 	* src/devices/gropdf/gropdf.pl: Handle -I flag, avoid
 	  unitialised values.
-	
+
 	* src/roff/groff/groff.1.man: Include 'X pdf: pdfpic'
-	
+
 	* src/devices/gropdf/gropdf.1.man: Document -I flag
-	
+
 2015-09-10  Bernd Warken  <groff-bernd.warken-72@web.de>
 
 	* src/roff/grog/subs.pl: fix comments
@@ -5316,6 +5316,8 @@ ________________________________________________________________________
 ##### License
 
 Copyright 2011-2018 Free Software Foundation, Inc.
+          2011-2018 Ingo Schwarze
+          2017-2018 G. Branden Robinson
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

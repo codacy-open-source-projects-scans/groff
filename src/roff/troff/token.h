@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,10 +16,22 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
 
 class charinfo;
 struct node;
 class vunits;
+
+enum delimiter_context {
+  DELIMITER_GROFF_EXPRESSION,
+  DELIMITER_ATT_STRING_EXPRESSION,
+  DELIMITER_ATT_NUMERIC_EXPRESSION,
+  DELIMITER_ATT_OUTPUT_COMPARISON_EXPRESSION
+};
 
 class token {
   symbol nm;
@@ -43,7 +55,7 @@ class token {
     TOKEN_MARK_INPUT,		// \k
     TOKEN_NEWLINE,		// ^J
     TOKEN_NODE,
-    TOKEN_NUMBERED_CHAR,	// \N
+    TOKEN_INDEXED_CHAR,		// \N
     TOKEN_PAGE_EJECTOR,
     TOKEN_REQUEST,
     TOKEN_RIGHT_BRACE,		// \}
@@ -74,12 +86,15 @@ public:
   bool is_unstretchable_space();
   bool is_horizontal_space();
   bool is_white_space();
+  bool is_character();
   bool is_special_character();
+  bool is_indexed_character();
   bool is_newline();
   bool is_tab();
   bool is_leader();
   bool is_backspace();
-  bool is_usable_as_delimiter(bool /* report_error */ = false);
+  bool is_usable_as_delimiter(bool /* report_error */ = false,
+    enum delimiter_context /* context */ = DELIMITER_GROFF_EXPRESSION);
   bool is_dummy();
   bool is_transparent_dummy();
   bool is_transparent();
@@ -91,7 +106,9 @@ public:
   bool operator==(const token &); // for delimiters & conditional exprs
   bool operator!=(const token &); // ditto
   unsigned char ch();
-  charinfo *get_char(bool /* required */ = false);
+  int character_index();
+  charinfo *get_char(bool /* required */ = false,
+		     bool /* suppress_creation */ = false);
   bool add_to_zero_width_node_list(node **);
   void make_space();
   void make_newline();
@@ -105,8 +122,8 @@ extern token tok;		// the current token
 
 extern symbol get_name(bool /* required */ = false);
 extern symbol get_long_name(bool /* required */ = false);
-extern charinfo *get_optional_char();
-extern char *read_string();
+extern charinfo *read_character(); // TODO?: bool /* required */ = false
+extern char *read_rest_of_line_as_argument();
 extern void check_missing_character();
 extern void skip_line();
 extern void handle_initial_title();
@@ -114,12 +131,12 @@ extern void handle_initial_title();
 enum char_mode {
   CHAR_NORMAL,
   CHAR_FALLBACK,
-  CHAR_FONT_SPECIAL,
-  CHAR_SPECIAL
+  CHAR_FONT_SPECIFIC_FALLBACK,
+  CHAR_SPECIAL_FALLBACK
 };
 
-extern void do_define_character(char_mode,
-			const char * /* font_name */ = 0 /* nullptr */);
+extern void define_character(char_mode,
+			     const char * /* font_name */ = 0 /* nullptr */);
 
 class hunits;
 extern void read_title_parts(node **part, hunits *part_width);
@@ -190,6 +207,23 @@ inline bool token::is_page_ejector()
 inline unsigned char token::ch()
 {
   return type == TOKEN_CHAR ? c : '\0';
+}
+
+inline bool token::is_character()
+{
+  return (TOKEN_CHAR == type) || (TOKEN_SPECIAL_CHAR == type)
+	  || (TOKEN_INDEXED_CHAR == type);
+}
+
+inline bool token::is_indexed_character()
+{
+  return TOKEN_INDEXED_CHAR == type;
+}
+
+inline int token::character_index()
+{
+  assert(TOKEN_INDEXED_CHAR == type);
+  return val;
 }
 
 inline bool token::is_eof()

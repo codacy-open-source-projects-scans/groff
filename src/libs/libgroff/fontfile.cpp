@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,8 +16,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -25,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <assert.h> // assert()
 #include <stdio.h> // snprintf()
 #include <string.h> // strchr(), strlen()
+
+#include "lib.h"
 
 #include "font.h"
 #include "searchpath.h"
@@ -70,6 +70,25 @@ FILE *font::open_file(const char *nm, char **pathp)
   // Do not traverse user-specified directories; Savannah #61424.
   if ((0 /* nullptr */ == strchr(nm, '/'))
       && (device != 0 /* nullptr */) && (nm != 0 /* nullptr */)) {
+    // Allocate enough for nm + device + 'dev' '/' '\0'.
+    size_t expected_size = strlen(nm) + strlen(device) + 5;
+    char *filename = new char[expected_size];
+    const size_t actual_size = snprintf(filename, expected_size,
+					"dev%s/%s", device, nm);
+    expected_size--; // snprintf() doesn't count the null terminator.
+    if (actual_size == expected_size)
+      fp = font_path.open_file(filename, pathp);
+    delete[] filename;
+  }
+  return fp;
+}
+
+FILE *font::open_resource_file(const char *nm, char **pathp)
+{
+  assert(nm != 0 /* nullptr */);
+  assert(device != 0 /* nullptr */);
+  FILE *fp = 0 /* nullptr */;
+  if ((device != 0 /* nullptr */) && (nm != 0 /* nullptr */)) {
     // Allocate enough for nm + device + 'dev' '/' '\0'.
     size_t expected_size = strlen(nm) + strlen(device) + 5;
     char *filename = new char[expected_size];

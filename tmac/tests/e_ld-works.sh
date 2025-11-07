@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2021-2023 Free Software Foundation, Inc.
+# Copyright (C) 2021-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -86,7 +86,7 @@ echo "$output_cs" | grep -Eqx ' +Dodatek A' || wail
 # German localization
 echo 'checking that `td` string updated correctly for German' >&2
 echo "$output_de" \
-    | grep -q 'The day was Montag, 15\. Dezember\. 2008\.$' || wail
+    | grep -q 'The day was Montag, 15\. Dezember 2008\.$' || wail
 
 echo 'checking for correct German "Chapter" string' >&2
 echo "$output_de" | grep -Eqx ' +Kapitel 1' || wail

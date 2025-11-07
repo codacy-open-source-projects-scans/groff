@@ -912,7 +912,7 @@ following, HTML always denotes XHTML also.
 .\"
 .\" If your heading contains URL, FTP, MTO macros you might wish to
 .\" disable automatic links to headings.  This can be done via '-P-l'
-.\" from the command line or by using a cakk to '.HX 0'.
+.\" from the command line or by using a call to '.HX 0'.
 .\"
 .nr www-heading-no -1
 .

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -19,10 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef GROFF_LIB_H
 #define GROFF_LIB_H
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #if defined(__INTERIX) && !defined(_ALL_SOURCE)
 #define _ALL_SOURCE
 #endif
@@ -30,18 +26,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifndef HAVE_STRERROR
-  char *strerror(int);
-#endif
   const char *i_to_a(int);
   const char *ui_to_a(unsigned int);
   const char *if_to_a(int, int);
 #ifdef __cplusplus
 }
 #endif
-
-#define __GETOPT_PREFIX groff_
-#include <getopt.h>
 
 #ifdef HAVE_SETLOCALE
 #include <locale.h>
@@ -85,7 +75,7 @@ int mkstemp(char *tmpl);
 int mksdir(char *tmpl);
 
 #ifdef __cplusplus
-  FILE *xtmpfile(char **namep = 0 /* nullptr */,
+  FILE *xtmpfile(const char **namep = 0 /* nullptr */,
 		 const char *postfix_long = 0 /* nullptr */,
 		 const char *postfix_short = 0 /* nullptr */);
   char *xtmptemplate(const char *postfix_long,
@@ -109,26 +99,6 @@ int mksdir(char *tmpl);
   {
     return (c >= 0 && invalid_char_table[c]);
   }
-
-#ifdef HAVE_STRCASECMP
-#ifdef NEED_DECLARATION_STRCASECMP
-// Ultrix4.3's string.h fails to declare this.
-  int strcasecmp(const char *, const char *); }
-#endif /* NEED_DECLARATION_STRCASECMP */
-#else /* !HAVE_STRCASECMP */
-  int strcasecmp(const char *, const char *);
-#endif /* HAVE_STRCASECMP */
-
-#if !defined(_AIX) && !defined(sinix) && !defined(__sinix__)
-#ifdef HAVE_STRNCASECMP
-#ifdef NEED_DECLARATION_STRNCASECMP
-// SunOS's string.h fails to declare this.
-  int strncasecmp(const char *, const char *, int);
-#endif /* NEED_DECLARATION_STRNCASECMP */
-#else /* !HAVE_STRNCASECMP */
-  int strncasecmp(const char *, const char *, size_t);
-#endif /* HAVE_STRNCASECMP */
-#endif /* !_AIX && !sinix && !__sinix__ */
 
 #ifdef __cplusplus
 }

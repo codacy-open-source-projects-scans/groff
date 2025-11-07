@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright 2024 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -62,7 +62,7 @@ do
     || wail
   echo "$output"
   # 3 backslashes
-  echo "$output" | grep -Eq 'x * X *pdf: \\\[u007E\]' || wail
+  echo "$output" | grep -Eq 'x * X *pdf: \\\[u007E]' || wail
 done
 
 test -z "$fail"

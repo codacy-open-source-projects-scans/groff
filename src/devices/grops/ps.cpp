@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -22,18 +22,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
  *   http://partners.adobe.com/public/developer/en/ps/5001.DSC_Spec.pdf
  */
 
-#include "lib.h" // PI
-#include "driver.h"
-#include "stringclass.h"
-#include "cset.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <errno.h>
+#include <locale.h> // setlocale()
+#include <math.h> // atan2(), sqrt(), tan()
+#include <stdint.h> // uint16_t
+#include <stdio.h> // EOF, FILE, fclose(), fgets(), fileno(), fseek(),
+		   // getc(), SEEK_SET, setbuf(), stderr, stdout
+#include <stdlib.h> // exit(), EXIT_SUCCESS, putenv(), strtol()
+#include <string.h> // strchr(), strcmp(), strcpy(), strerror(),
+		    // strlen(), strncmp(), strstr(), strtok()
+#include <time.h> // asctime()
+
+#include <getopt.h> // getopt_long()
+
+// needed for SET_BINARY()
+#include "posix.h"
 #include "nonposix.h"
-#include "paper.h"
+
+#include "lib.h" // PI
+
+#include "cset.h"
 #include "curtime.h"
+#include "driver.h"
+#include "paper.h"
+#include "stringclass.h"
 
 #include "ps.h"
-
-#include <errno.h> // errno
-#include <time.h>
 
 #ifdef NEED_DECLARATION_PUTENV
 extern "C" {
@@ -43,8 +62,8 @@ extern "C" {
 
 extern "C" const char *Version_string;
 
-// search path defaults to the current directory
-search_path include_search_path(0, 0, 0, 1);
+// Initialize inclusion search path with only the current directory.
+search_path include_search_path(0 /* nullptr */, 0 /* nullptr */, 0, 1);
 
 static int landscape_flag = 0;
 static int manual_feed_flag = 0;
@@ -78,7 +97,7 @@ double degrees(double r)
 
 double radians(double d)
 {
-  return d*PI/180.0;
+  return (d * PI) / 180.0;
 }
 
 // This is used for testing whether a character should be output in the
@@ -202,13 +221,16 @@ ps_output &ps_output::put_delimiter(char c)
   return *this;
 }
 
-ps_output &ps_output::put_string(const char *s, size_t n)
+ps_output &ps_output::put_string(const uint16_t *s, size_t n,
+				 bool is_utf16le)
 {
   size_t len = 0;
   size_t i;
   for (i = 0; i < n; i++) {
-    char c = s[i];
-    if (is_ascii(c) && csprint(c)) {
+    uint16_t c = s[i];
+    if (is_utf16le) {
+      len = (i + 1) * 4;
+    } else if (is_ascii(c) && csprint(c)) {
       if (c == '(' || c == ')' || c == '\\')
 	len += 2;
       else
@@ -217,34 +239,41 @@ ps_output &ps_output::put_string(const char *s, size_t n)
     else
       len += 4;
   }
-  if (len > n*2) {
-    if (col + n*2 + 2 > max_line_length && n*2 + 2 <= max_line_length) {
+  if ((len > (n * 2)) || is_utf16le) {
+    if (((col + (n * 2) + 2) > max_line_length)
+	&& (((n * 2) + 2) <= max_line_length)) {
       putc('\n', fp);
       col = 0;
     }
-    if (col + 1 > max_line_length) {
+    if ((col + 1) > max_line_length) {
       putc('\n', fp);
       col = 0;
     }
     putc('<', fp);
     col++;
     for (i = 0; i < n; i++) {
-      if (col + 2 > max_line_length) {
+      if ((col + 2) > max_line_length) {
 	putc('\n', fp);
 	col = 0;
       }
-      fprintf(fp, "%02x", s[i] & 0377);
-      col += 2;
+      if (is_utf16le) {
+        fprintf(fp, "%04X", s[i] & 0xFFFF);
+        col += 4;
+      } else {
+        fprintf(fp, "%02x", s[i] & 0377);
+        col += 2;
+      }
     }
     putc('>', fp);
     col++;
   }
   else {
-    if (col + len + 2 > max_line_length && len + 2 <= max_line_length) {
+    if (((col + len + 2) > max_line_length)
+	&& ((len + 2) <= max_line_length)) {
       putc('\n', fp);
       col = 0;
     }
-    if (col + 2 > max_line_length) {
+    if ((col + 2) > max_line_length) {
       putc('\n', fp);
       col = 0;
     }
@@ -260,7 +289,7 @@ ps_output &ps_output::put_string(const char *s, size_t n)
       }
       else
 	len = 4;
-      if (col + len + 1 > max_line_length) {
+      if ((col + len + 1) > max_line_length) {
 	putc('\\', fp);
 	putc('\n', fp);
 	col = 0;
@@ -277,7 +306,7 @@ ps_output &ps_output::put_string(const char *s, size_t n)
 	fprintf(fp, "\\%03o", c & 0377);
 	break;
       default:
-	assert(0);
+	assert(0 == "unhandled length of encoded character");
       }
       col += len;
     }
@@ -293,7 +322,7 @@ ps_output &ps_output::put_number(int n)
   char buf[1 + INT_DIGITS + 1];
   sprintf(buf, "%d", n);
   size_t len = strlen(buf);
-  if (col > 0 && col + len + need_space > max_line_length) {
+  if ((col > 0) && ((col + len + need_space) > max_line_length)) {
     putc('\n', fp);
     col = 0;
     need_space = 0;
@@ -312,7 +341,7 @@ ps_output &ps_output::put_fix_number(int i)
 {
   const char *p = if_to_a(i, fixed_point);
   size_t len = strlen(p);
-  if (col > 0 && col + len + need_space > max_line_length) {
+  if ((col > 0) && ((col + len + need_space) > max_line_length)) {
     putc('\n', fp);
     col = 0;
     need_space = 0;
@@ -337,7 +366,7 @@ ps_output &ps_output::put_float(double d)
   if (buf[last] == '.')
     last--;
   buf[++last] = '\0';
-  if (col > 0 && col + last + need_space > max_line_length) {
+  if ((col > 0) && ((col + last + need_space) > max_line_length)) {
     putc('\n', fp);
     col = 0;
     need_space = 0;
@@ -355,7 +384,7 @@ ps_output &ps_output::put_float(double d)
 ps_output &ps_output::put_symbol(const char *s)
 {
   size_t len = strlen(s);
-  if (col > 0 && col + len + need_space > max_line_length) {
+  if ((col > 0) && ((col + len + need_space) > max_line_length)) {
     putc('\n', fp);
     col = 0;
     need_space = 0;
@@ -375,7 +404,7 @@ ps_output &ps_output::put_color(unsigned int c)
   char buf[128];
   sprintf(buf, "%.3g", double(c) / double(color::MAX_COLOR_VAL));
   size_t len = strlen(buf);
-  if (col > 0 && col + len + need_space > max_line_length) {
+  if ((col > 0) && ((col + len + need_space) > max_line_length)) {
     putc('\n', fp);
     col = 0;
     need_space = 0;
@@ -393,7 +422,7 @@ ps_output &ps_output::put_color(unsigned int c)
 ps_output &ps_output::put_literal_symbol(const char *s)
 {
   size_t len = strlen(s);
-  if (col > 0 && col + len + 1 > max_line_length) {
+  if ((col > 0) && ((col + len + 1) > max_line_length)) {
     putc('\n', fp);
     col = 0;
   }
@@ -411,9 +440,11 @@ public:
   char *encoding;
   char *reencoded_name;
   ~ps_font();
-  void handle_unknown_font_command(const char *command, const char *arg,
-				   const char *filename, int lineno);
-  static ps_font *load_ps_font(const char *);
+  void handle_unknown_font_command(const char * /* command */,
+				   const char * /* arg */,
+				   const char * /* fn */,
+				   int lineno);
+  static ps_font *load_ps_font(const char * /* s */);
 };
 
 ps_font *ps_font::load_ps_font(const char *s)
@@ -438,11 +469,11 @@ ps_font::~ps_font()
 }
 
 void ps_font::handle_unknown_font_command(const char *command, const char *arg,
-					  const char *filename, int lineno)
+					  const char *fn, int lineno)
 {
   if (strcmp(command, "encoding") == 0) {
     if (arg == 0)
-      error_with_file_and_line(filename, lineno,
+      error_with_file_and_line(fn, lineno,
 			       "'encoding' command requires an argument");
     else
       encoding = strsave(arg);
@@ -450,11 +481,11 @@ void ps_font::handle_unknown_font_command(const char *command, const char *arg,
 }
 
 static void handle_unknown_desc_command(const char *command, const char *arg,
-					const char *filename, int lineno)
+					const char *fn, int lineno)
 {
   if (strcmp(command, "broken") == 0) {
     if (arg == 0)
-      error_with_file_and_line(filename, lineno,
+      error_with_file_and_line(fn, lineno,
 			       "'broken' command requires an argument");
     else if (!bflag)
       broken_flags = atoi(arg);
@@ -469,12 +500,13 @@ struct subencoding {
   const char *glyphs[256];
   subencoding *next;
 
-  subencoding(font *, unsigned int, int, subencoding *);
+  subencoding(font * /* f */, unsigned int /* n */, int /* ix */,
+	      subencoding * /* s */);
   ~subencoding();
 };
 
 subencoding::subencoding(font *f, unsigned int n, int ix, subencoding *s)
-: p(f), num(n), idx(ix), subfont(0), next(s)
+: p(f), num(n), idx(ix), subfont(0 /* nullptr */), next(s)
 {
   for (int i = 0; i < 256; i++)
     glyphs[i] = 0;
@@ -492,12 +524,13 @@ struct style {
   int height;
   int slant;
   style();
-  style(font *, subencoding *, int, int, int);
+  style(font * /* p */, subencoding * /* s */, int /* sz */,
+	int /* h */, int /* sl */);
   int operator==(const style &) const;
   int operator!=(const style &) const;
 };
 
-style::style() : f(0)
+style::style() : f(0 /* nullptr */)
 {
 }
 
@@ -529,7 +562,7 @@ class ps_printer : public printer {
   int paper_length;
   int equalise_spaces;
   enum { SBUF_SIZE = 256 };
-  char sbuf[SBUF_SIZE];
+  uint16_t sbuf[SBUF_SIZE];
   int sbuf_len;
   int sbuf_start_hpos;
   int sbuf_vpos;
@@ -560,25 +593,28 @@ class ps_printer : public printer {
   int invis_count;
 
   void flush_sbuf();
-  void set_style(const style &);
-  void set_space_code(unsigned char);
-  int set_encoding_index(ps_font *);
-  subencoding *set_subencoding(font *, glyph *, unsigned char *);
-  char *get_subfont(subencoding *, const char *);
-  void do_exec(char *, const environment *);
-  void do_import(char *, const environment *);
-  void do_def(char *, const environment *);
-  void do_mdef(char *, const environment *);
-  void do_file(char *, const environment *);
-  void do_invis(char *, const environment *);
-  void do_endinvis(char *, const environment *);
-  void set_line_thickness_and_color(const environment *);
-  void fill_path(const environment *);
+  void set_style(const style & /* sty */);
+  void set_space_code(unsigned char /* c */);
+  int set_encoding_index(ps_font * /* f */);
+  subencoding *set_subencoding(font * /* f */, glyph * /* g */,
+			       uint16_t * /* code */);
+  char *get_subfont(subencoding * /* sub */, const char * /* stem */);
+  void do_exec(char * /* arg */, const environment * /* env */);
+  void do_import(char * /* arg */, const environment * /* env */);
+  void do_def(char * /* arg */, const environment * /* env */);
+  void do_mdef(char * /* arg */, const environment * /* env */);
+  void do_file(char * /* arg */, const environment * /* env */);
+  void do_invis(char * /* UNUSED */, const environment * /* UNUSED */);
+  void do_endinvis(char * /* UNUSED */,
+		   const environment * /* UNUSED */);
+  void set_line_thickness_and_color(const environment * /* env */);
+  void fill_path(const environment * /* env */);
   void encode_fonts();
-  void encode_subfont(subencoding *);
-  void define_encoding(const char *, int);
-  void reencode_font(ps_font *);
-  void set_color(color *, int = 0);
+  void encode_subfont(subencoding * /* sub */);
+  void define_encoding(const char * /* encoding */,
+		       int /* encoding_index */);
+  void reencode_font(ps_font * /* f */);
+  void set_color(color * /* col */, int /* fill */ = 0);
 
   const char *media_name();
   int media_width();
@@ -588,12 +624,18 @@ class ps_printer : public printer {
 public:
   ps_printer(double);
   ~ps_printer();
-  void set_char(glyph *, font *, const environment *, int, const char *);
-  void draw(int, int *, int, const environment *);
-  void begin_page(int);
-  void end_page(int);
-  void special(char *, const environment *, char);
-  font *make_font(const char *);
+  void set_char(glyph * /* g */,
+		font * /* f */,
+		const environment * /* env */,
+		int /* w */,
+		const char * /* UNUSED */);
+  void draw(int /* code */, int * /* p */, int  /* np */,
+	    const environment * /* env */);
+  void begin_page(int /* n */);
+  void end_page(int /* UNUSED */);
+  void special(char * /* arg */, const environment * /* env */,
+	       char /* type */);
+  font *make_font(const char * /* nm */);
   void end_of_line();
 };
 
@@ -649,9 +691,10 @@ int ps_printer::set_encoding_index(ps_font *f)
     return f->encoding_index;
   for (font_pointer_list *p = font_list; p; p = p->next)
     if (p->p != f) {
-      char *encoding = ((ps_font *)p->p)->encoding;
-      int encoding_index = ((ps_font *)p->p)->encoding_index;
-      if (encoding != 0 && encoding_index >= 0 
+      char *encoding = (static_cast<ps_font *>(p->p))->encoding;
+      int encoding_index
+	= (static_cast<ps_font *>(p->p))->encoding_index;
+      if ((encoding != 0 /* nullptr */) && encoding_index >= 0
 	  && strcmp(f->encoding, encoding) == 0) {
 	return f->encoding_index = encoding_index;
       }
@@ -660,27 +703,43 @@ int ps_printer::set_encoding_index(ps_font *f)
 }
 
 subencoding *ps_printer::set_subencoding(font *f, glyph *g,
-					 unsigned char *codep)
+					 uint16_t *code)
 {
   unsigned int idx = f->get_code(g);
-  *codep = idx % 256;
+  const char *psname = f->get_internal_name();
+
+  if (psname && strstr(psname, "-UTF16-")) {
+    /* Unicode, convert to UTF-16LE */
+    if (idx < 0x10000) {
+      code[0] = idx;
+      code[1] = 0;
+    } else {
+      // Encode surrogate pairs.
+      code[0] = (idx - 0x10000) / 0x400 + 0xD800;
+      code[1] = (idx - 0x10000) % 0x400 + 0xDC00;
+    }
+    return 0 /* nullptr */;
+  }
+
+  code[0] = idx % 256;
+  code[1] = 0;
   unsigned int num = idx >> 8;
   if (num == 0)
-    return 0;
-  subencoding *p = 0;
+    return 0 /* nullptr */;
+  subencoding *p = 0 /* nullptr */;
   for (p = subencodings; p; p = p->next)
-    if (p->p == f && p->num == num)
+    if ((p->p == f) && (p->num == num))
       break;
-  if (p == 0)
+  if (0 /* nullptr */ == p)
     p = subencodings = new subencoding(f, num, next_subencoding_index++,
 				       subencodings);
-  p->glyphs[*codep] = f->get_special_device_encoding(g);
+  p->glyphs[*code] = f->get_special_device_encoding(g);
   return p;
 }
 
 char *ps_printer::get_subfont(subencoding *sub, const char *stem)
 {
-  assert(sub != 0);
+  assert(sub != 0 /* nullptr */);
   if (!sub->subfont) {
     char *tem = new char[strlen(stem) + 2 + INT_DIGITS + 1];
     sprintf(tem, "%s@@%d", stem, sub->idx);
@@ -689,13 +748,13 @@ char *ps_printer::get_subfont(subencoding *sub, const char *stem)
   return sub->subfont;
 }
 
-void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
-			  const char *)
+void ps_printer::set_char(glyph *g, font *f, const environment *env,
+			  int w, const char *)
 {
   if (g == space_glyph || invis_count > 0)
     return;
-  unsigned char code;
-  subencoding *sub = set_subencoding(f, g, &code);
+  uint16_t code[2];
+  subencoding *sub = set_subencoding(f, g, code);
   style sty(f, sub, env->size, env->height, env->slant);
   if (sty.slant != 0) {
     if (sty.slant > 80 || sty.slant < -80) {
@@ -709,14 +768,18 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
 	&& sbuf_vpos == env->vpos
 	&& sbuf_color == *env->col) {
       if (sbuf_end_hpos == env->hpos) {
-	sbuf[sbuf_len++] = code;
+	sbuf[sbuf_len++] = code[0];
+	if (code[1] > 0)
+	  sbuf[sbuf_len++] = code[1];
 	sbuf_end_hpos += w + sbuf_kern;
 	return;
       }
-      if (sbuf_len == 1 && sbuf_kern == 0) {
+      if ((sbuf_len == 1) && (sbuf_kern == 0)) {
 	sbuf_kern = env->hpos - sbuf_end_hpos;
 	sbuf_end_hpos = env->hpos + sbuf_kern + w;
-	sbuf[sbuf_len++] = code;
+	sbuf[sbuf_len++] = code[0];
+	if (code[1] > 0)
+	  sbuf[sbuf_len++] = code[1];
 	return;
       }
       /* If sbuf_end_hpos - sbuf_kern == env->hpos, we are better off
@@ -729,7 +792,9 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
 	    sbuf_space_width = env->hpos - sbuf_end_hpos;
 	    sbuf_end_hpos = env->hpos + w + sbuf_kern;
 	    sbuf[sbuf_len++] = sbuf_space_code;
-	    sbuf[sbuf_len++] = code;
+	    sbuf[sbuf_len++] = code[0];
+	    if (code[1] > 0)
+	      sbuf[sbuf_len++] = code[1];
 	    sbuf_space_count++;
 	    return;
 	  }
@@ -739,7 +804,9 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
 	  if (diff == 0 || (equalise_spaces && (diff == 1 || diff == -1))) {
 	    sbuf_end_hpos = env->hpos + w + sbuf_kern;
 	    sbuf[sbuf_len++] = sbuf_space_code;
-	    sbuf[sbuf_len++] = code;
+	    sbuf[sbuf_len++] = code[0];
+	    if (code[1] > 0)
+	      sbuf[sbuf_len++] = code[1];
 	    sbuf_space_count++;
 	    if (diff == 1)
 	      sbuf_space_diff_count++;
@@ -753,7 +820,9 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
     flush_sbuf();
   }
   sbuf_len = 1;
-  sbuf[0] = code;
+  sbuf[0] = code[0];
+  if (code[1] > 0)
+    sbuf[sbuf_len++] = code[1];
   sbuf_end_hpos = env->hpos + w;
   sbuf_start_hpos = env->hpos;
   sbuf_vpos = env->vpos;
@@ -782,21 +851,19 @@ static char *make_subencoding_name(int subencoding_index)
 
 const char *const WS = " \t\n\r";
 
-void ps_printer::define_encoding(const char *encoding, int encoding_index)
+void ps_printer::define_encoding(const char *encoding,
+				 int encoding_index)
 {
   char *vec[256];
   int i;
   for (i = 0; i < 256; i++)
     vec[i] = 0;
   char *path;
+  if (strchr(encoding, '/') != 0 /* nullptr */)
+    fatal("a '/' is not allowed in encoding file name: '%1'", encoding);
   FILE *fp = font::open_file(encoding, &path);
-  if (0 /* nullptr */ == fp) {
-    // If errno not valid, assume file rejected due to '/'.
-    if (errno <= 0)
-      fatal("refusing to traverse directories to open PostScript"
-	    " encoding file '%1'");
-    fatal("can't open encoding file '%1'", encoding);
-  }
+  if (0 /* nullptr */ == fp)
+    fatal("cannot open encoding file '%1'", encoding);
   int lineno = 1;
   const int BUFFER_SIZE = 512;
   char buf[BUFFER_SIZE];
@@ -808,7 +875,9 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
       char *q = strtok(0, WS);
       int n = 0;		// pacify compiler
       if (q == 0 || sscanf(q, "%d", &n) != 1 || n < 0 || n >= 256)
-	fatal_with_file_and_line(path, lineno, "bad second field");
+	fatal_with_file_and_line(path, lineno, "invalid encoding file:"
+	    " expected integer in range 0-255 as second word on line,"
+	    " got '%1'", q);
       vec[n] = new char[strlen(p) + 1];
       strcpy(vec[n], p);
     }
@@ -889,13 +958,14 @@ void ps_printer::set_style(const style &sty)
   sprintf(buf, "F%d", ndefined_styles);
   out.put_literal_symbol(buf);
   const char *psname = sty.f->get_internal_name();
-  if (psname == 0)
-    fatal("no internalname specified for font '%1'", sty.f->get_name());
+  if (0 /* nullptr */ == psname)
+    fatal("cannot set style; font description file '%1' lacks an"
+	  " 'internalname' directive", sty.f->get_filename());
   char *encoding = ((ps_font *)sty.f)->encoding;
   if (sty.sub == 0) {
-    if (encoding != 0) {
+    if (encoding != 0 /* nullptr */) {
       char *s = ((ps_font *)sty.f)->reencoded_name;
-      if (s == 0) {
+      if (0 /* nullptr */ == s) {
 	int ei = set_encoding_index((ps_font *)sty.f);
 	char *tem = new char[strlen(psname) + 1 + INT_DIGITS + 1];
 	sprintf(tem, "%s@%d", psname, ei);
@@ -1025,7 +1095,11 @@ void ps_printer::flush_sbuf()
     out.put_fix_number(extra_space);
   if (sbuf_kern != 0)
     out.put_fix_number(sbuf_kern);
-  out.put_string(sbuf, sbuf_len);
+  const char *psname = sbuf_style.f->get_internal_name();
+  bool is_utf16le = false;
+  if ((psname != 0 /* nullptr */) && strstr(psname, "-UTF16-"))
+    is_utf16le = true;
+  out.put_string(sbuf, sbuf_len, is_utf16le);
   char command_array[] = {'A', 'B', 'C', 'D',
 			  'E', 'F', 'G', 'H',
 			  'I', 'J', 'K', 'L',
@@ -1052,7 +1126,7 @@ void ps_printer::flush_sbuf()
        .put_fix_number(sbuf_vpos - output_vpos);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled motion relativity type");
   }
   out.put_symbol(sym);
   output_hpos = sbuf_end_hpos;
@@ -1253,7 +1327,7 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
     }
     break;
   default:
-    error("unrecognised drawing command '%1'", char(code));
+    error("unrecognized drawing command '%1'", char(code));
     break;
   }
   output_hpos = output_vpos = -1;
@@ -1315,7 +1389,7 @@ void ps_printer::media_set()
    *    ProcessColorModel
    *  etc.
    */
-  if (!(broken_flags & (USE_PS_ADOBE_2_0|NO_PAPERSIZE))) { 
+  if (!(broken_flags & (USE_PS_ADOBE_2_0|NO_PAPERSIZE))) {
     out.begin_comment("BeginFeature:")
        .comment_arg("*PageSize")
        .comment_arg(media_name())
@@ -1381,8 +1455,8 @@ ps_printer::~ps_printer()
   out.simple_comment("Trailer")
      .put_symbol("end")
      .simple_comment("EOF");
-  if (fseek(tempfp, 0L, 0) < 0)
-    fatal("fseek on temporary file failed");
+  if (fseek(tempfp, 0L, SEEK_SET) < 0)
+    fatal("unable to seek within temporary file: %1", strerror(errno));
   fputs("%!PS-Adobe-", stdout);
   fputs((broken_flags & USE_PS_ADOBE_2_0) ? "2.0" : "3.0", stdout);
   putchar('\n');
@@ -1435,7 +1509,7 @@ ps_printer::~ps_printer()
   }
   out.begin_comment("Orientation:")
      .comment_arg(landscape_flag ? "Landscape" : "Portrait")
-     .end_comment(); 
+     .end_comment();
   if (ncopies != 1) {
     out.end_line();
     fprintf(out.get_file(), "%%%%Requirements: numcopies(%d)\n", ncopies);
@@ -1627,14 +1701,14 @@ void ps_printer::do_file(char *arg, const environment *env)
     error("missing argument to X file command");
     return;
   }
-  const char *filename = arg;
+  const char *resource_filename = arg;
   do {
     ++arg;
   } while (*arg != '\0' && *arg != ' ' && *arg != '\n');
   out.put_fix_number(env->hpos)
      .put_fix_number(env->vpos)
      .put_symbol("EBEGIN");
-  rm.import_file(filename, out);
+  rm.import_file(resource_filename, out);
   out.put_symbol("EEND");
   output_hpos = output_vpos = -1;
   output_style.f = 0;
@@ -1799,13 +1873,14 @@ int main(int argc, char **argv)
   setbuf(stderr, stderr_buf);
   int c;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((c = getopt_long(argc, argv, "b:c:F:gI:lmp:P:vw:", long_options, NULL))
+  while ((c = getopt_long(argc, argv, ":b:c:F:gI:lmp:P:vw:",
+			  long_options, 0 /* nullptr */))
 	 != EOF)
-    switch(c) {
+    switch (c) {
     case 'b':
       // XXX check this
       broken_flags = atoi(optarg);
@@ -1813,7 +1888,8 @@ int main(int argc, char **argv)
       break;
     case 'c':
       if (sscanf(optarg, "%d", &ncopies) != 1 || ncopies <= 0) {
-	error("bad number of copies '%1'", optarg);
+	error("expected positive integer argument to '-c' option, got"
+	      " '%1'; ignoring", optarg);
 	ncopies = 1;
       }
       break;
@@ -1843,11 +1919,12 @@ int main(int argc, char **argv)
       env += optarg;
       env += '\0';
       if (putenv(strsave(env.contents())))
-	fatal("putenv failed");
+	fatal("unable to update process environment: %1",
+	      strerror(errno));
       break;
     case 'v':
       printf("GNU grops (groff) version %s\n", Version_string);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case 'w':
       if (sscanf(optarg, "%d", &linewidth) != 1 || linewidth < 0) {
@@ -1857,14 +1934,21 @@ int main(int argc, char **argv)
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+	    char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled getopt_long return value");
     }
   font::set_unknown_desc_command_handler(handle_unknown_desc_command);
   SET_BINARY(fileno(stdout));

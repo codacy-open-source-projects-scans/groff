@@ -14,7 +14,7 @@ output driver for Canon CaPSL printers
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1994-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1994-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -128,7 +128,7 @@ when the latter is given the
 option.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 Use
@@ -429,6 +429,21 @@ thousandths of an em;
 the default is
 .B 40
 (0.04\~em).
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%grolbp
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

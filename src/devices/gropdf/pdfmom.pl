@@ -24,11 +24,12 @@
 
 use strict;
 use warnings;
-use File::Spec qw/splitpath/;
+use File::Spec;
 use File::Temp qw/tempfile/;
 
 my @cmd;
 my $dev='pdf';
+my $groff='groff';
 my $preconv='';
 my $readstdin=1;
 my $mom='-mom';
@@ -49,6 +50,7 @@ my $RT_SEP='@RT_SEP@';
 
 $ENV{PATH}=$ENV{GROFF_BIN_PATH}.$RT_SEP.$ENV{PATH} if exists($ENV{GROFF_BIN_PATH});
 $ENV{TMPDIR}=$ENV{GROFF_TMPDIR} if exists($ENV{GROFF_TMPDIR});
+$groff=$ENV{GROFF_COMMAND} if exists ($ENV{GROFF_COMMAND});
 
 (undef,undef,my $prog)=File::Spec->splitpath($0);
 
@@ -68,11 +70,11 @@ sub autopsy
 	$finding = "unable to run groff: $!\n";
     }
     elsif ($? & 127) {
-	$finding = sprintf("groff died with signal %d, %s core dump\n",
+	$finding = sprintf("$groff died with signal %d, %s core dump\n",
 	    ($? & 127),  ($? & 128) ? 'with' : 'without');
     }
     else {
-	$finding = sprintf("groff exited with status %d\n", $? >> 8);
+	$finding = sprintf("$groff exited with status %d\n", $? >> 8);
     }
 
     return $finding;
@@ -140,6 +142,8 @@ while (my $c=shift)
     elsif ($c eq '-v' or $c eq '--version')
     {
 	print "GNU pdfmom (groff) version @VERSION@\n";
+	my $waitstatus = system("$groff -T$dev --version");
+	abort(autopsy($?)) unless $waitstatus == 0;
 	exit;
     }
     elsif (substr($c,0,1) eq '-')
@@ -191,24 +195,24 @@ if ($dev eq 'pdf')
 {
     if ($mom)
     {
-	$waitstatus = system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $mom $preconv - $cmdstring $zflg");
+	$waitstatus = system("$groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | $groff -Tpdf $preconv -dPDF.EXPORT=1 -dLABEL.REFS=1 $mom -z - $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | $groff -Tpdf $mom $preconv - $cmdstring $zflg");
 	abort(autopsy($?)) unless $waitstatus == 0;
 
     }
     else
     {
-	$waitstatus = system("groff -Tpdf $preconv -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | groff -Tpdf $preconv - $cmdstring $zflg");
+	$waitstatus = system("$groff -Tpdf $preconv -dPDF.EXPORT=1 -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | $groff -Tpdf $preconv - $cmdstring $zflg");
 	abort(autopsy($?)) unless $waitstatus == 0;
     }
 }
 elsif ($dev eq 'ps')
 {
-	$waitstatus = system("groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
+	$waitstatus = system("$groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
 	abort(autopsy($?)) unless $waitstatus == 0;
 }
 elsif ($dev eq '-z') # pseudo dev - just compile for warnings
 {
-    $waitstatus = system("groff -Tpdf $mom -z $cmdstring");
+    $waitstatus = system("$groff -Tpdf $mom -z $cmdstring");
     abort(autopsy($?)) unless $waitstatus == 0;
 }
 else

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,9 +16,16 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <stdlib.h> // free()
+#include <stdio.h> // fputs(), printf(), putchar(), puts(), stdout
+
 #include "pic.h"
 #include "common.h"
-
 
 const double RELATIVE_THICKNESS = -1.0;
 const double BAD_THICKNESS = -2.0;
@@ -593,7 +600,8 @@ void troff_output::set_location(const char *s, int n)
     }
   }
   if (update_file_name)
-    printf(".lf %d %s\n", n, s);
+    printf(".lf %d %s%s\n", current_lineno,
+	('"' == current_filename[0]) ? "" : "\"", current_filename);
   else
     printf(".lf %d\n", n);
 }

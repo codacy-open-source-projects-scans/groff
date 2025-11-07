@@ -1,7 +1,4 @@
-.\" andoc.tmac
-.\"
 .\" Load either an.tmac or doc.tmac.  Multiple man pages can be handled.
-.\"
 .\"
 .\" Copyright (C) 1991-2020 Free Software Foundation, Inc.
 .\"      Written by Werner Lemberg (wl@gnu.org),
@@ -45,8 +42,8 @@
 .de reload-doc
 .  \" Flush any partially collected output line and write page footer in
 .  \" continuous rendering mode.
-.  do if d an-end \
-.    do an-end
+.  do if d an*end-document \
+.    do an*end-document
 .
 .  \" Remove traps planted by an.tmac.
 .  do ch an-header
@@ -71,8 +68,8 @@
 .de reload-man
 .  \" Flush any partially collected output line and write page footer in
 .  \" continuous rendering mode.
-.  do if d doc-end-macro \
-.    do doc-end-macro
+.  do if d doc-end-document \
+.    do doc-end-document
 .
 .  \" Remove traps planted by mdoc/doc-{common,{n,dit}roff}.
 .  do ch doc-break-body-text

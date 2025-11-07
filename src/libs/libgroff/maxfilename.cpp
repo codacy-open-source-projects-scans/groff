@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1992-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -17,15 +16,17 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* file_name_max(dir) does the same as pathconf(dir, _PC_NAME_MAX) */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+// needed for _PC_NAME_MAX, pathconf()
+#include "posix.h"
+#include "nonposix.h"
 
 #include "lib.h"
 
-#include <sys/types.h>
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
+/* file_name_max(dir) does the same as pathconf(dir, _PC_NAME_MAX) */
 
 #ifdef _POSIX_VERSION
 
@@ -73,3 +74,9 @@ size_t file_name_max(const char *)
 }
 
 #endif /* not _POSIX_VERSION */
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

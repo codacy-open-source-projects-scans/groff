@@ -1,10 +1,7 @@
 .ig
+This file is part of groff, the GNU roff typesetting system.
 
-mixed_pickles.roff
-
-This file is part of groff, the GNU roff type-setting system.
-
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -19,7 +16,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ..
 .
 .am pspic*error-hook
@@ -29,7 +25,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .if !d sopath \
 .  ds sopath
 .
-.so \*[sopath]examples/common.roff
+.ds lib examples/common.roff
+.soquiet \*[sopath]\*[lib]
+.if !d common \{\
+.  tmc \n[.F]: cannot find "\*[lib]"; specify its location
+.  tm1 " with groff '-I' or '-d sopath=' option
+.\}
+.
 .
 .H Table with Mixed Content: \
    .br \
@@ -41,7 +43,7 @@ Call groff with options \-t, \-e, and \-p!
 .  TR
 .    TD
 .      TBL width='25% 75%' csp=.5n cpd=.5n hal=c
-.        TR 
+.        TR
 .          TD hl=d vl=d rowspan=2 bgc=red4 fgc=linen fsz=1.2 fst=HB val=m
 .            PSPIC -I -\\n[.l]u gnu.eps
 .            sp .5
@@ -49,7 +51,7 @@ Call groff with options \-t, \-e, and \-p!
 .          TD bgc=linen
 .
 .EQ
-int from 0 to 1 {( ln x ) sup 2} over {sqrt {1 - x sup 2}} dx approx 0.245 
+int from 0 to 1 {( ln x ) sup 2} over {sqrt {1 - x sup 2}} dx approx 0.245
 .EN
 .
 .            nop \0\0\0\0\0equation with \fIeqn\fP
@@ -77,7 +79,7 @@ Bit @ Code @ Warning @ Bit @ Code @ Warning
 .
 .            sp .5
 .            nop table with \fItbl\fP
-.        TR 
+.        TR
 .          TD colspan=2 bgc=azure2 fgc=blue4
 .
 .PS

@@ -158,6 +158,17 @@ an escape character that is not interpreted in copy mode.
 .RE
 .
 .
+.br
+.ne 3v
+.\" ====================================================================
+.SH Files
+.\" ====================================================================
+.
+.TP
+.I @MACRODIR@/\:trace\:.tmac
+implements the package.
+.
+.
 .\" ====================================================================
 .SH Examples
 .\" ====================================================================
@@ -251,17 +262,6 @@ As tracing was not yet active when the macros \[lq]LP\[rq] and
 .IR s.tmac ),
 their calls were not traced;
 contrast with the macro \[lq]Mymac\[rq].
-.
-.
-.br
-.ne 3v
-.\" ====================================================================
-.SH Files
-.\" ====================================================================
-.
-.TP
-.I @MACRODIR@/\:trace\:.tmac
-implements the package.
 .
 .
 .\" ====================================================================

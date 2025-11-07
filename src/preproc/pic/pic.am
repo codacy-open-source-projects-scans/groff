@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -7,8 +7,8 @@
 # Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# groff is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
@@ -35,6 +35,10 @@ pic_SOURCES = \
   src/preproc/pic/output.h \
   src/preproc/pic/object.h
 
+PICTMACFILES = tmac/pic.tmac
+pictmacdir = $(tmacdir)
+dist_pictmac_DATA = $(PICTMACFILES)
+
 PREFIXMAN1 += src/preproc/pic/pic.1
 EXTRA_DIST += \
   src/preproc/pic/TODO \
@@ -43,11 +47,20 @@ EXTRA_DIST += \
 # Since pic_CPPFLAGS was set, all .o files have a 'pic-' prefix.
 src/preproc/pic/pic-lex.$(OBJEXT): src/preproc/pic/pic.hpp
 
+pic_TESTS = \
+  src/preproc/pic/tests/passes-through-input-with-eighth-bit-set.sh \
+  src/preproc/pic/tests/polygon-command-works.sh
+TESTS += $(pic_TESTS)
+EXTRA_DIST += $(pic_TESTS)
+
+uninstall_groffdirs: uninstall_pic_hook
+uninstall_pic_hook:
+	-rmdir $(DESTDIR)$(tmacdir)
+
 MAINTAINERCLEANFILES += \
   src/preproc/pic/pic.cpp \
   src/preproc/pic/pic.hpp \
   src/preproc/pic/pic.output
-
 
 # Local Variables:
 # fill-column: 72

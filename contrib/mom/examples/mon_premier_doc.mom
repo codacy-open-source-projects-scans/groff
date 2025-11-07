@@ -8,7 +8,7 @@
 \#
 \# A very simple document with basic elements: headings, paragraphs,
 \# lists, table of contents and clickable links.
-\# 
+\#
 .TITLE "Mon Premier Document"
 .AUTHOR "Cicéron"
 .
@@ -29,7 +29,7 @@
 \#
 .HEADING 1 "Les différentes versions"
 .PP
-Voir également le chapitre sur 
+Voir également le chapitre sur
 .PDF_LINK evolution "les évolutions"
 possibles.
 .HEADING 2 "La version originale"

@@ -10,7 +10,7 @@ documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2000-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 2000-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -474,21 +474,21 @@ expressions enclosed by previously defined delimiters
 When using
 .I @g@grn
 along with other preprocessors,
-it is best to run
+run
 .MR @g@tbl @MAN1EXT@
 before
 .IR @g@grn ,
 .MR @g@pic @MAN1EXT@ ,
 and/or
-.I ideal \" no GNU version yet
-to avoid overworking
-.IR @g@tbl .
+.IR ideal . \" no GNU version yet
 .
+If
 .MR @g@eqn @MAN1EXT@
-should always be run last.
+is needed,
+run it as the last preprocessor.
 .
 .MR groff @MAN1EXT@
-will automatically run preprocessors in the correct order.
+automatically runs preprocessors in the correct order.
 .
 .
 .PP
@@ -935,11 +935,26 @@ Prepare device output using output driver
 .IR dev .
 .
 The default is
-.BR @DEVICE@ .
+.BR @DEFAULT_DEVICE@ .
 .
 See
 .MR groff @MAN1EXT@
 for a list of valid devices.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@grn
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

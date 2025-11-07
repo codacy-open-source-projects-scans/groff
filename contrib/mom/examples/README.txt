@@ -20,7 +20,7 @@ files with pdfmom(1).
 
     pdfmom mom-pdf.mom > mom-pdf.pdf
     pdfmom sample_docs.mom > sample_docs.pdf
-    pdfmom slide-demo.mom > slide-demo.pdf
+    pdfmom -t -p -e slide-demo.mom > slide-demo.pdf
     pdfmom -K utf8 letter.mom > letter.pdf
     pdfmom -K utf8 mon_premier_doc.mom > mon_premier_doc.pdf
     pdfmom -K utf8 typesetting.mom > typesetting.pdf
@@ -29,9 +29,9 @@ The files themselves
 --------------------
 
 All are set up for US letter papersize except mom-pdf.mom and
-mon_premier_doc.mom, which uses A4.
+mon_premier_doc.mom, which use A4.
 
-***typesetting.mom**
+***typesetting.mom***
 
 The file, typesetting.mom, demonstrates the use of typesetting tabs,
 string tabs, line padding, multi-columns and various indent styles,
@@ -39,7 +39,7 @@ as well as some of the refinements and fine-tuning available via
 macros and inline escapes.
 
 Because the file also demonstrates a cutaround using a small picture
-of everybody's favourite mascot, Tux, the PDF file, penguin.pdf has
+of everybody's favourite mascot, Tux, the PDF file 'penguin.pdf' has
 been included in the directory.
 
 ***sample_docs.mom***

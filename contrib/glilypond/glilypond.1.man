@@ -568,8 +568,6 @@ files, there are many files generated.
 By default, these files are regarded as temporary files and as such
 stored in a temporary directory.
 .
-.
-.P
 This process can be changed by command-line options.
 .
 .
@@ -639,12 +637,8 @@ are needed for the display which can take a long time.
 .SS "Mode pdf2eps"
 .\" ====================================================================
 .
-This mode is the actual default and can also be chosen by the option
-.BR \-\-pdf2eps .
-.
-.
-.P
-In this mode, the
+In this mode,
+the current default,
 .B .ly
 files are transformed by the
 .MR lilypond 1

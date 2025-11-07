@@ -9,7 +9,7 @@ output driver for PostScript
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2018, 2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -115,7 +115,7 @@ when the latter is given the
 option.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 Use
@@ -887,6 +887,59 @@ and therefore included in the default
 file.
 .
 .
+.P
+.I grops
+furthermore supports a naming scheme for East Asian typefaces
+shared with
+.MR grohtml @MAN1EXT@ ,
+.MR gropdf @MAN1EXT@ ,
+and
+.MR grotty @MAN1EXT@ .
+.
+.
+.RS
+.TP
+.B CSH
+Simplified Chinese,
+Hei style
+.
+.TQ
+.B CSS
+Simplified Chinese,
+Song style
+.
+.TQ
+.B CTH
+Traditional Chinese,
+Hei style
+.
+.TQ
+.B CTS
+Traditional Chinese,
+Song style
+.
+.TQ
+.B JPG
+Japanese,
+Gothic style
+.
+.TQ
+.B JPM
+Japanese,
+Mincho style
+.
+.TQ
+.B KOG
+Korean,
+Gothic style
+.
+.TQ
+.B KOM
+Korean,
+Mincho style
+.RE
+.
+.
 .\" ====================================================================
 .SS "Device extension commands"
 .\" ====================================================================
@@ -998,6 +1051,8 @@ basic units which are in turn converted to PostScript units with the
 procedure.
 .
 .
+.br
+.ne 3v
 .P
 .I grops
 wraps user-specified PostScript code into a dictionary,
@@ -1186,8 +1241,7 @@ For example,
 is not able to display a proper
 .B \[rs][em]
 character because the standard X11 fonts do not provide it;
-this problem can be overcome by executing the following
-request
+this problem can be overcome with the following request.
 .
 .
 .IP
@@ -1220,6 +1274,8 @@ is previewed with
 .RE
 .
 .
+.br
+.ne 3v
 .P
 If a PostScript procedure
 .B BPhook
@@ -1235,11 +1291,9 @@ it is executed at the beginning of every page
 For example,
 to underlay the page contents with the word \[lq]DRAFT\[rq] in light
 gray,
-you might use
-.
+you might use the following.
 .
 .RS
-.P
 .EX
 \&.de XX
 ps: def
@@ -1261,7 +1315,7 @@ Or,
 to cause lines and polygons to be drawn with square linecaps and mitered
 linejoins instead of the round linecaps and linejoins normally used by
 .IR grops ,
-use
+use the following.
 .
 .RS
 .EX
@@ -1273,11 +1327,11 @@ ps: def
 .EE
 .RE
 .
-(square linecaps,
+(Square linecaps,
 as opposed to butt linecaps
 .RB (\[lq] "0 setlinecap" \[rq]),
 give true corners in boxed tables even though the lines are drawn
-unconnected).
+unconnected.)
 .
 .
 .\" ====================================================================
@@ -1318,9 +1372,9 @@ to
 .SS "TrueType and other font formats"
 .\" ====================================================================
 .
-TrueType fonts can be used with
-.I grops
-if converted first to Type\~42 format,
+To use TrueType fonts with
+.IR grops ,
+convert them first to Type\~42 format,
 a PostScript wrapper equivalent to the PFA format described in
 .MR pfbtops @MAN1EXT@ .
 .
@@ -1331,17 +1385,13 @@ Ghostscript\[em]see
 .
 .
 .P
-One approach is to use
 .UR https://fontforge.org/
 FontForge
-.UE ,
-a font editor that can convert most outline font formats.
+.UE
+converts most outline font formats.
 .
-Here's an example of using the Roboto Slab Serif font with
+Here's how we'd set up Roboto Slab Serif for use with
 .IR groff .
-.
-Several variables are used so that you can more easily adapt it into
-your own script.
 .
 .
 .RS 4
@@ -1369,9 +1419,9 @@ printf \[dq]$BASE\[rs]t$PFA\[rs]n\[dq] >> \[dq]$DIR/devps/download\[dq]
 .I fontforge
 and
 .I afmtodit
-may generate warnings depending on the attributes of the font.
+may produce warnings depending on font file attributes.
 .
-The test procedure is simple.
+Test the font as follows.
 .
 .
 .RS 4
@@ -1603,7 +1653,7 @@ Test the selection and embedding of the new font.
 .RS \" two RS calls to get inboard of IP indentation
 .EX
 printf "\[rs]\[rs]f[BSI]Hello, world!\[rs]n" \
-| groff \-T ps \-P \-e >hello.ps
+| groff \-T ps >hello.ps
 see hello.pdf
 .EE
 .RE
@@ -1618,9 +1668,9 @@ see hello.pdf
 versions 1.19.2 and earlier contained descriptions of a slightly
 different set of the base 35 PostScript level 2 fonts defined by Adobe.
 .
-The older set has 229 glyphs and a larger set of kerning pairs;
-the newer one has 314 glyphs,
-including the Euro sign.
+The older set has 314 glyphs and a larger set of kerning pairs;
+the newer one has only 229 glyphs,
+but includes the Euro sign.
 .
 For backward compatibility,
 these old font descriptions are also installed in the
@@ -1664,6 +1714,21 @@ $ \c
 .RE
 .
 when the command runs.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%grops
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .br
@@ -1803,8 +1868,7 @@ PostScript printers do not natively support.
 creates temporary files using the template
 .RI \[lq] grops XXXXXX\[rq];
 see
-.MR groff @MAN1EXT@
-for details on their storage location.
+.MR groff @MAN1EXT@ .
 .
 .
 .\" ====================================================================

@@ -10,7 +10,7 @@ special character and glyph repertoire
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff (GNU roff), which is a free software
 .\" project.
@@ -201,7 +201,7 @@ and the Bell System logo
 .P
 In
 .IR groff ,
-you can test support for any character
+test support for any character
 (ordinary or special)
 with the conditional expression operator
 .RB \[lq] c \[rq].
@@ -458,7 +458,7 @@ will be visually distinguishable from double quotes
 (\[lq]thus\[rq])
 on terminal devices,
 and perhaps on others
-(depending on the font selected).
+(depending on the font selected and its kerning configuration).
 .
 .TS
 tab(@) center box;
@@ -523,15 +523,16 @@ Unicode calls \[lq]C1 controls\[rq]
 and the \[lq]Latin-1 supplement\[rq].
 .
 The C1 controls are neither printable nor usable as
-.I groff
+GNU
+.I troff \" GNU
 input.
 .
 .
 .P
-Two Latin-1 supplement characters are handled specially on input.
-.
-.I @g@troff
-never produces them as output.
+GNU
+.I troff \" GNU
+handles two Latin-1 supplement characters specially,
+and never produces them as output.
 .
 .
 .TP
@@ -689,7 +690,8 @@ employ
 .RB \[lq] ] \[rq].)
 .
 The foregoing acute accent example can be expressed in
-.I groff
+in GNU
+.I troff \" GNU
 as
 .BR \[rs][aa] .
 .
@@ -764,7 +766,7 @@ in subsection \[lq]Accents\[rq] below.
 .P
 Unicode encodes far more characters than
 .I groff
-has glyph names for;
+has names for;
 special character escape forms based on numerical code points enable
 access to any of them.
 .
@@ -798,6 +800,8 @@ producing \[lq]\^\[u02DA]\^\[rq].
 .\" Use "GNU troff" in this paragraph because the contrast with AT&T
 .\" troff, which antedated Unicode, is important, and that contrast is
 .\" obscured with the default empty command prefix on "troff".
+.br
+.ne 2v
 .P
 Unicode code points can be composed as well;
 when they are,
@@ -991,6 +995,8 @@ and equals
 signs normally drawn from this range.
 .
 .
+.br
+.ne 5v
 .P
 .TS
 L L L Lx.
@@ -1009,7 +1015,7 @@ L Lf(CR) L Lx.
 \[rB]	\e[rB]	u005D	right square bracket
 \[ha]	\e[ha]	u005E	circumflex, caret, \[lq]hat\[rq]
 \[lC]	\e[lC]	u007B	left brace
-|	|	u007C	bar
+|	|	u007C	bar +
 \[ba]	\e[ba]	u007C	bar
 \[or]	\e[or]	u007C	bitwise or +
 \[rC]	\e[rC]	u007D	right brace
@@ -1276,6 +1282,7 @@ L Lf(CR) L Lx.
 \[pc]	\e[pc]	u00B7	centered period
 \[em]	\e[em]	u2014	em-dash +
 \[en]	\e[en]	u2013	en-dash
+-	\-	u2010	hyphen +
 \[hy]	\e[hy]	u2010	hyphen +
 .TE
 .
@@ -1675,7 +1682,7 @@ L Lf(CR) L Lx.
 \[st]	\e[st]	u220B	such that
 \[3d]	\e[3d]	u2234	therefore
 \[tf]	\e[tf]	u2234	therefore
-|	|	u007C	bar
+|	|	u007C	bar +
 \[or]	\e[or]	u007C	bitwise or +
 .TE
 .
@@ -1687,25 +1694,25 @@ L Lf(CR) L Lx.
 .B \[rs][Fn]
 also appears in subsection \[lq]Supplementary Latin letters\[rq] above.
 .
-Observe the two varieties of the
+The
 plus-minus,
 multiplication,
-and division signs;
+and division signs,
 .BR \[rs][+\-] ,
 .BR \[rs][mu] ,
 and
-.B \[rs][di]
+.BR \[rs][di] ,
 are normally drawn from the special font,
 but have text font variants.
 .
-Also be aware of three glyphs available in special font variants that
-are normally drawn from text fonts:
-the plus,
+The plus,
 minus,
-and equals signs.
+and equals signs
+are normally drawn from text fonts,
+but have special font variants.
 .
-These variants may differ in appearance or spacing depending on the
-device and font selected.
+Variants may differ in appearance or spacing depending on the device and
+font selected.
 .
 .
 .P
@@ -1717,8 +1724,8 @@ served as the horizontal extension of the radical
 (square root)
 sign,
 .BR \[rs](sr ,
-and was drawn at the maximum height of the typeface's bounding box;
-this enabled the special character to double as an overline
+and was drawn at the maximum height of the typeface's bounding box,
+enabling it to double as an overline
 (see subsection \[lq]Rules and lines\[rq] above).
 .
 A contemporary font's radical sign might not ascend to such an extreme.
@@ -1844,6 +1851,11 @@ not for typesetting Greek language text;
 normally,
 the uppercase letters have upright shape,
 and the lowercase ones are slanted.
+For the latter,
+we include in parentheses under \[lq]Unicode\[rq]
+more appropriate code points
+from the Mathematical Alphanumeric Symbols block
+of the Supplementary Multilingual Plane.
 .
 .
 .P
@@ -1880,36 +1892,36 @@ L Lf(CR) L Lx.
 \[*Q]	\e[*Q]	u03A8	uppercase psi +
 \[*W]	\e[*W]	u03A9	uppercase omega +
 
-\[*a]	\e[*a]	u03B1	lowercase alpha +
-\[*b]	\e[*b]	u03B2	lowercase beta +
-\[*g]	\e[*g]	u03B3	lowercase gamma +
-\[*d]	\e[*d]	u03B4	lowercase delta +
-\[*e]	\e[*e]	u03B5	lowercase epsilon +
-\[*z]	\e[*z]	u03B6	lowercase zeta +
-\[*y]	\e[*y]	u03B7	lowercase eta +
-\[*h]	\e[*h]	u03B8	lowercase theta +
-\[*i]	\e[*i]	u03B9	lowercase iota +
-\[*k]	\e[*k]	u03BA	lowercase kappa +
-\[*l]	\e[*l]	u03BB	lowercase lambda +
-\[*m]	\e[*m]	u03BC	lowercase mu +
-\[*n]	\e[*n]	u03BD	lowercase nu +
-\[*c]	\e[*c]	u03BE	lowercase xi +
-\[*o]	\e[*o]	u03BF	lowercase omicron +
-\[*p]	\e[*p]	u03C0	lowercase pi +
-\[*r]	\e[*r]	u03C1	lowercase rho +
-\[*s]	\e[*s]	u03C3	lowercase sigma +
-\[*t]	\e[*t]	u03C4	lowercase tau +
-\[*u]	\e[*u]	u03C5	lowercase upsilon +
-\[*f]	\e[*f]	u03D5	lowercase phi +
-\[*x]	\e[*x]	u03C7	lowercase chi +
-\[*q]	\e[*q]	u03C8	lowercase psi +
-\[*w]	\e[*w]	u03C9	lowercase omega +
+\[*a]	\e[*a]	u03B1 (u1D6FC)	lowercase alpha +
+\[*b]	\e[*b]	u03B2 (u1D6FD)	lowercase beta +
+\[*g]	\e[*g]	u03B3 (u1D6FE)	lowercase gamma +
+\[*d]	\e[*d]	u03B4 (u1D6FF)	lowercase delta +
+\[*e]	\e[*e]	u03B5 (u1D700)	lowercase epsilon +
+\[*z]	\e[*z]	u03B6 (u1D701)	lowercase zeta +
+\[*y]	\e[*y]	u03B7 (u1D702)	lowercase eta +
+\[*h]	\e[*h]	u03B8 (u1D703)	lowercase theta +
+\[*i]	\e[*i]	u03B9 (u1D704)	lowercase iota +
+\[*k]	\e[*k]	u03BA (u1D705)	lowercase kappa +
+\[*l]	\e[*l]	u03BB (u1D706)	lowercase lambda +
+\[*m]	\e[*m]	u03BC (u1D707)	lowercase mu +
+\[*n]	\e[*n]	u03BD (u1D708)	lowercase nu +
+\[*c]	\e[*c]	u03BE (u1D709)	lowercase xi +
+\[*o]	\e[*o]	u03BF (u1D70A)	lowercase omicron +
+\[*p]	\e[*p]	u03C0 (u1D70B)	lowercase pi +
+\[*r]	\e[*r]	u03C1 (u1D70C)	lowercase rho +
+\[*s]	\e[*s]	u03C3 (u1D70E)	lowercase sigma +
+\[*t]	\e[*t]	u03C4 (u1D70F)	lowercase tau +
+\[*u]	\e[*u]	u03C5 (u1D710)	lowercase upsilon +
+\[*f]	\e[*f]	u03D5 (u1D717)	lowercase phi +
+\[*x]	\e[*x]	u03C7 (u1D712)	lowercase chi +
+\[*q]	\e[*q]	u03C8 (u1D713)	lowercase psi +
+\[*w]	\e[*w]	u03C9 (u1D714)	lowercase omega +
 
-\[+e]	\e[+e]	u03F5	variant epsilon (lunate)
-\[+h]	\e[+h]	u03D1	variant theta (cursive form)
-\[+p]	\e[+p]	u03D6	variant pi (similar to omega)
-\[+f]	\e[+f]	u03C6	variant phi (curly shape)
-\[ts]	\e[ts]	u03C2	terminal lowercase sigma +
+\[+e]	\e[+e]	u03F5 (u1D716)	variant epsilon (lunate)
+\[+h]	\e[+h]	u03D1 (u1D717)	variant theta (cursive form)
+\[+p]	\e[+p]	u03D6 (u1D717)	variant pi (similar to omega)
+\[+f]	\e[+f]	u03C6 (u1D71B)	variant phi (curly shape)
+\[ts]	\e[ts]	u03C2 (u1D70D)	terminal lowercase sigma +
 .TE
 .
 .
@@ -1933,6 +1945,8 @@ L Lf(CR) L Lx.
 .TE
 .
 .
+.br
+.ne 4v
 .\" ====================================================================
 .SH History
 .\" ====================================================================

@@ -9,7 +9,8 @@ groff_mm \- memorandum macros for GNU
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2019 Free Software Foundation, Inc.
+.\"           2020-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -183,22 +184,22 @@ macro is implemented only for memorandum type 4.
 The
 .I grap
 preprocessor is not explicitly supported;
-no
+.I "groff mm"
+defines no
 .B G1
-and
+or
 .B G2
-macros
-are defined.
+macros.
 .
 .
 .IP \[bu]
-The registers
+Registers
 .BR A ,
 .BR C ,
 .BR T ,
 and
 .BR U ,
-typically set from the
+set from the
 .I troff \" generic
 or
 .I nroff \" generic
@@ -227,7 +228,7 @@ DWB used a hard-coded value of 6\~ens.
 .
 .IP \[bu]
 .I "groff mm"
-uses the same adjustment and font defaults in
+uses the same adjustment and font style defaults in
 .I nroff
 and
 .I troff
@@ -259,10 +260,14 @@ strings.
 .
 .P
 .I "groff mm"
-features a new citation system that permits a bibliographic reference
-list to be sorted,
-an alternative to
-.BR RS / RE / RP .
+features a citation
+(or \[lq]bookmark\[rq])
+system,
+permitting the document to make (customizable) internal references like
+\[lq]See chapter 5,
+page 128.\[rq].
+.
+Forward references require two-pass formatting.
 .
 See the
 .B INITR
@@ -276,7 +281,7 @@ man page.
 Macro,
 register,
 and string descriptions in this page frequently mention each other;
-most cross references are to macros.
+most references are to macros.
 .
 Where a register or string is referenced,
 its type is explicitly identified.
@@ -351,8 +356,8 @@ document with the command
 This package can also be localized by site or territory;
 for example,
 .I @MACRODIR@/\:@TMAC_M_PREFIX@mse\:.tmac
-illustrates how to adapt the output to a national standard using its ISO
-3166 territory code.
+illustrates how to adapt the output to a national standard using its
+ISO\~3166 territory code.
 .
 Such a package can define a string that causes a macro file
 .IR @MACRODIR@/\:mm/\:\% territory _locale
@@ -373,9 +378,9 @@ Much
 .I mm
 behavior can be configured by registers and strings.
 .
-A register is assigned with the
+The
 .B nr
-request.
+request assigns a value to a register.
 .
 .
 .RS
@@ -395,11 +400,11 @@ and
 .IR n \~is
 the value to be assigned.
 .
-.IR n \~can
-be prefixed with a plus or minus sign if incrementation or
-decrementation (respectively) of the register's existing value
-.RI by\~ n
-is desired.
+Prefixing
+.I n
+with
+a plus or minus sign increments or decrements (respectively) its
+existing value.
 .
 If assignment of a (possibly) negative
 .IR n \~is
@@ -409,7 +414,7 @@ further prefix it with a zero or enclose it in parentheses.
 If
 .IR i \~is
 specified,
-the register is automatically modified
+the register's value automatically changes
 .RI by \~i
 prior to interpolation if a plus or minus sign is included in the escape
 sequence as follows.
@@ -429,9 +434,27 @@ be negative;
 it combines algebraically with the sign in the interpolation escape
 sequence.
 .
+The brackets around
+.I ident
+are literal.
+.
 .
 .P
-Strings are defined with the
+Many of the registers
+.I mm
+provides are as Boolean-valued,
+meaning that they are considered \[lq]true\[rq]
+(on,
+enabled)
+when they have a positive value,
+and \[lq]false\[rq]
+(off,
+disabled)
+otherwise.
+.
+.
+.P
+Define strings with the
 .B ds
 request.
 .
@@ -458,7 +481,7 @@ To include leading spaces in
 .IR contents ,
 prefix it with a double quote.
 .
-Strings are interpolated with the
+Interpolate strings with the
 .B \[rs]*
 escape sequence.
 .
@@ -535,11 +558,8 @@ A@0, A, B, C, .\|.\|., Z, AA, AB, .\|.\|.
 .SS Fonts
 .\" ====================================================================
 .
-In
-.IR "groff mm" ,
-the fonts
-(or rather,
-font styles)
+.I mm
+assumes that the font styles
 .BR R \~(roman),
 .BR I \~(italic),
 and
@@ -550,49 +570,19 @@ are mounted at font positions
 .RB and\~ 3 ,
 respectively.
 .
-Internally,
-font positions are used for backward compatibility.
+Use the
+.B fp
+request to mount substitute fonts at these positions as desired.
 .
-From a practical point of view,
-it doesn't make a big difference\[em]a different font family can still
-be selected by invoking
+The default font family is Times.
+.
+Select a different one
+by invoking
 .IR groff 's
 .B fam
 request or using its
 .B \-f
 command-line option.
-.
-On the other hand,
-if you want to replace just,
-for example,
-.RB font\~ I
-with Zapf Chancery Medium italic
-(available on
-.IR groff 's
-.B pdf
-and
-.B ps
-output devices),
-you have to use the
-.B fp
-request,
-replacing the font at position\~2 with
-.RB \[lq] .fp\~2\~ZCMI \[rq]).
-.
-Because the cover sheet,
-memorandum type,
-and
-.MR @g@refer @MAN1EXT@
-integration macros explicitly request fonts named
-.BR B ,
-.BR I ,
-and
-.BR R ,
-you will also need to remap these font names with the
-.B ftr
-request,
-for instance with
-.RB \[lq] .ftr\~I\~ZCMI \[rq].
 .
 .
 .\" ====================================================================
@@ -643,26 +633,9 @@ published interface but are documented aspects of
 .
 .
 .TP 8n \" "COVEND" + 2n
-.BI )E\  "level text"
-Add heading text
-.I text
-to the table of contents with
-.IR level ,
-which is either\~0 or in the range 1 to\~7.
-.
-See also
-.BR H .
-.
-This undocumented DWB
-.I mm
-macro is exposed by
-.I groff mm
-to enable customized tables of contents.
-.
-.
-.TP
 .BR 1C\~ [ 1 ]
-Format page text in one column.
+Format page text in one column
+(the default layout).
 .
 The page is broken.
 .
@@ -712,11 +685,11 @@ Specify a memorandum's organizational affiliation.
 .
 At most one can be declared;
 .I org-name
-is used by memorandum types and available to cover sheets.
+is used by
+.B MT
+memoranda and available to cover sheets.
 .
 See
-.B MT
-and
 .BR COVER .
 .
 .
@@ -732,7 +705,7 @@ cover page style.
 If not defined
 (the default),
 internally defined macros handle this task;
-see sections \[lq]Internals\[rq] and \[lq]Files\[rq] below.
+see subsection \[lq]Internals\[rq] and section \[lq]Files\[rq] below.
 .
 Applications include setting the firm name in a different font family
 or at a larger type size,
@@ -745,9 +718,10 @@ or
 macros.
 .
 See
-.B MT
+.BR MT ,
+.BR COVER ,
 and
-.BR COVER .
+.MR groff_tmac @MAN5EXT@ .
 .
 .
 .TP
@@ -817,7 +791,7 @@ determines whether an appendix heading is then formatted.
 This heading uses the string
 .B App
 followed by
-.IR id .
+.IR sequence-number .
 .
 Appendices appear in any table of contents
 (see
@@ -869,6 +843,8 @@ by default,
 but can be customized to interpret it.
 .
 .
+.br
+.ne 4v
 .IP
 .TS
 tab(@);
@@ -1022,10 +998,15 @@ See
 .IR name ]
 As
 .BR AV ,
-but omitting the date,
-date rule,
-and approval notation
-.BR Letapp .
+but omitting the approval notation
+(the
+.B Letapp
+string),
+the date rule,
+and the label below the date rule
+(the
+.B Letdate
+string).
 .
 .
 .TP
@@ -1093,7 +1074,7 @@ without space between the arguments.
 Begin bulleted list.
 .
 .I mm
-marks each item with the bullet string
+marks each item with the string
 .BR BU .
 .
 A
@@ -1279,7 +1260,7 @@ and
 Begin dashed list.
 .
 .I mm
-marks each item with the em-dash string
+marks each item with the string
 .BR EM .
 .
 A
@@ -1359,6 +1340,8 @@ for compatibility with
 .RI DWB\~ mm.
 .
 .
+.br
+.ne 4v
 .IP
 .TS
 tab(@);
@@ -1401,7 +1384,7 @@ to \[lq]0\[rq] to suppress it.
 Caption an equation.
 .
 A caption comprises the string
-.B Liec
+.B Capec
 followed by an automatically incrementing counter stored in the register
 .BR Ec ,
 punctuation configured by the register
@@ -1450,8 +1433,9 @@ T}
 .
 .
 .IP
-Equation captions are centered irrespective of the alignment of any
-enclosing display.
+.I mm
+centers equation captions irrespective of the alignment of any enclosing
+display.
 .
 .
 .IP
@@ -1466,7 +1450,7 @@ Recognition of this argument is a GNU extension.
 .
 .
 .IP
-Captioned equations are listed in a table of contents
+The package lists captioned equations in a table of contents
 (see
 .BR TC )
 if the Boolean register
@@ -1520,15 +1504,18 @@ see
 .
 .TP
 .B EOP
-If defined,
-this macro is called in lieu of normal page footer layout.
+.I "groff mm"
+calls this hook macro in lieu of normal page footer layout.
 .
-Headers and footers are formatted in a separate environment.
+The package uses a separate environment to format headers and footers.
 .
 See
 .BR TP .
 .
 .
+.br
+.ie t .ne 4v
+.el   .ne 5v \" for horizontal rule
 .IP
 .TS
 tab(@);
@@ -1617,16 +1604,17 @@ The register
 is the exhibit counter.
 .
 The string
-.B Liex
+.B Capex
 precedes the exhibit number and any
 .I title.
 .
-Exhibit captions are centered irrespective of the alignment of any
-enclosing display.
+.I mm
+centers exhibit captions irrespective of the alignment of any enclosing
+display.
 .
 .
 .IP
-Captioned exhibits are listed in a table of contents
+The package lists captioned exhibits in a table of contents
 (see
 .BR TC )
 if the Boolean register
@@ -1730,16 +1718,17 @@ The register
 is the figure counter.
 .
 The string
-.B Lifg
+.B Capfg
 precedes the figure number and any
 .I title.
 .
-Figure captions are centered irrespective of the alignment of any
-enclosing display.
+.I mm
+centers figure captions irrespective of the alignment of any enclosing
+display.
 .
 .
 .IP
-Captioned figures are listed in a table of contents
+The package lists captioned figures in a table of contents
 (see
 .BR TC )
 if the Boolean register
@@ -1763,7 +1752,7 @@ is called is collected into a footnote.
 By default,
 footnotes are automatically numbered starting at 1;
 the number is available in register
-.B :p
+.B Ftnum
 and,
 with a trailing period,
 in
@@ -1798,7 +1787,7 @@ the footnote marker in the body text must be explicitly written.
 .RI [ string ]
 Interpolate
 .IR ref-name 's
-heading number,
+heading mark,
 or,
 if
 .I string
@@ -1840,7 +1829,7 @@ and
 respectively,
 and interpolate string
 .B Qrf
-as a cross reference to it.
+as an internal reference to it.
 .
 See
 .BR INITR .
@@ -1875,7 +1864,7 @@ of the form
 .IR a . b . c .\|.\|.,
 with up to fourteen levels of nesting.
 .
-Each level's number increases automatically with each
+Each level's number increments automatically with each
 .B H
 call and is reset to zero when a more significant
 .I level
@@ -1963,7 +1952,7 @@ sets a threshold within which vertical space follows it.
 .
 If the heading level is above both of these,
 and the paragraph is not numbered,
-.I "groff mm"
+.I mm
 produces a
 .IR "run-in heading" ;
 paragraph text follows on the same output line.
@@ -1977,7 +1966,7 @@ Threshold register
 .B Hc
 permits centering;
 .I mm
-centers a heading with a level below both of the
+centers a heading with a level within both of the
 .B Hb
 and
 .B Hc
@@ -1987,7 +1976,7 @@ thresholds.
 .IP
 .I Heading typeface and size.
 .
-The fonts used for heading numbers and titles at each level are
+The fonts used for heading marks and titles at each level are
 configured by the
 .B HF
 string.
@@ -2166,11 +2155,10 @@ It could be used to change the page header to include a section heading.
 .
 .TP
 .BI HC\~ \fR[\fPhyphenation-character\fR]\fP
-Set hyphenation character.
-.
-The default is \[lq]\[rs]%\[rq].
-.
-Resets to the default if called without argument.
+Set hyphenation character,
+selecting the default,
+\[lq]\[rs]%\[rq],
+if called without argument.
 .
 .
 .TP
@@ -2200,7 +2188,7 @@ an optional
 .
 The heading is treated as a numbered heading of the level stored in
 .RB register\~ Hu ,
-but no heading number is output;
+but no heading mark is output;
 .RB see\~ H .
 .
 .
@@ -2355,9 +2343,9 @@ with the arguments given to
 .
 .TP
 .BI INITR\~ file-name-prefix
-Initialize the cross reference macros.
+Initialize the internal reference macros.
 .
-Cross references are written to the standard error stream,
+Internal references are written to the standard error stream,
 which should be redirected into a file named
 .RI file-name-prefix .qrf .
 .
@@ -2369,7 +2357,7 @@ handles this and the two formatting passes it requires.
 .\"by default deactivates the unsafe operations that are required by
 .\".BR INITR .
 .
-The first pass identifies cross references;
+The first pass identifies internal references;
 the second includes them.
 .\"
 .\".B INITR
@@ -2396,26 +2384,6 @@ in italics with
 .I roman-text
 in roman style,
 without space between the arguments.
-.
-.
-.TP
-.BR ISODATE\~ [ 0 ]
-Use ISO\~8601 format for the date string
-.B DT
-used by some cover sheet and memorandum types;
-that is,
-.IR YYYY - MM - DD .
-.
-Must be called before
-.B ND
-to be effective.
-.
-If given an argument
-.RB of\~ 0,
-the traditional date format for the
-.I groff
-locale is used;
-this is also the default.
 .
 .
 .TP
@@ -2446,16 +2414,17 @@ purpose.
 tracks the nesting level of lists;
 the outermost is\~0.
 .
-Each list item
-(text lines after an
+It indents
+each list item
+(text formatted after an
 .B LI
 call)
-is indented by
+by
 .I text-indent.
 .
 The mark is left-aligned at
 .IR mark-indent ,
-padded on the left with
+and padded on the left with
 .I pad
 ens of space.
 .
@@ -2558,9 +2527,12 @@ or only those from the current level down to
 if specified.
 .
 .B H
-calls
+and
+.B HU
+call
 .B LC
 automatically.
+.\" `H` calls `LC`, and `HU` calls `H`.
 .
 .
 .TP
@@ -2607,12 +2579,13 @@ exceeds the text indentation,
 .I "groff mm"
 warns and uses one en of padding between the mark and the text.
 .
-A second argument
-prefixes
+The presence of a second argument prefixes
 .I mark
 to the
 .BR LB -configured
-mark and conditionally puts an unbreakable space
+mark and,
+as a GNU extension,
+conditionally puts an unbreakable space
 between the prefix and mark per the argument's Boolean value.
 .
 .
@@ -2637,7 +2610,7 @@ regarding the date.
 tab(@);
 Lf(BI) Lb
 L Lx.
-option@Effect
+option@Meaning and Effect
 AT@T{
 Attention;
 put contents of string
@@ -2723,13 +2696,13 @@ the signature
 and notations
 .RB ( NS / NE ).
 .
-Any of these may be omitted.
+Any of these except the body text may be omitted.
 .
 Letter options specified with
 .B LO
 add further annotations,
 which are extensible;
-see section \[lq]Internals\[rq] below.
+see subsection \[lq]Internals\[rq] below.
 .
 .
 .br
@@ -2738,7 +2711,7 @@ see section \[lq]Internals\[rq] below.
 .TS
 tab(@);
 Lf(BI) Lb
-Lb Lx.
+L      Lx.
 style@Description
 BL@T{
 Blocked:
@@ -2933,18 +2906,18 @@ uses a diversion and operates in a separate environment.
 .
 .
 .TP
-.B MULN
-Begin next column in alternative column mode.
-.
-.
-.TP
 .B MULE
 End alternative multi-column mode and emit the columns.
 .
 .
 .TP
+.B MULN
+Start next column in alternative column mode.
+.
+.
+.TP
 .B NCOL
-Move to the start of the next column
+Start next column
 (only when using
 .B 2C
 or
@@ -3103,7 +3076,7 @@ the paragraph fully left\-aligned.
 A
 .I type
 .RB of\~ 1
-idents the first line by
+indents the first line by
 .B \[rs][Pi]
 ens.
 .
@@ -3414,7 +3387,7 @@ The reference counter is reset unless the first argument
 Normally,
 page breaks occur before and after the references are output;
 the register
-.B Rpe
+.B Rpej
 configures this behavior,
 and a second argument overrides its value.
 .
@@ -3595,7 +3568,7 @@ memoranda.
 The format of a signature block depends on the letter or memorandum
 type.
 .
-See section \[lq]Internals\[rq] below.
+See subsection \[lq]Internals\[rq] below.
 .
 .
 .IP
@@ -3685,10 +3658,11 @@ Multiple
 calls in sequence produce only the largest of the specified
 .I distances.
 .
-Absolute motions with a prefixed
+.B SP
+accepts boundary-relative motions specified with a prefixed
 .B |
-operator are accepted;
-negative ones are not.
+operator,
+but not negative ones.
 .
 .
 .IP
@@ -3729,16 +3703,17 @@ The register
 is the table counter.
 .
 The string
-.B Litb
+.B Captb
 precedes the table number and any
 .I title.
 .
-Table captions are centered irrespective of the alignment of any
-enclosing display.
+.I mm
+centers table captions irrespective of the alignment of any enclosing
+display.
 .
 .
 .IP
-Captioned tables are listed in a table of contents
+The package lists captioned tables in a table of contents
 (see
 .BR TC )
 if the Boolean register
@@ -3774,7 +3749,7 @@ calls
 .
 It then begins a new page with the contents caption,
 stored in the string
-.BR Licon ,
+.BR Captc ,
 centered at the top.
 .
 The entries follow after three vees of space.
@@ -3866,11 +3841,11 @@ is \[lq]FG\[rq],
 \[lq]EC\[rq],
 or \[lq]EX\[rq],
 and strings
-.BR Lifg ,
-.BR Litb ,
-.BR Liec ,
+.BR Capfg ,
+.BR Captb ,
+.BR Capec ,
 and
-.B Liex
+.B Capex
 analogously configure the output of each captioned list.
 .
 .
@@ -3933,15 +3908,18 @@ memoranda.
 .ne 6v
 .TP
 .B TP
-If defined,
-this macro is called in lieu of normal page header layout.
+.I mm
+calls this hook macro in lieu of normal page header layout.
 .
-Headers and footers are formatted in a separate environment.
+The package uses a separate environment to format headers and footers.
 .
 See
 .BR EOP .
 .
 .
+.br
+.ie t .ne 4v
+.el   .ne 5v \" for horizontal rule
 .IP
 .TS
 tab(@);
@@ -4065,40 +4043,54 @@ to end the list.
 .
 .TP
 .BI "VM \fR[\fP\-T\fR] [\fP" "top \fR[\fPbottom\fR]]\fP"
-Vertical margin.
+Configure vertical margins.
 .
-Increase the top and bottom margin by
+.
+.IP
+Without a
+.B \-T
+argument,
+increment the top and bottom margins by
 .I top
 and
 .IR bottom ,
 respectively.
 .
-If option
+If absent,
+set the corresponding margin to zero.
+.
+.
+.IP
+With the
 .B \-T
-is specified, set those margins to
+argument,
+set the top and bottom margins to
 .I top
 and
-.IR bottom .
+.IR bottom ,
+respectively.
 .
-If no argument is given, reset the margin to zero, or to the default
-(\[lq]7v 5v\[rq])
-if
-.B \-T
-is used.
+If absent,
+set the respective margin to the default
+(top:
+.BR 7v ,
+bottom:
+.BR 6v ).
 .
-It is highly recommended that macros
+.
+.IP
+We recommend defining the hook macros
 .B TP
 and/or
 .B EOP
-are defined if using
+if using
 .B \-T
-and setting top and/or bottom margin to less than the default.
+and setting top and/or bottom margin to values less than the default.
 .
-This undocumented DWB
-.I mm
-macro is exposed by
 .I groff mm
-to increase user control of page layout.
+exposes this undocumented DWB
+.I mm
+macro to enable greater user control of page layout.
 .
 .
 .TP
@@ -4194,7 +4186,7 @@ Many
 strings interpolate predefined,
 localizable text.
 .
-These are presented in quotation marks.
+We present their contents in quotation marks.
 .
 .
 .TP 10n \" "Abstract" + 2n
@@ -4221,7 +4213,7 @@ call.
 lists
 space-separated indices of positional arguments to the
 .B AU
-macro that should be suppressed from appearing in the document heading
+macro that should be suppressed from appearance in the document heading
 on the first page of
 .B MT
 memorandum types 0\[en]3 and 6.
@@ -4237,6 +4229,31 @@ except the second
 .B BU
 interpolates a bullet mark,
 .BR \[rs][bu] .
+.
+.
+.TP
+.B Captc
+\[lq]CONTENTS\[rq]
+.
+.
+.TP
+.B Capec
+\[lq]Equation\[rq]
+.
+.
+.TP
+.B Capex
+\[lq]Exhibit\[rq]
+.
+.
+.TP
+.B Capfg
+\[lq]Figure\[rq]
+.
+.
+.TP
+.B Captb
+\[lq]Table\[rq]
 .
 .
 .TP
@@ -4265,10 +4282,9 @@ see
 The
 .I groff
 locale determines its format,
-but see
-.B ISODATE
-and register
-.BR Iso .
+but register
+.B Isodate
+may override it.
 .
 .
 .TP
@@ -4480,31 +4496,6 @@ The default
 .
 .
 .TP
-.B Licon
-\[lq]CONTENTS\[rq]
-.
-.
-.TP
-.B Liec
-\[lq]Equation\[rq]
-.
-.
-.TP
-.B Liex
-\[lq]Exhibit\[rq]
-.
-.
-.TP
-.B Lifg
-\[lq]Figure\[rq]
-.
-.
-.TP
-.B Litb
-\[lq]Table\[rq]
-.
-.
-.TP
 .B Lt
 \[lq]LIST OF TABLES\[rq]
 .
@@ -4535,7 +4526,7 @@ instead of \[lq]chapter\[rq].
 .
 .TP
 .B Qrfh
-stores the heading number corresponding to the most recent
+stores the heading mark corresponding to the most recent
 .B \%GETR
 call.
 .
@@ -4585,7 +4576,7 @@ interpolates the service mark sign.
 .
 .
 .TP
-.B Tcst
+.B Tcstatus
 interpolates an indicator of the
 .B TC
 macro's processing status.
@@ -4646,16 +4637,6 @@ Default register values,
 where meaningful,
 are shown in parentheses.
 .
-Many are also marked as Boolean-valued,
-meaning that they are considered \[lq]true\[rq]
-(on,
-enabled)
-when they have a positive value,
-and \[lq]false\[rq]
-(off,
-disabled)
-otherwise.
-.
 .
 .TP 9n \" "Letwam" + 2n + hand-tuned for PDF
 .B .mgm
@@ -4664,20 +4645,6 @@ indicates that
 is in use
 (Boolean-valued;
 .BR 1 ).
-.
-.
-.TP
-.B :p
-is an auto-incrementing footnote counter;
-see
-.BR FS .
-.
-.
-.TP
-.B :R
-is an auto-incrementing reference counter;
-see
-.BR RS .
 .
 .
 .TP
@@ -4700,7 +4667,10 @@ in memorandum \[lq]from\[rq] information;
 see
 .B COVER
 and
-.B MT
+.BR MT ,
+and the
+.B Aumt
+string
 (Boolean-valued;
 .BR 1 ).
 .
@@ -4882,7 +4852,7 @@ sets the threshold for page breaks (ejection) prior to the format of
 headings.
 .
 Headings at levels above this value are set on the same page and column
-if possible;
+as any preceding text if possible;
 see
 .B H
 .RB ( 0 ).
@@ -4917,6 +4887,22 @@ to vertically separate footnotes;
 see
 .B FS
 .RB ( 1 ).
+.
+.
+.TP
+.B Ftnum
+is an auto-incrementing footnote counter;
+see
+.BR FS .
+.
+.I "groff mm"
+recognizes
+.B :p
+as an alias of
+.B Ftnum
+for DWB
+.I mm
+compatibility.
 .
 .
 .TP
@@ -4988,7 +4974,7 @@ see
 .ne 7v
 .TP
 .B Hi
-configures the indentation of text after headings.
+selects an indentation policy for text formatted after headings.
 .
 It does not affect \[lq]run-in\[rq] headings.
 .
@@ -5091,8 +5077,8 @@ see
 .
 .TP
 .B Ht
-suppresses output of heading level counters above the lowest when the
-heading is formatted;
+suppresses output of heading level counters above the deepest when a
+heading mark is formatted;
 see
 .B H
 (Boolean-valued;
@@ -5116,15 +5102,17 @@ enables automatic hyphenation of words
 .
 .
 .TP
-.B Iso
-configures the use of ISO\~8601 date format
-if specified
-(with any value)
-on the command line;
-see
-.BR ISODATE .
+.B Isodate
+configures the use of ISO\~8601 date format;
+that is,
+.IR YYYY - MM - DD
+instead of the format specified by the localization file.
 .
-The default is determined by localization files.
+Call
+.B ND
+without arguments after updating its value
+(Boolean-valued;
+.BR 0 ).
 .
 .
 .TP
@@ -5139,6 +5127,8 @@ The default is that of the selected
 output device.
 .
 .
+.br
+.ne 5v
 .TP
 .B Le
 .TQ
@@ -5381,7 +5371,7 @@ except when
 .B Pi
 configures the indentation
 (in ens)
-applied to first line of an unnumbered paragraph that has such
+applied to the first line of an unnumbered paragraph that has such
 (see
 .BR P );
 and the text indentation of non-enumerated list items;
@@ -5445,6 +5435,8 @@ see
 .RB ( 0 ).
 .
 .
+.br
+.ne 4v
 .IP
 .TS
 tab(@);
@@ -5471,11 +5463,30 @@ is used internally to control
 .MR mmroff 1 's
 two-pass approach to index and reference management;
 see
-.B INITI
+.BR IND ,
+.BR INDP ,
+.BR INITI ,
+.BR INITR ,
 and
-.B RS
+.B PIC
 (Boolean-valued;
 .BR 0 ).
+.
+.
+.TP
+.B Rfnum
+is an auto-incrementing reference counter;
+see
+.BR RS .
+.
+.I "groff mm"
+recognizes
+.B :R
+as an alias of
+.B Rfnum
+for DWB
+.I mm
+compatibility.
 .
 .
 .TP
@@ -5521,9 +5532,8 @@ may not take effect until the next heading or paragraphing macro call.
 .\" ...and in certain other cases we don't document.
 .
 .
-.\" XXX: Why is this not named `Rpej`?
 .TP
-.B Rpe
+.B Rpej
 configures the default page ejection policy for reference pages;
 see
 .B RP
@@ -5649,7 +5659,7 @@ see
 .
 .
 .\" ====================================================================
-.SH Internals
+.SS Internals
 .\" ====================================================================
 .
 The argument
@@ -5712,10 +5722,13 @@ unless the letterhead is desired on subsequent pages.
 .TP
 .BI let@sg_ type\~\c
 .IR "name title n is-final\~" [ SG-arg\~ .\|.\|.]
+is called by
 .B SG
-calls this macro only for letters;
+only for
+.B LT
+letters;
 .B MT
-memoranda have their own signature processing.
+memoranda implement their own signature processing.
 .
 .I name
 and
@@ -5738,9 +5751,9 @@ arguments are appended to the signature line.
 .
 .TP
 .BI let@fc_ "type closing"
-This macro is called by
+is called by
 .BR FC ,
-and has the formal closing as the argument.
+and takes the formal closing as its argument.
 .
 .
 .P

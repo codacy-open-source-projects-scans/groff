@@ -9,7 +9,7 @@ output driver for typewriter-like (terminal) devices
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -52,7 +52,7 @@ output driver for typewriter-like (terminal) devices
 .\" ====================================================================
 .
 .SY grotty
-.RB [ \-dfho ]
+.RB [ \-dfhot ]
 .RB [ \-i \||\| \-r ]
 .RB [ \-F\~\c
 .IR font-directory ]
@@ -110,7 +110,7 @@ or
 options.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 Use
@@ -146,13 +146,15 @@ reverse video
 [\[lq]negative image\[rq]]
 and colors).
 .
-Devices supporting the appropriate sequences can view
+Devices supporting
+SGR 30\[en]37 and 40\[en]47 sequences can view
 .I roff
 documents using eight different background and foreground colors.
 .
-Following ISO\~6429,
-the following colors are defined in
-.IR tty.tmac :
+.IR grotty 's
+.I tty.tmac
+file defines the eight color names of
+ISO\~6429:
 black,
 white,
 red,
@@ -162,17 +164,26 @@ yellow,
 magenta,
 and cyan.
 .
-Unrecognized colors are mapped to the default color,
-which is dependent on the settings of the terminal.
+Unrecognized colors map to the default color,
+the value of which depends on the settings of the terminal.
 .
+Also see the
+.B \-t
+option below.
+.
+.
+.P
 OSC\~8 hyperlinks are produced for these devices.
 .
 .
 .P
 In keeping with long-standing practice and the rarity of terminals
 (and emulators)
-that support oblique or italic fonts,
-italicized text is represented with underlining by default\[em]but see
+that support slanted
+(oblique or italic) faces,
+.I grotty
+marks italicized character cells with underlines instead
+by default\[em]but see
 the
 .B \-i
 option below.
@@ -266,7 +277,7 @@ which may render bold italics as reverse video.
 .\" SGR sequences (including color) with no flags required.
 Some implementations of
 .MR more 1
-are also able to display these sequences;
+also are able to display these sequences;
 you may wish to experiment with that command's
 .B \-b
 option.
@@ -289,7 +300,7 @@ There is therefore no need to filter its output through
 .SS "Device extension commands"
 .\" ====================================================================
 .
-.I grops
+.I grotty
 recognizes a device extension command produced by the
 .I groff
 request
@@ -359,9 +370,11 @@ is a decimal integer.
 If the 01 bit in
 .I n
 is set,
-then the font is treated as an italic font;
+.I grotty
+treats the font as slanted;
 if the 02 bit is set,
-then it is treated as a bold font.
+.I grotty
+treats the font as bold.
 .
 .\" The following seems to say nothing that is not true of font
 .\" description files in general; if so, it belongs in groff_font(5).
@@ -394,6 +407,59 @@ Because the output driver operates in
 .I nroff
 mode,
 attempts to set or change the font family or type size are ignored.
+.
+.
+.P
+.I grotty
+furthermore supports a naming scheme for East Asian typefaces
+shared with
+.MR grohtml @MAN1EXT@ ,
+.MR gropdf @MAN1EXT@ ,
+and
+.MR grops @MAN1EXT@ .
+.
+.
+.RS
+.TP
+.B CSH
+Simplified Chinese,
+Hei style
+.
+.TQ
+.B CSS
+Simplified Chinese,
+Song style
+.
+.TQ
+.B CTH
+Traditional Chinese,
+Hei style
+.
+.TQ
+.B CTS
+Traditional Chinese,
+Song style
+.
+.TQ
+.B JPG
+Japanese,
+Gothic style
+.
+.TQ
+.B JPM
+Japanese,
+Mincho style
+.
+.TQ
+.B KOG
+Korean,
+Gothic style
+.
+.TQ
+.B KOM
+Korean,
+Mincho style
+.RE
 .
 .
 .
@@ -435,15 +501,13 @@ SGR and OSC escape sequences are not emitted.
 .
 .TP
 .B \-d
-Ignore all
-.B \[rs]D
-drawing escape sequences in the input.
+Ignore all drawing commands in the input.
 .
 By default,
 .I grotty
 renders
-.BR \[rs]D\[aq]l \|.\|.\|.\& \[aq]
-escape sequences that have at least one zero argument
+.RB \[lq] "D l" \[rq]
+commands that have at least one zero argument
 (and so are either horizontal or vertical)
 using Unicode box drawing characters
 (for the
@@ -459,9 +523,12 @@ characters
 .
 .I grotty
 handles
-.BR \[rs]D\[aq]p \|.\|.\|.\& \[aq]
-escape sequences that consist entirely of horizontal and vertical
-lines similarly.
+.RB \[lq] "D p" \[rq]
+commands that consist entirely
+of horizontal and vertical lines similarly.
+.
+See
+.MR groff_out @MAN5EXT@ .
 .
 .
 .TP
@@ -493,10 +560,7 @@ Tabs are assumed to be set every 8 columns.
 .
 .TP
 .B \-i
-Render oblique-styled fonts
-.RB ( I
-and
-.BR BI )
+Render fonts marked as slanted
 with the SGR attribute for italic text
 rather than underlined text.
 .
@@ -520,10 +584,7 @@ format is in use).
 .
 .TP
 .B \-r
-Render oblique-styled fonts
-.RB ( I
-and
-.BR BI )
+Render fonts marked as slanted
 with the SGR attribute for reverse video text
 rather than underlined text.
 .
@@ -535,6 +596,16 @@ is also specified.
 .
 .
 .TP
+.B \-t
+Assume that the output device supports
+SGR\~38 and 48 escape sequences,
+which permit specification
+of character cell foreground and background colors
+in the RGB color space
+with 8 bits per channel.
+.
+.
+.TP
 .B \-u
 Suppress the use of underlining for italic characters in legacy output
 format.
@@ -543,6 +614,21 @@ format.
 .TP
 .B \-U
 Use only underlining for bold-italic characters in legacy output format.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%grotty
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================
@@ -657,10 +743,9 @@ There is no support for fractional horizontal or vertical motions.
 .
 .
 .IP \[bu]
-.I roff
-.B \[rs]D
-escape sequences producing anything other than horizontal and vertical
-lines are not supported.
+Drawing commands
+producing anything other than horizontal and vertical lines
+are not supported.
 .
 .
 .IP \[bu]
@@ -674,7 +759,7 @@ respectively.
 .
 .
 .P
-The
+The commands generated by the
 .B \[rs]l
 and
 .B \[rs]L
@@ -728,6 +813,8 @@ rendered with
 produces the following output.
 .
 .
+.br
+.ne 5v
 .P
 .RS
 .EX

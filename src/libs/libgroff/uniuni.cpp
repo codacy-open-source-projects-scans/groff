@@ -16,15 +16,19 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-// This code has been algorithmically derived from the file
-// UnicodeData.txt, version 15.1.0, available from unicode.org,
-// on 2024-08-29.
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "lib.h"
+
 #include "stringclass.h"
 #include "ptable.h"
-
 #include "unicode.h"
+
+// This code has been algorithmically derived from the file
+// UnicodeData.txt, version 17.0.0, available from unicode.org,
+// on 2025-10-09.
 
 struct unicode_decompose {
   char *value;
@@ -1535,6 +1539,8 @@ struct S {
   { "FB4C", "205D1_05BF" },
   { "FB4D", "205DB_05BF" },
   { "FB4E", "205E4_05BF" },
+  { "105C9", "2105D2_0307" },
+  { "105E4", "2105DA_0307" },
   { "1109A", "211099_110BA" },
   { "1109C", "21109B_110BA" },
   { "110AB", "2110A5_110BA" },
@@ -1542,12 +1548,30 @@ struct S {
   { "1112F", "211132_11127" },
   { "1134B", "211347_1133E" },
   { "1134C", "211347_11357" },
+  { "11383", "211382_113C9" },
+  { "11385", "211384_113BB" },
+  { "1138E", "21138B_113C2" },
+  { "11391", "211390_113C9" },
+  { "113C5", "2113C2_113C2" },
+  { "113C7", "2113C2_113B8" },
+  { "113C8", "2113C2_113C9" },
   { "114BB", "2114B9_114BA" },
   { "114BC", "2114B9_114B0" },
   { "114BE", "2114B9_114BD" },
   { "115BA", "2115B8_115AF" },
   { "115BB", "2115B9_115AF" },
   { "11938", "211935_11930" },
+  { "16121", "21611E_1611E" },
+  { "16122", "21611E_16129" },
+  { "16123", "21611E_1611F" },
+  { "16124", "216129_1611F" },
+  { "16125", "21611E_16120" },
+  { "16126", "31611E_1611E_1611F" },
+  { "16127", "31611E_16129_1611F" },
+  { "16128", "31611E_1611E_16120" },
+  { "16D68", "216D67_16D67" },
+  { "16D69", "216D63_16D67" },
+  { "16D6A", "316D63_16D67_16D67" },
   { "1D15E", "21D157_1D165" },
   { "1D15F", "21D158_1D165" },
   { "1D160", "31D158_1D165_1D16E" },

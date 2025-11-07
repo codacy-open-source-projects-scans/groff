@@ -30,7 +30,7 @@ HDTBLGROFF = \
     -dfontpath=$(top_srcdir)/font \
     -dsopath=$(hdtbl_srcdir)/ \
     -I $(doc_builddir) -I $(doc_srcdir) \
-     $(MFLAG) -M$(hdtbl_srcdir) -mhdtbl -t -p -e -U
+     $(MFLAG) -M$(hdtbl_srcdir) -mhdtbl -t -p -e -U -b -wall
 
 HDTBLTMACFILES = \
   contrib/hdtbl/hdtbl.tmac \
@@ -52,6 +52,8 @@ EXTRA_DIST += \
   contrib/hdtbl/examples/fonts_n.in \
   contrib/hdtbl/examples/fonts_x.in \
   $(hdtbl_test_template)
+
+$(HDTBLPROCESSEDEXAMPLEFILES): $(DEVPSFONTFILES)
 
 HDTBLEXAMPLEFILES = \
   contrib/hdtbl/examples/common.roff \
@@ -119,8 +121,11 @@ SUFFIXES += .roff .in .ps
 	&& sed -e "s|[@]fontdir[@]|$(fontdir)|" \
 	       -e "s|[@]EGREP[@]|$(EGREP)|" $< >$@
 
-$(HDTBLPROCESSEDEXAMPLEFILES): $(DOC_GNU_EPS) groff troff eqn pic tbl \
-  grops grn font/devps/stamp contrib/hdtbl/examples/common.roff
+# groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
+# soelim even though the documents don't require them.
+$(HDTBLPROCESSEDEXAMPLEFILES): $(HDTBLTMACFILES) $(DOC_GNU_EPS) groff \
+  troff eqn pic tbl grops grn soelim font/devps/stamp \
+  contrib/hdtbl/examples/common.roff
 
 uninstall_groffdirs: uninstall-hdtbl-hook
 uninstall-hdtbl-hook:

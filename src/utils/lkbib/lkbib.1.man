@@ -7,7 +7,7 @@ lkbib \- search bibliographic databases
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -84,7 +84,8 @@ lkbib \- search bibliographic databases
 .\" ====================================================================
 .
 .I \%lkbib
-searches bibliographic databases for references containing keywords
+searches bibliographic databases for references matching all
+keywords
 .I key
 and writes any references found to the standard output
 stream.
@@ -160,6 +161,21 @@ characters of keys to be given.
 .
 The default
 is\~6.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%lkbib
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

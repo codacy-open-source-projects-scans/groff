@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
 This file is part of groff.
@@ -16,10 +16,14 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "lib.h"
+
 #include "stringclass.h"
 #include "ptable.h"
-
 #include "unicode.h"
 
 struct glyph_to_unicode_map {
@@ -112,7 +116,6 @@ struct S {
   { "^", "005E" },
   { "ha", "005E" },
   { "_", "005F" },
-  { "ru", "005F" },
   { "ul", "005F" },
   { "ga", "0060" },
   { "a", "0061" },

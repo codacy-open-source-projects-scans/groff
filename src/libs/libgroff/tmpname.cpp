@@ -16,17 +16,19 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
 /* This file is heavily based on the function __gen_tempname() in the
    file tempname.c which is part of the fileutils package. */
 
-
-#include "lib.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
+
+#include "lib.h"
 
 #include "posix.h"
 #include "nonposix.h"
@@ -115,3 +117,9 @@ int gen_tempname(char *tmpl, int dir)
   /* We got out of the loop because we ran out of combinations to try.  */
   return -1; /* EEXIST */
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

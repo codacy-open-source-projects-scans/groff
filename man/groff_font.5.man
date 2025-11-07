@@ -9,7 +9,7 @@ device and font description files
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2021 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff (GNU roff), which is a free software
 .\" project.
@@ -96,7 +96,7 @@ while the
 .B utf8
 device
 (for terminals)
-has only font descriptions for the roman,
+has font descriptions for the roman,
 italic,
 bold,
 and bold-italic styles
@@ -190,7 +190,7 @@ The horizontal motion quantum is
 .IR n \~basic
 units.
 .
-Horizontal quantities are rounded to multiples
+Horizontal measurements round to multiples
 .RI of\~ n.
 .
 .
@@ -458,10 +458,8 @@ output devices use this directive.
 .
 .TP
 .BI unitwidth\~ n
-Quantities in the font description files are in basic units for fonts
-whose type size is
-.IR n \~scaled
-points.
+Arbitrary basis with respect to which font metrics are proportionally
+scaled when rendering glyphs at a type size of one point.
 .
 .
 .TP
@@ -491,7 +489,7 @@ The vertical motion quantum is
 .IR n \~basic
 units.
 .
-Vertical quantities are rounded to multiples
+Vertical measurements round to multiples
 .RI of\~ n.
 .
 .
@@ -543,14 +541,21 @@ While paper measurements in the device description file are in absolute
 units,
 measurements applicable to fonts must be proportional to the type size.
 .
-.I groff
-achieves this using the precedent set by AT&T device-independent
-.IR troff : \" AT&T
-one font size is chosen as a norm,
-and all others are scaled linearly relative to that basis.
+The font's
+.I "unit width"
+establishes a numerical basis
+that permits all of its metrics to be expressed as integers
+if rendered at one point.
 .
-The \[lq]unit width\[rq] is the number of basic units per point when the
-font is rendered at this nominal size.
+When the formatter configures a type size,
+it scales the metrics linearly relative to that basis.
+.
+The unit width has no inherent relationship to the device resolution,
+and the same division procedure applies to all font metrics.
+.
+Observe that whatever unit might one select for the unit width,
+the division operation implied by scaling cancels it out,
+leaving a dimensionless quantity.
 .
 .
 .P
@@ -558,28 +563,31 @@ For instance,
 .IR groff 's
 .B lbp
 device uses a
-.B unitwidth
-of\~800.
-.
+.B \%unitwidth
+directive with an argument of\~800.
 Its Times roman font
-.RB (\[lq] TR \[rq])
+.B TR
 has a
-.B spacewidth
+.B \%spacewidth
 of\~833;
 this is also the width of its comma,
 period,
 centered period,
 and mathematical asterisk,
-while its \[lq]M\[rq] is 2,963 basic units.
-.
+while its
+.RB \[lq] M \[rq]
+has a width of 2,963.
 Thus,
-an \[lq]M\[rq] on the
+an
+.RB \[lq] M \[rq]
+on the
 .B lbp
-device is 2,963 basic units wide at a notional type size of 800\~points.
-.
-(800-point type is not practical for most purposes,
-but using it enables the quantities in the font description files to be
-expressed as integers.)
+device is 2,963 \[tdi] 800 times the unit width,
+or approximately 3.7.
+At a type size of 10 points,
+a Times roman
+.RB \[lq] M \[rq]
+is therefore 37 units wide.
 .
 .
 .P
@@ -628,8 +636,8 @@ file.)
 .TP
 .BI spacewidth\~  n
 The width of an unadjusted inter-word space is
-.IR n \~basic
-units.
+.IR n ,
+relative to the device's unit width.
 .
 .
 .P
@@ -656,12 +664,12 @@ Glyphs
 .I lign
 are ligatures;
 possible ligatures are
-.BR ff ,
-.BR fi ,
-.BR fl ,
-.BR ffi ,
+.BR f\&f ,
+.BR f\&i ,
+.BR f\&l ,
+.BR f\&f\&i ,
 and
-.BR ffl .
+.BR f\&f\&l .
 .
 For compatibility with other
 .I troff
@@ -676,23 +684,28 @@ The list of ligatures must not extend over more than one line.
 .B special
 The font is
 .IR special :
-when a glyph is requested that is not present in the formatter's
-currently selected font,
+when the document attempts to format a glyph
+that is not present in the formatter's currently selected font,
 the glyph is sought in any mounted fonts that bear this property.
+Often,
+such fonts are
+.IR unstyled ,
+having no heavy (bold) or slanted
+(italic or oblique)
+variants.
 .
 .
 .P
-Other directives in this section are ignored by
-.IR @g@troff ,
+Other directives in this section are ignored by GNU
+.IR troff , \" GNU
 but may be used by postprocessors to obtain further information about
 the font.
 .
 .
 .P
-The second section contains one or two subsections.
-.
-These can appear in either order;
-the first one encountered commences the second section.
+The second section contains one to three subsections,
+which can appear in any order,
+and any of which starts the second section.
 .
 Each starts with a directive on a line by itself.
 .
@@ -701,7 +714,7 @@ A
 subsection is mandatory unless the associated
 .I DESC
 file contains the
-.B unicode
+.B \%unicode
 directive.
 .
 Another subsection,
@@ -726,7 +739,7 @@ spaces or tabs and organized as follows.
 .
 .
 .IP
-.I name metrics type code
+.I name metrics type index
 .RI [ entity-name ]
 .RB [ \-\-
 .IR comment ]
@@ -809,23 +822,29 @@ it may be broken here for readability).
 .RI [\fB,\fP[ \:\%italic-correction\/\c
 .RI [\fB,\fP[ \:\%left-italic-correction\/\c
 .RI [\fB,\fP[ \:\%subscript-correction ]]]]]]]]]]
-.ad \*[AD]
+.\" XXX: cringe
+.ie d AD .ad \*[AD]
+.el      .ad b
 .
 .
 .P
-There must not be any spaces,
+Spaces,
 tabs,
-or newlines between these
+and newlines are prohibited
+between these
 .I subfields,
+which are expressed as decimal integers.
 .
-which are in basic units expressed as decimal integers.
+The unit of measure is that established by the
+.B \%unitwidth
+directive and scaled to the type size.
 .
-Unspecified subfields default
-.RB to\~ 0 .
+Unspecified subfields default to\~0.
 .
 Since there is no associated binary format,
-these values are not required to fit into the C language data type
-.B char
+these values are not required to fit
+into the C language data type
+.I char
 as they are in AT&T device-independent
 .IR troff . \" AT&T
 .
@@ -840,36 +859,41 @@ The
 subfield gives the height of the glyph
 (upward is positive);
 if a glyph does not extend above the baseline,
-it should be given a zero height,
-rather than a negative height.
+give it a zero height,
+not a negative height.
 .
 The
 .I depth
-subfield gives the depth of the glyph,
+subfield gives the depth of the glyph\[em]\c
 that is,
 the distance below the baseline to which the glyph extends
 (downward is positive);
 if a glyph does not extend below the baseline,
-it should be given a zero depth,
-rather than a negative depth.
+give it a zero depth,
+not a negative depth.
 .
-Italic corrections are relevant to glyphs in italic or oblique styles.
+Italic corrections apply when upright and slanted
+(italic or oblique)
+styles are typeset adjacently.
 .
 The
 .I italic-correction
-is the amount of space that should be added after an oblique glyph to be
-followed immediately by an upright glyph.
+is the amount of space
+to add after a slanted glyph
+to be followed immediately by an upright glyph.
 .
 The
 .I left-italic-correction
-is the amount of space that should be added before an oblique glyph to
-be preceded immediately by an upright glyph.
+is the amount of space
+to add before a slanted glyph
+to be preceded immediately by an upright glyph.
 .
 The
 .I
 subscript-correction
-is the amount of space that should be added after an oblique glyph to be
-followed by a subscript;
+is the amount of space
+to add after a slanted glyph
+to be followed by a subscript;
 it should be less than the italic correction.
 .
 .
@@ -929,21 +953,27 @@ parentheses in some fonts.
 .
 .P
 The
-.I code
-field gives a numeric identifier that the postprocessor uses to render
-the glyph.
-.
-The glyph can be specified to
-.I troff \" generic
-using this code by means of the
-.B \[rs]N
-escape sequence.
-.
-The code can be any integer
+.I index
+field is an integer that uniquely identifies a glyph within the font;
+any integer is accepted as input,
 (that is,
-any integer parsable by the C standard library's
+any integer parsable
+by the C standard library's
 .MR strtol 3
-function).
+function)
+but no practical font employs all possible values.
+.
+An
+.I index
+is limited to the range of the system's C language data type
+.IR int .
+.
+In a
+.I troff \" generic
+document,
+use the indexed character escape sequence
+.B \[rs]N
+to specify a glyph by index.
 .
 .
 .P
@@ -1009,6 +1039,25 @@ Such aliases can be chained.
 .
 .
 .P
+A
+.B \%charset\-range
+subsection works like the
+.B charset
+directive except that the glyph descriptions use a
+.I name
+of the form
+.BI u AAAA ..u FFFF\c
+,
+where
+.I AAAA
+and
+.I FFFF
+are hexadecimal digit sequences;
+the specified metrics then apply identically
+to all glyphs in the designated range.
+.
+.
+.P
 The directive
 .B \%kernpairs
 starts a list of kerning adjustments to be made to adjacent glyph pairs
@@ -1026,6 +1075,10 @@ is typeset immediately before
 .IR g2 ,
 the space between them should be increased
 .RI by\~ n .
+.
+The unit of measure is that established by the
+.B \%unitwidth
+directive and scaled to the type size.
 .
 Most kerning pairs should have a negative value
 .RI for\~ n .

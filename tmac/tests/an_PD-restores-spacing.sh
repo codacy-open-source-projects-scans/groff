@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright (C) 2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -22,7 +22,8 @@ groff="${abs_top_builddir:-.}/test-groff"
 
 # Regression-test Savannah #64267.
 
-input='.TH foo 1 2024-03-15 "groff test suite"
+input='.
+.TH foo 1 2024-03-15 "groff test suite"
 .SH Name
 foo \- frobnicate a bar
 .SH Monsters
@@ -39,9 +40,29 @@ troll
 .P
 .PD \" inexpert page author did not put this _before_ the `P` call
 .SH Treasure
-There is a lot of it.'
+There is a lot of it.
+.'
 
-output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou)
+# Expected output:
+#
+# foo(1)                  General Commands Manual                 foo(1)
+#
+# Name
+#      foo - frobnicate a bar
+#
+# Monsters
+#      In this game reminiscent of rogue(6), you can expect to encounter
+#      the following opponents in increasing order of menace.
+#      B      bat
+#      T      troll
+#
+# Treasure
+#      There is a lot of it.
+#
+# groff test suite              2024-03-15                        foo(1)
+
+output=$(printf "%s\n" "$input" \
+    | "$groff" -rLL=70n -man -Tascii -P-cbou)
 echo "$output"
 echo "$output" | sed -n -e '/troll/{' \
     -e 'n;/^$/{' \

@@ -24,7 +24,7 @@
 # standard.  Unfortunately, it doesn't contain a version number, which
 # must be thus provided manually as an additional parameter.
 #
-# 'glyphlist.txt' holds the Adobe Glyph List (AGL).
+# 'glyphlist.txt' is the Adobe Glyph List (AGL).
 #
 # This program needs a C preprocessor.
 
@@ -74,7 +74,7 @@ cat $$1 \
 cat $$3 \
 | sed -e '/#/d' \
       -e '/^$/d' \
-      -e 's/ \+/ /g' \
+      -e 's/  */ /g' \
       -e 's/ *$//' \
       -e 's/u//g' \
       -e 's/^\([^ ]*\) /\1;/' > $$4

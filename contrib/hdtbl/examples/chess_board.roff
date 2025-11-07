@@ -1,9 +1,7 @@
 .ig
-chess_board.roff
+This file is part of groff, the GNU roff typesetting system.
 
-This file is part of groff, the GNU roff type-setting system.
-
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
 
 groff is free software; you can redistribute it and/or modify it under
@@ -23,12 +21,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .if !d sopath \
 .  ds sopath
 .
-.so \*[sopath]examples/common.roff
+.ds lib examples/common.roff
+.soquiet \*[sopath]\*[lib]
+.if !d common \{\
+.  tmc \n[.F]: cannot find "\*[lib]"; specify its location
+.  tm1 " with groff '-I' or '-d sopath=' option
+.\}
 .
 .
 .nr *x 8
 .de r1
-.TR height=1.6c 
+.TR height=1.6c
 .TD hl= val=m hal=r \\\\n(*x
 .PN 4 ".TD bgc=wheat" ".TD bgc=tan3"
 .TD hl= val=m hal=l \\\\n(*x
@@ -51,7 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .TD hl=
 .PN 4 .r1 .r2
 .TR vl= hal=c
-.TD 
+.TD
 .nr *y 0
 .PN 8 .TD ".nr *y +1" \\\\n(*y
 .TD

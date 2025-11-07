@@ -1,8 +1,5 @@
 .ig
-
-common.roff
-
-This file is part of groff, the GNU roff type-setting system.
+This file is part of groff, the GNU roff typesetting system.
 
 Copyright (C) 2010-2020 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
@@ -19,7 +16,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ..
 .
 .
@@ -151,8 +147,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .  \" strip leading zero, if any
 .  ds * \\*[hex#]\"
 .  substring * 0 0
-.  if "\\*[*]"0" \
+.  length len# \\*[hex#]
+.  if \\n[len#]>1 .if "\\*[*]"0" \
 .    substring hex# 1 -1
+.  rr len#
 .
 .  if (\\$1 < 0) \
 .    ds hex# -\\*[hex#]\"

@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 2002-2020 Free Software Foundation, Inc.
      Written by Werner Lemberg (wl@gnu.org)
 
@@ -34,3 +33,9 @@ public:
 #define NUM_PAPERSIZES 4*8 + 8 + 1
 
 extern paper papersizes[];
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

@@ -334,11 +334,13 @@ sz	set type size and vertical spacing
 tp	begin title page
 u	underline argument
 uh	begin unnumbered section
-xl	set line length (local)
+xl	set line length (current environment only)
 xp	output index
 .TE
 .
 .
+.br
+.ne 4v
 .P
 Some macros are provided for \(lqold\(rq
 .MR roff 1
@@ -487,18 +489,18 @@ is a wrapper enabling the package to be loaded with the option
 .SH Notes
 .\" ====================================================================
 .
-Early
+Some early
 .I roff
-macro packages often limited their names to a single letter,
+macro packages limited their names to a single letter,
 which followed the formatter's
 .B m
-flag letter,
-resulting in
-.IR mm ,
-.IR ms ,
-.IR mv ,
-.IR mn ,
-and so on.
+option,
+resulting in \[lq]names\[rq] like
+.IR \-mm ,
+.IR \-ms ,
+.IR \-mv ,
+and
+.IR \-mn .
 .
 .\" 'When I started writing the -me macros it began as something in my
 .\" private tree (I don't remember what I called it).  Then some other
@@ -517,11 +519,14 @@ and so on.
 .\"
 .\" https://minnie.tuhs.org/pipermail/tuhs/2018-November/017033.html
 .
-The \(lqe\(rq in \(lqme\(rq stands for \(lqEric P.\& Allman\(rq,
-who wrote the macro package and the original technical papers
-documenting it while an undergraduate at the University of California.
+.IR me 's
+\(lqe\(rq stands for \(lqEric P.\& Allman\(rq,
+the author of the original macro package and the technical papers
+documenting it.
 .
 .
+.br
+.ne 4v
 .\" ====================================================================
 .SH "See also"
 .\" ====================================================================

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +16,16 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <errno.h> // errno
+#include <math.h> // ceil(), fabs()
+
+#include <vector>
+#include <algorithm> // find()
+
 #include "troff.h"
 #include "dictionary.h"
 #include "hvunits.h"
@@ -32,15 +42,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "macropath.h"
 #include "input.h"
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <errno.h> // errno
-#include <math.h> // ceil()
-
 symbol default_family("T");
 
+// C++11: Use `enum : char`.
+// TODO: Can we move this into a (possibly struct/class-implicit)
+// namespace?
 enum { ADJUST_LEFT = 0,
   ADJUST_BOTH = 1,
   ADJUST_CENTER = 3,
@@ -48,6 +54,9 @@ enum { ADJUST_LEFT = 0,
   ADJUST_MAX = 5
 };
 
+// C++11: Use `enum : unsigned char`.
+// TODO: Can we move this into a (possibly struct/class-implicit)
+// namespace?
 enum {
   // Not all combinations are valid; see hyphenate_request() below.
   HYPHEN_NONE = 0,
@@ -76,6 +85,9 @@ charinfo *field_delimiter_char;
 charinfo *padding_indicator_char;
 
 bool translate_space_to_dummy = false;
+
+// forward declaration
+static void hyphenate(hyphen_list *h, unsigned int flags);
 
 class pending_output_line {
   node *nd;
@@ -163,7 +175,8 @@ void environment::output(node *nd, bool suppress_filling,
       ) {
     curenv->construct_format_state(nd, was_centered, !suppress_filling);
     curdiv->output(nd, suppress_filling, vs, post_vs, width);
-  } else {
+  }
+  else {
     pending_output_line **p;
     for (p = &pending_lines; *p; p = &(*p)->next)
       ;
@@ -188,7 +201,8 @@ void environment::output_title(node *nd, bool suppress_filling,
 
 void environment::output_pending_lines()
 {
-  while (pending_lines && pending_lines->output()) {
+  while ((pending_lines != 0 /* nullptr */) && pending_lines->output())
+  {
     pending_output_line *tem = pending_lines;
     pending_lines = pending_lines->next;
     delete tem;
@@ -222,49 +236,50 @@ void widow_control_request()
 
 /* font_size functions */
 
-size_range *font_size::size_table = 0 /* nullptr */;
+size_range *font_size::size_list = 0 /* nullptr */;
 int font_size::nranges = 0;
 
 extern "C" {
 
 int compare_ranges(const void *p1, const void *p2)
 {
-  return ((size_range *)p1)->min - ((size_range *)p2)->min;
+  return (  static_cast<size_range *>(const_cast<void *>(p1))->min
+	  - static_cast<size_range *>(const_cast<void *>(p2))->min);
 }
 
 }
 
-void font_size::init_size_table(int *sizes)
+void font_size::init_size_list(int *sizes)
 {
   nranges = 0;
   while (sizes[nranges * 2] != 0)
     nranges++;
   assert(nranges > 0);
-  size_table = new size_range[nranges];
+  size_list = new size_range[nranges];
   for (int i = 0; i < nranges; i++) {
-    size_table[i].min = sizes[i * 2];
-    size_table[i].max = sizes[i * 2 + 1];
+    size_list[i].min = sizes[i * 2];
+    size_list[i].max = sizes[i * 2 + 1];
   }
-  qsort(size_table, nranges, sizeof(size_range), compare_ranges);
+  qsort(size_list, nranges, sizeof(size_range), compare_ranges);
 }
 
-void font_size::dump_size_table()
+void font_size::dump_size_list()
 {
   int lo, hi;
-  errprint("  valid type size table for selected font: ");
+  errprint("  valid type size list for selected font: ");
   if (nranges == 0)
     errprint(" empty!");
   else {
     bool need_comma = false;
     for (int i = 0; i < nranges; i++) {
-      lo = size_table[i].min;
-      hi = size_table[i].max;
+      lo = size_list[i].min;
+      hi = size_list[i].max;
       if (need_comma)
 	errprint(", ");
       if (lo == hi)
-	errprint("%1z", lo);
+	errprint("%1s", lo);
       else
-	errprint("%1z-%2z", lo, hi);
+	errprint("%1s-%2s", lo, hi);
       need_comma = true;
     }
   }
@@ -275,19 +290,19 @@ void font_size::dump_size_table()
 font_size::font_size(int sp)
 {
   for (int i = 0; i < nranges; i++) {
-    if (sp < size_table[i].min) {
-      if (i > 0 && size_table[i].min - sp >= sp - size_table[i - 1].max)
-	p = size_table[i - 1].max;
+    if (sp < size_list[i].min) {
+      if (i > 0 && size_list[i].min - sp >= sp - size_list[i - 1].max)
+	p = size_list[i - 1].max;
       else
-	p = size_table[i].min;
+	p = size_list[i].min;
       return;
     }
-    if (sp <= size_table[i].max) {
+    if (sp <= size_list[i].max) {
       p = sp;
       return;
     }
   }
-  p = size_table[nranges - 1].max;
+  p = size_list[nranges - 1].max;
 }
 
 int font_size::to_units()
@@ -297,31 +312,39 @@ int font_size::to_units()
 
 // we can't do this in a static constructor because various dictionaries
 // have to get initialized first
-
 static symbol default_environment_name("0");
 
 void init_environments()
 {
   curenv = new environment(default_environment_name);
-  (void)env_dictionary.lookup(default_environment_name, curenv);
+  (void) env_dictionary.lookup(default_environment_name, curenv);
 }
 
-void tab_character()
+// Set tab character, used to fill out the remainder of a tab stop where
+// a tab (TAB, U+0009) occurs in the input.  If a null pointer,
+// horizontal motion "fills" the tab stop.
+void tab_character_request()
 {
-  curenv->tab_char = get_optional_char();
+  curenv->tab_char = read_character();
   skip_line();
 }
 
-void leader_character()
+// Set leader character, used to fill out the remainder of a tab stop
+// where a leader (SOH, U+0001) occurs in the input.  If a null pointer,
+// horizontal motion "fills" the tab stop.  Used when the behavior of a
+// null pointer tab character is also desired on the same output line
+// (or more generally).
+void leader_character_request()
 {
-  curenv->leader_char = get_optional_char();
+  curenv->leader_char = read_character();
   skip_line();
 }
 
 void environment::add_char(charinfo *ci)
 {
+  assert(!was_line_interrupted);
   node *gc_np = 0 /* nullptr */;
-  if (line_interrupted)
+  if (was_line_interrupted)
     ;
   // don't allow fields in dummy environments
   else if (ci == field_delimiter_char && !is_dummy_env) {
@@ -348,7 +371,7 @@ void environment::add_char(charinfo *ci)
       start_line();
 #if 0
     fprintf(stderr, "current line is\n");
-    line->dump_node_list();
+    dump_node_list_in_reverse(line);
 #endif
     if (ci != hyphen_indicator_char)
       line = line->add_char(ci, this, &width_total, &space_total, &gc_np);
@@ -357,7 +380,7 @@ void environment::add_char(charinfo *ci)
   }
 #if 0
   fprintf(stderr, "now after we have added character the line is\n");
-  line->dump_node_list();
+  dump_node_list_in_reverse(line);
 #endif
   if ((!suppress_push) && gc_np) {
     if (gc_np && (gc_np->state == 0 /* nullptr */)) {
@@ -371,7 +394,7 @@ void environment::add_char(charinfo *ci)
   }
 #if 0
   fprintf(stderr, "now we have possibly added the state the line is\n");
-  line->dump_node_list();
+  dump_node_list_in_reverse(line);
 #endif
 }
 
@@ -392,7 +415,7 @@ void environment::add_node(node *nd)
 
   if ((current_tab != TAB_NONE) || has_current_field)
     nd->freeze_space();
-  if (line_interrupted) {
+  if (was_line_interrupted) {
     delete nd;
   }
   else if (current_tab != TAB_NONE) {
@@ -419,20 +442,22 @@ void environment::add_node(node *nd)
 
 void environment::add_hyphen_indicator()
 {
-  if ((current_tab != TAB_NONE) || line_interrupted || has_current_field
-      || hyphen_indicator_char != 0 /* nullptr */)
+  if ((current_tab != TAB_NONE)
+      || was_line_interrupted
+      || has_current_field
+      || (hyphen_indicator_char != 0 /* nullptr */))
     return;
   if (line == 0 /* nullptr */)
     start_line();
   line = line->add_discretionary_hyphen();
 }
 
-unsigned environment::get_hyphenation_mode()
+unsigned int environment::get_hyphenation_mode()
 {
   return hyphenation_mode;
 }
 
-unsigned environment::get_hyphenation_mode_default()
+unsigned int environment::get_hyphenation_mode_default()
 {
   return hyphenation_mode_default;
 }
@@ -489,8 +514,9 @@ void environment::add_italic_correction()
 
 void environment::space_newline()
 {
+  assert(!was_line_interrupted);
   assert((current_tab == TAB_NONE) && !has_current_field);
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   hunits x = H0;
   hunits sw = env_space_width(this);
@@ -508,7 +534,7 @@ void environment::space_newline()
     return;
   }
   add_node(new word_space_node(x, get_fill_color(), w));
-  possibly_break_line(false, is_spreading);
+  possibly_break_line(false /* must break here */, is_spreading);
   is_spreading = false;
 }
 
@@ -519,7 +545,7 @@ void environment::space()
 
 void environment::space(hunits space_width, hunits sentence_space_width)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   if (has_current_field && padding_indicator_char == 0 /* nullptr */) {
     add_padding();
@@ -544,7 +570,7 @@ void environment::space(hunits space_width, hunits sentence_space_width)
 			       get_fill_color(),
 			       new width_list(space_width,
 					      sentence_space_width)));
-  possibly_break_line(false, is_spreading);
+  possibly_break_line(false /* must break here */, is_spreading);
   is_spreading = false;
 }
 
@@ -556,14 +582,34 @@ static node *configure_space_underlining(bool b)
   return new device_extension_node(m, 1);
 }
 
+// TODO: Kill this off in groff 1.24.0 release + 2 years.  See input.cpp.
+std::vector<symbol> deprecated_font_identifiers;
+extern bool is_device_ps_or_pdf; // See input.cpp.
+
+static void warn_if_font_name_deprecated(symbol nm)
+{
+  const char *name = nm.contents();
+  std::vector<symbol>::iterator it
+    = find(deprecated_font_identifiers.begin(),
+	   deprecated_font_identifiers.end(), name);
+  if (it != deprecated_font_identifiers.end()) {
+    warning(WARN_FONT, "font name '%1' is deprecated", name);
+    // Warn only once for each name.
+    deprecated_font_identifiers.erase(it);
+  }
+}
+
 bool environment::set_font(symbol nm)
 {
-  if (line_interrupted) {
+  if (was_line_interrupted) {
     warning(WARN_FONT, "ignoring font selection on interrupted line");
     return true; // "no operation" is successful
   }
+  // TODO: Kill this off in groff 1.24.0 release + 2 years.
+  if (is_device_ps_or_pdf)
+    warn_if_font_name_deprecated(nm);
   if (nm == symbol("P") || nm.is_empty()) {
-    if (family->make_definite(prev_fontno) < 0)
+    if (family->resolve(prev_fontno) == FONT_NOT_MOUNTED)
       return false;
     int tem = fontno;
     fontno = prev_fontno;
@@ -577,7 +623,7 @@ bool environment::set_font(symbol nm)
       if (!mount_font(n, nm))
 	return false;
     }
-    if (family->make_definite(n) < 0)
+    if (family->resolve(n) == FONT_NOT_MOUNTED)
       return false;
     fontno = n;
   }
@@ -592,9 +638,9 @@ bool environment::set_font(symbol nm)
 
 bool environment::set_font(int n)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return false;
-  if (is_good_fontno(n)) {
+  if (is_valid_font_mounting_position(n)) {
     prev_fontno = fontno;
     fontno = n;
   }
@@ -607,12 +653,12 @@ bool environment::set_font(int n)
 
 void environment::set_family(symbol fam)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   if (fam.is_null() || fam.is_empty()) {
-    int previous_mounting_position = prev_family->make_definite(fontno);
+    int previous_mounting_position = prev_family->resolve(fontno);
     assert(previous_mounting_position >= 0);
-    if (previous_mounting_position < 0)
+    if (previous_mounting_position == FONT_NOT_MOUNTED)
       return;
     font_family *tem = family;
     family = prev_family;
@@ -627,7 +673,7 @@ void environment::set_family(symbol fam)
 	   (0 != "font family dictionary lookup"));
     if (0 /* nullptr */ == f)
       return;
-    if (f->make_definite(fontno) < 0) {
+    if (f->resolve(fontno) == FONT_NOT_MOUNTED) {
       error("no font family named '%1' exists", fam.contents());
       return;
     }
@@ -638,7 +684,7 @@ void environment::set_family(symbol fam)
 
 void environment::set_size(int n)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   if (n == 0) {
     font_size temp = prev_size;
@@ -658,7 +704,7 @@ void environment::set_size(int n)
 
 void environment::set_char_height(int n)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   if (n == requested_size || n <= 0)
     char_height = 0;
@@ -668,7 +714,7 @@ void environment::set_char_height(int n)
 
 void environment::set_char_slant(int n)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   char_slant = n;
 }
@@ -695,7 +741,7 @@ color *environment::get_fill_color()
 
 void environment::set_stroke_color(color *c)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   curenv->prev_stroke_color = curenv->stroke_color;
   curenv->stroke_color = c;
@@ -703,7 +749,7 @@ void environment::set_stroke_color(color *c)
 
 void environment::set_fill_color(color *c)
 {
-  if (line_interrupted)
+  if (was_line_interrupted)
     return;
   curenv->prev_fill_color = curenv->fill_color;
   curenv->fill_color = c;
@@ -725,8 +771,8 @@ environment::environment(symbol nm)
   sentence_space_size(12),
   adjust_mode(ADJUST_BOTH),
   is_filling(true),
-  line_interrupted(false),
-  prev_line_interrupted(0),
+  was_line_interrupted(false),
+  was_previous_line_interrupted(0),
   centered_line_count(0),
   right_aligned_line_count(0),
   prev_vertical_spacing(points_to_units(12)),
@@ -743,23 +789,23 @@ environment::environment(symbol nm)
   underline_spaces(false),
   input_trap_count(-1),
   continued_input_trap(false),
-  line(0),
+  line(0 /* nullptr */),
   prev_text_length(0),
   width_total(0),
   space_total(0),
   input_line_start(0),
   using_line_tabs(false),
   current_tab(TAB_NONE),
-  leader_node(0),
-  tab_char(0),
+  leader_node(0 /* nullptr */),
+  tab_char(0 /* nullptr */),
   leader_char(charset_table['.']),
   has_current_field(false),
   is_discarding(false),
   is_spreading(false),
-  margin_character_flags(0),
-  margin_character_node(0),
+  margin_character_flags(0U),
+  margin_character_node(0 /* nullptr */),
   margin_character_distance(points_to_units(10)),
-  numbering_nodes(0),
+  numbering_nodes(0 /* nullptr */),
   number_text_separation(1),
   line_number_indent(0),
   line_number_multiple(1),
@@ -771,7 +817,7 @@ environment::environment(symbol nm)
   hyphenation_space(H0),
   hyphenation_margin(H0),
   composite(false),
-  pending_lines(0),
+  pending_lines(0 /* nullptr */),
 #ifdef WIDOW_CONTROL
   want_widow_control(false),
 #endif /* WIDOW_CONTROL */
@@ -779,21 +825,21 @@ environment::environment(symbol nm)
   prev_stroke_color(&default_color),
   fill_color(&default_color),
   prev_fill_color(&default_color),
-  control_character('.'),
-  no_break_control_character('\''),
+  control_character((unsigned char)('.')),
+  no_break_control_character((unsigned char)('\'')),
   seen_space(false),
   seen_eol(false),
   suppress_next_eol(false),
   seen_break(false),
-  tabs(units_per_inch/2, TAB_LEFT),
+  tabs((units_per_inch / 2), TAB_LEFT),
   name(nm),
   hyphen_indicator_char(0)
 {
   prev_family = family = lookup_family(default_family);
   prev_fontno = fontno = 1;
-  if (!is_good_fontno(1))
+  if (!is_valid_font_mounting_position(1))
     fatal("font mounted at position 1 is not valid");
-  if (family->make_definite(1) < 0)
+  if (family->resolve(1) == FONT_NOT_MOUNTED)
     fatal("invalid default font family '%1'",
 	  default_family.contents());
   prev_fontno = fontno;
@@ -819,8 +865,8 @@ environment::environment(const environment *e)
   sentence_space_size(e->sentence_space_size),
   adjust_mode(e->adjust_mode),
   is_filling(e->is_filling),
-  line_interrupted(false),
-  prev_line_interrupted(0),
+  was_line_interrupted(false),
+  was_previous_line_interrupted(0),
   centered_line_count(0),
   right_aligned_line_count(0),
   prev_vertical_spacing(e->prev_vertical_spacing),
@@ -837,14 +883,14 @@ environment::environment(const environment *e)
   underline_spaces(false),
   input_trap_count(-1),
   continued_input_trap(false),
-  line(0),
+  line(0) /* nullptr */,
   prev_text_length(e->prev_text_length),
   width_total(0),
   space_total(0),
   input_line_start(0),
   using_line_tabs(e->using_line_tabs),
   current_tab(TAB_NONE),
-  leader_node(0),
+  leader_node(0 /* nullptr */),
   tab_char(e->tab_char),
   leader_char(e->leader_char),
   has_current_field(false),
@@ -853,7 +899,7 @@ environment::environment(const environment *e)
   margin_character_flags(e->margin_character_flags),
   margin_character_node(e->margin_character_node),
   margin_character_distance(e->margin_character_distance),
-  numbering_nodes(0),
+  numbering_nodes(0 /* nullptr */),
   number_text_separation(e->number_text_separation),
   line_number_indent(e->line_number_indent),
   line_number_multiple(e->line_number_multiple),
@@ -865,7 +911,7 @@ environment::environment(const environment *e)
   hyphenation_space(e->hyphenation_space),
   hyphenation_margin(e->hyphenation_margin),
   composite(false),
-  pending_lines(0),
+  pending_lines(0 /* nullptr */),
 #ifdef WIDOW_CONTROL
   want_widow_control(e->want_widow_control),
 #endif /* WIDOW_CONTROL */
@@ -880,7 +926,7 @@ environment::environment(const environment *e)
   suppress_next_eol(e->suppress_next_eol),
   seen_break(e->seen_break),
   tabs(e->tabs),
-  name(e->name),		// so that, e.g., '.if "\n[.ev]"0"' works
+  name(e->name),	// so that, e.g., '.if "\n[.ev]"0"' works
   hyphen_indicator_char(e->hyphen_indicator_char)
 {
 }
@@ -901,8 +947,8 @@ void environment::copy(const environment *e)
   sentence_space_size = e->sentence_space_size;
   adjust_mode = e->adjust_mode;
   is_filling = e->is_filling;
-  line_interrupted = false;
-  prev_line_interrupted = 0;
+  was_line_interrupted = false;
+  was_previous_line_interrupted = 0;
   centered_line_count = 0;
   right_aligned_line_count = 0;
   prev_vertical_spacing = e->prev_vertical_spacing;
@@ -1055,9 +1101,9 @@ vunits environment::total_post_vertical_spacing()
   return tem;
 }
 
-int environment::get_bold()
+hunits environment::get_emboldening_offset()
 {
-  return get_bold_fontno(fontno);
+  return env_font_emboldening_offset(this, fontno);
 }
 
 hunits environment::get_digit_width()
@@ -1065,7 +1111,7 @@ hunits environment::get_digit_width()
   return env_digit_width(this);
 }
 
-unsigned environment::get_adjust_mode()
+unsigned int environment::get_adjust_mode()
 {
   return adjust_mode;
 }
@@ -1212,66 +1258,7 @@ node *environment::extract_output_line()
   return nd;
 }
 
-/* environment related requests */
-
-void environment_switch()
-{
-  if (curenv->is_dummy()) {
-    error("cannot switch out of dummy environment");
-  }
-  else {
-    symbol nm = get_long_name();
-    if (nm.is_null()) {
-      if (env_stack == 0 /* nullptr */)
-	error("environment stack underflow");
-      else {
-	bool seen_space = curenv->seen_space;
-	bool seen_eol   = curenv->seen_eol;
-	bool suppress_next_eol = curenv->suppress_next_eol;
-	curenv = env_stack->env;
-	curenv->seen_space = seen_space;
-	curenv->seen_eol   = seen_eol;
-	curenv->suppress_next_eol = suppress_next_eol;
-	env_list_node *tem = env_stack;
-	env_stack = env_stack->next;
-	delete tem;
-      }
-    }
-    else {
-      environment *e = (environment *)env_dictionary.lookup(nm);
-      if (!e) {
-	e = new environment(nm);
-	(void)env_dictionary.lookup(nm, e);
-      }
-      env_stack = new env_list_node(curenv, env_stack);
-      curenv = e;
-    }
-  }
-  skip_line();
-}
-
-void environment_copy()
-{
-  if (!has_arg()) {
-    warning(WARN_MISSING, "environment copy request expects an"
-	    " argument");
-    skip_line();
-    return;
-  }
-  environment *e = 0 /* nullptr */;
-  tok.skip();
-  symbol nm = get_long_name();
-  assert(nm != 0 /* nullptr */);
-  e = static_cast<environment *>(env_dictionary.lookup(nm));
-  if (e != 0 /* nullptr */)
-    curenv->copy(e);
-  else
-    error("cannot copy from nonexistent environment '%1'",
-	  nm.contents());
-  skip_line();
-}
-
-void fill_color_change()
+static void select_fill_color_request()
 {
   symbol s = get_name();
   if (s.is_null())
@@ -1281,7 +1268,7 @@ void fill_color_change()
   skip_line();
 }
 
-void stroke_color_change()
+static void select_stroke_color_request()
 {
   symbol s = get_name();
   if (s.is_null())
@@ -1293,33 +1280,47 @@ void stroke_color_change()
 
 static symbol P_symbol("P");
 
-static void select_font()
+// Select font with name or mounting position `s`.
+void select_font(symbol s)
 {
-  symbol s = get_name();
   bool is_number = true;
-  if (s.is_null())
+  if (s.is_null() || s.is_empty())
     s = P_symbol;
   if (s == P_symbol)
     is_number = false;
   else {
-    for (const char *p = s.contents();
-	 p != 0 /* nullptr */ && *p != '\0';
-	 p++)
+    const char *p = s.contents();
+    assert(*p != 0 /* nullptr */);
+    if ((csdigit(*p)) || ('-' == *p))
+      p++;
+    for (; p != 0 /* nullptr */ && *p != '\0'; p++)
       if (!csdigit(*p)) {
 	is_number = false;
 	break;
       }
   }
-  // environment::set_font warns if a bogus mounting position is
+  // environment::set_font warns if an unused mounting position is
   // requested.  We must warn here if a bogus font name is selected.
-  if (is_number)
-    (void) curenv->set_font(atoi(s.contents()));
+  if (is_number) {
+    errno = 0;
+    long val = strtol(s.contents(), NULL, 10);
+    if ((ERANGE == errno) || (val > INT_MAX) || (val < 0))
+      warning(WARN_RANGE, "font mounting position must be in range"
+	      " 0..%1, got %2", INT_MAX, s.contents());
+    else
+      (void) curenv->set_font(int(val));
+  }
   else {
     if (s == "DESC")
       error("'%1' is not a valid font name", s.contents());
     else if (!curenv->set_font(s))
       warning(WARN_FONT, "cannot select font '%1'", s.contents());
   }
+}
+
+static void select_font_request()
+{
+  select_font(get_name());
   skip_line();
 }
 
@@ -1353,7 +1354,7 @@ void point_size()
   skip_line();
 }
 
-void override_sizes()
+static void override_available_type_sizes_request()
 {
   if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "available font sizes override request"
@@ -1369,7 +1370,7 @@ void override_sizes()
   int *sizes = new int[n]; // C++03: new int[n]();
   (void) memset(sizes, 0, (n * sizeof(int)));
   int i = 0;
-  char *buf = read_string();
+  char *buf = read_rest_of_line_as_argument();
   if (!buf)
     return;
   char *p = strtok(buf, " \t");
@@ -1403,7 +1404,8 @@ void override_sizes()
     sizes[i++] = upper;
     p = strtok(0, " \t");
   }
-  font_size::init_size_table(sizes);
+  font_size::init_size_list(sizes);
+  tok.next();
 }
 
 void space_size()
@@ -1417,12 +1419,12 @@ void space_size()
   int n;
   if (get_integer(&n)) {
     if (n < 0)
-      warning(WARN_RANGE, "negative word space size ignored: '%1'", n);
+      warning(WARN_RANGE, "ignoring negative word space size: '%1'", n);
     else
       curenv->space_size = n;
     if (has_arg() && get_integer(&n))
       if (n < 0)
-	warning(WARN_RANGE, "negative sentence space size ignored: "
+	warning(WARN_RANGE, "ignoring negative sentence space size: "
 		"'%1'", n);
       else
 	curenv->sentence_space_size = n;
@@ -1599,11 +1601,20 @@ void indent()
 void temporary_indent()
 {
   bool is_valid = true;
-  hunits temp;
-  if (!get_hunits(&temp, 'm', curenv->get_indent()))
-    is_valid = false;
-  while (!tok.is_newline() && !tok.is_eof())
-    tok.next();
+  hunits temp = H0;
+  if (!has_arg()) {
+    warning(WARN_MISSING, "temporary indentation request expects"
+	    " argument");
+    skip_line();
+    // _Don't_ return early; when invoked with the ordinary control
+    // character this request still breaks the line.
+  }
+  else {
+    if (!get_hunits(&temp, 'm', curenv->get_indent()))
+      is_valid = false;
+    while (!tok.is_newline() && !tok.is_eof())
+      tok.next();
+  }
   if (want_break)
     curenv->do_break();
   if (temp < H0) {
@@ -1670,8 +1681,8 @@ void margin_character()
     if (nd) {
       delete curenv->margin_character_node;
       curenv->margin_character_node = nd;
-      curenv->margin_character_flags = MARGIN_CHARACTER_ON
-				       | MARGIN_CHARACTER_NEXT;
+      curenv->margin_character_flags = environment::MC_ON
+				       | environment::MC_NEXT;
       hunits d;
       if (has_arg() && get_hunits(&d, 'm'))
 	curenv->margin_character_distance = d;
@@ -1679,8 +1690,8 @@ void margin_character()
   }
   else {
     check_missing_character();
-    curenv->margin_character_flags &= ~MARGIN_CHARACTER_ON;
-    if (curenv->margin_character_flags == 0) {
+    curenv->margin_character_flags &= ~environment::MC_ON;
+    if (curenv->margin_character_flags == 0U) {
       delete curenv->margin_character_node;
       curenv->margin_character_node = 0 /* nullptr */;
     }
@@ -1706,7 +1717,7 @@ void number_lines()
     curenv->numbering_nodes = nd;
     curenv->line_number_digit_width = env_digit_width(curenv);
     int n;
-    if (!tok.is_usable_as_delimiter()) {
+    if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
       if (get_integer(&n, next_line_number)) {
 	next_line_number = n;
 	if (next_line_number < 0) {
@@ -1719,7 +1730,7 @@ void number_lines()
       while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	tok.next();
     if (has_arg()) {
-      if (!tok.is_usable_as_delimiter()) {
+      if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
 	if (get_integer(&n)) {
 	  if (n <= 0) {
 	    warning(WARN_RANGE, "output line number multiple cannot"
@@ -1733,14 +1744,14 @@ void number_lines()
 	while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	  tok.next();
       if (has_arg()) {
-	if (!tok.is_usable_as_delimiter()) {
+	if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
 	  if (get_integer(&n))
 	    curenv->number_text_separation = n;
 	}
 	else
 	  while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	    tok.next();
-	if (has_arg() && !tok.is_usable_as_delimiter()
+	if (has_arg() && !tok.is_usable_as_delimiter() // XXX abuse of function
 	    && get_integer(&n))
 	  curenv->line_number_indent = n;
       }
@@ -1770,15 +1781,15 @@ void hyphenate_request()
   int n;
   if (has_arg() && get_integer(&n)) {
     if (n < HYPHEN_NONE) {
-      warning(WARN_RANGE, "negative hyphenation flags ignored: %1", n);
+      warning(WARN_RANGE, "ignoring negative hyphenation mode: %1", n);
     } else if (n > HYPHEN_MAX) {
-      warning(WARN_RANGE, "unknown hyphenation flags ignored (maximum "
-	"%1): %2", HYPHEN_MAX, n);
+      warning(WARN_RANGE, "hyphenation mode must be in range 0..%1, got"
+	      " %2", HYPHEN_MAX, n);
     } else if (((n & HYPHEN_DEFAULT) && (n & ~HYPHEN_DEFAULT))
 	|| ((n & HYPHEN_FIRST_CHAR) && (n & HYPHEN_NOT_FIRST_CHARS))
 	|| ((n & HYPHEN_LAST_CHAR) && (n & HYPHEN_NOT_LAST_CHARS)))
-      warning(WARN_SYNTAX, "contradictory hyphenation flags ignored: "
-	"%1", n);
+      warning(WARN_SYNTAX, "ignoring self-contradictory hyphenation"
+	      " mode: %1", n);
     else
       curenv->hyphenation_mode = n;
   }
@@ -1810,9 +1821,13 @@ void set_hyphenation_mode_default()
   skip_line();
 }
 
-void hyphen_char()
+// Set hyphenation character, which the input uses to mark the position
+// of a discretionary break ("dbreak") in a word.
+void hyphenation_character_request()
 {
-  curenv->hyphen_indicator_char = get_optional_char();
+  curenv->hyphen_indicator_char = read_character();
+  // TODO?: If null pointer, set to ESCAPE_PERCENT, eliminating test(s)
+  // while processing output line?
   skip_line();
 }
 
@@ -1830,7 +1845,7 @@ void environment::interrupt()
 {
   if (!is_dummy_env) {
     add_node(new transparent_dummy_node);
-    line_interrupted = true;
+    was_line_interrupted = true;
   }
 }
 
@@ -1861,13 +1876,13 @@ void environment::newline()
   }
   node *to_be_output = 0 /* nullptr */;
   hunits to_be_output_width;
-  prev_line_interrupted = 0;
+  was_previous_line_interrupted = 0;
   if (is_dummy_env)
     space_newline();
-  else if (line_interrupted) {
-    line_interrupted = false;
+  else if (was_line_interrupted) {
+    was_line_interrupted = false;
     // see environment::final_break
-    prev_line_interrupted = is_exit_underway ? 2 : 1;
+    was_previous_line_interrupted = is_exit_underway ? 2 : 1;
   }
   else if (centered_line_count > 0) {
     --centered_line_count;
@@ -1909,7 +1924,7 @@ void environment::newline()
     hyphen_line_count = 0;
   }
   if (input_trap_count > 0) {
-    if (!(continued_input_trap && prev_line_interrupted))
+    if (!(continued_input_trap && (was_previous_line_interrupted > 0)))
       if (--input_trap_count == 0)
 	spring_trap(input_trap);
   }
@@ -1918,14 +1933,14 @@ void environment::newline()
 void environment::output_line(node *nd, hunits width, bool was_centered)
 {
   prev_text_length = width;
-  if (margin_character_flags) {
+  if (margin_character_flags > 0U) {
     hunits d = line_length + margin_character_distance - saved_indent
 	       - width;
     if (d > 0) {
       nd = new hmotion_node(d, get_fill_color(), nd);
       width += d;
     }
-    margin_character_flags &= ~MARGIN_CHARACTER_NEXT;
+    margin_character_flags &= ~MC_NEXT;
     node *tem;
     if (!margin_character_flags) {
       tem = margin_character_node;
@@ -2065,11 +2080,11 @@ breakpoint *environment::choose_breakpoint()
 		   // Don't choose the hyphenated breakpoint if the line
 		   // can be justified by adding no more than
 		   // hyphenation_space to any word space.
-		   ? (bp->nspaces > 0
-		      && ((((target_text_length - bp->width)
-			    + ((bp->nspaces - 1) * hresolution)
-			       / bp->nspaces))
-			  <= hyphenation_space))
+		   ? ((bp->nspaces > 0)
+		      && (((target_text_length - bp->width)
+			    + ((bp->nspaces - 1) * hresolution))
+			    / bp->nspaces)
+			   <= hyphenation_space)
 		   // Don't choose the hyphenated breakpoint if the line
 		   // is no more than hyphenation_margin short of the
 		   // line length.
@@ -2124,15 +2139,18 @@ breakpoint *environment::choose_breakpoint()
     }
     nd = nd->next;
   }
-  if (best_bp) {
-    if (!best_bp_fits)
-      output_warning(WARN_BREAK, "cannot break line");
+  if (best_bp)
     return best_bp;
-  }
   return 0 /* nullptr */;
 }
 
-void environment::hyphenate_line(bool must_break_here)
+// Iterate over the nodes of the output line, looking for break points.
+// The node list is in reverse order, so the first node we see is the
+// last (or rightmost) on the line.  Whether a break requires
+// hyphenation depends on the properties of the node and the context;
+// if we're at a word boundary, we can break without a hyphen regardless
+// of the node's own hyphenation properties.
+void environment::possibly_hyphenate_line(bool must_break_here)
 {
   assert(line != 0 /* nullptr */);
   hyphenation_type prev_type = line->get_hyphenation_type();
@@ -2143,19 +2161,23 @@ void environment::hyphenate_line(bool must_break_here)
     for (startp = &line->next; *startp != 0 /* nullptr */;
 	 startp = &(*startp)->next) {
       hyphenation_type this_type = (*startp)->get_hyphenation_type();
-      if (prev_type == HYPHEN_BOUNDARY && this_type == HYPHEN_MIDDLE)
+      if (prev_type == HYPHENATION_UNNECESSARY
+	  && this_type == HYPHENATION_PERMITTED)
 	break;
       prev_type = this_type;
     }
+  assert(*startp != 0 /* nullptr */);
   if (*startp == 0 /* nullptr */)
     return;
   node *tem = *startp;
   do {
     tem = tem->next;
   } while (tem != 0 /* nullptr */
-	   && tem->get_hyphenation_type() == HYPHEN_MIDDLE);
-  bool inhibit = (tem != 0 /* nullptr */
-		 && tem->get_hyphenation_type() == HYPHEN_INHIBIT);
+	   && tem->get_hyphenation_type() == HYPHENATION_PERMITTED);
+  // This is for characters like hyphen and em dash.
+  bool inhibit = ((tem != 0 /* nullptr */)
+		  && (tem->get_hyphenation_type()
+		      == HYPHENATION_INHIBITED));
   node *end = tem;
   hyphen_list *sl = 0 /* nullptr */;
   tem = *startp;
@@ -2169,16 +2191,15 @@ void environment::hyphenate_line(bool must_break_here)
     forward = tem1;
   }
   if (!inhibit) {
-    // this is for characters like hyphen and emdash
-    int prev_code = 0;
+    unsigned char prev_code = 0U;
     for (hyphen_list *h = sl; h; h = h->next) {
-      h->is_breakable = (prev_code != 0
+      h->is_breakable = (prev_code != 0U
 			 && h->next != 0 /* nullptr */
-			 && h->next->hyphenation_code != 0);
+			 && h->next->hyphenation_code != 0U);
       prev_code = h->hyphenation_code;
     }
   }
-  if (hyphenation_mode != 0
+  if ((hyphenation_mode != 0)
       && !inhibit
       // this may not be right if we have extra space on this line
       && !((hyphenation_mode & HYPHEN_NOT_LAST_LINE)
@@ -2211,12 +2232,12 @@ static node *node_list_reverse(node *nd)
   return res;
 }
 
-static void distribute_space(node *nd, int nspaces,
+static bool distribute_space(node *nd, int nspaces,
 			     hunits desired_space,
 			     bool force_reverse_node_list = false)
 {
-  if (desired_space.is_zero() || nspaces == 0)
-    return;
+  if (desired_space.is_zero() || (nspaces == 0) || (desired_space < H0))
+    return false;
   // Positive desired space is the typical case.  Negative desired space
   // is possible if we have overrun an unbreakable line.  But we should
   // not get here if there are no adjustable space nodes to adjust.
@@ -2234,7 +2255,7 @@ static void distribute_space(node *nd, int nspaces,
   if (!force_reverse_node_list && spread_limit >= 0
       && desired_space.to_units() > 0) {
     hunits em = curenv->get_size();
-    double Ems = (double)desired_space.to_units() / nspaces
+    double Ems = static_cast<double>(desired_space.to_units()) / nspaces
 		 / (em.is_zero() ? hresolution : em.to_units());
     if (Ems > spread_limit)
       output_warning(WARN_BREAK, "spreading %1m per space", Ems);
@@ -2242,10 +2263,15 @@ static void distribute_space(node *nd, int nspaces,
   for (node *tem = nd; tem != 0 /* nullptr */; tem = tem->next)
     tem->spread_space(&nspaces, &desired_space);
   if (force_reverse_node_list || do_reverse_node_list)
-    (void)node_list_reverse(nd);
+    (void) node_list_reverse(nd);
   if (!force_reverse_node_list)
     do_reverse_node_list = !do_reverse_node_list;
+  return true;
 }
+
+// from input.cpp
+extern double warn_scale;
+extern char warn_scaling_unit;
 
 void environment::possibly_break_line(bool must_break_here,
 				      bool must_adjust)
@@ -2259,7 +2285,7 @@ void environment::possibly_break_line(bool must_break_here,
 	     // When a macro follows a paragraph in fill mode, the
 	     // current line should not be empty.
 	     || (width_total - line->width()) > target_text_length)) {
-    hyphenate_line(must_break_here);
+    possibly_hyphenate_line(must_break_here);
     breakpoint *bp = choose_breakpoint();
     if (bp == 0 /* nullptr */)
       // we'll find one eventually
@@ -2270,21 +2296,48 @@ void environment::possibly_break_line(bool must_break_here,
       ndp = &(*ndp)->next;
     bp->nd->split(bp->index, &pre, &post);
     *ndp = post;
-    hunits extra_space_width = H0;
+    // The space deficit tells us how much the line is overset if
+    // negative, or underset if positive, relative to the configured
+    // line length.
+    hunits space_deficit = target_text_length - bp->width;
+    // An overset line always gets a warning.
+    if (space_deficit < H0) {
+      double dsd = static_cast<double>(space_deficit.to_units());
+      output_warning(WARN_BREAK, "cannot %1 line; overset by %2%3",
+		     (ADJUST_BOTH == adjust_mode) ? "adjust" : "break",
+		     in_nroff_mode
+		     ? static_cast<int>(ceil(fabs(dsd / hresolution)))
+		     : fabs(dsd / warn_scale),
+		     in_nroff_mode ? 'n' : warn_scaling_unit);
+    }
+    // An underset line warns only if it requires adjustment but no
+    // adjustable spaces exist on the line.
+    else if ((ADJUST_BOTH == adjust_mode)
+	     && (space_deficit > H0)
+	     && (0 == bp->nspaces)) {
+      double dsd = static_cast<double>(space_deficit.to_units());
+      output_warning(WARN_BREAK, "cannot adjust line; underset by %1%2",
+		     in_nroff_mode
+		     ? static_cast<int>(ceil(fabs(dsd / hresolution)))
+		     : fabs(dsd / warn_scale),
+		     in_nroff_mode ? 'n' : warn_scaling_unit);
+    }
+    // The extra space is the amount of space to distribute among the
+    // adjustable space nodes in an output line; this process occurs
+    // only if adjustment is enabled.  We may however want to synthesize
+    // an extra indentation from it if centering or right-aligning.
+    hunits extra_space = H0;
     switch (adjust_mode) {
     case ADJUST_BOTH:
       if (bp->nspaces != 0)
-	extra_space_width = target_text_length - bp->width;
-      else if (bp->width > 0 && target_text_length > 0
-	       && target_text_length > bp->width)
-	output_warning(WARN_BREAK, "cannot adjust line");
+	extra_space = space_deficit;
       break;
     case ADJUST_CENTER:
-      saved_indent += (target_text_length - bp->width)/2;
+      saved_indent += space_deficit / 2;
       was_centered = true;
       break;
     case ADJUST_RIGHT:
-      saved_indent += target_text_length - bp->width;
+      saved_indent += space_deficit;
       break;
     case ADJUST_LEFT:
     case ADJUST_CENTER - 1:
@@ -2293,16 +2346,12 @@ void environment::possibly_break_line(bool must_break_here,
     default:
       assert(0 == "unhandled case of `adjust_mode`");
     }
-    distribute_space(pre, bp->nspaces, extra_space_width);
-    hunits output_width = bp->width + extra_space_width;
-    // This should become an assert() when we can get reliable width
-    // data from CJK glyphs.  See Savannah #44018.
-    if (output_width <= 0) {
-      double output_width_in_ems = output_width.to_units();
-      output_warning(WARN_BREAK, "line has non-positive width %1m",
-		     output_width_in_ems);
+    hunits output_width = bp->width; // 0 if no breakpoint is found.
+    if (distribute_space(pre, bp->nspaces, extra_space))
+      output_width += extra_space;
+    // If we had an unbreakable, overset line, we can do no more.
+    if (output_width <= 0)
       return;
-    }
     input_line_start -= output_width;
     if (bp->hyphenated)
       hyphen_line_count++;
@@ -2391,7 +2440,7 @@ bottom of this page.
 
 void environment::final_break()
 {
-  if (prev_line_interrupted == 2) {
+  if (was_previous_line_interrupted == 2) {
     do_break();
     add_node(new transparent_dummy_node);
   }
@@ -2411,7 +2460,7 @@ node *environment::make_tag(const char *nm, int i)
     macro m;
     m.append_str("devtag:");
     for (const char *p = nm; *p; p++)
-      if (!is_invalid_input_char((unsigned char)*p))
+      if (!is_invalid_input_char(static_cast<unsigned char>(*p)))
 	m.append(*p);
     m.append(' ');
     m.append_int(i);
@@ -2443,10 +2492,11 @@ void environment::dump_troff_state()
 #undef SPACES
 }
 
-void environment::dump_node_list()
+extern void dump_node_list_in_reverse(node *);
+
+void environment::dump_pending_nodes()
 {
-  if (line != 0 /* nullptr */)
-    line->dump_node_list();
+  dump_node_list_in_reverse(line);
 }
 
 statem *environment::construct_state(bool has_only_eol)
@@ -2544,7 +2594,7 @@ void environment::do_break(bool want_adjustment)
       line = new space_node(H0, get_fill_color(), line);
       space_total++;
     }
-    possibly_break_line(false, want_adjustment);
+    possibly_break_line(false /* must break here */, want_adjustment);
   }
   while (line != 0 /* nullptr */ && line->discardable()) {
     width_total -= line->width();
@@ -2567,12 +2617,14 @@ void environment::do_break(bool want_adjustment)
 	break;
       }
     }
+    if (want_nodes_dumped && (curdiv == topdiv))
+      curenv->dump_pending_nodes();
     node *tem = line;
     line = 0 /* nullptr */;
     output_line(tem, width_total, was_centered);
     hyphen_line_count = 0;
   }
-  prev_line_interrupted = 0;
+  was_previous_line_interrupted = 0;
 #ifdef WIDOW_CONTROL
   mark_last_line();
   output_pending_lines();
@@ -2622,7 +2674,7 @@ void title()
   }
   node *part[3];
   hunits part_width[3];
-  part[0] = part[1] = part[2] = 0;
+  part[0] = part[1] = part[2] = 0 /* nullptr */;
   environment env(curenv);
   environment *oldenv = curenv;
   curenv = &env;
@@ -2701,8 +2753,9 @@ void adjust()
 	if (n < 0)
 	  warning(WARN_RANGE, "negative adjustment mode");
 	else if (n > ADJUST_MAX)
-	  warning(WARN_RANGE, "out-of-range adjustment mode ignored: "
-		  "%1", n);
+	  warning(WARN_RANGE, "adjustment mode must be in range 0..%1"
+		  " (or 'l', 'r', 'c', 'b', or 'n'), got %2",
+		  ADJUST_MAX, n);
 	else
 	  curenv->adjust_mode = n;
       }
@@ -2721,10 +2774,7 @@ void do_input_trap(bool respect_continuation)
 {
   curenv->input_trap_count = -1;
   curenv->input_trap = 0 /* nullptr */;
-  if (respect_continuation)
-    curenv->continued_input_trap = true;
-  else
-    curenv->continued_input_trap = false;
+  curenv->continued_input_trap = respect_continuation;
   int n;
   if (has_arg() && get_integer(&n)) {
     if (n <= 0)
@@ -2949,7 +2999,7 @@ void tab_stops::operator=(const tab_stops &ts)
   }
 }
 
-void set_tabs()
+static void configure_tab_stops_request()
 {
   hunits pos;
   hunits prev_pos = 0;
@@ -3010,11 +3060,12 @@ tab_type environment::distance_to_next_tab(hunits *distance, hunits *leftpos)
 					leftpos);
 }
 
-void field_characters()
+// XXX: Field characters are global; shouldn't they be environmental?
+static void field_characters_request()
 {
-  field_delimiter_char = get_optional_char();
+  field_delimiter_char = read_character();
   if (field_delimiter_char)
-    padding_indicator_char = get_optional_char();
+    padding_indicator_char = read_character();
   else
     padding_indicator_char = 0 /* nullptr */;
   skip_line();
@@ -3159,14 +3210,14 @@ void environment::wrap_up_field()
 			       tab_field_spaces,
 			       field_spaces + tab_field_spaces);
     padding -= tab_padding;
-    distribute_space(tab_contents, tab_field_spaces, tab_padding,
-		     true /* force reversal of node list */);
+    (void) distribute_space(tab_contents, tab_field_spaces, tab_padding,
+			    true /* force reversal of node list */);
     tab_field_spaces = 0;
     tab_width += tab_padding;
   }
   if (field_spaces != 0) {
-    distribute_space(line, field_spaces, padding,
-		     true /* force reversal of node list */);
+    (void) distribute_space(line, field_spaces, padding,
+			    true /* force reversal of node list */);
     width_total += padding;
     if (current_tab != TAB_NONE) {
       // the start of the tab has been moved to the right by padding, so
@@ -3216,7 +3267,7 @@ void environment::add_padding()
 }
 
 typedef int (environment::*INT_FUNCP)();
-typedef unsigned (environment::*UNSIGNED_FUNCP)();
+typedef unsigned int (environment::*UNSIGNED_FUNCP)();
 typedef vunits (environment::*VUNITS_FUNCP)();
 typedef hunits (environment::*HUNITS_FUNCP)();
 typedef const char *(environment::*STRING_FUNCP)();
@@ -3234,7 +3285,7 @@ class unsigned_env_reg : public reg {
  public:
   unsigned_env_reg(UNSIGNED_FUNCP);
   const char *get_string();
-  bool get_value(unsigned *val);
+  bool get_value(unsigned int *val);
 };
 
 class vunits_env_reg : public reg {
@@ -3279,7 +3330,7 @@ unsigned_env_reg::unsigned_env_reg(UNSIGNED_FUNCP f) : func(f)
 {
 }
 
-bool unsigned_env_reg::get_value(unsigned *val)
+bool unsigned_env_reg::get_value(unsigned int *val)
 {
   *val = (curenv->*func)();
   return true;
@@ -3376,6 +3427,16 @@ const char *environment::get_fill_color_string()
   return fill_color->nm.contents();
 }
 
+const char *environment::get_prev_stroke_color_string()
+{
+  return prev_stroke_color->nm.contents();
+}
+
+const char *environment::get_prev_fill_color_string()
+{
+  return prev_fill_color->nm.contents();
+}
+
 const char *environment::get_font_name_string()
 {
   symbol f = get_font_name(fontno, this);
@@ -3453,24 +3514,18 @@ const char *environment::get_requested_point_size_string()
   return sptoa(curenv->get_requested_point_size());
 }
 
-void environment::print_env()
+void environment::dump()
 {
-  // at the time of calling .pev, those values are always zero or
-  // meaningless:
+  // At the time this request is invoked, the following values are zero
+  // or meaningless.
   //
   //   char_height, char_slant,
-  //   line_interrupted
+  //   was_line_interrupted
   //   current_tab, tab_width, tab_distance
   //   has_current_field, field_distance, pre_field_width, field_spaces,
   //     tab_field_spaces, tab_precedes_field
   //   composite
   //
-  errprint("  previous line length: %1u\n",
-	   prev_line_length.to_units());
-  errprint("  line length: %1u\n", line_length.to_units());
-  errprint("  previous title line length: %1u\n",
-	   prev_title_length.to_units());
-  errprint("  title line length: %1u\n", title_length.to_units());
   if (!in_nroff_mode) {
     errprint("  previous type size: %1p (%2s)\n",
 	     prev_size.to_points(), prev_size.to_scaled_points());
@@ -3479,22 +3534,26 @@ void environment::print_env()
     errprint("  previous requested type size: %1s\n",
 	     prev_requested_size);
     errprint("  requested type size: %1s\n", requested_size);
-    font_size::dump_size_table();
-  }
-  errprint("  previous font selection: %1 ('%2')\n", prev_fontno,
-	   get_font_name(prev_fontno, this).contents());
-  errprint("  font selection: %1 ('%2')\n", fontno,
-	   get_font_name(fontno, this).contents());
-  if (!in_nroff_mode) {
+    font_size::dump_size_list();
     errprint("  previous default family: '%1'\n",
 	     prev_family->nm.contents());
     errprint("  default family: '%1'\n", family->nm.contents());
   }
+  errprint("  previous resolved font selection: %1 ('%2')\n",
+	   prev_fontno, get_font_name(prev_fontno, this).contents());
+  errprint("  resolved font selection: %1 ('%2')\n", fontno,
+	   get_font_name(fontno, this).contents());
   errprint("  space size: %1/12 of font space width\n", space_size);
   errprint("  sentence space size: %1/12 of font space width\n",
 	   sentence_space_size);
+  errprint("  previous line length: %1u\n",
+	   prev_line_length.to_units());
+  errprint("  line length: %1u\n", line_length.to_units());
+  errprint("  previous title line length: %1u\n",
+	   prev_title_length.to_units());
+  errprint("  title line length: %1u\n", title_length.to_units());
   errprint("  previous line interrupted/continued: %1\n",
-	   prev_line_interrupted ? "yes" : "no");
+	   was_previous_line_interrupted ? "yes" : "no");
   errprint("  filling: %1\n", is_filling ? "on" : "off");
   errprint("  alignment/adjustment: %1\n",
 	   adjust_mode == ADJUST_LEFT
@@ -3555,12 +3614,11 @@ void environment::print_env()
   errprint("  forcing adjustment: %1\n", is_spreading ? "yes" : "no");
   if (margin_character_node != 0 /* nullptr */) {
     errprint("  margin character flags: %1\n",
-	     margin_character_flags == MARGIN_CHARACTER_ON
+	     margin_character_flags == MC_ON
 	       ? "on"
-	       : margin_character_flags == MARGIN_CHARACTER_NEXT
+	       : margin_character_flags == MC_NEXT
 		   ? "next"
-		   : margin_character_flags == (MARGIN_CHARACTER_ON
-						| MARGIN_CHARACTER_NEXT)
+		   : margin_character_flags == (MC_ON | MC_NEXT)
 		       ? "on, next"
 		       : "none");
     errprint("  margin character distance: %1u\n",
@@ -3582,15 +3640,15 @@ void environment::print_env()
   }
   string hf = hyphenation_mode ? "on" : "off";
   if (hyphenation_mode & HYPHEN_NOT_LAST_LINE)
-    hf += ", not last line";
+    hf += ", not on line before vertical position trap";
   if (hyphenation_mode & HYPHEN_LAST_CHAR)
-    hf += ", last char";
+    hf += ", allowed before last character";
   if (hyphenation_mode & HYPHEN_NOT_LAST_CHARS)
-    hf += ", not last two chars";
+    hf += ", not allowed within last two characters";
   if (hyphenation_mode & HYPHEN_FIRST_CHAR)
-    hf += ", first char";
+    hf += ", allowed after first character";
   if (hyphenation_mode & HYPHEN_NOT_FIRST_CHARS)
-    hf += ", not first two chars";
+    hf += ", not allowed within first two characters";
   hf += '\0';
   errprint("  hyphenation mode: %1 (%2)\n", hyphenation_mode,
 	   hf.contents());
@@ -3606,12 +3664,19 @@ void environment::print_env()
 #ifdef WIDOW_CONTROL
   errprint("  widow control: %1\n", want_widow_control ? "yes" : "no");
 #endif /* WIDOW_CONTROL */
+  errprint("  previous stroke color: %1\n",
+	   get_prev_stroke_color_string());
+  errprint("  stroke color: %1\n", get_stroke_color_string());
+  errprint("  previous fill color: %1\n",
+	   get_prev_fill_color_string());
+  errprint("  fill color: %1\n", get_fill_color_string());
+  fflush(stderr);
 }
 
-void print_env()
+void print_environment_request()
 {
   errprint("Current Environment:\n");
-  curenv->print_env();
+  curenv->dump();
   dictionary_iterator iter(env_dictionary);
   symbol s;
   environment *e;
@@ -3619,7 +3684,7 @@ void print_env()
     assert(!s.is_null());
     errprint("Environment %1:\n", s.contents());
     if (e != curenv)
-      e->print_env();
+      e->dump();
     else
       errprint("  current\n");
   }
@@ -3627,13 +3692,14 @@ void print_env()
   skip_line();
 }
 
-static void print_nodes_from_input_line()
+static void print_pending_output_line_request()
 {
-  curenv->dump_node_list();
+  curenv->dump_pending_nodes();
   skip_line();
 }
 
-// Hyphenation - TeX's hyphenation algorithm with a less fancy implementation.
+// Hyphenation - TeX's hyphenation algorithm with a less fancy
+// implementation.
 
 struct trie_node;
 
@@ -3643,7 +3709,7 @@ class trie {
   virtual void do_delete(void *) = 0;
   void delete_trie_node(trie_node *);
 public:
-  trie() : tp(0) {}
+  trie() : tp(0 /* nullptr */) {}
   virtual ~trie();		// virtual to shut up g++
   void insert(const char *, int, void *);
   // find calls do_match for each match it finds
@@ -3685,10 +3751,70 @@ static void select_hyphenation_language()
   }
   symbol nm = get_name();
   if (!nm.is_null()) {
-    current_language = (hyphenation_language *)language_dictionary.lookup(nm);
-    if (!current_language) {
+    current_language = static_cast<hyphenation_language *>
+      (language_dictionary.lookup(nm));
+    if (0 /* nullptr */ == current_language) {
       current_language = new hyphenation_language(nm);
-      (void)language_dictionary.lookup(nm, (void *)current_language);
+      (void) language_dictionary.lookup(nm,
+	static_cast<hyphenation_language *>(current_language));
+    }
+  }
+  skip_line();
+}
+
+void environment_copy()
+{
+  if (!has_arg()) {
+    warning(WARN_MISSING, "environment copy request expects an"
+	    " argument");
+    skip_line();
+    return;
+  }
+  environment *e = 0 /* nullptr */;
+  tok.skip();
+  symbol nm = get_long_name();
+  assert(nm != 0 /* nullptr */);
+  e = static_cast<environment *>(env_dictionary.lookup(nm));
+  if (e != 0 /* nullptr */)
+    curenv->copy(e);
+  else
+    error("cannot copy from nonexistent environment '%1'",
+	  nm.contents());
+  skip_line();
+}
+
+void environment_switch()
+{
+  if (curenv->is_dummy()) {
+    error("cannot switch out of dummy environment");
+  }
+  else {
+    symbol nm = get_long_name();
+    if (nm.is_null()) {
+      if (env_stack == 0 /* nullptr */)
+	error("environment stack underflow");
+      else {
+	bool seen_space = curenv->seen_space;
+	bool seen_eol   = curenv->seen_eol;
+	bool suppress_next_eol = curenv->suppress_next_eol;
+	curenv = env_stack->env;
+	curenv->seen_space = seen_space;
+	curenv->seen_eol   = seen_eol;
+	curenv->suppress_next_eol = suppress_next_eol;
+	env_list_node *tem = env_stack;
+	env_stack = env_stack->next;
+	delete tem;
+      }
+    }
+    else {
+      environment *e
+	= static_cast<environment *>(env_dictionary.lookup(nm));
+      if (!e) {
+	e = new environment(nm);
+	(void) env_dictionary.lookup(nm, e);
+      }
+      env_stack = new env_list_node(curenv, env_stack);
+      curenv = e;
     }
   }
   skip_line();
@@ -3705,7 +3831,7 @@ static void add_hyphenation_exceptions()
     skip_line();
     return;
   }
-  if (!current_language) {
+  if (0 /* nullptr */ == current_language) {
     error("cannot add hyphenation exceptions when no hyphenation"
 	  " language is set");
     skip_line();
@@ -3714,8 +3840,7 @@ static void add_hyphenation_exceptions()
   char buf[WORD_MAX + 1];
   unsigned char pos[WORD_MAX + 2];
   for (;;) {
-    tok.skip();
-    if (tok.is_newline() || tok.is_eof())
+    if (!has_arg())
       break;
     int i = 0;
     int npos = 0;
@@ -3733,7 +3858,7 @@ static void add_hyphenation_exceptions()
       }
       else {
 	unsigned char c = ci->get_hyphenation_code();
-	if (0 == c)
+	if (0U == c)
 	  break;
 	buf[i++] = c;
       }
@@ -3756,6 +3881,8 @@ static void add_hyphenation_exceptions()
 
 static void print_hyphenation_exceptions()
 {
+  if (0 /* nullptr */ == current_language)
+    return;
   dictionary_iterator iter(current_language->exceptions);
   symbol entry;
   unsigned char *hypoint;
@@ -3764,6 +3891,8 @@ static void print_hyphenation_exceptions()
   // space; see `hyphen_trie::read_patterns_file()`.
   const size_t bufsz = WORD_MAX * 2;
   char wordbuf[bufsz]; // need to `errprint()` it, so not `unsigned`
+  // We must use the nuclear `reinterpret_cast` operator because GNU
+  // troff's dictionary types use a pre-STL approach to containers.
   while (iter.get(&entry, reinterpret_cast<void **>(&hypoint))) {
     assert(!entry.is_null());
     assert(hypoint != 0 /* nullptr */);
@@ -3931,7 +4060,7 @@ inline int max(int m, int n)
 
 void hyphen_trie::do_match(int i, void *v)
 {
-  operation *op = (operation *)v;
+  operation *op = static_cast<operation *>(v);
   while (op != 0) {
     h[i - op->distance] = max(h[i - op->distance], op->num);
     op = op->next;
@@ -3940,7 +4069,7 @@ void hyphen_trie::do_match(int i, void *v)
 
 void hyphen_trie::do_delete(void *v)
 {
-  operation *op = (operation *)v;
+  operation *op = static_cast<operation *>(v);
   while (op) {
     operation *tem = op;
     op = tem->next;
@@ -4127,8 +4256,8 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	if (have_patterns || have_hyphenation)
 	  error("'{' is not allowed within %1 group",
 		have_patterns ? "\\patterns" : "\\hyphenation");
-	c = hpf_getc(fp);		// skipped if not starting \patterns
-					// or \hyphenation
+	c = hpf_getc(fp);		// skipped if not starting
+					// \patterns or \hyphenation
       }
     }
     else {
@@ -4138,7 +4267,7 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
     if (i > 0) {
       if (have_patterns || is_final_pattern || is_traditional) {
 	for (int j = 0; j < i; j++)
-	  buf[j] = hpf_code_table[(unsigned char)buf[j]];
+	  buf[j] = hpf_code_table[static_cast<unsigned char>(buf[j])];
 	insert_pattern(buf, i, num);
 	is_final_pattern = false;
       }
@@ -4163,7 +4292,8 @@ public:
 
 const char *hyphenation_language_reg::get_string()
 {
-  return current_language ? current_language->name.contents() : "";
+  return (current_language != 0 /* nullptr */)
+	  ? current_language->name.contents() : "";
 }
 
 class hyphenation_default_mode_reg : public reg {
@@ -4203,12 +4333,12 @@ void init_env_requests()
   init_request("ev", environment_switch);
   init_request("evc", environment_copy);
   init_request("fam", family_change);
-  init_request("fc", field_characters);
+  init_request("fc", field_characters_request);
   init_request("fi", fill);
-  init_request("fcolor", fill_color_change);
-  init_request("ft", select_font);
-  init_request("gcolor", stroke_color_change);
-  init_request("hc", hyphen_char);
+  init_request("fcolor", select_fill_color_request);
+  init_request("ft", select_font_request);
+  init_request("gcolor", select_stroke_color_request);
+  init_request("hc", hyphenation_character_request);
   init_request("hla", select_hyphenation_language);
   init_request("hlm", hyphen_line_max_request);
   init_request("hy", hyphenate_request);
@@ -4218,7 +4348,7 @@ void init_env_requests()
   init_request("in", indent);
   init_request("it", input_trap);
   init_request("itc", input_trap_continued);
-  init_request("lc", leader_character);
+  init_request("lc", leader_character_request);
   init_request("linetabs", line_tabs_request);
   init_request("ll", line_length);
   init_request("ls", line_spacing);
@@ -4229,23 +4359,23 @@ void init_env_requests()
   init_request("nh", no_hyphenate);
   init_request("nm", number_lines);
   init_request("nn", no_number);
-  init_request("pev", print_env);
-  init_request("pline", print_nodes_from_input_line);
+  init_request("pev", print_environment_request);
+  init_request("pline", print_pending_output_line_request);
   init_request("ps", point_size);
   init_request("pvs", post_vertical_spacing);
   init_request("rj", right_justify);
-  init_request("sizes", override_sizes);
+  init_request("sizes", override_available_type_sizes_request);
   init_request("ss", space_size);
-  init_request("ta", set_tabs);
+  init_request("ta", configure_tab_stops_request);
   init_request("ti", temporary_indent);
-  init_request("tc", tab_character);
+  init_request("tc", tab_character_request);
   init_request("tl", title);
   init_request("ul", underline);
   init_request("vs", vertical_spacing);
 #ifdef WIDOW_CONTROL
   init_request("wdc", widow_control_request);
 #endif /* WIDOW_CONTROL */
-  init_int_env_reg(".b", get_bold);
+  init_hunits_env_reg(".b", get_emboldening_offset);
   init_vunits_env_reg(".cdp", get_prev_char_depth);
   init_int_env_reg(".ce", get_centered_line_count);
   init_vunits_env_reg(".cht", get_prev_char_height);
@@ -4264,7 +4394,7 @@ void init_env_requests()
   init_hunits_env_reg(".hys", get_hyphenation_space);
   init_hunits_env_reg(".i", get_indent);
   init_hunits_env_reg(".in", get_saved_indent);
-  init_int_env_reg(".int", get_prev_line_interrupted);
+  init_int_env_reg(".int", get_was_previous_line_interrupted);
   init_int_env_reg(".it", get_input_trap_line_count);
   init_int_env_reg(".itc", get_input_trap_respects_continuation);
   init_string_env_reg(".itm", get_input_trap_macro);
@@ -4304,16 +4434,37 @@ void init_env_requests()
   register_dictionary.define("skw", new variable_reg(&skw_reg_contents));
   register_dictionary.define("ssc", new variable_reg(&ssc_reg_contents));
   register_dictionary.define("st", new variable_reg(&st_reg_contents));
+  // TODO: Kill the following off in groff 1.24.0 release + 2 years.
+  deprecated_font_identifiers.push_back("AX");
+  deprecated_font_identifiers.push_back("KR");
+  deprecated_font_identifiers.push_back("KI");
+  deprecated_font_identifiers.push_back("KB");
+  deprecated_font_identifiers.push_back("KX");
+  deprecated_font_identifiers.push_back("CW");
+  deprecated_font_identifiers.push_back("C");
+  deprecated_font_identifiers.push_back("CO");
+  deprecated_font_identifiers.push_back("CX");
+  deprecated_font_identifiers.push_back("H");
+  deprecated_font_identifiers.push_back("HO");
+  deprecated_font_identifiers.push_back("HX");
+  deprecated_font_identifiers.push_back("Hr");
+  deprecated_font_identifiers.push_back("Hi");
+  deprecated_font_identifiers.push_back("Hb");
+  deprecated_font_identifiers.push_back("Hx");
+  deprecated_font_identifiers.push_back("PA");
+  deprecated_font_identifiers.push_back("PX");
+  deprecated_font_identifiers.push_back("NX");
+  deprecated_font_identifiers.push_back("ZI");
 }
 
 // Appendix H of _The TeXbook_ is useful background for the following.
 
-void hyphenate(hyphen_list *h, unsigned flags)
+static void hyphenate(hyphen_list *h, unsigned int flags)
 {
-  if (!current_language)
+  if (0 /* nullptr */ == current_language)
     return;
   while (h != 0 /* nullptr */) {
-    while ((h != 0 /* nullptr */) && (0 == h->hyphenation_code))
+    while ((h != 0 /* nullptr */) && (0U == h->hyphenation_code))
       h = h->next;
     int len = 0;
     // Locate hyphenable points within a (subset of) an input word.
@@ -4337,7 +4488,7 @@ void hyphenate(hyphen_list *h, unsigned flags)
     char *bufp = hbuf + 1;
     hyphen_list *tem;
     for (tem = h; tem && len < WORD_MAX; tem = tem->next) {
-      if (tem->hyphenation_code != 0)
+      if (tem->hyphenation_code != 0U)
 	bufp[len++] = tem->hyphenation_code;
       else
 	break;
@@ -4425,39 +4576,41 @@ void hyphenate(hyphen_list *h, unsigned flags)
 
 static void read_hyphenation_patterns_from_file(bool append)
 {
-  // TODO: Read a file name, not a groff identifier.
-  symbol name = get_long_name(true /* required */);
-  if (!name.is_null()) {
-    if (!current_language)
+  char *filename = read_rest_of_line_as_argument();
+  if (filename != 0 /* nullptr */) {
+    if (0 /* nullptr */ == current_language)
       error("no current hyphenation language");
     else
-      current_language->patterns.read_patterns_file(
-			  name.contents(), append,
-			  &current_language->exceptions);
+      current_language->patterns.read_patterns_file(filename, append,
+	&current_language->exceptions);
   }
-  skip_line();
+  tok.next();
 }
 
 static void load_hyphenation_patterns_from_file()
 {
-  if (!has_arg()) {
+  if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "hyphenation pattern load request expects"
 	    " argument");
     skip_line();
     return;
   }
   read_hyphenation_patterns_from_file(false /* append */);
+  // No `skip_line()` here; the above function calls
+  // `read_rest_of_line_as_argument()` and `tok.next()`.
 }
 
 static void append_hyphenation_patterns_from_file()
 {
-  if (!has_arg()) {
+  if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "hyphenation pattern appendment request"
 	    " expects argument");
     skip_line();
     return;
   }
   read_hyphenation_patterns_from_file(true /* append */);
+  // No `skip_line()` here; the above function calls
+  // `read_rest_of_line_as_argument()` and `tok.next()`.
 }
 
 // Most hyphenation functionality is environment-specific; see

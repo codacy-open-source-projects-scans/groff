@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2019-2020 Free Software Foundation, Inc.
+# Copyright 2019-2020 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -20,8 +20,10 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Check for segfault if we try to write a glyph before setting up.
+# Check for fatal error if we try to write a glyph before setting up.
 # Savannah #56555.
 "$groff" >/dev/null <<EOF
 \!ta
 EOF
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

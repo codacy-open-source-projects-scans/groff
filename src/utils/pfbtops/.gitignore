@@ -3,3 +3,6 @@
 /.dirstamp
 /pfbtops.1
 /pfbtops.o
+# test ("make check") artifacts
+/tests/*.log
+/tests/*.trs

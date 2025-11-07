@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,15 +16,18 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
 #include <errno.h>
-#include <stdlib.h>
+#include <stdlib.h> // exit(), EXIT_FAILURE, EXIT_SUCCESS, getenv(),
+		    // strtol()
+
+#include <getopt.h> // getopt_long()
+
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
@@ -38,10 +41,18 @@ extern "C" const char *Version_string;
 static void usage(FILE *stream)
 {
   fprintf(stream,
-          "usage: %s [-n] [-p database] [-i XYZ] [-t N] key ...\n"
+          "usage: %s [-n] [-i XYZ] [-p database] ... [-t N] key ...\n"
           "usage: %s {-v | --version}\n"
           "usage: %s --help\n",
 	  program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"GNU lkbib searches bibliographic databases for references matching\n"
+"all keywords \"key\" and writes any references found to the standard\n"
+"output stream.  It reads databases given by -p options and then\n"
+"(unless -n is given) a default database.  See the lkbib(1) manual\n"
+"page.\n",
+	  stream);
 }
 
 int main(int argc, char **argv)
@@ -53,11 +64,12 @@ int main(int argc, char **argv)
   search_list list;
   int opt;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "nvVi:t:p:", long_options, NULL))
+  while ((opt = getopt_long(argc, argv, ":nvVi:t:p:", long_options,
+			    0 /* nullptr */))
 	 != EOF)
     switch (opt) {
     case 'V':
@@ -85,7 +97,7 @@ int main(int argc, char **argv)
     case 'v':
       {
 	printf("GNU lkbib (groff) version %s\n", Version_string);
-	exit(0);
+	exit(EXIT_SUCCESS);
 	break;
       }
     case 'p':
@@ -93,18 +105,25 @@ int main(int argc, char **argv)
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       assert(0);
     }
   if (optind >= argc) {
     usage(stderr);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   char *filename = getenv("REFER");
   if (filename)

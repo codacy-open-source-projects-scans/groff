@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -7,8 +7,8 @@
 # Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# groff is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
@@ -28,10 +28,20 @@ post_grohtml_SOURCES = \
 post_grohtml_LDADD = $(LIBM) \
   libdriver.a \
   libgroff.a \
-  lib/libgnu.a 
+  lib/libgnu.a
+
+POSTGROHTMLTMACFILES = \
+  tmac/html.tmac \
+  tmac/html-end.tmac
+post_grohtmltmacdir = $(tmacdir)
+dist_post_grohtmltmac_DATA = $(POSTGROHTMLTMACFILES)
+
 man1_MANS += src/devices/grohtml/grohtml.1
 EXTRA_DIST += src/devices/grohtml/grohtml.1.man
 
+uninstall_groffdirs: uninstall_post_grohtml_hook
+uninstall_post_grohtml_hook:
+	-rmdir $(DESTDIR)$(tmacdir)
 
 # Local Variables:
 # fill-column: 72

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,15 +16,21 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
 #include <errno.h>
-#include <stdlib.h>
+#include <stdio.h> // EOF, FILE, fflush(), fgets(), fileno(), fprintf(),
+		   // printf(), putchar(), setbuf(), stderr, stdin,
+		   // stdout
+#include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
+#include <string.h> // strerror()
+
+#include <getopt.h> // getopt_long()
+
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
@@ -33,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "refid.h"
 #include "search.h"
 
-/* for isatty() */
+// needed for isatty()
 #include "posix.h"
 #include "nonposix.h"
 
@@ -46,6 +52,16 @@ static void usage(FILE *stream)
 	  "usage: %s {-v | --version}\n"
 	  "usage: %s --help\n",
 	  program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"GNU lookbib writes a prompt to the standard error stream (unless the\n"
+"standard input stream is not a terminal), reads from the standard\n"
+"input a line containing a set of keywords, searches each\n"
+"bibliographic \"database\" for references containing those keywords,\n"
+"writes any references found to the standard output stream, and\n"
+"repeats this process until the end of input.  See the lookbib(1)\n"
+"manual page.\n",
+	  stream);
 }
 
 int main(int argc, char **argv)
@@ -55,11 +71,13 @@ int main(int argc, char **argv)
   setbuf(stderr, stderr_buf);
   int opt;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "vVi:t:", long_options, NULL)) != EOF)
+  while ((opt = getopt_long(argc, argv, ":vVi:t:", long_options,
+			    0 /* nullptr */))
+	 != EOF)
     switch (opt) {
     case 'V':
       do_verify = true;
@@ -72,7 +90,8 @@ int main(int argc, char **argv)
 	char *ptr;
 	long n = strtol(optarg, &ptr, 10);
 	if (ptr == optarg) {
-	  error("bad integer '%1' in 't' option", optarg);
+	  error("invalid integer '%1' in argument to command-line 't'"
+		" option; ignoring", optarg);
 	  break;
 	}
 	if (n < 1)
@@ -83,23 +102,31 @@ int main(int argc, char **argv)
     case 'v':
       {
 	printf("GNU lookbib (groff) version %s\n", Version_string);
-	exit(0);
+	exit(EXIT_SUCCESS);
 	break;
       }
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of command-line option");
     }
   if (optind >= argc) {
+    error("no database file operands");
     usage(stderr);
-    exit(1);
+    exit(2);
   }
   search_list list;
   for (int i = optind; i < argc; i++)
@@ -113,7 +140,7 @@ int main(int argc, char **argv)
       fputs("> ", stderr);
       fflush(stderr);
     }
-    if (!fgets(line, sizeof(line), stdin))
+    if (!fgets(line, sizeof line, stdin))
       break;
     char *ptr = line;
     while (csspace(*ptr))
@@ -126,7 +153,8 @@ int main(int argc, char **argv)
     int count;
     for (count = 0; iter.next(&start, &len); count++) {
       if (fwrite(start, 1, len, stdout) != (size_t)len)
-	fatal("write error on stdout: %1", strerror(errno));
+	fatal("cannot write to standard output stream: %1",
+	      strerror(errno));
       // Can happen for last reference in file.
       if (start[len - 1] != '\n')
 	putchar('\n');

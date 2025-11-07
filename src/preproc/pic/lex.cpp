@@ -16,8 +16,19 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "pic.h"
-#include "ptable.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <errno.h>
+#include <math.h> // pow()
+#include <stdio.h> // EOF, FILE, fclose(), fopen(), getc(), ungetc()
+#include <string.h> // strerror()
+
+#include "pic.h" // must precede object.h
+
+#include "ptable.h" // must precede object.h
 #include "object.h"
 #include "pic.hpp"
 
@@ -95,7 +106,7 @@ int file_input::read_line()
 	lex_error("invalid input character code %1", c);
       else {
 	line += char(c);
-	if (c == '\n') 
+	if (c == '\n')
 	  break;
       }
     }
@@ -520,6 +531,7 @@ int lookup_keyword(const char *str, int len)
     { "outline", OUTLINED },
     { "outlined", OUTLINED },
     { "plot", PLOT },
+    { "polygon", POLYGON },
     { "print", PRINT },
     { "rad", RADIUS },
     { "radius", RADIUS },
@@ -852,6 +864,69 @@ int get_token_after_dot(int c)
     }
     context_buffer = ".b";
     return DOT_S;
+  case 'v':
+    input_stack::get_char();
+    c = input_stack::peek_char();
+    if (c == 'e') {
+      input_stack::get_char();
+      c = input_stack::peek_char();
+      if (c == 'r') {
+	input_stack::get_char();
+	c = input_stack::peek_char();
+	if (c == 't') {
+	  input_stack::get_char();
+	  c = input_stack::peek_char();
+	  if (c == 'e') {
+	    input_stack::get_char();
+	    c = input_stack::peek_char();
+	    if (c == 'x') {
+	      input_stack::get_char();
+	      context_buffer = ".vertex";
+	      return DOT_V;
+	    }
+	  }
+	context_buffer = ".ver";
+	return DOT_V;
+	}
+      }
+    }
+    context_buffer = ".v";
+    return DOT_V;
+  case 'm':
+    input_stack::get_char();
+    c = input_stack::peek_char();
+    if (c == 'i') {
+      input_stack::get_char();
+      c = input_stack::peek_char();
+      if (c == 'd') {
+	input_stack::get_char();
+	c = input_stack::peek_char();
+	if (c == 'p') {
+	  input_stack::get_char();
+	  c = input_stack::peek_char();
+	  if (c == 'o') {
+	    input_stack::get_char();
+	    c = input_stack::peek_char();
+	    if (c == 'i') {
+	      input_stack::get_char();
+	      c = input_stack::peek_char();
+	      if (c == 'n') {
+		input_stack::get_char();
+		c = input_stack::peek_char();
+		if (c == 't') {
+		  input_stack::get_char();
+		  context_buffer = ".midpoint";
+		  return DOT_MID;
+		}
+	      }
+	    }
+	  }
+	}
+	context_buffer = ".mid";
+	return DOT_MID;
+      }
+    }
+    // fall through
   default:
     context_buffer = '.';
     return '.';

@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -44,3 +43,9 @@ extern void errprint(const char *,
 		     const errarg &arg1 = empty_errarg,
 		     const errarg &arg2 = empty_errarg,
 		     const errarg &arg3 = empty_errarg);
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

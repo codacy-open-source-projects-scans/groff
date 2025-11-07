@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +15,15 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <math.h> // M_PI, atan2()
+#include <stdlib.h> // strtol()
+#include <stdio.h> // fputs(), printf(), stdout
 
 #include "pic.h"
 
@@ -96,7 +104,7 @@ void tex_output::set_pen_size(double ps)
     ps = -1.0;
   if (ps != pen_size) {
     pen_size = ps;
-    printf("    \\special{pn %d}%%\n", 
+    printf("    \\special{pn %d}%%\n",
 	   ps < 0.0 ? DEFAULT_PEN_SIZE : int(ps*(1000.0/72.0) + .5));
   }
 }
@@ -251,7 +259,7 @@ void tex_output::solid_arc(const position &cent, double rad,
 	 (-end_angle > -start_angle) ? (double)M_PI * 2 - start_angle
 	 			     : -start_angle);
 }
-  
+
 void tex_output::arc(const position &start, const position &cent,
 		     const position &end, const line_type &lt)
 {
@@ -454,5 +462,11 @@ output *make_tpic_output()
 {
   return new tpic_output;
 }
- 
+
 #endif
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

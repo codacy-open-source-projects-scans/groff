@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -24,6 +24,8 @@ extern void get_flags();
 
 class macro;
 
+// libgroff has a simpler `charinfo` class that stores much less
+// information.
 class charinfo : glyph {
   static int next_index;
   charinfo *translation;
@@ -46,6 +48,8 @@ public:
   //
   // Keep these symbol names in sync with the subset used in the `enum`
   // `break_char_type`; see "node.cpp".
+  //
+  // C++11: Use `enum : unsigned int`.
   enum {
     ENDS_SENTENCE = 0x01,
     ALLOWS_BREAK_BEFORE = 0x02,
@@ -56,8 +60,11 @@ public:
     IGNORES_SURROUNDING_HYPHENATION_CODES = 0x40,
     PROHIBITS_BREAK_BEFORE = 0x80,
     PROHIBITS_BREAK_AFTER = 0x100,
-    IS_INTERWORD_SPACE = 0x200
+    IS_INTERWORD_SPACE = 0x200,
+    CFLAGS_MAX = 0x2FF
   };
+  //
+  // C++11: Use `enum : unsigned char`.
   enum {
     TRANSLATE_NONE,
     TRANSLATE_SPACE,
@@ -81,7 +88,7 @@ public:
   unsigned char get_hyphenation_code();
   unsigned char get_ascii_code();
   unsigned char get_asciify_code();
-  int get_unicode_code();
+  int get_unicode_mapping();
   void set_hyphenation_code(unsigned char);
   void set_ascii_code(unsigned char);
   void set_asciify_code(unsigned char);
@@ -94,7 +101,7 @@ public:
   void set_special_translation(int, int);
   int get_special_translation(bool = false);
   macro *set_macro(macro *);
-  macro *setx_macro(macro *, char_mode);
+  macro *set_macro(macro *, char_mode);
   macro *get_macro();
   bool first_time_not_found();
   void set_number(int);
@@ -111,11 +118,11 @@ public:
   bool contains(int, bool = false);
   bool contains(symbol, bool = false);
   bool contains(charinfo *, bool = false);
+  void dump();
 };
 
-charinfo *get_charinfo(symbol);
+charinfo *get_charinfo(symbol, bool /* suppress_creation */ = false);
 extern charinfo *charset_table[];
-charinfo *get_charinfo_by_number(int);
 
 inline bool charinfo::overlaps_horizontally()
 {
@@ -204,13 +211,13 @@ inline bool charinfo::is_fallback()
 
 inline bool charinfo::is_special()
 {
-  return (mode == CHAR_SPECIAL);
+  return (mode == CHAR_SPECIAL_FALLBACK);
 }
 
 inline charinfo *charinfo::get_translation(bool for_transparent_throughput)
 {
   return ((for_transparent_throughput && !is_transparently_translatable)
-	  ? 0
+	  ? 0 /* nullptr */
 	  : translation);
 }
 
@@ -226,7 +233,7 @@ inline unsigned char charinfo::get_ascii_code()
 
 inline unsigned char charinfo::get_asciify_code()
 {
-  return (translatable_as_input ? asciify_code : 0);
+  return (translatable_as_input ? asciify_code : 0U);
 }
 
 inline void charinfo::set_flags(unsigned int c)

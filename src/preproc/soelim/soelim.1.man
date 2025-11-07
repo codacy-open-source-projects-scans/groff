@@ -10,7 +10,7 @@ or other text files
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -97,9 +97,9 @@ is a preprocessor for the
 document formatting system.
 .
 .I @g@soelim
-works as a filter to eliminate source requests in
+eliminates source requests in
 .MR roff @MAN7EXT@
-input;
+and other text files;
 that is,
 it replaces lines of the form
 .RB \[lq] .so
@@ -107,11 +107,13 @@ it replaces lines of the form
 within each text
 .I input-file
 with the contents of
-.IR included-file ,
-recursively.
+.I included-file
+recursively,
+flattening a tree of documents.
 .
 By default,
 it writes
+.I roff
 .B lf
 requests as well to record the name and line number of each
 .I input-file
@@ -135,19 +137,34 @@ The program writes to the standard output stream.
 .
 .
 .PP
-If the name of a
+.I @g@soelim
+reads the
 .I included-file
-contains a backslash,
+argument as
+GNU
+.I troff \" GNU
+does.
+.
+It ignores spaces immediately after \[lq]so\[rq];
+to embed a sequence of one or more leading spaces in the argument,
+prefix the sequence with a neutral double quote
+.RB ( \[dq] ).
+.
+Non-leading spaces are interpreted literally.
+.
+A backslash followed by a space
+.RB (\[lq] \[rs]\~ \[rq])
+also encodes a space,
+for compatibility with earlier versions of
+GNU
+.IR soelim . \" GNU
+.
+If the included file name requires a backslash,
 use
 .B \[rs]\[rs]
 or
 .B \[rs]e
 to embed it.
-.
-To embed a space,
-write
-.RB \[lq] \[rs]\~ \[rq]
-(backslash followed by a space).
 .
 Any other escape sequence in
 .IR included-file ,
@@ -156,6 +173,12 @@ including
 prevents
 .I @g@soelim
 from replacing the source request.
+.
+AT&T and descendant versions of
+.I soelim
+have no means of embedding spaces in file names;
+they replace the first space encountered with a newline
+and stop interpreting the request.
 .
 .
 .PP
@@ -169,7 +192,7 @@ This convention allows source requests to be \[lq]protected\[rq] from
 processing by
 .IR @g@soelim ,
 for instance as part of macro definitions or
-.RB \[lq] if \[rq]
+.RB \[lq] if \^\[rq]
 requests.
 .
 .
@@ -209,8 +232,7 @@ With its
 option,
 therefore,
 .I @g@soelim
-can be used to process text files in general,
-to flatten a tree of input documents.
+can be used to process text files in general.
 .
 .
 .PP
@@ -310,7 +332,9 @@ required for
 to source files.
 .
 .
-.PP
+.br
+.ne 2v
+.P
 If a file to be sourced should also be preprocessed,
 it must already be read
 .I before
@@ -434,6 +458,21 @@ and
 .B \-t
 are given,
 the last one specified controls.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@soelim
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 .
 .\" ====================================================================

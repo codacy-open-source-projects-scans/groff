@@ -1,6 +1,10 @@
  /* Last non-groff version: hdb.c  1.8 (Berkeley) 84/10/20
  *
- * Copyright -C- 1982 Barry S. Roitblat
+ * Originally written by Barry Roitblat, 1982.
+ * Adapted to GNU troff by Daniel Senderowicz 99/12/29.
+ * Modified 2000-2024 by the Free Software Foundation, Inc.
+ *
+ * This file contains no AT&T code and is in the public domain.
  *
  * This file contains database routines for the hard copy programs of
  * the gremlin picture editor.
@@ -10,13 +14,14 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
-#include "gprint.h"
-#include <string.h>
-#include <ctype.h>
+#include <ctype.h> // isdigit()
+#include <stdio.h> // FILE, feof(), fgets(), getc()
+#include <stdlib.h> // atoi()
+#include <string.h> // strcmp()
 
 #include "errarg.h"
 #include "error.h"
+#include "gprint.h"
 
 #define MAXSTRING 128
 #define MAXSTRING_S "127"

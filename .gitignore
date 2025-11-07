@@ -5,6 +5,8 @@
 /autom4te.cache/
 /build-aux/
 /configure
+# Neither "clean" nor "distclean" scrub this.
+/configure~
 /gnulib_m4/
 /lib/
 # build artifacts

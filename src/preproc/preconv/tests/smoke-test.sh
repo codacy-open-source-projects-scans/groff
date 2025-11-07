@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2020-2024 Free Software Foundation, Inc.
+# Copyright (C) 2020-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -71,7 +71,7 @@ test -z "$fail" || exit
 # We need uchardet to work to get past this point.
 if ! "$preconv" -v | grep -q 'with uchardet support'
 then
-    echo "preconv lacks uchardet support; skipping test" >&2
+    echo "$0: preconv lacks uchardet support; skipping" >&2
     exit 77 # skip
 fi
 
@@ -120,4 +120,4 @@ printf 'Eat at the caf\351.\n' \
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

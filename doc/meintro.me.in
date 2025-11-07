@@ -38,12 +38,16 @@
 .\"
 .\" Modified for groff by jjc@jclark.com.
 .\"UC 7
-.if t .ll 6.5i
-.if t .lt 6.5i
+.if t \{\
+.  ll 6.5i
+.  lt 6.5i
+.\}
+.if n .po 10n
 .nr sx 0
 .ds MO @VERSION@
 .nr si 3n
 .he 'Using \f(BIgroff\fP and \f(BI\-me\fP''%'
+.fo ''\f(BIgroff\fP \*(MO''
 .\"eh 'USD:19-%''Writing Papers with NROFF using \-me'
 .\"oh 'Writing Papers with NROFF using \-me''USD:19-%'
 .ds U Unix
@@ -1113,9 +1117,9 @@ Why the sea is boiling hot
 Whether pigs have wings
 \&.)x ""
 \&.(x
-This is a terribly long index entry, such as might be used
-for a list of illustrations, tables, or figures; I expect it to
-take at least two lines.
+This is a terribly long index entry, such as might
+be used for a list of illustrations, tables, or
+figures; I expect it to take at least two lines.
 \&.)x
 \&.xp
 .)b
@@ -1133,9 +1137,9 @@ Why the sea is boiling hot
 Whether pigs have wings
 .)x ""
 .(x
-This is a terribly long index entry, such as might be used
-for a list of illustrations, tables, or figures; I expect it to
-take at least two lines.
+This is a terribly long index entry, such as might
+be used for a list of illustrations, tables, or
+figures; I expect it to take at least two lines.
 .)x
 .xp
 .pp
@@ -1269,14 +1273,16 @@ the input:
 \&.ip longlabel
 This paragraph had a long label.
 The first character of text on the first line
-will not line up with the text on second and subsequent lines,
+will not line up with the text
+on second and subsequent lines,
 although they will line up with each other.
 .)b
 will produce:
 .ip longlabel
 This paragraph had a long label.
 The first character of text on the first line
-will not line up with the text on second and subsequent lines,
+will not line up with the text
+on second and subsequent lines,
 although they will line up with each other.
 .pp
 It is possible to change the size of the label
@@ -1671,7 +1677,7 @@ comments begin with the sequence
 .hl
 .if t .in 0.5i
 .if t .ta 2i
-.if n .ta 3i
+.if n .ta 23n
 \&.th	\e" set for thesis mode
 \&.fo \(aq\(aqDRAFT\(aq\(aq	\e" define footer for each page
 \&.tp	\e" begin title page

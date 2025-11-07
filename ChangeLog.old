@@ -4373,7 +4373,7 @@ Sun Oct 14 11:46:46 1990  James Clark  (jjc at jclark)
 	(font_family::~font_family): New function.
 	(invalidate_fontno): Use font_family::map_size.
 	(get_fontno, env_space_width, env_half_narrow_space_width,
-	env_narrow_space_width, symbol_fotno, is_good_fontno,
+	env_narrow_space_width, symbol_fontno, is_good_fontno,
 	get_bold_fontno, make_glyph_node): Use font_table_size rather than
 	FONTS_MAX.
 	(next_available_font_position): Never return 0.

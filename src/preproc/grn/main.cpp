@@ -1,9 +1,11 @@
 /* Last non-groff version: main.c 1.23  (Berkeley)  85/08/05
  *
+ * Originally written by Barry Roitblat, 1982.
  * Adapted to GNU troff by Daniel Senderowicz 99/12/29.
- *
  * Further refinements by Werner Lemberg 00/02/20.
+ * Modified 2000-2024 by the Free Software Foundation, Inc.
  *
+ * This file contains no AT&T code and is in the public domain.
  *
  * This file contains the main and file system dependent routines for
  * processing gremlin files into troff input.  The program watches input
@@ -72,16 +74,24 @@
  * g9 are used for text processing and g5-g7 are reserved.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "lib.h"
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <errno.h> // errno
-#include "gprint.h"
+#include <ctype.h> // isdigit(), isupper(), tolower()
+#include <errno.h>
+#include <locale.h> // setlocale()
+#include <stdio.h> // FILE, fclose(), fgets(), fopen(), fprintf(),
+		   // fputs(), printf(), stderr, stdin, stdout
+#include <stdlib.h> // exit(), EXIT_SUCCESS, free(), malloc()
+#include <string.h> // strchr(), strcmp(), strcpy(), strerror(),
+		    // strlen()
 
 #include "device.h"
 #include "font.h"
+#include "gprint.h"
 #include "searchpath.h"
 #include "macropath.h"
 
@@ -263,6 +273,10 @@ usage(FILE *stream)
 	  "usage: %s {-v | --version}\n"
 	  "usage: %s --help\n",
 	  program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"Preprocess troff(1) input to incorporate gremlin image files.  See\n"
+"the grn(1) manual page.\n", stream);
 }
 
 
@@ -347,20 +361,20 @@ main(int argc,
 	if (strcmp(*argv,"--version")==0) {
       case 'v':
 	  printf("GNU grn (groff) version %s\n", Version_string);
-	  exit(0);
+	  exit(EXIT_SUCCESS);
 	  break;
 	}
 	if (strcmp(*argv,"--help")==0) {
       case '?':
 	  usage(stdout);
-	  exit(0);
+	  exit(EXIT_SUCCESS);
 	  break;
 	}
 	// fallthrough
       default:
-	error("unknown switch: %1", c);
+	error("unrecognized command-line option '%1'", c);
 	usage(stderr);
-	exit(1);
+	exit(2);
       }
   }
 

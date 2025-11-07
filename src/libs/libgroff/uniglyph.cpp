@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
 This file is part of groff.
@@ -17,10 +16,14 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "lib.h"
+
 #include "stringclass.h"
 #include "ptable.h"
-
 #include "unicode.h"
 
 struct unicode_to_glyph {
@@ -277,59 +280,6 @@ struct S {
   { "02DA", "ao" },
   { "02DB", "ho" },
   { "02DD", "a\"" },
-  { "0391", "*A" },
-  { "0392", "*B" },
-  { "0393", "*G" },
-  { "0394", "*D" },
-  { "0395", "*E" },
-  { "0396", "*Z" },
-  { "0397", "*Y" },
-  { "0398", "*H" },
-  { "0399", "*I" },
-  { "039A", "*K" },
-  { "039B", "*L" },
-  { "039C", "*M" },
-  { "039D", "*N" },
-  { "039E", "*C" },
-  { "039F", "*O" },
-  { "03A0", "*P" },
-  { "03A1", "*R" },
-  { "03A3", "*S" },
-  { "03A4", "*T" },
-  { "03A5", "*U" },
-  { "03A6", "*F" },
-  { "03A7", "*X" },
-  { "03A8", "*Q" },
-  { "03A9", "*W" },
-  { "03B1", "*a" },
-  { "03B2", "*b" },
-  { "03B3", "*g" },
-  { "03B4", "*d" },
-  { "03B5", "*e" },
-  { "03B6", "*z" },
-  { "03B7", "*y" },
-  { "03B8", "*h" },
-  { "03B9", "*i" },
-  { "03BA", "*k" },
-  { "03BB", "*l" },
-  { "03BC", "*m" },
-  { "03BD", "*n" },
-  { "03BE", "*c" },
-  { "03BF", "*o" },
-  { "03C0", "*p" },
-  { "03C1", "*r" },
-  { "03C2", "ts" },
-  { "03C3", "*s" },
-  { "03C4", "*t" },
-  { "03C5", "*u" },
-  { "03C6", "+f" },
-  { "03C7", "*x" },
-  { "03C8", "*q" },
-  { "03C9", "*w" },
-  { "03D1", "+h" },
-  { "03D5", "*f" },
-  { "03D6", "+p" },
-  { "03F5", "+e" },
 //{ "2010", "-" },
   { "2010", "hy" },
   { "2013", "en" },
@@ -495,3 +445,9 @@ const char *unicode_to_glyph_name(const char *s)
   unicode_to_glyph *result = unicode_to_glyph_table.lookup(s);
   return result ? result->value : 0;
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

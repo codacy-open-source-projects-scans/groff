@@ -9,6 +9,6 @@
 /examples/typesetting.pdf
 /groff_mom.7
 # test ("make check") artifacts
-/examples/tests-mom.sh
-/examples/tests-mom.sh.log
-/examples/tests-mom.sh.trs
+/examples/test-mom.sh
+/examples/test-mom.sh.log
+/examples/test-mom.sh.trs

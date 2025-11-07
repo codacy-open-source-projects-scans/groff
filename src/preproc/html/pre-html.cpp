@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2025 Free Software Foundation, Inc.
  * Written by Gaius Mulley (gaius@glam.ac.uk).
  *
  * This file is part of groff.
@@ -19,35 +19,43 @@
  * 02110-1301, USA.
  */
 
-#define PREHTMLC
-
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
-#include <ctype.h>
+#include <ctype.h> // isspace()
 #include <errno.h>
-#include <signal.h>
-#include <stdlib.h>
+#include <stdarg.h> // va_list, va_end(), va_start(), vsnprintf()
+#include <stdio.h> // EOF, FILE, fclose(), feof(), fflush(), fopen(),
+		   // fprintf(), fputc(), fread(), getc(), printf(),
+		   // stderr, stdin, stdout, ungetc()
+#include <stdlib.h> // atexit(), atoi(), exit(), free(), getenv(),
+		    // malloc(), system()
+#include <string.h> // memcpy(), strchr(), strcmp(), strcpy(),
+		    // strerror(), strlen(), strncmp(), strsignal()
+
+#include <getopt.h> // getopt_long()
+
+#include <new> // std::bad_alloc
+
+// needed for close(), creat(), dup(), dup2(), execvp(), fork(),
+// getpid(), mkdir(), open(), pipe(), unlink(), wait(), write()
+#include "posix.h"
+#include "nonposix.h"
+
+#define PREHTMLC
+
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
 #include "stringclass.h"
-#include "posix.h"
 #include "defs.h"
 #include "searchpath.h"
 #include "paper.h"
 #include "device.h"
 #include "font.h"
-
-#include <errno.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 #ifdef _POSIX_VERSION
 # include <sys/wait.h>
@@ -55,14 +63,6 @@
 #else /* not _POSIX_VERSION */
 # define PID_T int
 #endif /* not _POSIX_VERSION */
-
-#include <stdarg.h>
-
-#include "nonposix.h"
-
-#if 0
-# define DEBUGGING
-#endif
 
 /* Establish some definitions to facilitate discrimination between
    differing runtime environments. */
@@ -144,7 +144,6 @@
 
 #endif /* not __MSDOS__ or _WIN32 */
 
-#ifdef DEBUGGING
 // For a DEBUGGING version, we need some additional macros,
 // to direct the captured debugging mode output to appropriately named
 // files in the specified DEBUG_FILE_DIR.
@@ -152,7 +151,6 @@
 # define DEBUG_TEXT(text) #text
 # define DEBUG_NAME(text) DEBUG_TEXT(text)
 # define DEBUG_FILE(name) DEBUG_NAME(DEBUG_FILE_DIR) "/" name
-#endif
 
 extern "C" const char *Version_string;
 
@@ -189,42 +187,49 @@ static int postscriptRes = -1;		// PostScript resolution,
 static int stdoutfd = 1;		// output file descriptor -
 					// normally 1 but might move
 					// -1 means closed
-static char *psFileName = 0 /* nullptr */;	// PostScript file name
-static char *psPageName = 0 /* nullptr */;	// name of file
-						// containing current
-						// PostScript page
-static char *regionFileName = 0 /* nullptr */;	// name of file
-						// containing all image
-						// regions
-static char *imagePageName = 0 /* nullptr */;	// name of bitmap image
-						// file containing
-						// current page
+static const char *psFileName = 0 /* nullptr */;	// PostScript
+							// file name
+static const char *psPageName = 0 /* nullptr */;	// name of file
+							// containing
+							// current
+							// PostScript
+							// page
+static const char *regionFileName = 0 /* nullptr */;	// name of file
+							// containing
+							// all image
+							// regions
+static const char *imagePageName = 0 /* nullptr */;	// name of
+							// bitmap image
+							// file
+							// containing
+							// current page
 static const char *image_device = "pnmraw";
 static int image_res = DEFAULT_IMAGE_RES;
 static int vertical_offset = 0;
 static char *image_template = 0 /* nullptr */;	// image file name
 						// template
-static char *macroset_template= 0 /* nullptr */;	// image file
+static const char *macroset_template= 0 /* nullptr */;	// image file
 							// name template
 							// passed to
 							// troff by -D
 static int troff_arg = 0;		// troff arg index
-static char *image_dir = 0 /* nullptr */;	// user-specified image
+static const char *image_dir = 0 /* nullptr */;	// user-specified image
 						// directory
 static int textAlphaBits = MAX_ALPHA_BITS;
 static int graphicAlphaBits = MAX_ALPHA_BITS;
-static char *antiAlias = 0 /* nullptr */;	// anti-alias arguments
+static const char *antiAlias = 0 /* nullptr */;	// anti-alias arguments
 						// to be passed to gs
 static bool want_progress_report = false;	// display page numbers
 						// as they are processed
 static int currentPageNo = -1;		// current image page number
-#if defined(DEBUGGING)
 static bool debugging = false;
-static char *troffFileName = 0 /* nullptr */;	// pre-html output sent
-						// to troff -Tps
-static char *htmlFileName = 0 /* nullptr */;	// pre-html output sent
-						// to troff -Thtml
-#endif
+static const char *troffFileName = 0 /* nullptr */;	// pre-html
+							// output sent
+							// to troff -Tps
+static const char *htmlFileName = 0 /* nullptr */;	// pre-html
+							// output sent
+							// to troff
+							// -Thtml
 static bool need_eqn = false;		// must we preprocess via eqn?
 
 static char *linebuf = 0 /* nullptr */;	// for scanning devps/DESC
@@ -258,22 +263,34 @@ void sys_fatal(const char *s)
 /*
  *  get_line - Copy a line (w/o newline) from a file to the
  *             global line buffer.
+ *
+ * TODO: Discard; migrate callers to POSIX `getline()`.
+ * https://pubs.opengroup.org/onlinepubs/9799919799/functions/\
+ *   getline.html
  */
 
-int get_line(FILE *f)
+static bool get_line(FILE *f, const char *file_name, int lineno)
 {
-  if (f == 0)
-    return 0;
-  if (linebuf == 0) {
-    linebuf = new char[128];
+  if (0 /* nullptr */ == f)
+    return false;
+  if (0 /* nullptr */ == linebuf) {
     linebufsize = 128;
+    try {
+      linebuf = new char[linebufsize]; // C++03: new int[linebufsize]();
+      (void) memset(linebuf, '\0', (linebufsize * sizeof(char)));
+    }
+    catch (std::bad_alloc &e) {
+      fatal_with_file_and_line(file_name, lineno, "cannot allocate %1"
+			       " bytes to read line; aborting",
+			       linebufsize);
+    }
   }
   int i = 0;
   // skip leading whitespace
   for (;;) {
     int c = getc(f);
-    if (c == EOF)
-      return 0;
+    if (EOF == c)
+      return false;
     if (c != ' ' && c != '\t') {
       ungetc(c, f);
       break;
@@ -281,23 +298,32 @@ int get_line(FILE *f)
   }
   for (;;) {
     int c = getc(f);
-    if (c == EOF)
+    if (EOF == c)
       break;
     if (i + 1 >= linebufsize) {
+      int newbufsize = linebufsize * 2;
       char *old_linebuf = linebuf;
-      linebuf = new char[linebufsize * 2];
+      try {
+	linebuf = new char[newbufsize]; // C++03: new int[newbufsize]();
+	(void) memset(linebuf, '\0', (newbufsize * sizeof(char)));
+      }
+      catch (std::bad_alloc &e) {
+	fatal_with_file_and_line(file_name, lineno, "cannot allocate"
+				 " more than %1 bytes to read line;"
+				 " aborting", linebufsize);
+      }
       memcpy(linebuf, old_linebuf, linebufsize);
       delete[] old_linebuf;
-      linebufsize *= 2;
+      linebufsize = newbufsize;
     }
     linebuf[i++] = c;
-    if (c == '\n') {
+    if ('\n' == c) {
       i--;
       break;
     }
   }
   linebuf[i] = '\0';
-  return 1;
+  return true;
 }
 
 /*
@@ -312,12 +338,18 @@ static unsigned int get_resolution(void)
   f = font_path.open_file(devps_desc, &pathp);
   if (0 /* nullptr */ == f)
     fatal("cannot open file '%1': %2", devps_desc, strerror(errno));
-  free(pathp);
-  // XXX: We should break out of this loop if we hit a "charset" line.
-  // "This line and everything following it in the file are ignored."
-  // (groff_font(5))
-  while (get_line(f))
+  int lineno = 0;
+  while (get_line(f, pathp, lineno++)) {
     (void) sscanf(linebuf, "res %u", &res);
+    // We must stop reading at a "charset" line; see groff_font(5).
+    if (strncmp(linebuf, "charset", sizeof "charset") == 0) {
+      // Don't be fooled by non-groff extensions.
+      char trailing_char = linebuf[(sizeof "charset") - 1];
+      if (isspace(trailing_char) || '\0' == trailing_char)
+	break;
+    }
+  }
+  free(pathp);
   fclose(f);
   return res;
 }
@@ -332,17 +364,14 @@ static char *get_image_generator(void)
 {
   char *pathp;
   FILE *f;
-  char *generator = 0;
+  char *generator = 0 /* nullptr */;
   const char keyword[] = "image_generator";
   const size_t keyword_len = strlen(keyword);
   f = font_path.open_file(devhtml_desc, &pathp);
   if (0 /* nullptr */ == f)
     fatal("cannot open file '%1': %2", devhtml_desc, strerror(errno));
-  free(pathp);
-  // XXX: We should break out of this loop if we hit a "charset" line.
-  // "This line and everything following it in the file are ignored."
-  // (groff_font(5))
-  while (get_line(f)) {
+  int lineno = 0;
+  while (get_line(f, pathp, lineno++)) {
     char *cursor = linebuf;
     size_t limit = strlen(linebuf);
     char *end = linebuf + limit;
@@ -358,7 +387,15 @@ static char *get_image_generator(void)
 	continue;
       generator = cursor;
     }
+    // We must stop reading at a "charset" line; see groff_font(5).
+    if (strncmp(linebuf, "charset", sizeof "charset") == 0) {
+      // Don't be fooled by non-groff extensions.
+      char trailing_char = linebuf[(sizeof "charset") - 1];
+      if (isspace(trailing_char) || '\0' == trailing_char)
+	break;
+    }
   }
+  free(pathp);
   fclose(f);
   return generator;
 }
@@ -369,13 +406,11 @@ static char *get_image_generator(void)
 
 void html_system(const char *s, int redirect_stdout)
 {
-#if defined(DEBUGGING)
   if (debugging) {
     fprintf(stderr, "%s: debug: executing: ", program_name);
     fwrite(s, sizeof(char), strlen(s), stderr);
     fflush(stderr);
   }
-#endif
   {
     int saved_stdout = dup(STDOUT_FILENO);
     int fdnull = open(NULL_DEV, O_WRONLY|O_BINARY, 0666);
@@ -416,7 +451,7 @@ void html_system(const char *s, int redirect_stdout)
  *                failure as invariably fatal.
  */
 
-char *make_string(const char *fmt, ...)
+const char *make_string(const char *fmt, ...)
 {
   size_t size = 0;
   char *p = 0 /* nullptr */;
@@ -907,8 +942,6 @@ imageList::~imageList()
 
 int imageList::createPage(int pageno)
 {
-  char *s;
-
   if (currentPageNo == pageno)
     return 0;
 
@@ -927,14 +960,12 @@ int imageList::createPage(int pageno)
     fflush(stderr);
   }
 
-#if defined(DEBUGGING)
   if (debugging)
     fprintf(stderr, "%s: debug: creating page %d\n", program_name,
 	    pageno);
-#endif
 
-  s = make_string("ps2ps -sPageList=%d %s %s",
-		   pageno, psFileName, psPageName);
+  const char *s = make_string("ps2ps -sPageList=%d %s %s",
+			      pageno, psFileName, psPageName);
   html_system(s, 1);
   assert(strlen(image_gen) > 0);
   s = make_string("echo showpage | "
@@ -952,7 +983,7 @@ int imageList::createPage(int pageno)
 		  imagePageName,
 		  psPageName);
   html_system(s, 1);
-  free(s);
+  free(const_cast<char *>(s));
   currentPageNo = pageno;
   return 0;
 }
@@ -1007,7 +1038,6 @@ int imageList::getMaxX(int pageno)
 void imageList::createImage(imageItem *i)
 {
   if (i->X1 != -1) {
-    char *s;
     int x1 = max(min(i->X1, i->X2) * image_res / postscriptRes
 		   - IMAGE_BORDER_PIXELS,
 		 0);
@@ -1021,19 +1051,19 @@ void imageList::createImage(imageItem *i)
 	     + max(i->Y1, i->Y2) * image_res / postscriptRes
 	     + 1 + IMAGE_BORDER_PIXELS;
     if (createPage(i->pageNo) == 0) {
-      s = make_string("pamcut%s %d %d %d %d < %s "
-		      "| pnmcrop%s " PNMTOOLS_QUIET
-		      "| pnmtopng%s " PNMTOOLS_QUIET " %s"
-		      "> %s",
-		      EXE_EXT,
-		      x1, y1, x2 - x1 + 1, y2 - y1 + 1,
-		      imagePageName,
-		      EXE_EXT,
-		      EXE_EXT,
-		      TRANSPARENT,
-		      i->imageName);
+      const char *s = make_string("pamcut%s %d %d %d %d < %s "
+				  "| pnmcrop%s " PNMTOOLS_QUIET
+				  "| pnmtopng%s " PNMTOOLS_QUIET " %s"
+				  "> %s",
+				  EXE_EXT,
+				  x1, y1, x2 - x1 + 1, y2 - y1 + 1,
+				  imagePageName,
+				  EXE_EXT,
+				  EXE_EXT,
+				  TRANSPARENT,
+				  i->imageName);
       html_system(s, 0);
-      free(s);
+      free(const_cast<char *>(s));
     }
     else {
       fprintf(stderr, "%s: failed to generate image of page %d\n",
@@ -1044,7 +1074,7 @@ void imageList::createImage(imageItem *i)
   }
   else {
     if (debugging) {
-      fprintf(stderr, "%s: debug: ignoring image as x1 coord is -1\n"
+      fprintf(stderr, "%s: debug: ignoring image as x1 coord is -1\n",
 	      program_name);
       fflush(stderr);
     }
@@ -1094,7 +1124,7 @@ static imageList listOfImages;	// list of images defined by region file
  *                   x1,y1--x2,y2 extents of each image.
  */
 
-static void generateImages(char *region_file_name)
+static void generateImages(const char *region_file_name)
 {
   pushBackBuffer *f=new pushBackBuffer(region_file_name);
 
@@ -1289,8 +1319,6 @@ void dump_args(int argc, char *argv[])
  *  print_args - Print arguments as if issued on the command line.
  */
 
-#if defined(DEBUGGING)
-
 void print_args(int argc, char *argv[])
 {
   if (debugging) {
@@ -1300,14 +1328,6 @@ void print_args(int argc, char *argv[])
     fputc('\n', stderr);
   }
 }
-
-#else
-
-void print_args(int, char **)
-{
-}
-
-#endif
 
 int char_buffer::run_output_filter(int filter, int argc, char **argv)
 {
@@ -1486,7 +1506,6 @@ int char_buffer::do_html(int argc, char *argv[])
     }
   }
 
-#if defined(DEBUGGING)
 # define HTML_DEBUG_STREAM  OUTPUT_STREAM(htmlFileName)
   // slight security risk: only enabled if defined(DEBUGGING)
   if (debugging) {
@@ -1495,7 +1514,6 @@ int char_buffer::do_html(int argc, char *argv[])
     emit_troff_output(DEVICE_FORMAT(HTML_OUTPUT_FILTER));
     set_redirection(STDOUT_FILENO, saved_stdout);
   }
-#endif
 
   return run_output_filter(HTML_OUTPUT_FILTER, argc, argv);
 }
@@ -1534,7 +1552,6 @@ int char_buffer::do_image(int argc, char *argv[])
     argc++;
   }
 
-#if defined(DEBUGGING)
 # define IMAGE_DEBUG_STREAM  OUTPUT_STREAM(troffFileName)
   // slight security risk: only enabled if defined(DEBUGGING)
   if (debugging) {
@@ -1543,7 +1560,6 @@ int char_buffer::do_image(int argc, char *argv[])
     emit_troff_output(DEVICE_FORMAT(IMAGE_OUTPUT_FILTER));
     set_redirection(STDOUT_FILENO, saved_stdout);
   }
-#endif
 
   return run_output_filter(IMAGE_OUTPUT_FILTER, argc, argv);
 }
@@ -1565,8 +1581,7 @@ static void usage(FILE *stream)
 "usage: %s --help\n",
 	 program_name, program_name, program_name);
   if (stdout == stream) {
-    fputs(
-"\n"
+    fputs("\n"
 "Prepare a troff(1) document for HTML formatting.\n"
 "\n"
 "This program is not intended to be executed standalone; it is\n"
@@ -1577,7 +1592,6 @@ static void usage(FILE *stream)
     fprintf(stream,
 "'%s' is called.  See the grohtml(1) manual page.\n",
 	  program_name);
-    exit(EXIT_SUCCESS);
   }
 }
 
@@ -1599,15 +1613,15 @@ static int scanArguments(int argc, char **argv)
   strcpy(s, "troff");
   int c, i;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
     { 0 /* nullptr */, 0, 0, 0 }
   };
   while ((c = getopt_long(argc, argv,
-	  "+a:bCdD:eF:g:Ghi:I:j:lno:prs:S:vVx:y", long_options,
-	  0 /* nullptr */))
+			  "+:a:bCdD:eF:g:Ghi:I:j:k:lno:prs:S:vVx:y",
+			  long_options, 0 /* nullptr */))
 	 != EOF)
-    switch(c) {
+    switch (c) {
     case 'a':
       textAlphaBits = min(max(MIN_ALPHA_BITS, atoi(optarg)),
 			  MAX_ALPHA_BITS);
@@ -1621,9 +1635,7 @@ static int scanArguments(int argc, char **argv)
       // handled by post-grohtml (don't write Creator HTML comment)
       break;
     case 'd':
-#if defined(DEBUGGING)
       debugging = true;
-#endif
       break;
     case 'D':
       image_dir = optarg;
@@ -1654,6 +1666,9 @@ static int scanArguments(int argc, char **argv)
       break;
     case 'j':
       // handled by post-grohtml (set job name for multiple file output)
+      break;
+    case 'k':
+      // handled by post-grohtml (charset ASCII/mixed/UTF-8)
       break;
     case 'l':
       // handled by post-grohtml (no automatic section links)
@@ -1696,10 +1711,18 @@ static int scanArguments(int argc, char **argv)
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(EXIT_FAILURE);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       break;
@@ -1724,14 +1747,12 @@ static int scanArguments(int argc, char **argv)
 
 static void makeTempFiles(void)
 {
-#if defined(DEBUGGING)
   psFileName = DEBUG_FILE("prehtml-ps");
   regionFileName = DEBUG_FILE("prehtml-region");
   imagePageName = DEBUG_FILE("prehtml-page");
   psPageName = DEBUG_FILE("prehtml-psn");
   troffFileName = DEBUG_FILE("prehtml-troff");
   htmlFileName = DEBUG_FILE("prehtml-html");
-#else /* not DEBUGGING */
   FILE *f;
 
   // psPageName contains a single page of PostScript.
@@ -1759,7 +1780,6 @@ static void makeTempFiles(void)
   if (0 /* nullptr */ == f)
     sys_fatal("xtmpfile");
   fclose(f);
-#endif /* not DEBUGGING */
 }
 
 static bool do_file(const char *filename)
@@ -1772,6 +1792,7 @@ static bool do_file(const char *filename)
   else {
     fp = fopen(filename, "r");
     if (0 /* nullptr*/ == fp) {
+      current_filename = 0 /* nullptr */;
       error("unable to open '%1': %2", filename, strerror(errno));
       return false;
     }
@@ -1809,7 +1830,7 @@ int main(int argc, char **argv)
     sys_fatal("atexit");
   int operand_index = scanArguments(argc, argv);
   image_gen = strsave(get_image_generator());
-  if (0 == image_gen)
+  if (0 /* nullptr */ == image_gen)
     fatal("'image_generator' directive not found in file '%1'",
 	  devhtml_desc);
   postscriptRes = get_resolution();

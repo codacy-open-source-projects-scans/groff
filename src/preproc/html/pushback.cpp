@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2025 Free Software Foundation, Inc.
      Written by Gaius Mulley (gaius@glam.ac.uk).
 
 This file is part of groff.
@@ -16,23 +16,23 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-#include <signal.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <errno.h>
-#include "errarg.h"
-#include "error.h"
-#include "stringclass.h"
+#include <stdio.h> // fflush(), fprintf(), printf(), putchar(), stderr
+#include <stdlib.h> // exit(), free(), malloc()
+#include <string.h> // strcpy(), strlen()
+
+// needed for close(), dup(), open(), read()
 #include "posix.h"
 #include "nonposix.h"
 
-#include <errno.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "lib.h"
+
+#include "errarg.h"
+#include "error.h"
+#include "stringclass.h"
 
 #include "pushback.h"
 #include "pre-html.h"
@@ -56,7 +56,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
  *  constructor for pushBackBuffer
  */
 
-pushBackBuffer::pushBackBuffer (char *filename)
+pushBackBuffer::pushBackBuffer (const char *filename)
 {
   charStack = (char *)malloc(MAXPUSHBACKSTACK);
   if (charStack == 0) {

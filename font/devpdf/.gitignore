@@ -11,6 +11,10 @@
 /CBI
 /CI
 /CR
+/CSH
+/CSS
+/CTH
+/CTS
 /DESC
 /EURO
 /Foundry
@@ -22,6 +26,10 @@
 /HNI
 /HNR
 /HR
+/JPG
+/JPM
+/KOG
+/KOM
 /NB
 /NBI
 /NI
@@ -31,6 +39,7 @@
 /PI
 /PR
 /S
+/SS
 /TB
 /TBI
 /TI
@@ -74,11 +83,12 @@
 /ZD
 /download
 /enc/text.enc
-/map/symbolchars
 /map/symbol.map
 /map/text.map
 /map/dingbats.map
 /stamp
+/symbolsl.afm
+/symbolsl.pfb
 /util/BuildFoundries
 # test ("make check") artifacts
 /tests/check-default-foundry.sh

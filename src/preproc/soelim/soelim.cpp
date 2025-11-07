@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,8 +16,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -27,6 +25,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h>
 #include <stdlib.h>
 
+#include <getopt.h> // getopt_long()
+
+#include "lib.h"
+
 #include "errarg.h"
 #include "error.h"
 #include "stringclass.h"
@@ -34,24 +36,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "searchpath.h"
 #include "lf.h"
 
-// The include search path initially contains only the current directory.
-static search_path include_search_path(0, 0, 0, 1);
+// Initialize inclusion search path with only the current directory.
+static search_path include_search_path(0 /* nullptr */, 0 /* nullptr */,
+				       0, 1);
 
-int compatible_flag = 0;
-int raw_flag = 0;
-int tex_flag = 0;
+bool want_att_compat = false;
+bool want_raw_output = false;
+bool want_tex_output = false;
 
 extern "C" const char *Version_string;
 
-int do_file(const char *);
-
+// forward declaration
+static bool do_file(const char *);
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-Crt] [-I dir] [file ...]\n"
+  fprintf(stream, "usage: %s [-Crt] [-I dir] [input-file ...]\n"
 	  "usage: %s {-v | --version}\n"
 	  "usage: %s --help\n",
 	  program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"GNU soelim eliminates source requests in roff(7) and other text\n"
+"files; it replaces lines of the form \".so included‐file\" within\n"
+"each text input-file with the contents of included-file recursively,\n"
+"flattening a tree of documents.  By default, it writes roff \"lf\"\n"
+"requests as well to record the name and line number of each\n"
+"input-file and included-file.  Use the -t option to produce TeX\n"
+"comments instead of roff requests.  Use the -r option to write\n"
+"neither.  See the soelim(1) manual page.\n",
+	  stream);
 }
 
 int main(int argc, char **argv)
@@ -59,38 +73,47 @@ int main(int argc, char **argv)
   program_name = argv[0];
   int opt;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "CI:rtv", long_options, NULL)) != EOF)
+  while ((opt = getopt_long(argc, argv, ":CI:rtv", long_options,
+			    0 /* nullptr */))
+	 != EOF)
     switch (opt) {
     case 'v':
       printf("GNU soelim (groff) version %s\n", Version_string);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case 'C':
-      compatible_flag = 1;
+      want_att_compat = true;
       break;
     case 'I':
       include_search_path.command_line_dir(optarg);
       break;
     case 'r':
-      raw_flag = 1;
+      want_raw_output = true;
       break;
     case 't':
-      tex_flag = 1;
+      want_tex_output = true;
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled getopt_long return value");
     }
   int nbad = 0;
   if (optind >= argc)
@@ -98,17 +121,21 @@ int main(int argc, char **argv)
   else
     for (int i = optind; i < argc; i++)
       nbad += !do_file(argv[i]);
-  if (ferror(stdout) || fflush(stdout) < 0)
-    fatal("output error");
-  return nbad != 0;
+  if (ferror(stdout))
+    fatal("error status on standard output stream");
+  if (fflush(stdout) < 0)
+    fatal("cannot flush standard output stream: %1", strerror(errno));
+  return (nbad != 0);
 }
 
 void set_location()
 {
-  if (!raw_flag) {
-    if (!tex_flag)
-      printf(".lf %d %s\n", current_lineno, current_filename);
+  if (!want_raw_output) {
+    if (!want_tex_output)
+      printf(".lf %d %s%s\n", current_lineno,
+	('"' == current_filename[0]) ? "" : "\"", current_filename);
     else
+      // XXX: Should we quote the file name?  What's TeX-conventional?
       printf("%% file %s, line %d\n", current_filename, current_lineno);
   }
 }
@@ -119,10 +146,11 @@ void do_so(const char *line)
   while (*p == ' ')
     p++;
   string filename;
-  int success = 1;
-  for (const char *q = p;
-       success && *q != '\0' && *q != '\n' && *q != ' ';
-       q++)
+  bool is_filename_valid = true;
+  const char *q = p;
+  if ('"' == *q)
+    q++;
+  for (; is_filename_valid && (*q != '\0') && (*q != '\n'); q++)
     if (*q == '\\') {
       switch (*++q) {
       case 'e':
@@ -130,16 +158,20 @@ void do_so(const char *line)
 	filename += '\\';
 	break;
       case ' ':
+	warning("escaping a space is unnecessary and not compatible"
+		" with troff syntax");
 	filename += ' ';
+	// TODO: groff 1.24.0 release + 2 years?
+	// is_filename_valid = false; // or fall through
 	break;
       default:
-	success = 0;
+	is_filename_valid = false;
 	break;
       }
     }
     else
       filename += char(*q);
-  if (success && filename.length() > 0) {
+  if (is_filename_valid && (filename.length() > 0)) {
     filename += '\0';
     const char *fn = current_filename;
     int ln = current_lineno;
@@ -156,26 +188,28 @@ void do_so(const char *line)
   fputs(line, stdout);
 }
 
-int do_file(const char *filename)
+static bool do_file(const char *filename)
 {
-  char *file_name_in_path = 0;
-  FILE *fp = include_search_path.open_file_cautious(filename,
-						    &file_name_in_path);
+  char *file_name_in_path = 0 /* nullptr */;
+  FILE *fp = include_search_path.open_file_cautiously(filename,
+      &file_name_in_path);
   int err = errno;
   string whole_filename(filename);
   if (strcmp(filename, "-") && file_name_in_path != 0 /* nullptr */)
     whole_filename = file_name_in_path;
   whole_filename += '\0';
   free(file_name_in_path);
-  if (fp == 0) {
-    error("can't open '%1': %2", whole_filename.contents(), strerror(err));
-    return 0;
+  if (0 /* nullptr */ == fp) {
+    error("cannot open '%1': %2", whole_filename.contents(),
+	  strerror(err));
+    return false;
   }
-  normalize_for_lf(whole_filename);
+  normalize_file_name_for_lf_request(whole_filename);
   current_filename = whole_filename.contents();
   current_lineno = 1;
   set_location();
-  enum { START, MIDDLE, HAD_DOT, HAD_s, HAD_so, HAD_l, HAD_lf } state = START;
+  enum { START, MIDDLE, HAD_DOT, HAD_s, HAD_so, HAD_l, HAD_lf } state
+      = START;
   for (;;) {
     int c = getc(fp);
     if (c == EOF)
@@ -233,7 +267,7 @@ int do_file(const char *filename)
       }
       break;
     case HAD_so:
-      if (c == ' ' || c == '\n' || compatible_flag) {
+      if (c == ' ' || c == '\n' || want_att_compat) {
 	string line;
 	for (; c != EOF && c != '\n'; c = getc(fp))
 	  line += c;
@@ -265,14 +299,14 @@ int do_file(const char *filename)
       }
       break;
     case HAD_lf:
-      if (c == ' ' || c == '\n' || compatible_flag) {
+      if (c == ' ' || c == '\n' || want_att_compat) {
 	string line;
 	for (; c != EOF && c != '\n'; c = getc(fp))
 	  line += c;
 	current_lineno++;
 	line += '\n';
 	line += '\0';
-	interpret_lf_args(line.contents());
+	interpret_lf_request_arguments(line.contents());
 	printf(".lf%s", line.contents());
 	state = START;
       }
@@ -283,7 +317,7 @@ int do_file(const char *filename)
       }
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled state in file parser");
     }
   }
   switch (state) {
@@ -309,9 +343,11 @@ int do_file(const char *filename)
     break;
   }
   if (fp != stdin)
-    fclose(fp);
-  current_filename = 0;
-  return 1;
+    if (fclose(fp) < 0)
+      fatal("cannot close '%1': %2", whole_filename.contents(),
+	    strerror(errno));
+  current_filename = 0 /* nullptr */;
+  return true;
 }
 
 // Local Variables:

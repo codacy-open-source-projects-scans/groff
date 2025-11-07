@@ -1,4 +1,5 @@
-# Copyright (C) 2002-2022 Free Software Foundation, Inc.
+# Copyright (C) 2002-2020 Free Software Foundation, Inc.
+#               2021-2023 G. Branden Robinson
 # Original Makefile.sub written by Werner Lemberg <wl@gnu.org>.
 # Adapted to Automake by Bertrand Garrigues
 #   (bertrand.garrigues@laposte.net).
@@ -36,33 +37,35 @@ DOC_SED = $(SED) \
 DOC_GROFF = \
   GROFF_COMMAND_PREFIX= \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-  $(GROFFBIN) -M $(doc_srcdir) $(MFLAG) $(FFLAG) -ww -b
+  $(GROFFBIN) $(MFLAG) $(FFLAG) -ww -b
 
 DOC_PDFMOM = \
+  GROFF_COMMAND=test-groff \
   GROFF_COMMAND_PREFIX= \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-  $(GROFF_BIN_PATH)/pdfmom -M $(doc_srcdir) $(MFLAG) $(FFLAG) -ww -b --roff
+  $(PDFMOMBIN) $(MFLAG) $(FFLAG) -ww -b -P-W --roff
 
 # This image file is used by several documents in the groff source tree.
 DOC_GNU_EPS = doc/gnu.eps
-DOC_GMP_COVER_PAGE = doc/GMPfront.t
+DOC_GMP_COVER_PAGE = doc/groff-man-pages-cover.groff
 
 # Other doc, installed in $(docdir)
 # Files located in the source tree
 DOCFILES_INST = \
   doc/me-revisions \
-  doc/ms.ms \
   doc/pic.ms
 DOCFILES_NOINST = \
-  doc/GMPfront.t.in \
+  doc/groff-man-pages-cover.groff.in \
   doc/meintro.me.in \
   doc/meintro_fr.me.in \
-  doc/meref.me.in
+  doc/meref.me.in \
+  doc/ms.ms.in
 # Files that undergo a transformation prior to groff processing
 GENERATEDDOCFILES = \
   doc/meintro.me \
   doc/meintro_fr.me \
-  doc/meref.me
+  doc/meref.me \
+  doc/ms.ms
 # Files generated in the build tree
 if USE_GROHTML
 PROCESSEDDOCFILES_HTML = \
@@ -98,7 +101,7 @@ PROCESSEDFILES_DEPS_HTML = pre-grohtml groff troff post-grohtml \
   tmac/html.tmac tmac/html-end.tmac font/devhtml/stamp font/devps/stamp
 PROCESSEDFILES_DEPS_PS = groff troff grops tmac/ps.tmac \
   font/devps/stamp
-PROCESSEDFILES_DEPS_PDF = groff troff gropdf tmac/pdf.tmac \
+PROCESSEDFILES_DEPS_PDF = test-groff groff troff gropdf tmac/pdf.tmac \
   font/devpdf/stamp
 PROCESSEDFILES_DEPS_TXT = groff troff grotty tmac/tty.tmac \
   font/devutf8/stamp
@@ -220,7 +223,6 @@ GROFF_MAN_PAGES1 = \
   src/preproc/eqn/neqn.1 \
   src/roff/nroff/nroff.1 \
   src/devices/gropdf/pdfmom.1 \
-  contrib/pdfmark/pdfroff.1 \
   src/utils/pfbtops/pfbtops.1 \
   src/preproc/pic/pic.1 \
   contrib/pic2graph/pic2graph.1 \
@@ -265,9 +267,9 @@ man-all: $(GROFF_MAN_PAGES_ALL)
 man-clean:
 	$(RM) $(GROFF_MAN_PAGES_ALL)
 
-$(DOC_GMP_COVER_PAGE): $(doc_srcdir)/GMPfront.t.in
+$(DOC_GMP_COVER_PAGE): $(doc_srcdir)/groff-man-pages-cover.groff.in
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
-	&& $(DOC_SED) $(doc_srcdir)/GMPfront.t.in >$@
+	&& $(DOC_SED) $(doc_srcdir)/groff-man-pages-cover.groff.in >$@
 
 # Many pages use tbl, a few use eqn, and soelim(1) uses pic.  We also
 # need groff's FreeEuro font so we can embed it.
@@ -279,7 +281,7 @@ doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
   $(DOC_GMP_COVER_PAGE) \
   eqn pic tbl pdfmom \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC) font/devps/freeeuro.pfa
-	$(GROFF_V)$(DOC_PDFMOM) -K latin-1 -pet -mandoc -dHF=HB -rC1 \
+	$(GROFF_V)$(DOC_PDFMOM) -K utf-8 -pet -mandoc -dHF=HB -rC1 \
 	  -rCHECKSTYLE=3 -Tpdf -P-e \
 	  $(DOC_GMP_COVER_PAGE) \
 	  $(GROFF_MAN_PAGES1) \
@@ -288,15 +290,17 @@ doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
 
 doc/groff-man-pages.utf8.txt: $(GROFF_MAN_PAGES_ALL) eqn pic tbl \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC)
-	$(GROFF_V)$(DOC_GROFF) -K latin-1 -pet -Tutf8 -mandoc \
+	$(GROFF_V)$(DOC_GROFF) -K utf-8 -pet -Tutf8 -mandoc \
 	  -rCHECKSTYLE=3 $(GROFF_MAN_PAGES1) \
 	  $(tmac_srcdir)/sv.tmac $(GROFF_MAN_PAGES2) \
 	  $(tmac_srcdir)/en.tmac $(GROFF_MAN_PAGES3) > $@
 
+# `-M $(doc_srcdir)` is so that grn can find "grnexampl.g".
 doc/grnexmpl.ps: $(doc_srcdir)/grnexmpl.me $(doc_srcdir)/grnexmpl.g \
   $(TMAC_PACKAGE_ME) grn eqn
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
-	&& $(DOC_GROFF) -Tps -ge -me $(doc_srcdir)/grnexmpl.me >$@
+	&& $(DOC_GROFF) -Tps -ge -M $(doc_srcdir) -me \
+	     $(doc_srcdir)/grnexmpl.me >$@
 
 # Generating *.me from *.me.in is, surprisingly, a challenge.
 # 1.  A pattern rule ("%.me: %.me.in") is not portable to NetBSD or
@@ -312,7 +316,7 @@ doc/grnexmpl.ps: $(doc_srcdir)/grnexmpl.me $(doc_srcdir)/grnexmpl.g \
 #     special target.
 #       error: use variable 'SUFFIXES', not target '.SUFFIXES'
 # 4.  What about a target rule?  We'd have to explicitly write the first
-#     dependency name in the rule commands because NetBSD make (and
+#     preprequisite name in the rule commands because NetBSD make (and
 #     reportedly OpenBSD) refuses to honor the $< variable in target
 #     rules.
 #
@@ -332,7 +336,7 @@ doc/grnexmpl.ps: $(doc_srcdir)/grnexmpl.me $(doc_srcdir)/grnexmpl.g \
 # A double-suffix rule won't work in an obvious way because its
 # semantics are that the suffix is replaced, not removed.  You have to
 # add both suffixes to the .SUFFIXES special target, in order with the
-# dependency first.
+# preprequisite first.
 #   .SUFFIXES: .me.in .me
 #   .me.in.me:
 #	$(DOC_SED) $< >$@
@@ -352,7 +356,7 @@ SUFFIXES += .me.in .me
 doc/meintro.ps doc/meintro_fr.ps doc/meref.ps: $(TMAC_PACKAGE_ME)
 
 .me.in.me:
-	$(GROFF_V)$(MKDIR_P) `dirname $@` \
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
 	&& $(DOC_SED) $< >$@
 
 .me.ps:
@@ -365,9 +369,14 @@ doc/meintro_fr.ps: doc/meintro_fr.me preconv tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 	&& $(DOC_GROFF) -K utf8 -t -Tps -me -mfr $< >$@
 
-doc/ms.ps: $(doc_srcdir)/ms.ms $(TMAC_PACKAGE_MS) eqn pic tbl
+SUFFIXES += .ms.in .ms
+.ms.in.ms:
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
+	&& $(DOC_SED) $< >$@
+
+doc/ms.ps: doc/ms.ms $(TMAC_PACKAGE_MS) eqn pic tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
-	&& $(DOC_GROFF) -pet -Tps -ms $(doc_srcdir)/ms.ms >$@
+	&& $(DOC_GROFF) -pet -Tps -ms doc/ms.ms >$@
 
 doc/pic.ps: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS) eqn pic tbl
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
@@ -393,7 +402,9 @@ doc/pic.html: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) $(doc_builddir) \
 	&& cd $(doc_builddir) \
 	&& $(DOC_GROFF) -pet -P-Ipic -P-Dimg -P-jpic -Thtml -ms \
-	  $(doc_srcdir)/pic.ms > pic.html
+	  $(doc_srcdir)/pic.ms > pic.html.tmp
+	$(AM_V_at)test -f $(doc_builddir)/img/pic-1.png \
+	  && mv $@.tmp $@
 
 # groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
 # soelim even though the document doesn't require them.
@@ -405,7 +416,9 @@ doc/webpage.html: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 	&& cd $(doc_builddir) \
 	&& $(DOC_GROFF) -t -I $(doc_srcdir) -P-jwebpage -P-nrb \
 	  -P-Iwebpage -P-Dimg -Thtml -ms $(doc_srcdir)/webpage.ms \
-	  > webpage.html
+	  > webpage.html.tmp
+	$(AM_V_at)test -f $(doc_builddir)/img/webpage-1.png \
+	  && mv $@.tmp $@
 
 # We remove groff.css only from an out-of-source build tree.
 mostlyclean-local: mostlyclean_doc
@@ -543,13 +556,18 @@ endif
 #info_TEXINFOS = doc/groff.texi
 #doc_groff_TEXINFOS = doc/fdl.texi
 
+if HAVE_MAKEINFO
+GROFF_INFO = doc/groff.info
+GROFF_TXT = doc/groff.txt
+GROFF_HTML = doc/groff.html
+endif
+
 if USE_TEX
 GROFF_DVI = doc/groff.dvi
 GROFF_PDF = doc/groff.pdf
-endif
+endif # USE_TEX
 
-all: doc/groff.info doc/groff.txt doc/groff.html \
-	$(GROFF_DVI) $(GROFF_PDF)
+all: $(GROFF_INFO) $(GROFF_TXT) $(GROFF_HTML) $(GROFF_DVI) $(GROFF_PDF)
 
 # Distribute the manual in source form as well.
 EXTRA_DIST += doc/groff.texi.in doc/groff.texi doc/fdl.texi
@@ -561,12 +579,14 @@ doc/groff.texi: $(top_srcdir)/doc/groff.texi.in
 
 EXTRA_DIST += doc/groff.info
 MAINTAINERCLEANFILES += doc/groff.info
-doc/groff.info: doc/groff.texi
+if HAVE_MAKEINFO
+$(GROFF_INFO): doc/groff.texi
 	$(AM_V_at)$(MKDIR_P) $(doc_builddir)
 	$(AM_V_GEN)LANG=C \
 	LC_ALL=C \
 	$(MAKEINFO) -o doc/groff.info --enable-encoding \
 	  -I $(doc_srcdir) $(doc_builddir)/groff.texi
+endif
 
 # Distribute the Info files.
 dist-hook: dist-info-bits
@@ -664,9 +684,14 @@ maintainer-clean-local:
 # Generated forms of the groff Texinfo manual might be in the source
 # directory (distribution archive build) or in the build directory (Git
 # repository build).
+#
+# Targets that do the work have a macro prerequisite that is empty if
+# build-time dependencies for regenerating the document are unavailable;
+# thus we (re)build the document only if we can actually do so.  If not,
+# the user gets the "stock" version from distribution archive.
 
-install-data-local: install-txt
-install-txt:
+install-data-local: install-txt-local
+install-txt-local: $(GROFF_TXT)
 	-test -d $(DESTDIR)$(docdir) \
 	  || $(mkinstalldirs) $(DESTDIR)$(docdir)
 	for d in $(doc_builddir) $(doc_srcdir); do \
@@ -676,8 +701,8 @@ install-txt:
 	  fi; \
 	done
 
-install-data-local: install_infodoc
-install_infodoc: doc/groff.info
+install-data-local: install-info-local
+install-info-local: $(GROFF_INFO)
 	-test -d $(DESTDIR)$(infodir) \
 	  || $(mkinstalldirs) $(DESTDIR)$(infodir)
 	$(RM) $(DESTDIR)/doc/groff.info*
@@ -690,7 +715,7 @@ install_infodoc: doc/groff.info
 	  fi; \
 	done
 
-install-dvi-local: doc/groff.dvi
+install-dvi-local: $(GROFF_DVI)
 	-test -d $(DESTDIR)$(docdir) \
 	  || $(mkinstalldirs) $(DESTDIR)$(docdir)
 	for d in $(doc_builddir) $(doc_srcdir); do \
@@ -700,7 +725,7 @@ install-dvi-local: doc/groff.dvi
 	  fi; \
 	done
 
-install-pdf-local: doc/groff.pdf
+install-pdf-local: $(GROFF_PDF)
 	-test -d $(DESTDIR)$(pdfdocdir) \
 	  || $(mkinstalldirs) $(DESTDIR)$(pdfdocdir)
 	for d in $(doc_builddir) $(doc_srcdir); do \
@@ -710,7 +735,7 @@ install-pdf-local: doc/groff.pdf
 	  fi; \
 	done
 
-install-html-local: doc/groff.html
+install-html-local: $(GROFF_HTML)
 	-test -d $(DESTDIR)$(htmldocdir)/groff.html.mono \
 	  || $(mkinstalldirs) $(DESTDIR)$(htmldocdir)/groff.html.mono
 	for d in $(doc_builddir) $(doc_srcdir); do \

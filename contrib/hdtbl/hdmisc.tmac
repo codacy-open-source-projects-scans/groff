@@ -1,8 +1,5 @@
 .ig
-
-hdmisc.tmac
-
-This file is part of groff, the GNU roff type-setting system.
+This file is part of groff, the GNU roff typesetting system.
 
 Copyright (C) 2005-2020 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
@@ -19,7 +16,6 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 ..
 .
 .
@@ -152,13 +148,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    return
 .  \}
 .
-.  length ** \\$1
+.  length ** \\$1\&
 .  length $2 \\$2
 .  nr * 0-1 1
 .
 .  while (\\n+[*] < \\n[**]) \{\
-.    ds * \\$1\"
-.    substring * \\n[*] (\\n[*] + \\n[$2] - 1)
+.    ds * \\$1\&\"
+.    substring * \\n[*] (\\n[*] <? (\\n[*] + \\n[$2] - 1))
 .    \" The surrounding \? escapes emulate string comparison.
 .    if "\?\\*[*]\?"\?\\$2\?" \
 .      break
@@ -277,7 +273,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    nr \\$2 \\$4
 .
 .  ds $3 \\$3\"			remember stackname
-.  shift 4		\"	shift four args
+.  shift 4\"			shift four args
 .
 .  ds \\*[$3] "\\$@\"		fill stack with remaining elements
 ..
@@ -295,11 +291,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"	******************************************************************
 .de t*DI
 .  nr * \\n[.u]
-.  nf		\"	diversion is already formatted - output it unchanged
-.  \\$1		\"	output the diversion ...
-.  rm \\$1	\"	... and remove it
+.  nf\"		diversion is already formatted - output it unchanged
+.  \\$1\"	output the diversion ...
+.  rm \\$1\"	... and remove it
 .  if \\n[*] \
-.    fi		\"	reactivate formatting
+.    fi\"	reactivate formatting
 ..
 .
 .\"	******************************************************************
@@ -308,15 +304,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .de t*EM
 .
 .  if !"\\*[t*kept]"" \{\
-.    tm1 "hdtbl: Not all tables have been printed.
-.    tm1 "       Add '.bp' at the end of your document.
+.    tmc \*[hdtbl]: Not all tables have been printed.
+.    tm1 "  Add '.bp' at the end of your document.
 .  \}
 .  if !"\\*[t*held]"" \{\
-.    tm1 "hdtbl: There are held tables which haven't been printed.
-.    tm1 "       Add '.t*free' at the end of your document.
+.    tmc \*[hdtbl]: There are held tables which haven't been printed.
+.    tm1 "  Add '.t*free' at the end of your document.
 .  \}
-.  if \\n[t*#] \
-.    tm hdtbl: Missing '.ETB' macro; last .TBL in \\*[t*FN] at line \\*[t*LN].
+.  if \\n[t*#] \{\
+.    tmc \*[hdtbl]: Missing '.ETB' macro; last .TBL in \\*[t*FN] at line
+.    tm1 " \\*[t*LN].
+.  \}
 ..
 .
 .

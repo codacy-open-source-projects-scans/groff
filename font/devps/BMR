@@ -591,8 +591,7 @@ t+-	600,513	0	177	plusminus	--	00B1
 S2	372,698	2	178	twosuperior	--	00B2
 S3	372,698	2	179	threesuperior	--	00B3
 aa	340,689	2	180	acute	--	00B4
-*m	627,484,205	0	181	mu	--	03BC
-mc	"
+mc	627,484,205	0	181	mu	--	00B5
 ps	600,681	2	182	paragraph	--	00B6
 pc	320,327	0	183	periodcentered	--	00B7
 ac	320,0,200	0	184	cedilla	--	00B8

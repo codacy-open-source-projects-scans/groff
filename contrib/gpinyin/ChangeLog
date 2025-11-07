@@ -1,3 +1,8 @@
+2025-07-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gpinyin.1.man: Stop assuming `AD` string is defined in some
+	hairy bits of typesetting.
+
 2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* gpinyin.pl: Stop endorsing shebang line space myth.  See
@@ -181,21 +186,14 @@
 	* gpinyin.pl, gpinyin.man, ChangeLog, Makefile.sub:
 	First version 0.9.0 of gpinyin
 
-2014-08-01  Bernd Warken  <groff-bernd.warken-72@web.de>
 ________________________________________________________________________
-License
 
-Copyright (C) 2014-2020 Free Software Foundation, Inc.
-Written by Bernd Warken <groff-bernd.warken-72@web.de>.
+Copyright 2014-2021 Free Software Foundation, Inc.
+Copyright 2021-2022 G. Branden Robinson
 
-Copying and distribution of this file, with or without
-modification, are permitted provided the copyright notice and this
-notice are preserved.
-
-This file is part of `gpinyin', which is part of the `groff'
-project.
-
-##### Editor settings
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
 
 Local Variables:
 fill-column: 72

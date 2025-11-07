@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -46,21 +46,26 @@ This need only be done for a font for which math_fitting is false;
 When it's true, the left_correction and subscript_correction should
 both be zero. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
 #include <errno.h>
-#include <math.h>
-#include <stdlib.h>
+#include <math.h> // atan2()
+#include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
+
+#include <getopt.h> // getopt_long()
+
+// needed for DIR_SEPS, FOPEN_RB
+#include "posix.h"
+#include "nonposix.h"
+
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
 #include "cset.h"
-#include "nonposix.h"
 
 extern "C" const char *Version_string;
 
@@ -696,11 +701,12 @@ int main(int argc, char **argv)
   int opt;
   const char *gf_file = 0;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "svg:k:", long_options, NULL))
+  while ((opt = getopt_long(argc, argv, ":svg:k:", long_options,
+			    0 /* nullptr */))
 	 != EOF)
     switch (opt) {
     case 'g':
@@ -722,24 +728,31 @@ int main(int argc, char **argv)
     case 'v':
       {
 	printf("GNU tfmtodit (groff) version %s\n", Version_string);
-	exit(0);
+	exit(EXIT_SUCCESS);
 	break;
       }
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
-    case EOF:
+      break;
+    default:
       assert(0 == "EOF encountered in option processing");
     }
   if (argc - optind != 3) {
     error("insufficient arguments");
     usage(stderr);
-    exit(1);
+    exit(2);
   }
   gf g;
   if (gf_file) {
@@ -881,6 +894,11 @@ static void usage(FILE *stream)
 "usage: %s {-v | --version}\n"
 "usage: %s --help\n",
 	  program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"Create a font description file for use with groff(1)'s 'dvi' output\n"
+"device.  See the tfmtodit(1) manual page.\n",
+	  stream);
 }
 
 // Local Variables:

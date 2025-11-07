@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -32,3 +31,9 @@ inline int operator==(const reference_id &r1, const reference_id &r2)
 {
   return r1.filename_id == r2.filename_id && r1.pos == r2.pos;
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

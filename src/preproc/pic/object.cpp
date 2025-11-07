@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -20,9 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include <stdlib.h>
+#include <assert.h>
+#include <math.h> // M_PI, acos(), atan2(), cos(), sin()
+#include <stdlib.h> // free()
 
-#include "pic.h"
+#include "pic.h" // includes cset.h, which declares csupper()
 #include "ptable.h"
 #include "object.h"
 
@@ -369,6 +371,20 @@ position object::center()
   return origin();
 }
 
+position object::vertex()
+{
+  return origin();
+}
+
+position object::point()
+{
+  return origin();
+}
+
+void object::set_vertex_number(int)
+{
+}
+
 double object::width()
 {
   return 0.0;
@@ -395,7 +411,7 @@ segment::segment(const position &a, int n, segment *p)
 }
 
 text_item::text_item(char *t, const char *fn, int ln)
-: next(0), text(t), filename(fn), lineno(ln) 
+: next(0), text(t), filename(fn), lineno(ln)
 {
   adj.h = CENTER_ADJUST;
   adj.v = NONE_ADJUST;
@@ -417,6 +433,8 @@ object_spec::object_spec(object_type t) : type(t)
   shaded = 0;
   xslanted = 0;
   yslanted = 0;
+  vertex_number = 1;
+  is_edge = 0;
   outlined = 0;
   with = 0;
   dir = RIGHT_DIRECTION;
@@ -736,13 +754,13 @@ void closed_object::set_fill(double f)
   fill = f;
 }
 
-/* accept positive and negative values */ 
+/* accept positive and negative values */
 void closed_object::set_xslanted(double s)
 {
   //assert(s >= 0.0);
   xslanted = s;
 }
-/* accept positive and negative values */ 
+/* accept positive and negative values */
 void closed_object::set_yslanted(double s)
 {
   //assert(s >= 0.0);
@@ -1206,7 +1224,7 @@ graphic_object *object_spec::make_move(position *curpos, direction *dirp)
   for (segment *s = segment_list; s; s = s->next)
     if (s->is_absolute)
       endpos = s->pos;
-    else 
+    else
       endpos += s->pos;
   have_last_move = 1;
   last_move = endpos - startpos;
@@ -1352,7 +1370,7 @@ void line_object::move_by(const position &pos)
   for (int i = 0; i < n; i++)
     v[i] += pos;
 }
-  
+
 void spline_object::update_bounding_box(bounding_box *p)
 {
   p->encompass(strt);
@@ -1449,6 +1467,72 @@ line_object::~line_object()
   delete[] v;
 }
 
+class polygon_object : public line_object {
+protected:
+  double fill;			// < 0 if not filled
+  char *color_fill;		// = 0 if not colored
+  int vertex_number;
+public:
+  polygon_object(const position &s, const position &e, position *, int);
+  position point();		// Select midpoint between two vertices
+  position vertex();		// Select vertex
+  position center();		// Calculate centroid of the polygon
+  void set_vertex_number(int);
+  object_type type() { return POLYGON_OBJECT; }
+  void print();
+  void set_fill(double);
+  void set_fill_color(char *fill);
+};
+
+polygon_object::polygon_object(const position &s, const position &e,
+			 position *p, int i)
+: line_object(s, e, p, i)
+{
+  fill = -1.0;
+  color_fill = 0;
+}
+
+position polygon_object::center() {
+  position tmp;
+  for (int i = 0; i < n; i++) {
+    tmp += v[i];
+  }
+  return tmp/n;
+}
+
+position polygon_object::point() {
+  if (vertex_number == n)
+    return (v[vertex_number-1] + v[0])/2.0;
+  return (v[vertex_number] + v[vertex_number-1])/2.0;
+}
+
+void polygon_object::set_fill(double f)
+{
+  assert(f >= 0.0);
+  fill = f;
+}
+
+void polygon_object::set_fill_color(char *f)
+{
+  color_fill = strsave(f);
+}
+
+void polygon_object::set_vertex_number(int vnum) {
+  vertex_number = vnum;
+}
+
+position polygon_object::vertex() {
+  return v[vertex_number-1];
+}
+
+void polygon_object::print() {
+  if (lt.type == line_type::invisible)
+    return;
+  out->set_color(color_fill, graphic_object::get_outline_color());
+  out->polygon(v, n, lt, fill);
+  out->reset_color();
+}
+
 linear_object *object_spec::make_line(position *curpos, direction *dirp)
 {
   static position last_line;
@@ -1468,7 +1552,7 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
     if ((flags & IS_SAME) && (type == LINE_OBJECT || type == ARROW_OBJECT)
 	&& have_last_line)
       segment_pos = last_line;
-    else 
+    else
       switch (dir) {
       case UP_DIRECTION:
 	segment_pos.y = segment_height;
@@ -1520,17 +1604,59 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
     if (!with->follow(here, &offset))
       return 0;
     pos -= offset;
-    for (s = segment_list; s; s = s->next)
+
+    if (type == POLYGON_OBJECT) {
+      int i = 0;
+      if (is_edge) {
+	pos = at;
+	// Offset start position by the difference between it and the
+	// midpoint of the desired edge.
+	for (s = segment_list; s; s = s->next) {
+	  if (vertex_number == 1) { // First edge
+	    pos -= (pos + s->pos)/2.0;
+	    break;
+	  } else if (vertex_number != 1 && vertex_number != nsegments+1) { // Any other edge
+	    pos -= (s->pos + s->next->pos)/2.0;
+	    break;
+	  } else if (vertex_number == nsegments+1 && i == vertex_number-2) { // Last edge
+	    pos -= (pos + s->pos)/2.0;
+	    break;
+	  }
+	  i++;
+	}
+      }
+      // Offset start position by the difference between it and the desired
+      // vertex.
+      if (vertex_number != 1 && !is_edge) {
+	pos = at;
+	for (s = segment_list; s; s = s->next) {
+	  if (i == vertex_number-2) {
+	    pos -= s->pos;
+	    break;
+	  }
+	  i++;
+	}
+      }
+    }
+
+    for (s = segment_list; s; s = s->next) {
       s->pos += pos;
+    }
     startpos += pos;
     endpos += pos;
   }
   // handle chop
   line_object *p = 0;
-  position *v = new position[nsegments];
+  // build array of size n+1 if building a polygon, assign v[0] later
   int i = 0;
-  for (s = segment_list; s; s = s->next, i++)
+  if (type == POLYGON_OBJECT) {
+    nsegments += 1;
+    i = 1;
+  }
+  position *v = new position[nsegments];
+  for (s = segment_list; s; s = s->next, i++) {
     v[i] = s->pos;
+  }
   if (flags & IS_DEFAULT_CHOPPED) {
     lookup_variable("circlerad", &start_chop);
     end_chop = start_chop;
@@ -1560,6 +1686,11 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
     break;
   case LINE_OBJECT:
     p = new line_object(startpos, endpos, v, nsegments);
+    break;
+  case POLYGON_OBJECT:
+    v[0] = startpos;
+    p = new polygon_object(startpos, endpos, v, nsegments);
+    p->set_vertex_number(vertex_number);
     break;
   default:
     assert(0);
@@ -1904,6 +2035,7 @@ object *object_spec::make_object(position *curpos, direction *dirp)
   case MOVE_OBJECT:
     obj = make_move(curpos, dirp);
     break;
+  case POLYGON_OBJECT:
   case ARC_OBJECT:
   case LINE_OBJECT:
   case SPLINE_OBJECT:

@@ -1,4 +1,4 @@
-/* Copyright (C) 1992-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -26,9 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#define __GETOPT_PREFIX groff_
-
 #include <X11/Xlib.h>
+
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <fcntl.h>
 #include <limits.h>
 
-#include <getopt.h>
+#include <getopt.h> // getopt_long()
 
 #include "XFontName.h"
 #include "DviChar.h"
@@ -286,14 +286,14 @@ int main(int argc, char **argv)
   FILE *map;
   int opt;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, NULL, CHAR_MAX + 1 },
+    { "version", no_argument, NULL, 'v' },
+    { NULL, 0, NULL, 0 }
   };
 
   program_name = argv[0];
 
-  while ((opt = getopt_long(argc, argv, "d:gr:s:v", long_options,
+  while ((opt = getopt_long(argc, argv, ":d:gr:s:v", long_options,
 			    NULL)) != EOF) {
     switch (opt) {
     case 'd':
@@ -317,9 +317,19 @@ int main(int argc, char **argv)
       xtotroff_exit(EXIT_SUCCESS);
       break;
     case '?':
+      fprintf(stderr, "%s: unrecognized command-line option '%c'\n",
+	      program_name, (char) optopt);
       usage(stderr);
-      xtotroff_exit(EXIT_FAILURE);
+      xtotroff_exit(2);
       break;
+    case ':':
+      fprintf(stderr, "%s: error: command-line option '%c' requires an"
+	      " argument\n", program_name, (char) optopt);
+      usage(stderr);
+      exit(2);
+      break;
+    default:
+      assert(0 == "unhandled getopt_long return value");
     }
   }
   if (argc - optind != 1) {

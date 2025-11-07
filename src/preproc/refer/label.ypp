@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -17,6 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 %{
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "refer.h"
 #include "refid.h"
@@ -41,7 +45,7 @@ label_info *lookup_label(const string &label);
 struct expression {
   enum {
     // Does the tentative label depend on the reference?
-    CONTAINS_VARIABLE = 01, 
+    CONTAINS_VARIABLE = 01,
     CONTAINS_STAR = 02,
     CONTAINS_FORMAT = 04,
     CONTAINS_AT = 010
@@ -124,7 +128,7 @@ public:
   map_expr(expression *e, map_func *f) : unary_expr(e), func(f) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
-  
+
 typedef const char *extractor_func(const char *, const char *, const char **);
 
 class extractor_expr : public unary_expr {
@@ -140,7 +144,7 @@ public:
 class truncate_expr : public unary_expr {
   int n;
 public:
-  truncate_expr(expression *e, int i) : unary_expr(e), n(i) { } 
+  truncate_expr(expression *e, int i) : unary_expr(e), n(i) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
@@ -205,9 +209,9 @@ public:
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-static expression *parsed_label = 0;
-static expression *parsed_date_label = 0;
-static expression *parsed_short_label = 0;
+static expression *parsed_label = 0 /* nullptr */;
+static expression *parsed_date_label = 0 /* nullptr */;
+static expression *parsed_short_label = 0 /* nullptr */;
 
 static expression *parse_result;
 
@@ -218,8 +222,8 @@ string literals;
 %union {
   int num;
   expression *expr;
-  struct { int ndigits; int val; } dig;
-  struct { int start; int len; } str;
+  struct dig_s { int ndigits; int val; } dig;
+  struct str_s { int start; int len; } str;
 }
 
 /* uppercase or lowercase letter */
@@ -268,7 +272,7 @@ alternative:
 		{ $$ = new alternative_expr($1, $3); }
 	| alternative '&' list
 		{ $$ = new conditional_expr($1, $3, 0); }
-	;	
+	;
 
 list:
 	substitute
@@ -311,7 +315,7 @@ string:
 		    break;
 		  }
 		}
-	
+
 	| '%' digits
 		{
 		  $$ = new format_expr('0', $2.ndigits, $2.val);
@@ -379,8 +383,8 @@ digits:
 	| digits TOKEN_DIGIT
 		{ $$.ndigits = $1.ndigits + 1; $$.val = $1.val*10 + $2; }
 	;
-	
-      
+
+
 flag:
 	/* empty */
 		{ $$ = 0; }
@@ -409,7 +413,7 @@ static char uppercase_array[] = {
   'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
   'Y', 'Z',
 };
-  
+
 static char lowercase_array[] = {
   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
   'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
@@ -905,7 +909,7 @@ const substring_position &reference::get_separator_pos(label_type type) const
 const string &reference::get_label(label_type type) const
 {
   if (type == SHORT_LABEL && short_label_flag)
-    return short_label; 
+    return short_label;
   else
     return label;
 }
@@ -918,7 +922,7 @@ int reference::merge_labels_by_parts(reference **v, int n, label_type type,
   const string &lb = get_label(type);
   const substring_position &sp = get_separator_pos(type);
   if (sp.start < 0
-      || sp.start != v[0]->get_separator_pos(type).start 
+      || sp.start != v[0]->get_separator_pos(type).start
       || memcmp(lb.contents(), v[0]->get_label(type).contents(),
 		sp.start) != 0)
     return 0;

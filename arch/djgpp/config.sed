@@ -11,7 +11,7 @@
 
 # DOS-style absolute file names should be supported as well
 /\*) srcdir=/s,/\*,[\\\\/]* | [A-z]:[\\\\/]*,
-/\$]\*) INSTALL=/s,\[/\$\]\*,[\\\\/$]* | [A-z]:[\\\\/]*,
+/\$]\*) INSTALL=/s,\[/\$]\*,[\\\\/$]* | [A-z]:[\\\\/]*,
 
 # Who said each line has only \012 at its end?
 /DEFS=`sed -f/s,'\\012','\\012\\015',

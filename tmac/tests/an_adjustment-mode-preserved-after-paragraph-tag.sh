@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright (C) 2024-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -22,7 +22,8 @@ groff="${abs_top_builddir:-.}/test-groff"
 
 # Regression-test Savannah #65462.
 
-input='.TH foo 1 2024-03-15 "groff test suite"
+input='.
+.TH foo 1 2024-03-15 "groff test suite"
 .SH Name
 foo \- frobnicate a bar
 .SH Description
@@ -38,7 +39,8 @@ A dubious practice,
 to be sure,
 but the house style of Perl man pages to date.
 .IR pod2man (1)
-might soon come to support
+from podlators\~6.0
+employs
 .I groff
 1.23'"'"'s
 .B AD
@@ -49,7 +51,7 @@ had the same preference in
 .I nroff
 mode in 1979,
 and did not adjust the text to both margins on terminals
-(using a
+(using the
 .B na
 request),
 though it did when using a typesetter.
@@ -59,14 +61,38 @@ commented out the disablement of adjustment as early as its 2.0 release
 (1982),
 and appears to have retained that all the way through Solaris 10.
 .P
-The tagged paragraphs above should retain the alignment configured in
-the previous untagged paragraph
-(as should this one).'
+As of
+.I groff
+1.24,
+paragraphing macros reset the adjustment mode to the default configured
+by the user,
+or by the document if the user did not configure one.
+.P
+Due to differences between implementations,
+between
+.I nroff
+and
+.I troff
+modes,
+and to the surprising behavior of the request sequence
+.IP
+.EX
+\&.ad l
+\&.na
+\&.ad
+.EE
+.P
+no useful idioms for use of the
+.B ad
+request
+in man pages have arisen.
+.'
 
 output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou)
 echo "$output"
+# Assume adjustment starting from the left on this output line.
 echo "$output" \
-    | grep -q 'had the same preference in nroff mode in 1979'
+    | grep -Eq 'had  +the  +same  +preference in nroff mode in 1979'
 
 exit
 

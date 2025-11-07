@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 2001-2020 Free Software Foundation, Inc.
      Written by Gaius Mulley <gaius@glam.ac.uk>
 
@@ -24,3 +23,9 @@ void check_output_arc_limits(int x, int y,
 			     double c0, double c1,
 			     int *minx, int *maxx,
 			     int *miny, int *maxy);
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

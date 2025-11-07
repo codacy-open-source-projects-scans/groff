@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2024 Free Software Foundation, Inc.
+/* Copyright 2003-2025 Free Software Foundation, Inc.
  *
  *  mtsm.h
  *
@@ -24,7 +24,16 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <stdio.h> // FILE
+
 #include <stack>
+
+#include "stringclass.h" // string
+
+// groff doesn't yet use include guards, so until it does, any source
+// file needing symbols from this one must #include "hvunits.h" first.
+//
+//#include "hvunits.h" // hunits, units
 
 struct int_value {
   int value;
@@ -156,3 +165,9 @@ public:
   void add(units_value_state, int);
   units val(units_value_state);
 };
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

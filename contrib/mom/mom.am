@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2024 Free Software Foundation, Inc.
+# Copyright (C) 2002-2025 Free Software Foundation, Inc.
 #      Written by Werner Lemberg <wl@gnu.org>
 #      Automake migration by Bertrand Garrigues
 #        <bertrand.garrigues@laposte.net>
@@ -24,11 +24,11 @@ mom_srcdir = $(top_srcdir)/contrib/mom
 #
 # Use '-K utf8', not '-k', in case 'configure' didn't find uchardet.
 MOMPDFMOM = \
+  GROFF_COMMAND=test-groff \
   GROFF_COMMAND_PREFIX= \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-  PDFMOM_BIN_PATH="$(top_builddir)" \
   $(PDFMOMBIN) $(FFLAG) $(MFLAG) -M$(mom_srcdir) -K utf8 -p -e -t \
-  -wall -b
+  -wall -b -P-W
 
 man7_MANS += contrib/mom/groff_mom.7
 
@@ -148,8 +148,8 @@ SUFFIXES += .mom .pdf
 	&& LC_ALL=C $(MOMPDFMOM) $< >$@
 
 $(MOMPROCESSEDEXAMPLEFILES): $(MOMNORMALFILES) \
-  groff troff gropdf pdfmom penguin.ps penguin.pdf font/devpdf/stamp \
-  tmac/pdf.tmac
+  test-groff groff troff gropdf pdfmom penguin.ps penguin.pdf \
+  font/devpdf/stamp tmac/pdf.tmac
 
 penguin.ps:
 	$(AM_V_at)cp $(mom_srcdir)/examples/penguin.ps $@

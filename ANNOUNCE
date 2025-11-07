@@ -1,5 +1,6 @@
-[[ maintainer: Send to platform-testers for betas/RCs,
+[[ maintainer: Send to platform-testers for release candidates,
                info-gnu for releases,
+               info-groff for both,
                and CC groff and linux-man@vger.kernel.org for both. ]]
 
 [[ groff x.y.Y release candidate Z, x.y.Y.rcZ, is now available from
@@ -29,12 +30,12 @@ commands can be low-level typesetting primitives, macros from a
 supplied package, or user-defined macros.  All three approaches can be
 combined.
 
-A reimplementation and extension of the typesetter from AT&T Unix, groff
-is present on most POSIX systems owing to its long association with Unix
-manuals (including man pages).  It and its predecessor are notable for
-their production of several best-selling software engineering texts.
-groff is capable of producing typographically sophisticated documents
-while consuming minimal system resources.
+A reimplementation and extension of troff and other programs from AT&T
+Unix, groff is widely available on POSIX and other systems owing to its
+long association with Unix manuals, including man pages.  It and its
+predecessor have produced several best-selling software engineering
+texts.  groff can create typographically sophisticated documents while
+consuming minimal system resources.
 
   https://www.gnu.org/software/groff/
 
@@ -158,7 +159,10 @@ of this release.
 
 Alex Colomar
 Alexander Kanavin
+Alexander Monakov
 Alexis (surryhill)
+Andrew Bower
+Benno Schulenberg
 Bjarni Ingi Gislason
 Brian Inglis
 Bruno Haible
@@ -167,34 +171,48 @@ Christof Meerwald
 Colin Watson
 Collin Funk
 Damian McGuckin
+Dan Plassche
 Dave Kemper
 Deri James
 Doug McIlroy
+Duncan Losin
 Eli Schwartz
 Eloi Montañés
 Frederic Chartier
 Gavin Smith
+Grisha Levit
+Hanno Boeck
 Hans Bezemer
 Heinz-Jürgen Oertel
 Helge Kreutzmann
 Ian Ropers
 Ingo Schwarze
+James Cloos
 Jeff Conrad
 Joerg van den Hoff
+Jonathan Gray
 Lennart Jablonka
 Lukas Javorsky
 Michał Kruszewski
 Mike Fulton
 Morten Bo Johansen
 Nikita Ivanov
+Oliver Corff
+onf
 Patrice Dumas
 Paul Eggert
 Peter Schaffter
 Phil Chadwick
 Pim
 Ralph Corderoy
+Rob Kolstad
+Robert Yang
 Ross Burton
+Russ Allbery
+Sebastien Peterson-Boudreau
+Stefan Möding
 Sven Schober
+TANAKA Takuji
 Tadziu Hoffman
 Thorsten Glaser
 Thérèse Godefroy

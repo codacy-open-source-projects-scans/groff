@@ -23,7 +23,7 @@ CLEANFILES += defs.h
 defs.h: config.status
 	@$(SHELL) $(top_srcdir)/gendef.sh defs.h \
 	"PROG_PREFIX=\"$(g)\"" \
-	"DEVICE=\"$(DEVICE)\"" \
+	"DEFAULT_DEVICE=\"$(DEFAULT_DEVICE)\"" \
 	"INSTALLPATH=\"$(prefix)\"" \
 	"BINPATH=\"$(bindir)\"" \
 	"FONTPATH=\"$(fontpath)\"" \

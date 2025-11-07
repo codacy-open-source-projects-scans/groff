@@ -1,4 +1,4 @@
-    Copyright (C) 1989-2020 Free Software Foundation, Inc.
+    Copyright 1989-2020 Free Software Foundation, Inc.
 
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
@@ -74,7 +74,7 @@ cov*abstract-indent	I	Indentation argument to .AS.
 
 cov*abstract		M	The abstract.
 
-cov*new-date		S	date (today if .ND not used)
+cov*date		S	date (or argument to .ND)
 
 cov*mt-type		S	memorandum type set by .MT
 cov*mt-addressee 	S	memorandum addressee set by .MT

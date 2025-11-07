@@ -1,6 +1,6 @@
 # Automake rules for 'src utils afmtodit'
 #
-# Copyright (C) 2013-2020 Free Software Foundation, Inc.
+# Copyright (C) 2013-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -30,23 +30,15 @@ EXTRA_DIST += \
   src/utils/afmtodit/make-afmtodit-tables
 
 afmtodit: $(afmtodit_srcdir)/afmtodit.pl $(afmtodit_srcdir)/afmtodit.tables
-	$(AM_V_GEN)if test -n "$(PERL)"; then \
-	  sed -e "s|[@]PERL[@]|$(PERL)|" \
-	      -e "s|[@]VERSION[@]|$(VERSION)|" \
-	      -e "s|[@]FONTDIR[@]|$(fontdir)|" \
-	      -e "/[@]afmtodit.tables[@]/ r $(afmtodit_srcdir)/afmtodit.tables" \
-	      -e "/[@]afmtodit.tables[@]/ d" \
-	      $(afmtodit_srcdir)/afmtodit.pl \
-	      >afmtodit; \
-	else \
-	  sed -e "s|[@]VERSION[@]|$(VERSION)|" \
-	      -e "s|[@]FONTDIR[@]|$(fontdir)|" \
-	      -e "/[@]afmtodit.tables[@]/ r $(afmtodit_srcdir)/afmtodit.tables" \
-	      -e "/[@]afmtodit.tables[@]/ d" \
-	      $(afmtodit_srcdir)/afmtodit.pl \
-	      >afmtodit; \
-	fi \
-	&& chmod +x afmtodit
+	$(AM_V_GEN)$(RM) $@ \
+	&& sed -e "s|[@]PERL[@]|$(PERL)|" \
+	       -e "s|[@]VERSION[@]|$(VERSION)|" \
+	       -e "s|[@]FONTDIR[@]|$(fontdir)|" \
+	       -e "/[@]afmtodit.tables[@]/ r $(afmtodit_srcdir)/afmtodit.tables" \
+	       -e "/[@]afmtodit.tables[@]/ d" \
+	       $(afmtodit_srcdir)/afmtodit.pl \
+	       >$@ \
+	&& chmod +x $@
 
 
 # Local Variables:

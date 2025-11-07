@@ -33,7 +33,7 @@
 .\"     Slightly modified by jjc@jclark.com to work with groff as well.
 .\"
 .\" Assume nroff on crt's only if cR==1
-.if n .nr cR 1
+.do if !r cR .if n .nr cR 1
 .\"	STRING CONSTANTS
 .\" 	DITROFF
 .if t \{\

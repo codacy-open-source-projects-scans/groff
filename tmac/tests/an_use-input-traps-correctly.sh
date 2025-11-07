@@ -39,6 +39,7 @@ input=".TH foo 1 2022-06-07 \"groff test suite\"
 output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou 2>&1)
 
 echo "checking that B macro uses correct input trap 'it'" >&2
+echo "$output"
 echo "$output" | grep -Fqx 'BR' || wail
 
 # I
@@ -50,6 +51,7 @@ input=".TH foo 1 2022-06-07 \"groff test suite\"
 output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou 2>&1)
 
 echo "checking that I macro uses correct input trap 'it'" >&2
+echo "$output"
 echo "$output" | grep -Fqx 'IR' || wail
 
 # SH
@@ -61,6 +63,7 @@ foo \- frobnicate a bar"
 output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou 2>&1)
 
 echo "checking that SH macro uses correct input trap 'it'" >&2
+echo "$output"
 echo "$output" | grep -Fqx 'Name' || wail
 
 # SS
@@ -72,6 +75,7 @@ Lorem ipsum gitsum voluptatem."
 output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou 2>&1)
 
 echo "checking that SS macro uses correct input trap 'it'" >&2
+echo "$output"
 echo "$output" | grep -Fqx '   Limitations' || wail # 3 spaces
 
 # SM
@@ -83,6 +87,7 @@ input=".TH foo 1 2022-06-07 \"groff test suite\"
 output=$(printf "%s\n" "$input" | "$groff" -man -a -Tps 2>&1)
 
 echo "checking that SM macro uses correct input trap 'it'" >&2
+echo "$output"
 echo "$output" | grep -Fqx '910' || wail
 
 # SB
@@ -94,6 +99,7 @@ input=".TH foo 1 2022-06-07 \"groff test suite\"
 output=$(printf "%s\n" "$input" | "$groff" -man -a -Tps 2>&1)
 
 echo "checking that SB macro uses correct input trap 'it'" >&2
+echo "$output"
 echo "$output" | grep -Fqx 'TB9TR10' || wail
 
 # TP
@@ -106,6 +112,7 @@ input=".TH foo 1 2022-06-07 \"groff test suite\"
 output=$(printf "%s\n" "$input" | "$groff" -man -Tascii -P-cbou 2>&1)
 
 echo "checking that TP macro uses correct input trap 'itc'" >&2
+echo "$output"
 echo "$output" | grep -Fqx '     --bar[=baz]' || wail # 5 spaces
 
 test -z "$fail"

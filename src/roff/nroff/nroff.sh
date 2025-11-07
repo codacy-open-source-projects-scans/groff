@@ -1,8 +1,8 @@
-#!/bin/sh
+#!@POSIX_SHELL_PROG@
 #
 # Emulate nroff with groff.
 #
-# Copyright (C) 1992-2024 Free Software Foundation, Inc.
+# Copyright (C) 1992-2025 Free Software Foundation, Inc.
 #
 # Written by James Clark, Werner Lemberg, and G. Branden Robinson.
 #
@@ -21,7 +21,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-prog=${0##*/}
+# Screen for shells non-conforming with POSIX Issue 4 (1994).
+badshell=yes
+# Solaris 10 /bin/sh is so wretched that it not only doesn't support
+# standard parameter expansion, but it also writes diagnostic messages
+# to the standard output instead of standard error.
+if [ -n "$SHELL" ]
+then
+  "$SHELL" -c 'prog=${0##*/}' >/dev/null 2>&1 && badshell=
+fi
+
+if [ -n "$badshell" ]
+then
+  prog=`basename $0`
+else
+  prog=${0##*/}
+fi
 
 T=
 Topt=
@@ -55,6 +70,14 @@ do
         break
         ;;
       -[abCEikpRStUvzZ]*)
+        if test -n "$badshell"
+        then
+          # POSIX doesn't actually require $SHELL, but fortunately at
+          # least one craptastic non-conforming shell offers it.
+          echo "$prog: option cluster '$thisarg' not supported with" \
+            "POSIX-non-conforming shell '$SHELL'" >&2
+          exit 2
+        fi
         remainder=${thisarg#-?}
         thisarg=${thisarg%%$remainder}
         newargs="$newargs $thisarg"
@@ -86,10 +109,9 @@ do
   # -s "
   # -f because terminal devices don't support font families.
   # -g because terminals don't do graphics.  (Some do, but grotty(1)
-  #    does not produce ReGIS or Sixel output.)
+  #    does not produce ReGIS or Sixel output.  Yet we support `-p`.)
   # -G "
   # -j "
-  # -p "
   # -l because terminal output is not suitable for a print spooler.
   # -L "
   # -N because we don't support -e.

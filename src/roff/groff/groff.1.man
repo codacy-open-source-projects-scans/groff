@@ -9,7 +9,7 @@ document formatting system
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -157,18 +157,19 @@ reads the standard input stream.
 .
 .
 .P
-A reimplementation and extension of the typesetter from AT&T Unix,
+A reimplementation and extension of
+.I troff \" AT&T
+and other programs from AT&T Unix,
 .I groff
-is present on most POSIX systems owing to its long association with Unix
-manuals
-(including man pages).
+is widely available on POSIX and other systems
+owing to its long association with Unix manuals,
+including man pages.
 .
-It and its predecessor are notable for their production of several
-best-selling software engineering texts.
-.
+It and its predecessor have produced
+several best-selling software engineering texts.
 .I groff
-is capable of producing typographically sophisticated documents while
-consuming minimal system resources.
+can create typographically sophisticated documents
+while consuming minimal system resources.
 .\" END Keep parallel with groff.texi node "What Is groff?".
 .
 .
@@ -434,13 +435,17 @@ preprocessor.
 .
 .TP
 .B \-S
-Operate in \[lq]safer\[rq] mode;
-see
+Enable safer mode and ignore any subsequent
 .B \-U
-below for its opposite.
+option.
 .
-For security reasons,
-safer mode is enabled by default.
+.I groff
+passes the
+.B \-S
+option to
+.MR @g@pic @MAN1EXT@
+and
+.MR @g@troff @MAN1EXT@ .
 .
 .
 .TP
@@ -664,6 +669,18 @@ Output only pages in
 .TQ
 .BI \-r\~ register = numeric-expression
 Define register.
+.
+.
+.TP
+.B \-S
+Enable safer mode and ignore any subsequent
+.B \-U
+option.
+.
+.
+.TP
+.B \-U
+Operate in unsafe mode.
 .
 .
 .TP
@@ -896,8 +913,9 @@ benefit from a preamble in the document prior to the first macro call,
 while others,
 like
 .IR mm ,
-instead require the specification of registers on the command line to
-configure page dimensions.
+instead require the specification of registers on the command line,
+or otherwise before its macro file is interpreted,
+to configure page dimensions.
 .
 .
 .P
@@ -1376,7 +1394,7 @@ If neither this option nor the
 .I \%GROFF_TYPESETTER
 environment variable is used,
 the default output device is
-.BR @DEVICE@ .
+.BR @DEFAULT_DEVICE@ .
 .
 An output device may be any of the following.
 .
@@ -1696,12 +1714,18 @@ the databases.
 .\" ====================================================================
 .
 .I groff
-exits with a failure status if there was a problem parsing its arguments
-and a successful status if either of the options
+exits successfully (with
+.RB status\~ 0 )
+if either of the options
 .B \-h
 or
 .B \-\-help
-was specified.
+is specified,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
 .
 Otherwise,
 .I groff
@@ -1713,23 +1737,24 @@ does likewise.
 If not,
 .IR groff 's
 exit status encodes a summary of problems encountered,
-setting bit\~0 if a command exited with a failure status,
-bit\~1 if a command was terminated with a signal,
-and bit\~2 if a command could not be executed.
+setting bit\~2 if a command exited with a failure status,
+bit\~3 if a command was terminated with a signal,
+and bit\~4 if a command could not be executed.
 .
 (Thus,
-if all three misfortunes befell one's pipeline,
+if all three misfortunes befall one's pipeline,
 .I groff
-would exit with status 2\[ha]0 + 2\[ha]1 + 2\[ha]2 = 1+2+4 = 7.)
+exits with status 2\[ha]2 + 2\[ha]3 + 2\[ha]4 = 4+8+16 = 28.)
 .
 To troubleshoot pipeline problems,
-you may wish to re-run the
+re-run the
 .I groff
 command with the
 .B \-V
 option and break the reported pipeline down into separate stages,
-inspecting the exit status of and diagnostic messages emitted by each
-command.
+inspecting the exit status of,
+and diagnostic messages emitted by,
+each command.
 .
 .
 .\" ====================================================================
@@ -1901,7 +1926,7 @@ commands use temporary files.
 Set the default output device.
 .
 If empty or not set,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is used.
 .
 The
@@ -2399,8 +2424,8 @@ Formatter program:
 Formatter wrappers:
 .\".MR groff @MAN1EXT@ , \" 42 -- this page
 .MR @g@nroff @MAN1EXT@ , \" #44
-.MR pdfmom @MAN1EXT@ , \" #30
-.MR pdfroff @MAN1EXT@ \" #14
+.MR pdfmom @MAN1EXT@ \" #30
+.\" MR pdfroff @MAN1EXT@ \" formerly #14
 .
 .
 .TP

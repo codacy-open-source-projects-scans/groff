@@ -1,10 +1,12 @@
 #!/bin/sh -xv
 # Usage:
 # genfonts.sh <input .proto file> <RES> <CPI> <FONT name>
-if test -z "$1" || test -z "$2" || test -z "$3" || test -z "$4"; then
-    echo "genfonts.sh: missing parameter"; exit 255;
+progname=${0##*/}
+if test -z "$1" || test -z "$2" || test -z "$3" || test -z "$4"
+then
+    echo "$progname: missing parameter"
+    exit 2
 fi
-
 INPUT=$1
 RES=$2
 CPI=$3

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -29,12 +29,13 @@ class diversion {
   int saved_space_total;
   hunits saved_saved_indent;
   hunits saved_target_text_length;
-  int saved_prev_line_interrupted; // three-valued Boolean :-|
+  int saved_was_previous_line_interrupted; // three-valued Boolean :-|
 protected:
   symbol nm;
   vunits vertical_position;
   vunits high_water_mark;
 public:
+  bool is_box;
   bool is_in_no_space_mode;
   bool saved_seen_break; // XXX: nilpotent?
   bool saved_seen_space; // XXX: nilpotent?
@@ -42,7 +43,7 @@ public:
   bool saved_suppress_next_eol; // XXX: nilpotent?
   state_set modified_tag;
   vunits marked_place;
-  diversion(symbol s = NULL_SYMBOL);
+  diversion(symbol /* s */ = NULL_SYMBOL, bool /* boxing */ = false);
   virtual ~diversion();
   virtual void output(node * /* nd */, bool /* retain_size */,
 		      vunits /* vs */, vunits /* post_vs */,
@@ -73,7 +74,7 @@ class macro_diversion : public diversion {
   symbol diversion_trap;
   vunits diversion_trap_pos;
 public:
-  macro_diversion(symbol, bool /* appending */);
+  macro_diversion(symbol, bool /* appending */, bool /* boxing */);
   ~macro_diversion();
   void output(node * /* nd */, bool /* retain_size */, vunits /* vs */,
 	      vunits /* post_vs */, hunits /* width */);

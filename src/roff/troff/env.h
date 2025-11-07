@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -24,7 +24,7 @@ struct size_range {
 };
 
 class font_size {
-  static size_range *size_table;
+  static size_range *size_list;
   static int nranges;
   int p;
 public:
@@ -35,8 +35,8 @@ public:
   int to_units();
   int operator==(font_size);
   int operator!=(font_size);
-  static void init_size_table(int *sizes);
-  static void dump_size_table();
+  static void init_size_list(int *sizes);
+  static void dump_size_list();
 };
 
 inline font_size::font_size() : p(0)
@@ -91,9 +91,6 @@ public:
   void add_tab(hunits pos, tab_type type, bool is_repeated);
   const char *to_string();
 };
-
-const unsigned MARGIN_CHARACTER_ON = 1;
-const unsigned MARGIN_CHARACTER_NEXT = 2;
 
 class charinfo;
 struct node;
@@ -160,8 +157,8 @@ class environment {
   int sentence_space_size;	// same but for spaces at the end of sentences
   int adjust_mode;
   bool is_filling;
-  bool line_interrupted;
-  int prev_line_interrupted;	// three-valued Boolean :-|
+  bool was_line_interrupted;
+  int was_previous_line_interrupted;	// three-valued Boolean :-|
   int centered_line_count;
   int right_aligned_line_count;
   vunits prev_vertical_spacing;
@@ -203,7 +200,7 @@ class environment {
   bool tab_precedes_field;
   bool is_discarding;
   bool is_spreading;		// set by \p
-  unsigned margin_character_flags;
+  unsigned char margin_character_flags;
   node *margin_character_node;
   hunits margin_character_distance;
   node *numbering_nodes;
@@ -212,8 +209,8 @@ class environment {
   int line_number_indent;	// in digit spaces
   int line_number_multiple;
   int no_number_count;
-  unsigned hyphenation_mode;
-  unsigned hyphenation_mode_default;
+  unsigned int hyphenation_mode;
+  unsigned int hyphenation_mode_default;
   int hyphen_line_count;
   int hyphen_line_max;
   hunits hyphenation_space;
@@ -231,26 +228,34 @@ class environment {
   unsigned char no_break_control_character;
 
   tab_type distance_to_next_tab(hunits *);
-  tab_type distance_to_next_tab(hunits *distance, hunits *leftpos);
+  tab_type distance_to_next_tab(hunits * /* distance */,
+				hunits * /* leftpos */);
   void start_line();
   void output_line(node * /* nd */, hunits /* width */,
 		   bool /* was_centered */);
   void output(node * /* nd */, bool /* suppress_filling */,
 	      vunits /* vs */, vunits /* post_vs */, hunits /* width */,
 	      bool /* was_centered */);
-  void output_title(node *nd, bool suppress_filling, vunits vs,
-		    vunits post_vs, hunits width);
+  void output_title(node * /* nd */, bool /* suppress_filling */,
+		    vunits /* vs */, vunits /* post_vs */,
+		    hunits /* width */);
 #ifdef WIDOW_CONTROL
   void mark_last_line();
 #endif /* WIDOW_CONTROL */
   breakpoint *choose_breakpoint();
-  void hyphenate_line(bool /* must_break_here */ = false);
+  void possibly_hyphenate_line(bool /* must_break_here */ = false);
   void start_field();
   void wrap_up_field();
   void add_padding();
-  node *make_tab_node(hunits d, node *next = 0);
+  node *make_tab_node(hunits /* d */,
+		      node * /* next */ = 0 /* nullptr */);
   node *get_prev_char();
 public:
+  // C++11: Use `enum : unsigned char`.
+  enum {
+    MC_ON = 0x1,
+    MC_NEXT = 0x2
+  };
   bool seen_space;
   bool seen_eol;
   bool suppress_next_eol;
@@ -267,7 +272,7 @@ public:
   unsigned char get_no_break_control_character();
   bool set_no_break_control_character(unsigned char);
   statem *construct_state(bool has_only_eol);
-  void print_env();
+  void dump();
   void copy(const environment *);
   bool is_dummy() { return is_dummy_env; }
   bool is_empty();
@@ -288,7 +293,7 @@ public:
   int get_zoom();			// .zoom
   int get_numbering_nodes();		// .nm
   font_family *get_family() { return family; }
-  int get_bold();			// .b
+  hunits get_emboldening_offset();	// .b
   unsigned get_adjust_mode();		// .j
   int get_fill();			// .u
   hunits get_indent();			// .i
@@ -324,7 +329,8 @@ public:
   const char *get_input_trap_macro();
   int get_right_aligned_line_count();
   int get_no_number_count();
-  int get_prev_line_interrupted() { return prev_line_interrupted; }
+  bool get_was_line_interrupted() { return was_line_interrupted; }
+  int get_was_previous_line_interrupted() { return was_previous_line_interrupted; }
   color *get_fill_color();
   color *get_stroke_color();
   color *get_prev_stroke_color();
@@ -360,6 +366,8 @@ public:
   void space_newline();
   const char *get_stroke_color_string();
   const char *get_fill_color_string();
+  const char *get_prev_stroke_color_string();
+  const char *get_prev_fill_color_string();
   const char *get_font_family_string();
   const char *get_font_name_string();
   const char *get_style_name_string();
@@ -371,7 +379,7 @@ public:
 			      int /* fill */);
   void construct_new_line_state(node *n);
   void dump_troff_state();
-  void dump_node_list();
+  void dump_pending_nodes();
 
   friend void title_length();
   friend void space_size();
@@ -393,8 +401,8 @@ public:
   friend void margin_character();
   friend void no_number();
   friend void number_lines();
-  friend void leader_character();
-  friend void tab_character();
+  friend void leader_character_request();
+  friend void tab_character_request();
   friend void hyphenate_request();
   friend void set_hyphenation_mode_default();
   friend void no_hyphenate();
@@ -418,6 +426,7 @@ extern environment *curenv;
 extern void pop_env();
 extern void push_env(int);
 
+void select_font(symbol);
 void init_environments();
 
 extern double spread_limit;

@@ -1,4 +1,4 @@
-/* Copyright (C) 1994-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1994-2025 Free Software Foundation, Inc.
      Written by Francisco Andrés Verdú <pandres@dragonet.es> with many
      ideas taken from the other groff drivers.
 
@@ -28,13 +28,22 @@ TODO
 #endif
 
 #include <assert.h>
+#include <errno.h>
+#include <limits.h> // INT_MAX
+#include <math.h> // fabs(), sqrt()
+#include <stdlib.h> // abs(), EXIT_SUCCESS, exit(), strtol()
+#include <string.h> // strcmp(), strcpy(), strlen(), strncpy()
+#include <strings.h> // strcasecmp()
 
-#include "driver.h"
-#include "lbp.h"
-#include "charset.h"
-#include "paper.h"
+#include <getopt.h> // getopt_long()
 
 #include "nonposix.h"
+
+#include "charset.h"
+#include "driver.h"
+#include "lbp.h"
+#include "lib.h" // array_length(), strsave()
+#include "paper.h"
 
 extern "C" const char *Version_string;
 
@@ -55,9 +64,11 @@ static int set_papersize(const char *paperformat);
 class lbp_font : public font {
 public:
   ~lbp_font();
-  void handle_unknown_font_command(const char *command, const char *arg,
-				   const char *filename, int lineno);
-  static lbp_font *load_lbp_font(const char *);
+  void handle_unknown_font_command(const char * /* command */,
+				   const char * /* arg */,
+				   const char * /* fn */,
+				   int /* lineno */);
+  static lbp_font *load_lbp_font(const char * /* s */);
   char *lbpname;
   char is_scalable;
 private:
@@ -68,19 +79,24 @@ class lbp_printer : public printer {
 public:
   lbp_printer(int, double, double);
   ~lbp_printer();
-  void set_char(glyph *, font *, const environment *, int, const char *name);
-  void draw(int code, int *p, int np, const environment *env);
-  void begin_page(int);
-  void end_page(int page_length);
-  font *make_font(const char *);
+  void set_char(glyph * /* g */, font * /* f */,
+		const environment * /* env */, int /* w */,
+		const char * /* UNUSED */);
+  void draw(int /* code */, int * /* p */, int /* np */,
+	    const environment * /* env */);
+  void begin_page(int /* UNUSED */);
+  void end_page(int /* page_length */);
+  font *make_font(const char * /* nm */);
   void end_of_line();
 private:
-  void set_line_thickness(int size,const environment *env);
+  void set_line_thickness(int /* size */,
+			  const environment * /* env */);
   void vdmstart();
   void vdmflush(); // the name vdmend was already used in lbp.h
-  void setfillmode(int mode);
-  void polygon( int hpos,int vpos,int np,int *p);
-  char *font_name(const lbp_font *f, const int siz);
+  void setfillmode(int /* mode */);
+  void polygon(int /* hpos */, int /* vpos */, int /* np */,
+	       int * /* p */);
+  char *font_name(const lbp_font * /* f */, const int /* siz */);
 
   int fill_pattern;
   int fill_mode;
@@ -109,7 +125,7 @@ lbp_font::~lbp_font()
 lbp_font *lbp_font::load_lbp_font(const char *s)
 {
   lbp_font *f = new lbp_font(s);
-  f->lbpname = NULL;
+  f->lbpname = 0 /* nullptr */;
   f->is_scalable = 1; // Default is that fonts are scalable
   if (!f->load()) {
     delete f;
@@ -121,11 +137,11 @@ lbp_font *lbp_font::load_lbp_font(const char *s)
 
 void lbp_font::handle_unknown_font_command(const char *command,
 					   const char *arg,
-					   const char *filename, int lineno)
+					   const char *fn, int lineno)
 {
   if (strcmp(command, "lbpname") == 0) {
     if (arg == 0)
-      fatal_with_file_and_line(filename, lineno,
+      fatal_with_file_and_line(fn, lineno,
 			       "'%1' command requires an argument",
 			       command);
     this->lbpname = new char[strlen(arg) + 1];
@@ -136,14 +152,14 @@ void lbp_font::handle_unknown_font_command(const char *command,
     // fprintf(stderr, "Loading font \"%s\" \n", arg);
   }
   // fprintf(stderr, "Loading font  %s \"%s\" in %s at %d\n",
-  //         command, arg, filename, lineno);
+  //         command, arg, fn, lineno);
 }
 
 static void wp54charset()
 {
   unsigned int i;
   lbpputs("\033[714;100;29;0;32;120.}");
-  for (i = 0; i < sizeof(symset); i++)
+  for (i = 0; i < sizeof symset; i++)
     lbpputc(symset[i]);
   lbpputs("\033[100;0 D");
   return;
@@ -199,7 +215,8 @@ lbp_printer::~lbp_printer()
   lbpputs("\033c\033<");
 }
 
-inline void lbp_printer::set_line_thickness(int size,const environment *env)
+inline void lbp_printer::set_line_thickness(int size,
+					    const environment *env)
 {
       if (size == 0)
 	line_thickness = 1;
@@ -364,7 +381,7 @@ void lbp_printer::vdmstart()
   errno = 0;
   f = tmpfile();
   // f = fopen("/tmp/gtmp","w+");
-  if (f == NULL)
+  if (0 /* nullptr */ == f)
     perror("Opening temporary file");
   vdminit(f);
   if (!changed_origin) {	// we should change the origin only one time
@@ -384,12 +401,12 @@ lbp_printer::vdmflush()
   /* let's copy the vdm code to the output */
   rewind(vdmoutput);
   do {
-    bytes_read = fread(buffer, 1, sizeof(buffer), vdmoutput);
+    bytes_read = fread(buffer, 1, sizeof buffer, vdmoutput);
     bytes_read = fwrite(buffer, 1, bytes_read, lbpoutput);
-  } while (bytes_read == sizeof(buffer));
+  } while (bytes_read == sizeof buffer);
   fclose(vdmoutput);	// This will also delete the file,
 			// since it is created by tmpfile()
-  vdmoutput = NULL;
+  vdmoutput = 0 /* nullptr */;
 }
 
 inline void lbp_printer::setfillmode(int mode)
@@ -567,7 +584,7 @@ printer *make_printer()
   return new lbp_printer(user_papersize, user_paperwidth, user_paperlength);
 }
 
-static struct {
+static struct lbp_paper_size {
   const char *name;
   int code;
 } lbp_papersizes[] =
@@ -582,7 +599,7 @@ static int set_papersize(const char *paperformat)
   unsigned int i;
   // First, test for a standard (i.e. supported directly by the printer)
   // paper format.
-  for (i = 0 ; i < sizeof(lbp_papersizes) / sizeof(lbp_papersizes[0]); i++)
+  for (i = 0 ; i < array_length(lbp_papersizes); i++)
   {
     if (strcasecmp(lbp_papersizes[i].name,paperformat) == 0)
       return lbp_papersizes[i].code;
@@ -592,7 +609,7 @@ static int set_papersize(const char *paperformat)
 }
 
 static void handle_unknown_desc_command(const char *command, const char *arg,
-					const char *filename, int lineno)
+					const char *fn, int lineno)
 {
   // orientation command
   if (strcasecmp(command, "orientation") == 0) {
@@ -600,7 +617,7 @@ static void handle_unknown_desc_command(const char *command, const char *arg,
     if (orientation > 0)
       return;
     if (arg == 0)
-      error_with_file_and_line(filename, lineno,
+      error_with_file_and_line(fn, lineno,
 			       "'orientation' command requires an argument");
     else {
       if (strcasecmp(arg, "portrait") == 0)
@@ -609,7 +626,7 @@ static void handle_unknown_desc_command(const char *command, const char *arg,
 	if (strcasecmp(arg, "landscape") == 0)
 	  orientation = 1;
 	else
-	  error_with_file_and_line(filename, lineno,
+	  error_with_file_and_line(fn, lineno,
 				   "invalid argument to 'orientation' command");
       }
     }
@@ -617,15 +634,15 @@ static void handle_unknown_desc_command(const char *command, const char *arg,
 }
 
 static struct option long_options[] = {
-  { "orientation", required_argument, NULL, 'o' },
-  { "version", no_argument, NULL, 'v' },
-  { "copies", required_argument, NULL, 'c' },
-  { "landscape", no_argument, NULL, 'l' },
-  { "papersize", required_argument, NULL, 'p' },
-  { "linewidth", required_argument, NULL, 'w' },
-  { "fontdir", required_argument, NULL, 'F' },
-  { "help", no_argument, NULL, 'h' },
-  { NULL, 0, 0, 0 }
+  { "orientation", required_argument, 0 /* nullptr */, 'o' },
+  { "version", no_argument, 0 /* nullptr */, 'v' },
+  { "copies", required_argument, 0 /* nullptr */, 'c' },
+  { "landscape", no_argument, 0 /* nullptr */, 'l' },
+  { "papersize", required_argument, 0 /* nullptr */, 'p' },
+  { "linewidth", required_argument, 0 /* nullptr */, 'w' },
+  { "fontdir", required_argument, 0 /* nullptr */, 'F' },
+  { "help", no_argument, 0 /* nullptr */, 'h' },
+  { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
 };
 
 static void usage(FILE *stream)
@@ -636,28 +653,24 @@ static void usage(FILE *stream)
 "usage: %s {-v | --version}\n"
 "usage: %s {-h | --help}\n",
 	  program_name, program_name, program_name);
-  if (stdout == stream) {
-    fputs(
-"\n"
+  if (stdout == stream)
+    fputs("\n"
 "Translate the output of troff(1) into a CaPSL and VDM format suitable"
 "\n"
 "for Canon LBP-4 and LBP-8 printers.  See the grolbp(1) manual page.\n",
 	  stream);
-    exit(EXIT_SUCCESS);
-  }
 }
 
 int main(int argc, char **argv)
 {
-  if (program_name == NULL)
+  if (0 /* nullptr */ == program_name)
     program_name = strsave(argv[0]);
   font::set_unknown_desc_command_handler(handle_unknown_desc_command);
   // command line parsing
   int c;
-  int option_index = 0;
-  while ((c = getopt_long(argc, argv, "c:F:hI:lo:p:vw:", long_options,
-			  &option_index))
-	 != EOF) {
+  while ((c = getopt_long(argc, argv, ":c:F:hI:lo:p:vw:", long_options,
+			  0 /* nullptr */))
+	 != EOF)
     switch (c) {
     case 'F':
       font::command_line_font_dir(optarg);
@@ -719,15 +732,22 @@ int main(int argc, char **argv)
       }
     case 'h':
       usage(stdout);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(EXIT_FAILURE);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+	    char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       assert(0 == "unhandled getopt_long return value");
     }
-  }
   if (optind >= argc)
     do_file("-");
   while (optind < argc)

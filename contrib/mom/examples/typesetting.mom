@@ -49,7 +49,7 @@ and multi-columns"
 \# The following uses a combination of padding, string tabs, and the
 \# FWD escape to set up five tabs with 1-pica gutters stretched over
 \# the full line length.
-\# 
+\#
 .SILENT        \" Don't print the next line
 .PAD "\*[ST1]VIN#\*[ST1X]\*[FWD 1P]\*[ST2]ROBE#\*[ST2X]\
 \*[FWD 1P]\*[ST3]NEZ#\*[ST3X]\*[FWD 1P]\*[ST4]BOUCHE#\*[ST4X]\
@@ -149,7 +149,7 @@ Superbe\|!  Une aubaine à ne pas manquer.  Prêt à boire maintenant.
 \#
 \# ...and set a left indent equal to the width of an asterisk plus 2 points
 \#
-.IL \w'*'+2p   
+.IL \w'*'+2p
 \#
 \# Now, set the hanging indent equal to the left indent, effectively
 \# pulling the first line of the following text back to the new left
@@ -174,7 +174,7 @@ Otherwise, it smells like cheap lipstick.
 \# italic font, the letter T doesn't align visually with the rest of
 \# the text.  As already noted, this is an extremely fussy example. :)
 \#
-.IQ CLEAR      \" Cancel and clear stored indent values 
+.IQ CLEAR      \" Cancel and clear stored indent values
 .L_MARGIN 1i   \" Reset left margin to its original value.
 \#
 .ALD 2P        \" Add 2-picas extra space before next example
@@ -250,10 +250,10 @@ The same passage, \*[BU4]"massaged"
 .ALD .5v
 \#
 .FT       R
-.PT_SIZE +1 
+.PT_SIZE +1
 .QUAD     LEFT
 .HY OFF           \" Turn automatic hyphenation off
-.BR_AT_LINE_KERN  \" Automatically insert a line break (.BR) at each .RW and .EW 
+.BR_AT_LINE_KERN  \" Automatically insert a line break (.BR) at each .RW and .EW
 .WS +1            \" Increase word space slightly
 .IB               \" Turn "indent both" back on; values are the same as before
 \#
@@ -303,7 +303,7 @@ Example 3:
 .ie '\*[.T]'ps' \
 .FAM      N     \" New Century Schoolbook family
 .el .if '\*[.T]'pdf' \
-.FAM      U-N 
+.FAM      U-N
 .FT       R
 .PT_SIZE 11
 .LS      13
@@ -635,8 +635,8 @@ multi columns and a dropcap"
 \#
 \# The little picture of tux.
 \#
-.if '\*[.T]'pdf' .PDF_IMAGE penguin.pdf 81p 96p 
-.if '\*[.T]'ps' .PSPIC penguin.ps 81p 96p 
+.if '\*[.T]'pdf' .PDF_IMAGE penguin.pdf 81p 96p
+.if '\*[.T]'ps' .PSPIC penguin.ps 81p 96p
 .MCR
 .TAB 1
 .XCOLOR        red   \" Initialize the X11 color, red

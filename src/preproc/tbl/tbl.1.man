@@ -10,7 +10,7 @@ documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -433,13 +433,11 @@ tabs,
 newlines,
 and commas separate descriptors.
 .
-Newlines and commas are special;
-they apply the descriptors following them to a subsequent row of the
-table.
-.
-(This enables column headings to be centered or emboldened while the
-table entries for the data are not,
-for instance.)
+Newlines and commas apply the descriptors following them
+to a subsequent row of the table
+(enabling column headings to be centered or emboldened
+while the table entries for the data are not,
+for instance).
 .
 We term the resulting group of column descriptors a
 .I row definition.
@@ -468,7 +466,7 @@ Others perform special operations like drawing lines or spanning entries
 from adjacent cells in the table.
 .
 Except for
-.RB \[lq] | \[rq],
+.RB \[lq]\^ | \^\[rq],
 any classifier can be followed by one or more
 .I modifiers;
 some of these accept an argument,
@@ -491,7 +489,7 @@ but must conclude with a dot
 .RB \[lq] .\& \[rq]
 followed by a newline.
 .
-Each row definition is applied in turn to one row of the table.
+Each row definition applies in turn to one row of the table.
 .
 .I tbl \" generic
 applies the last row definition to rows of table data
@@ -525,7 +523,7 @@ GNU
 implicitly extends any row definition with fewer
 on the right-hand side with
 .B L
-classifiers as many times as necessary to make the table rectangular.
+descriptors as many times as necessary to make the table rectangular.
 .\" Heirloom Doctools tbl also does that; DWB tbl does not.
 .
 .
@@ -584,7 +582,8 @@ If multiple decimal separators are adjacent to a digit,
 it uses the rightmost one for vertical alignment.
 .
 If there is no decimal separator,
-the rightmost digit is used for vertical alignment;
+.I @g@tbl
+uses the rightmost digit for vertical alignment;
 if no digits are present,
 .I @g@tbl
 centers the entry within the column.
@@ -799,9 +798,8 @@ This is a GNU extension.
 .
 .TP
 .BR e ,\~ E
-Equalize the widths of columns with this modifier.
-.
-The column with the largest width controls.
+Equalize the widths of columns with this modifier
+to that of the widest.
 .
 This modifier sets the default line length used in a text block.
 .
@@ -981,10 +979,11 @@ After computing the column widths,
 distribute any remaining line length evenly over all columns bearing
 this modifier.
 .
+This is a Documenter's Workbench (DWB) 3.3 extension.
+.
 Applying the
 .BR x \~modifier
 to more than one column is a GNU extension.
-.\" 'x' wasn't documented at all in Lesk 1979.
 .
 This modifier sets the default line length used in a text block.
 .
@@ -1072,7 +1071,7 @@ It is not filled,
 broken,
 hyphenated,
 adjusted,
-or populated with additional inter-sentence space.
+or populated with supplemental inter-sentence space.
 .
 .I @g@tbl
 instructs the formatter to measure each table entry as it occurs in the
@@ -1224,7 +1223,7 @@ dummy character
 .
 An ordinary table entry's contents can make a column,
 and therefore the table,
-excessively wide;
+too wide;
 the table then exceeds the line length of the page,
 and becomes ugly or is exposed to truncation by the output device.
 .
@@ -1237,15 +1236,15 @@ it can be placed within a
 .
 .P
 .I @g@tbl
-interprets a table entry beginning with
+interprets a table entry of
 .RB \[lq] T{ \[rq]
-at the end of an input line not as table data,
-but as a token starting a text block.
+at the end of an input line specially,
+as a token starting a text block.
 .
 Similarly,
+an entry
 .RB \[lq] T} \[rq]
-at the start of an input line ends a text block;
-it must also end the table entry.
+at the start of an input line ends a text block.
 .
 Text block tokens can share an input line with other table data
 (preceding
@@ -1579,17 +1578,33 @@ as a leader character.
 .
 .
 .\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I @g@tbl
+exits with
+.RB status\~ 0
+on successful operation,
+.RB status\~ 2
+if the program cannot interpret its command-line arguments,
+and
+.RB status\~ 1
+if it encounters an error during operation.
+.
+.
+.\" ====================================================================
 .SH Limitations
 .\" ====================================================================
 .
-In table entries that are not text blocks,
+In entries other than text blocks,
 avoid use of
 .I roff
 escape sequences that read to the end of the line,
-like
+as
 .B \[rs]\[dq]
-or
-.BR \[rs]!\& .
+and
+.B \[rs]!\&
+do.
 .
 .
 .P
@@ -1763,6 +1778,8 @@ _
 .RE
 .
 .
+.br
+.ne 2v
 .P
 These dummy columns have zero width and are therefore invisible;
 unfortunately they usually don't work as intended on terminal devices.
@@ -1785,6 +1802,11 @@ _
 .SH Examples
 .\" ====================================================================
 .
+.if t \{\
+.  \" Unstrand line.  What sins we commit for attractive page layout...
+.  nr old-PD \n[PD]
+.  nr PD 0.35v
+.\}
 It can be easier to acquire the language of
 .I tbl \" generic
 through examples than formal description,
@@ -1795,6 +1817,11 @@ especially at first.
 .\" output.  Recast with care.
 .RS
 .P
+.\" More sinning to fit the examples on 1 U.S. letter page.
+.if t \{\
+.  ps 9
+.  vs 11
+.\}
 .EX
 \&.TS
 box center tab(#);
@@ -1810,6 +1837,10 @@ Charisma#sells tomato-based fruit salads to hypercarnivores
 \&.TE
 .EE
 .RE
+.if t \{\
+.  ps
+.  vs
+.\}
 .
 .
 .P
@@ -1838,6 +1869,11 @@ description.
 .
 .RS
 .P
+.\" More sinning to fit the examples on 1 U.S. letter page.
+.if t \{\
+.  ps 9
+.  vs 11
+.\}
 .EX
 \&.TS
 center tab(;);
@@ -1859,6 +1895,10 @@ Total;\[rs][ti]24.4
 \&.TE
 .EE
 .RE
+.if t \{\
+.  ps
+.  vs
+.\}
 .
 .
 .RS
@@ -1882,6 +1922,11 @@ LN.
 Total;\[ti]24.4
 .TE
 .RE
+.if t \{\
+.  \" Undo kludge.
+.  nr PD \n[old-PD]u
+.  rr old-PD
+.\}
 .
 .
 .br

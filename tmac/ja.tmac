@@ -58,7 +58,7 @@
 .\" Check (heuristically) for output device coverage of Japanese script.
 .if !r \*[locale]*device-checked-for-glyph-coverage \{\
 .  if !c \[u65E5] \{\
-.    tm \*[locale].tmac: warning: font \n[.fn] may lack coverage of \
+.    tm \n[.F]: warning: font \n[.fn] may lack coverage of \
 Japanese script
 .    nr \*[locale]*device-checked-for-glyph-coverage 1
 .  \}

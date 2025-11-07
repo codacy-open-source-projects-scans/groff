@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -23,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef UCHAR_MAX
 #define UCHAR_MAX 255
 #endif
-#endif /* not HAVE_CC_LIMITS_H */ 
+#endif /* not HAVE_CC_LIMITS_H */
 
 enum cset_builtin { CSET_BUILTIN };
 
@@ -72,3 +71,9 @@ static class cset_init {
 public:
   cset_init();
 } _cset_init;
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

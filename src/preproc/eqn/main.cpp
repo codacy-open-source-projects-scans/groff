@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -15,6 +15,12 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <getopt.h> // getopt_long()
 
 #include "eqn.h"
 #include "stringclass.h"
@@ -80,10 +86,7 @@ static bool read_line(FILE *fp, string *p)
   p->clear();
   int c = -1;
   while ((c = getc(fp)) != EOF) {
-    if (!is_invalid_input_char(c))
-      *p += char(c);
-    else
-      error("invalid input (%1)", input_char_description(c));
+    *p += char(c);
     if (c == '\n')
       break;
   }
@@ -96,11 +99,12 @@ void do_file(FILE *fp, const char *filename)
   string str;
   string fn(filename);
   fn += '\0';
-  normalize_for_lf(fn);
+  normalize_file_name_for_lf_request(fn);
+  current_lineno = 1;
   current_filename = fn.contents();
   if (output_format == troff)
-    printf(".lf 1 %s\n", current_filename);
-  current_lineno = 1;
+    (void) printf(".lf %d %s%s\n", current_lineno,
+	('"' == current_filename[0]) ? "" : "\"", current_filename);
   while (read_line(fp, &linebuf)) {
     if (linebuf.length() >= 4
 	&& linebuf[0] == '.' && linebuf[1] == 'l' && linebuf[2] == 'f'
@@ -109,7 +113,7 @@ void do_file(FILE *fp, const char *filename)
       put_string(linebuf, stdout);
       linebuf += '\0';
       // In GNU roff, `lf` assigns the number of the _next_ line.
-      if (interpret_lf_args(linebuf.contents() + 3))
+      if (interpret_lf_request_arguments(linebuf.contents() + 3))
 	current_lineno--;
     }
     else if (linebuf.length() >= 4
@@ -316,6 +320,12 @@ void usage(FILE *stream)
     "usage: %s {-v | --version}\n"
     "usage: %s --help\n",
     program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"GNU eqn is a filter that translates expressions in its own language,\n"
+"embedded in roff(7) input, into mathematical notation typeset by\n"
+"GNU troff(1).  See the eqn(1) manual page.\n",
+	  stream);
 }
 
 int main(int argc, char **argv)
@@ -326,19 +336,19 @@ int main(int argc, char **argv)
   int opt;
   bool want_startup_file = true;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(argc, argv, "CNrRd:f:m:M:p:s:T:v",
-			    long_options, NULL))
+  while ((opt = getopt_long(argc, argv, ":CNrRd:f:m:M:p:s:T:v",
+			    long_options, 0 /* nullptr */))
 	 != EOF)
     switch (opt) {
     case 'C':
       compatible_flag = 1;
       break;
     case 'R':			// don't load eqnrc
-      want_startup_file = true;
+      want_startup_file = false;
       break;
     case 'M':
       config_macro_path.command_line_dir(optarg);
@@ -418,8 +428,15 @@ int main(int argc, char **argv)
       exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(EXIT_FAILURE);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
       assert(0 == "unhandled getopt_long return value");

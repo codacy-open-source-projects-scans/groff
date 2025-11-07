@@ -2,7 +2,7 @@
 #
 #       gropdf          : PDF post processor for groff
 #
-# Copyright (C) 2011-2024 Free Software Foundation, Inc.
+# Copyright (C) 2011-2025 Free Software Foundation, Inc.
 #      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff.
@@ -26,7 +26,7 @@ require 5.8.0;
 use Getopt::Long qw(:config bundling);
 use Encode qw(encode);
 use POSIX qw(mktime);
-use File::Spec qw(splitpath);
+use File::Spec;
 
 use constant
 {
@@ -224,6 +224,8 @@ unshift(@ARGV,split(' ',$ENV{GROPDF_OPTIONS})) if exists($ENV{GROPDF_OPTIONS});
 my $gotzlib=0;
 my $gotinline=0;
 my $gotexif=0;
+my $xitcd=0;
+my $warnexit=0;
 
 my $rc = eval
 {
@@ -435,7 +437,7 @@ begincmap
 <0000> <FFFF>
 endcodespacerange
 1 beginbfrange
-<001f> <001f> <002d>
+<1f> <1f> <002d>
 endbfrange
 endcmap
 CMapName currentdict /CMap defineresource pop
@@ -449,8 +451,8 @@ sub usage
     my $had_error = shift;
     $stream = *STDERR if $had_error;
     print $stream
-"usage: $prog [-dels] [-F font-directory] [-I inclusion-directory]" .
-" [-p paper-format] [-u [cmap-file]] [-y foundry] [file ...]\n" .
+"usage: $prog [-delsW] [-F font-directory] [-I inclusion-directory]" .
+" [--opt option-bits] [-p paper-format] [--pdfver {1.4|1.7}] [-u [cmap-file]] [-y foundry] [file ...]\n" .
 "usage: $prog {-v | --version}\n" .
 "usage: $prog --help\n";
     if (!$had_error)
@@ -463,6 +465,7 @@ sub usage
 }
 
 my $fd;
+my @fdlist;
 my $frot;
 my $fpsz;
 my $embedall=0;
@@ -486,19 +489,20 @@ my $term="\n";
 my @bl;
 my %seac;
 my $thisfnt;
-my $parcln=qr/\[[^\]]*?\]|(?<term>.)((?!\g{term}).)*\g{term}/;
+my $parcln=qr/\[[^\]]*?\]|(.)((?!\1).)*\1/;
 my $parclntyp=qr/(?:[\d\w]|\([+-]?[\S]{2}|$parcln)/;
 
-if (!GetOptions('F=s' => \$fd, 'I=s' => \@idirs, 'l' => \$frot,
+if (!GetOptions('F=s' => \@fdlist, 'I=s' => \@idirs, 'l' => \$frot,
     'p=s' => \$fpsz, 'd!' => \$debug, 'help' => \$want_help, 'pdfver=f' => \$PDFver,
     'v' => \$version, 'version' => \$version, 'opt=s' => \$options,
-    'e' => \$embedall, 'y=s' => \$Foundry, 's' => \$stats,
+    'e' => \$embedall, 'y=s' => \$Foundry, 's' => \$stats, 'W' => \$warnexit,
     'u:s' => \$unicodemap))
 {
     &usage(1);
 }
 
 unshift(@idirs,'.');
+$fd=join('@RT_SEP@',@fdlist) if $#fdlist > -1;
 
 &usage(0) if ($want_help);
 
@@ -529,7 +533,7 @@ if (defined($unicodemap))
 
 if ($PDFver != 1.4 and $PDFver != 1.7)
 {
-    Warn("Only pdf versions 1.4 or 1.7 are supported, not '$PDFver'");
+    Notice("Only pdf versions 1.4 or 1.7 are supported, not '$PDFver'");
     $PDFver=1.7;
 }
 
@@ -1001,6 +1005,7 @@ else
 
 print "startxref\n$xrefct\n\%\%EOF\n";
 print "\% Pages=$pages->{Count}\n" if $stats;
+exit $xitcd;
 
 sub MakeMatrix
 {
@@ -1193,11 +1198,11 @@ sub LoadDownload
 
 	    if (!-r $pth)
 	    {
-		$missing{"$foundry $name"}="$dir/$devnm";
+		$missing{"$foundry $name"}="$dir/$devnm" if !exists($download{"$foundry $name"});
 		next;
 	    }
 
-	    $download{"$foundry $name"}=$file if !exists($download{"$foundry $name"});
+	    $download{"$foundry $name"}=[$file,$dir] if !exists($download{"$foundry $name"});
 	}
 
 	close($f);
@@ -1363,101 +1368,11 @@ sub do_x
 
 	if ($xprm[0] eq 'ps:')
 	{
-	    if ($xprm[1] eq 'invis')
-	    {
-		$suppress=1;
-	    }
-	    elsif ($xprm[1] eq 'endinvis')
-	    {
-		$suppress=0;
-	    }
-	    elsif ($par=~m/exec gsave currentpoint 2 copy translate (.+) rotate neg exch neg exch translate/)
-	    {
-		# This is added by gpic to rotate a single object
-
-		my $theta=-rad($1);
-
-		IsGraphic();
-		my ($curangle,$hyp)=RtoP($xpos,GraphY($ypos));
-		my ($x,$y)=PtoR($theta+$curangle,$hyp);
-		my ($tx, $ty) = ($xpos - $x, GraphY($ypos) - $y);
-		if ($frot) {
-		    ($tx, $ty) = ($tx *  sin($theta) + $ty * -cos($theta),
-				  $tx * -cos($theta) + $ty * -sin($theta));
-		}
-		$stream.="q\n".sprintf("%.3f %.3f %.3f %.3f %.3f %.3f cm",cos($theta),sin($theta),-sin($theta),cos($theta),$tx,$ty)."\n";
-		$InPicRotate=1;
-	    }
-	    elsif ($par=~m/exec grestore/ and $InPicRotate)
-	    {
-		IsGraphic();
-		$stream.="Q\n";
-		$InPicRotate=0;
-	    }
-	    elsif ($par=~m/exec.*? (\d) setlinejoin/)
-	    {
-		IsGraphic();
-		$linejoin=$1;
-		$stream.="$linejoin j\n";
-	    }
-	    if ($par=~m/exec.*? (\d) setlinecap/)
-	    {
-		IsGraphic();
-		$linecap=$1;
-		$stream.="$linecap J\n";
-	    }
-	    elsif ($par=~m/exec %%%%PAUSE/i and !$noslide)
-	    {
-		my $trans='BLOCK';
-
-		if ($firstpause)
-		{
-		    $trans='PAGE';
-		    $firstpause=0;
-		}
-		MakeXO();
-		NewPage($trans);
-		$present=1;
-	    }
-	    elsif ($par=~m/exec %%%%BEGINONCE/)
-	    {
-		if ($noslide)
-		{
-		    $suppress=1;
-		}
-		else
-		{
-		    my $trans='BLOCK';
-
-		    if ($firstpause)
-		    {
-			$trans='PAGE';
-			$firstpause=0;
-		    }
-		    MakeXO();
-		    NewPage($trans);
-		    $present=1;
-		}
-	    }
-	    elsif ($par=~m/exec %%%%ENDONCE/)
-	    {
-		if ($noslide)
-		{
-		    $suppress=0;
-		}
-		else
-		{
-		    MakeXO();
-		    NewPage('BLOCK');
-		    $present=1;
-		    pop(@XOstream);
-		}
-	    }
-	    elsif ($par=~m/\[(.+) pdfmark/)
+	    if ($par=~m/\[(.+) pdfmark/)
 	    {
 		my $pdfmark=$1;
 		$pdfmark=~s((\d{4,6}) u)(sprintf("%.1f",$1/$desc{sizescale}))eg;
-		$pdfmark=~s(\\\[u00(..)\])(chr(hex($1)))eg;
+#		$pdfmark=~s(\\\[u00(..)\])(chr(hex($1)))eg;
 		$pdfmark=~s/\\n/\n/g;
 
 		if ($pdfmark=~m/\/(\w+) \((.+)\) \/DOCINFO\s*$/s)
@@ -1508,6 +1423,11 @@ sub do_x
 		    FixPDFColour($annot->{DATA});
 		    $annot->{DATA}->{Dest}=UTFName($annot->{DATA}->{Dest}) if exists($annot->{DATA}->{Dest});
 		    $annot->{DATA}->{A}->{URI}=URIName($annot->{DATA}->{A}->{URI}) if exists($annot->{DATA}->{A}->{URI});
+		    if (exists($annot->{DATA}->{Subtype}) and $annot->{DATA}->{Subtype} eq '/Text')
+		    {
+			$annot->{DATA}->{M}="($dt)";
+			$annot->{DATA}->{T}=$info{Author} if !exists($annot->{DATA}->{T}) and exists($info{Author});
+		    }
 		    push(@PageAnnots,$annotno);
 		}
 		elsif ($pdfmark=~m/(.+) \/OUT\s*$/)
@@ -1515,13 +1435,12 @@ sub do_x
 		    my $t=$1;
 		    $t=~s/\\\) /\\\\\) /g;
 		    $t=~s/\\e/\\\\/g;
-		    $t=~m/^\/Dest (.+?) \/Title \((.*)(\).*)/;
-		    my ($d,$title,$post)=($1,$2,$3);
+		    $t=~m/^\/Dest (.+?) \/Title \((.*)\) \/Level (-?[0-9]+)/;
+		    my ($d,$title,$lvl)=($1,$2,$3);
 		    $title=utf16($title);
 
 		    $title="\\134" if $title eq "\\";
-		    my @xwds=split(' ',"<< \/Title ($title$post >>");
-		    my $out=ParsePDFValue(\@xwds);
+		    my $out={"Level" => $lvl, "Title" => "($title)"};
 		    $out->{Dest}=UTFName($d);
 
 		    my $this=[$out,[]];
@@ -1591,6 +1510,96 @@ sub do_x
 			}
 		    }
 		}
+	    }
+	    elsif ($xprm[1] eq 'invis')
+	    {
+		$suppress=1;
+	    }
+	    elsif ($xprm[1] eq 'endinvis')
+	    {
+		$suppress=0;
+	    }
+	    elsif ($par=~m/exec gsave currentpoint 2 copy translate (.+) rotate neg exch neg exch translate/)
+	    {
+		# This is added by gpic to rotate a single object
+
+		my $theta=-rad($1);
+
+		IsGraphic();
+		my ($curangle,$hyp)=RtoP($xpos,GraphY($ypos));
+		my ($x,$y)=PtoR($theta+$curangle,$hyp);
+		my ($tx, $ty) = ($xpos - $x, GraphY($ypos) - $y);
+		if ($frot) {
+		    ($tx, $ty) = ($tx *  sin($theta) + $ty * -cos($theta),
+				  $tx * -cos($theta) + $ty * -sin($theta));
+		}
+		$stream.="q\n".sprintf("%.3f %.3f %.3f %.3f %.3f %.3f cm",cos($theta),sin($theta),-sin($theta),cos($theta),$tx,$ty)."\n";
+		$InPicRotate=1;
+	    }
+	    elsif ($par=~m/exec grestore/ and $InPicRotate)
+	    {
+		IsGraphic();
+		$stream.="Q\n";
+		$InPicRotate=0;
+	    }
+	    elsif ($par=~m/exec.*? (\d) setlinejoin/)
+	    {
+		IsGraphic();
+		$linejoin=$1;
+		$stream.="$linejoin j\n";
+	    }
+	    elsif ($par=~m/exec %%%%PAUSE/i and !$noslide)
+	    {
+		my $trans='BLOCK';
+
+		if ($firstpause)
+		{
+		    $trans='PAGE';
+		    $firstpause=0;
+		}
+		MakeXO();
+		NewPage($trans);
+		$present=1;
+	    }
+	    elsif ($par=~m/exec %%%%BEGINONCE/)
+	    {
+		if ($noslide)
+		{
+		    $suppress=1;
+		}
+		else
+		{
+		    my $trans='BLOCK';
+
+		    if ($firstpause)
+		    {
+			$trans='PAGE';
+			$firstpause=0;
+		    }
+		    MakeXO();
+		    NewPage($trans);
+		    $present=1;
+		}
+	    }
+	    elsif ($par=~m/exec %%%%ENDONCE/)
+	    {
+		if ($noslide)
+		{
+		    $suppress=0;
+		}
+		else
+		{
+		    MakeXO();
+		    NewPage('BLOCK');
+		    $present=1;
+		    pop(@XOstream);
+		}
+	    }
+	    if ($par=~m/exec.*? (\d) setlinecap/)
+	    {
+		IsGraphic();
+		$linecap=$1;
+		$stream.="$linecap J\n";
 	    }
 	}
 	elsif (lc($xprm[0]) eq 'pdf:')
@@ -1697,10 +1706,16 @@ sub do_x
 		    else
 		    {
 			my $dim=`( identify $FDnm 2>/dev/null || file $FDnm )`;
-			$dim=~m/(?:(?:[,=A-Z]|JP2) (?<w>\d+)\s*x\s*(?<h>\d+))|(?:height=(?<h>\d+).+width=(?<w>\d+))/;
-
-			$info->{ImageWidth}=$+{w};
-			$info->{ImageHeight}=$+{h};
+			if ($dim=~m/(?:[,=A-Z]|JP2) (\d+)\s*x\s*(\d+)/)
+			{
+			    $info->{ImageWidth}=$1;
+			    $info->{ImageHeight}=$2;
+			}
+			elsif ($dim=~m/height=(\d+).+width=(\d+)/)
+			{
+			    $info->{ImageWidth}=$2;
+			    $info->{ImageHeight}=$1;
+			}
 
 			if ($dim=~m/JPEG \d+x|JFIF/)
 			{
@@ -1745,7 +1760,7 @@ sub do_x
 		    my $bbox=$incfil{$fil}->[1];
 		    $imgtype=$incfil{$fil}->[2];
 		    Warn("Failed to extract width x height for '$FDnm'"),return if !defined($bbox->[2]) or !defined($bbox->[3]);
-		    $wid=($bbox->[2]-$bbox->[0]) if $wid <= 0;
+		    $wid=($bbox->[2]-$bbox->[0]) if $wid <= 0 and $hgt <= 0;
 		    my $xscale=d3($wid/($bbox->[2]-$bbox->[0]));
 		    my $yscale=d3(($hgt<=0)?$xscale:($hgt/($bbox->[3]-$bbox->[1])));
 		    $xscale=($wid<=0)?$yscale:$xscale;
@@ -2009,7 +2024,8 @@ sub do_x
 		my ($S,$P,$St);
 
 		$xprm[2]='' if !$xprm[2] or $xprm[2] eq '.';
-		$xprm[3]='' if defined($xprm[3]) and $xprm[3] eq '.';
+		$xprm[3]='' if !defined($xprm[3]) or $xprm[3] eq '.';
+		$xprm[4]='' if !defined($xprm[4]);
 
 		if ($xprm[2] and index('DRrAa',substr($xprm[2],0,1)) == -1)
 		{
@@ -2037,7 +2053,7 @@ sub do_x
 		    my $label={};
 		    $label->{S} = "/$S" if $S;
 		    $label->{P} = "($P)" if length($P);
-		    $label->{St} = $St if length($St);
+		    $label->{St} = $St if $St and length($St);
 
 		    $#PageLabel=$pginsert if $pginsert > $#PageLabel;
 		    splice(@PageLabel,$pginsert,0,$label);
@@ -2093,7 +2109,7 @@ sub Clean
     $p=~s/\\[FfgkMmnVY]$parclntyp//g;
     $p=~s/\\[hs][-+]?$parclntyp//g;
 
-    $p=~s/\\\((\w\w)/\\\[$1\]/g;	# convert \(xx to \[xx]
+    $p=~s/\\\((..)/\\\[$1\]/g;	# convert \(xx to \[xx]
 
     return $p;
 }
@@ -2144,7 +2160,7 @@ sub FindChr
 	}
 	elsif (defined($thisfnt->{NAM}->{$ch}->[UNICODE]))
 	{
-	    return pack('U',hex($thisfnt->{NAM}->{$ch}->[UNICODE]))
+	    return pack('U',hex(substr($thisfnt->{NAM}->{$ch}->[UNICODE],0,4)));
 	}
     }
     elsif ($ch=~m/^\w+$/)       # ligature not in font i.e. \(ff
@@ -2714,7 +2730,7 @@ sub LoadMagick
 
     my $cs=$image->Get('colorspace');
     $cs='RGB' if $cs eq 'sRGB';
-    my $x = $image->Set(alpha => 'off', magick => $cs);
+    my $x = $image->Set(alpha => 'off', magick => $cs, depth => $BPC);
     Warn("Image '$JPnm': $x"), return if "$x";
     my @blobs = $image->ImageToBlob();
     Warn("Image '$JPnm': More than 1 image") if $#blobs > 0;
@@ -3012,8 +3028,7 @@ sub ParsePDFHash
 
 	if ($w[0])
 	{
-	    Warn("PDF Dict Key '$wd' does not start with '/'");
-	    exit 1;
+	    Die("PDF Dict Key '$wd' does not start with '/'");
 	}
 	else
 	{
@@ -3039,7 +3054,7 @@ sub ParsePDFValue
     my $rtn;
     my $wd=nextwd($pdfwds);
 
-    if ($wd=~m/^\d+$/ and $pdfwds->[0]=~m/^\d+$/ and $pdfwds->[1]=~m/^R(\]|\>|\/)?/)
+    if ($wd=~m/^\d+$/ and $#{$pdfwds}>0 and $pdfwds->[0]=~m/^\d+$/ and $pdfwds->[1]=~m/^R(\]|\>|\/)?/)
     {
 	shift(@{$pdfwds});
 	if (defined($1) and length($1))
@@ -3096,6 +3111,12 @@ sub ParsePDFValue
 	    unshift(@{$pdfwds},$2);
 	    $wd=$1;
 	}
+    }
+
+    if ($wd=~m/(\/.+?)(\/.*)$/)
+    {
+	unshift(@{$pdfwds},$2);
+	$wd=$1;
     }
 
     return($wd);
@@ -3166,12 +3187,9 @@ sub ParsePDFArray
 
 sub Notice
 {
-    if ($debug)
-    {
-	unshift(@_, "debug: ");
-	my $msg=join('',@_);
-	Msg(0,$msg);
-    }
+    unshift(@_, "notice: ");
+    my $msg=join('',@_);
+    Msg(0,$msg);
 }
 
 sub Warn
@@ -3179,6 +3197,7 @@ sub Warn
     unshift(@_, "warning: ");
     my $msg=join('',@_);
     Msg(0,$msg);
+    $xitcd=2 if $warnexit;
 }
 
 sub Die
@@ -3439,6 +3458,22 @@ sub LoadFont
 
 	    $r[3]=oct($r[3]) if substr($r[3],0,1) eq '0';
 	    $r[4]=$r[0] if !defined($r[4]);
+	    $r[6]=$1 if !defined($r[6] and defined($r[5]) and $r[5]=~m/^-- ([0-9A-F]{4,6})/);
+	    if (exists($fnt{NAM}->{$r[0]}))
+	    {
+		# Prefer postscript names other than 'uni' or 'afii' as primary
+		if ($fnt{NAM}->{$r[0]}->[2]=~m'^/(:afii\d{5}|uni[A-F0-9]{4,6})')
+		{
+		    my $n=$fnt{NAM}->{$r[0]}->[1];
+		    $fnt{NAM}->{"#$n"}=$fnt{NAM}->{$r[0]};
+		    $fnt{NO}->[$n]="#$n";
+		}
+		else
+		{
+		    $r[0]="#$r[3]";
+		}
+	    }
+
 	    $fnt{NAM}->{$r[0]}=[$p[0],$r[3],'/'.$r[4],undef,undef,$r[6]];
 	    $fnt{NO}->[$r[3]]=$r[0];
 	    $lastnm=$r[0];
@@ -3472,7 +3507,7 @@ sub LoadFont
     $fnt{slant}=$slant;
     $fnt{nospace}=(!defined($fnt{NAM}->{space}->[PSNAME]) or $fnt{NAM}->{space}->[PSNAME] ne '/space' or !exists($fnt{'spacewidth'}))?1:0;
     $fnt{'spacewidth'}=270 if !exists($fnt{'spacewidth'});
-    Notice("Using nospace mode for font '$ofontnm'") if $fnt{nospace} == 1 and $options & USESPACE;
+    Notice("Using nospace mode for font '$ofontnm'") if $debug and $fnt{nospace} == 1 and $options & USESPACE;
 
     $t1flags|=2**0 if $fixwid > -1;
     $t1flags|=(exists($fnt{'special'}))?2**2:2**5;
@@ -3480,13 +3515,19 @@ sub LoadFont
     $fnt{t1flags}=$t1flags;
     my $fontkey="$foundry $fnt{internalname}";
 
-    Warn("\nFont '$fnt{internalname} ($ofontnm)' has $lastchr glyphs\n"
+    Notice("\nFont '$fnt{internalname} ($ofontnm)' has $lastchr glyphs\n"
 	."You would see a noticeable speedup if you install the perl module Inline::C\n") if !$gotinline and $lastchr > 1000;
 
     if (exists($download{$fontkey}))
     {
 	# Real font needs subsetting
-	$fnt{fontfile}=$download{$fontkey};
+	$fnt{fontfile}=$download{$fontkey}[0];
+	if (exists($missing{$fontkey}))
+	{
+	    Notice("The download file in '$missing{$fontkey}'"
+	    . " has erroneous entry for '$fnt{internalname} ($ofontnm)'"
+	    . " but entry in '$download{$fontkey}[1]' used instead");
+	}
 #	my ($head,$body,$tail)=GetType1($download{$fontkey});
 #	$head=~s/\/Encoding .*?readonly def\b/\/Encoding StandardEncoding def/s;
 #	$fontlst{$fontno}->{HEAD}=$head;
@@ -3499,7 +3540,7 @@ sub LoadFont
     {
 	if (exists($missing{$fontkey}))
 	{
-	    Warn("The download file in '$missing{$fontkey}' "
+	    Warn("The download file in '$missing{$fontkey}'"
 	    . " has erroneous entry for '$fnt{internalname} ($ofontnm)'");
 	}
 	else
@@ -3513,7 +3554,7 @@ sub LoadFont
     $fontlst{$fontno}->{NM}='/F'.$fontno;
     $fontlst{$fontno}->{FNT}=\%fnt;
 
-    if (defined($fnt{encoding}) and $fnt{encoding} eq 'text.enc' and $ucmap ne '')
+    if ($ucmap ne '')
     {
 	if ($textenccmap eq '')
 	{
@@ -3537,11 +3578,15 @@ sub GetType1
     my $f;
 
     OpenFile(\$f,$fontdir,"$file");
-    Die("unable to open font '$file' for embedding") if !defined($f);
+    Die("cannot open font '$file' for embedding") if !defined($f);
 
-    $head=GetChunk($f,1,"currentfile eexec");
-    $body=GetChunk($f,2,"00000000") if !eof($f);
-    $tail=GetChunk($f,3,"cleartomark") if !eof($f);
+    $head=GetChunk($f,1,"currentfile eexec",$file);
+
+    Die("'$file' not an Adobe Type 1 font") if $head!~m/^%!PS-AdobeFont-1.0:/;
+    Die("font format for '$file' not recognised: font header missing") if eof($f);
+
+    $body=GetChunk($f,2,"00000000",$file);
+    $tail=GetChunk($f,3,"cleartomark",$file);
 
     return($head,$body,$tail);
 }
@@ -3551,7 +3596,8 @@ sub GetChunk
     my $F=shift;
     my $segno=shift;
     my $ascterm=shift;
-    my ($type,$hdr,$chunk,@msg);
+    my $file=shift;
+    my ($type,$hdr,$chunk);
     binmode($F);
     my $enc="ascii";
 
@@ -3580,11 +3626,11 @@ sub GetChunk
 		return if $chunktype == 3;
 
 		$ct=read($F,$hdr,4);
-		Die("failed to read binary segment length") if $ct != 4;
+		Die("font format for '$file' not recognised: failed to read binary segment length") if $ct != 4;
 		my $sl=unpack('V',$hdr);
 		my $data;
 		my $chk=read($F,$data,$sl);
-		Die("failed to read binary segment") if $chk != $sl;
+		Die("font format for '$file' not recognised: failed to read binary segment") if $chk != $sl;
 		$chunk.=$data;
 	    }
 	    else
@@ -3625,7 +3671,7 @@ sub GetChunk
 	}
 	else
 	{
-	    push(@msg,"Failed to read 2 header bytes");
+	    Die("font format for '$file' not recognised: failed to read 2 header bytes");
 	}
     }
 
@@ -4478,7 +4524,7 @@ sub AssignGlyph
     {
 	($chf->[MINOR],$chf->[MAJOR])=($chf->[CHRCODE],0);
     }
-    elsif ($chf->[CHRCODE] == 173)
+    elsif (defined($chf->[UNICODE]) and $chf->[UNICODE] eq "2212") # minus
     {
 	($chf->[MINOR],$chf->[MAJOR])=(31,0);
     }
@@ -5057,7 +5103,7 @@ sub Subset
     my $glyphs=shift;
     my $extra=shift;
 
-    foreach my $g ($glyphs=~m/(\/[.\w]+)/g)
+    foreach my $g ($glyphs=~m/(\/[.\w-]+)/g)
     {
 	if (exists($sec{$g}))
 	{

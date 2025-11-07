@@ -1,6 +1,6 @@
 .ig
 
-Copyright (C) 1991-2020 Free Software Foundation, Inc.
+Copyright 1991-2020 Free Software Foundation, Inc.
 mm is written by Jörgen Hägg <jh@axis.com>
 
 Modified by G. Branden Robinson <g.branden.robinson@gmail.com> to more
@@ -55,7 +55,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .de cov@print-date
 .rj 1
 .ft \\*[@metadata-font]
-.nop \\*[cov*new-date]
+.nop \\*[cov*date]
 .ft
 ..
 .\"------------

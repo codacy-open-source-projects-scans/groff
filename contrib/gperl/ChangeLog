@@ -1,3 +1,20 @@
+2025-08-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gperl.pl: Revise usage and version messages.  Rename scalar
+	`version` to `gperl_version`.  Add scalar `groff_version`, and
+	make its value robust to use of the program directly from the
+	source tree or in built form, copying a technique from groff's
+	`chem` contributed component.  Stop accepting abbreviated forms
+	of `--help` and `--version` options, apart from `-h` and `-v`.
+	Developers have over the decades come to repent of this old,
+	terrible idea, because it prevents them from adding an option
+	name that is a leading substring of another without changing the
+	semantics of existing command lines.  Bump minor component of
+	`gperl_version` accordingly.
+	(usage, version): Reuse subroutines from grog(1), updating usage
+	message appropriately and formatting version report per GNU
+	Coding Standards.
+
 2023-07-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* gperl.pl: Stop endorsing shebang line space myth.  See
@@ -126,22 +143,18 @@
 	* gperl.pl, gperl.man, ChangeLog, Makefile.sub:
 	first version 1.0
 
-2014-02-25  Bernd Warken  <groff-bernd.warken-72@web.de>
 ________________________________________________________________________
-License
 
-Copyright (C) 2014-2020 Free Software Foundation, Inc.
-Written by Bernd Warken <groff-bernd.warken-72@web.de>.
+Copyright 2014-2021 Free Software Foundation, Inc.
+Copyright      2025 G. Branden Robinson
 
-Copying and distribution of this file, with or without
-modification, are permitted provided the copyright notice and this
-notice are preserved.
-
-This file is part of `gperl', which is part of the `groff'
-project.
-
-##### Editor settings
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
 
 Local Variables:
+fill-column: 72
 mode: change-log
+version-control: never
 End:
+vim:set autoindent textwidth=72:

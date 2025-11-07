@@ -60,7 +60,7 @@ cat $$1 \
 cat $$3 \
 | sed -e '/#/d' \
       -e '/^$/d' \
-      -e 's/ \+/ /g' \
+      -e 's/  */ /g' \
       -e 's/ *$//' \
       -e 's/u//g' \
       -e 's/^\([^ ]*\) /\1;/' > $$4
@@ -85,15 +85,19 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "lib.h"
+
+#include "stringclass.h"
+#include "ptable.h"
+#include "unicode.h"
+
 // This code has been algorithmically derived from the file
 // UnicodeData.txt, version $version_string, available from unicode.org,
 // on `date '+%Y-%m-%d'`.
-
-#include "lib.h"
-#include "stringclass.h"
-#include "ptable.h"
-
-#include "unicode.h"
 
 struct unicode_decompose {
   char *value;

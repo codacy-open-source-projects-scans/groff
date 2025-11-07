@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +16,13 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdio.h> // fputs(), fwrite(), putchar(), stdout
+#include <stdlib.h> // free()
+
 #include "table.h"
 
 #define BAR_HEIGHT ".25m"
@@ -28,7 +35,7 @@ const int DEFAULT_COLUMN_SEPARATION = 3;
 
 #define DELIMITER_CHAR "\\[tbl]"
 #define SEPARATION_FACTOR_REG PREFIX "sep"
-#define LEFTOVER_FACTOR_REG PREFIX "leftover"
+#define EXPANSION_REMAINDER_REG PREFIX "leftover"
 #define BOTTOM_REG PREFIX "bot"
 #define RESET_MACRO_NAME PREFIX "init"
 #define LINESIZE_REG PREFIX "lps"
@@ -348,7 +355,8 @@ public:
 
 table_entry::table_entry(const table *p, const entry_modifier *m)
 : next(0), input_lineno(-1), input_filename(0),
-  start_row(-1), end_row(-1), start_col(-1), end_col(-1), parent(p), mod(m)
+  start_row(-1), end_row(-1), start_col(-1), end_col(-1), parent(p),
+  mod(m)
 {
 }
 
@@ -474,11 +482,12 @@ text_entry::text_entry(const table *p, const entry_modifier *m, char *s)
 
 text_entry::~text_entry()
 {
-  free(contents);
+  free(contents); // `malloc()`ed by `string::extract()`
 }
 
 repeated_char_entry::repeated_char_entry(const table *p,
-					 const entry_modifier *m, char *s)
+					 const entry_modifier *m,
+					 char *s)
 : text_entry(p, m, s)
 {
 }
@@ -644,7 +653,8 @@ void alphabetic_text_entry::add_tab()
   printfs(" \\n[%1]u", column_end_reg(end_col));
 }
 
-block_entry::block_entry(const table *p, const entry_modifier *m, char *s)
+block_entry::block_entry(const table *p, const entry_modifier *m,
+			 char *s)
 : table_entry(p, m), contents(s)
 {
 }
@@ -682,7 +692,8 @@ void block_entry::position_vertically()
     prints("." TEXT_BLOCK_STAGGERING_MACRO " -.5v\n");
 }
 
-int block_entry::divert(int ncols, const string *mw, int *sep, int do_expand)
+int block_entry::divert(int ncols, const string *mw, int *sep,
+			int do_expand)
 {
   do_divert(0, ncols, mw, sep, do_expand);
   return 1;
@@ -861,7 +872,8 @@ void line_entry::note_double_vrule_on_left(int is_corner)
   double_vrule_on_left = is_corner ? 1 : 2;
 }
 
-single_line_entry::single_line_entry(const table *p, const entry_modifier *m)
+single_line_entry::single_line_entry(const table *p,
+				     const entry_modifier *m)
 : line_entry(p, m)
 {
 }
@@ -946,7 +958,8 @@ double_line_entry *double_line_entry::to_double_line_entry()
   return this;
 }
 
-short_line_entry::short_line_entry(const table *p, const entry_modifier *m)
+short_line_entry::short_line_entry(const table *p,
+				   const entry_modifier *m)
 : simple_entry(p, m)
 {
 }
@@ -1626,7 +1639,8 @@ void table::add_entry(int r, int c, const string &str,
   }
   else if (strncmp(s, "\\R", 2) == 0) {
     if (len < 3) {
-      error("an ordinary or special character must follow '\\R'");
+      error("an ordinary, special, or indexed character must follow"
+	    " '\\R'");
       e = new empty_entry(this, f);
     }
     else {
@@ -1755,12 +1769,12 @@ void table::add_vrules(int r, const char *v)
     assert(v[i] < 3);
     if (v[i] && (flags & (BOX | ALLBOX | DOUBLEBOX)) && (i == 0)
 	&& (!lwarned)) {
-      error("ignoring vertical line at leading edge of boxed table");
+      warning("ignoring vertical line at leading edge of boxed table");
       lwarned = true;
     }
     else if (v[i] && (flags & (BOX | ALLBOX | DOUBLEBOX))
 	     && (i == ncolumns) && (!twarned)) {
-      error("ignoring vertical line at trailing edge of boxed table");
+      warning("ignoring vertical line at trailing edge of boxed table");
       twarned = true;
     }
     else
@@ -2231,7 +2245,8 @@ void table::build_span_list()
 	    && q->end_col == p->end_col)
 	  break;
       if (!q)
-	span_list = new horizontal_span(p->start_col, p->end_col, span_list);
+	span_list = new horizontal_span(p->start_col, p->end_col,
+					span_list);
     }
     p = p->next;
   }
@@ -2357,7 +2372,7 @@ void table::compute_separation_factor()
   // Store the remainder for use in compute_column_positions().
   if (flags & GAP_EXPAND) {
     prints(".if n \\\n");
-    prints(".  nr " LEFTOVER_FACTOR_REG " \\n[.l]-\\n[.i]");
+    prints(".  nr " EXPANSION_REMAINDER_REG " \\n[.l]-\\n[.i]");
     for (int i = 0; i < ncolumns; i++)
       printfs("-\\n[%1]", span_width_reg(i, i));
     printfs("%%%1\n", as_string(total_separation));
@@ -2417,8 +2432,8 @@ void table::compute_column_positions()
     // region option, put it prior to the last column so that the table
     // looks as if expanded to the available line length.
     if ((ncolumns > 2) && (flags & GAP_EXPAND) && (i == (ncolumns - 1)))
-      printfs(".if n .if \\n[" LEFTOVER_FACTOR_REG "] .nr %1 +(1n>?\\n["
-	      LEFTOVER_FACTOR_REG "])\n",
+      printfs(".if n .if \\n[" EXPANSION_REMAINDER_REG "]"
+	      " .nr %1 +(1n>?\\n[" EXPANSION_REMAINDER_REG "])\n",
 	      column_start_reg(i));
     printfs(".nr %1 \\n[%2]+\\n[%3]/2\n",
 	    column_divide_reg(i),
@@ -2538,11 +2553,14 @@ void table::compute_widths()
 void table::print_single_hrule(int r)
 {
   prints(".vs " LINE_SEP ">?\\n[.V]u\n"
-	 ".ls 1\n"
+	 ".ls 1\n");
+  prints(".if t "
 	 "\\v'" BODY_DEPTH "'"
-	 "\\s[\\n[" LINESIZE_REG "]]");
+	 "\\s[\\n[" LINESIZE_REG "]]\\c\n");
+  if ((r > 0) && (flags & (BOX | DOUBLEBOX | ALLBOX)))
+    prints(".if n \\Z@\\r\\D'l 0 2v'@\\c\n");
   if (r > nrows - 1)
-    prints("\\D'l |\\n[TW]u 0'");
+    prints("\\D'l |\\n[TW]u 0'\\c");
   else {
     int start_col = 0;
     for (;;) {
@@ -2574,7 +2592,11 @@ void table::print_single_hrule(int r)
       start_col = end_col;
     }
   }
-  prints("\\s0\n");
+  prints("\\c\n");
+  if ((r > 0) && (flags & (BOX | DOUBLEBOX | ALLBOX)))
+    prints(".if n \\Z@\\r\\D'l 0 2v'@\\c\n");
+  prints(".ie t \\s0\n"
+	 ".el   \\&\n");
   prints(".ls\n"
 	 ".vs\n");
 }
@@ -2646,7 +2668,8 @@ void table::print_double_hrule(int r)
 	 ".vs\n");
 }
 
-void table::compute_vrule_top_adjust(int start_row, int col, string &result)
+void table::compute_vrule_top_adjust(int start_row, int col,
+				     string &result)
 {
   if (row_is_all_lines[start_row] && start_row < nrows - 1) {
     if (row_is_all_lines[start_row] == 2)
@@ -2701,7 +2724,8 @@ void table::compute_vrule_top_adjust(int start_row, int col, string &result)
   }
 }
 
-void table::compute_vrule_bot_adjust(int end_row, int col, string &result)
+void table::compute_vrule_bot_adjust(int end_row, int col,
+				     string &result)
 {
   if (row_is_all_lines[end_row] && end_row > 0) {
     end_row--;
@@ -2942,7 +2966,8 @@ void table::do_row(int r)
 	had_line = true;
       }
     }
-  // change the row *after* printing the stuff list (which might contain .TH)
+  // change the row *after* printing the stuff list (which might contain
+  // .TH)
   printfs("\\*[" TRANSPARENT_STRING_NAME "].nr " CURRENT_ROW_REG " %1\n",
 	  as_string(r));
   if (!had_line && row_is_all_lines[r])
@@ -3161,11 +3186,11 @@ void table::do_bottom()
   // a half-row if we ever support [emulators of] devices like the
   // Teletype Model 37 with half-line motions).
   if (flags & (BOX | DOUBLEBOX | ALLBOX))
-    prints(".if n .sp\n");
+    prints(".if n .sp \\\" avoid overprinting box bottom\n");
   // Space again for the doublebox option, until we can draw that more
   // attractively; see Savannah #43637.
   if (flags & DOUBLEBOX)
-    prints(".if n .sp\n");
+    prints(".if n .sp \\\" avoid overprinting doublebox bottom\n");
   prints("." RESET_MACRO_NAME "\n"
 	 ".nn \\n[" SAVED_NUMBERING_SUPPRESSION_COUNT "]\n"
 	 ".ie \\n[" SAVED_NUMBERING_ENABLED "] "
@@ -3190,8 +3215,10 @@ void set_troff_location(const char *fn, int ln)
   else {
     string filename(fn);
     filename += '\0';
-    normalize_for_lf(filename);
-    printfs(".lf %1 %2\n", as_string(ln), filename.contents());
+    normalize_file_name_for_lf_request(filename);
+    printfs(".lf %1 %2%3\n", as_string(ln),
+	    ('"' == filename[0]) ? "" : "\"", filename.contents());
+
     last_filename = fn;
     location_force_filename = 0;
   }

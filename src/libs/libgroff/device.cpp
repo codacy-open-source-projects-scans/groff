@@ -21,10 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <stdlib.h>
+
 #include "device.h"
 #include "defs.h"
 
-const char *device = DEVICE;
+const char *device = DEFAULT_DEVICE;
 
 struct device_init {
   device_init();

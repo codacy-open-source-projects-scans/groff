@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,17 +16,22 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <ctype.h>
+
 #include "lib.h"
+
 #include "cset.h"
 #include "stringclass.h"
 #include "lf.h"
 
-#include <ctype.h>
-
 extern void change_filename(const char *);
 extern void change_lineno(int);
 
-bool interpret_lf_args(const char *p)
+bool interpret_lf_request_arguments(const char *p)
 {
   while (*p == ' ')
     p++;
@@ -62,7 +67,7 @@ bool interpret_lf_args(const char *p)
 }
 
 #if defined(__MSDOS__) || (defined(_WIN32) && !defined(__CYGWIN__))
-void normalize_for_lf (string &fn)
+void normalize_file_name_for_lf_request(string &fn)
 {
   int fnlen = fn.length();
   for (int i = 0; i < fnlen; i++) {
@@ -71,7 +76,7 @@ void normalize_for_lf (string &fn)
   }
 }
 #else
-void normalize_for_lf (string &)
+void normalize_file_name_for_lf_request(string &)
 {
 }
 #endif

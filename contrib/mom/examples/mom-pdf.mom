@@ -294,7 +294,7 @@ surrounded by quotes.  As an example,
 .RW 0
 .COD "\&.PDF_WWW_LINK https://www.schaffter.ca/mom/momdoc/toc.html
 would open mom's online documentation at
-.PDF_WWW_LINK https://www.schaffter.ca/mom/momdoc/toc.html SUFFIX "." 
+.PDF_WWW_LINK https://www.schaffter.ca/mom/momdoc/toc.html SUFFIX "."
 The same, with \*[cod]\[dq]here\[dq]\*[codx] supplied as
 hotlink text, lets you click
 .PDF_WWW_LINK https://www.schaffter.ca/mom/momdoc/toc.html "here"
@@ -408,7 +408,7 @@ can remove the window title by issuing
 \#.SP .5v
 .HEADING 1 NAMED toc "Tables of Contents"
 .RLD .5v
-.HEADING 2 NAMED toc:gen "Generating a Table of Contents 
+.HEADING 2 NAMED toc:gen "Generating a Table of Contents
 .PP
 .RW .1
 To generate a printable Table of Contents for any document, simply

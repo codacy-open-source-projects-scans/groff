@@ -333,7 +333,7 @@ be one of:
   STATEMENT    A3
   TABLOID      A4
   LEDGER       A5
-  FOLIO        B4 
+  FOLIO        B4
   QUARTO       B5
 </span>
 Say, for example, you have A4-sized sheets in your printer.  It&#8217;s
@@ -821,11 +821,11 @@ pre-defined character escapes, e.g. <kbd>\[rh]</kbd> for a pointing
 right hand; see <kbd>man groff_char</kbd> for a complete list.
 Dingbats that have not been pre-defined must be accessed with the
 <kbd>\N</kbd> escape.  For example, <kbd>\f[ZD]\N'37'</kbd> prints
-the (undefined) telephone dingbat.  
+the (undefined) telephone dingbat.
 </p>
 
 <p id="fam-add-note" class="tip-bottom">
-<span class="additional-note">Additional note:</span> 
+<span class="additional-note">Additional note:</span>
 If you are running a version of groff lower than 1.19.2, you must
 follow all FAMILY requests with a FT request, otherwise mom will set
 all type up to the next FT request in the
@@ -879,7 +879,7 @@ to see a list of the extensions mom provides to groff&#8217;s basic
 
 <div class="box-tip">
 <p class="tip">
-<span class="tip">Suggestion:</span> When adding 
+<span class="tip">Suggestion:</span> When adding
 families to groff, I recommend following the established standard
 for the naming families and fonts.  For example, if you add the
 Garamond family, name the font files
@@ -1121,23 +1121,6 @@ or, more simply, just
 The size of type can also be changed inline.  See
 <a href="inlines.html#inline-size-mom">Inline Escapes, changing point size</a>.
 </p>
-
-<div class="box-tip">
-<p class="tip">
-<span class="note">Note:</span> It is unfortunate that the
-<kbd>pic</kbd> preprocessor has already taken the name,
-<kbd>PS</kbd>, and thus mom&#8217;s macro for setting point
-sizes can&#8217;t use it.  However, if you aren&#8217;t using
-<kbd>pic</kbd>, you might want to
-<a href="goodies.html#alias">alias</a>
-PT_SIZE as PS, since there&#8217;d be no conflict.  For example
-<br/>
-<span class="pre-in-pp">
-  .ALIAS PS PT_SIZE
-</span>
-would allow you to set point sizes with <kbd>.PS</kbd>.
-</p>
-</div>
 
 <!-- -LS- -->
 
@@ -1433,7 +1416,7 @@ for a definition of the difference between &#8220;fill&#8221; and
 </p>
 
 <p>
-JUSTIFY doesn&#8217;t take an argument. 
+JUSTIFY doesn&#8217;t take an argument.
 <a href="definitions.html#inputline">Input lines</a>
 after JUSTIFY are
 <a href="definitions.html#filled">filled</a>
@@ -1473,7 +1456,7 @@ for a definition of the difference between &#8220;fill&#8221; and
 QUAD takes one argument: the direction in which lines should be
 <a href="definitions.html#quad">quadded</a>.
 <a href="definitions.html#inputline">Input lines</a>
-after QUAD are 
+after QUAD are
 <a href="definitions.html#filled">filled</a>
 upon output.
 </p>
@@ -1859,7 +1842,7 @@ the output line would read
 </span>
 Please also note that had the example been in one of the
 <a href="definitions.html#filled">fill modes</a>,
-there&#8217;d have been no need for the <kbd>\c</kbd>.  
+there&#8217;d have been no need for the <kbd>\c</kbd>.
 </p>
 
 <div class="box-tip">
@@ -2291,7 +2274,7 @@ would set the hyphenation margin to 36 points.
 If you wanted the same number of maximum consecutive hyphenated
 lines and a hyphenation space of 2 points for use with
 <a href="definitions.html#just">justified</a>
-copy, 
+copy,
 <br/>
 <span class="pre-in-pp">
   .HYSET 2 0 2p
@@ -2340,7 +2323,7 @@ recommend previewing your work to assess the effect of RW.
 
 <div class="box-tip">
 <p class="tip">
-<span class="note">Note:</span> By default, RW does not deposit a 
+<span class="note">Note:</span> By default, RW does not deposit a
 <a href="#br">break</a>
 when it&#8217;s invoked if you&#8217;re in one of the
 <a href="definitions.html#fill">fill</a>
@@ -2403,7 +2386,7 @@ assess the effect of EW.
 
 <div class="box-tip">
 <p class="tip">
-<span class="note">Note:</span> By default, EW does not deposit a 
+<span class="note">Note:</span> By default, EW does not deposit a
 <a href="#br">break</a>
 when it&#8217;s invoked if you&#8217;re in one of the
 <a href="definitions.html#fill">fill</a>
@@ -3563,7 +3546,7 @@ into its component parts:
 </span>
 </li>
 <li>We want 1 pica (12 points) between tab 2 and 3, so we
-    insert it with: 
+    insert it with:
 <br/>
 <span class="pre-in-pp" style="margin-bottom: -.25em;">
   \*[FWD 12p]
@@ -3611,7 +3594,7 @@ Here&#8217;s the complete setup and entry for the sample employee
 evaluation form utilizing string tabs.
 </p>
 
-<div class="examples" style="margin-bottom: 0px;">Code:</div> 
+<div class="examples" style="margin-bottom: 0px;">Code:</div>
 <div class="box-code" style="height: 324px; padding-bottom: 18px; overflow: scroll;">
 <span class="pre-in-pp">
 .PAGE 8.5i 11i 1i 1i 1i
@@ -3786,7 +3769,7 @@ tab structure within the confines of an existing tab).
 <div class="box-important">
 <p class="tip">
 <span class="important">IMPORTANT:</span> Turn all indents off (see
-<a href="#indents">Indents</a>)
+<a href="#indents-intro">Indents</a>)
 before setting up tabs with TAB_SET, or mom may get confused.
 </p>
 </div>

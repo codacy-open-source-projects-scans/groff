@@ -50,8 +50,6 @@ This file summarizes the structure of the groff source distribution.
   hdtbl         A sophisticated table macro package.
   mm            The groff memorandum macro package.
   mom           Peter Schaffter's "mom", a friendly groff macro package.
-  pdfmark       Add PDF marks to groff documents; includes "pdfroff",
-                which eases creation of PDF documents.
   pic2graph     Convert pic(1) diagrams into graphical images.
   rfc1345       Use RFC 1345 mnemonics as groff special characters.
   sboxes        Use bordered, shaded background boxes with ms and PDF.

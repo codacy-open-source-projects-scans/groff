@@ -1,4 +1,4 @@
-    Copyright 1997-2022 Free Software Foundation, Inc.
+    Copyright 1997-2025 Free Software Foundation, Inc.
 
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
@@ -124,6 +124,9 @@ requires the 'pkg-config' program to be installed on your system, as
 well as the library's C header files--on a package-based host system,
 this can mean installing uchardet's '-dev' or '-devel' package.
 
+The contributed program 'glilypond' requires the Perl module
+'File::HomeDir'.
+
 URW fonts
 ---------
 
@@ -188,8 +191,8 @@ Renderings in HTML, TeX DVI, and PDF are also available.
   xdvi doc/groff.dvi
   evince doc/groff.pdf
 
-A compilation of groff's man pages is available in text (with ISO 6429
-escape sequences) and PDF.
+A compilation of groff's man pages is available in text (with ISO 6429/
+ECMA-48 escape sequences) and PDF.
 
   less -R doc/groff-man-pages.utf8.txt
   evince doc/groff-man-pages.pdf

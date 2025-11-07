@@ -44,11 +44,6 @@ SH_SEP=@PATH_SEPARATOR@
 
 # 'ALT_GHOSTSCRIPT_PROGS' specifies a list of alternative names to be
 # tried if 'GHOSTSCRIPT' cannot be found at run time.
-# XXX: only pdfmark.am uses this
-
-# 'ALT_AWK_PROGS' similarly specifies a list of alternative names,
-# which can be tried at run time, to identify the awk program.
-# XXX: only pdfmark.am uses this
 
 # BROKEN_SPOOLER_FLAGS
 #
@@ -79,8 +74,9 @@ SH_SEP=@PATH_SEPARATOR@
 # %!PS-Adobe-2.0 rather than %!PS-Adobe-3.0; this is needed when using
 # Sun's Newsprint with a printer that requires page reversal.
 
-# 'DEVICE' is the default output device.
-DEVICE=ps
+# 'DEFAULT_DEVICE' is the output device troff uses when not given a `-T`
+# command-line option.
+DEFAULT_DEVICE=ps
 
 # 'XPROGDIRS' is either "src/devices/xditview src/utils/xtotroff" or
 # empty.
@@ -312,7 +308,6 @@ man7dir=$(manroot)/man$(man7ext)
 # HAVE_SETLOCALE		if you have setlocale()
 # HAVE_STRCASECMP		if you have strcasecmp()
 # HAVE_STRNCASECMP		if you have strncasecmp()
-# HAVE_STRERROR		if you have strerror()
 # HAVE_STRSEP			if you have strsep()
 # HAVE_STRTOL			if you have strtol()
 # HAVE_SYMLINK		if you have symlink()
@@ -357,15 +352,11 @@ man7dir=$(manroot)/man$(man7ext)
 #
 # uintmax_t=<value>		define to `unsigned long' or `unsigned long
 #				long' if <inttypes.h> does not exist
-#
-# PAGE=A4			if the printer's page size is A4
-# GHOSTSCRIPT=gs		the name (and directory if required) of the
-#				ghostscript program
 
 # Include
 #
-#   {fmod,getcwd,mkstemp,putenv,strcasecmp,
-#    strerror,strncasecmp,strtol}.$(OBJEXT)
+#   {fmod,getcwd,mkstemp,putenv,
+#    strerror,strtol}.$(OBJEXT)
 #
 # in 'LIBOBJS' if your C library is missing the corresponding function.
 
@@ -578,7 +569,6 @@ include $(top_srcdir)/contrib/grap2graph/grap2graph.am
 include $(top_srcdir)/contrib/hdtbl/hdtbl.am
 include $(top_srcdir)/contrib/mm/mm.am
 include $(top_srcdir)/contrib/mom/mom.am
-include $(top_srcdir)/contrib/pdfmark/pdfmark.am
 include $(top_srcdir)/contrib/pic2graph/pic2graph.am
 include $(top_srcdir)/contrib/rfc1345/rfc1345.am
 include $(top_srcdir)/contrib/sboxes/sboxes.am
@@ -754,10 +744,7 @@ endif
 
 # Other files that should be present in the distribution archive.
 EXTRA_DIST += \
-  bootstrap \
-  bootstrap.conf \
   BUG-REPORT \
-  ChangeLog.old \
   ChangeLog.111 \
   ChangeLog.112 \
   ChangeLog.113 \
@@ -770,21 +757,25 @@ EXTRA_DIST += \
   ChangeLog.120 \
   ChangeLog.121 \
   ChangeLog.122 \
+  ChangeLog.123 \
+  ChangeLog.old \
   FDL \
-  gendef.sh \
   HACKING \
   INSTALL.REPO \
   INSTALL.extra \
   LICENSES \
   MANIFEST \
-  mdate.pl \
   MORE.STUFF \
   PROBLEMS \
   PROJECTS \
   README.MinGW \
   arch/djgpp \
+  bootstrap \
+  bootstrap.conf \
   font/util/make-Rproto \
-  makevarescape.sed
+  gendef.sh \
+  makevarescape.sed \
+  mdate.pl
 
 MOSTLYCLEANFILES += $(prefixexecbin_SCRIPTS) $(bin_SCRIPTS) \
   $(man1_MANS) $(man5_MANS) $(man7_MANS) \
@@ -852,7 +843,7 @@ SUFFIXES += .man
 	     -e "s|[@]DATASUBDIR[@]|`echo $(datasubdir) | sed -f $(makevarescape)`|g" \
 	     -e "s|[@]DEFAULT_INDEX[@]|`echo $(indexdir)/$(indexname) | sed -f $(makevarescape)`|g" \
 	     -e "s|[@]DEFAULT_INDEX_NAME[@]|`echo $(indexname) | sed -f $(makevarescape)`|g" \
-	     -e "s|[@]DEVICE[@]|\\\\%$(DEVICE)|g" \
+	     -e "s|[@]DEFAULT_DEVICE[@]|\\\\%$(DEFAULT_DEVICE)|g" \
 	     -e "s|[@]DOCDIR[@]|`echo $(docdir) | sed -f $(makevarescape)`|g" \
 	     -e "s|[@]EXAMPLEDIR[@]|`echo $(exampledir) | sed -f $(makevarescape)`|g" \
 	     -e "s|[@]FONTDIR[@]|`echo $(fontdir) | sed -f $(makevarescape)`|g" \

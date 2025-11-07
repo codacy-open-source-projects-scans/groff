@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -51,7 +51,7 @@ enum warning_type {
   WARN_NUMBER = 02,
   WARN_BREAK = 04,
   WARN_DELIM = 010,
-  //WARN_EL = 020,
+  //WARN_EL = 020, // withdrawn in groff 1.24
   WARN_SCALE = 040,
   WARN_RANGE = 0100,
   WARN_SYNTAX = 0200,

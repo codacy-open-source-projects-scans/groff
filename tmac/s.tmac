@@ -3,7 +3,11 @@
 s.tmac
 
 Copyright (C) 1989-2021 Free Software Foundation, Inc.
+              2022-2023 G. Branden Robinson
      Written by James Clark (jjc@jclark.com)
+Enhanced by: Werner Lemberg <wl@gnu.org>
+             Keith Marshall <keith.d.marshall@ntlworld.com>
+             G. Branden Robinson <g.branden.robinson@gmail.com>
 
 This file is part of groff.
 
@@ -36,6 +40,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .
 .\" Define a string for use in diagnostic messages.
 .ds @s s.tmac\"
+.
+.nr @is-initialized 0
 .
 .de @diag
 .	ds *file \" empty
@@ -110,15 +116,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .	rr @saved-no-space-mode
 ..
 .
+.\" Initialize environments `k` and `nf` immediately so that keeps can
+.\" be used on a cover page.
+.ev k
+.evc 0
+.ev
+.
+.ev nf
+.evc 0
+'nf
+.ev
+.
 .de @init
 .if !rPO .nr PO \\n(.o
 .\" a non-empty environment
 .ev ne
 \c
 .ev
-.ev nf
-'nf
-.ev
+.nr @is-initialized 1
 ..
 .ds REFERENCES References
 .ds ABSTRACT ABSTRACT
@@ -562,8 +577,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .de P1
 .nr pg*P1 1
 ..
+.\" Establish traps for the bottom of the text area and the footer line.
+.\" Various macros move them, but pg@top restores them at each new page.
 .wh -\n[FM]u pg@bottom
-.wh -\n[FM]u/2u pg*footer
+.wh -\n[FM]u/2u-1v pg*footer
 .nr MINGW 2n
 .nr pg@ncols 1
 .de @MC
@@ -614,7 +631,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .	pl \\n[nl]u
 .	ab
 .\}
-.ch pg*footer -\\n[FM]u/2u
+.ch pg*footer -\\n[FM]u/2u-1v
 .nr pg*col-num 0
 .nr pg@fn-bottom-margin 0
 .po \\n[PO]u
@@ -924,15 +941,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .if !'\\n(.z'' .@error-recover .KF while diversion open
 .di kp@fdiv
 .ev k
-.par@reset-env
-.par@reset
+.if \\n[@is-initialized] \{\
+.	par@reset-env
+.	par@reset
+.\}
 ..
 .de KE
-.ie '\\n(.z'kp@div' .kp*end
-.el \{\
-.	ie '\\n(.z'kp@fdiv' .kp*fend
-.	el .@error .KE without .KS or .KF
-.\}
+.nr kp*did-closure-succeed 0
+.if '\\n(.z'kp@div'  .kp*end
+.if '\\n(.z'kp@fdiv' .kp*fend
+.if !\\n[kp*did-closure-succeed] .@error .KE without .KS or .KF
+.rr kp*did-closure-succeed
 ..
 .de @div-end!kp@div
 .kp*end
@@ -953,6 +972,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .kp@div
 .ev
 .rm kp@div
+.nr kp*did-closure-succeed 1
 ..
 .\" Floating keeps.
 .nr kp@head 0
@@ -974,6 +994,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .	nr kp*ht!\\n[kp@tail] 0\\n[dn]
 .	nr kp@tail +1
 .\}
+.nr kp*did-closure-succeed 1
 ..
 .\" top of page processing for KF
 .nr kp*doing-top 0
@@ -1071,6 +1092,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .el .@error-recover mismatched .DE
 ..
 .de DS
+.\" Break to ensure that we spring the top-of-page trap (at the start of
+.\" a document, this also ensures that important registers like `PS` are
+.\" set).  Also, even if the drawing position is elsewhere and invalid
+.\" nesting occurs, the user will still expect a break.
 .br
 .if '\\n(.z'ds*div' .@error-recover cannot begin display within display
 .nr ds*badarg 0
@@ -1449,7 +1474,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .nr \\n[.ev]:li +1n
 .nr \\n[.ev]:ri +1n
 .nr par*box-in \\n[.in]
-.\" remember what 1n is, just in case the point size changes
+.\" remember what 1n is, just in case the type size changes
 .nr par*box-n 1n
 .in +1n
 .ll -1n
@@ -1515,11 +1540,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .el \!.par*box-draw \\$1 \\$2
 ..
 .\" \n[HORPHANS] sets how many lines of the following paragraph must be
-.\" kept together, with a preceding section header.  Initialise it,
+.\" kept together, with a preceding section heading.  Initialise it,
 .\" to reproduce original behaviour; user may change it.
 .if !rHORPHANS .nr HORPHANS 1
 .
-.\" \n[GROWPS] and \n[PSINCR] cause auto-increment of header point size.
+.\" \n[GROWPS] and \n[PSINCR] cause auto-increment of heading type size.
 .\" Initialise them, so they have no effect, unless explicitly set by
 .\" the user.
 .if !rGROWPS .nr GROWPS 0
@@ -1535,7 +1560,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .ie \\n(VS<1000 .par*vs \\n(VSp+\\n[sh*psincr]u
 .el .par*vs \\n(VSp/1000u+\\n[sh*psincr]u
 .ne 2v+\\n[sh*minvs]u+\\n[\\n[.ev]:PD]u+\\n(.Vu
-.\" Adjust point size for heading text, as specified by \n[GROWPS] and
+.\" Adjust type size for heading text, as specified by \n[GROWPS] and
 .\" \n[PSINCR].
 .ie \\n(PS<1000 .ps \\n(PS+\\n[sh*psincr]u
 .el .ps \\n(PSz/1000u+\\n[sh*psincr]u
@@ -1543,9 +1568,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .ft B
 ..
 .de @SH
-.\" Standard ms implementation does not expect an argument,
-.\" but allow ".SH n" to make heading point size match ".NH n",
-.\" for same "n", when \n[GROWPS] and \n[PSINCR] are set.
+.\" AT&T ms implementation does not expect an argument, but groff ms
+.\" allows ".SH n" to make a heading's type size match ".NH n", for same
+.\" "n", when \n[GROWPS] and \n[PSINCR] are set.
 .  nr sh*psincr 0
 .  if 0\\$1>0 .nr sh*psincr (\\n[GROWPS]-0\\$1)*\\n[PSINCR]
 .  SH-NO-TAG
@@ -1994,10 +2019,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\" ****************************
 .\" Tbl support.
 .nr tbl@within-table 0
-.nr tbl*have-header 0
+.nr tbl*has-heading 0
+.nr tbl*was-tbl-failure-reported 0
+.de tbl*check-for-tbl
+.if !r TW .if !\\n[tbl*was-tbl-failure-reported] \{\
+.	ds tbl*err tbl preprocessor failed, or it or soelim was not
+.	as tbl*err " run; table(s) likely not rendered\"
+.	as tbl*err " (TE macro called with TW register undefined)\"
+.	@error \\*[tbl*err]
+.	rm tbl*err
+.	nr tbl*was-tbl-failure-reported 1
+.\}
+..
 .\" This gets called if TS occurs before the first paragraph.
 .de TS
-.LP
+.cov*ab-init
 .\" cov*ab-init, called by LP, aliases TS to @TS.
 \\*[TS]\\
 ..
@@ -2010,7 +2046,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .	el .if '\\n[.z]'kp@fdiv' \
 .		@warning \\*[tbl*stem] .KF/.KE floating keep
 .	rm tbl*stem
-.	di tbl*header-div
+.	di tbl*heading-diversion
 .\}
 .if '\*(.T'html' \{\
 .	nr tbl*ll \\n[.l]
@@ -2019,19 +2055,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .HTML-IMAGE
 ..
 .de tbl@top-hook
-.if \\n[tbl*have-header] \{\
-.	ie \\n[.t]-\\n[tbl*header-ht]-1v .tbl*print-header
+.if \\n[tbl*has-heading] \{\
+.	ie \\n[.t]-\\n[tbl*heading-height]-1v .tbl*print-heading
 .	el .sp \\n[.t]u
 .\}
 ..
-.de tbl*print-header
+.de tbl*print-heading
 .ev nf
-.tbl*header-div
+.tbl*heading-diversion
 .ev
 .mk #T
 ..
 .de TH
-.ie '\\n[.z]'tbl*header-div' \{\
+.ie '\\n[.z]'tbl*heading-diversion' \{\
 .	nr T. 0
 .	T#
 .	br
@@ -2044,25 +2080,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .		@error \\*[tbl*err]
 .		rm tbl*err
 .		ds@need \\n[dn]
-.		tbl*print-header
+.		tbl*print-heading
 .	\}
 .	el \{\
-.		nr tbl*header-ht \\n[dn]
+.		nr tbl*heading-height \\n[dn]
 .		ds@need \\n[dn]u+1v
-.		tbl*print-header
-.		nr tbl*have-header 1
+.		tbl*print-heading
+.		nr tbl*has-heading 1
 .	\}
 .\}
 .el .@error-recover .TH without .TS H
 ..
-.de @div-end!tbl*header-div
+.de @div-end!tbl*heading-diversion
 .TH
 .TE
 ..
 .de TE
-.ie '\\n(.z'tbl*header-div' .@error-recover .TS H but no .TH before .TE
+.tbl*check-for-tbl
+.if !r TW .return
+.ie '\\n(.z'tbl*heading-diversion' \
+.	@error-recover .TS H but no .TH before .TE
 .el \{\
-.	nr tbl*have-header 0
+.	nr tbl*has-heading 0
 .	if !'\*(.T'html' \{\
 .		sp \\n[DD]u
 .		ns
@@ -2076,7 +2115,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .nr tbl@within-table 0
 ..
 .de tbl@bottom-hook
-.if \\n[tbl*have-header] \{\
+.if \\n[tbl*has-heading] \{\
 .	nr T. 1
 .	T#
 .\}

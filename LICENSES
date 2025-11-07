@@ -38,9 +38,10 @@ Files in the contrib/ subdirectory of the source distribution are not
 strictly part of groff.  That is, they are distributed with it and are
 Free Software <https://www.gnu.org/philosophy/free-sw.en.html>, but they
 are not considered essential parts of the distribution.  Further, they
-may bear licenses other than the GPL or the FSF does not administer
-their copyrights.  To determine their copyright status and licensing,
-see the "COPYRIGHT" file in the appropriate subdirectory of contrib/.
+may bear licenses in addition to the GPL, or the FSF does not administer
+their copyrights.  For convenience, a "COPYRIGHT" file in the
+appropriate subdirectory of contrib/ may clarify a contributed
+component's copyright status and licensing.
 
 Some files are part of groff but bear licenses in addition to the GPL,
 or have been placed into the public domain, because they originated
@@ -53,10 +54,10 @@ grn preprocessor
 ================
 
 grn, written by Barry Roitblat <barry@rentonww.com> and David
-Slattengren <slatteng@Xinet.COM>, was part of the Berkeley
-device-independent troff distribution.  The files contain no AT&T code
-and are in the public domain.  Historically, the original package could
-be found at <http://ftp.cs.wisc.edu/pub/misc/grn.tar.Z>.
+Slattengren <slatteng@Xinet.COM>, was used with a Berkeley version of
+device-independent troff.  The files contain no AT&T code and are in the
+public domain.  Historically, the original package could be found at
+<http://ftp.cs.wisc.edu/pub/misc/grn.tar.Z>.
 
 	src/preproc/grn/gprint.h
 	src/preproc/grn/hdb.cpp

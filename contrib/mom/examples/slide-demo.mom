@@ -402,7 +402,7 @@ Because slides contain pauses, they need a little help on their
 way to the printer or they stop printing at the first pause\*[HANG .]
 .PAUSE "Wipe 1"
 .PP
-Setting GROPDF_NOSLIDE=1 before invoking 
+Setting GROPDF_NOSLIDE=1 before invoking
 \[oq]\*[FU4]\*[CODE]\*[COND]pdfmom\*[CONDX]\*[CODE off]\*[FU4]\[cq]
 or
 \[oq]\*[FU2]\*[CODE]\*[COND]groff\~-Tpdf\*[CONDX]\*[CODE off]\*[FU6]\[cq]

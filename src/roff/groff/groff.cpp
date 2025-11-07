@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,9 +16,7 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-// A front end for groff.
-
-#include "lib.h"
+// A front end for GNU troff.
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -26,8 +24,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <assert.h>
 #include <errno.h>
-#include <signal.h>
-#include <stdlib.h>
+#include <stdio.h> // EOF, FILE, fflush(), setbuf(), stderr, stdout
+#include <stdlib.h> // exit(), EXIT_SUCCESS, free(), getenv(), putenv()
+#include <string.h> // strerror(), strsignal()
+
+#include <getopt.h> // getopt_long()
+//
+// TODO: operating system services proper (cf. the standard C/C++
+// runtime and libraries) should be abstracted through posix.h/
+// nonposix.h (if gnulib doesn't handle it for us).
+#include <sys/types.h> // pid_t
+#include <signal.h> // kill()
+
+// needed for close(), dup(), execvp(), _exit(), fork(), pipe(), wait()
+#include "posix.h"
+#include "nonposix.h"
+
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
@@ -36,7 +49,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "font.h"
 #include "device.h"
 #include "pipeline.h"
-#include "nonposix.h"
 #include "relocate.h"
 #include "defs.h"
 
@@ -155,7 +167,8 @@ int main(int argc, char **argv)
   int iflag = 0;
   int Xflag = 0;
   int oflag = 0;
-  int safer_flag = 1;
+  bool is_safer_mode_locked = false; // made true if `-S` explicit
+  bool want_unsafe_mode = true;
   int is_xhtml = 0;
   int eflag = 0;
   int need_pic = 0;
@@ -166,15 +179,14 @@ int main(int argc, char **argv)
     command_prefix = PROG_PREFIX;
   commands[TROFF_INDEX].set_name(command_prefix, "troff");
   static const struct option long_options[] = {
-    { "help", no_argument, 0, 'h' },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, 'h' },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((opt = getopt_long(
-		  argc, argv,
-		  "abcCd:D:eEf:F:gGhiI:jJkK:lL:m:M:"
-		  "n:No:pP:r:RsStT:UvVw:W:XzZ",
-		  long_options, NULL))
+  while ((opt = getopt_long(argc, argv,
+			    ":abcCd:D:eEf:F:gGhiI:jJkK:lL:m:M:"
+			    "n:No:pP:r:RsStT:UvVw:W:XzZ",
+			    long_options, 0 /* nullptr */))
 	 != EOF) {
     char buf[3];
     buf[0] = '-';
@@ -256,12 +268,17 @@ int main(int argc, char **argv)
       want_version_info = true;
       printf("GNU groff version %s\n", Version_string);
       puts(
-"Copyright (C) 1989-2023 Free Software Foundation, Inc.\n"
+"Copyright 1989-2025 Free Software Foundation, Inc. and others\n"
+"\n"
 "This is free software, distributed under the terms of the GNU General"
 " Public\n"
 "License, version 3, or any later version, at your option.  There is NO"
 " warranty;\n"
-"not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+"not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
+"See the \"COPYING\", \"FDL\", and \"LICENSES\" files in the groff"
+" distribution or\n"
+"package for additional notices and permissions."
       );
       puts("\nprograms in constructed pipeline:\n");
       fflush(stdout);
@@ -286,6 +303,7 @@ int main(int argc, char **argv)
       break;
     case 'h':
       usage(stdout);
+      exit(EXIT_SUCCESS);
       break;
     case 'E':
     case 'b':
@@ -295,10 +313,14 @@ int main(int argc, char **argv)
       commands[TROFF_INDEX].append_arg(buf);
       break;
     case 'S':
-      safer_flag = 1;
+      is_safer_mode_locked = true;
+      want_unsafe_mode = false;
       break;
     case 'U':
-      safer_flag = 0;
+      if (is_safer_mode_locked)
+	warning("ignoring '-U' option; '-S' already specified");
+      else
+	want_unsafe_mode = true;
       break;
     case 'T':
       if (strcmp(optarg, "xhtml") == 0) {
@@ -362,8 +384,15 @@ int main(int argc, char **argv)
       need_postdriver = false;
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      xexit(EXIT_FAILURE);
+      xexit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+	    char(optopt));
+      usage(stderr);
+      xexit(2);
       break;
     default:
       assert(0 == "no case to handle option character");
@@ -377,7 +406,11 @@ int main(int argc, char **argv)
     if (!Kflag && *encoding)
       commands[PRECONV_INDEX].append_arg("-e", encoding);
   }
-  if (!safer_flag) {
+  if (is_safer_mode_locked) {
+    commands[TROFF_INDEX].insert_arg("-S");
+    commands[PIC_INDEX].append_arg("-S");
+  }
+  else if (want_unsafe_mode) {
     commands[TROFF_INDEX].insert_arg("-U");
     commands[PIC_INDEX].append_arg("-U");
   }
@@ -391,6 +424,7 @@ int main(int argc, char **argv)
 			     " 'postpro' directive");
   if (predriver && !zflag) {
     commands[TROFF_INDEX].insert_arg(commands[TROFF_INDEX].get_name());
+    commands[TROFF_INDEX].insert_arg("--");
     commands[TROFF_INDEX].set_name(predriver);
     // pass the device arguments to the predrivers as well
     commands[TROFF_INDEX].insert_args(Pargs);
@@ -532,7 +566,10 @@ int main(int argc, char **argv)
     print_commands(Vflag == 1 ? stdout : stderr);
   if (Vflag == 1)
     xexit(EXIT_SUCCESS);
-  xexit(run_commands(want_version_info));
+  // We need the lower two bits of the exit status for ourselves.
+  int status = run_commands(want_version_info) << 2;
+  assert(status < 65 || 0 == "run_commands() returned too many bits");
+  xexit(status);
 }
 
 const char *xbasename(const char *s)
@@ -836,16 +873,13 @@ void usage(FILE *stream)
 "usage: %s {-v | --version}\n"
 "usage: %s {-h | --help}\n",
 	  program_name, program_name, program_name);
-  if (stdout == stream) {
-    fputs(
-"\n"
+  if (stdout == stream)
+    fputs("\n"
 "groff (GNU roff) is a typesetting system that reads plain text input\n"
 "files that include formatting commands to produce output in\n"
 "PostScript, PDF, HTML, or DVI formats or for display to a terminal.\n"
 "See the groff(1) manual page.\n",
 	  stream);
-    exit(EXIT_SUCCESS);
-  }
 }
 
 extern "C" {

@@ -1,3 +1,176 @@
+2025-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/fonts_n.in:
+	* examples/fonts_x.in: Invoke `ab`ort request when failing to
+	find the required "library" macro file, since this is a fatal
+	problem.
+
+2025-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.tmac (TBL, TR, TD, t*cl): Replace Control+G character
+	used as escape sequence delimiter with `"`, as otherwise
+	commonly used in the file.
+
+2025-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdmisc.tmac (t*index): Replace Control+G character used in
+	string processing with dummy character.  (It's not used for
+	matching, but apparently to work around the `substring`
+	request's unfortunate index handling.)
+
+2025-08-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.tmac: Diagnose and skip loading the package in
+	situations that would cause it to malfunction.
+	- if the formatter does not claim groff compatibility
+	- if the formatter is in groff's AT&T compatibility mode
+	- if a macro named `TD` is already defined
+	- if a macro named `TH` is already defined
+	- if a macro named `TR` is already defined
+
+	Fixes <https://savannah.gnu.org/bugs/?67418>.  Thanks to Morten
+	Bo Johansen for the report.
+
+2025-08-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.tmac: Define new `hdtbl` string containing the
+	{canonical} file name of the macro package, so that it can
+	announce itself in diagnostic messages.
+
+	* hdmisc.tmac (t*EM):
+	* hdtbl.tmac (TBL, CPTN, TR, TH, TD, ETB, t*free, t*cl, t*dntr)
+	(t*args, t*hm): Prefix diagnostic messages with it.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?52463>.
+
+2025-08-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.tmac (TH): Confirm (just as `TR` does) that macro usage
+	occurs within a table context; return early if it doesn't.
+
+	Fixes <https://savannah.gnu.org/bugs/?67434>.  Thanks to Morten
+	Bo Johansen for the report.
+
+2025-08-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.am: Declare dependency of `HDTBLPROCESSEDEXAMPLEFILES`
+	on `$(HDTBLMACFILES)`.  When the package's macro files are
+	changed, documents using it should be regenerated.
+
+2024-12-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/fonts_n.in:
+	* examples/fonts_x.in: Guard against substandard tr(1)
+	implementation on Solaris 10 by forcing locale to "C" when using
+	a POSIX regular expression character class.
+
+2024-11-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Fix Savannah #66479 (1b/2).
+
+	* examples/test-hdtbl.sh.in: Work around macOS wc(1)'s
+	right-alignment of its integer output field.
+
+2024-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/test-hdtbl.sh.in: Update test expectations to reflect
+	addition of 8 font descriptions for CJK support.
+
+2024-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.am: Declare dependency of `HDTBLPROCESSEDEXAMPLEFILES`
+	on `DEVPSFONTFILES`.
+
+2024-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdmisc.tmac (t*index): Fix "range" warning: clamp substring
+	extraction at length of string.
+	(t*DI): Fix "tab" warnings: precede tab characters in macro
+	calls with comment character.
+	* hdtbl.tmac (ETC): Fix "range" warning: clamp line length at
+	horizontal motion quantum if the desired value is less.
+	* hdtbl.am (HDTBLGROFF): Run groff with `-b` and `-wall`
+	options.
+	* examples/color_transitions.roff (ctab): When incrementing
+	color channel value, cap it at "1f" to avoid "range" warning.
+	* examples/common.roff (d2x): Fix "range" warning: clamp
+	substring extraction at length of string.
+
+	Fixes <https://savannah.gnu.org/bugs/?54461>,
+	<https://savannah.gnu.org/bugs/?54538>, and
+	<https://savannah.gnu.org/bugs/?54539>.  Thanks to Bjarni Ingi
+	Gislason for the reports.
+
+2024-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/fonts_n.in:
+	* examples/fonts_x.in: Throw useful diagnostic and abort if
+	unsafe mode is not enabled; prevents horrendous spew of errors
+	from formatter.  Move status/progress message closer to the
+	relevant logic.
+
+2024-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/fonts_n.in (fontdump):
+	* examples/fonts_x.in (fontdump): Tweak table caption.  Annotate
+	why the font grid might be blank, in preparation for Savannah
+	#62830.
+
+2024-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/chess_board.roff:
+	* examples/col_rowspan_colors.roff:
+	* examples/color_boxes.roff:
+	* examples/color_nested_tables.roff:
+	* examples/color_table_cells.roff:
+	* examples/color_transitions.roff:
+	* examples/fonts_n.in:
+	* examples/fonts_x.in:
+	* examples/mixed_pickles.roff:
+	* examples/rainbow.roff:
+	* examples/short_reference.roff: Use `soquiet` request instead
+	of `so` and provide a more helpful diagnostic than the formatter
+	would have.
+
+2024-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[hdtbl]: Tweak shell style in test script.
+
+	* examples/test-hdtbl.sh.in: Favor `[` command over `test` in
+	control structures.  Use Bourne style for control structures,
+	not pseudo-C.  Quote variables that are not under the script's
+	control, in case they contain whitespace.  Write messages to
+	standard error, not standard output.  Exit with status 2 if an
+	artifact can't be found--the build should have produced it if
+	Ghostscript is available.  Favor `$()` command substitution
+	syntax over "backticks"; the groff 1.23.0 release, with 100+
+	test scripts using the former syntax, established that every
+	platform of interest to us supports it.  Break long lines.
+	Align wording of messages with groff's other test scripts.
+
+2024-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/fonts_n.in (fontdump):
+	* examples/fonts_x.in (fontdump): Put back the newline at the
+	end of the pipe stream constructed by `pso` request; the tr(1)
+	command in the pipeline was eliding it along with the intended
+	transformation of control characters.  Our Texinfo manual notes
+	this pitfall.
+
+2024-11-10  Robert Yang <liezhi.yang@windriver.com>
+
+	* hdtbl.am (HDTBLPROCESSEDEXAMPLEFILES): Declare dependency on
+	`soelim`; because `-I` flags are used, it is dragged in even
+	though not explicitly needed.  Resolves race against `soelim`'s
+	availability in the build tree.
+
+2024-10-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* groff_hdtbl.7.man: Fix spelling error.
+
+	Fixes <https://savannah.gnu.org/bugs/?66371>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
 2024-10-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* hdtbl.am (HDTBLPROCESSEDEXAMPLEFILES): Declare dependency on
@@ -549,7 +722,8 @@
 
 ________________________________________________________________________
 
-Copyright 2006-2020 Free Software Foundation, Inc.
+Copyright 2006-2018 Free Software Foundation, Inc.
+Copyright 2017-2025 G. Branden Robinson
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

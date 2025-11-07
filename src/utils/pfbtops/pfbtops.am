@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Copyright (C) 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -24,6 +24,10 @@ pfbtops_LDADD = libgroff.a $(LIBM) lib/libgnu.a
 # See the Automake manual, "Libtool Convenience Libraries"
 nodist_EXTRA_pfbtops_SOURCES = src/utils/pfbtops/dummy.cpp
 
+pfbtops_TESTS = \
+  src/utils/pfbtops/tests/smoke-test.sh
+TESTS += $(pfbtops_TESTS)
+EXTRA_DIST += $(pfbtops_TESTS)
 
 # Local Variables:
 # fill-column: 72

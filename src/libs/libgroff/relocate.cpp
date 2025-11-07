@@ -1,5 +1,5 @@
 /* Provide relocation for macro and font files.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -16,8 +16,6 @@
 
 // Made after relocation code in kpathsea and gettext.
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -25,6 +23,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
+
+#include "lib.h"
 
 #include "defs.h"
 #include "posix.h"

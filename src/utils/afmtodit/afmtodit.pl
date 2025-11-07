@@ -1,6 +1,9 @@
 #!@PERL@
-# Copyright (C) 1989-2024 Free Software Foundation, Inc.
+# Copyright (C) 1989-2010 Free Software Foundation, Inc.
+#               2022-2024 G. Branden Robinson
 #      Written by James Clark (jjc@jclark.com)
+# Enhanced by: Werner Lemberg <wl@gnu.org>
+#              G. Branden Robinson <g.branden.robinson@gmail.com>
 #
 # This file is part of groff.
 #
@@ -22,21 +25,25 @@ use strict;
 
 @afmtodit.tables@
 
-use File::Spec qw(splitpath);
-(undef,undef,my $prog)=File::Spec->splitpath($0);
+use File::Spec;
+(undef,undef,my $program_name)=File::Spec->splitpath($0);
 
 my $groff_sys_fontdir = "@FONTDIR@";
 my $want_help;
 my $space_width = 0;
 
 our ($opt_a, $opt_c, $opt_d, $opt_e, $opt_f, $opt_i, $opt_k,
-     $opt_m, $opt_n, $opt_o, $opt_s, $opt_v, $opt_w, $opt_x);
+     $opt_m, $opt_n, $opt_o, $opt_q, $opt_s, $opt_v, $opt_w, $opt_x);
 
 use Getopt::Long qw(:config gnu_getopt);
 GetOptions( "a=s", "c", "d=s", "e=s", "f=s", "i=s", "k", "m", "n",
-  "o=s", "s", "v", "w=i", "x", "version" => \$opt_v,
+  "o=s", "q", "s", "v", "w=i", "x", "version" => \$opt_v,
   "help" => \$want_help
 );
+
+# for diagnostics
+our $filename;
+our $lineno = 0;
 
 # We keep these two scalars separate so we can report out the option.
 $space_width = $opt_w if defined $opt_w;
@@ -57,43 +64,49 @@ if ($opt_v) {
 }
 
 sub croak {
-  my $msg = shift;
-  print STDERR "$prog: error: $msg\n";
-  exit(1);
+    my $msg = shift;
+    my $pos = "";
+    $pos .= "$filename:" if $filename;
+    $pos .= "$lineno:" if $lineno;
+    print STDERR "$program_name:$pos error: $msg\n";
+    exit(1);
 }
 
 sub whine {
-  my $msg = shift;
-  print STDERR "$prog: warning: $msg\n";
+    my $msg = shift;
+    my $pos = "";
+    $pos .= "$filename:" if $filename;
+    $pos .= "$lineno:" if $lineno;
+    print STDERR "$program_name:$pos warning: $msg\n";
 }
 
 sub usage {
     my $stream = *STDOUT;
     my $had_error = shift;
     $stream = *STDERR if $had_error;
-    print $stream "usage: $prog [-ckmnsx] [-a slant]" .
+    print $stream "usage: $program_name [-ckmnsx] [-a slant]" .
 	" [-d device-description-file] [-e encoding-file]" .
 	" [-f internal-name] [-i italic-correction-factor]" .
 	" [-o output-file] [-w space-width] afm-file map-file" .
 	" font-description-file\n" .
-	"usage: $prog {-v | --version}\n" .
-	"usage: $prog --help\n";
+	"usage: $program_name {-v | --version}\n" .
+	"usage: $program_name --help\n";
     unless ($had_error) {
 	print $stream "\n" .
-"Adapt an Adobe Font Metric file, afm-file, for use with the 'ps'\n" .
-"and 'pdf' output devices of groff(1).  See the afmtodit(1) manual " .
-"page.\n";
+"Generate a font description file for use with groff(1)'s 'ps' and\n" .
+"'pdf' output devices from an Adobe Font Metric file, afm-file.\n" .
+"See the afmtodit(1) manual page.\n";
     }
     my $status = 0;
     $status = 2 if ($had_error);
     exit($status);
 }
 
-&usage(0) if ($want_help);
+usage(0) if ($want_help);
 
 if ($#ARGV != 2) {
-    print STDERR "$prog: usage error: insufficient arguments\n";
-    &usage(1);
+    print STDERR "$program_name: usage error: insufficient arguments\n";
+    usage(1);
 }
 
 my $afm = $ARGV[0];
@@ -107,7 +120,7 @@ my $sys_desc = $groff_sys_fontdir . "/devps/" . $desc;
 # read the afm file
 
 my $psname;
-my ($notice, $version, $fullname, $familyname, @comments); 
+my ($notice, $version, $fullname, $familyname, @comments);
 my $italic_angle = 0;
 my (@kern1, @kern2, @kernx);
 my (%italic_correction, %left_italic_correction);
@@ -118,9 +131,15 @@ my (@encoding, %in_encoding);
 my (%width, %height, %depth);
 my (%left_side_bearing, %right_side_bearing);
 
-open(AFM, $afm) || &croak("unable to open '$ARGV[0]': $!");
+if (open(AFM, $afm)) {
+    $filename = $afm;
+}
+else {
+    croak("cannot open '$ARGV[0]': $!");
+}
 
 while (<AFM>) {
+    $lineno++;
     chomp;
     s/\x0D$//;
     my @field = split(' ');
@@ -225,15 +244,29 @@ while (<AFM>) {
     }
 }
 close(AFM);
+$filename = "";
+$lineno = 0;
 
 # read the DESC file
 
 my ($sizescale, $resolution, $unitwidth);
 $sizescale = 1;
 
-open(DESC, $desc) || open(DESC, $sys_desc) ||
-    &croak("unable to open '$desc' or '$sys_desc': $!");
+if (open(DESC, $desc)) {
+    $filename = $desc;
+}
+else {
+    whine("cannot open '$desc': $!");
+    if (open(DESC, $sys_desc)) {
+	$filename = $sys_desc;
+    }
+    else {
+	croak("cannot open '$sys_desc': $!");
+    }
+}
+
 while (<DESC>) {
+    $lineno++;
     next if /^#/;
     chop;
     my @field = split(' ');
@@ -250,13 +283,15 @@ while (<DESC>) {
     }
 }
 close(DESC);
+$filename = "";
+$lineno = 0;
 
 if ($opt_e) {
     # read the encoding file
 
     my $sys_opt_e = $groff_sys_fontdir . "/devps/" . $opt_e;
     open(ENCODING, $opt_e) || open(ENCODING, $sys_opt_e) ||
-	&croak("unable to open '$opt_e' or '$sys_opt_e': $!");
+	croak("cannot open '$opt_e' nor '$sys_opt_e': $!");
     while (<ENCODING>) {
 	next if /^#/;
 	chop;
@@ -276,9 +311,18 @@ if ($opt_e) {
 
 my (%nmap, %map);
 
-open(MAP, $map) || open(MAP, $sys_map) ||
-    &croak("unable to open '$map' or '$sys_map': $!");
+if (open(MAP, $map)) {
+    $filename = $map;
+}
+elsif (open(MAP, $sys_map)) {
+    $filename = $sys_map;
+}
+else {
+    croak("cannot open '$map' nor '$sys_map': $!");
+}
+
 while (<MAP>) {
+    $lineno++;
     next if /^#/;
     chop;
     my @field = split(' ');
@@ -287,12 +331,12 @@ while (<MAP>) {
 	if ($field[1] eq "space") {
 	    # The PostScript character "space" is automatically mapped
 	    # to the groff character "space"; this is for grops.
-	    &whine("you are not allowed to map to the groff character"
-		   . " 'space'");
+	    whine("you are not allowed to map to the groff character"
+		  . " 'space'");
 	}
 	elsif ($field[0] eq "space") {
-	    &whine("you are not allowed to map the PostScript character"
-		   . " 'space'");
+	    whine("you are not allowed to map the PostScript character"
+		  . " 'space'");
 	}
 	else {
 	    $nmap{$field[0]} += 0;
@@ -313,9 +357,11 @@ while (<MAP>) {
     }
 }
 close(MAP);
+$filename = "";
+$lineno = 0;
 
 $italic_angle = $opt_a if $opt_a;
-
+my $duplicate_mappings_count = 0; # used only if $opt_q
 
 if (!$opt_x) {
     my %mapped;
@@ -329,10 +375,15 @@ if (!$opt_x) {
 	if ($nmap{$ch}) {
 	    for (my $j = 0; $j < $nmap{$ch}; $j++) {
 		if (defined $mapped{$map{$ch, $j}}) {
-		    print STDERR "$prog: AGL name"
-			 . " '$mapped{$map{$ch, $j}}' already mapped to"
-			 . " groff name '$map{$ch, $j}'; ignoring AGL"
-			 . " name '$ch'\n";
+		    if ($opt_q) {
+			$duplicate_mappings_count++;
+		    }
+		    else {
+			print STDERR "$program_name: AGL name"
+			  . " '$mapped{$map{$ch, $j}}' already mapped"
+			  . " to groff name '$map{$ch, $j}'; ignoring"
+			  . " AGL name '$ch'\n";
+		    }
 		}
 		else {
 		    $mapped{$map{$ch, $j}} = $ch;
@@ -439,7 +490,14 @@ if (!$opt_x) {
 	    $u =~ s/^_/u/;
 	    if ($u) {
 		if (defined $mapped{$u}) {
-		    &whine("both $mapped{$u} and $ch map to $u");
+		    # Don't whine about duplicates that exist to
+		    # preserve round-trip conversions; thanks to James
+		    # Cloos for pointing this out.
+		    if (!(($mapped{$u} eq 'Delta' and ($ch eq 'uni0394'))
+			 or ($mapped{$u} eq 'mu' and ($ch eq 'uni03BC'))
+			 or ($mapped{$u} eq 'uni03A9' and ($ch eq 'uni2126')))) {
+			whine("both $mapped{$u} and $ch map to $u");
+		    }
 		}
 		else {
 		    $mapped{$u} = $ch;
@@ -471,7 +529,7 @@ foreach my $lig (sort keys %default_ligatures) {
 # print it all out
 
 open(FONT, ">$outfile") ||
-  &croak("unable to open '$outfile' for writing: $!");
+  croak("cannot open '$outfile' for writing: $!");
 select(FONT);
 
 my @options;
@@ -486,6 +544,7 @@ push @options, "-k"        if defined $opt_k;
 push @options, "-m"        if defined $opt_m;
 push @options, "-n"        if defined $opt_n;
 push @options, "-o $opt_o" if defined $opt_o;
+# Don't add $opt_q here; it is irrelevant to the generated file.
 push @options, "-s"        if defined $opt_s;
 push @options, "-v"        if defined $opt_v;
 push @options, "-w $opt_w" if defined $opt_w;
@@ -674,13 +733,19 @@ for (my $i = 0; $i <= $#encoding; $i++) {
     }
 }
 
+if ($opt_q && $duplicate_mappings_count) {
+    print STDERR "$program_name: $duplicate_mappings_count duplicate"
+      . " mapping" . (($duplicate_mappings_count > 1) ? "s" : "" )
+      . " encountered\n";
+}
+
 sub conv {
-    $_[0]*$unitwidth*$resolution/(72*1000*$sizescale) +
-      ($_[0] < 0 ? -.5 : .5);
+    $_[0]*$unitwidth*$resolution/(72*1000*$sizescale)
+      + ($_[0] < 0 ? -.5 : .5);
 }
 
 # Local Variables:
 # fill-column: 72
 # mode: CPerl
 # End:
-# vim: set cindent noexpandtab shiftwidth=2 softtabstop=2 textwidth=72:
+# vim: set cindent noexpandtab shiftwidth=4 softtabstop=4 textwidth=72:

@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 2000-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2024 Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote html-text.cpp
  *
@@ -24,6 +23,10 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "driver.h"
 #include "stringclass.h"
@@ -99,7 +102,7 @@ void html_text::dump_stack_element (tag_definition *p)
       fprintf(stderr, "<COLOR (default)>");
     else {
       unsigned int r, g, b;
-      
+
       p->col.get_rgb(&r, &g, &b);
       fprintf(stderr, "<COLOR %x %x %x>", r/0x101, g/0x101, b/0x101);
     }
@@ -505,7 +508,7 @@ char *html_text::shutdown (HTML_TAG t)
     tag_definition *p    =stackptr;
     tag_definition *temp =NULL;
     int notext           =TRUE;
-    
+
     dump_stack();
     while ((stackptr != NULL) && (stackptr->type != t)) {
       notext = (notext && (! stackptr->text_emitted));
@@ -520,7 +523,7 @@ char *html_text::shutdown (HTML_TAG t)
       stackptr = stackptr->next;
       if (stackptr == NULL)
 	lastptr = NULL;
-    
+
       /*
        *  push tag onto temp stack
        */
@@ -686,7 +689,7 @@ void html_text::do_para (const char *arg, html_indent *in, int space)
   if (! is_present(P_TAG)) {
     if (is_present(PRE_TAG)) {
       html_indent *i = remove_indent(PRE_TAG);
-      done_pre();    
+      done_pre();
       if ((arg == NULL || (strcmp(arg, "") == 0)) &&
 	  (i == in || in == NULL))
 	in = i;
@@ -871,7 +874,7 @@ void html_text::remove_def (tag_definition *t)
 {
   tag_definition *p = stackptr;
   tag_definition *l = 0;
-    
+
   while ((p != 0) && (p != t)) {
     l = p;
     p = p->next;
@@ -899,7 +902,7 @@ void html_text::remove_def (tag_definition *t)
 void html_text::remove_tag (HTML_TAG tag)
 {
   tag_definition *p = stackptr;
-    
+
   while ((p != 0) && (p->type != tag)) {
     p = p->next;
   }
@@ -1054,3 +1057,9 @@ void html_text::do_sub (void)
 {
   push_para(SUB_TAG);
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

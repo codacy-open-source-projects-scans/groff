@@ -9,7 +9,7 @@ output driver for Portable Document Format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2011-2024 Free Software Foundation, Inc.
+.\" Copyright (C) 2011-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -56,7 +56,7 @@ output driver for Portable Document Format
 ..
 .
 .\" This man page employs an unusual character.
-.fchar \[u2717] X
+.if !c \[u2717] .char \[u2717] X
 .
 .
 .\" ====================================================================
@@ -64,13 +64,17 @@ output driver for Portable Document Format
 .\" ====================================================================
 .
 .SY gropdf
-.RB [ \-dels ]
+.RB [ \-delsW ]
 .RB [ \-F\~\c
 .IR font-directory ]
 .RB [ \-I\~\c
 .IR inclusion-directory ]
+.RB [ \-\-opt\~\c
+.IR option-bits ]
 .RB [ \-p\~\c
 .IR paper-format ]
+.RB [ \-\-pdfver\~\c
+.RI { 1.4 \~|\~ 1.7 }]
 \#.RB [ \-w\~\c
 \#.IR n ]
 .RB [ \-u
@@ -116,7 +120,7 @@ when the latter is given the
 option.
 .
 (In this installation,
-.B @DEVICE@
+.B @DEFAULT_DEVICE@
 is the default output device.)
 .
 Use
@@ -208,6 +212,55 @@ it is otherwise searched last.
 Orient the document in landscape format.
 .
 .TP
+.BI \-\-opt\~ option-bits
+Specify advanced options for
+.I gropdf.
+.I option-bits
+is a bit vector that selects active features.
+.
+Add the following values to combine them.
+.
+.
+.LP
+.RS \" One inset to align with the indentation of `TP`...
+.RS \" ...and one more to get "inboard" of it.
+.TS
+L  L
+Lb Lx.
+Value	Meaning
+_
+1	Subset included Type 1 fonts.
+2	T{
+Use more compact format for text by including space as a character.
+Fonts that do not include space as a glyph
+may conflict with this feature.
+T}
+4	T{
+Compress all streams.
+T}
+8	T{
+.\" Why don't we flip the sense of this bit and the default can be
+.\" 15--all bits on? --GBR
+Don't embed font files.
+.
+(A font required by the document is not embedded;
+usually not useful.)
+T}
+.TE
+.RE
+.LP
+The default feature combination is 7.
+.
+To mimic what
+.I gropdf
+from
+.I groff
+1.23 produced,
+specify \[lq]6\[rq] to turn off subsetting.
+.RE
+.
+.
+.TP
 .BI \-p " paper-format"
 Set the physical dimensions of the output medium.
 .
@@ -226,6 +279,15 @@ directive.
 See
 .MR groff_font @MAN5EXT@
 for details.
+.
+.
+.TP
+.BI \-\-pdfver\~ 1.4 \~|\~ 1.7
+PDF version 1.7 introduced a more compact object format, this is
+now the default.
+If you require the original format (as produced by
+.I gropdf
+1.23) set the version to 1.4.
 .
 .
 .TP
@@ -252,6 +314,15 @@ You can include your own CMap by specifying a
 or have no CMap at all by omitting the argument.
 .
 .
+.TP
+.B \-W
+Exit with failure status if font embedding fails.
+.
+Normally,
+.I gropdf
+issues a warning diagnostic and proceeds.
+.
+.
 .\" .TP
 .\" .BI \-w n
 .\" Lines should be drawn using a thickness of
@@ -271,68 +342,75 @@ Set the foundry to use for selecting fonts of the same name.
 .SH Usage
 .\" ====================================================================
 .
-The input to
-.I gropdf
-must be in the format output by
-.MR @g@troff @MAN1EXT@ .
-.
-This is described in
+.IR gropdf 's
+input must be in the format produced by
+.MR @g@troff @MAN1EXT@
+and described in
 .MR groff_out @MAN5EXT@ .
 .
-In addition, the device and font description files for the device used
-must meet certain requirements:
+Further,
+its device and font description files must meet certain requirements.
 .
-The resolution must be an integer multiple of\~72 times the
+The device
+.B resolution
+must be an integer multiple of\~72 times
 .BR sizescale .
 .
-The
-.B pdf
-device uses a resolution of 72000 and a sizescale of 1000.
+By default,
+.I gropdf
+uses a
+.B resolution
+of 72000 and a
+.B sizescale
+of 1000.
 .
-.
-.LP
-The device description file must contain a valid paper format;
+A valid paper format is mandatory;
 see
 .MR groff_font @MAN5EXT@ .
 .
+While the PDF standard allows several font file formats
+(like TrueType),
+at present
 .I gropdf
-uses the same Type\~1 Adobe PostScript fonts as the
-.B grops
-device driver.
-.
-Although the PDF Standard allows the use of other font types (like
-TrueType) this implementation only accepts the Type\~1 PostScript
-font.
+accepts only the same Type\~1 Adobe PostScript format as
+.MR grops @MAN1EXT@ .
 .
 Fewer Type\~1 fonts are supported natively in PDF documents than the
 standard 35 fonts supported by
-.B grops
-and all PostScript printers, but all the fonts are available since any
-which aren't supported natively are automatically embedded in the
-PDF.
-.
-.
-.LP
+.I grops
+and PostScript printers, \" XXX: strictly, PostScript Level 2, right?
+but all are available since
 .I gropdf
-supports the concept of foundries,
-that is different versions of basically the same font.
+automatically embeds any that aren't specified by the PDF standard.
 .
-During install a
-.I Foundry
-file controls where fonts are found and builds
+.
+.P
+.I gropdf
+supports
+.I foundries
+that permit multiple providers to supply the same
 .I groff
-fonts from the files it discovers on your system.
+font names.
 .
+.IR groff 's
+compilation process
+attempts to locate Type\~1 fonts on the system,
+populates a
+.I Foundry
+file with their locations,
+and generates font description files corresponding to them.
 .
-.LP
-Each font description file must contain a command
-.
-.IP
+Font description files can also be added after installation.
+Each such file must contain a directive
+.RS
 .BI internalname\  psname
-.
-.LP
-which says that the PostScript name of the font is
-.IR psname .
+.RE
+that maps the
+.I groff
+font name
+(such as \[lq]TR\[rq])
+to a PostScript name
+(such as \[lq]Times\-Roman\[rq]).
 .
 Lines starting with
 .B #
@@ -344,15 +422,16 @@ to the code in the default encoding for the font.
 This code can be used with the
 .B \[rs]N
 escape sequence in
-.B troff
-to select the character,
-even if the character does not have a
-.I groff
-name.
+.I @g@troff
+to select the character
+even if it lacks a special character name.
 .
-Every character in the font file must exist in the PostScript font, and
-the widths given in the font file must match the widths used
-in the PostScript font.
+Every character in the font description must exist in the font file,
+and the widths given in the description must match those used in the
+font file.
+.
+See
+.MR groff_font @MAN5EXT@ .
 .\" .
 .\" .
 .\" .LP
@@ -367,36 +446,30 @@ in the PostScript font.
 .\" produces on the fly.
 .
 .
-.LP
+.P
 .I gropdf
-can automatically include the downloadable fonts necessary
-to print the document.
+can automatically
+.I embed
+any downloadable fonts necessary to print the document.
 .
-Fonts may be in PFA or PFB format.
-.LP
+Any fonts thus required must be listed in the file
+.IR @FONTDIR@/\:\%devpdf/\:\%download ,
+which should comprise lines of the form
 .
-Any downloadable fonts which should, when required, be included by
-.I gropdf
-must be listed in the file
-.IR @FONTDIR@/\:\%devpdf/\:\%download ;
-this should consist of lines of the form
+.RS
+.I "foundry font file-name"
+.RE
 .
-.IP
-.I
-foundry font filename
-.
-.LP
 where
 .I foundry
-is the foundry name or blank for the default foundry.
-.
+is the foundry name, or blank for the default foundry;
 .I font
 is the PostScript name of the font,
 and
-.I filename
-is the name of the file containing the font.
-.
-It can also contain a pathname to the font.
+.I file-name
+is the name of the PFA or PFB font file,
+and can be a pathname
+(can contain slashes).
 .
 Any lines beginning with
 .B #
@@ -405,12 +478,15 @@ fields must be separated by tabs
 (spaces are
 .B not
 allowed);
-.I filename
-is searched for using the same mechanism that is used
-for
-.I groff
-font metric files,
-unless a path is also present.
+if
+.I file-name
+is not a pathname,
+it is sought using the same mechanism as that used for
+font metric files.
+.\" XXX: This may be underspecified; do we mean groff font description
+.\" files, or AFM files?  Also, gropdf does its own path searches rather
+.\" than the stuff in libgroff so I'm not sure what "the same mechanism"
+.\" means.  --GBR
 .
 The
 .I download
@@ -421,7 +497,7 @@ Foundry names are usually a single character
 or empty for the default foundry.
 .
 This default uses the same fonts as
-.I ghostscript
+.I Ghostscript
 uses when it embeds fonts in a PDF file.
 .
 .
@@ -665,44 +741,105 @@ ZapfChancery-MediumItalic
 .P
 Special fonts include
 .BR S ,
-the PostScript Symbol font,
-and
+the PostScript Symbol font;
+.BR SS ,
+a subset of
+.B S
+with slanted lowercase Greek letters;
 .BR EURO ,
-which offers a Euro glyph for use with old devices lacking it.
-.
-.\" XXX: This is expected to change in groff 1.24.
-Lowercase Greek letters are automatically slanted to match the
-SymbolSlanted font
-.RB ( SS )
-available to
-.MR grops @MAN1EXT@ .
-.
-Zapf Dingbats is available as
-.BR ZD .
+which offers a Euro glyph
+in several styles
+for use with old devices lacking it;
+and
+.BR ZD ,
+Zapf Dingbats.
 .
 In contrast to
-.I grops ,
+.IR grops ,
 .I gropdf
 does not require a reversed variant of it
 .RB ( ZDR );
 the \[lq]hand pointing left\[rq] glyph
 .RB ( \[rs][lh] )
 is available nevertheless,
-since it is defined using the
+since
+.I \%pdf.tmac
+defines it using the
 .B \[rs]X\[aq]pdf: xrev\[aq]
 device extension command
 (see below).
 .
-Most glyphs in these fonts are unnamed and must be accessed using
-.BR \[rs]N .
+Some glyphs in these fonts are unnamed and must be accessed
+as indexed characters,
+using the
+.B \[rs]N
+escape sequence.
 .
+.P
+The fonts corresponding to
 .B EURO
-is not a standard PDF font,
-but supplied by
+and
+.B SS
+are unknown to the PDF standard;
 .I groff
-and therefore included in the default
-.I download
-file.
+therefore provides their AFM files
+(font metrics)
+and PFA or PFB files
+so that they can be used with other software
+and embedded in PDF output.
+.
+.
+.P
+.I gropdf
+furthermore supports a naming scheme for East Asian typefaces
+shared with
+.MR grohtml @MAN1EXT@ ,
+.MR grops @MAN1EXT@ ,
+and
+.MR grotty @MAN1EXT@ .
+.
+.
+.RS
+.TP
+.B CSH
+Simplified Chinese,
+Hei style
+.
+.TQ
+.B CSS
+Simplified Chinese,
+Song style
+.
+.TQ
+.B CTH
+Traditional Chinese,
+Hei style
+.
+.TQ
+.B CTS
+Traditional Chinese,
+Song style
+.
+.TQ
+.B JPG
+Japanese,
+Gothic style
+.
+.TQ
+.B JPM
+Japanese,
+Mincho style
+.
+.TQ
+.B KOG
+Korean,
+Gothic style
+.
+.TQ
+.B KOM
+Korean,
+Mincho style
+.RE
 .
 .
 .\" ====================================================================
@@ -936,7 +1073,7 @@ that take the same arguments and behave equivalently.
 .
 .TP
 .BI "\[rs]X\[aq]pdf: pdfpic\~" file\~\c
-.IR "alignment width height line-length" \[aq]
+.IB "alignment width height line-length" \[aq]
 Place an image from file
 .I file
 of desired
@@ -986,12 +1123,12 @@ can embed in its output.
 .TS
 allbox center;
 Cb Ci Ci Ci Ci
-L  C  C  C  C.
-\&	none	file\fR(1)	identify\fR(1)	Image::Magick\fR(3pm)
+Li C  C  C  C.
+\&	\fRnone	file\fR(1)	identify\fR(1)	Image::Magick\fR(3pm)
 \&.pdf	\[OK]	\[OK]	\[OK]	\[OK]
 \&.jpg	\[u2717]	\[OK]	\[OK]	\[OK]
 \&.jp2	\[u2717]	\[u2717]	\[OK]	\[OK]
-other	\[u2717]	\[u2717]	\[u2717]	\[OK]
+\fRother	\[u2717]	\[u2717]	\[u2717]	\[OK]
 .TE
 .
 .
@@ -1018,6 +1155,8 @@ To restore the normal glyph orientation,
 repeat the command.
 .
 .
+.br
+.ne 5v
 .TP
 .BI "\[rs]X\[aq]pdf: markstart " "/ANN-definition" \[aq]
 .TQ
@@ -1145,7 +1284,7 @@ entry, revealing the new page.
 - The old page dissolves gradually to reveal the new one.
 .br
 .B Glitter
-- Similar to Dissolve,
+- As Dissolve,
 except that the effect sweeps across the page in a wide band moving from
 one side of the screen to the other in the direction specified by the
 .I direction
@@ -1303,7 +1442,7 @@ not all PDF Readers support any or all these transitions.
 produces a background rectangle on the page,
 where
 .RS
-.TP
+.TP 8n \" "bottom" + 2n
 .I cmd
 is the command,
 which can be any of
@@ -1322,12 +1461,12 @@ requires the given dimensions to place the box.
 .
 Including
 .RB \[lq] fill \[rq]
-in the command will paint the rectangle with the current fill colour
+in the command paints the rectangle with the current fill colour
 (as with
 .BR \[rs]M[] )
 and including
 .RB \[lq] box \[rq]
-will give the rectangle a border in the current stroke colour
+gives the rectangle a border in the current stroke colour
 (as with
 .BR \[rs]m[] ).
 .
@@ -1337,13 +1476,13 @@ will give the rectangle a border in the current stroke colour
 may also be
 .RB \[lq] off \[rq]
 on its own,
-which will terminate drawing the current box.
+which terminates drawing the current box.
 .
 If you have specified a page colour with
 .RB \[lq] pagefill \[rq],
 it is always the first box in the stack,
 and if you specify it again,
-it will replace the first entry.
+it replaces the first entry.
 .
 Be aware that the
 .RB \[lq]  pagefill \[rq]
@@ -1364,7 +1503,7 @@ may be
 .RB \[lq] footnote \[rq]
 followed by a new value for
 .IR bottom ,
-which will be used for all open boxes on the current page.
+which is used for all open boxes on the current page.
 This is to allow room for footnote areas that grow while a page is
 processed
 (to accommodate multiple footnotes,
@@ -1798,6 +1937,26 @@ see hello.pdf
 .RE
 .
 .
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.IP 0
+.I gropdf
+successfully produced a PDF document.
+.IP 1
+.I gropdf
+experienced a critical error,
+or could not interpret its arguments.
+No PDF was produced,
+or the document produced will be unusable.
+.IP 2
+.I gropdf
+emitted warnings.
+The document produced may be usable,
+but may fail to render as desired.
+.
+.
 .br
 .ne 5v
 .\" ====================================================================
@@ -1901,6 +2060,26 @@ build system to locate PostScript Type\~1 fonts.
 .
 .
 .TP
+.I @FONTDIR@/\:\%devpdf/\:\%symbolsl\:.afm
+provides metrics for the slanted symbol font known to
+.I groff
+as
+.BR SS .
+.
+These data facilitate use of the font with
+.RI non- groff
+software.
+.
+.
+.TP
+.I @FONTDIR@/\:\%devpdf/\:\%symbolsl\:.pfb
+supplies the slanted symbol font known to
+.I groff
+as
+.BR SS .
+.
+.
+.TP
 .I @FONTDIR@/\:\%devpdf/\:enc/\:\%text\:.enc
 describes the encoding scheme used by most PostScript Type\~1 fonts;
 the
@@ -1909,6 +2088,14 @@ directive of
 font description files for the
 .B pdf
 device refers to it.
+.
+.
+.TP
+.I @FONTDIR@/\:\%devpdf/\:\%generate/\:\%symbolsl\:.sfd
+is the source form of the
+.I \%symbolsl.pfb
+font,
+in spline font database (SFD) format.
 .
 .
 .TP
@@ -1957,6 +2144,8 @@ Deri James
 .ME .
 .
 .
+.br
+.ne 3v
 .\" ====================================================================
 .SH "See also"
 .\" ====================================================================

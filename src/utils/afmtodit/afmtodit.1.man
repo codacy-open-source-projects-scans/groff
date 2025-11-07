@@ -9,7 +9,7 @@ PostScript and PDF output
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -52,7 +52,7 @@ PostScript and PDF output
 .\" ====================================================================
 .
 .SY afmtodit
-.RB [ \-ckmnsx ]
+.RB [ \-ckmnqsx ]
 .RB [ \-a\~\c
 .IR slant ]
 .RB [ \-d\~\c
@@ -94,16 +94,15 @@ PostScript and PDF output
 .\" ====================================================================
 .
 .I \%afmtodit
-adapts an
-Adobe Font Metric
-file,
-.IR afm-file ,
-for use with the
+generates a font description file for use with
+.MR groff 1 's
 .B ps
 and
 .B pdf
-output devices of
-.MR @g@troff @MAN1EXT@ .
+output devices from an
+Adobe Font Metric
+file,
+.IR afm-file .
 .
 .I map-file
 associates a
@@ -470,6 +469,12 @@ use with monospaced (constant-width) fonts.
 .
 .
 .TP
+.B \-q
+Quieten duplicate mapping warnings;
+see section \[lq]Diagnostics\[rq] below.
+.
+.
+.TP
 .B \-s
 Add the
 .B special
@@ -606,6 +611,14 @@ a remedy is to craft an alternative
 and re-run
 .I \%afmtodit
 using it.
+.
+.
+.IP
+When the
+.B \-q
+option is used,
+these messages are suppressed in favor of a count of how many
+would have been emitted were the option not present.
 .
 .
 .\" ====================================================================

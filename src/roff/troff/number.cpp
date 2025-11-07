@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -538,12 +538,12 @@ static bool is_valid_term(units *u, int scaling_unit,
       && (strchr(SCALING_UNITS, c) != 0 /* nullptr */)) {
     switch (scaling_unit) {
     case 0:
-      warning(WARN_SCALE, "scaling unit invalid in context");
+      warning(WARN_SCALE, "scaling unit '%1' invalid in context", c);
       break;
     case 'f':
-      if (c != 'f') {
+      if (c != 'f' && c != 'u') {
 	warning(WARN_SCALE, "'%1' scaling unit invalid in context;"
-		" use 'f'", c);
+		" use 'f' or 'u'", c);
 	break;
       }
       si = c;
@@ -650,7 +650,9 @@ units scale(units n, units x, units y)
       return (n * x) / y;
   }
   else {
-    if (-(unsigned)n <= -(unsigned)INT_MIN / x)
+    // I'd prefer to say "(unsigned int(n))", but C++ doesn't seem to
+    // permit function-style construction with a type qualifier.  --GBR
+    if (-(unsigned(n)) <= -(unsigned(INT_MIN)) / x)
       return (n * x) / y;
   }
   double res = n * double(x) / double(y);

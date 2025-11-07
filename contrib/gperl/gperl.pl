@@ -1,25 +1,25 @@
 #!/usr/bin/env perl
 
-# gperl - add Perl part to groff files, this is the preprocessor for that
-
+# gperl - preprocess troff(1) input to execute embedded Perl code
+#
 # Copyright (C) 2014-2020 Free Software Foundation, Inc.
-
+#                    2025 G. Branden Robinson
+#
 # Written by Bernd Warken <groff-bernd.warken-72@web.de>.
-
-my $version = '1.2.6';
-
-# This file is part of 'gperl', which is part of 'groff'.
-
-# 'groff' is free software; you can redistribute it and/or modify it
+# Enhanced by: G. Branden Robinson <g.branden.robinson@gmail.com>
+#
+# This file is part of 'gperl'.
+#
+# 'gperl' is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
-
-# 'groff' is distributed in the hope that it will be useful, but
+#
+# 'gperl' is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-
+#
 # You can find a copy of the GNU General Public License in the internet
 # at <http://www.gnu.org/licenses/gpl-2.0.html>.
 
@@ -47,6 +47,17 @@ use Cwd;
 # $Bin is the directory where this script is located
 use FindBin;
 
+my $gperl_version = '1.3.0';
+my $groff_version = 'DEVELOPMENT';
+
+my $is_in_source_tree;
+{
+  $is_in_source_tree = 1 if '@VERSION@' eq '@' . 'VERSION' . '@';
+}
+
+if (!$is_in_source_tree) {
+  $groff_version = '@VERSION@';
+}
 
 ########################################################################
 # system variables and exported variables
@@ -81,24 +92,38 @@ if ($before_make) {
   $at_at{'G'} = '@g@';
 }
 
+(undef, undef, my $program_name) = File::Spec->splitpath($0);
+
+sub usage {
+  my $stream = *STDOUT;
+  my $had_error = shift;
+  $stream = *STDERR if $had_error;
+  my $gperl = $program_name;
+  print $stream "usage: $gperl [file ...]\n" .
+    "usage: $gperl {-v | --version}\n" .
+    "usage: $gperl {-h | --help}\n";
+  unless ($had_error) {
+    # Omit some newlines due to `$\` voodoo.
+    print $stream "" .
+"Filter troff(1) input, executing Perl code on lines between\n" .
+"'.Perl start' and '.Perl end'.  See the gperl(1) manual page.";
+  }
+  exit $had_error;
+}
+
+sub version {
+  # Omit newline due to `$\` voodoo.
+  print "$program_name (groff $groff_version) $gperl_version";
+  exit 0;
+}
 
 ########################################################################
 # options
 ########################################################################
 
-foreach (@ARGV) {
-  if ( /^(-h|--h|--he|--hel|--help)$/ ) {
-    print q(Usage for the 'gperl' program:);
-    print 'gperl [-] [--] [filespec...] normal file name arguments';
-    print 'gperl [-h|--help]        gives usage information';
-    print 'gperl [-v|--version]     displays the version number';
-    print q(This program is a 'groff' preprocessor that handles Perl ) .
-      q(parts in 'roff' files.);
-    exit;
-  } elsif ( /^(-v|--v|--ve|--ver|--vers|--versi|--versio|--version)$/ ) {
-    print "gperl (groff @VERSION@) version $version";
-    exit;
-  }
+foreach my $arg (@ARGV) {
+  usage(0) if ($arg eq '-h' || $arg eq '--help');
+  version() if ($arg eq '-v' || $arg eq '--version');
 }
 
 

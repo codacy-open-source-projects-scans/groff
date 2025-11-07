@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!@PERL@
 
 # chem - a groff preprocessor for producing chemical structure diagrams
 
@@ -40,11 +40,11 @@ use Math::Trig;
 
 # for catfile()
 use File::Spec;
+(undef,undef,my $prog)=File::Spec->splitpath($0);
 
 # $Bin is the directory where this script is located
 use FindBin;
 
-my $chem;
 my $File_chem_pic;
 
 my $is_in_source_tree;
@@ -58,13 +58,11 @@ if ($is_in_source_tree) {
   my $chem_dir = $FindBin::Bin;
   $makevar{'G'} = '';
   $File_chem_pic = File::Spec->catfile($chem_dir, 'chem.pic');
-  $chem = 'chem';
 } else {
   $groff_version = '@VERSION@';
   $makevar{'G'} = '@g@';
-  $makevar{'PICDIR'} = '@PICDIR@';
-  $File_chem_pic = File::Spec->catfile($makevar{'PICDIR'}, 'chem.pic');
-  $chem = $makevar{'G'} . 'chem';
+  $makevar{'MACRODIR'} = '@MACRODIR@';
+  $File_chem_pic = File::Spec->catfile($makevar{'MACRODIR'}, 'chem.pic');
 }
 
 
@@ -1194,26 +1192,26 @@ sub setparams {
 } # setparams()
 
 
+# Use $0 in the usage message for consistency with groff's C++ programs.
+# This also informs the user with multiple versions available which they
+# are running.
 sub usage {
+  my $G = $makevar{'G'};
   print <<EOF;
-usage: $chem [file ...]
-usage: $chem { -h | --help | -v | --version }
+usage: $prog [file ...]
+usage: $prog { -v | --version }
+usage: $prog { -h | --help }
 
-$chem is a groff preprocessor for producing chemical structure
-diagrams.  It produces input for the $makevar{'G'}pic preprocessor.  If
-no file operands are given, or if file is "-", the standard input stream
-is read.
-
-Options:
- -h, --help     Display this message and exit.
- -v, --version  Display version information and exit.
+$prog is a groff(1) preprocessor for producing chemical structure
+diagrams.  It produces input for the ${G}pic(1) preprocessor.  See the
+$prog(1) manual page.
 EOF
 }
 
 
 sub version {
   print <<EOF;
-$chem (groff $groff_version) $chem_version
+$prog (groff $groff_version) $chem_version
 $copyright
 License GPLv2: GNU GPL version 2
 <https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html>

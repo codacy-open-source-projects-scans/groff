@@ -44,6 +44,11 @@
 .ds \*[locale]-april april\"
 .ds \*[locale]-attribute_string av\"
 .ds \*[locale]-august augusti\"
+.ds \*[locale]-capcon Inneh\[a ao]llsf\[o :]rteckning\"
+.ds \*[locale]-capec Ekvation\"
+.ds \*[locale]-capex Uppst\[a :]llning\"
+.ds \*[locale]-capfg Figur\"
+.ds \*[locale]-captb Tabell\"
 .ds \*[locale]-chapter_string Kapitel\"
 .ds \*[locale]-december december\"
 .ds \*[locale]-draft_string Utkast\"
@@ -81,22 +86,17 @@
 .ds \*[locale]-letsa Till vederb\[o :]rande:\"
 .ds \*[locale]-letsj Inneh\[a ao]ll:\"
 .ds \*[locale]-lf Figurer\"
-.ds \*[locale]-licon Inneh\[a ao]llsf\[o :]rteckning\"
-.ds \*[locale]-liec \Ekvation\"
-.ds \*[locale]-liex Uppst\[a :]llning\"
-.ds \*[locale]-lifg Figur\"
-.ds \*[locale]-litb Tabell\"
 .ds \*[locale]-lt Tabeller\"
 .ds \*[locale]-lx Uppst\[a :]llningar\"
-.ds \*[locale]-man-section1 Handbok för allmänna kommandon\"
-.ds \*[locale]-man-section2 Handbok för systemsamtal\"
-.ds \*[locale]-man-section3 Handbok för biblioteksfunktioner\"
-.ds \*[locale]-man-section4 Handbok för kärngränssnitt\"
-.ds \*[locale]-man-section5 Handbok för filformat\"
+.ds \*[locale]-man-section1 Handbok f\[o :]r allm\[a :]nna kommandon\"
+.ds \*[locale]-man-section2 Handbok f\[o :]r systemsamtal\"
+.ds \*[locale]-man-section3 Handbok f\[o :]r biblioteksfunktioner\"
+.ds \*[locale]-man-section4 Handbok f\[o :]r k\[a :]rngr\[a :]nssnitt\"
+.ds \*[locale]-man-section5 Handbok f\[o :]r filformat\"
 .ds \*[locale]-man-section6 Spelhandbok\"
-.ds \*[locale]-man-section7 Handbok för diverse information\"
+.ds \*[locale]-man-section7 Handbok f\[o :]r diverse information\"
 .ds \*[locale]-man-section8 Systemchefens handbok\"
-.ds \*[locale]-man-section9 Handbok för kärnutvecklare\"
+.ds \*[locale]-man-section9 Handbok f\[o :]r k\[a :]rnutvecklare\"
 .ds \*[locale]-march mars\"
 .ds \*[locale]-may maj\"
 .ds \*[locale]-monday m\[a ao]ndag\"
@@ -126,12 +126,14 @@
 .if r GS \{\
 .	\" update the date
 .	ds DY \n[dy] \*[MO] \n[year]
-.	\" set hyphenation flags
+.	\" set hyphenation mode
 .	nr HY 34
 .\}
 .
 .
-.\" mm package -- additional Swedish localization is done in mse.tmac
+.\" mm package
+.if d PH \
+.	ds cov*local-date-format \En[dy] \E*[MO\En[mo]] \En[year]
 .
 .
 .\" Default encoding

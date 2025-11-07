@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,11 +16,16 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "lib.h" // array_length()
+#include "ptable.h"
+#include "stringclass.h"
+
 #include "eqn.h"
 #include "eqn.hpp"
-#include "stringclass.h"
-#include "ptable.h"
-
 
 // declarations to avoid friend name injection problems
 int get_char();
@@ -54,7 +59,7 @@ implement_ptable(definition)
 
 PTABLE(definition) macro_table;
 
-static struct {
+static struct eqn_primitive {
   const char *name;
   int token;
 } token_table[] = {
@@ -280,13 +285,13 @@ static struct builtin_def mathml_defs[] = {
 void init_table(const char *device)
 {
   unsigned int i;
-  for (i = 0; i < sizeof(token_table)/sizeof(token_table[0]); i++) {
+  for (i = 0; i < array_length(token_table); i++) {
     definition *def = new definition[1];
     def->is_macro = 0;
     def->tok = token_table[i].token;
     macro_table.define(token_table[i].name, def);
   }
-  for (i = 0; i < sizeof(common_defs)/sizeof(common_defs[0]); i++) {
+  for (i = 0; i < array_length(common_defs); i++) {
     definition *def = new definition[1];
     def->is_macro = 1;
     def->contents = strsave(common_defs[i].def);
@@ -294,7 +299,7 @@ void init_table(const char *device)
     macro_table.define(common_defs[i].name, def);
   }
   if (output_format == troff) {
-    for (i = 0; i < sizeof(troff_defs)/sizeof(troff_defs[0]); i++) {
+    for (i = 0; i < array_length(troff_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
       def->contents = strsave(troff_defs[i].def);
@@ -303,7 +308,7 @@ void init_table(const char *device)
     }
   }
   else if (output_format == mathml) {
-    for (i = 0; i < sizeof(mathml_defs)/sizeof(mathml_defs[0]); i++) {
+    for (i = 0; i < array_length(mathml_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
       def->contents = strsave(mathml_defs[i].def);

@@ -82,6 +82,8 @@ const size_t UNIBUFSZ = sizeof "u10FFFF"; // see glyphuni.cpp
 // `unicode_to_glyph_name` might return.
 const size_t GLYPHBUFSZ = sizeof "bracketrighttp"; // see uniglyph.cpp
 
+char *to_utf8_string (unsigned int);
+
 // Local Variables:
 // fill-column: 72
 // mode: C++

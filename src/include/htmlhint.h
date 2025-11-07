@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 2000-2020 Free Software Foundation, Inc.
      Written by Gaius Mulley <gaius@glam.ac.uk>
 
@@ -34,3 +33,9 @@ extern void html_begin_suppress();
 extern void html_end_suppress();
 
 #endif
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

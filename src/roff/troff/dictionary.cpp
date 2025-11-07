@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +16,9 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "troff.h"
 #include "dictionary.h"
@@ -63,7 +66,7 @@ void *dictionary::lookup(symbol s, void *v)
   ++used;
   table[i].v = v;
   table[i].s = s;
-  if ((double)used/(double)size >= threshold || used + 1 >= size) {
+  if ((double(used) / double(size) >= threshold) || used + 1 >= size) {
     int old_size = size;
     size = int(size * factor);
     while (!is_good_size(size))
@@ -73,7 +76,7 @@ void *dictionary::lookup(symbol s, void *v)
     used = 0;
     for (i = 0; i < old_size; i++)
       if (old_table[i].v != 0 /* nullptr */)
-	(void)lookup(old_table[i].s, old_table[i].v);
+	(void) lookup(old_table[i].s, old_table[i].v);
     delete[] old_table;
   }
   return 0 /* nullptr */;
@@ -170,14 +173,14 @@ object *object_dictionary::lookup(symbol nm)
 void object_dictionary::define(symbol nm, object *obj)
 {
   obj->add_reference();
-  obj = (object *)d.lookup(nm, obj);
+  obj = static_cast<object *>(d.lookup(nm, obj));
   if (obj)
     obj->remove_reference();
 }
 
 void object_dictionary::rename(symbol oldnm, symbol newnm)
 {
-  object *obj = (object *)d.remove(oldnm);
+  object *obj = static_cast<object *>(d.remove(oldnm));
   if (obj) {
     obj = (object *)d.lookup(newnm, obj);
     if (obj)
@@ -187,7 +190,7 @@ void object_dictionary::rename(symbol oldnm, symbol newnm)
 
 void object_dictionary::remove(symbol nm)
 {
-  object *obj = (object *)d.remove(nm);
+  object *obj = static_cast<object *>(d.remove(nm));
   if (obj)
     obj->remove_reference();
 }
@@ -196,10 +199,10 @@ void object_dictionary::remove(symbol nm)
 
 bool object_dictionary::alias(symbol newnm, symbol oldnm)
 {
-  object *obj = (object *)d.lookup(oldnm);
+  object *obj = static_cast<object *>(d.lookup(oldnm));
   if (obj) {
     obj->add_reference();
-    obj = (object *)d.lookup(newnm, obj);
+    obj = static_cast<object *>(d.lookup(newnm, obj));
     if (obj)
       obj->remove_reference();
     return true;

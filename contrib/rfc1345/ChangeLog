@@ -1,3 +1,9 @@
+2025-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* rfc1345.tmac: Add Vim 9.1.1065 digraph `.=` for U+2250
+	"APPROACHES THE LIMIT".
+	* groff_rfc1345.7.man: Document it.
+
 2023-10-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* rfc1345.tmac: Fix copy-and-paste errors.  Annotate which

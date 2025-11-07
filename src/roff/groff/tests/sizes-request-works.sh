@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2024 Free Software Foundation, Inc.
+# Copyright 2024 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -28,7 +28,7 @@ input='.
 
 echo "checking that 'sizes' request works" >&2
 output=$(printf '%s\n' "$input" | "$groff" -T ps 2>&1)
-echo "$output" | grep 'valid type size table'
-echo "$output" | grep -Fq '2z-20z, 36z'
+echo "$output" | grep 'valid type size list'
+echo "$output" | grep -Fq '2s-20s, 36s'
 
 # vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:

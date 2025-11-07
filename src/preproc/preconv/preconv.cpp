@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2025 Free Software Foundation, Inc.
      Written by Werner Lemberg (wl@gnu.org)
 
 This file is part of groff.
@@ -16,37 +16,42 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <assert.h>
-#include <stdlib.h>
 #include <errno.h>
-#include <sys/stat.h>
-#ifdef HAVE_UCHARDET
-#include <uchardet/uchardet.h>
-#endif
-
-#include "errarg.h"
-#include "error.h"
-#include "localcharset.h"
-#include "nonposix.h"
-#include "stringclass.h"
-#include "lf.h"
-
-#include <locale.h>
-
 #if HAVE_ICONV
-# include <iconv.h>
+# include <iconv.h> // iconv(), iconv_close(), iconv_open()
 # ifdef WORDS_BIGENDIAN
 #  define UNICODE "UTF-32BE"
 # else
 #  define UNICODE "UTF-32LE"
 # endif
 #endif
+#include <locale.h> // setlocale()
+#include <stdio.h> // EOF, FILE, fclose(), ferror(), fflush(), fileno(),
+		   // fopen(), fprintf(), fread(), fseek(), ftell(),
+		   // getc(), printf(), putchar(), rewind(), SEEK_SET,
+		   // stderr, stdin, stdout, ungetc()
+#include <stdlib.h> // calloc(), exit(), EXIT_SUCCESS, free(), malloc()
+#include <string.h> // sterror()
+#include <sys/stat.h> // fstat(), stat
+#ifdef HAVE_UCHARDET
+#include <uchardet/uchardet.h>
+#endif
+
+#include <getopt.h> // getopt_long()
+
+#include "lib.h" // array_length()
+
+#include "errarg.h"
+#include "error.h"
+#include "localcharset.h"
+#include "nonposix.h"
+#include "stringclass.h" // must precede lf.h
+#include "lf.h"
 
 #define MAX_VAR_LEN 100
 
@@ -56,7 +61,7 @@ char fallback_encoding[MAX_VAR_LEN];
 char user_encoding[MAX_VAR_LEN];
 char encoding_string[MAX_VAR_LEN];
 bool is_debugging = false;
-int raw_flag = 0;
+bool want_raw_output = false;
 
 struct conversion {
   const char *from;
@@ -71,14 +76,14 @@ struct conversion {
 // names (which also work with the portable GNU libiconv package).  They
 // are marked with '*'.
 //
-// Encodings specific to XEmacs and Emacs are marked as such; no mark means
-// that they are used by both Emacs and XEmacs.
+// Encodings specific to XEmacs and Emacs are marked as such; no mark
+// means that they are used by both Emacs and XEmacs.
 //
 // Encodings marked with '--' are special to Emacs, XEmacs, or other
 // applications and shouldn't be used for data exchange.
 //
-// 'Not covered' means that the encoding can be handled neither by GNU iconv
-// nor by libiconv, or just one of them has support for it.
+// 'Not covered' means that the encoding can be handled neither by GNU
+// iconv nor by libiconv, or just one of them has support for it.
 //
 // A special case is VIQR encoding: Despite of having a MIME tag it is
 // missing in both libiconv 1.10 and iconv (coming with GNU libc 2.3.6).
@@ -87,10 +92,11 @@ struct conversion {
 // 'utf8' to catch those encoding names before iconv is called.
 //
 // Note that most entries are commented out -- only a small, (rather)
-// reliable and stable subset of encodings is recognized (for coding tags)
-// which are still in greater use today (January 2006).  Most notably, all
-// Windows-specific encodings are not selected because they lack stability:
-// Microsoft has changed the mappings instead of creating new versions.
+// reliable and stable subset of encodings is recognized (for coding
+// tags) which are still in greater use today (January 2006).  Most
+// notably, all Windows-specific encodings are not selected because they
+// lack stability: Microsoft has changed the mappings instead of
+// creating new versions.
 //
 // Please contact the groff list if you find the selection inadequate.
 
@@ -375,7 +381,7 @@ emacs_to_mime[] = {
 //  {"x-ctext",				""},		// --
 //  {"x-ctext-with-extensions",		""},		// --
 
-  {NULL,				NULL},
+  {0 /* nullptr */,				0 /* nullptr */},
 };
 
 // ---------------------------------------------------------
@@ -394,9 +400,11 @@ emacs2mime(char *emacs_enc)
   if (emacs_enc_len > 5
       && !strcasecmp(emacs_enc + emacs_enc_len - 5, "-unix"))
     emacs_enc[emacs_enc_len - 5] = 0;
-  for (const conversion *table = emacs_to_mime; table->from; table++)
+  for (const conversion *table = emacs_to_mime;
+       table->from != 0 /* nullptr */;
+       table++)
     if (!strcasecmp(emacs_enc, table->from))
-      return (char *)table->to;
+      return const_cast<char *>(table->to);
   return emacs_enc;
 }
 
@@ -434,7 +442,8 @@ void
 conversion_latin1(FILE *fp, const string &data)
 {
   int len = data.length();
-  const unsigned char *ptr = (const unsigned char *)data.contents();
+  const unsigned char *ptr
+    = reinterpret_cast<const unsigned char *>(data.contents());
   for (int i = 0; i < len; i++)
     unicode_entity(ptr[i]);
   int c = -1;
@@ -611,7 +620,8 @@ conversion_utf8(FILE *fp, const string &data)
 {
   utf8 u(fp);
   int len = data.length();
-  const unsigned char *ptr = (const unsigned char *)data.contents();
+  const unsigned char *ptr
+    = reinterpret_cast<const unsigned char *>(data.contents());
   for (int i = 0; i < len; i++)
     u.add(ptr[i]);
   int c = -1;
@@ -659,7 +669,8 @@ conversion_cp1047(FILE *fp, const string &data)
     0x38, 0x39, 0xB3, 0xDB, 0xDC, 0xD9, 0xDA, 0x9F,
   };
   int len = data.length();
-  const unsigned char *ptr = (const unsigned char *)data.contents();
+  const unsigned char *ptr
+    = reinterpret_cast<const unsigned char *>(data.contents());
   for (int i = 0; i < len; i++)
     unicode_entity(cp1047[ptr[i]]);
   int c = -1;
@@ -674,40 +685,41 @@ conversion_iconv(FILE *fp, const string &data, char *enc)
 {
   iconv_t handle = iconv_open(UNICODE, enc);
   if (handle == (iconv_t)-1) {
-    if (errno == EINVAL) {
-      error("encoding system '%1' not supported by iconv()", enc);
+    if (EINVAL == errno) {
+      error("character encoding '%1' not supported by iconv()", enc);
       return;
     }
-    fatal("iconv_open failed");
+    fatal("unable to convert character encoding: %1", strerror(errno));
   }
   char inbuf[BUFSIZ];
   int outbuf[BUFSIZ];
-  char *outptr = (char *)outbuf;
+  char *outptr = reinterpret_cast<char *>(outbuf);
   size_t outbytes_left = BUFSIZ * sizeof (int);
   // Handle 'data'.
-  char *inptr = (char *)data.contents();
+  char *inptr = const_cast<char *>(data.contents());
   size_t inbytes_left = data.length();
   char *limit;
   while (inbytes_left > 0) {
     size_t status = iconv(handle,
-			  (ICONV_CONST char **)&inptr, &inbytes_left,
-			  &outptr, &outbytes_left);
-    if (status == (size_t)-1) {
-      if (errno == EILSEQ) {
+			  static_cast<ICONV_CONST char **>(&inptr),
+			  &inbytes_left, &outptr, &outbytes_left);
+    if (status == static_cast<size_t>(-1)) {
+      if (EILSEQ == errno) {
 	// Invalid byte sequence.  XXX
 	inptr++;
 	inbytes_left--;
       }
-      else if (errno == E2BIG) {
+      else if (E2BIG == errno) {
 	// Output buffer is full.
-	limit = (char *)outbuf + BUFSIZ * sizeof (int) - outbytes_left;
+	limit = reinterpret_cast<char *>(outbuf)
+	  + (BUFSIZ * sizeof (int)) - outbytes_left;
 	for (int *ptr = outbuf; (char *)ptr < limit; ptr++)
 	  unicode_entity(*ptr);
 	memmove(outbuf, outptr, outbytes_left);
-	outptr = (char *)outbuf + outbytes_left;
+	outptr = reinterpret_cast<char *>(outbuf) + outbytes_left;
 	outbytes_left = BUFSIZ * sizeof (int) - outbytes_left;
       }
-      else if (errno == EINVAL) {
+      else if (EINVAL == errno) {
 	// 'data' ends with partial input sequence.
 	memcpy(inbuf, inptr, inbytes_left);
 	break;
@@ -717,29 +729,32 @@ conversion_iconv(FILE *fp, const string &data, char *enc)
   // Handle 'fp' and switch to 'inbuf'.
   size_t read_bytes;
   char *read_start = inbuf + inbytes_left;
-  while ((read_bytes = fread(read_start, 1, BUFSIZ - inbytes_left, fp)) > 0) {
+  while ((read_bytes = fread(read_start, 1, (BUFSIZ - inbytes_left),
+			     fp))
+	 > 0) {
     inptr = inbuf;
     inbytes_left += read_bytes;
     while (inbytes_left > 0) {
       size_t status = iconv(handle,
-			    (ICONV_CONST char **)&inptr, &inbytes_left,
-			    &outptr, &outbytes_left);
+			    static_cast<ICONV_CONST char **>(&inptr),
+			    &inbytes_left, &outptr, &outbytes_left);
       if (status == (size_t)-1) {
-	if (errno == EILSEQ) {
+	if (EILSEQ == errno) {
 	  // Invalid byte sequence.  XXX
 	  inptr++;
 	  inbytes_left--;
 	}
-	else if (errno == E2BIG) {
+	else if (E2BIG == errno) {
 	  // Output buffer is full.
-	  limit = (char *)outbuf + BUFSIZ * sizeof (int) - outbytes_left;
+	  limit = reinterpret_cast<char *>(outbuf)
+	    + (BUFSIZ * sizeof (int)) - outbytes_left;
 	  for (int *ptr = outbuf; (char *)ptr < limit; ptr++)
 	    unicode_entity(*ptr);
 	  memmove(outbuf, outptr, outbytes_left);
-	  outptr = (char *)outbuf + outbytes_left;
-	  outbytes_left = BUFSIZ * sizeof (int) - outbytes_left;
+	  outptr = reinterpret_cast<char *>(outbuf) + outbytes_left;
+	  outbytes_left = (BUFSIZ * sizeof (int)) - outbytes_left;
 	}
-	else if (errno == EINVAL) {
+	else if (EINVAL == errno) {
 	  // 'inbuf' ends with partial input sequence.
 	  memmove(inbuf, inptr, inbytes_left);
 	  break;
@@ -750,11 +765,24 @@ conversion_iconv(FILE *fp, const string &data, char *enc)
   }
   iconv_close(handle);
   // XXX use ferror?
-  limit = (char *)outbuf + BUFSIZ * sizeof (int) - outbytes_left;
+  limit = reinterpret_cast<char *>(outbuf) + (BUFSIZ * sizeof (int))
+    - outbytes_left;
   for (int *ptr = outbuf; (char *)ptr < limit; ptr++)
     unicode_entity(*ptr);
 }
 #endif /* HAVE_ICONV */
+
+static struct bom_s {
+  int len;
+  const char *str;
+  const char *name;
+} BOM_table[] = {
+  {4, "\x00\x00\xFE\xFF", "UTF-32"},
+  {4, "\xFF\xFE\x00\x00", "UTF-32"},
+  {3, "\xEF\xBB\xBF", "UTF-8"},
+  {2, "\xFE\xFF", "UTF-16"},
+  {2, "\xFF\xFE", "UTF-16"},
+};
 
 // ---------------------------------------------------------
 // Handle Byte Order Mark.
@@ -769,7 +797,8 @@ conversion_iconv(FILE *fp, const string &data, char *enc)
 // the byte after the BOM.  This function reads (at most)
 // four bytes from the data stream.
 //
-// Return encoding if a BOM is found, NULL otherwise.
+// Return encoding if a BOM is found, and a null pointer
+// otherwise.
 // ---------------------------------------------------------
 const char *
 get_BOM(FILE *fp, string &BOM, string &data)
@@ -780,20 +809,9 @@ get_BOM(FILE *fp, string &BOM, string &data)
   //   UTF-8: 0xEFBBBF
   //   UTF-16: 0xFEFF or 0xFFFE
   //   UTF-32: 0x0000FEFF or 0xFFFE0000
-  static struct {
-    int len;
-    const char *str;
-    const char *name;
-  } BOM_table[] = {
-    {4, "\x00\x00\xFE\xFF", "UTF-32"},
-    {4, "\xFF\xFE\x00\x00", "UTF-32"},
-    {3, "\xEF\xBB\xBF", "UTF-8"},
-    {2, "\xFE\xFF", "UTF-16"},
-    {2, "\xFF\xFE", "UTF-16"},
-  };
-  const int BOM_table_len = sizeof (BOM_table) / sizeof (BOM_table[0]);
+  const int BOM_table_len = array_length(BOM_table);
   char BOM_string[4];
-  const char *retval = NULL;
+  const char *retval = 0 /* nullptr */;
   int len;
   for (len = 0; len < 4; len++) {
     int c = getc(fp);
@@ -822,8 +840,8 @@ get_BOM(FILE *fp, string &BOM, string &data)
 // Get first two lines from input stream.
 //
 // Return string (allocated with 'new') without zero bytes
-// or NULL in case no coding tag can occur in the data
-// (which is stored unmodified in 'data').
+// or a null pointer in case no coding tag can occur in the
+// data (which is stored unmodified in 'data').
 // ---------------------------------------------------------
 char *
 get_tag_lines(FILE *fp, string &data)
@@ -840,7 +858,7 @@ get_tag_lines(FILE *fp, string &data)
     prev = c;
   }
   if (newline_count > 1)
-    return NULL;
+    return 0 /* nullptr */;
   bool emit_warning = true;
   for (int lines = newline_count; lines < 2; lines++) {
     while ((c = getc(fp)) != EOF) {
@@ -866,15 +884,13 @@ get_tag_lines(FILE *fp, string &data)
 }
 
 // ---------------------------------------------------------
-// Check whether C string starts with a comment.
-//
-// Return 1 if true, 0 otherwise.
+// Indicate whether C string starts with a comment.
 // ---------------------------------------------------------
-int
+bool
 is_comment_line(char *s)
 {
   if (!s || !*s)
-    return 0;
+    return false;
   if (*s == '.' || *s == '\'')
   {
     s++;
@@ -884,16 +900,16 @@ is_comment_line(char *s)
     {
       s++;
       if (*s == '"' || *s == '#')
-	return 1;
+	return true;
     }
   }
   else if (*s == '\\')
   {
     s++;
     if (*s == '#')
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
 // ---------------------------------------------------------
@@ -905,8 +921,8 @@ is_comment_line(char *s)
 // Leading and trailing blanks are ignored.  There might be
 // more than one blank after ':' and ';'.
 //
-// Return position of next value/variable pair or NULL if
-// at end of data.
+// Return position of next value/variable pair or a null
+// pointer if at end of data.
 // ---------------------------------------------------------
 char *
 get_variable_value_pair(char *d1, char **variable, char **value)
@@ -926,7 +942,7 @@ get_variable_value_pair(char *d1, char **variable, char **value)
     d1++;
   val[0] = 0;
   if (!*d1)
-    return NULL;
+    return 0 /* nullptr */;
   if (*d1 == ';')
     return d1 + 1;
   d1++;
@@ -942,7 +958,7 @@ get_variable_value_pair(char *d1, char **variable, char **value)
     d1++;
   if (*d1 == ';')
     return d1 + 1;
-  return NULL;
+  return 0 /* nullptr */;
 }
 
 // ---------------------------------------------------------
@@ -971,11 +987,12 @@ get_variable_value_pair(char *d1, char **variable, char **value)
 // which specifies the coding system used for the data
 // stream.
 //
-// Return <value> if found, NULL otherwise.
+// Return <value> if found, and a null pointer otherwise.
 //
-// Note that null bytes in the data are skipped before applying
-// the algorithm.  This should work even with files encoded as
-// UTF-16 or UTF-32 (or its siblings) in most cases.
+// Note that null bytes in the data are skipped before
+// applying the algorithm.  This should work even with files
+// encoded as UTF-16 or UTF-32 (or its siblings) in most
+// cases.
 // ---------------------------------------------------------
 char *
 check_coding_tag(FILE *fp, string &data)
@@ -983,19 +1000,19 @@ check_coding_tag(FILE *fp, string &data)
   char *inbuf = get_tag_lines(fp, data);
   char *lineend;
   for (char *p = inbuf; is_comment_line(p); p = lineend + 1) {
-    if ((lineend = strchr(p, '\n')) == NULL)
+    if ((lineend = strchr(p, '\n')) == 0 /* nullptr */)
       break;
     *lineend = 0;		// switch temporarily to '\0'
     char *d1 = strstr(p, "-*-");
-    char *d2 = 0;
-    if (d1)
+    char *d2 = 0 /* nullptr */;
+    if (d1 != 0 /* nullptr */)
       d2 = strstr(d1 + 3, "-*-");
     *lineend = '\n';		// restore newline
     if (!d1 || !d2)
       continue;
     *d2 = 0;			// switch temporarily to '\0'
     d1 += 3;
-    while (d1) {
+    while (d1 != 0 /* nullptr */) {
       char *variable, *value;
       d1 = get_variable_value_pair(d1, &variable, &value);
       if (!strcasecmp(variable, "coding")) {
@@ -1007,27 +1024,27 @@ check_coding_tag(FILE *fp, string &data)
     *d2 = '-';			// restore '-'
   }
   free(inbuf);
-  return NULL;
+  return 0 /* nullptr */;
 }
 
 char *
 detect_file_encoding(FILE *fp)
 {
 #ifdef HAVE_UCHARDET
-  uchardet_t ud = NULL;
+  uchardet_t ud = 0 /* nullptr */;
   struct stat stat_buf;
   size_t len, read_bytes;
-  char *data = NULL;
+  char *data = 0 /* nullptr */;
   int res, current_position;
   const char *charset;
-  char *ret = NULL;
+  char *ret = 0 /* nullptr */;
 
   current_position = ftell(fp);
   /* Due to BOM and tag detection, we are not at the beginning of the
      file. */
   rewind(fp);
   if (fstat(fileno(fp), &stat_buf) != 0) {
-    error("fstat: %1", strerror(errno));
+    error("unable to get file status: %1", strerror(errno));
     goto end;
   }
   len = stat_buf.st_size;
@@ -1035,15 +1052,15 @@ detect_file_encoding(FILE *fp)
     fprintf(stderr, "  len: %lu\n", (unsigned long)len);
   if (len == 0)
     goto end;
-  data = (char *)calloc(len, 1);
+  data = static_cast<char *>(calloc(len, 1));
   read_bytes = fread(data, 1, len, fp);
   if (read_bytes == 0) {
-    error("fread: %1", strerror(errno));
+    error("unable to read from file: %1", strerror(errno));
     goto end;
   }
   /* We rewind back to the original position */
   if (fseek(fp, current_position, SEEK_SET) != 0) {
-    fatal("fseek: %1", strerror(errno));
+    fatal("unable to seek within file: %1", strerror(errno));
     goto end;
   }
   ud = uchardet_new();
@@ -1058,36 +1075,37 @@ detect_file_encoding(FILE *fp)
   uchardet_data_end(ud);
   charset = uchardet_get_charset(ud);
   if (is_debugging) {
-    if (charset)
+    if (charset != 0 /* nullptr */)
        fprintf(stderr, "  charset: %s\n", charset);
     else
        fprintf(stderr, "  charset is NULL\n");
   }
-  /* uchardet 0.0.1 could return an empty string instead of NULL */
-  if (charset && *charset) {
-    ret = (char *)malloc(strlen(charset) + 1);
+  /* uchardet 0.0.1 could return an empty string instead of a null
+   * pointer. */
+  if ((charset != 0 /* nullptr */) && (*charset != '\0')) {
+    ret = static_cast<char *>(malloc(strlen(charset) + 1));
     strcpy(ret, charset);
   }
 
 end:
-  if (ud)
+  if (ud != 0 /* nullptr */)
      uchardet_delete(ud);
-  if (data)
+  if (data != 0 /* nullptr */)
      free(data);
 
   return ret;
 #else /* not HAVE_UCHARDET */
-  return NULL;
+  return 0 /* nullptr */;
 #endif /* not HAVE_UCHARDET */
 }
 
 // ---------------------------------------------------------
-// Handle an input file.  If `filename` is "-", read the
+// Process an input file.  If `filename` is "-", read the
 // standard input stream.
 //
-// Return 1 on success, 0 otherwise.
+// Return Boolean indicating successful completion.
 // ---------------------------------------------------------
-int
+bool
 do_file(const char *filename)
 {
   FILE *fp;
@@ -1107,9 +1125,9 @@ do_file(const char *filename)
   }
   char *c_reported_filename = reported_filename.extract();
   if (!fp) {
-    error("can't open %1: %2", c_reported_filename, strerror(errno));
+    error("cannot open %1: %2", c_reported_filename, strerror(errno));
     free(c_reported_filename);
-    return 0;
+    return false;
   }
   if (is_debugging) {
     fprintf(stderr, "processing %s\n", c_reported_filename);
@@ -1127,25 +1145,26 @@ do_file(const char *filename)
   const char *BOM_encoding = get_BOM(fp, BOM, data);
   // Determine the encoding.
   char *encoding;
-  int must_free_encoding = 0;
+  bool must_free_encoding = false;
   if (user_encoding[0]) {
     if (is_debugging) {
       fprintf(stderr, "  user-specified encoding '%s', "
 		      "no search for coding tag\n",
 		      user_encoding);
       if (BOM_encoding && strcmp(BOM_encoding, user_encoding))
-	fprintf(stderr, "  but BOM in data stream implies encoding '%s'!\n",
-			BOM_encoding);
+	fprintf(stderr, "  but BOM in data stream implies encoding"
+		" '%s'!\n", BOM_encoding);
     }
-    encoding = (char *)user_encoding;
+    encoding = static_cast<char *>(user_encoding);
   }
-  else if (BOM_encoding) {
+  else if (BOM_encoding != 0 /* nullptr */) {
     if (is_debugging)
       fprintf(stderr, "  found BOM, no search for coding tag\n");
-    encoding = (char *)BOM_encoding;
+    encoding = const_cast<char *>(BOM_encoding);
   }
   else {
-    // 'check_coding_tag' returns a pointer to a static array (or NULL).
+    // 'check_coding_tag' returns a pointer to a static array (or a null
+    // pointer).
     char *file_encoding = check_coding_tag(fp, data);
     if (!file_encoding) {
       if (is_debugging)
@@ -1154,11 +1173,12 @@ do_file(const char *filename)
          file_encoding = detect_file_encoding(fp);
       if (!file_encoding) {
         if (is_debugging)
-          fprintf(stderr, "  could not detect encoding with uchardet\n");
+          fprintf(stderr,
+		  "  could not detect encoding with uchardet\n");
         file_encoding = fallback_encoding;
       }
       else
-        must_free_encoding = 1;
+        must_free_encoding = true;
     }
     else
       if (is_debugging)
@@ -1166,26 +1186,26 @@ do_file(const char *filename)
     encoding = file_encoding;
   }
   strncpy(encoding_string, encoding, MAX_VAR_LEN - 1);
-  encoding_string[MAX_VAR_LEN - 1] = 0;
+  encoding_string[MAX_VAR_LEN - 1] = '\0';
   if (must_free_encoding)
     free(encoding);
   encoding = encoding_string;
-  // Translate from MIME & Emacs encoding names to locale encoding names.
+  // Translate from MIME/Emacs encoding names to locale encoding names.
   encoding = emacs2mime(encoding_string);
   if (encoding[0] == '\0') {
-    error("encoding '%1' not supported, not a portable encoding",
-	  encoding_string);
-    return 0;
+    error("unportable encoding '%1' not supported", encoding_string);
+    return false;
   }
   if (is_debugging)
     fprintf(stderr, "  encoding used: '%s'\n", encoding);
-  if (!raw_flag) {
+  if (!want_raw_output) {
     string fn(filename);
     fn += '\0';
-    normalize_for_lf(fn);
-    printf(".lf 1 %s\n", fn.contents());
+    normalize_file_name_for_lf_request(fn);
+    (void) printf(".lf 1 %s%s\n", ('"' == filename[0]) ? "" : "\"",
+		  fn.contents());
   }
-  int success = 1;
+  bool was_successful = true;
   // Call converter (converters write to stdout).
   if (!strcasecmp(encoding, "ISO-8859-1"))
     conversion_latin1(fp, BOM + data);
@@ -1198,12 +1218,12 @@ do_file(const char *filename)
     conversion_iconv(fp, BOM + data, encoding);
 #else
     error("encoding system '%1' not supported", encoding);
-    success = 0;
+    was_successful = false;
 #endif /* HAVE_ICONV */
   }
   if (fp != stdin)
     fclose(fp);
-  return success;
+  return was_successful;
 }
 
 // ---------------------------------------------------------
@@ -1217,7 +1237,7 @@ usage(FILE *stream)
 "usage: %s {-v | --version}\n"
 "usage: %s {-h | --help}\n",
 	  program_name, program_name, program_name);
-  if (stdout == stream) {
+  if (stdout == stream)
     fprintf(stream,
 "\n"
 "Read each file, convert its encoded characters to a form GNU"
@@ -1226,8 +1246,6 @@ usage(FILE *stream)
 "The default fallback encoding is '%s'.  See the preconv(1) manual"
 " page.\n",
 	  fallback_encoding);
-    exit(EXIT_SUCCESS);
-  }
 }
 
 // ---------------------------------------------------------
@@ -1252,16 +1270,18 @@ main(int argc, char **argv)
   program_name = argv[0];
   int opt;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, 'h' },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, 'h' },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
   // Parse the command-line options.
-  while ((opt = getopt_long(argc, argv,
-			    "dD:e:hrv", long_options, NULL)) != EOF)
+  while ((opt = getopt_long(argc, argv, ":dD:e:hrv", long_options,
+			    0 /* nullptr */))
+	 != EOF)
     switch (opt) {
     case 'v':
-      printf("GNU preconv (groff) version %s %s iconv support and %s uchardet support\n",
+      printf("GNU preconv (groff) version %s %s iconv support and %s"
+	     " uchardet support\n",
 	     Version_string,
 #ifdef HAVE_ICONV
 	     "with",
@@ -1274,13 +1294,13 @@ main(int argc, char **argv)
              "without"
 #endif /* HAVE_UCHARDET */
 	    );
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case 'd':
       is_debugging = true;
       break;
     case 'e':
-      if (optarg) {
+      if (optarg != 0 /* nullptr */) {
 	strncpy(user_encoding, optarg, MAX_VAR_LEN - 1);
 	user_encoding[MAX_VAR_LEN - 1] = 0;
       }
@@ -1288,23 +1308,31 @@ main(int argc, char **argv)
 	user_encoding[0] = 0;
       break;
     case 'D':
-      if (optarg) {
+      if (optarg != 0 /* nullptr */) {
 	strncpy(fallback_encoding, optarg, MAX_VAR_LEN - 1);
 	fallback_encoding[MAX_VAR_LEN - 1] = 0;
       }
       break;
     case 'r':
-      raw_flag = 1;
+      want_raw_output = true;
       break;
     case 'h':
       usage(stdout);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      error("command-line option '%1' requires an argument",
+           char(optopt));
+      usage(stderr);
+      exit(2);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled getopt_long return value");
     }
   int nbad = 0;
   if (is_debugging)
@@ -1314,9 +1342,11 @@ main(int argc, char **argv)
   else
     for (int i = optind; i < argc; i++)
       nbad += !do_file(argv[i]);
-  if (ferror(stdout) || fflush(stdout) < 0)
-    fatal("output error");
-  return nbad != 0;
+  if (ferror(stdout))
+    fatal("error status on standard output stream");
+  if (fflush(stdout) < 0)
+    fatal("cannot flush standard output stream: %1", strerror(errno));
+  return (nbad != 0);
 }
 
 // Local Variables:

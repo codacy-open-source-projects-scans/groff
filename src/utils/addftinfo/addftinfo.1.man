@@ -10,7 +10,7 @@ fonts for use with
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -100,11 +100,11 @@ reads an
 .RI AT&T \~troff
 font description file
 .IR font ,
-adds additional font metric information required by
+adds further font metric information required by
 .\" We need the "GNU" below because the @g@ prefix might be empty.
 GNU
 .MR @g@troff @MAN1EXT@ ,
-and writes the combined result to the standard output.
+and writes the combined result to the standard output stream.
 .
 The information added is derived from the font's existing parameters and
 assumptions about traditional
@@ -217,6 +217,19 @@ If a parameter is not specified,
 the default will be used.
 .
 The defaults are chosen to produce reasonable values for a Times font.
+.
+.
+.\" ====================================================================
+.SH "Exit status"
+.\" ====================================================================
+.
+.I \%addftinfo
+exits with
+.RB status\~ 0
+on successful operation,
+and
+.RB status\~ 2
+if the program cannot interpret its command-line arguments.
 .
 .
 .\" ====================================================================

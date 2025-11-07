@@ -185,15 +185,13 @@
 
 ________________________________________________________________________
 
-##### License
-
-Copyright 2021 Free Software Foundation, Inc.
+Copyright 2021-2022 G. Branden Robinson
+Copyright      2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.
 
-##### Editor settings
 Local Variables:
 fill-column: 72
 mode: change-log

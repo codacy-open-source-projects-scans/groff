@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -70,6 +70,7 @@ public:
   bool is_diversion();
   bool is_string();
   void clear_string_flag();
+  void json_dump();
   friend class string_iterator;
   friend void chop_macro();
   friend void substring_request();
@@ -88,6 +89,7 @@ extern void init_request(const char *, REQUEST_FUNCP);
 class charinfo;
 class environment;
 
+// XXX: defined in input.cpp, but its only call site is in node.cpp
 node *charinfo_to_node_list(charinfo *, const environment *);
 
 // Local Variables:

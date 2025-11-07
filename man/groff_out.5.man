@@ -10,7 +10,7 @@ device-independent page description language
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2024 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff type-setting system.
 .\"
@@ -122,9 +122,10 @@ The fundamental operation of the
 .MR @g@troff @MAN1EXT@
 formatter is the translation of the
 .MR groff @MAN7EXT@
-input language into a series of instructions concerned primarily with
-placing glyphs or geometric objects at specific positions on a
-rectangular page.
+input language
+into a series of instructions concerned primarily
+with placing glyphs or geometric objects
+at specific positions on a rectangular page.
 .
 In the following discussion,
 the term
@@ -139,10 +140,10 @@ glyph output;
 font,
 color,
 and text size selection;
-motion of the printing position;
+motion of the drawing position;
 page advancement;
 drawing of geometric primitives;
-and device control commands,
+and device extension commands,
 a catch-all for other operations.
 .
 The last includes directives to start and stop output,
@@ -167,7 +168,7 @@ users seldom encounter this format under normal circumstances.
 .
 .I groff
 offers the option
-.B \-z
+.B \-Z
 to inhibit postprocessing such that GNU
 .IR troff 's \" GNU
 output is sent to the standard output stream just as it is when running
@@ -204,7 +205,7 @@ implementation,
 recognizes a GNU extension to the language,
 and supports an obsolete construct for compatibility;
 otherwise,
-both formats are the same.
+the formats are the same.
 .
 (The parser for device-independent output can be found in the
 .I groff
@@ -224,107 +225,97 @@ A decade later,
 when James Clark wrote
 .IR groff ,
 these constraints were no longer as tight.
-.
-GNU
-.I troff \" GNU
-therefore emits device-independent output that is more easily
-interpreted by humans than did AT&T
-.IR troff . \" AT&T
 .\" END Keep parallel with paragraphs after the first in the "gtroff
 .\" Output" node in doc/groff.texi.in.
 .
 .
 .\" ====================================================================
-.SS Separation
+.SS Syntax
 .\" ====================================================================
 .
-.I Classical troff output
-had strange requirements on whitespace.
-.
-The
-.I groff
-output parser, however, is smart about whitespace by making it
-maximally optional.
-.
-The whitespace characters, i.e., the
-.IR tab ,
-.IR space ,
-and
-.I newline
-characters, always have a syntactical meaning.
-.
-They are never printable because spacing within the output is always
-done by positioning commands.
+.IR roff 's
+page description language is a sequence of
+.I tokens:
+single-letter commands or their arguments.
+Some commands accept a subcommand as a first argument,
+followed by one or more further arguments.
 .
 .
 .P
-Any sequence of
-.I space
-or
-.I tab
-characters is treated as a single
-.I syntactical
-.IR space .
+AT&T device-independent
+.I troff \" AT&T
+used whitespace minimally when producing output.
 .
-It separates commands and arguments, but is only required when there
-would occur a clashing between the command code and the arguments
-without the space.
+GNU
+.IR troff , \" GNU
+in contrast,
+attempts to make its output more human-readable.
 .
-Most often, this happens when variable length command names,
-arguments, argument lists, or command clusters meet.
+The whitespace characters\[em]tab,
+space,
+and newline\[em]are always meaningful.
 .
-Commands and arguments with a known, fixed length need not be
-separated by
-.I syntactical
-.IR space .
+They are never used to represent spacing in the document;
+that is done with horizontal
+.RB ( h ,\~ H )
+and vertical
+.RB ( v ,\~ V )
+positioning commands.
+.
+Any sequence of space and/or tab characters is equivalent to a single
+space,
+separating commands from arguments and arguments from each other.
+.
+Space is required only where omitting it would cause ambiguity.
+.
+A line break separates commands.
+.
+The comment character is a pound/hash sign
+.RB ( # ),
+and marks the remainder of the line as a comment.
+.
+A line comprising only whitespace after comment removal does nothing but
+separate input tokens.
+.
+.
+.P
+For example,
+the relative horizontal motion command
+.RB ( h )
+and the command to write one glyph
+.RB ( c ),
+each take a single argument;
+the former a signed integer,
+and the latter a printable ISO\~646/\[lq]ASCII\[rq] character.
+.
+A series of such commands could validly occur without spaces
+on an input line,
+but GNU
+.I troff \" GNU
+follows each with a newline.
 .
 .
 .P
-A line break is a syntactical element, too.
+Some commands have a more complex syntax;
+the GNU
+.I troff \" GNU
+extension command for writing glyph sequences
+.RB ( t )
+accepts a variable number of arguments.
+Those that draw geometric objects
+.RB ( D )
+or control the device
+.RB ( x )
+furthermore recognize subcommand arguments.
 .
-Every command argument can be followed by whitespace, a comment, or a
-newline character.
+Such commands thus must end with a newline.
 .
-Thus a
-.I syntactical line break
-is defined to consist of optional
-.I syntactical space
-that is optionally followed by a comment, and a newline character.
-.
-.
-.P
-The normal commands, those for positioning and text, consist of a
-single letter taking a fixed number of arguments.
-.
-For historical reasons, the parser allows stacking of such commands on
-the same line, but fortunately, in
-.I groff intermediate
-.IR output ,
-every command with at least one argument is followed by a line break,
-thus providing excellent readability.
-.
-.P
-The other commands\[em]those for drawing and device control\[em]have a
-more complicated structure; some recognize long command names, and some
-take a variable number of arguments.
-.
-So all
-.B D
-and
-.B x
-commands were designed to request a
-.I syntactical line break
-after their last argument.
-.
-Only one command,
-.RB \[oq] x\ X \[cq]
-has an argument that can stretch over several lines, all other
-commands must have all of their arguments on the same line as the
-command, i.e., the arguments may not be split by a line break.
-.
-.P
-Lines containing only spaces and/or a comment are treated as empty and
-ignored.
+In GNU
+.I troff, \" GNU
+the device extension (sub)command
+.RB \[lq] x\~X \[rq]
+uniquely supports a line continuation syntax;
+all other commands occupy one input line.
 .
 .
 .\" ====================================================================
@@ -338,8 +329,8 @@ Most commands assume a scaling unit
 .RB of\~\[lq] u \[rq]
 (basic units),
 and others
-.RB use\~\[lq] z \[rq]
-(scaled points);
+.RB use\~\[lq] s \[rq]
+(scaled points).
 .
 These are defined by the parameters specified in the device's
 .I DESC

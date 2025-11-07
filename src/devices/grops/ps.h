@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,10 +16,12 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <stdint.h> // uint16_t
+
 class ps_output {
 public:
   ps_output(FILE *, int max_line_length);
-  ps_output &put_string(const char *, size_t n);
+  ps_output &put_string(const uint16_t *, size_t, bool);
   ps_output &put_number(int);
   ps_output &put_fix_number(int);
   ps_output &put_float(double);

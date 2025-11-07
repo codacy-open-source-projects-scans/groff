@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,11 +16,15 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <errno.h>
+#include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
+
 #include "lib.h"
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <errno.h>
 #include "errarg.h"
 #include "error.h"
 #include "stringclass.h"
@@ -37,7 +41,7 @@ static void convert_font(const font_params &, FILE *, FILE *);
 
 typedef int font_params::*param_t;
 
-static struct {
+static struct parameter {
   const char *name;
   param_t par;
 } param_table[] = {
@@ -72,7 +76,7 @@ int main(int argc, char **argv)
       version();
     if (!strcmp(argv[i],"--help")) {
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
     }
   }
   if (argc < 4)
@@ -111,7 +115,7 @@ int main(int argc, char **argv)
       usage("option requires argument");
     size_t j;
     for (j = 0;; j++) {
-      if (j >= sizeof(param_table)/sizeof(param_table[0]))
+      if (j >= array_length(param_table))
 	fatal("parameter '%1' not recognized", argv[i] + 1);
       if (strcmp(param_table[j].name, argv[i] + 1) == 0)
 	break;
@@ -133,18 +137,24 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream, "usage: %s", program_name);
-  size_t len = sizeof(param_table)/sizeof(param_table[0]);
+  size_t len = array_length(param_table);
   for (size_t i = 0; i < len; i++)
     fprintf(stream, " [-%s n]", param_table[i].name);
   fputs(" resolution unit-width font\n", stream);
   fprintf(stream, "usage: %s {-v | --version}\n"
 	  "usage: %s --help\n", program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"Read an AT&T troff font description file, add further font metric\n"
+"information required by GNU troff, and write the combined result to\n"
+"the standard output stream.  See the addftinfo(1) manual page.\n",
+          stream);
 }
 
 static void usage()
 {
   usage(stderr);
-  exit(1);
+  exit(2);
 }
 
 static void usage(const char *problem)
@@ -156,7 +166,7 @@ static void usage(const char *problem)
 static void version()
 {
   printf("GNU addftinfo (groff) version %s\n", Version_string);
-  exit(0);
+  exit(EXIT_SUCCESS);
 }
 
 static int get_line(FILE *fp, string *p)

@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 1992-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
@@ -64,3 +63,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef HAVE_ISATTY
 #define isatty(n) (1)
 #endif
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

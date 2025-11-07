@@ -1,4 +1,6 @@
-/* Determine a canonical name for the current locale's character encoding.
+/* Determine a canonical name for the current locale's character
+   encoding.
+
    Copyright (C) 2000-2020 Free Software Foundation, Inc.
    This file is part of the GNU CHARSET Library.
 
@@ -12,8 +14,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef _LOCALCHARSET_H
 #define _LOCALCHARSET_H
@@ -24,10 +27,10 @@ extern "C" {
 #endif
 
 
-/* Determine the current locale's character encoding, and canonicalize it
-   into one of the canonical names listed in config.charset.
-   The result must not be freed; it is statically allocated.
-   If the canonical name cannot be determined, the result is a non-canonical
+/* Determine the current locale's character encoding, and canonicalize
+   it into one of the canonical names listed in config.charset.  The
+   result must not be freed; it is statically allocated.  If the
+   canonical name cannot be determined, the result is a non-canonical
    name.  */
 extern const char * locale_charset (void);
 
@@ -38,3 +41,9 @@ extern const char * locale_charset (void);
 
 
 #endif /* _LOCALCHARSET_H */
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

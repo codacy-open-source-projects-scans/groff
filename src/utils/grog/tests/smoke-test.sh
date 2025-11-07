@@ -114,16 +114,6 @@ echo "testing mom(7) document $doc" >&2
 "$grog" "$doc" | \
     grep -Fqx 'groff -mom '"$doc"
 
-doc=$src/contrib/pdfmark/cover.ms
-echo "testing ms(7) document $doc" >&2
-"$grog" "$doc" | \
-    grep -Fqx 'groff -ms '"$doc"
-
-doc=$src/contrib/pdfmark/pdfmark.ms
-echo "testing ms(7) document $doc" >&2
-"$grog" "$doc" | \
-    grep -Fqx 'groff -ms '"$doc"
-
 doc=$src/doc/pic.ms
 echo "testing tbl(1)-, eqn(1)-, and pic(1)-using ms(7) document $doc" \
     >&2

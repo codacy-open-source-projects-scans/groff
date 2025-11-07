@@ -1,5 +1,4 @@
-// -*- C -*-
-/* Copyright (C) 2000-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2025 Free Software Foundation, Inc.
      Written by Gaius Mulley (gaius@glam.ac.uk).
 
 This file is part of groff.
@@ -32,12 +31,12 @@ class pushBackBuffer
   int         stackPtr;   /* index to push back stack        */
   int         verbose;
   int         eofFound;
-  char       *fileName;
+  const char *fileName;
   int         lineNo;
   int         stdIn;
 
  public:
-         pushBackBuffer (char *);
+         pushBackBuffer (const char *);
   ~      pushBackBuffer ();
   char   getPB          (void);
   char   putPB          (char ch);
@@ -49,4 +48,8 @@ class pushBackBuffer
   int    isString       (const char *string);
 };
 
-
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

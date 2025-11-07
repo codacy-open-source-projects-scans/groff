@@ -1,5 +1,4 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -16,6 +15,13 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <assert.h>
+#include <math.h> // M_PI, atan2(), ceil(), cos(), sin(), sqrt()
 
 #include "pic.h"
 #include "common.h"
@@ -645,3 +651,9 @@ void common_output::filled_rounded_box(const position &cent,
   vec[3] = cent + position(dim.x/2.0 - rad, -dim.y/2.0);
   polygon(vec, 4, ilt, fill);
 }
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

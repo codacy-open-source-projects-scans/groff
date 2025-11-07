@@ -1,4 +1,4 @@
-/* Copyright (C) 1994-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1994-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -35,13 +35,25 @@ X command to include bitmap graphics
 #endif
 
 #include <assert.h>
+#include <locale.h> // setlocale()
+#include <math.h> // atan2(), floor()
+#include <stdio.h> // EOF, FILE, fflush(), fprintf(), printf(),
+		   // setbuf(), stderr, stdout
+#include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
+#include <string.h> // strcmp()
+#include <strings.h> // strcasecmp()
 
-#include "driver.h"
+#include <getopt.h> // getopt_long()
+
 #include "nonposix.h"
+
+#include "cset.h" // csdigit()
+#include "driver.h"
+#include "lib.h" // array_size(), PI
 
 extern "C" const char *Version_string;
 
-static struct {
+static struct lj4_paper_sizes {
   const char *name;
   int code;
   // at 300dpi
@@ -80,20 +92,20 @@ const int DEFAULT_HPGL_UNITS = 1016;
 int line_width_factor = DEFAULT_LINE_WIDTH_FACTOR;
 unsigned ncopies = 0;		// 0 means don't send ncopies command
 
-static int lookup_paper_size(const char *);
-
 class lj4_font : public font {
 public:
   ~lj4_font();
-  void handle_unknown_font_command(const char *command, const char *arg,
-				   const char *filename, int lineno);
-  static lj4_font *load_lj4_font(const char *);
+  void handle_unknown_font_command(const char * /* command */,
+				   const char * /* arg */,
+				   const char * /* fn */,
+				   int lineno);
+  static lj4_font *load_lj4_font(const char * /* s */);
   int weight;
   int style;
   int proportional;
   int typeface;
 private:
-  lj4_font(const char *);
+  lj4_font(const char * /* nm */);
 };
 
 lj4_font::lj4_font(const char *nm)
@@ -110,12 +122,12 @@ lj4_font *lj4_font::load_lj4_font(const char *s)
   lj4_font *f = new lj4_font(s);
   if (!f->load()) {
     delete f;
-    return 0;
+    return 0 /* nullptr */;
   }
   return f;
 }
 
-static struct {
+static struct lj4_command_table {
   const char *s;
   int lj4_font::*ptr;
   int min;
@@ -129,31 +141,33 @@ static struct {
 
 void lj4_font::handle_unknown_font_command(const char *command,
 					   const char *arg,
-					   const char *filename, int lineno)
+					   const char *fn,
+					   int lineno)
 {
-  for (unsigned int i = 0;
-       i < sizeof(command_table)/sizeof(command_table[0]); i++) {
+  for (size_t i = 0; i < array_length(command_table); i++) {
     if (strcmp(command, command_table[i].s) == 0) {
-      if (arg == 0)
-	fatal_with_file_and_line(filename, lineno,
+      if (0 /* nullptr */ == arg)
+	fatal_with_file_and_line(fn, lineno,
 				 "'%1' command requires an argument",
 				 command);
       char *ptr;
       long n = strtol(arg, &ptr, 10);
       if (ptr == arg)
-	fatal_with_file_and_line(filename, lineno,
-				 "'%1' command requires numeric argument",
-				 command);
+	fatal_with_file_and_line(fn, lineno,
+				 "'%1' command requires numeric"
+				 " argument", command);
       if (n < command_table[i].min) {
-	error_with_file_and_line(filename, lineno,
-				 "argument for '%1' command must not be less than %2",
-				 command, command_table[i].min);
+	error_with_file_and_line(fn, lineno,
+				 "'%1' command argument must not be"
+				 " less than %2", command,
+				 command_table[i].min);
 	n = command_table[i].min;
       }
       else if (n > command_table[i].max) {
-	error_with_file_and_line(filename, lineno,
-				 "argument for '%1' command must not be greater than %2",
-				 command, command_table[i].max);
+	error_with_file_and_line(fn, lineno,
+				 "'%1' command argument must not be"
+				 " greater than %2", command,
+				 command_table[i].max);
 	n = command_table[i].max;
       }
       this->*command_table[i].ptr = int(n);
@@ -162,23 +176,44 @@ void lj4_font::handle_unknown_font_command(const char *command,
   }
 }
 
+static ssize_t lookup_paper_size(const char *s)
+{
+  // C++11: constexpr
+  const size_t paper_table_length = array_length(paper_table);
+  // ...and once it's a constexpr, we can do this...
+  //static_assert(paper_table_length < INT_MAX);
+  // ...but until then...
+  assert(paper_table_length < INT_MAX);
+  for (size_t i = 0; i < paper_table_length; i++) {
+    // FIXME Perhaps allow unique prefix.
+    if (strcasecmp(s, paper_table[i].name) == 0)
+      return ssize_t(i);
+  }
+  return ssize_t(-1);
+}
+
 class lj4_printer : public printer {
 public:
   lj4_printer(int);
   ~lj4_printer();
-  void set_char(glyph *, font *, const environment *, int, const char *name);
-  void draw(int code, int *p, int np, const environment *env);
-  void begin_page(int);
-  void end_page(int page_length);
-  font *make_font(const char *);
+  void set_char(glyph * /* g */,
+		font * /* f */,
+		const environment * /* env */,
+		int /* w */,
+		const char * /* UNUSED */);
+  void draw(int /* code */, int * /* p */, int  /* np */,
+	    const environment * /* env */);
+  void begin_page(int /* UNUSED */);
+  void end_page(int /* page_length */);
+  font *make_font(const char * /* nm */);
   void end_of_line();
 private:
-  void set_line_thickness(int size, int dot = 0);
+  void set_line_thickness(int /* size */, int /* dot */ = 0);
   void hpgl_init();
   void hpgl_start();
   void hpgl_end();
-  int moveto(int hpos, int vpos);
-  int moveto1(int hpos, int vpos);
+  int moveto(int /* hpos */, int /* vpos */);
+  int moveto1(int /* hpos */, int /* vpos */);
 
   int cur_hpos;
   int cur_vpos;
@@ -216,7 +251,7 @@ void lj4_printer::hpgl_end()
 
 lj4_printer::lj4_printer(int ps)
 : cur_hpos(-1),
-  cur_font(0),
+  cur_font(0 /* nullptr */),
   cur_size(0),
   cur_symbol_set(0),
   line_thickness(-1),
@@ -279,7 +314,7 @@ void lj4_printer::end_of_line()
 inline
 int is_unprintable(unsigned char c)
 {
-  return c < 32 && (c == 0 || (7 <= c && c <= 15) || c == 27);
+  return c < 32 && (0 == c || (7 <= c && c <= 15) || 27 == c);
 }
 
 void lj4_printer::set_char(glyph *g, font *f, const environment *env,
@@ -335,10 +370,10 @@ int lj4_printer::moveto1(int hpos, int vpos)
     printf("%dx%dY", hpos - x_offset, vpos);
   else {
     if (cur_hpos != hpos)
-      printf("%s%d%c", hpos > cur_hpos ? "+" : "",
-	     hpos - cur_hpos, vpos == cur_vpos ? 'X' : 'x');
+      printf("%s%d%c", (hpos > cur_hpos) ? "+" : "",
+	     hpos - cur_hpos, (vpos == cur_vpos) ? 'X' : 'x');
     if (cur_vpos != vpos)
-      printf("%s%dY", vpos > cur_vpos ? "+" : "", vpos - cur_vpos);
+      printf("%s%dY", (vpos > cur_vpos) ? "+" : "", vpos - cur_vpos);
   }
   cur_hpos = hpos;
   cur_vpos = vpos;
@@ -380,18 +415,18 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
     if (!moveto(env->hpos, env->vpos))
       return;
     hpgl_start();
-    set_line_thickness(env->size, p[0] == 0 && p[1] == 0);
+    set_line_thickness(env->size, 0 == p[0] && 0 == p[1]);
     printf("PD%d,%d", p[0], p[1]);
     hpgl_end();
     break;
   case 'p':
   case 'P':
     {
-      if (np & 1) {
+      if ((np % 2) == 1) {
 	error("even number of arguments required for polygon");
 	break;
       }
-      if (np == 0) {
+      if (0 == np) {
 	error("no arguments for polygon");
 	break;
       }
@@ -399,22 +434,22 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
       if (!moveto(env->hpos, env->vpos))
 	return;
       hpgl_start();
-      if (code == 'p')
+      if ('p' == code)
 	set_line_thickness(env->size);
       printf("PMPD%d", p[0]);
       for (int i = 1; i < np; i++)
 	printf(",%d", p[i]);
-      printf("PM2%cP", code == 'p' ? 'E' : 'F');
+      printf("PM2%cP", ('p' == code) ? 'E' : 'F');
       hpgl_end();
       break;
     }
   case '~':
     {
-      if (np & 1) {
+      if ((np % 2) == 1) {
 	error("even number of arguments required for spline");
 	break;
       }
-      if (np == 0) {
+      if (0 == np) {
 	error("no arguments for spline");
 	break;
       }
@@ -447,7 +482,7 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
   case 'c':
   case 'C':
     // troff adds an extra argument to C
-    if (np != 1 && !(code == 'C' && np == 2)) {
+    if (np != 1 && !(('C' == code) && (2 == np))) {
       error("1 argument required for circle");
       break;
     }
@@ -455,7 +490,7 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
     if (!moveto(env->hpos + p[0]/2, env->vpos))
       return;
     hpgl_start();
-    if (code == 'c') {
+    if ('c' == code) {
       set_line_thickness(env->size);
       printf("CI%d", p[0]/2);
     }
@@ -474,7 +509,7 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
       return;
     hpgl_start();
     printf("SC0,%.4f,0,-%.4f,2", hpgl_scale * double(p[0])/p[1], hpgl_scale);
-    if (code == 'e') {
+    if ('e' == code) {
       set_line_thickness(env->size);
       printf("CI%d", p[1]/2);
     }
@@ -524,7 +559,7 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
     break;
   case 't':
     {
-      if (np == 0) {
+      if (0 == np) {
 	line_thickness = -1;
       }
       else {
@@ -538,7 +573,7 @@ void lj4_printer::draw(int code, int *p, int np, const environment *env)
       break;
     }
   default:
-    error("unrecognised drawing command '%1'", char(code));
+    error("unrecognized drawing command '%1'", char(code));
     break;
   }
 }
@@ -588,18 +623,6 @@ printer *make_printer()
   return new lj4_printer(user_paper_size);
 }
 
-static
-int lookup_paper_size(const char *s)
-{
-  for (unsigned int i = 0;
-       i < sizeof(paper_table)/sizeof(paper_table[0]); i++) {
-    // FIXME Perhaps allow unique prefix.
-    if (strcasecmp(s, paper_table[i].name) == 0)
-      return i;
-  }
-  return -1;
-}
-
 static void usage(FILE *stream);
 
 extern "C" int optopt, optind;
@@ -612,39 +635,33 @@ int main(int argc, char **argv)
   setbuf(stderr, stderr_buf);
   int c;
   static const struct option long_options[] = {
-    { "help", no_argument, 0, CHAR_MAX + 1 },
-    { "version", no_argument, 0, 'v' },
-    { NULL, 0, 0, 0 }
+    { "help", no_argument, 0 /* nullptr */, CHAR_MAX + 1 },
+    { "version", no_argument, 0 /* nullptr */, 'v' },
+    { 0 /* nullptr */, 0, 0 /* nullptr */, 0 }
   };
-  while ((c = getopt_long(argc, argv, "c:d:F:I:lp:vw:", long_options, NULL))
+  while ((c = getopt_long(argc, argv, ":c:d:F:I:lp:vw:", long_options,
+			  0 /* nullptr */))
 	 != EOF)
-    switch(c) {
+    switch (c) {
     case 'l':
       landscape_flag = 1;
       break;
     case 'I':
       // ignore include search path
       break;
-    case ':':
-      if (optopt == 'd') {
-	fprintf(stderr, "duplex assumed to be long-side\n");
-	duplex_flag = 1;
-      } else
-	fprintf(stderr, "option -%c requires an argument\n", optopt);
-      fflush(stderr);
-      break;
     case 'd':
-      if (!isdigit(*optarg))	// this ugly hack prevents -d without
+      if (!csdigit(*optarg))	// this ugly hack prevents -d without
 	optind--;		//  args from messing up the arg list
       duplex_flag = atoi(optarg);
       if (duplex_flag != 1 && duplex_flag != 2) {
-	fprintf(stderr, "odd value for duplex; assumed to be long-side\n");
+	fprintf(stderr, "argument to command-line option 'd' out of"
+		" range; assuming long-side duplexing\n");
 	duplex_flag = 1;
       }
       break;
     case 'p':
       {
-	int n = lookup_paper_size(optarg);
+	ssize_t n = lookup_paper_size(optarg);
 	if (n < 0)
 	  error("ignoring invalid paper format '%1'", font::papersize);
 	else
@@ -653,7 +670,7 @@ int main(int argc, char **argv)
       }
     case 'v':
       printf("GNU grolj4 (groff) version %s\n", Version_string);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case 'F':
       font::command_line_font_dir(optarg);
@@ -663,9 +680,11 @@ int main(int argc, char **argv)
 	char *ptr;
 	long n = strtol(optarg, &ptr, 10);
 	if (ptr == optarg)
-	  error("argument for -c must be a positive integer");
+	  error("argument to command-line option 'c' option must be a"
+		" positive integer");
 	else if (n <= 0 || n > 32767)
-	  error("out of range argument for -c");
+	  error("argument to command-line option 'c' must be in range"
+		" (0, 32767]; got '%1'", optarg);
 	else
 	  ncopies = unsigned(n);
 	break;
@@ -675,23 +694,39 @@ int main(int argc, char **argv)
 	char *ptr;
 	long n = strtol(optarg, &ptr, 10);
 	if (ptr == optarg)
-	  error("argument for -w must be a non-negative integer");
+	  error("argument to command-line option 'w' must be a"
+		" non-negative integer");
 	else if (n < 0 || n > INT_MAX)
-	  error("out of range argument for -w");
+	  error("argument to command-line option 'w' must be in range"
+		" [0, %1]; got '%2'", INT_MAX, optarg);
 	else
 	  line_width_factor = int(n);
 	break;
       }
     case CHAR_MAX + 1: // --help
       usage(stdout);
-      exit(0);
+      exit(EXIT_SUCCESS);
       break;
     case '?':
+      error("unrecognized command-line option '%1'", char(optopt));
       usage(stderr);
-      exit(1);
+      exit(2);
+      break;
+    case ':':
+      if ('d' == optopt) {
+	warning("command-line option 'd' requires an argument; assuming"
+		" duplexing on long side");
+	duplex_flag = 1;
+      }
+      else {
+	error("command-line option '%1' requires an argument",
+	      char(optopt));
+	usage(stderr);
+	exit(2);
+      }
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled getopt_long return value");
     }
   SET_BINARY(fileno(stdout));
   if (optind >= argc)
@@ -706,11 +741,15 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream,
-	  "usage: %s [-l] [-c n] [-d [n]] [-F dir] [-p paper-format]"
-	  " [-w n] [file ...]\n"
-	  "usage: %s {-v | --version}\n"
-	  "usage: %s --help\n",
+"usage: %s [-l] [-c n] [-d [n]] [-F dir] [-p paper-format] [-w n]"
+" [file ...]\n"
+"usage: %s {-v | --version}\n"
+"usage: %s --help\n",
 	  program_name, program_name, program_name);
+  if (stdout == stream)
+    fputs("\n"
+"Translate the output of troff(1) into PCL 5/LaserJet 4 format.  See\n"
+"the grolj4(1) manual page.\n", stream);
 }
 
 // Local Variables:

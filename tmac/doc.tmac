@@ -3,7 +3,8 @@
 .\" Copyright (c) 1991, 1993
 .\"   The Regents of the University of California.  All rights reserved.
 .\"
-.\" Copyright (C) 2001-2024 Free Software Foundation, Inc.
+.\" Copyright 2001-2019 Free Software Foundation, Inc.
+.\"           2021-2024 G. Branden Robinson
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -58,7 +59,7 @@
 .
 .do if d Dd .nx
 .
-.
+.do nr *groff_doc_tmac_C \n[.cp]
 .cp 0
 .
 .\" Macros that are part of the external interface (Dd, Sh, Pp, etc.) or
@@ -99,10 +100,6 @@
 .if r ps4html \
 .  nr doc-is-output-html 1
 .
-.\" adjustment mode
-.if !d AD \
-.  ds AD b\"
-.
 .\" base paragraph indentation
 .if !r BP \
 .  nr BP 5n
@@ -132,6 +129,9 @@
 .\" full capitalization of section headings
 .if !r CS \
 .  nr CS 0
+.
+.\" `Sh` sets this register to \n[CS].
+.nr doc-do-capitalize 0
 .
 .\" full capitalization of page identifier
 .if !r CT \
@@ -210,13 +210,6 @@
 .rr doc-HF-length
 .rm doc-heading-style
 .
-.\" \n[HY] is recognized for groff_man(7) compatibility, particularly
-.\" via andoc.tmac and man(1); see \n[doc-hyphen-flags] in doc-common.
-.\"
-.\" hyphenation enablement
-.if !r HY \
-.  nr HY 1
-.
 .\" groff mdoc does _not_ use groff man's `IN` register.
 .
 .\" LL and LT registers are handled by the doc-setup-page-layout macro.
@@ -257,18 +250,16 @@
 .\" and whose state is shared with man (and andoc.tmac, if necessary).
 .\"
 .\" Also, we can't use the `P` register with grohtml at all.
-.ie \n[doc-is-output-html] \{\
+.ie \n[doc-is-output-html] \
 .  if r P \{\
 .     tm \*[doc]: ignoring starting page number in HTML output
 .     rr P
 .  \}
-.\}
-.el \{\
+.el \
 .  if r P \{\
 .    ie (\n[nl] = -1) .pn 0\n[P]
 .    el               .nr % 0\n[P]
 .  \}
-.\}
 .
 .\" subsection indentation
 .if !r SN \
@@ -395,10 +386,11 @@
 .  \" handle '|' and '...' specially
 .  ie        "\$1"|" \
 .    ds doc-arg\n[doc-arg-count] \f[R]|\f[]
-.  el \{ .ie "\$1"..." \
-.    ds doc-arg\n[doc-arg-count] \f[R]\|.\|.\|.\f[]
-.  el \
-.    ds doc-arg\n[doc-arg-count] "\$1
+.  el \{\
+.    ie "\$1"..." \
+.      ds doc-arg\n[doc-arg-count] \f[R]\|.\|.\|.\f[]
+.    el \
+.      ds doc-arg\n[doc-arg-count] "\$1
 .  \}
 .
 .  \" get argument type and set spacing
@@ -413,8 +405,6 @@
 .    shift
 .    doc-parse-args \$@
 .  \}
-.
-.  nh
 ..
 .ec
 .
@@ -446,9 +436,8 @@
 .
 .  ie        "\*[doc-arg\n[doc-arg-count]]"|" \
 .    ds doc-arg\n[doc-arg-count] \f[R]|\f[]
-.  el \{ .if "\*[doc-arg\n[doc-arg-count]]"..." \
+.  el    .if "\*[doc-arg\n[doc-arg-count]]"..." \
 .    ds doc-arg\n[doc-arg-count] \|.\|.\|.
-.  \}
 .
 .  doc-get-arg-type* \n[doc-arg-count]
 .  nr doc-type\n[doc-arg-count] \n[doc-arg-type]
@@ -462,8 +451,6 @@
 .    nr doc-num-args -1
 .    doc-parse-arg-vector
 .  \}
-.
-.  nh
 ..
 .ec
 .
@@ -562,8 +549,6 @@
 .  nr doc-arg-count 0
 .  nr doc-arg-ptr 0
 .  nr doc-have-slot 0
-.
-.  hy \n[doc-hyphen-flags]
 ..
 .ec
 .
@@ -590,7 +575,7 @@
 .eo
 .de Fl
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Fl-font]\c
+.  nop \f[\*[doc-Fl-font]]\c
 .
 .  if !\n[doc-arg-count] \{\
 .    ds doc-macro-name Fl
@@ -806,7 +791,7 @@
 .    \}
 .\"  el \{\
 .      nr doc-curr-font \n[.f]
-.      nop \*[doc-\$0-font]\c
+.      nop \f[\*[doc-\$0-font]]\c
 .      doc-print-recursive
 .\"  \}
 .  \}
@@ -836,7 +821,7 @@
 .eo
 .de Ar
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Ar-font]\c
+.  nop \f[\*[doc-Ar-font]]\c
 .
 .  if !\n[doc-arg-count] \{\
 .    ds doc-macro-name Ar
@@ -935,17 +920,17 @@
 .        if !\n[doc-indent-synopsis-active] \
 .          in +\n[doc-indent-synopsis]u
 .        ti -\n[doc-indent-synopsis]u
-.        nop \*[doc-Nm-font]\c
+.        nop \f[\*[doc-Nm-font]]\c
 .        doc-print-recursive
 .        if !\n[doc-indent-synopsis-active] \
 .          in -\n[doc-indent-synopsis]u
 .      \}
 .      el \{\
-.        nop \*[doc-Nm-font]\c
+.        nop \f[\*[doc-Nm-font]]\c
 .        doc-print-recursive
 .    \}\}
 .    el \{\
-.      nop \*[doc-Nm-font]\c
+.      nop \f[\*[doc-Nm-font]]\c
 .      doc-print-recursive
 .  \}\}
 .  el \{\
@@ -1058,7 +1043,7 @@
 .de Fd
 .  ie ((\n[.$] >= 1) & (\n[doc-arg-count] == 0)) \{\
 .    doc-do-func-decl
-.    nop \*[doc-Fd-font]\$*
+.    nop \f[\*[doc-Fd-font]]\$*
 .    br
 .    ft \n[doc-curr-font]
 .  \}
@@ -1106,7 +1091,7 @@
 .    ie \n[doc-in-synopsis-section] \{\
 .      ie "\*[doc-macro-name]"In" \{\
 .        doc-do-func-decl
-.        nop \*[doc-Fd-font]#include <\*[doc-arg\n[doc-arg-ptr]]>
+.        nop \f[\*[doc-Fd-font]]#include <\*[doc-arg\n[doc-arg-ptr]]>
 .        ft \n[doc-curr-font]
 .        br
 .        nr doc-arg-ptr +1
@@ -1116,12 +1101,12 @@
 .          doc-reset-args
 .      \}
 .      el \{\
-.        ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
+.        ds doc-arg\n[doc-arg-ptr] "<\f[\*[doc-Pa-font]]\*[doc-arg\n[doc-arg-ptr]]
 .        as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]>
 .        doc-print-recursive
 .    \}\}
 .    el \{\
-.      ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
+.      ds doc-arg\n[doc-arg-ptr] "<\f[\*[doc-Pa-font]]\*[doc-arg\n[doc-arg-ptr]]
 .      as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]>
 .      doc-print-recursive
 .  \}\}
@@ -1199,14 +1184,12 @@
 .  if !\n[doc-arg-count] \{\
 .    ds doc-macro-name Nm
 .    ie \n[.$] \{\
-.      \" Handle '.Nm ...' in "Name" section: don't use a special font.
-.      ie \n[doc-in-name-section] \{\
+.      \" Handle '.Nm ...' in "Name" section.
+.      if \n[doc-in-name-section] \{\
 .        if "\*[doc-topic-name]"" \
 .          ds doc-topic-name "\$1\"
-.        No \$@
 .      \}
-.      el \
-.        doc-parse-args \$@
+.      doc-parse-args \$@
 .    \}
 .    el \{\
 .      ie "\*[doc-topic-name]"" \
@@ -1227,7 +1210,7 @@
 .      doc-reset-args
 .    \}
 .    el \{\
-.      nop \*[doc-Nm-font]\*[doc-topic-name]\f[]\c
+.      nop \f[\*[doc-Nm-font]]\*[doc-topic-name]\f[]\c
 .      doc-print-and-reset
 .  \}\}
 .  el \{\
@@ -1239,7 +1222,7 @@
 .      el \{\
 .        \" replace previous argument (Nm) with default value
 .        nr doc-arg-ptr -1
-.        ds doc-arg\n[doc-arg-ptr] "\*[doc-Nm-font]\*[doc-topic-name]\f[]
+.        ds doc-arg\n[doc-arg-ptr] "\f[\*[doc-Nm-font]]\*[doc-topic-name]\f[]
 .        nr doc-type\n[doc-arg-ptr] 2
 .        ds doc-space\n[doc-arg-ptr] "\*[doc-space]
 .
@@ -1264,7 +1247,7 @@
 .          ti -\n[doc-indent-synopsis]u
 .      \}\}
 .
-.      nop \*[doc-Nm-font]\c
+.      nop \f[\*[doc-Nm-font]]\c
 .    \}
 .    doc-print-recursive
 .  \}
@@ -1290,7 +1273,7 @@
 .
 .    \" default value
 .    if !\n[.$] \
-.      nop \*[doc-Pa-font]\[ti]\f[]
+.      nop \f[\*[doc-Pa-font]]\[ti]\f[]
 .  \}
 .
 .  if !\n[doc-arg-count] \
@@ -1300,7 +1283,7 @@
 .  doc-print-prefixes
 .  ie (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
 .    nr doc-curr-font \n[.f]
-.    nop \*[doc-Pa-font]\c
+.    nop \f[\*[doc-Pa-font]]\c
 .    if !(\n[doc-type\n[doc-arg-ptr]] == 2) \{\
 .      \" replace previous argument (Pa) with default value
 .      nr doc-arg-ptr -1
@@ -1316,7 +1299,7 @@
 .    doc-print-recursive
 .  \}
 .  el \{\
-.    nop \*[doc-Pa-font]\[ti]\f[]\c
+.    nop \f[\*[doc-Pa-font]]\[ti]\f[]\c
 .    doc-print-and-reset
 .  \}
 ..
@@ -1370,7 +1353,7 @@
 .    nr doc-curr-font \n[.f]
 .    nop \)\c
 .    ie !\n[doc-is-reference] \{\
-.      nop \)\*[doc-Tn-font]\c
+.      nop \)\f[\*[doc-Tn-font]]\c
 .      doc-print-recursive
 .    \}
 .    el \
@@ -2295,7 +2278,6 @@
 .  chop doc-enclosure-box\n[doc-nesting-level]
 .  unformat doc-enclosure-box\n[doc-nesting-level]
 .
-.  nh
 .  nop \*[doc-enclosure-box\n[doc-nesting-level]]\c
 .  nop \)\*[doc-quote-right]\)\c
 .
@@ -2645,6 +2627,10 @@
 .\" NS   this macro sets the 'doc-width' register using the 'length'
 .\" NS   request to get the number of characters in a string literally
 .\" NS
+.\" NS   Ignore the *roff internal string '.T'; the formatter also
+.\" NS   defines a '.T' _register_, colliding perfectly with mdoc's
+.\" NS   argument type system.
+.\" NS
 .\" NS modifies:
 .\" NS   doc-arg-type
 .\" NS   doc-width
@@ -2655,14 +2641,14 @@
 .  length doc-width "\*[doc-arg\$1]
 .
 .  if ((\n[doc-width] < 4) & \A'\*[doc-arg\$1]') \{\
-.    ie (\n[doc-width] == 1) \{\
+.    ie (\n[doc-width] == 1) \
 .      if r doc-punct\*[doc-arg\$1] \
 .        nr doc-arg-type \n[doc-punct\*[doc-arg\$1]]
-.    \}
 .    el \
-.      if r \*[doc-arg\$1] \
-.        if d \*[doc-arg\$1] \
-.          nr doc-arg-type 1
+.      if !'\?\*[doc-arg\$1]\?'\?.T\?' \
+.        if r \*[doc-arg\$1] \
+.          if d \*[doc-arg\$1] \
+.            nr doc-arg-type 1
 .  \}
 ..
 .ec
@@ -2833,17 +2819,17 @@
 .    nr doc-fontmode-size-stack\n[doc-fontmode-depth] \n[.ps]
 .
 .    ie        "\$1"Em" \
-.      nop \*[doc-Em-font]\c
+.      nop \f[\*[doc-Em-font]]\c
 .    el \{ .ie "\$1"Li" \
-.      nop \*[doc-Li-font]\c
+.      nop \f[\*[doc-Li-font]]\c
 .    el \{ .ie "\$1"Sy" \
-.      nop \*[doc-Sy-font]\c
+.      nop \f[\*[doc-Sy-font]]\c
 .    el \{ .ie "\$1"-emphasis" \
-.      nop \*[doc-Em-font]\c
+.      nop \f[\*[doc-Em-font]]\c
 .    el \{ .ie "\$1"-literal" \
-.      nop \*[doc-Li-font]\c
+.      nop \f[\*[doc-Li-font]]\c
 .    el \{ .ie "\$1"-symbolic" \
-.      nop \*[doc-Sy-font]\c
+.      nop \f[\*[doc-Sy-font]]\c
 .    el \{\
 .      doc-warn unknown keyword '\$1' in .Bf macro
 .  \}\}\}\}\}\}\}
@@ -3076,7 +3062,7 @@
 .  nr doc-display-ad-stack\n[doc-display-depth] \n[.j]
 .  nr doc-display-fi-stack\n[doc-display-depth] \n[.u]
 .
-.  ie        "\$1"-literal" \{\
+.  ie        "\?\$1\?"\?-literal\?" \{\
 .    ds doc-display-type-stack\n[doc-display-depth] literal
 .    nr doc-display-ft-stack\n[doc-display-depth] \n[.f]
 .    nr doc-display-ps-stack\n[doc-display-depth] \n[.ps]
@@ -3089,22 +3075,22 @@
 .      ta T 8n
 .    nf
 .  \}
-.  el \{ .ie "\$1"-filled" \{\
+.  el \{ .ie "\?\$1\?"\?-filled\?" \{\
 .    ds doc-display-type-stack\n[doc-display-depth] filled
 .    ad b
 .    fi
 .  \}
-.  el \{ .ie "\$1"-ragged" \{\
+.  el \{ .ie "\?\$1\?"\?-ragged\?" \{\
 .    ds doc-display-type-stack\n[doc-display-depth] ragged
 .    na
 .    fi
 .  \}
-.  el \{ .ie "\$1"-centered" \{\
+.  el \{ .ie "\?\$1\?"\?-centered\?" \{\
 .    ds doc-display-type-stack\n[doc-display-depth] centered
 .    ad c
 .    fi
 .  \}
-.  el \{ .ie "\$1"-unfilled" \{\
+.  el \{ .ie "\?\$1\?"\?-unfilled\?" \{\
 .    ds doc-display-type-stack\n[doc-display-depth] unfilled
 .    nf
 .  \}
@@ -3142,7 +3128,7 @@ macro
 .\"
 .\"  if "\*[doc-display-type-stack\n[doc-display-depth]]"literal" \
 .\"    if t \
-.\"      nop \*[doc-Li-font]\c
+.\"      nop \f[\*[doc-Li-font]]\c
 .
 .  if !\n[cR] \
 .    ne 2v
@@ -4169,7 +4155,6 @@ arguments
 .  doc-set-vertical-and-indent 0
 .  br
 .
-.  nh
 .  doc-item-box\n[doc-list-depth]
 .
 .  nr doc-in-list 0
@@ -4201,7 +4186,6 @@ arguments
 .  nr doc-reg-dhl (\n[doc-list-indent-stack\n[doc-list-depth]]u + \n[doc-digit-width]u)
 .  ti -\n[doc-reg-dhl]u
 .
-.  nh
 .  ie (\n[dl]u > \n[doc-list-indent-stack\n[doc-list-depth]]u) \
 .    doc-item-box\n[doc-list-depth]
 .  el \{\
@@ -4233,7 +4217,6 @@ arguments
 .  unformat doc-item-box\n[doc-list-depth]
 .
 .  doc-set-vertical-and-indent 0
-.  nh
 .  doc-item-box\n[doc-list-depth]
 .  br
 .
@@ -4300,7 +4283,7 @@ arguments
 .eo
 .de doc-bullet-list
 .  nr doc-in-list 1
-.  nop \)\*[doc-Sy-font]\[bu]\f[]
+.  nop \)\f[\*[doc-Sy-font]]\[bu]\f[]
 .  doc-do-list
 ..
 .ec
@@ -4315,7 +4298,7 @@ arguments
 .eo
 .de doc-dash-list
 .  nr doc-in-list 1
-.  nop \)\*[doc-Sy-font]\-\f[]
+.  nop \)\f[\*[doc-Sy-font]]\-\f[]
 .  doc-do-list
 ..
 .ec
@@ -4354,8 +4337,7 @@ arguments
 .    br
 .  nr doc-diag-list-input-line-count \n[.c]
 .
-.  nh
-.  nop \*[doc-Sy-font]\c
+.  nop \f[\*[doc-Sy-font]]\c
 .  if \n[doc-num-args] \
 .    doc-remaining-args
 .  nop \f[\n[doc-curr-font]]\*[doc-hard-space]\c
@@ -4401,7 +4383,6 @@ arguments
 .  nr doc-reg-dtl (\n[doc-list-indent-stack\n[doc-list-depth]]u + \n[doc-digit-width]u)
 .  ti -\n[doc-reg-dtl]u
 .
-.  nh
 .  doc-item-box\n[doc-list-depth]
 .  ie (\n[dl]u > \n[doc-list-indent-stack\n[doc-list-depth]]u) \
 .    br
@@ -4715,7 +4696,7 @@ arguments
 .  \" The first argument is a man page identifier.
 .  nr doc-arg-ptr +1
 .  ie (\n[doc-type\n[doc-arg-ptr]] == 2) \{\
-.    ds doc-visible-target-Xr "\*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]
+.    ds doc-visible-target-Xr "\f[\*[doc-Xr-font]]\*[doc-arg\n[doc-arg-ptr]]\f[]
 .    ds doc-target-identifier-Xr \*[doc-arg\n[doc-arg-ptr]]
 .    ds doc-target-section-Xr \" empty
 .  \}
@@ -5039,7 +5020,7 @@ arguments
 .  \}
 .
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Ft-font]\c
+.  nop \f[\*[doc-Ft-font]]\c
 .  doc-print-recursive
 .
 .  if \n[doc-in-synopsis-section] \{\
@@ -5107,7 +5088,7 @@ arguments
 .  \}
 .
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Ft-font]\c
+.  nop \f[\*[doc-Ft-font]]\c
 .  doc-print-recursive
 ..
 .ec
@@ -5150,7 +5131,7 @@ arguments
 .  \}
 .
 .  if \n[.$] \
-.    nop \*[doc-Ft-font]\$*\c
+.    nop \f[\*[doc-Ft-font]]\$*\c
 .  nop \ \f[]\c
 ..
 .ec
@@ -5183,7 +5164,7 @@ arguments
 .    nr doc-arg-ptr +1
 .    if (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
 .      nr doc-curr-font \n[.f]
-.      nop \*[doc-Fa-font]\c
+.      nop \f[\*[doc-Fa-font]]\c
 .      doc-print-recursive
 .
 .      if \n[doc-in-synopsis-section] \
@@ -5251,12 +5232,12 @@ arguments
 .    if !"\*[doc-arg\n[doc-arg-ptr]]"/*" \
 .      if !"\*[doc-arg\n[doc-arg-ptr]]"*/" \
 .        nop ,\)\c
-.    nop \)\*[doc-space\n[doc-arg-ptr]]\*[doc-Fa-font]\c
+.    nop \)\*[doc-space\n[doc-arg-ptr]]\f[\*[doc-Fa-font]]\c
 .    nop \)\*[doc-arg\n[doc-arg-ptr]]\f[]\c
 .  \}
 .
 .  if (\n[doc-func-arg-count] == 1) \{\
-.    nop \)\*[doc-Fa-font]\*[doc-arg\n[doc-arg-ptr]]\c
+.    nop \)\f[\*[doc-Fa-font]]\*[doc-arg\n[doc-arg-ptr]]\c
 .    nop \f[]\c
 .  \}
 .  nr doc-func-arg-count +1
@@ -5345,13 +5326,13 @@ arguments
 .  \}
 .
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Fn-font]\*[doc-arg\n[doc-arg-ptr]]\c
+.  nop \f[\*[doc-Fn-font]]\*[doc-arg\n[doc-arg-ptr]]\c
 .  nop \f[]\*[lp]\)\c
 .
 .  nr doc-arg-ptr +1
 .  if (\n[doc-arg-count] >= \n[doc-arg-ptr]) \{\
 .    if (\n[doc-type\n[doc-arg-ptr]] == 2) \{\
-.      nop \*[doc-Fa-font]\c
+.      nop \f[\*[doc-Fa-font]]\c
 .      doc-do-func-args
 .      nop \f[\n[doc-curr-font]]\c
 .  \}\}
@@ -5513,7 +5494,7 @@ arguments
 .    nr doc-func-arg-count 1
 .    nr doc-curr-font \n[.f]
 .
-.    nop \*[doc-Fn-font]\*[doc-arg\n[doc-arg-ptr]]\c
+.    nop \f[\*[doc-Fn-font]]\*[doc-arg\n[doc-arg-ptr]]\c
 .    nop \f[]\*[lp]\)\c
 .    doc-reset-args
 .  \}
@@ -5570,7 +5551,6 @@ arguments
 .    ti -\n[doc-indent-synopsis]u
 .  \}
 .
-.  nh
 .  nop \*[doc-func-box]\c
 .
 .  nr doc-arg-ptr +1
@@ -5785,9 +5765,6 @@ arguments
 .
 .eo
 .de doc-print-reference
-.
-.  nh
-.
 .  if \n[doc-author-count] \{\
 .    doc-print-reference-authors
 .    nr doc-reference-count -\n[doc-author-count]
@@ -5894,7 +5871,7 @@ arguments
 .  if \n[doc-reference-count] \
 .    doc-warn unresolved reference problem
 .
-.  hy \n[doc-hyphen-flags]
+.  doc-reset-hyphenation-mode
 ..
 .ec
 .
@@ -6040,11 +6017,11 @@ arguments
 .    evc 0
 .    in 0
 .    nf
-.    nop \*[doc-Em-font]\c
+.    nop \f[\*[doc-Em-font]]\c
 .    doc-do-references
 .  \}
 .  el \{\
-.    nop \*[doc-Em-font]\c
+.    nop \f[\*[doc-Em-font]]\c
 .    doc-print-recursive
 .  \}
 ..
@@ -6208,7 +6185,7 @@ arguments
 .  evc 0
 .  in 0
 .  nf
-.  nop \*[doc-Em-font]\c
+.  nop \f[\*[doc-Em-font]]\c
 .  doc-do-references
 ..
 .ec
@@ -6263,7 +6240,7 @@ arguments
 .  evc 0
 .  in 0
 .  nf
-.  nop \*[doc-Em-font]\c
+.  nop \f[\*[doc-Em-font]]\c
 .  doc-do-references
 ..
 .ec
@@ -6597,7 +6574,7 @@ arguments
 .    evc 0
 .    in 0
 .    nf
-.    nop \*[doc-No-font]\c
+.    nop \f[\*[doc-No-font]]\c
 .    doc-do-references
 .
 .    \" do it a second time with another font
@@ -6611,11 +6588,11 @@ arguments
 .    evc 0
 .    in 0
 .    nf
-.    nop \*[doc-Em-font]\c
+.    nop \f[\*[doc-Em-font]]\c
 .    doc-do-references
 .  \}
 .  el \{\
-.    nop \*[doc-Em-font]\c
+.    nop \f[\*[doc-Em-font]]\c
 .    doc-print-recursive
 .  \}
 ..
@@ -6871,19 +6848,19 @@ arguments
 .ds doc-str-Rv-std-prefix "The
 .ds doc-str-Rv-std-suffix "function returns the value\~0 if successful;
 .as doc-str-Rv-std-suffix " otherwise the value\~\-1 is returned and
-.as doc-str-Rv-std-suffix " the global variable \*[doc-Va-font]errno\f[]
+.as doc-str-Rv-std-suffix " the global variable \f[\*[doc-Va-font]]errno\f[]
 .as doc-str-Rv-std-suffix " is set to indicate the error.
 .
 .ds doc-str-Rv-stds-prefix "The
 .ds doc-str-Rv-stds-and    "and
 .ds doc-str-Rv-stds-suffix "functions return the value\~0 if successful;
 .as doc-str-Rv-stds-suffix " otherwise the value\~\-1 is returned and
-.as doc-str-Rv-stds-suffix " the global variable \*[doc-Va-font]errno\f[]
+.as doc-str-Rv-stds-suffix " the global variable \f[\*[doc-Va-font]]errno\f[]
 .as doc-str-Rv-stds-suffix " is set to indicate the error.
 .
 .ds doc-str-Rv-std0 "Upon successful completion, the value\~0 is returned;
 .as doc-str-Rv-std0 " otherwise the value\~\-1 is returned and
-.as doc-str-Rv-std0 " the global variable \*[doc-Va-font]errno\f[]
+.as doc-str-Rv-std0 " the global variable \f[\*[doc-Va-font]]errno\f[]
 .as doc-str-Rv-std0 " is set to indicate the error.
 .ec
 .
@@ -7051,7 +7028,7 @@ arguments
 .
 .  \" Format the link target.
 .  nr doc-curr-font \n[.f]
-.  nop \*[doc-Mt-font]\*[doc-visible-target-Mt]\c
+.  nop \f[\*[doc-Mt-font]]\*[doc-visible-target-Mt]\c
 .  nop \f[\n[doc-curr-font]]\c
 .
 .  doc-end-hyperlink-\*[.T]
@@ -7143,12 +7120,12 @@ arguments
 .    \" If we won't/can't hyperlink, format the link target.
 .    if !\n[U] \{\
 .      nop \" put a breaking space on the output
-.      nop \[la]\*[doc-target-Lk]\[ra]\c
+.      nop \%\[la]\*[doc-target-Lk]\[ra]\c
 .    \}
 .  \}
 .  \" If no link text, format the link target as its own link text.
 .  el \
-.    nop \*[doc-Lk-font]\*[doc-target-Lk]\c
+.    nop \f[\*[doc-Lk-font]]\%\*[doc-target-Lk]\c
 .  nop \f[\n[doc-curr-font]]\c
 .
 .  doc-end-hyperlink-\*[.T]
@@ -7192,6 +7169,7 @@ arguments
 .
 .
 .rn em e@
+.e@ doc-end-document
 .
 .eo
 .de em
@@ -7216,14 +7194,41 @@ should this have been '.Em ...'?
 .blm doc-empty-line
 .
 .
-.\" For UTF-8, map the minus sign to the hyphen-minus to facilitate
-.\" copy and paste of code examples, file names, and URLs embedding it.
+.\" On output devices that typically have separate hyphen and minus sign
+.\" glyphs _and_ a glyph for ASCII/ISO Latin's hybrid "hyphen-minus",
+.\" remap the (text) minus sign to the hyphen-minus to facilitate copy
+.\" and paste of code examples, file names, and URLs embedding it.  We
+.\" do this for man pages but not for general typesetting.  See
+.\" groff_char(7) for further background.
+.\"
+.\" PDF's "CMap" feature solves this problem so we don't have to.
 .if '\*[.T]'utf8' \
 .  char \- \N'45'
+.if '\*[.T]'html' \
+.  char \- \N'45'
+.
+.\" Man pages more often use the neutral double quote `"` as a "code
+.\" literal" than as a quotation character.  Give it the same (empty)
+.\" set of character flags as its special character equivalent, \[dq].
+.cflags 0 "
 .
 .
-.\" load local modifications
-.mso mdoc.local
+.\" Load site-local configuration.
+.ie d msoquiet .msoquiet mdoc.local
+.el            .mso      mdoc.local
+.
+.\" Save `HY` value and `AD` contents configured by {man,mdoc}.local or
+.\" command line.
+.if !r andoc*is-initialized \{\
+.  ie r HY .nr andoc*HY \n[HY]
+.  el      .nr andoc*HY 1
+.  ie d AD .ds andoc*AD \*[AD]\"
+.  el      .ds andoc*AD b\"
+.  nr andoc*is-initialized 1
+.\}
+.
+.cp \n[*groff_doc_tmac_C]
+.do rr *groff_doc_tmac_C
 .
 .\" Local Variables:
 .\" mode: nroff

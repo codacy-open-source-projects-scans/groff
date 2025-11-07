@@ -1,4 +1,3 @@
-// -*- C++ -*-
 /* Copyright (C) 2001-2020 Free Software Foundation, Inc.
      Written by Gaius Mulley (gaius@glam.ac.uk).
 
@@ -24,3 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #define HTML_IMAGE_INLINE_BEGIN	"\\O[HTML-IMAGE-INLINE-BEGIN]"
 #define HTML_IMAGE_INLINE_END	"\\O[HTML-IMAGE-INLINE-END]"
+
+// Local Variables:
+// fill-column: 72
+// mode: C
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

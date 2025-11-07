@@ -27,7 +27,8 @@ wail() {
     fail=yes
 }
 
-input='.TH foo 1 2022-11-22 "groff test suite"
+input='.
+.TH foo 1 2022-11-22 "groff test suite"
 .SH Name
 foo \- frobnicate a bar
 .SH Description
@@ -38,7 +39,15 @@ the boss
 .
 Complaints to
 .MT nobody@\:example\:.com
-.ME .'
+.ME .
+.
+.
+.TP
+.MT postmaster@\:example\:.com
+.ME
+does not want them,
+either.
+.'
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU0)
 echo "$output"
@@ -53,6 +62,10 @@ echo "checking formatting of mail URI with no link text" \
 echo "$output" | grep -Eq 'Complaints +to +<nobody@example\.com>\.' \
     || wail
 
+echo "checking formatting of mail URI with no link text as paragraph" \
+     "tag (hyperlinks disabled)" >&2
+echo "$output" | grep -Fq ' <postmaster@example.com>' || wail
+
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -rU1)
 echo "$output"
 
@@ -63,6 +76,10 @@ echo "$output" | grep -Fq 'Mail the boss.' || wail
 echo "checking formatting of mail URI with no link text" \
     "(hyperlinks enabled)" >&2
 echo "$output" | grep -Fq 'Complaints to nobody@example.com.' || wail
+
+echo "checking formatting of mail URI with no link text as paragraph" \
+     "tag (hyperlinks enabled)" >&2
+echo "$output" | grep -Fq ' postmaster@example.com' || wail
 
 input='.TH foo 1 2022-12-04 "groff test suite"
 .SH Name
