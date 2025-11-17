@@ -64,12 +64,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "posix.h"
 #include "nonposix.h"
 
-#ifdef NEED_DECLARATION_PUTENV
-extern "C" {
-  int putenv(const char *);
-}
-#endif /* NEED_DECLARATION_PUTENV */
-
 #define MACRO_PREFIX "tmac."
 #define MACRO_POSTFIX ".tmac"
 #define INITIAL_STARTUP_FILE "troffrc"
@@ -79,7 +73,7 @@ extern "C" {
 #ifndef DEFAULT_WARNING_MASK
 // warnings that are enabled by default
 #define DEFAULT_WARNING_MASK \
-     (WARN_CHAR|WARN_NUMBER|WARN_BREAK|WARN_SPACE|WARN_FONT|WARN_FILE)
+     (WARN_CHAR|WARN_BREAK|WARN_SPACE|WARN_FONT|WARN_FILE)
 #endif
 
 extern "C" const char *program_name;
@@ -2856,9 +2850,10 @@ bool token::is_usable_as_delimiter(bool report_error,
 
 const char *token::description()
 {
-  // Reserve a buffer large enough to handle the two lengthiest cases.
+  // Reserve a buffer large enough to handle the lengthiest cases.
   //   "character code XXX"
   //   "special character 'bracketrighttp'"
+  //   "indexed character -2147483648"
   // Future:
   //   "character code XXX (U+XXXX)" or similar
   const size_t maxstr = sizeof "special character 'bracketrighttp'";
@@ -2904,18 +2899,31 @@ const char *token::description()
   case TOKEN_NODE:
     return "a node";
   case TOKEN_INDEXED_CHAR:
-    return "an escaped 'N'";
+    (void) snprintf(buf, maxstr, "indexed character %d",
+		    character_index());
+    return buf;
   case TOKEN_RIGHT_BRACE:
     return "an escaped '}'";
   case TOKEN_SPACE:
     return "a space";
   case TOKEN_SPECIAL_CHAR:
-    // TODO: This truncates the names of impractically long special
-    // character names.  Do something about that.  (The truncation is
-    // visually indicated by the absence of a closing quotation mark.)
-    (void) snprintf(buf, maxstr, "special character \"%s\"",
-		    nm.contents());
-    return buf;
+    // We normally using apostrophes for quotation in diagnostic
+    // messages, but many special character names contain them.  Fall
+    // back to double quotes if this one does.  A user-defined special
+    // character name could contain both characters; we expect such
+    // users to lie comfortably in the bed they made for themselves.
+    {
+      const char *sc = nm.contents();
+      char qc = '\'';
+      if (strchr(sc, '\'') != 0 /* nullptr */)
+	qc = '"';
+      // TODO: This truncates the names of impractically long special
+      // character names.  Do something about that.  (The truncation is
+      // visually indicated by the absence of a closing quotation mark.)
+      (void) snprintf(buf, maxstr, "special character %c%s%c", qc, sc,
+		      qc);
+      return buf;
+    }
   case TOKEN_SPREAD:
     return "an escaped 'p'";
   case TOKEN_STRETCHABLE_SPACE:
@@ -3281,7 +3289,7 @@ bool unbreakable_space_node::need_reread(bool *)
 bool hmotion_node::need_reread(bool *)
 {
   if (unformat && was_tab) {
-    curenv->handle_tab(0);
+    curenv->advance_to_tab_stop();
     unformat = 0;
     return true;
   }
@@ -6921,7 +6929,8 @@ static bool is_conditional_expression_true()
     case 'r':
     case 'v':
       warning(WARN_SYNTAX,
-	      "conditional operator '%1' used in compatibility mode",
+	      "conditional expression operator '%1' is not portable to"
+	      " AT&T troff",
 	      c);
 	      // TODO: "; treating as output comparison delimiter", c);
       break;
@@ -6945,7 +6954,7 @@ static bool is_conditional_expression_true()
     tok.next();
   }
   // TODO: else if (!want_att_compat) {
-  // Check for GNU troff extension conditional operators.
+  // Check for GNU troff extended conditional expression operators.
   else if ((c == 'd') || (c == 'r')) {
     tok.next();
     symbol nm = get_name(true /* required */);
@@ -8780,7 +8789,7 @@ void token::process()
     curenv->add_italic_correction();
     break;
   case TOKEN_LEADER:
-    curenv->handle_tab(1);
+    curenv->advance_to_tab_stop(true /* use_leader */);
     break;
   case TOKEN_LEFT_BRACE:
     break;
@@ -8821,7 +8830,7 @@ void token::process()
 						 curenv->get_fill_color()));
     break;
   case TOKEN_TAB:
-    curenv->handle_tab(0);
+    curenv->advance_to_tab_stop();
     break;
   case TOKEN_TRANSPARENT:
     break;
@@ -9545,8 +9554,8 @@ int main(int argc, char **argv)
     if (*groff_path)
       e += groff_path;
     e += '\0';
-    if (putenv(strsave(e.contents())))
-      fatal("putenv failed");
+    if (putenv(strsave(e.contents())) != 0)
+      fatal("cannot update process environment: %1", strerror(errno));
   }
   setlocale(LC_CTYPE, "");
   static const struct option long_options[] = {
@@ -10244,10 +10253,8 @@ static struct warning_category {
   { "break", WARN_BREAK },
   { "delim", WARN_DELIM },
   { "scale", WARN_SCALE },
-  { "number", WARN_NUMBER },
   { "syntax", WARN_SYNTAX },
   { "tab", WARN_TAB },
-  { "right-brace", WARN_RIGHT_BRACE },
   { "missing", WARN_MISSING },
   { "input", WARN_INPUT },
   { "escape", WARN_ESCAPE },

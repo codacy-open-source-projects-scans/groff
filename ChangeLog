@@ -1,19 +1,223 @@
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am: Include "contrib/install-font/install-font.am".
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Withdraw "right-brace" warning category.
+
+	* src/roff/troff/troff.h (enum warning_type): Drop
+	`WARN_RIGHT_BRACE` enumeration constant.
+	* src/roff/troff/input.cpp: Drop "right-brace" element from
+	`warning_table` static array.
+
+	* doc/groff.texi.in (Warnings):
+	* src/roff/troff/troff.1.man (Warnings): De-document it.
+
+	* NEWS: Report change.
+
+	Fixes <https://savannah.gnu.org/bugs/?67698> (2/2).
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Withdraw "number" warning category.  The previous
+	change left it without any instances.
+
+	* src/roff/troff/troff.h (enum warning_type): Drop `WARN_NUMBER`
+	enumeration constant.
+	* src/roff/troff/input.cpp: Drop "number" element from
+	`warning_table` static array.  Update default warning mask to
+	exclude it.
+
+	* doc/groff.texi.in (Warnings):
+	* src/roff/troff/troff.1.man (Warnings): De-document it.
+
+	* NEWS: Report change.
+
+	Fixes <https://savannah.gnu.org/bugs/?67698> (1/2).
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Refactor numeric expression parser
+	to simplify and heighten severity of diagnostics.  This isn't
+	a behavior change; character sequences that were invalid as
+	numeric expressions were ignored before and remain so.  But
+	since we're aborting interpretation of an argument to a request
+	or escape sequence, where in at least one case AT&T troff did
+	not--it would read through spurious tab characters to reach a
+	valid numeric expression afterward--an error seems more
+	appropriate.
+	(is_valid_expression_start): Drop special handling of tab and
+	right-brace escape sequences.  These get handled anyway when the
+	term at the start of the expression gets interpreted...
+	(is_valid_term): ...thus.  Raise diagnostic severity from
+	warning (in "number" category) to error.
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Improve
+	quotation of special character names.
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Improve
+	diagnostics when encountering an indexed character.
+
+2025-11-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `environment` class's
+	member function `handle_tab()` to `advance_to_tab_stop()`.
+	Rename its argument from `is_leader` to `use_leader`.
+
+	* src/roff/troff/env.h (class environment):
+	* src/roff/troff/env.cpp: Do it.
+	* src/roff/troff/input.cpp (unbreakable_space_node::need_reread)
+	(token::process): Update call sites.
+
+2025-11-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (unbreakable_space_node::need_reread)
+	(token::process): Stop explicitly specifying argument of same
+	value as `environment::handle_tab()`'s default.
+	(token::process): Call environment object's `handle_tab()`
+	member function with Boolean, not integer, literal.  Continues
+	commit 023083d16d, 27 April 2024.
+
+2025-11-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (is_conditional_expression_true):
+	Tweak wording of syntax warning thrown only in compatibility
+	mode.  Say that the conditional expression operator is "not
+	portable to AT&T troff", for parallel phrasing with the escape
+	sequence warning added in commit 589a724eca, 2 November, and
+	because a person authoring or formatting a document presumably
+	knows whether they're using compatibility mode.  (If they don't
+	know, they can find out with `.tm compatibility mode is \n(.C`.)
+	Prompted by discussion with James Youngman.
+
+2025-11-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/color.cpp (color::get_rgb, color::get_cmy)
+	(color::get_cmyk, color::get_gray):
+	* src/preproc/eqn/pile.cpp (pile_box::output)
+	(matrix_box::output, column::debug_print)
+	* src/preproc/eqn/common.cpp (common_output::rounded_box):
+	* src/preproc/pic/lex.cpp (get_delimited):
+	* src/preproc/pic/object.cpp (object_spec::position_rectangle)
+	(object_spec::make_move, object_spec::make_line)
+	(object_spec::make_object):
+	* src/preproc/pic/tex.cpp (tex_output::spline)
+	(tex_output::circle, tex_output::ellipse):
+	* src/preproc/pic/troff.cpp (simple_output::line)
+	(simple_output::ellipse, simple_output::circle):
+	* src/preproc/refer/command.cpp (check_args):
+	* src/preproc/refer/label.ypp (format_serial)
+	(extractor_expr::evaluate):
+	* src/utils/hpftodit/hpftodit.cpp (main):
+	* src/utils/lkbib/lkbib.cpp (main): Replace `assert(0)` calls
+	with communicative predicates.
+
+2025-11-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/pic/lex.cpp (get_delimited): Drop `switch` case
+	that is present only "to shut cfront 2.0 up".  Cfront is long
+	dead.
+
+2025-11-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[refer]: Slightly refactor (boolify).
+
+	* src/preproc/refer/token.h: Declare `get_token` as returning a
+	`bool` rather than an `int`.
+	* src/preproc/refer/token.cpp (get_token): Demote return type
+	from `int` to `bool`.  Return Boolean, not integer, literals.
+
+2025-11-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/TODO: Rename this file...
+	* tmac/TODO-ms: ...to this, since it discusses only contemplated
+	changes to the ms(7) package.
+	* tmac/tmac.am (EXTRA_DIST): Reflect rename.
+
+2025-11-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Reform terminology: "conditional operator" -> "conditional
+	expression operator".
+
+	* src/roff/troff/input.cpp (is_conditional_expression_true):
+	Update wording in diagnostic message.
+
+	* doc/groff.texi.in (Selecting Fonts, Diversions):
+	* man/groff.7.man (Diversions): Update documentation.
+
+2025-11-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/pic/pic.ypp (ordinal): Replace C-style type cast
+	with value construction.
+
+2025-11-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Retire our fmod(3) replacement in favor of gnulib's.  James
+	Clark wrote groff's in 1989; it's changed very little since.
+
+	* Makefile.am: Drop fmod-referencing annotations.
+	* bootstrap.conf (gnulib_modules): Add "fmod".
+	* configure.ac: Drop `fmod` from `AC_REPLACE_FUNCS()` call.
+	* src/libs/libgroff/fmod.c: Delete.
+	* src/libs/libgroff/libgroff.am (EXTRA_DIST): Drop "fmod.c".
+	* src/preproc/pic/pic.ypp: Drop conditional declaration of
+	`fmod()` symbol.
+
+	Continues fixing Savannah #66518.
+
+2025-11-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Retire our putenv(3) replacement in favor of gnulib's.  groff's
+	was copied from glibc in 1991 and changed very little since.
+
+	* Makefile.am: Drop putenv-referencing annotations.
+	* bootstrap.conf (gnulib_modules): Add "putenv".
+	* configure.ac: Drop `GROFF_NEED_DECLARATION([putenv])` call.
+	Drop `putenv` from `AC_REPLACE_FUNCS()` call.
+	* src/devices/grops/ps.cpp:
+	* src/devices/grops/psrm.cpp:
+	* src/roff/groff/groff.cpp:
+	* src/roff/troff/input.cpp: Drop conditional declaration of
+	`putenv()` symbol.
+	* src/libs/libgroff/putenv.c: Delete.
+	* src/libs/libgroff/libgroff.am (EXTRA_DIST): Drop "putenv.c".
+
+	Continues fixing Savannah #66518.
+
+2025-11-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grops,groff,troff]: Parallelize diagnostic messages relating to
+	putenv(3).
+
+	* src/devices/grops/ps.cpp (main):
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog):
+	* src/roff/groff/groff.cpp (xputenv):
+	* src/roff/troff/input.cpp (main): Consistently compare
+	`putenv()`'s return value to an integer literal, rather than
+	letting it pun down to a Boolean.  Phrase diagnostic message
+	consistently.  Consistently report `strerror(errno)` on failure.
+
 2025-11-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Improve "asciification" of more special characters.
 
 	* src/roff/troff/node.cpp (glyph_node::asciify): Fix and clarify
-	logic.  First, if a glyph as an "asciify code", use that.  Then,
-	if it has a nonzero "ASCII code", use that.  Next, if it has a
-	Unicode mapping, write out an appropriate escape sequence using
-	the default escape character.  (This source file has no insight
-	into what a user's selected escape character is.)  Map code
-	points U+0022, U+0027, U+002D, U+005C, U+005E, U+0060, and
+	logic.  First, if a glyph has an "asciify code", use that.
+	Then, if it has a nonzero "ASCII code", use that.  Next, if it
+	has a Unicode mapping, write out an appropriate escape sequence
+	using the default escape character.  (This source file has no
+	insight into what a user's selected escape character is.)  Map
+	code points U+0022, U+0027, U+002D, U+005C, U+005E, U+0060, and
 	U+007E to predefined special character escape sequences (see
 	groff_char(7)).  For all other Unicode code points, write out an
 	escape sequence of the form `\[uYXXXX]`.  Finally, if none of
 	the foreging mappings exist, throw an error diagnostic and dump
-	the glyph's "charinfo", as if `pchar` were called on a
+	the glyph's "charinfo", as if `pchar` were invoked on a
 	corresponding GNU troff character.
 
 	* src/roff/groff/tests/asciify-request-works.sh: Adjust test
@@ -135,8 +339,8 @@
 
 	* src/roff/troff/input.cpp (token::is_usable_as_delimiter): Fix
 	spurious warning in category "delim" when using a tab character
-	as an escape sequence as a delimiter.  AT&T troff allows that,
-	and so has GNU troff historically.
+	as an escape sequence as a delimiter.  AT&T troff doesn't allow
+	that, but GNU troff has, historically.
 
 	Continues commit 39c1176bfa, 25 January.  See Savannah #66686
 	and Savannah #66526.
@@ -314,7 +518,7 @@
 
 	[troff]: Fix Savannah #67408.  As I've observed before in the
 	groff 1.24 development cycle, the delimiter situation is a mess.
-	AT&T troff actually has three different, context-dependent sets
+	AT&T troff actually has three different, context-dependent, sets
 	of delimiters; getting too adventurous, though, leads to core
 	dumps, as with `\D0l 1 20' or `.if %0%0% .tm true`.  Last
 	November, I attempted to streamline groff's delimiter handling,
@@ -354,10 +558,10 @@
 	anyway, but warns of its ambiguity.}
 	(is_conditional_expression_true): Refactor, introducing new
 	Boolean local variable `perform_output_comparison`.  Throw
-	syntax warning if `v` conditional operator used in compatibility
-	mode, as no variant of AT&T troff available to me recognizes it.
-	Distinguish compatibility mode once the letteral conditional
-	expression operators are ruled out.
+	syntax warning if `v` expression conditional operator used in
+	compatibility mode, as no variant of AT&T troff available to me
+	recognizes it.  Distinguish compatibility mode once the letteral
+	conditional expression operators are ruled out.
 
 	Fixes <https://savannah.gnu.org/bugs/?67408>.
 
@@ -454,9 +658,11 @@
 	package implements its own bespoke type system to accompany its
 	bespoke macro processor; the type of a macro argument (a string
 	or macro) is determined by looking up its name as a _register_.
-	mandoc(1) does not exhibit this problem, likely because it lacks
-	a *roff formatter that defines both a `.T` register and a `.T`
-	string; rather it simulates both of these.
+	mandoc(1) does not exhibit this problem because it does not use
+	roff(7) registers to distinguish mdoc(7) child macros from
+	plain-text macro arguments, so the .T register does not clash
+	with the .T predefined string in the way it did in
+	groff mdoc(7).
 
 2025-10-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -19152,10 +19358,10 @@
 	condition was consistently misspelled, testing for the existence
 	of, for example, a register named "ef*spec!J:\\$1" (where `\\$1`
 	_would_ be interpolated, but not improve chances of success).
-	Fix by using the `d` conditional operator as obviously intended.
-	This enables some refer(1) formatting customization that was
-	unfortunately inoperative.  Problem appears to date back to
-	commit 3bab8e6fe5, 2011-01-28.
+	Fix by using the `d` conditional expression operator as
+	obviously intended.  This enables some refer(1) formatting
+	customization that was unfortunately inoperative.  Problem
+	appears to date back to commit 3bab8e6fe5, 2011-01-28.
 
 	Fixes <https://savannah.gnu.org/bugs/?64779>.  Thanks to an
 	anonymous bug submitter for the report and the patch.

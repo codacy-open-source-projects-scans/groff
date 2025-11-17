@@ -32,11 +32,13 @@ const double BAD_THICKNESS = -2.0;
 
 class simple_output : public common_output {
   virtual void simple_line(const position &, const position &) = 0;
-  virtual void simple_spline(const position &, const position *, int n) = 0;
+  virtual void simple_spline(const position &, const position *, int n)
+    = 0;
   virtual void simple_arc(const position &, const position &,
 			  const position &) = 0;
   virtual void simple_circle(int, const position &, double rad) = 0;
-  virtual void simple_ellipse(int, const position &, const distance &) = 0;
+  virtual void simple_ellipse(int, const position &, const distance &)
+    = 0;
   virtual void simple_polygon(int, const position *, int) = 0;
   virtual void line_thickness(double) = 0;
   virtual void set_fill(double) = 0;
@@ -45,7 +47,8 @@ class simple_output : public common_output {
   virtual char *get_last_filled() = 0;
   void dot(const position &, const line_type &) = 0;
 public:
-  void start_picture(double sc, const position &ll, const position &ur) = 0;
+  void start_picture(double sc, const position &ll, const position &ur)
+    = 0;
   void finish_picture() = 0;
   void text(const position &, text_piece *, int, double) = 0;
   void line(const position &, const position *, int n,
@@ -57,7 +60,8 @@ public:
   void arc(const position &, const position &, const position &,
 	   const line_type &);
   void circle(const position &, double rad, const line_type &, double);
-  void ellipse(const position &, const distance &, const line_type &, double);
+  void ellipse(const position &, const distance &, const line_type &,
+	       double);
   int supports_filled_polygons();
 };
 
@@ -85,8 +89,8 @@ void simple_output::arc(const position &start, const position &cent,
   }
 }
 
-void simple_output::line(const position &start, const position *v, int n,
-			 const line_type &lt)
+void simple_output::line(const position &start, const position *v,
+			 int n, const line_type &lt)
 {
   position pos = start;
   line_thickness(lt.thickness);
@@ -116,7 +120,8 @@ void simple_output::line(const position &start, const position *v, int n,
 	if (dist <= lt.dash_width*2.0)
 	  simple_line(pos, v[i]);
 	else {
-	  int ndashes = int((dist - lt.dash_width)/(lt.dash_width*2.0) + .5);
+	  int ndashes = int((dist - lt.dash_width)
+			    / (lt.dash_width * 2.0) + .5);
 	  distance dash_vec = vec*(lt.dash_width/dist);
 	  double dash_gap = (dist - lt.dash_width)/ndashes;
 	  distance dash_gap_vec = vec*(dash_gap/dist);
@@ -130,14 +135,14 @@ void simple_output::line(const position &start, const position *v, int n,
     case line_type::invisible:
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of line type");
     }
     pos = v[i];
   }
 }
 
-void simple_output::spline(const position &start, const position *v, int n,
-			   const line_type &lt)
+void simple_output::spline(const position &start, const position *v,
+			   int n, const line_type &lt)
 {
   line_thickness(lt.thickness);
   simple_spline(start, v, n);
@@ -146,7 +151,8 @@ void simple_output::spline(const position &start, const position *v, int n,
 void simple_output::polygon(const position *v, int n,
 			    const line_type &lt, double fill)
 {
-  if (driver_extension_flag && ((fill >= 0.0) || (get_last_filled() != 0))) {
+  if (driver_extension_flag
+      && ((fill >= 0.0) || (get_last_filled() != 0))) {
     if (get_last_filled() == 0)
       set_fill(fill);
     simple_polygon(1, v, n);
@@ -164,7 +170,8 @@ void simple_output::polygon(const position *v, int n,
 void simple_output::circle(const position &cent, double rad,
 			   const line_type &lt, double fill)
 {
-  if (driver_extension_flag && ((fill >= 0.0) || (get_last_filled() != 0))) {
+  if (driver_extension_flag
+      && ((fill >= 0.0) || (get_last_filled() != 0))) {
     if (get_last_filled() == 0)
       set_fill(fill);
     simple_circle(1, cent, rad);
@@ -183,14 +190,15 @@ void simple_output::circle(const position &cent, double rad,
     simple_circle(0, cent, rad);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of line type");
   }
 }
 
 void simple_output::ellipse(const position &cent, const distance &dim,
 			    const line_type &lt, double fill)
 {
-  if (driver_extension_flag && ((fill >= 0.0) || (get_last_filled() != 0))) {
+  if (driver_extension_flag
+      && ((fill >= 0.0) || (get_last_filled() != 0))) {
     if (get_last_filled() == 0)
       set_fill(fill);
     simple_ellipse(1, cent, dim);
@@ -210,7 +218,7 @@ void simple_output::ellipse(const position &cent, const distance &dim,
     simple_ellipse(0, cent, dim);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of line type");
   }
 }
 
@@ -338,7 +346,8 @@ void troff_output::command(const char *s,
   putchar('\n');
 }
 
-void troff_output::simple_circle(int filled, const position &cent, double rad)
+void troff_output::simple_circle(int filled, const position &cent,
+				 double rad)
 {
   position c = transform(cent);
   printf("\\h'%.3fi'"
@@ -365,8 +374,8 @@ void troff_output::simple_ellipse(int filled, const position &cent,
 	 dim.x/scale, dim.y/scale);
 }
 
-void troff_output::simple_arc(const position &start, const distance &cent,
-			      const distance &end)
+void troff_output::simple_arc(const position &start,
+			      const distance &cent, const distance &end)
 {
   position s = transform(start);
   position c = transform(cent);
@@ -379,7 +388,8 @@ void troff_output::simple_arc(const position &start, const distance &cent,
 	 s.x, s.y, cv.x, cv.y, ev.x, ev.y);
 }
 
-void troff_output::simple_line(const position &start, const position &end)
+void troff_output::simple_line(const position &start,
+			       const position &end)
 {
   position s = transform(start);
   distance ev = transform(end) - s;
@@ -442,7 +452,8 @@ static const char *choose_delimiter(const char *text)
 void troff_output::text(const position &center, text_piece *v, int n,
 			double ang)
 {
-  line_thickness(BAD_THICKNESS); // text might use lines (e.g., in equations)
+ // text might use lines (e.g., in equations)
+  line_thickness(BAD_THICKNESS);
   int rotate_flag = 0;
   if (driver_extension_flag && ang != 0.0) {
     rotate_flag = 1;
@@ -450,7 +461,8 @@ void troff_output::text(const position &center, text_piece *v, int n,
     printf(".if \\n(" GROPS_REG " \\{\\\n"
 	   "\\h'%.3fi'"
 	   "\\v'%.3fi'"
-	   "\\X'ps: exec gsave currentpoint 2 copy translate %.4f rotate neg exch neg exch translate'"
+	   "\\X'ps: exec gsave currentpoint 2 copy translate %.4f"
+	   " rotate neg exch neg exch translate'"
 	   "\n.sp -1\n"
 	   ".\\}\n",
 	   c.x, c.y, -ang*180.0/M_PI);

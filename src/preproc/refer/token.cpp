@@ -56,10 +56,10 @@ static void skip_name(const char **ptr, const char *end)
   }
 }
 
-int get_token(const char **ptr, const char *end)
+bool get_token(const char **ptr, const char *end)
 {
   if (*ptr >= end)
-    return 0;
+    return false;
   char c = *(*ptr)++;
   if (c == '\\' && *ptr < end) {
     switch (**ptr) {
@@ -77,7 +77,7 @@ int get_token(const char **ptr, const char *end)
       break;
     }
   }
-  return 1;
+  return true;
 }
 
 token_info::token_info()

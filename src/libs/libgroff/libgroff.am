@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2025 Free Software Foundation, Inc.
+# Copyright 2014 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -81,9 +81,7 @@ libgroff_a_LIBADD = lib/libgnu.a
 # TODO: these .c files could be removed (use gnulib instead).
 EXTRA_DIST += \
   src/libs/libgroff/mkstemp.cpp \
-  src/libs/libgroff/fmod.c \
   src/libs/libgroff/getcwd.c \
-  src/libs/libgroff/putenv.c \
   src/libs/libgroff/strtol.c \
   src/libs/libgroff/config.charset \
   src/libs/libgroff/ref-add.sin \

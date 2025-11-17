@@ -356,7 +356,7 @@ public:
   void final_break();
   node *make_tag(const char *name, int i);
   void newline();
-  void handle_tab(bool /* is_leader */ = false); // do a tab or leader
+  void advance_to_tab_stop(bool /* use_leader */ = false);
   void add_node(node *);
   void add_char(charinfo *);
   void add_hyphen_indicator();

@@ -1,4 +1,5 @@
-# Copyright (C) 1989-2024 Free Software Foundation, Inc.
+# Copyright 1989-2015 Free Software Foundation, Inc.
+#
 #      Written by James Clark <jjc@jclark.com>
 #      Automake migration by Bertrand Garrigues
 #        <bertrand.garrigues@laposte.net>
@@ -127,7 +128,7 @@ EXTRA_DIST += \
   tmac/man.ultrix \
   tmac/ptx.tmac \
   tmac/TESTING-HINTS \
-  tmac/TODO \
+  tmac/TODO-ms \
   tmac/www.tmac.in
 
 tmac_TESTS = \

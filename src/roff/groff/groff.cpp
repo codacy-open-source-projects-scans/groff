@@ -58,12 +58,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 // specified
 #define XREG ".X"
 
-#ifdef NEED_DECLARATION_PUTENV
-extern "C" {
-  int putenv(const char *);
-}
-#endif /* NEED_DECLARATION_PUTENV */
-
 // The number of commands must be in sync with MAX_COMMANDS in
 // pipeline.h.
 
@@ -139,7 +133,7 @@ static char *xstrdup(const char *s) {
 
 static void xputenv(const char *s) {
   if (putenv(const_cast<char *>(s)) != 0)
-    fatal("unable to write to environment: %1", strerror(errno));
+    fatal("cannot update process environment: %1", strerror(errno));
   return;
 }
 

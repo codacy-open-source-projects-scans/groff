@@ -83,5 +83,5 @@ inline int token_info::is_range_sep() const
   return type == TOKEN_RANGE_SEP;
 }
 
-int get_token(const char **ptr, const char *end);
+bool get_token(const char **ptr, const char *end);
 const token_info *lookup_token(const char *start, const char *end);

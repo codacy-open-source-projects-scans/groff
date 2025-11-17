@@ -3950,7 +3950,9 @@ void glyph_node::asciify(macro *m)
 	  // a glyph's charinfo, it no longer has a "name"--it's already
 	  // been looked up in the dictionary.  (Also, multiple names
 	  // can refer to the same charinfo datum.)  And this racket
-	  // beats telling the user nothing at all about the glyph.
+	  // beats telling the user nothing at all about the glyph: if
+	  // the character was defined by request (`char` et al.), this
+	  // dump reports the file name and line number of that request.
 	  ci->dump();
 	}
       }

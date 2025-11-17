@@ -1,4 +1,4 @@
-/* Copyright (C) 2004-2020 Free Software Foundation, Inc.
+/* Copyright 2004-2020 Free Software Foundation, Inc.
      Written by: Keith Marshall (keith.d.marshall@ntlworld.com)
 
 This file is part of groff.

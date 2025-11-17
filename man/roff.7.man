@@ -585,8 +585,8 @@ does not yet support right-to-left scripts.)
 .
 A glyph therefore \[lq]starts\[rq] at its bottom-left corner.
 .
-The formatter's origin is thus one vee below the page top,
-preventing a glyph from lying partially or wholly off the page.
+The formatter's origin is one vee below the page top
+to prevent a glyph from lying partially or wholly off the page.
 .
 .
 .P
@@ -610,7 +610,7 @@ Combining the foregoing facts results in an origin that lies
 at the page offset in the horizontal dimension
 and at the text baseline (using the default vertical spacing)
 in the vertical dimension.
-A document can change these prior to the first written or drawn output.
+A document can change these prior to its first written or drawn output.
 .\" see @ref{Line Layout} and
 .\" @ref{Manipulating Type Size and Vertical Spacing}.
 .\" This origin isn't necessarily--and generally is not--the one used by
@@ -632,11 +632,12 @@ If the formatter were already writing
 to the last line that fits on the page,
 advancing by one vee would place the next text baseline off the page.
 .
-Rather than let that happen,
+To avoid that,
 .I roff
 formatters instruct the output driver to eject the page,
 start a new one,
-and again place the drawing position one vee below the page top;
+and again place the drawing position
+at the page offset one vee below the page top;
 this is a
 .I "page break."
 .

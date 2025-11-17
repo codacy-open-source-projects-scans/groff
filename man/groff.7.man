@@ -8489,7 +8489,7 @@ regarding the enablement and suppression of warnings.
 .
 A diversion does not exist for the purpose of testing with the
 .B d
-conditional operator until its initial definition ends
+conditional expression operator until its initial definition ends
 (see subsection \[lq]Conditional expressions\[rq] above).
 .\" The following requests are used to create and alter diversions.
 .
@@ -8594,8 +8594,9 @@ and
 .RB \%\[lq] unformat \[rq]
 requests reprocess diversions.
 .\" XXX: That's a weak statement.  What we need is a `for` request and
-.\" a new conditional operator that tests whether an item in a node list
-.\" is an (otherwise unrepresentable) node.  See Savannah #62264.
+.\" a new conditional expression operator that tests whether an item in
+.\" a node list is an (otherwise unrepresentable) node.  See Savannah
+.\" #62264.
 .\" END Keep (roughly) parallel with groff.texi node "Diversions".
 .
 .

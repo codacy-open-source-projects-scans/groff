@@ -1,3 +1,8 @@
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gdiffmk.am (EXTRA_DIST): Ship "COPYRIGHT" file in distribution
+	archive.
+
 2025-08-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* gdiffmk.sh (Usage): Update description, (roughly) syncing it

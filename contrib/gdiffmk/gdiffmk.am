@@ -28,6 +28,7 @@ TESTS += contrib/gdiffmk/tests/runtests.sh
 man1_MANS += contrib/gdiffmk/gdiffmk.1
 EXTRA_DIST += \
   contrib/gdiffmk/gdiffmk.1.man \
+  contrib/gdiffmk/COPYRIGHT \
   contrib/gdiffmk/ChangeLog \
   contrib/gdiffmk/README \
   contrib/gdiffmk/gdiffmk.sh \

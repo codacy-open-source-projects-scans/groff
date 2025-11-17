@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright 1989-2007 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -79,7 +79,7 @@ void pile_box::output()
 	       uid, col.p[i]->uid);
 	break;
       default:
-	assert(0);
+	assert(0 == "unhandled case of column alignment");
       }
       col.p[i]->output();
       printf("\\h'-\\n[" WIDTH_FORMAT "]u'", col.p[i]->uid);
@@ -95,7 +95,7 @@ void pile_box::output()
 	       col.p[i]->uid, uid);
 	break;
       default:
-	assert(0);
+	assert(0 == "unhandled case of column alignment");
       }
       if (i != col.len - 1)
 	printf("\\v'\\n[" BASELINE_SEP_FORMAT "]u'", uid);
@@ -117,7 +117,7 @@ void pile_box::output()
       av = "center";
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of column alignment");
     }
     printf("<mtable columnalign='%s'>", av);
     for (int i = 0; i < col.len; i++) {
@@ -216,7 +216,7 @@ void matrix_box::output()
 		 uid, i, p[i]->p[j]->uid);
 	  break;
 	default:
-	  assert(0);
+	  assert(0 == "unhandled case of column alignment");
 	}
 	p[i]->p[j]->output();
 	printf("\\h'-\\n[" WIDTH_FORMAT "]u'", p[i]->p[j]->uid);
@@ -232,7 +232,7 @@ void matrix_box::output()
 		 p[i]->p[j]->uid, uid, i);
 	  break;
 	default:
-	  assert(0);
+	  assert(0 == "unhandled case of column alignment");
 	}
 	if (j != p[i]->len - 1)
 	  printf("\\v'\\n[" BASELINE_SEP_FORMAT "]u'", uid);
@@ -263,7 +263,7 @@ void matrix_box::output()
 	  av = "center";
 	  break;
 	default:
-	  assert(0);
+	  assert(0 == "unhandled case of column alignment");
 	}
 	printf("<mtd columnalign='%s'>", av);
 	p[j]->p[i]->output();
@@ -349,7 +349,7 @@ void column::debug_print(const char *s)
     c = 'c';
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of column alignment");
   }
   fprintf(stderr, "%c%s %d { ", c, s, space);
   list_debug_print(" above ");

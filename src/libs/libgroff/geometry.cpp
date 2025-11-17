@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-2020 Free Software Foundation, Inc.
      Written by Gaius Mulley <gaius@glam.ac.uk>
      using adjust_arc_center() from printer.cpp, written by James Clark.
 

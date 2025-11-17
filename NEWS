@@ -139,6 +139,9 @@ troff
    `trf` requests, and the second argument to the `open` and `opena`
    requests.  See "soelim" below.
 
+*  The "number" warning category has been withdrawn.  The diagnostic
+   that formerly used it has been promoted to an error.
+
 *  The "el" warning category has been withdrawn.  If enabled (which it
    was not by default), the formatter would emit a diagnostic if it
    inferred an imbalance between `ie` and `el` requests.  Unfortunately
@@ -146,6 +149,13 @@ troff
    warnings, and making it perfectly reliable did not look tractable.
    We recommend using brace escape sequences `\{` and `\}` to ensure
    that your control flow structures remain maintainable.
+
+*  The "right-brace" warning category has been withdrawn.  If enabled
+   (which it was not by default), the formatter would emit a diagnostic
+   in exactly one circumstance: when a numeric expression was expected
+   (as, for instance, the second argument to an `nr` request) but a
+   right brace escape sequence `\}` was encountered instead.  This
+   diagnostic still issues, but it is now an error.
 
 *  GNU troff now performs some limited processing/transformation of the
    argument to the `\X` escape sequence and its counterpart `device`

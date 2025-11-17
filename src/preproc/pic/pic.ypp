@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -47,12 +47,6 @@ extern "C" {
 }
 #endif /* NEED_DECLARATION_SRAND */
 
-#ifndef HAVE_FMOD
-extern "C" {
-  double fmod(double, double);
-}
-#endif
-
 #include "pic.h"
 #include "ptable.h"
 #include "object.h"
@@ -85,7 +79,7 @@ implement_ptable(place)
 PTABLE(place) top_table;
 
 PTABLE(place) *current_table = &top_table;
-saved_state *current_saved_state = 0;
+saved_state *current_saved_state = 0 /* nullptr */;
 
 object_list olist;
 
@@ -365,7 +359,7 @@ placeless_element:
 		    lex_error("variable '%1' not defined", $1);
 		    YYABORT;
 		  }
-		  p->obj = 0;
+		  p->obj = 0 /* nullptr */;
 		  p->x = $4;
 		  p->y = 0.0;
 		  free($1);
@@ -527,7 +521,7 @@ print_arg:
 		{
 		  $$.str = new char[GDIGITS + 1];
 		  sprintf($$.str, "%g", $1);
-		  $$.filename = 0;
+		  $$.filename = 0 /* nullptr */;
 		  $$.lineno = 0;
 		}
 	| text
@@ -536,7 +530,7 @@ print_arg:
 		{
 		  $$.str = new char[GDIGITS + 2 + GDIGITS + 1];
 		  sprintf($$.str, "%g, %g", $1.x, $1.y);
-		  $$.filename = 0;
+		  $$.filename = 0 /* nullptr */;
 		  $$.lineno = 0;
 		}
 	;
@@ -619,7 +613,7 @@ element:
 		{
 		  $$.obj = $1->make_object(&current_position,
 					   &current_direction);
-		  if ($$.obj == 0)
+		  if ($$.obj == 0 /* nullptr */)
 		    YYABORT;
 		  delete $1;
 		  if ($$.obj)
@@ -637,7 +631,7 @@ element:
 		}
 	| LABEL ':' optional_separator position_not_place
 		{
-		  $$.obj = 0;
+		  $$.obj = 0 /* nullptr */;
 		  $$.x = $4.x;
 		  $$.y = $4.y;
 		  define_label($1, & $$);
@@ -667,7 +661,7 @@ element:
 		}
 	| placeless_element
 		{
-		  $$.obj = 0;
+		  $$.obj = 0 /* nullptr */;
 		  $$.x = current_position.x;
 		  $$.y = current_position.y;
 		}
@@ -1359,7 +1353,7 @@ ordinal:
 	| '`' any_expr TH
 		{
 		  // XXX Check for overflow (and non-integers?).
-		  $$ = (int)$2;
+		  $$ = int($2);
 		}
 	;
 
@@ -1822,7 +1816,7 @@ place *lookup_label(const char *label)
     if (pl)
       return pl;
     if (!state)
-      return 0;
+      return 0 /* nullptr */;
     tbl = state->tbl;
     state = state->prev;
   }

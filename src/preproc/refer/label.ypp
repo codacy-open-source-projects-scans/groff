@@ -620,7 +620,7 @@ static const char *format_serial(char c, int n)
       break;
     }
   default:
-    assert(0);
+    assert(0 == "unhandled case of register format");
   }
   return buf;
 }
@@ -715,7 +715,7 @@ void extractor_expr::evaluate(int tentative, const reference &ref,
 	result.append(end, temp.contents() + temp.length() - end);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of part in expression evaluator");
     }
   }
 }

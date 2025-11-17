@@ -245,16 +245,6 @@ static bool is_valid_expression_start()
     warning(WARN_MISSING, "numeric expression missing");
     return false;
   }
-  if (tok.is_tab()) {
-    warning(WARN_TAB, "expected numeric expression, got %1",
-	    tok.description());
-    return false;
-  }
-  if (tok.is_right_brace()) {
-    warning(WARN_RIGHT_BRACE, "expected numeric expression, got right"
-	    " brace escape sequence");
-    return false;
-  }
   return true;
 }
 
@@ -512,8 +502,8 @@ static bool is_valid_term(units *u, int scaling_unit,
     *u = 0;
     return !is_mandatory;
   default:
-    warning(WARN_NUMBER, "expected numeric expression, got %1",
-	    tok.description());
+    error("ignoring invalid numeric expression starting with %1",
+	  tok.description());
     return false;
   }
   int divisor = 1;

@@ -1,4 +1,6 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
+             2020-2025 G. Branden Robinson
+
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -3146,13 +3148,13 @@ node *environment::make_tab_node(hunits d, node *next)
   return nd;
 }
 
-void environment::handle_tab(bool is_leader)
+void environment::advance_to_tab_stop(bool use_leader)
 {
   hunits d;
   hunits absolute;
   if (current_tab != TAB_NONE)
     wrap_up_tab();
-  charinfo *ci = is_leader ? leader_char : tab_char;
+  charinfo *ci = use_leader ? leader_char : tab_char;
   delete leader_node;
   leader_node = ci ? make_char_node(ci) : 0;
   tab_type t = distance_to_next_tab(&d, &absolute);

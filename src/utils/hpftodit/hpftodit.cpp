@@ -340,7 +340,7 @@ main(int argc, char **argv)
       exit(2);
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of command-line option");
     }
 
   if (debug_flag && argc - optind < 1)

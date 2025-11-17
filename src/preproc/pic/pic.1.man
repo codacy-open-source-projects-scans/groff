@@ -9,7 +9,7 @@ or TeX
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -120,14 +120,15 @@ or \*[tx] input into the language understood by \*[tx] or
 It copies each
 .IR file 's
 contents to the standard output stream,
-except for lines between
+translating each
+.I picture
+between lines starting with
 .B .PS
 and any of
 .BR .PE ,
 .BR .PF ,
 or
-.BR .PY ,
-which it interprets as picture descriptions.
+.BR .PY .
 .
 End a
 .I @g@pic

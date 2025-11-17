@@ -1,5 +1,5 @@
 # Autoconf configuration file for groff.
-# Copyright (C) 1989-2024 Free Software Foundation, Inc.
+# Copyright 1989-2024 Free Software Foundation, Inc.
 #
 # This file is part of groff.
 #
@@ -91,7 +91,6 @@ GROFF_SRAND
 GROFF_NEED_DECLARATION([gettimeofday])
 GROFF_NEED_DECLARATION([popen])
 GROFF_NEED_DECLARATION([pclose])
-GROFF_NEED_DECLARATION([putenv])
 GROFF_NEED_DECLARATION([rand])
 GROFF_NEED_DECLARATION([srand])
 GROFF_NEED_DECLARATION([vfprintf])
@@ -126,7 +125,7 @@ AC_SUBST([LIBEXT],[$acl_libext])
 AC_FUNC_MMAP
 saved_libs="$LIBS"
 LIBS="$LIBS $LIBC $LIBM"
-AC_REPLACE_FUNCS([fmod getcwd putenv strtol])
+AC_REPLACE_FUNCS([getcwd strtol])
 LIBS="$saved_libs"
 AC_CHECK_FUNCS([gettimeofday isatty kill rename setlocale strdup \
                 strsep])

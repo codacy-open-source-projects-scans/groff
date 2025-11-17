@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -342,7 +342,7 @@ void common_output::rounded_box(const position &cent, const distance &dim,
     solid_rounded_box(cent, dim, rad, lt);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of line type");
   }
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -1391,10 +1391,8 @@ int get_delimited()
       else if (c == '\\')
 	state = IN_STRING_QUOTED;
       break;
-    case DELIM_END:
-      // This case it just to shut cfront 2.0 up.
     default:
-      assert(0);
+      assert(0 == "unhandled case of lexical analyzer state");
     }
     if (state == DELIM_END)
       break;

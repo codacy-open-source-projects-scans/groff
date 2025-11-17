@@ -30,7 +30,9 @@ A simple method of building and installing groff is as follows.
 
   4. Type 'sudo make install install-doc' to install groff's programs,
      data files, and documentation.  This is the only step for which you
-     need 'root' access; 'sudo' obtains this access.
+     need 'root' access; 'sudo' obtains this access.  The "install-doc"
+     target installs the typeset and HTML versions of groff's Texinfo
+     manual, but does not work if TeX is not installed.
 
   5. You can remove the groff executables and other generated files from
      the source code directory by typing 'make clean'.  To also remove
@@ -69,7 +71,9 @@ valid on the operating system.
 
   4. Type 'sudo make install install-doc' to install groff's programs,
      data files, and documentation.  This is the only step for which you
-     need 'root' access; 'sudo' obtains this access.
+     need 'root' access; 'sudo' obtains this access.  The "install-doc"
+     target installs the typeset and HTML versions of groff's Texinfo
+     manual, but does not work if TeX is not installed.
 
   5. You can remove the groff executables and other generated files from
      the source code directory by typing 'make clean'.  To also remove

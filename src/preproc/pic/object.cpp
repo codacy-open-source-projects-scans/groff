@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
+/* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -902,7 +902,7 @@ int object_spec::position_rectangle(rectangle_object *p,
     motion.x = p->width()/2.0;
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of motion direction");
   }
   if (flags & HAS_AT) {
     pos = at;
@@ -1205,7 +1205,7 @@ graphic_object *object_spec::make_move(position *curpos, direction *dirp)
 	segment_pos.x = segment_width;
 	break;
       default:
-	assert(0);
+	assert(0 == "unhandled case of motion direction");
       }
     }
   }
@@ -1567,7 +1567,7 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
 	segment_pos.x = segment_width;
 	break;
       default:
-	assert(0);
+	assert(0 == "unhandled case of motion direction");
       }
   }
   segment_list = new segment(segment_pos, segment_is_absolute, segment_list);
@@ -1693,7 +1693,7 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
     p->set_vertex_number(vertex_number);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of picture object type");
   }
   have_last_line = 1;
   last_line = endpos - startpos;
@@ -2045,7 +2045,7 @@ object *object_spec::make_object(position *curpos, direction *dirp)
   case MARK_OBJECT:
   case OTHER_OBJECT:
   default:
-    assert(0);
+    assert(0 == "unhandled case of picture object type");
     break;
   }
   if (obj) {

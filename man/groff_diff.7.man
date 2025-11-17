@@ -5318,6 +5318,53 @@ interpolates the Gregorian year minus 1900.
 .
 .
 .\" ====================================================================
+.SS Delimiters
+.\" ====================================================================
+.\" BEGIN Keep (roughly) parallel with relevant material from groff.texi
+.\" node "Compatibility Mode".
+AT&T
+.I troff \" AT&T
+recognized slightly varying sets of delimiters when expecting
+numerical expressions
+(as with the
+.B \[rs]h
+escape sequence),
+string expressions
+(as with the
+.B \[rs]w
+escape sequence),
+and output comparisons
+(as in
+.RB \[lq] ".if #foo#bar# .tm match" \[rq]).
+GNU
+.IR troff , \" GNU
+when not in compatibility mode,
+recognizes a single consistent set of delimiters.
+Compatibility mode
+emulates
+AT&T
+.I troff \" AT&T
+only up to a point.
+GNU
+.IR troff , \" GNU
+accepts leaders and tabs as delimiters,
+as well as
+Control+D
+(EOT or EOF),
+Control+H
+(BS or backspace),
+and
+Control+L
+(FF or form feed),
+all of which cause
+AT&T
+.I troff \" AT&T
+to behave in ways difficult to predict.
+.\" END Keep (roughly) parallel with relevant material from groff.texi
+.\" node "Compatibility Mode".
+.
+.
+.\" ====================================================================
 .SS Miscellaneous
 .\" ====================================================================
 .
@@ -6181,19 +6228,17 @@ while it interprets its argument list.
 .SH "Other differences"
 .\" ====================================================================
 .
-GNU
-.IR troff 's \" GNU
-features sometimes cause incompatibilities with documents written
-assuming old implementations of
-.IR troff . \" generic
-GNU
-.I troff \" GNU
-request names unrecognized by other
+Other
 .I troff \" generic
-implementations will likely be ignored by them,
-and escape sequences that are GNU
+formatters that don't implement request names that are
+GNU
 .I troff \" GNU
-extensions are liable to format their function selector character.
+extensions tend to ignore them,
+and if they don't support a
+GNU
+.I troff \" GNU
+extension escape sequence,
+they are liable to format the function selector character as text.
 .
 For example,
 the adjustable,

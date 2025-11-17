@@ -117,20 +117,21 @@ independently and systematically.
 It copies the contents of each
 .I file
 to the standard output stream,
-except that it interprets lines between
+looking up each
+.I citation
+between lines starting with
 .B .[
 and
 .B .]\&
-as
-.I citations
-to be translated into
-.I groff
-input,
-and lines between
+and replacing it with a bibliographic reference.
+.
+GNU
+.I refer \" GNU
+furthermore interprets lines between those starting with
 .B .R1
 and
 .B .R2
-as instructions regarding how citations are to be processed.
+as instructions directing how citations are to be processed.
 .
 .I @g@refer
 interprets and generates

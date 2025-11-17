@@ -2,7 +2,7 @@
 #
 # make-uniuni -- script for creating the file uniuni.cpp
 #
-# Copyright (C) 2005-2024 Free Software Foundation, Inc.
+# Copyright 2005-2024 Free Software Foundation, Inc.
 #      Written by Werner Lemberg <wl@gnu.org>
 #
 # This file is part of groff.
@@ -67,7 +67,7 @@ cat $$3 \
 
 # Write preamble.
 cat <<END
-/* Copyright (C) 2002-2024  Free Software Foundation, Inc.
+/* Copyright 2002-2024  Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
 This file is part of groff.

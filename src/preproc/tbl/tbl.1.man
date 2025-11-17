@@ -92,14 +92,18 @@ preprocessor that translates descriptions of tables embedded in
 input into the language understood by
 .IR @g@troff .
 .
-It copies the contents of each
-.I file
-to the standard output stream,
-except that lines between
+It copies each
+.IR file 's
+contents to the standard output stream,
+transforming each
+.I "table region"
+between lines sarting with
 .B .TS
 and
 .B .TE
-are interpreted as table descriptions.
+into instructions to the GNU
+.I troff \" GNU
+formatter.
 .
 While GNU
 .IR tbl 's \" GNU
@@ -147,9 +151,7 @@ and
 .B .TE
 (table end).
 .
-Each such
-.I table region
-encloses one or more table descriptions.
+Each such table region encloses one or more table descriptions.
 .
 Within a table region,
 table descriptions beyond the first must each be preceded
@@ -193,8 +195,9 @@ macros to handle issues of table placement on the page.
 .
 .I @g@tbl
 produces
-.I groff
-code to define these macros as empty if their definitions do not exist
+.I troff \" generic
+requests to define these macros as empty
+if their definitions do not exist
 when the formatter encounters a table region.)
 .
 .
@@ -223,7 +226,7 @@ token may specify region options,
 keywords that influence the interpretation or rendering of the region as
 a whole or all table entries within it indiscriminately.
 .
-They must be separated by commas,
+Separate multiple region options with commas,
 spaces,
 or tabs.
 .
@@ -338,7 +341,8 @@ its entries and its column separations
 When
 .B \%expand
 applies to a table that exceeds the available horizontal space,
-column separation is reduced as far as necessary
+.I tbl \" generic
+reduces column separation as far as necessary
 (even to zero).
 .
 .I @g@tbl
@@ -363,7 +367,7 @@ with a thickness of
 .
 The default is the current type size when the region begins.
 .
-This option is ignored on terminal devices.
+This option has no effect on terminal devices.
 .
 .
 .TP
@@ -444,7 +448,7 @@ We term the resulting group of column descriptors a
 .
 Within a row definition,
 separation between column descriptors
-(by spaces or tabs)
+by spaces or tabs
 is often optional;
 only some modifiers,
 described below,
@@ -518,10 +522,10 @@ Any rows of entries appended to the table data reuse the row definition
 .P
 The row definition with the most column descriptors determines the
 number of columns in the table;
+any row definition with fewer,
 GNU
 .I tbl \" GNU
-implicitly extends any row definition with fewer
-on the right-hand side with
+implicitly extends on the right-hand side with
 .B L
 descriptors as many times as necessary to make the table rectangular.
 .\" Heirloom Doctools tbl also does that; DWB tbl does not.
@@ -576,7 +580,7 @@ Left-align entry within the column.
 Numerically align entry in the column.
 .
 .I @g@tbl
-aligns columns of numbers vertically at the units place.
+aligns columns of decimal numbers vertically at the units place.
 .
 If multiple decimal separators are adjacent to a digit,
 it uses the rightmost one for vertical alignment.
@@ -752,8 +756,8 @@ Modifier arguments,
 where accepted,
 are case-sensitive.
 .
-If a given modifier is applied to a classifier more than once,
-or if conflicting modifiers are applied,
+If you apply a given modifier to a classifier more than once,
+or apply conflicting modifiers,
 only the last occurrence has effect.
 .
 The
@@ -880,13 +884,11 @@ with an optional leading sign must follow.
 .
 If unsigned,
 the type size is set to
-.IR n \~scaled
-points.
+.IR n \~points.
 .
 Otherwise,
 the type size is incremented or decremented per the sign by
-.IR n \~scaled
-points.
+.IR n \~points.
 .
 The use of a signed multi-digit number is a GNU extension.
 .
@@ -1080,7 +1082,7 @@ updating the width required by its corresponding column.
 .
 If the
 .B z
-modifier applies to the column,
+modifier applies to the entry,
 this measurement is ignored;
 if
 .B w
@@ -1098,7 +1100,8 @@ do not persist between entries.
 .
 .
 .P
-Several forms of table entry are interpreted specially.
+.I @g@tbl
+interprets several forms of table entry specially.
 .
 .
 .IP \[bu] 3n
@@ -1147,7 +1150,9 @@ where
 .IR x \~is
 any
 .I roff
-ordinary or special character,
+ordinary,
+special,
+or indexed character,
 is replaced by enough repetitions of the glyph corresponding
 .RI to\~ x
 to fill the column,
@@ -1325,7 +1330,10 @@ you can also control a text block's width by including an
 request in it prior to any text to be formatted.
 .
 Because a diversion is used to format the text block,
-its height and width are subsequently available in the registers
+its height and width are subsequently available
+in the
+.I troff \" generic
+registers
 .B dn
 and
 .BR dl ,
@@ -1343,12 +1351,12 @@ it can't be used within the region itself,
 but is defined before the
 .B .TE
 token is output so that a
-.I groff
+.I troff \" generic
 macro named
 .B TE
 can make use of it.
 .
-.B T.\&
+.RB \[lq] T.\& \[rq]
 is a Boolean-valued register indicating whether the bottom of the table
 is being processed.
 .
@@ -1542,7 +1550,7 @@ requests that
 injects to restore the source line number cannot take effect.
 .
 Consider copying the input line counter register
-.B c.\&
+.RB \[lq] c.\& \[rq]
 and restoring its value at a convenient location after applicable
 arithmetic.
 .

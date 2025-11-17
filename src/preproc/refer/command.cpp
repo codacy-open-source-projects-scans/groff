@@ -739,7 +739,7 @@ static int check_args(const char *types, const char *name,
       }
       break;
     default:
-      assert(0);
+      assert(0 == "unhandled case of command type");
     }
     if (types[1] == '?')
       types += 2;

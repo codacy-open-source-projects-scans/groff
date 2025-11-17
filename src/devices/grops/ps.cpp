@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -53,12 +53,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "stringclass.h"
 
 #include "ps.h"
-
-#ifdef NEED_DECLARATION_PUTENV
-extern "C" {
-  int putenv(const char *);
-}
-#endif /* NEED_DECLARATION_PUTENV */
 
 extern "C" const char *Version_string;
 
@@ -1918,9 +1912,8 @@ int main(int argc, char **argv)
       env += '=';
       env += optarg;
       env += '\0';
-      if (putenv(strsave(env.contents())))
-	fatal("unable to update process environment: %1",
-	      strerror(errno));
+      if (putenv(strsave(env.contents())) != 0)
+	fatal("cannot update process environment: %1", strerror(errno));
       break;
     case 'v':
       printf("GNU grops (groff) version %s\n", Version_string);

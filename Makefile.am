@@ -1,4 +1,4 @@
-# Copyright (C) 1989-2024 Free Software Foundation, Inc.
+# Copyright 1989-2024 Free Software Foundation, Inc.
 # Original Makefile.in written by James Clark (jjc@jclark.com)
 # Migrated to Automake by Bertrand Garrigues
 #
@@ -294,7 +294,6 @@ man7dir=$(manroot)/man$(man7ext)
 # HAVE_SYS_TYPES_H		if you have <sys/types.h>
 # HAVE_UNISTD_H		if you have <unistd.h>
 #
-# HAVE_FMOD			if you have fmod()
 # HAVE_GETCWD			if you have getcwd()
 # HAVE_GETTIMEOFDAY		if you have gettimeofday()
 # HAVE_ICONV			if you have iconv()
@@ -303,7 +302,6 @@ man7dir=$(manroot)/man$(man7ext)
 # HAVE_LANGINFO_CODESET	if you have nl_langinfo()
 # HAVE_MKSTEMP		if you have mkstemp()
 # HAVE_MMAP			if you have mmap()
-# HAVE_PUTENV			if you have putenv()
 # HAVE_RENAME			if you have rename()
 # HAVE_SETLOCALE		if you have setlocale()
 # HAVE_STRCASECMP		if you have strcasecmp()
@@ -318,8 +316,6 @@ man7dir=$(manroot)/man$(man7ext)
 # NEED_DECLARATION_HYPOT	if your C++ <math.h> doesn't declare hypot()
 # NEED_DECLARATION_PCLOSE	if your C++ <stdio.h> doesn't declare pclose()
 # NEED_DECLARATION_POPEN	if your C++ <stdio.h> doesn't declare popen()
-# NEED_DECLARATION_PUTENV	if your C++ <stdlib.h> doesn't declare
-#				putenv()
 # NEED_DECLARATION_RAND	if your C++ <stdlib.h> doesn't declare rand()
 # NEED_DECLARATION_SRAND	if your C++ <stdlib.h> doesn't declare srand()
 # NEED_DECLARATION_STRCASECMP	if your C++ <string.h> doesn't declare
@@ -355,7 +351,7 @@ man7dir=$(manroot)/man$(man7ext)
 
 # Include
 #
-#   {fmod,getcwd,mkstemp,putenv,
+#   {getcwd,mkstemp,
 #    strerror,strtol}.$(OBJEXT)
 #
 # in 'LIBOBJS' if your C library is missing the corresponding function.
@@ -567,6 +563,7 @@ include $(top_srcdir)/contrib/gperl/gperl.am
 include $(top_srcdir)/contrib/gpinyin/gpinyin.am
 include $(top_srcdir)/contrib/grap2graph/grap2graph.am
 include $(top_srcdir)/contrib/hdtbl/hdtbl.am
+include $(top_srcdir)/contrib/install-font/install-font.am
 include $(top_srcdir)/contrib/mm/mm.am
 include $(top_srcdir)/contrib/mom/mom.am
 include $(top_srcdir)/contrib/pic2graph/pic2graph.am

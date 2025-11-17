@@ -972,7 +972,8 @@ A new read-only, string-valued register `.sty' returns the name of the
 current style.
 
 .LI
-Two new conditional operators `F\~\[la]name\[ra]' and `S\~\[la]name\[ra]'
+Two new conditional expression operators
+`F\~\[la]name\[ra]' and `S\~\[la]name\[ra]'
 have been added.
 `F' is true if a font \[la]name\[ra] exists.
 `S' is true if a style \[la]name\[ra] has been registered.
@@ -1968,7 +1969,7 @@ environment variable also.
 For defining color components as fractions between 0 and\~1, a new
 scaling unit `f' has been defined: 1f\~=\~65536u.
 For testing whether a color is defined (with \&.if and \&.ie), a new
-conditional operator `m' is available.
+conditional expression operator `m' is available.
 
 More details can be found in the groff_diff.7 manual page and in
 groff.texinfo.

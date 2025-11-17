@@ -5748,10 +5748,15 @@ Macros}.}
 @endExample
 
 @noindent
-The foregoing input produces no output by itself; all we have done is
-store some information.  Observe the pair of dots that ends the macro
-definition.  This is a default; you can specify your own terminator for
-the macro definition as the second argument to the @code{de} request.
+The foregoing input produces no output by itself;
+all we have done is store information in a macro named
+@samp{DATE}.
+Observe the pair of dots that ends the macro definition.
+This is a default;
+you can specify your own terminator for the macro definition
+as the second argument to the
+@code{de}
+request.
 
 @Example
 .de NAME ENDNAME
@@ -5839,13 +5844,26 @@ macros for such simple interpolations; what is important here is to
 glimpse the potential of macros and the power of recursive
 interpolation.
 
-We could have defined @code{DATE} and @code{BOSS} in the opposite order;
-perhaps less obviously, we could also have defined them @emph{after}
-@code{NOTICE}.  ``Forward references'' like this are acceptable because
-the body of a macro definition is not (completely) interpreted, but
-stored instead (@pxref{Copy Mode}).  While a macro is being defined (or
-appended to), requests are not interpreted and macros not interpolated,
-whereas some commonly used escape sequences @emph{are} interpreted.
+We could have defined our
+@code{DATE}
+and
+@code{BOSS}
+macros in the opposite order;
+perhaps less obviously,
+we could also have defined them
+@emph{after}
+@code{NOTICE}.
+Such ``forward references'' are well-defined
+because the body of a macro definition is,
+for the most part,
+stored rather than interpreted
+(@pxref{Copy Mode}).
+While a macro is being defined
+(or appended to),
+requests are not interpreted and macros not interpolated;
+some commonly used escape sequences
+@emph{are}
+however interpreted.
 @code{roff} systems also support recursive macro calls, as long as you
 have a way to break the recursion (@pxref{Conditionals and Loops}).
 Maintainable @code{roff} documents tend to arrange macro definitions to
@@ -5967,11 +5985,13 @@ or other encodings that use characters from these ranges.
 @node Input Encodings, Input Conventions, Input Format, Text
 @subsection Input Encodings
 
-The
+Recall from
+@ref{Groff Options},
+that the
 @command{groff}
 command's
 @option{-k}
-option calls the
+option runs the
 @command{preconv}
 preprocessor
 to perform input character encoding conversions to satisfy
@@ -6314,9 +6334,9 @@ which the next glyph will be written, from which the next motion will be
 measured, or where a geometric object will commence rendering.
 Notionally, glyphs are drawn from the text baseline upward and to the
 right.@footnote{@code{groff} does not yet support right-to-left
-scripts.}  A glyph therefore ``starts'' at its bottom-left corner.  The
-formatter's origin is thus one vee below the page top, preventing a
-glyph from lying partially or wholly off the page.
+scripts.}  A glyph therefore ``starts'' at its bottom-left corner.
+The formatter's origin is one vee below the page top
+to prevent a glyph from lying partially or wholly off the page.
 
 @cindex page offset
 @cindex offset, page
@@ -6338,7 +6358,7 @@ Combining the foregoing facts results in an origin that lies
 at the page offset in the horizontal dimension
 and at the text baseline (using the default vertical spacing)
 in the vertical dimension.
-A document can change these prior to the first written or drawn output;
+A document can change these prior to its first written or drawn output;
 see @ref{Line Layout} and
 @ref{Manipulating Type Size and Vertical Spacing}.
 @c This origin isn't necessarily--and generally is not--the one used by
@@ -6359,11 +6379,12 @@ to the next text baseline.
 If the formatter were already writing
 to the last line that fits on the page,
 advancing by one vee would place the next text baseline off the page.
-Rather than let that happen,
+To avoid that,
 @code{roff}
 formatters instruct the output driver to eject the page,
 start a new one,
-and again place the drawing position one vee below the page top;
+and again place the drawing position
+at the page offset one vee below the page top;
 this is a
 @dfn{page break}.
 
@@ -6421,6 +6442,7 @@ Digits after the decimal point are optional.
 Examples of measurements include
 @samp{10.5p},
 @samp{11i},
+@samp{.5f},
 and @samp{3.c}.
 
 @cindex basic units, conversion to
@@ -6496,7 +6518,8 @@ like
 @code{p},
 but used only with type sizes,
 to overcome a limitation of AT&T
-@command{troff}. @c AT&T
+@command{troff}; @c AT&T
+see @ref{Using Fractional Type Sizes}.
 
 @item f
 GNU @code{troff} defines this unit to scale decimal fractions in the
@@ -6504,6 +6527,7 @@ interval [0, 1] to 16-bit unsigned integers.  It multiplies a quantity
 by 65,536.  @xref{Colors}, for usage.
 @end table
 
+@need 1000
 The magnitudes of other scaling units depend on the text formatting
 parameters in effect.  These are useful when specifying measurements
 that need to scale with the typeface or vertical spacing.
@@ -6527,7 +6551,8 @@ because it is approximately the width of the letter@tie{}@samp{M}.
 En;
 on typesetters,
 an en is one-half em,
-but on terminals an en equals an em.
+but on terminals an en equals an em,
+because they align all text to a grid of character cells.
 
 @item v
 @cindex vertical space unit (@code{v})
@@ -6711,6 +6736,7 @@ completeness; it does nothing).  The unary minus must often be used
 with parentheses to avoid confusion with the decrementation operator,
 discussed below.
 
+@need 1000
 Observe the rounding behavior and effect of negative operands on the
 modulus and truncating division operators.
 
@@ -6981,8 +7007,7 @@ underlines the period.
 
 For vertical motions, the @code{|} operator specifies a distance from
 the first text baseline on the page or in the current
-diversion,@footnote{@xref{Diversions}.} using the current vertical
-spacing.
+diversion.@footnote{@xref{Diversions}.}
 
 @Example
 A
@@ -11345,7 +11370,9 @@ We can assign a font to a margin character as follows
 @cindex @code{ie} request, and font translations
 @cindex @code{while} request, and font translations
 Translate font name@tie{}@var{f} to@tie{}@var{g}.  Where the @code{\f}
-escape sequence, the @code{F} and @code{S} conditional operators, and
+escape sequence,
+the @code{F} and @code{S} conditional expression operators,
+and
 the @code{ft}, @code{ul}, @code{bd}, @code{cs}, @code{tkf},
 @code{special}, @code{fspecial}, @code{fp}, or @code{sty} requests refer
 to@tie{}@var{f}, GNU @command{troff} uses @var{g} instead.  Omit @var{g}
@@ -13041,9 +13068,14 @@ see @ref{Environments})
 @cindex changing type sizes (@code{ps}, @code{\s})
 @cindex type sizes, changing (@code{ps}, @code{\s})
 @cindex point sizes, changing (@code{ps}, @code{\s})
-Set (increase, decrease) the type size to (by) @var{size} scaled points.
-@code{ps} with no argument restores the previous size.  The @code{ps}
-request's default scaling unit is @samp{z}.
+Set (increase, decrease) the type size to (by) @var{size} points.
+@code{ps} with no argument restores the previous size.
+The
+@code{ps}
+request's default scaling unit is
+@samp{z};
+recall @ref{Measurements}
+and see @ref{Using Fractional Type Sizes}).
 The formatter rounds the requested size to the nearest valid size
 (with ties rounding down)
 within the limits supported by the device,
@@ -16879,10 +16911,12 @@ top-level diversion has no name.
 Dereferencing an undefined diversion creates an empty one of that
 name and emits a warning in category @samp{mac}.
 @xref{Warnings}, regarding the enablement and suppression of warnings.
-A diversion does not exist for the purpose of testing with the @code{d}
-conditional operator until its initial definition ends (@pxref{Operators
-in Conditionals}).  The following requests are used to create and alter
-diversions.
+A diversion does not exist for the purpose of testing with the
+@code{d}
+conditional expression operator
+until its initial definition ends
+(@pxref{Operators in Conditionals}).
+The following requests are used to create and alter diversions.
 
 @DefreqList {di, [@Var{name}]}
 @DefreqListEndx {da, [@Var{name}]}
@@ -19256,11 +19290,11 @@ and no mounted font defines a glyph for it,
 or input could not be encoded for device-independent output.
 This category is enabled by default.
 
-@item number
-@itemx 2
-An invalid numeric expression was encountered.  This category is enabled
-by default.
-@xref{Numeric Expressions}.
+@c @item number
+@c @itemx 2
+@c An invalid numeric expression was encountered.  This category is
+@c enabled by default.
+@c @xref{Numeric Expressions}.
 
 @item break
 @itemx 4
@@ -19386,11 +19420,11 @@ issues at most one warning for each.
 A tab character was encountered where a number was expected, or appeared
 in an unquoted macro argument.
 
-@item right-brace
-@itemx 4096
-@cindex @code{\@}}, and warnings
-A right brace escape sequence @code{\@}} was encountered where a number
-was expected.
+@c @item right-brace
+@c @itemx 4096
+@c @cindex @code{\@}}, and warnings
+@c A right brace escape sequence @code{\@}} was encountered where a
+@c number was expected.
 
 @item missing
 @itemx 8192
@@ -19811,20 +19845,63 @@ Thus they work as expected
 even if the interpolation context disables compatibility mode.
 @c END Keep in sync with groff_diff(7), subsection "Altered requests".
 
+@c BEGIN Keep in sync with groff_diff(7), subsection "Delimiters".
+@acronym{AT&T}
+@code{troff} @c AT&T
+recognized slightly varying sets of delimiters when expecting
+numerical expressions
+(as with the
+@code{\h}
+escape sequence),
+string expressions
+(as with the
+@code{\w}
+escape sequence),
+and output comparisons
+(as in
+@samp{.if #foo#bar# .tm match}).
+GNU
+@command{troff}, @c GNU
+when not in compatibility mode,
+recognizes a single consistent set of delimiters.
+Compatibility mode
+emulates
+@acronym{AT&T}
+@code{troff} @c AT&T
+only up to a point.
+GNU
+@command{troff} @c GNU
+accepts leaders and tabs as delimiters,
+as well as
+@key{Control+D}
+(EOT or EOF),
+@key{Control+H}
+(BS or backspace),
+and
+@key{Control+L}
+(FF or form feed),
+all of which cause
+@acronym{AT&T}
+@code{troff} @c AT&T
+to behave in ways difficult to predict.
+@c END Keep in sync with groff_diff(7), subsection "Delimiters".
+
 @c ---------------------------------------------------------------------
 
 @node Other Differences, , Compatibility Mode, Implementation Differences
 @subsection Other Differences
 
-GNU
-@command{troff} @c GNU
-request names unrecognized by other
+Other
 @command{troff} @c generic
-implementations will likely be ignored by them,
-and escape sequences that are
+formatters that don't implement request names that are
 GNU
 @command{troff} @c GNU
-extensions are liable to format their function selector character.
+extensions tend to ignore them,
+and if they don't support a
+GNU
+@command{troff} @c GNU
+extension escape sequence,
+they are liable to format the function selector character as text.
 @cindex @code{\~}, incompatibilities with @acronym{AT&T} @code{troff}
 For example,
 the adjustable,

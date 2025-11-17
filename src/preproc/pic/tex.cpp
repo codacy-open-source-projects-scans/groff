@@ -239,7 +239,7 @@ void tex_output::spline(const position &start, const position *v, int n,
     printf(" %.3f", lt.dash_width/scale);
     break;
   case line_type::invisible:
-    assert(0);
+    assert(0 == "unhandled case of line type");
   }
   fputs("}%\n", stdout);
 }
@@ -312,7 +312,7 @@ void tex_output::circle(const position &cent, double rad,
     dotted_circle(cent, rad, lt);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of line type");
   }
 }
 
@@ -348,7 +348,7 @@ void tex_output::ellipse(const position &cent, const distance &dim,
     dotted_ellipse(cent, dim / scale, lt);
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of line type");
   }
 }
 

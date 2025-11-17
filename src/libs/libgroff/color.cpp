@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2024 Free Software Foundation, Inc.
+/* Copyright 2001-2024 Free Software Foundation, Inc.
      Written by Gaius Mulley <gaius@glam.ac.uk>
 
 This file is part of groff.
@@ -249,7 +249,7 @@ color::get_rgb(unsigned int *r, unsigned int *g, unsigned int *b) const
     *r = *g = *b = Gray;
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of color scheme");
     break;
   }
 }
@@ -280,7 +280,7 @@ color::get_cmy(unsigned int *c, unsigned int *m, unsigned int *y) const
     *c = *m = *y = MAX_COLOR_VAL - Gray;
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of color scheme");
     break;
   }
 }
@@ -330,7 +330,7 @@ void color::get_cmyk(unsigned int *c, unsigned int *m,
     *k = MAX_COLOR_VAL - Gray;
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of color scheme");
     break;
   }
 }
@@ -355,7 +355,7 @@ void color::get_gray(unsigned int *g) const
     *g = Gray;
     break;
   default:
-    assert(0);
+    assert(0 == "unhandled case of color scheme");
     break;
   }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2003 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -31,12 +31,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "stringclass.h"
 
 #include "ps.h"
-
-#ifdef NEED_DECLARATION_PUTENV
-extern "C" {
-  int putenv(const char *);
-}
-#endif /* NEED_DECLARATION_PUTENV */
 
 #define GROPS_PROLOGUE "prologue"
 
@@ -297,8 +291,8 @@ void resource_manager::output_prolog(ps_output &out)
     e += '=';
     e += GROPS_PROLOGUE;
     e += '\0';
-    if (putenv(strsave(e.contents())))
-      fatal("cannot update environment: %1", strerror(errno));
+    if (putenv(strsave(e.contents())) != 0)
+      fatal("cannot update process environment: %1", strerror(errno));
   }
   char *prologue = getenv("GROPS_PROLOGUE");
   FILE *fp = font::open_resource_file(prologue, &path);

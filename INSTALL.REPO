@@ -111,7 +111,8 @@ When the build is finished you can install the groff build artifacts.
 
     $ make install install-doc # run with "sudo" if necessary
 
-The "install-doc" target does not work if TeX is not installed.
+The "install-doc" target installs the typeset and HTML versions of
+groff's Texinfo manual, but does not work if TeX is not installed.
 
 
 Uninstalling
