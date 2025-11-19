@@ -227,7 +227,7 @@ void environment::mark_last_line()
 void widow_control_request()
 {
   int n;
-  if (has_arg() && get_integer(&n))
+  if (has_arg() && read_integer(&n))
     curenv->want_widow_control = (n > 0);
   else
     curenv->want_widow_control = true;
@@ -1262,7 +1262,7 @@ node *environment::extract_output_line()
 
 static void select_fill_color_request()
 {
-  symbol s = get_name();
+  symbol s = read_identifier();
   if (s.is_null())
     curenv->set_fill_color(curenv->get_prev_fill_color());
   else
@@ -1272,7 +1272,7 @@ static void select_fill_color_request()
 
 static void select_stroke_color_request()
 {
-  symbol s = get_name();
+  symbol s = read_identifier();
   if (s.is_null())
     curenv->set_stroke_color(curenv->get_prev_stroke_color());
   else
@@ -1322,7 +1322,7 @@ void select_font(symbol s)
 
 static void select_font_request()
 {
-  select_font(get_name());
+  select_font(read_identifier());
   skip_line();
 }
 
@@ -1332,7 +1332,7 @@ void family_change()
     skip_line();
     return;
   }
-  symbol s = get_name();
+  symbol s = read_identifier();
   curenv->set_family(s);
   skip_line();
 }
@@ -1419,12 +1419,12 @@ void space_size()
     return;
   }
   int n;
-  if (get_integer(&n)) {
+  if (read_integer(&n)) {
     if (n < 0)
       warning(WARN_RANGE, "ignoring negative word space size: '%1'", n);
     else
       curenv->space_size = n;
-    if (has_arg() && get_integer(&n))
+    if (has_arg() && read_integer(&n))
       if (n < 0)
 	warning(WARN_RANGE, "ignoring negative sentence space size: "
 		"'%1'", n);
@@ -1460,7 +1460,7 @@ void no_fill()
 void center()
 {
   int n;
-  if (!has_arg() || !get_integer(&n))
+  if (!has_arg() || !read_integer(&n))
     n = 1;
   else if (n < 0)
     n = 0;
@@ -1477,7 +1477,7 @@ void center()
 void right_justify()
 {
   int n;
-  if (!has_arg() || !get_integer(&n))
+  if (!has_arg() || !read_integer(&n))
     n = 1;
   else if (n < 0)
     n = 0;
@@ -1564,9 +1564,10 @@ void post_vertical_spacing()
 void line_spacing()
 {
   int temp;
-  if (has_arg() && get_integer(&temp)) {
+  if (has_arg() && read_integer(&temp)) {
     if (temp < 1) {
-      warning(WARN_RANGE, "value %1 out of range: interpreted as 1", temp);
+      warning(WARN_RANGE, "line spacing value '%1' is out of range;"
+	      " assuming '1'", temp);
       temp = 1;
     }
   }
@@ -1635,7 +1636,7 @@ void temporary_indent()
 void configure_underlining(bool want_spaces_underlined)
 {
   int n;
-  if (!has_arg() || !get_integer(&n))
+  if (!has_arg() || !read_integer(&n))
     n = 1;
   if (n <= 0) {
     if (curenv->underlined_line_count > 0) {
@@ -1675,7 +1676,7 @@ void margin_character()
   while (tok.is_space())
     tok.next();
   charinfo *ci = tok.get_char();
-  if (ci) {
+  if (ci != 0 /* nullptr */) {
     // Call tok.next() only after making the node so that
     // .mc \s+9\(br\s0 works.
     node *nd = curenv->make_char_node(ci);
@@ -1720,7 +1721,7 @@ void number_lines()
     curenv->line_number_digit_width = env_digit_width(curenv);
     int n;
     if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
-      if (get_integer(&n, next_line_number)) {
+      if (read_integer(&n, next_line_number)) {
 	next_line_number = n;
 	if (next_line_number < 0) {
 	  warning(WARN_RANGE, "output line number cannot be negative");
@@ -1733,7 +1734,7 @@ void number_lines()
 	tok.next();
     if (has_arg()) {
       if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
-	if (get_integer(&n)) {
+	if (read_integer(&n)) {
 	  if (n <= 0) {
 	    warning(WARN_RANGE, "output line number multiple cannot"
 		    "be nonpositive");
@@ -1747,14 +1748,14 @@ void number_lines()
 	  tok.next();
       if (has_arg()) {
 	if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
-	  if (get_integer(&n))
+	  if (read_integer(&n))
 	    curenv->number_text_separation = n;
 	}
 	else
 	  while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
 	    tok.next();
 	if (has_arg() && !tok.is_usable_as_delimiter() // XXX abuse of function
-	    && get_integer(&n))
+	    && read_integer(&n))
 	  curenv->line_number_indent = n;
       }
     }
@@ -1765,7 +1766,7 @@ void number_lines()
 void no_number()
 {
   int n;
-  if (has_arg() && get_integer(&n))
+  if (has_arg() && read_integer(&n))
     curenv->no_number_count = n > 0 ? n : 0;
   else
     curenv->no_number_count = 1;
@@ -1781,7 +1782,7 @@ void no_hyphenate()
 void hyphenate_request()
 {
   int n;
-  if (has_arg() && get_integer(&n)) {
+  if (has_arg() && read_integer(&n)) {
     if (n < HYPHEN_NONE) {
       warning(WARN_RANGE, "ignoring negative hyphenation mode: %1", n);
     } else if (n > HYPHEN_MAX) {
@@ -1809,8 +1810,7 @@ void set_hyphenation_mode_default()
     return;
   }
   int n;
-  if (!get_integer(&n)) {
-    // get_integer() will throw a diagnostic if necessary.
+  if (!read_integer(&n)) { // throws a diagnostic if necessary
     skip_line();
     return;
   }
@@ -1836,7 +1836,7 @@ void hyphenation_character_request()
 void hyphen_line_max_request()
 {
   int n;
-  if (has_arg() && get_integer(&n))
+  if (has_arg() && read_integer(&n))
     curenv->hyphen_line_max = n;
   else
     curenv->hyphen_line_max = -1;
@@ -2751,7 +2751,7 @@ void adjust()
       break;
     default:
       int n;
-      if (get_integer(&n)) {
+      if (read_integer(&n)) {
 	if (n < 0)
 	  warning(WARN_RANGE, "negative adjustment mode");
 	else if (n > ADJUST_MAX)
@@ -2778,12 +2778,12 @@ void do_input_trap(bool respect_continuation)
   curenv->input_trap = 0 /* nullptr */;
   curenv->continued_input_trap = respect_continuation;
   int n;
-  if (has_arg() && get_integer(&n)) {
+  if (has_arg() && read_integer(&n)) {
     if (n <= 0)
       warning(WARN_RANGE,
 	      "input trap line count must be greater than zero");
     else {
-      symbol s = get_name(true /* required */);
+      symbol s = read_identifier(true /* required */);
       if (!s.is_null()) {
 	curenv->input_trap_count = n;
 	curenv->input_trap = s;
@@ -3076,7 +3076,7 @@ static void field_characters_request()
 void line_tabs_request()
 {
   int n;
-  if (has_arg() && get_integer(&n))
+  if (has_arg() && read_integer(&n))
     curenv->using_line_tabs = (n > 0);
   else
     curenv->using_line_tabs = true;
@@ -3751,7 +3751,7 @@ static void select_hyphenation_language()
     skip_line();
     return;
   }
-  symbol nm = get_name();
+  symbol nm = read_identifier();
   if (!nm.is_null()) {
     current_language = static_cast<hyphenation_language *>
       (language_dictionary.lookup(nm));
@@ -3850,6 +3850,9 @@ static void add_hyphenation_exceptions()
 	   && !tok.is_eof()) {
       charinfo *ci = tok.get_char(true /* required */);
       if (0 /* nullptr */ == ci) {
+	error("%1 has no associated character information(!)",
+	      tok.description());
+	assert(0 == "unexpected null pointer to charinfo of token");
 	skip_line();
 	return;
       }

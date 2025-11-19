@@ -122,7 +122,7 @@ public:
 
 extern token tok;		// the current token
 
-extern symbol get_name(bool /* required */ = false);
+extern symbol read_identifier(bool /* required */ = false);
 extern symbol get_long_name(bool /* required */ = false);
 extern charinfo *read_character(); // TODO?: bool /* required */ = false
 extern char *read_rest_of_line_as_argument();
@@ -146,11 +146,11 @@ extern void read_title_parts(node **part, hunits *part_width);
 extern bool get_number_rigidly(units *result, unsigned char si);
 
 extern bool read_measurement(units *result, unsigned char si);
-extern bool get_integer(int *result);
+extern bool read_integer(int *result);
 
 extern bool read_measurement(units *result, unsigned char si,
 			     units prev_value);
-extern bool get_integer(int *result, int prev_value);
+extern bool read_integer(int *result, int prev_value);
 
 extern void interpolate_register(symbol, int);
 

@@ -95,10 +95,11 @@ public:
   void make_translatable_as_input();
   bool is_translatable_as_input();
   charinfo *get_translation(bool = false);
-  void set_translation(charinfo *, int, int);
+  void set_translation(charinfo *, bool /* transparently */,
+		       bool /* as_input */);
   void get_flags();
   void set_flags(unsigned int);
-  void set_special_translation(int, int);
+  void set_special_translation(int, bool /* transparently */);
   int get_special_translation(bool = false);
   macro *set_macro(macro *);
   macro *set_macro(macro *, char_mode);
@@ -256,9 +257,9 @@ inline bool charinfo::is_translatable_as_input()
   return translatable_as_input;
 }
 
-inline int charinfo::get_special_translation(bool for_transparent_throughput)
+inline int charinfo::get_special_translation(bool transparently)
 {
-  return (for_transparent_throughput && !is_transparently_translatable
+  return (transparently && !is_transparently_translatable
 	  ? int(TRANSLATE_NONE)
 	  : special_translation);
 }

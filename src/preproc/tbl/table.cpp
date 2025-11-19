@@ -66,7 +66,7 @@ const int DEFAULT_COLUMN_SEPARATION = 3;
 #define NEEDED_REG PREFIX "needed"
 #define REPEATED_MARK_MACRO PREFIX "rmk"
 #define REPEATED_VPT_MACRO PREFIX "rvpt"
-#define TEXT_BLOCK_STAGGERING_MACRO PREFIX "sp"
+#define TEXT_BLOCK_STAGGER_MACRO PREFIX "stagger"
 #define SUPPRESS_BOTTOM_REG PREFIX "supbot"
 #define SAVED_DN_REG PREFIX "dn"
 #define SAVED_HYPHENATION_MODE_REG PREFIX "hyphmode"
@@ -689,7 +689,7 @@ void block_entry::position_vertically()
 		  " CENTER, or BOTTOM");
     }
   if (mod->stagger)
-    prints("." TEXT_BLOCK_STAGGERING_MACRO " -.5v\n");
+    prints("." TEXT_BLOCK_STAGGER_MACRO " -.5v\n");
 }
 
 int block_entry::divert(int ncols, const string *mw, int *sep,
@@ -791,7 +791,7 @@ void left_block_entry::print()
   printfs(".in +\\n[%1]u\n", column_start_reg(start_col));
   printfs(".%1\n", block_diversion_name(start_row, start_col));
   if (mod->stagger)
-    prints("." TEXT_BLOCK_STAGGERING_MACRO " .5v\n");
+    prints("." TEXT_BLOCK_STAGGER_MACRO " .5v\n");
   prints(".in\n");
 }
 
@@ -809,7 +809,7 @@ void right_block_entry::print()
 	  block_width_reg(start_row, start_col));
   printfs(".%1\n", block_diversion_name(start_row, start_col));
   if (mod->stagger)
-    prints("." TEXT_BLOCK_STAGGERING_MACRO " .5v\n");
+    prints("." TEXT_BLOCK_STAGGER_MACRO " .5v\n");
   prints(".in\n");
 }
 
@@ -827,7 +827,7 @@ void center_block_entry::print()
 	  block_width_reg(start_row, start_col));
   printfs(".%1\n", block_diversion_name(start_row, start_col));
   if (mod->stagger)
-    prints("." TEXT_BLOCK_STAGGERING_MACRO " .5v\n");
+    prints("." TEXT_BLOCK_STAGGER_MACRO " .5v\n");
   prints(".in\n");
 }
 
@@ -853,7 +853,7 @@ void alphabetic_block_entry::print()
 	  span_alphabetic_width_reg(start_col, end_col));
   printfs(".%1\n", block_diversion_name(start_row, start_col));
   if (mod->stagger)
-    prints("." TEXT_BLOCK_STAGGERING_MACRO " .5v\n");
+    prints("." TEXT_BLOCK_STAGGER_MACRO " .5v\n");
   prints(".in\n");
 }
 
@@ -1925,8 +1925,8 @@ void table::init_output()
 	 ".nr " NEED_BOTTOM_RULE_REG " 1\n"
 	 ".nr " SUPPRESS_BOTTOM_REG " 0\n"
 	 ".eo\n"
-	 ".de " TEXT_BLOCK_STAGGERING_MACRO "\n"
-	 ".  ie !'\\n(.z'' \\!.3sp \"\\$1\"\n"
+	 ".de " TEXT_BLOCK_STAGGER_MACRO "\n"
+	 ".  ie !'\\n(.z'' \\!." TEXT_BLOCK_STAGGER_MACRO "\"\\$1\"\n"
 	 ".  el .sp \\$1\n"
 	 "..\n"
 	 ".de " REPEATED_MARK_MACRO "\n"

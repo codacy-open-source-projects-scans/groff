@@ -461,7 +461,7 @@ sub usage
 "Translate the output of troff(1) into Portable Document Format.\n" .
 "See the gropdf(1) manual page.\n";
     }
-    exit($had_error);
+    exit($had_error ? 2 : 0);
 }
 
 my $fd;
@@ -498,7 +498,7 @@ if (!GetOptions('F=s' => \@fdlist, 'I=s' => \@idirs, 'l' => \$frot,
     'e' => \$embedall, 'y=s' => \$Foundry, 's' => \$stats, 'W' => \$warnexit,
     'u:s' => \$unicodemap))
 {
-    &usage(1);
+    &usage(1); # had error
 }
 
 unshift(@idirs,'.');
@@ -3197,7 +3197,7 @@ sub Warn
     unshift(@_, "warning: ");
     my $msg=join('',@_);
     Msg(0,$msg);
-    $xitcd=2 if $warnexit;
+    $xitcd=1 if $warnexit;
 }
 
 sub Die

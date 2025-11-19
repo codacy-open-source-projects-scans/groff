@@ -316,11 +316,7 @@ or have no CMap at all by omitting the argument.
 .
 .TP
 .B \-W
-Exit with failure status if font embedding fails.
-.
-Normally,
-.I gropdf
-issues a warning diagnostic and proceeds.
+Exit with failure status if any warnings are issued.
 .
 .
 .\" .TP
@@ -1944,17 +1940,19 @@ see hello.pdf
 .IP 0
 .I gropdf
 successfully produced a PDF document.
+.
+.
 .IP 1
 .I gropdf
 experienced a critical error,
-or could not interpret its arguments.
-No PDF was produced,
-or the document produced will be unusable.
+or warnings were emitted and the
+.B \-W
+option was specified.
+.
+.
 .IP 2
 .I gropdf
-emitted warnings.
-The document produced may be usable,
-but may fail to render as desired.
+could not interpret its command-line arguments.
 .
 .
 .br

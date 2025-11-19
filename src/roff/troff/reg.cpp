@@ -334,9 +334,8 @@ void define_register_request()
     skip_line();
     return;
   }
-  symbol nm = get_name();
+  symbol nm = read_identifier();
   if (nm.is_null()) {
-    // get_name() has already thrown an error diagnostic on bogus input.
     skip_line();
     return;
   }
@@ -377,7 +376,7 @@ void inline_define_register()
   if (!start_token.is_usable_as_delimiter(true /* report error */))
     return;
   tok.next();
-  symbol nm = get_name(true /* required */);
+  symbol nm = read_identifier(true /* required */);
   if (nm.is_null())
     return;
   reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
@@ -438,9 +437,8 @@ void assign_register_format_request()
     skip_line();
     return;
   }
-  symbol nm = get_name();
+  symbol nm = read_identifier();
   if (nm.is_null()) {
-    // get_name() has already thrown an error diagnostic on bogus input.
     skip_line();
     return;
   }
@@ -479,8 +477,7 @@ void remove_register_request()
     return;
   }
   for (;;) {
-    symbol s = get_name();
-    // get_name() has already thrown an error diagnostic on bogus input.
+    symbol s = read_identifier();
     if (s.is_null())
       break;
     register_dictionary.remove(s);
@@ -498,16 +495,13 @@ void alias_register_request()
     skip_line();
     return;
   }
-  symbol s1 = get_name();
-  // get_name() has already thrown an error diagnostic on bogus input.
+  symbol s1 = read_identifier();
   if (!s1.is_null()) {
     if (!has_arg())
       warning(WARN_MISSING, "register aliasing request expects"
 	      " identifier of existing register as second argument");
     else {
-      symbol s2 = get_name();
-      // get_name() has already thrown an error diagnostic on bogus
-      // input.
+      symbol s2 = read_identifier();
       if (!s2.is_null()) {
 	if (!register_dictionary.alias(s1, s2))
 	  error("cannot alias undefined register '%1'", s2.contents());
@@ -525,14 +519,12 @@ void rename_register_request()
     skip_line();
     return;
   }
-  symbol s1 = get_name();
-  // get_name() has already thrown an error diagnostic on bogus input.
+  symbol s1 = read_identifier();
   if (!has_arg())
     warning(WARN_MISSING, "register renaming request exepects new"
 	    " identifier as second argument");
   else if (!s1.is_null()) {
-    symbol s2 = get_name();
-    // get_name() has already thrown an error diagnostic on bogus input.
+    symbol s2 = read_identifier();
     if (!s2.is_null())
       register_dictionary.rename(s1, s2);
   }
@@ -569,7 +561,7 @@ void print_register_request()
   symbol identifier;
   if (has_arg()) {
     do {
-      identifier = get_name();
+      identifier = read_identifier();
       r = look_up_register(identifier, true /* suppress creation */);
       if (r != 0 /* nullptr */)
 	dump_register(&identifier, r);

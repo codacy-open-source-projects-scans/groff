@@ -1,3 +1,244 @@
+2025-11-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/gropdf/gropdf.pl (Warn): Set exit status to 1, not
+	2, if the scalar `warnexit` (set by the `-W` command-line
+	option) is truthy.
+	(usage): Exit with status 2, not 1, on usage errors.
+	* src/devices/gropdf/gropdf.1.man (Options, Exit status): Update
+	documentation accordingly.
+
+	Fixes <https://savannah.gnu.org/bugs/?67612>.  Thanks to Dave
+	Kemper for the report and to him and Deri for the code review.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.
+	(assign_escape_character, interpolate_arg): Mark variables
+	pointing to character array literals as `static` and `const`.
+	(assign_escape_character): Mark variable that selects between
+	one of the aforementioned static literals a pointer to `const`.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_line_arg): Trivially refactor.
+	Rename function argument whose type is a pointer to a `charinfo`
+	object from `cp` to `cip` for (slightly more) clarity.  `ci` is
+	almost universally used in the code base for `charinfo` objects.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_suppress): Improve diagnostic
+	message when input malformatted; the one we had wasn't clear in
+	the easily anticipated scenario where the user assumes that `\O`
+	is a delimited escape sequence (it isn't) and selects "'" as
+	the "delimiter".
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (add_hyphenation_exceptions):
+	Instrument seemingly impossible scenario.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (margin_character): Fix code style
+	nit; explicitly compare value of pointer type to null pointer
+	literal instead of letting it pun down to a Boolean.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (hyphenation_patterns_file_code): Fix
+	code style nit; parenthesize formally complex expressions.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (line_spacing): Clarify diagnostic
+	message.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_integer()` to
+	`read_integer()` because it does more than retrieve a property;
+	it advances the input stream pointer.
+
+	* src/roff/troff/token.h (get_integer): Rename this
+	declaration...
+	(read_integer): ...to this.
+	* src/roff/troff/number.cpp (get_integer): Rename this
+	definition...
+	(read_integer): ...to this.  Also update assertion text.
+
+	* src/roff/troff/div.cpp (begin_page, page_number)
+	(return_request):
+	* src/roff/troff/env.cpp (window_control_request) [0]
+	(space_size, no_fill, center, right_justify)
+	(post_vertical_spacing, temporary_indent, number_lines)
+	(hyphenate_request, set_hyphenation_mode_default)
+	(hyphenation_line_max_request, adjust, do_input_trap)
+	(field_characters_request):
+	* src/roff/troff/input.cpp (shift, activate_color, compatible)
+	(substring_request, line_file, set_character_flags_request)
+	(hyphenation_patterns_file_code, set_warning_mask_request):
+	* src/roff/troff/node.cpp (mount_font_at_position)
+	(associate_style_with_font_position, read_font_identifier)
+	(zoom_font, constantly_space_font, set_ligature_mode)
+	(set_kerning_mode): Update call sites.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp: Trivially refactor.  Update
+	preprocessor macro `TEXT_BLOCK_STAGGER_MACRO` definition to
+	indicate its purpose rather details of its implementation.  This
+	is to help anyone having to debug tbl's output maintain their
+	sanity.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp: Trivially refactor.  Rename
+	preprocessor macro `TEXT_BLOCK_STAGGERING_MACRO` to
+	`TEXT_BLOCK_STAGGER_MACRO`.
+
+2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::init_output): Fix
+	inappropriately hard-coded string literal.  Invoke the text
+	block staggering macro via its existing preprocessor macro, not
+	by its literal name.  Things will go wrong if we ever change
+	that preprocessor macro's definition.  Continues commit
+	2c8e354f22, 4 August 2023.  See Savannah #64454.
+
+2025-11-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Slightly refactor; boolify `charinfo` member functions.
+
+	* src/roff/troff/charinfo.h (class charinfo): Demote integer
+	arguments to `set_translation()` and `set_special_translation()`
+	from `int` to `bool`.
+	(charinfo::get_special_translation): Rename argument from
+	`for_transparent_throughput` to `transparently`.
+	* src/roff/troff/input.cpp (charinfo::set_translation): Demote
+	argument types as above, and rename from the cryptic `tt` and
+	`ti` to `transparently` and `as_input`, respectively.
+	(charinfo::set_special_translation): Demote argument types as
+	above.  Rename `c` to `cc` ("character code", as abbreivated
+	elsewhere in this file), and `tt` to `transparently`.
+	(do_translate): Demote integer arguments `translate_transparent`
+	and `translate_input` from `int` to `bool`, and rename them to
+	`transparently` and `as_input`, respectively, to obviously
+	correspond with `charinfo` class member functions to which they
+	are passed.
+	(transparent_translate, translate, translate_no_transparent)
+	(transparent_input): Update call sites to use Boolean literals
+	and annotate argument correspondence.
+
+2025-11-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (charinfo::set_hyphenation_code): Fix
+	code style nit; explicitly compare value of pointer type to null
+	pointer literal instead of letting it pun down to a Boolean.  In
+	so doing, parenthesize formally complex expression.
+
+2025-11-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_name()` to
+	`read_identifier()`.  Part of the idea here is to use the verb
+	"read" to suggest that the function advances the token pointer
+	through the input stream (and it does).  Another part is to
+	reduce confusion, since the `font_info` and `tfont` classes have
+	an unrelated accessor member function `get_name()`.
+
+	* src/roff/troff/token.h (get_name): Rename declaration from
+	this...
+	(read_identifier): ...to this.
+	* src/roff/troff/input.cpp  (get_name): Rename definition from
+	this...
+	(read_identifier): ...to this.
+	* src/roff/troff/div.cpp (do_divert, when_request)
+	(diversion_trap, change_trap, mark):
+	* src/roff/troff/env.cpp (select_fill_color_request)
+	(select_stroke_color_request, select_font_request)
+	(family_change, do_input_trap, select_hyphenation_language):
+	* src/roff/troff/input.cpp (print_color_request)
+	(diagnose_invalid_identifier, eoi_macro, blank_line_macro)
+	(leading_spaces_macro, do_request, process_input_stack)
+	(print_macro_request, map_composite_character)
+	(do_define_string, do_define_macro, remove_macro, rename_macro)
+	(alias_macro, chop_macro, do_string_case_transform)
+	(substring_request, length_request, asciify_request)
+	(unformat_macro, device_macro_request)
+	(is_conditional_expression_true, open_file, close_request)
+	(write_macro_request, define_class_request):
+	* src/roff/troff/node.cpp (translate_font)
+	(mount_font_at_position, associate_style_with_font_position)
+	(read_font_identifier, zoom_font):
+	* src/roff/troff/reg.cpp (define_register_request)
+	(inline_define_register [0], assign_register_format_request)
+	(remove_register_request, alias_register_request)
+	(rename_register_request, print_register_request): Update call
+	sites.
+
+2025-11-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (length_request): Drop erroneous
+	assertion, while failed and cored on `.length \&`.
+
+2025-11-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	class-defining request handler.
+	(define_class): Rename this...
+	(define_class_request): ...to this.  Mark it `static` since it
+	does not require external linkage.
+	(init_input_requests): Update `init_request()` wiry-uppery.
+
+2025-11-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (define_class): Fix code style nits.
+	Explicitly compare values of pointer type to null pointer
+	literals instead of letting them pun down to Booleans.  Arrange
+	equality comparison to avoid inadvertent lvalue assignment.
+
+2025-11-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[hpftodit,troff]: Fix code style nit.
+
+	* src/roff/troff/input.cpp (charinfo::dump):
+	* src/roff/troff/node.cpp (glyph_node::asciify):
+	* src/utils/hpftodit/hpftodit.cpp (unicode_to_ucode_name): Make
+	the compiler do the work of computing sufficiently large static
+	buffer sizes (for C strings), and so doing express the maximal
+	expected output to that buffer.
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Describe
+	character class objects distinctly from special characters.
+	(print_character_request): Update error diagnostic to recognize
+	that a character class is also worthy argument fodder to the
+	`pchar` request.
+	(charinfo::dump): Report totally different information for a
+	character class.  Call the `dump()` member function of the its
+	associated (empty) macro from the previous change.  This way the
+	user troubleshooting character classes (or character
+	class/special character collisions) can simply _ask_ the
+	formatter where a character class is defined.  Report the only
+	properties a character class has: a list of (potentially
+	singleton) code point ranges and a list of nested classes.
+
+	Fixes <https://savannah.gnu.org/bugs/?67617>.
+
+2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/request.h (class macro): Declare new member
+	function `dump()`, for specialized use with macros that always
+	have zero-length contents.  What are these?  They correspond to
+	the character class `charinfo` objects created by the `class`
+	request.
+	* src/roff/troff/input.cpp (define_class): Create a macro object
+	with no contents and associate it with the character class being
+	created.
+	(macro::dump): New member function dumps file name and line
+	number information.
+
 2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* Makefile.am: Include "contrib/install-font/install-font.am".
@@ -233,7 +474,7 @@
 
 2025-11-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Regression-test Savannah #67680.
+	[groff]: Regression-test Savannah #67680.
 
 	* src/roff/groff/tests/asciify-special-characters-correctly.sh:
 	Do it.
@@ -1441,7 +1682,7 @@
 
 2025-09-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Regression-test Savannah #66653.
+	[groff]: Regression-test Savannah #66653.
 
 	* src/roff/groff/tests/asciify-composite-nodes-correctly.sh: Do
 	it.
@@ -1498,7 +1739,7 @@
 
 2025-09-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Regression-test Savannah #67532.
+	[groff]: Regression-test Savannah #67532.
 
 	* src/roff/groff/tests/trf-request-works.sh: Add unit tests of
 	`trf` request functionality in undiverted and diverted cases.
@@ -16207,7 +16448,7 @@
 
 2024-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Regression-test Savannah #45502.
+	[groff]: Regression-test Savannah #45502.
 
 	* src/roff/groff/tests/degenerate-control-flow-works.sh: Do it.
 	* src/roff/groff/groff.am (groff_TESTS): Run test.
@@ -19666,7 +19907,7 @@
 
 2023-09-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Regression-test Savannah #64421.
+	[groff]: Regression-test Savannah #64421.
 
 	* src/roff/groff/tests/detect-evil-link-time-optimizer.sh: Do
 	it.

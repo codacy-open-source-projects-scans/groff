@@ -101,7 +101,7 @@ diversion *curdiv;
 void do_divert(bool appending, bool boxing)
 {
   tok.skip();
-  symbol nm = get_name();
+  symbol nm = read_identifier();
   if (nm.is_null()) {
     // Why the asymmetric diagnostic severity?  See Savannah #67139.
     if (!(curdiv->is_box) && boxing)
@@ -768,7 +768,7 @@ void when_request()
 {
   vunits n;
   if (get_vunits(&n, 'v')) {
-    symbol s = get_name();
+    symbol s = read_identifier();
     if (s.is_null())
       topdiv->remove_trap_at(n);
     else
@@ -781,7 +781,7 @@ void begin_page()
 {
   bool got_arg = false;
   int n = 0;
-  if (has_arg() && get_integer(&n, topdiv->get_page_number()))
+  if (has_arg() && read_integer(&n, topdiv->get_page_number()))
     got_arg = true;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -911,7 +911,7 @@ void page_number()
   // register before invoking .pn.
   reg *r = static_cast<reg *>(register_dictionary.lookup("ps4html"));
   if (0 /* nullptr */ == r)
-    if (has_arg() && get_integer(&n, topdiv->get_page_number()))
+    if (has_arg() && read_integer(&n, topdiv->get_page_number()))
       topdiv->set_next_page_number(n);
   skip_line();
 }
@@ -976,7 +976,7 @@ void diversion_trap()
 {
   vunits n;
   if (has_arg() && get_vunits(&n, 'v')) {
-    symbol s = get_name();
+    symbol s = read_identifier();
     if (!s.is_null())
       curdiv->set_diversion_trap(s, n);
     else
@@ -989,7 +989,7 @@ void diversion_trap()
 
 void change_trap()
 {
-  symbol s = get_name(true /* required */);
+  symbol s = read_identifier(true /* required */);
   if (!s.is_null()) {
     vunits x;
     if (has_arg() && get_vunits(&x, 'v'))
@@ -1008,7 +1008,7 @@ void print_traps()
 
 void mark()
 {
-  symbol s = get_name();
+  symbol s = read_identifier();
   if (s.is_null())
     curdiv->marked_place = curdiv->get_vertical_position();
   else if (curdiv == topdiv)
@@ -1044,7 +1044,7 @@ void return_request()
 void vertical_position_traps()
 {
   int n = 0;
-  if (has_arg() && get_integer(&n))
+  if (has_arg() && read_integer(&n))
     honor_vertical_position_traps = (n > 0);
   else
     honor_vertical_position_traps = true;

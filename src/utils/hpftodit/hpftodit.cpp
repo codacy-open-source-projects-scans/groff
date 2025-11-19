@@ -1322,7 +1322,7 @@ unicode_to_ucode_name(int ucode)
   // A 64-bit signed int produces up to 16 hexadecimal digits.
   assert(sizeof(int) <= 8);
   const char *ustr;
-  char codestr[17]; // 16 hex digits + \0
+  char codestr[sizeof "AAAABBBBCCCCDDDD"];
 
   // don't allow PUA code points as Unicode names
   if (ucode >= 0xE000 && ucode <= 0xF8FF)

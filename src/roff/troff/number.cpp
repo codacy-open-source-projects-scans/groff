@@ -98,7 +98,7 @@ bool read_measurement(units *res, unsigned char si)
     return false;
 }
 
-bool get_integer(int *res)
+bool read_integer(int *res)
 {
   if (!is_valid_expression_start())
     return false;
@@ -194,7 +194,7 @@ bool read_measurement(units *res, unsigned char si, units prev_value)
   return true;
 }
 
-bool get_integer(int *res, int prev_value)
+bool read_integer(int *res, int prev_value)
 {
   units i;
   switch (get_incr_number(&i, 0)) {
@@ -212,7 +212,7 @@ bool get_integer(int *res, int prev_value)
       warning(WARN_RANGE, "integer decrementation saturated");
     break;
   default:
-    assert(0 == "unhandled case in get_integer()");
+    assert(0 == "unhandled case in read_integer()");
   }
   return true;
 }

@@ -6238,7 +6238,7 @@ and if they don't support a
 GNU
 .I troff \" GNU
 extension escape sequence,
-they are liable to format the function selector character as text.
+they are liable to format its function selector character as text.
 .
 For example,
 the adjustable,

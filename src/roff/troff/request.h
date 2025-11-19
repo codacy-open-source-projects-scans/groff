@@ -70,6 +70,7 @@ public:
   bool is_diversion();
   bool is_string();
   void clear_string_flag();
+  void dump();
   void json_dump();
   friend class string_iterator;
   friend void chop_macro();

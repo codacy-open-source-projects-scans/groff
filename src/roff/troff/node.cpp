@@ -3935,7 +3935,7 @@ void glyph_node::asciify(macro *m)
 	    break;
 	  default:
 	    m->append_str("\\[u");
-	    const size_t buflen = 6; // five hex digits + '\0'
+	    const size_t buflen = sizeof "10FFFF";
 	    char hexbuf[buflen];
 	    (void) memset(hexbuf, '\0', buflen);
 	    (void) snprintf(hexbuf, buflen, "%.4X", unicode_mapping);
@@ -6759,14 +6759,15 @@ static void translate_font()
     skip_line();
     return;
   }
-  symbol from = get_name(true /* required */);
-  assert(!from.is_null()); // has_arg()+get_name() should ensure this
+  symbol from = read_identifier(true /* required */);
+  // has_arg()+read_identifier() should ensure the assertion succeeds.
+  assert(!from.is_null());
   if (is_nonnegative_integer(from.contents())) {
     error("cannot translate a font mounting position");
     skip_line();
     return;
   }
-  symbol to = get_name();
+  symbol to = read_identifier();
   if ((!to.is_null()) && is_nonnegative_integer(to.contents())) {
     error("cannot translate to a font mounting position");
     skip_line();
@@ -6801,11 +6802,11 @@ static void mount_font_at_position()
     return;
   }
   int n;
-  if (get_integer(&n)) {
+  if (read_integer(&n)) {
     if (n < 0)
       error("font mounting position %1 is negative", n);
     else {
-      symbol internal_name = get_name(true /* required */);
+      symbol internal_name = read_identifier(true /* required */);
       if (!internal_name.is_null()) {
 	symbol filename = get_long_name();
 	if (!mount_font(n, internal_name, filename)) {
@@ -6922,7 +6923,7 @@ static void associate_style_with_font_position()
     return;
   }
   int n;
-  if (get_integer(&n)) {
+  if (read_integer(&n)) {
     if (n < 0)
       error("font mounting position %1 is negative", n);
     else {
@@ -6930,7 +6931,7 @@ static void associate_style_with_font_position()
 	warning(WARN_MISSING, "abstract style configuration request"
 		" expects a style name as second argument");
       else {
-	symbol internal_name = get_name(true /* required */);
+	symbol internal_name = read_identifier(true /* required */);
 	if (!internal_name.is_null())
 	  (void) mount_style(n, internal_name);
       }
@@ -6966,7 +6967,7 @@ static bool read_font_identifier(font_lookup_info *finfo)
   int n;
   tok.skip();
   if (tok.is_usable_as_delimiter()) {
-    symbol s = get_name(true /* required */);
+    symbol s = read_identifier(true /* required */);
     finfo->requested_name = const_cast<char *>(s.contents());
     if (!s.is_null()) {
       n = symbol_fontno(s);
@@ -6978,7 +6979,7 @@ static bool read_font_identifier(font_lookup_info *finfo)
       finfo->position = curenv->get_family()->resolve(n);
     }
   }
-  else if (get_integer(&n)) {
+  else if (read_integer(&n)) {
     finfo->requested_position = n;
     if (is_valid_font_mounting_position(n))
       finfo->position = curenv->get_family()->resolve(n);
@@ -7120,8 +7121,8 @@ static void zoom_font()
     skip_line();
     return;
   }
-  symbol font_name = get_name();
-  // has_arg()+get_name() should ensure the following
+  symbol font_name = read_identifier();
+  // has_arg()+read_identifier() should ensure the assertion succeeds.
   assert(font_name != 0 /* nullptr */);
   if (is_nonnegative_integer(font_name.contents())) {
     warning(WARN_FONT, "cannot set zoom factor of a font mounting"
@@ -7162,7 +7163,7 @@ static void zoom_font()
   }
 #endif
   int zoom = 0;
-  get_integer(&zoom);
+  read_integer(&zoom);
   if (zoom < 0) {
     warning(WARN_RANGE, "ignoring negative font zoom factor '%1'",
 	    zoom);
@@ -7444,7 +7445,7 @@ static void constantly_space_font()
     font_lookup_error(finfo, "for constant spacing");
   else {
     int n = finfo.position, x, y;
-    if (!has_arg() || !get_integer(&x))
+    if (!has_arg() || !read_integer(&x))
       font_table[n]->set_constant_space(CONSTANT_SPACE_NONE);
     else {
       if (!has_arg() || !read_measurement(&y, 'z'))
@@ -7462,7 +7463,7 @@ static void constantly_space_font()
 static void set_ligature_mode()
 {
   int lig;
-  if (has_arg() && get_integer(&lig) && lig >= 0 && lig <= 2)
+  if (has_arg() && read_integer(&lig) && lig >= 0 && lig <= 2)
     global_ligature_mode = lig;
   else
     global_ligature_mode = 1;
@@ -7472,7 +7473,7 @@ static void set_ligature_mode()
 static void set_kerning_mode()
 {
   int k;
-  if (has_arg() && get_integer(&k))
+  if (has_arg() && read_integer(&k))
     global_kern_mode = (k > 0);
   else
     global_kern_mode = true;

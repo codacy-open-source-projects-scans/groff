@@ -19901,7 +19901,7 @@ and if they don't support a
 GNU
 @command{troff} @c GNU
 extension escape sequence,
-they are liable to format the function selector character as text.
+they are liable to format its function selector character as text.
 @cindex @code{\~}, incompatibilities with @acronym{AT&T} @code{troff}
 For example,
 the adjustable,

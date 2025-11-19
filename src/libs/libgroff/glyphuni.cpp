@@ -35,8 +35,15 @@ implement_ptable(glyph_to_unicode_map)
 
 PTABLE(glyph_to_unicode_map) glyph_to_unicode_table;
 
-// The entries commented out in the table below can't be used in glyph
-// names.
+// The entries commented out in the table below aren't easily used in
+// glyph names.  Getting at the names `[` and `]` would require use of
+// `\C`, and getting at `\` would require changing the escape character.
+//
+// Examples: \C'[' \C']'
+//   .ec @
+//   @[\]
+//
+// TODO: Uncomment them, then?
 
 struct S {
   const char *key;
