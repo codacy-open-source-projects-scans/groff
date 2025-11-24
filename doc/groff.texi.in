@@ -9236,12 +9236,20 @@ even possible is an unsolved problem in computer science:@:
 unusual words found in technical literature.  We can instruct GNU
 @code{troff} how to hyphenate specific words if the need arises.
 
-@c TODO: Add request `rhw`?
-@cindex hyphenation exceptions
+@c TODO: Add request `rhw`; see Savannah #64478.
+@cindex hyphenation exception words
 @Defreq {hw, word @dots{}}
-Define each @dfn{hyphenation exception} @var{word} comprising ordinary
-or special characters with each hyphen-minus `-' in @var{word}
-indicating a hyphenation point.  For example, the request
+Define each argument @var{word},
+(comprising ordinary,
+special,
+or indexed characters)
+as a
+@dfn{hyphenation exception word}
+such that each occurence of a hyphen-minus `-' in
+@var{word}
+indicates a hyphenation point.
+For example,
+the request
 
 @Example
 .hw in-sa-lub-rious alpha
@@ -9261,21 +9269,38 @@ Hyphenation points specified with @code{hw} are not subject to the
 within-word placement restrictions imposed by the @code{hy} request (see
 below).
 
-Hyphenation exceptions specified with the @code{hw} request are
-associated with the hyphenation language (see the @code{hla} request
-below) and environment (@pxref{Environments}); invoking the @code{hw}
+Hyphenation exception words are associated with the hyphenation language
+(see the
+@code{hla}
+request below);
+@c TODO: and environment (@pxref{Environments}); @c See Savannah #66803.
+invoking the
+@code{hw}
 request in the absence of a hyphenation language is an error.
+Each hyphenation language maintains an independent set
+of hyphenation exception words.
 
-The request is ignored if there are no parameters.
+The formatter ignores the request if it lacks arguments.
+@footnote{GNU
+@code{troff} @c GNU
+emits a warning in category
+@samp{missing}.
+@xref{Warnings}.}
 
-You can obtain a report of hyphenation exceptions on the standard error
-stream with the @code{phw} request.  @xref{Debugging}.
+Obtain a report of hyphenation exception words
+on the standard error stream
+with the @code{phw} request.
+@xref{Debugging}.
 @endDefreq
 
-These are known as hyphenation @slanted{exceptions} in the expectation
-that most users will avail themselves of automatic hyphenation; these
-exceptions override any rules that would normally apply to a word
-matching a hyphenation exception defined with @code{hw}.
+These are known as
+@slanted{hyphenation exception words}
+in the expectation that most users
+will avail themselves of automatic hyphenation;
+these exceptions override any rules
+that would normally apply to a word
+matching a hyphenation exception word defined with
+@code{hw}.
 
 Situations also arise when only a specific occurrence of a word needs
 its hyphenation altered or suppressed, or when a URL or similar
@@ -9778,8 +9803,12 @@ is reset to its default value, 0.  The default scaling unit is @samp{m}.
 The hyphenation margin is associated with the environment
 (@pxref{Environments}).
 
-A negative argument resets the hyphenation margin to zero, emitting a
-warning in category @samp{range}.
+A negative argument resets the hyphenation margin to zero.
+@footnote{GNU
+@code{troff} @c GNU
+also emits a warning in category
+@samp{range}.
+@xref{Warnings}.}
 
 @cindex hyphenation margin register (@code{.hym})
 The hyphenation margin is available in the @code{.hym} read-only
@@ -9799,8 +9828,13 @@ default value, 0.  The default scaling unit is @samp{m}.  The
 hyphenation space adjustment threshold is associated with the
 environment (@pxref{Environments}).
 
-A negative argument resets the hyphenation space adjustment threshold to
-zero, emitting a warning in category @samp{range}.
+A negative argument
+resets the hyphenation space adjustment threshold to zero.
+@footnote{GNU
+@code{troff} @c GNU
+also emits a warning in category
+@samp{range}.
+@xref{Warnings}.}
 
 @cindex hyphenation space adjustment threshold register (@code{.hys})
 The hyphenation space adjustment threshold is available in the
@@ -19008,16 +19042,30 @@ followed by its ``to'' translation.
 @endDefreq
 
 @Defreq {phw, }
-@cindex dumping hyphenation exceptions (@code{phw})
-@cindex hyphenation exceptions, dumping (@code{phw})
-@cindex exceptions, hyphenation, dumping (@code{phw})
-Report, to the standard error stream, the list of hyphenation
-exceptions associated with the current hyphenation language.  Each
-hyphenation point is marked with @samp{-}.  Words that will not be
-hyphenated at all are prefixed with @samp{-}.  Those to which automatic
-hyphenation applies (meaning those defined in a hyphenation pattern file
-rather than with the @code{hw} request) are suffixed with a tab and
-asterisk (@code{*}).
+@cindex dumping hyphenation exception words (@code{phw})
+@cindex hyphenation exception words, dumping (@code{phw})
+@cindex exception words, hyphenation, dumping (@code{phw})
+Report,
+to the standard error stream,
+the list of hyphenation exception words
+associated with the hyphenation language
+selected by the
+@code{hla}
+request.
+A
+@samp{-}
+marks each hyphenation point.
+A word prefixed with
+@samp{-}
+is not hyphenated at all.
+The report suffixes words
+to which automatic hyphenation applies
+(meaning those defined in a hyphenation pattern file
+rather than with the
+@code{hw}
+request)
+with a tab and asterisk
+(@code{*}).
 @endDefreq
 
 @Defreq {pline, }
@@ -19417,7 +19465,9 @@ issues at most one warning for each.
 @item tab
 @itemx 2048
 @cindex @code{\t}, and warnings
-A tab character was encountered where a number was expected, or appeared
+A tab character appeared
+in a parameterized escape sequence
+or
 in an unquoted macro argument.
 
 @c @item right-brace
@@ -20008,9 +20058,9 @@ specific to U.S.@: English,
 while GNU
 @command{troff} @c GNU
 uses language-specific hyphenation pattern files derived from @TeX{}.
-In some versions of
+Some versions of
 @code{troff} @c generic
-there was limited space to store hyphenation exceptions
+reserved meager storage for hyphenation exception words
 (arguments to the
 @code{hw}
 request);
@@ -20031,6 +20081,20 @@ which is not suitable in GNU
 @command{troff}
 for some languages,
 including English.
+
+Unlike
+GNU
+@command{troff}, @c GNU
+@acronym{AT&T}
+@command{troff} @c AT&T
+does not recognize an occurrence of
+@code{\%}
+at the beginning of a word as suppressing its hyphenation;
+instead,
+it (uselessly) marks the start of the word
+as a potential hyphenation point,
+permitting output lines to end with hyphens
+that are not interior to a word.
 
 GNU @command{troff} handles the dummy character @code{\&} differently
 from @acronym{AT&T} @command{troff} when it is followed by the

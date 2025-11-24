@@ -100,7 +100,7 @@ diversion *curdiv;
 
 void do_divert(bool appending, bool boxing)
 {
-  tok.skip();
+  tok.skip_spaces();
   symbol nm = read_identifier();
   if (nm.is_null()) {
     // Why the asymmetric diagnostic severity?  See Savannah #67139.

@@ -3855,22 +3855,29 @@ followed by its \[lq]to\[rq] translation.
 .B .phw
 Report,
 to the standard error stream,
-the list of hyphenation exceptions
-associated with the current hyphenation language.
+the list of hyphenation exception words
+associated with the hyphenation language
+selected by the
+.B hla
+request.
 .
-Each hyphenation point is marked with
-.RB \[lq] \- \[rq].
+A
+.RB \[lq] \- \[rq]
+marks each hyphenation point.
 .
-Words that will not be hyphenated at all are prefixed with
-.RB \[lq] \- \[rq].
+A word prefixed with
+.RB \[lq] \- \[rq]
+is not hyphenated at all.
 .
-Those to which the automatic hyphenation mode applies
-(meaning those defined in a hyphenation pattern file rather than with
-the
+The report suffixes words
+to which automatic hyphenation applies
+(meaning those defined in a hyphenation pattern file
+rather than with the
 .B hw
 request)
-are suffixed with a tab and asterisk
-.RB ( * ).
+with a tab and asterisk
+.RB \[lq] * \[rq].
+.
 .
 .TP
 .B .pline
@@ -6343,9 +6350,9 @@ while GNU
 .I troff \" GNU
 uses language-specific hyphenation pattern files derived from \*[tx].
 .
-In some versions of
+Some versions of
 .I troff \" generic
-there was limited space to store hyphenation exceptions
+reserved meager storage for hyphenation exception words
 (arguments to the
 .B hw
 request);
@@ -6367,6 +6374,22 @@ which is not suitable in GNU
 .I troff \" GNU
 for some languages,
 including English.
+.
+.
+.P
+Unlike
+GNU
+.I troff \" GNU
+AT&T
+.I troff \" AT&T
+does not recognize an occurrence of
+.B \[rs]%
+at the beginning of a word as suppressing its hyphenation;
+instead,
+it (uselessly) marks the start of the word
+as a potential hyphenation point,
+permitting output lines to end with hyphens
+that are not interior to a word.
 .
 .
 .P

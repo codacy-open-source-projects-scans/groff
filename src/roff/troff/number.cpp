@@ -263,7 +263,7 @@ static bool is_valid_expression(units *u, int scaling_unit,
 			     is_mandatory);
   while (result) {
     if (is_parenthesized)
-      tok.skip();
+      tok.skip_spaces();
     int op = tok.ch();
     switch (op) {
     case '+':
@@ -445,7 +445,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     if (!is_valid_expression(u, scaling_unit,
 			     true /* is_parenthesized */, is_mandatory))
       return false;
-    tok.skip();
+    tok.skip_spaces();
     if (tok.ch() != ')') {
       if (is_mandatory)
 	return false;

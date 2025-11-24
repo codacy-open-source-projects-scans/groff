@@ -1304,7 +1304,7 @@ bool non_interpreted_char_node::is_same_as(node *nd)
 
 const char *non_interpreted_char_node::type()
 {
-  return "non_interpreted_char_node";
+  return "non-interpreted character node";
 }
 
 bool non_interpreted_char_node::causes_tprint()
@@ -1666,8 +1666,14 @@ node *do_overstrike() // \o
       osnode->overstrike(n);
     }
     else {
-      charinfo *ci = tok.get_char(true /* required */);
-      if (ci != 0 /* nullptr */) {
+      charinfo *ci = tok.get_charinfo(true /* required */);
+      if (0 /* nullptr */ == ci) {
+	assert(0 == "attempted to use token without charinfo in"
+	       " overstrike escape sequence");
+	delete osnode;
+	return 0 /* nullptr */;
+      }
+      else {
 	node *n = curenv->make_char_node(ci);
 	if (n != 0 /* nullptr */)
 	  osnode->overstrike(n);
@@ -1719,10 +1725,16 @@ static node *do_bracket() // \b
     if (tok == start_token
 	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
-    charinfo *ci = tok.get_char(true /* required */);
-    if (ci != 0 /* nullptr */) {
-      node *n = curenv->make_char_node(ci);
-      if (n != 0 /* nullptr */)
+    charinfo *ci = tok.get_charinfo(true /* required */);
+    if (0 /* nullptr */ == ci) {
+      assert(0 == "attempted to use token without charinfo in"
+	     " bracket-building escape sequence");
+      delete bracketnode;
+      return 0 /* nullptr */;
+    }
+    else {
+       node *n = curenv->make_char_node(ci);
+       if (n != 0 /* nullptr */)
 	bracketnode->bracket(n);
     }
   }
@@ -1964,7 +1976,7 @@ bool token_node::is_same_as(node *nd)
 
 const char *token_node::type()
 {
-  return "token_node";
+  return "token node";
 }
 
 bool token_node::causes_tprint()
@@ -2009,10 +2021,33 @@ void token::operator=(const token &t)
   type = t.type;
 }
 
-void token::skip()
+void token::skip_spaces()
 {
   while (is_space())
     next();
+}
+
+void token::diagnose_non_character()
+{
+  // TODO: What about
+  //   is_space()
+  //   is_stretchable_space()
+  //   is_unstrechable_space()
+  //   is_horizontal_space()
+  //   is_white_space()
+  //   is_leader()
+  //   is_backspace()
+  //   is_dummy()
+  //   is_transparent()
+  //   is_transparent_dummy()
+  //   is_left_brace()
+  //   is_page_ejector()
+  //   is_hyphen_indicator()
+  //   is_zero_width_break()
+  // ?
+  if (!is_newline() && !is_eof() && !is_right_brace() && !is_tab())
+    error("expected ordinary, special, or indexed character, got %1;"
+	  " ignoring", description());
 }
 
 // Indicate whether an argument lies ahead on the current line in the
@@ -2041,8 +2076,7 @@ bool has_arg(bool want_peek)
     return !(('\n' == c) || (EOF == c));
   }
   else {
-    while (tok.is_space())
-      tok.next();
+    tok.skip_spaces();
     return !(tok.is_newline() || tok.is_eof());
   }
 }
@@ -2469,7 +2503,7 @@ void token::next()
 	  if (!get_line_arg(&x, (cc == 'l' ? 'm': 'v'), &s))
 	    break;
 	  if (s == 0)
-	    s = get_charinfo(cc == 'l' ? "ru" : "br");
+	    s = lookup_charinfo(cc == 'l' ? "ru" : "br");
 	  type = TOKEN_NODE;
 	  node *char_node = curenv->make_char_node(s);
 	  if (cc == 'l')
@@ -2615,12 +2649,18 @@ void token::next()
 	  if (type == TOKEN_NODE || type == TOKEN_HORIZONTAL_SPACE)
 	    nd = new zero_width_node(nd);
 	  else {
-	    charinfo *ci = get_char(true /* required */);
-	    if (0 /* nullptr */ == ci)
+	    charinfo *ci = get_charinfo(true /* required */);
+	    if (0 /* nullptr */ == ci) {
+	      assert(0 == "attempted to use token without charinfo in"
+		     " zero-width escape sequence");
 	      break;
+	    }
 	    node *gn = curenv->make_char_node(ci);
-	    if (0 /* nullptr */ == gn)
+	    if (0 /* nullptr */ == gn) {
+	      assert("make_char_node failed to create a character"
+		     " node");
 	      break;
+	    }
 	    nd = new zero_width_node(gn);
 	    type = TOKEN_NODE;
 	  }
@@ -2898,7 +2938,23 @@ const char *token::description()
   case TOKEN_NEWLINE:
     return "a newline";
   case TOKEN_NODE:
-    return "a node";
+    // Ah, the joys of computational natural language grammar.
+    {
+      const char *ndtype = nd->type();
+      const char initial_letter = ndtype[0];
+      bool is_vowelly = false;
+      // I wonder if Kernighan thought that the absence of set types and
+      // an "in" operator was one of Pascal's great blunders.
+      if (('a' == initial_letter)
+	  || ('e' == initial_letter)
+	  || ('i' == initial_letter)
+	  || ('o' == initial_letter)
+	  || ('u' == initial_letter))
+	is_vowelly = true;
+      (void) snprintf(buf, bufsz, "a%s %s token", is_vowelly ? "n" : "",
+		      ndtype);
+      return buf;
+    }
   case TOKEN_INDEXED_CHAR:
     (void) snprintf(buf, maxstr, "indexed character %d",
 		    character_index());
@@ -2922,12 +2978,17 @@ const char *token::description()
       // character or character class names.  Do something about that.
       // (The truncation is visually indicated by the absence of a
       // closing quotation mark.)
-      if (tok.get_char()->is_class())
-	(void) snprintf(buf, maxstr, "character class %c%s%c", qc, sc,
-			qc);
-      else
-	(void) snprintf(buf, maxstr, "special character %c%s%c", qc, sc,
-			qc);
+      static const char special_character[] = "special character";
+      static const char character_class[] = "character class";
+      const char *ctype = special_character;
+      charinfo *ci = get_charinfo();
+      if (0 /* nullptr */ == ci) {
+	assert(0 == "attempted to process token without charinfo");
+	return "impossible character";
+      }
+      else if (ci->is_class())
+	ctype = character_class;
+      (void) snprintf(buf, maxstr, "%s %c%s%c", ctype, qc, sc, qc);
       return buf;
     }
   case TOKEN_SPREAD:
@@ -3014,7 +3075,7 @@ symbol read_identifier(bool required)
 {
   if (want_att_compat) {
     char buf[3];
-    tok.skip();
+    tok.skip_spaces();
     if ((buf[0] = tok.ch()) != 0) {
       tok.next();
       if ((buf[1] = tok.ch()) != 0) {
@@ -3041,8 +3102,7 @@ symbol get_long_name(bool required)
 
 static symbol do_get_long_name(bool required, char end_char)
 {
-  while (tok.is_space())
-    tok.next();
+  tok.skip_spaces();
   int buf_size = default_buffer_size;
   char *buf = 0 /* nullptr */;
   try {
@@ -4902,18 +4962,21 @@ static const char *character_mode_description(char_mode mode)
 void define_character(char_mode mode, const char *font_name)
 {
   const char *modestr = character_mode_description(mode);
-  tok.skip();
-  charinfo *ci = tok.get_char(true /* required */);
+  tok.skip_spaces();
+  charinfo *ci = tok.get_charinfo(true /* required */);
   if (0 /* nullptr */ == ci) {
+    assert(0 == "attempted to use token without charinfo in character"
+	   " definition request");
     skip_line();
     return;
   }
+  // TODO: If `ci` is already a character class, clobber it.
   if (font_name != 0 /* nullptr */) {
     string s(font_name);
     s += ' ';
     s += ci->nm.contents();
     s += '\0';
-    ci = get_charinfo(symbol(s.contents()));
+    ci = lookup_charinfo(symbol(s.contents()));
   }
   tok.next();
   int c;
@@ -4923,9 +4986,9 @@ void define_character(char_mode mode, const char *font_name)
   else if (tok.is_tab())
     c = '\t';
   else if (!tok.is_space()) {
-    error("ignoring invalid%1 character definition; expected one"
-	  " ordinary or special character to define, got %2", modestr,
-	  tok.description());
+    error("ignoring invalid%1 character definition; expected an"
+	  " ordinary, indexed, or special character to define, got %2",
+	  modestr, tok.description());
     skip_line();
     return;
   }
@@ -4994,29 +5057,18 @@ static void print_character_request()
   }
   charinfo *ci;
   do {
-    while (tok.is_space())
-      tok.next();
-    ci = tok.get_char(false /* required */,
-		      true /* suppress creation */);
+    tok.skip_spaces();
     if (!tok.is_character()) {
       error("character report request expects characters or character"
 	    " classes as arguments; got %1", tok.description());
       break;
     }
-    if (0 /* nullptr */ == ci) {
-      if (!tok.is_indexed_character())
-	warning(WARN_CHAR, "%1 is not defined", tok.description());
-      else
-	warning(WARN_CHAR, "character with index %1 in the current font"
-		" is not defined", tok.character_index());
-    }
+    ci = tok.get_charinfo(false /* required */,
+			  true /* suppress creation */);
+    if (0 /* nullptr */ == ci)
+      warning(WARN_CHAR, "%1 is not defined", tok.description());
     else {
-      // A charinfo doesn't know the name by which it is accessed.
-      if (tok.is_indexed_character())
-	errprint("character indexed %1 in current font\n",
-		 tok.character_index());
-      else
-	errprint("%1\n", tok.description());
+      errprint("%1\n", tok.description());
       fflush(stderr);
       ci->dump();
     }
@@ -5036,15 +5088,10 @@ static void remove_character()
   while (!tok.is_newline() && !tok.is_eof()) {
     if (!tok.is_space() && !tok.is_tab()) {
       if (tok.is_character()) {
-	charinfo *ci = tok.get_char(true /* required */,
-				    true /* suppress creation */);
-	if (0 /* nullptr */ == ci) {
-	  if (!tok.is_indexed_character())
-	    warning(WARN_CHAR, "%1 is not defined", tok.description());
-	  else
-	    warning(WARN_CHAR, "character with index %1 in the current"
-		    " font is not defined", tok.character_index());
-	}
+	charinfo *ci = tok.get_charinfo(true /* required */,
+					true /* suppress creation */);
+	if (0 /* nullptr */ == ci)
+	   warning(WARN_CHAR, "%1 is not defined", tok.description());
 	else {
 	  macro *m = ci->set_macro(0 /* nullptr */);
 	  if (m != 0 /* nullptr */)
@@ -5893,6 +5940,7 @@ static bool read_delimited_number(units *n, unsigned char si)
 // \l, \L
 static bool get_line_arg(units *n, unsigned char si, charinfo **cip)
 {
+  assert(cip != 0 /* nullptr */);
   token start_token;
   start_token.next();
   if (!want_att_compat
@@ -5913,7 +5961,10 @@ static bool get_line_arg(units *n, unsigned char si, charinfo **cip)
       tok.next();
     if (!(start_token == tok
 	  && input_stack::get_level() == start_level)) {
-      *cip = tok.get_char(true /* required */);
+      *cip = tok.get_charinfo(true /* required */);
+      if (0 /* nullptr */ == *cip)
+	assert(0 == "attempted to use token without charinfo in"
+	       " line-drawing escape sequence");
       tok.next();
     }
     if (!(start_token == tok
@@ -6161,8 +6212,7 @@ static void do_register() // \R
   symbol nm = get_long_name(true /* required */);
   if (nm.is_null())
     return;
-  while (tok.is_space())
-    tok.next();
+  tok.skip_spaces();
   reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
   int prev_value;
   if ((0 /* nullptr */ == r) || !r->get_value(&prev_value))
@@ -6266,8 +6316,13 @@ void read_title_parts(node **part, hunits *part_width)
 	tok.next();
 	break;
       }
-      if ((page_character != 0 /* nullptr */)
-	  && (tok.get_char() == page_character))
+      charinfo *ci = tok.get_charinfo();
+      // It's okay for `ci` to be a null pointer; that will be the case
+      // if the token is a node: italic corrections, horizontal motions,
+      // and so forth.  TODO: Is it worth warning about some node types?
+      if ((ci != 0 /* nullptr */)
+	  && (page_character != 0 /* nullptr */)
+	  && (page_character == ci))
 	interpolate_register(percent_symbol, 0);
       else
 	tok.process();
@@ -6312,7 +6367,7 @@ bool non_interpreted_node::is_same_as(node *nd)
 
 const char *non_interpreted_node::type()
 {
-  return "non_interpreted_node";
+  return "non-interpreted node";
 }
 
 bool non_interpreted_node::causes_tprint()
@@ -6455,12 +6510,18 @@ static void map_special_character_for_device_output(macro *mac,
 static void encode_special_character_for_device_output(macro *mac)
 {
   const char *sc;
-  if (font::use_charnames_in_special) {
-    charinfo *ci = tok.get_char(true /* required */);
-    sc = ci->get_symbol()->contents();
+  charinfo *ci = tok.get_charinfo(true /* required */);
+  if (0 /* nullptr */ == ci) {
+    assert(0 == "attempted to encode token without charinfo for"
+	   " device extension command output");
+    return;
   }
-  else
-    sc = tok.get_char(true /* required */)->get_symbol()->contents();
+  sc = ci->get_symbol()->contents();
+  if (0 /* nullptr */ == sc) {
+    assert(0 == "attempted to encode token containing charinfo with"
+	   " null symbol for device extension command output");
+    return;
+  }
   map_special_character_for_device_output(mac, sc);
 }
 
@@ -6867,8 +6928,7 @@ static void take_branch()
 
 static void nop_request()
 {
-  while (tok.is_space())
-    tok.next();
+  tok.skip_spaces();
 }
 
 // Perform a (formatted) output comparison operation, as found in
@@ -6925,8 +6985,7 @@ static bool is_conditional_expression_true()
 {
   bool perform_output_comparison = false;
   bool want_test_sense_inverted = false;
-  while (tok.is_space())
-    tok.next();
+  tok.skip_spaces();
   while (tok.ch() == '!') {
     tok.next();
     want_test_sense_inverted = !want_test_sense_inverted;
@@ -6992,9 +7051,13 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'c') {
     tok.next();
-    tok.skip();
-    charinfo *ci = tok.get_char(true /* required */);
-    if (ci == 0 /* nullptr */) {
+    tok.skip_spaces();
+    // XXX: Mystery: the presence of a character (fortunately) doesn't
+    // create it if nonexistent even though the default second argument
+    // to `token::get_charinfo()` (`suppress_creation`) is `false` (see
+    // "token.h").  Why?
+    charinfo *ci = tok.get_charinfo(true /* required */);
+    if (0 == ci /* nullptr */) {
       skip_branch();
       return false;
     }
@@ -8262,7 +8325,7 @@ static void init_charset_table()
   (void) strncpy(buf, char_prefix, char_prefix_len);
   for (int i = 0; i < 256; i++) {
     (void) strcpy((buf + char_prefix_len), i_to_a(i));
-    charset_table[i] = get_charinfo(symbol(buf));
+    charset_table[i] = lookup_charinfo(symbol(buf));
     charset_table[i]->set_ascii_code(i);
     if (csalpha(i))
       charset_table[i]->set_hyphenation_code(cmlower(i));
@@ -8276,18 +8339,18 @@ static void init_charset_table()
   charset_table[')']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
   charset_table[']']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
   charset_table['*']->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
-  get_charinfo(symbol("dg"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
-  get_charinfo(symbol("dd"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
-  get_charinfo(symbol("rq"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
-  get_charinfo(symbol("cq"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
-  get_charinfo(symbol("em"))->set_flags(charinfo::ALLOWS_BREAK_AFTER);
-  get_charinfo(symbol("hy"))->set_flags(charinfo::ALLOWS_BREAK_AFTER);
-  get_charinfo(symbol("ul"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
-  get_charinfo(symbol("rn"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
-  get_charinfo(symbol("radicalex"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
-  get_charinfo(symbol("sqrtex"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
-  get_charinfo(symbol("ru"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
-  get_charinfo(symbol("br"))->set_flags(charinfo::OVERLAPS_VERTICALLY);
+  lookup_charinfo(symbol("dg"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  lookup_charinfo(symbol("dd"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  lookup_charinfo(symbol("rq"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  lookup_charinfo(symbol("cq"))->set_flags(charinfo::IS_TRANSPARENT_TO_END_OF_SENTENCE);
+  lookup_charinfo(symbol("em"))->set_flags(charinfo::ALLOWS_BREAK_AFTER);
+  lookup_charinfo(symbol("hy"))->set_flags(charinfo::ALLOWS_BREAK_AFTER);
+  lookup_charinfo(symbol("ul"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
+  lookup_charinfo(symbol("rn"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
+  lookup_charinfo(symbol("radicalex"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
+  lookup_charinfo(symbol("sqrtex"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
+  lookup_charinfo(symbol("ru"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
+  lookup_charinfo(symbol("br"))->set_flags(charinfo::OVERLAPS_VERTICALLY);
   page_character = charset_table['%'];
 }
 
@@ -8299,7 +8362,7 @@ static void init_hpf_code_table()
 
 static void do_translate(bool transparently, bool as_input)
 {
-  tok.skip();
+  tok.skip_spaces();
   while (!tok.is_newline() && !tok.is_eof()) {
     if (tok.is_space()) {
       // This is a really bizarre troff feature.
@@ -8311,9 +8374,12 @@ static void do_translate(bool transparently, bool as_input)
       tok.next();
       continue;
     }
-    charinfo *ci1 = tok.get_char(true /* required */);
-    if (0 /* nullptr */ == ci1)
+    charinfo *ci1 = tok.get_charinfo(true /* required */);
+    if (0 /* nullptr */ == ci1) {
+      assert(0 == "attempted to use token without charinfo in title"
+	     " formatting request");
       break;
+    }
     tok.next();
     if (tok.is_newline() || tok.is_eof()) {
       ci1->set_special_translation(charinfo::TRANSLATE_SPACE,
@@ -8333,9 +8399,12 @@ static void do_translate(bool transparently, bool as_input)
       ci1->set_special_translation(charinfo::TRANSLATE_HYPHEN_INDICATOR,
 				   transparently);
     else {
-      charinfo *ci2 = tok.get_char(true /* required */);
-      if (0 /* nullptr */ == ci2)
+      charinfo *ci2 = tok.get_charinfo(true /* required */);
+      if (0 /* nullptr */ == ci2) {
+	assert(0 == "attempted to use token without charinfo in"
+	       " character translation request");
 	break;
+      }
       if (ci1 == ci2)
 	ci1->set_translation(0 /* nullptr */, transparently, as_input);
       else
@@ -8413,8 +8482,11 @@ static void set_character_flags_request()
       return;
     }
     while (has_arg()) {
-      charinfo *ci = tok.get_char(true /* required */);
-      if (ci != 0 /* nullptr */) {
+      charinfo *ci = tok.get_charinfo(true /* required */);
+      if (0 /* nullptr */ == ci)
+	assert(0 == "attempted to use token without charinfo in"
+	       " character flags assignment request");
+      else {
 	charinfo *tem = ci->get_translation();
 	if (tem != 0 /* nullptr */)
 	  ci = tem;
@@ -8440,7 +8512,7 @@ static void set_hyphenation_codes()
       error("cannot apply a hyphenation code to a numeral");
       break;
     }
-    charinfo *cidst = tok.get_char();
+    charinfo *cidst = tok.get_charinfo();
     if ('\0' == cdst) {
       if (0 /* nullptr */ == cidst) {
 	error("expected ordinary, special, or indexed character,"
@@ -8459,7 +8531,7 @@ static void set_hyphenation_codes()
       break;
     }
     unsigned char new_code = 0U;
-    charinfo *cisrc = tok.get_char();
+    charinfo *cisrc = tok.get_charinfo();
     if (cisrc != 0 /* nullptr */)
       // Common case: assign destination character the hyphenation code
       // of the source character.
@@ -8483,7 +8555,7 @@ static void set_hyphenation_codes()
 	&& cidst->get_translation()->is_translatable_as_input())
       cidst->get_translation()->set_hyphenation_code(new_code);
     tok.next();
-    tok.skip();
+    tok.skip_spaces();
   }
   skip_line();
 }
@@ -8507,7 +8579,7 @@ void hyphenation_patterns_file_code()
       }
       if (read_integer(&n2) && ((0 <= n2) && (n2 <= 255))) {
 	hpf_code_table[n1] = n2;
-	tok.skip();
+	tok.skip_spaces();
       }
       else {
 	error("output hyphenation code must be integer in the range 0..255");
@@ -8526,23 +8598,27 @@ dictionary char_class_dictionary(501);
 
 static void define_class_request()
 {
-  tok.skip();
+  tok.skip_spaces();
   symbol nm = read_identifier(true /* required */);
   if (nm.is_null()) {
     skip_line();
     return;
   }
-  charinfo *ci = get_charinfo(nm);
+  charinfo *ci = lookup_charinfo(nm);
   // Assign the charinfo an empty macro as a hack to record the
   // file:line location of its definition.
   macro *m = new macro;
   (void) ci->set_macro(m);
   charinfo *child1 = 0 /* nullptr */, *child2 = 0 /* nullptr */;
+  bool just_chained_a_range_expression = false;
   while (!tok.is_newline() && !tok.is_eof()) {
-    tok.skip();
+    tok.skip_spaces();
+    // Chained range expressions like
+    //   \[u3041]-\[u3096]-\[u30FF]
+    // are not valid.
     if ((child1 != 0 /* nullptr */) && (tok.ch() == '-')) {
       tok.next();
-      child2 = tok.get_char(true /* required */);
+      child2 = tok.get_charinfo();
       if (0 /* nullptr */ == child2) {
 	warning(WARN_MISSING,
 		"missing end of character range in class '%1'",
@@ -8573,6 +8649,7 @@ static void define_class_request()
       }
       ci->add_to_class(u1, u2);
       child1 = child2 = 0 /* nullptr */;
+      just_chained_a_range_expression = true;
     }
     else if (child1 != 0 /* nullptr */) {
       if (child1->is_class()) {
@@ -8596,12 +8673,18 @@ static void define_class_request()
       }
       child1 = 0 /* nullptr */;
     }
-    child1 = tok.get_char(true /* required */);
+    child1 = tok.get_charinfo(true /* required */);
     tok.next();
     if (0 /* nullptr */ == child1) {
       if (!tok.is_newline())
 	skip_line();
       break;
+    }
+    if (just_chained_a_range_expression) {
+      // Throw away `child1` so we don't duplicatively add the second
+      // end point of a range as a singleton.  See Savannah #67718.
+      child1 = 0 /* nullptr */;
+      just_chained_a_range_expression = false;
     }
   }
   if (child1 != 0 /* nullptr */) {
@@ -8641,12 +8724,12 @@ static void define_class_request()
 static charinfo *get_charinfo_by_index(int n,
 				       bool suppress_creation = false);
 
-charinfo *token::get_char(bool required, bool suppress_creation)
+charinfo *token::get_charinfo(bool required, bool suppress_creation)
 {
   if (type == TOKEN_CHAR)
     return charset_table[c];
   if (type == TOKEN_SPECIAL_CHAR)
-    return get_charinfo(nm, suppress_creation);
+    return lookup_charinfo(nm, suppress_creation);
   if (type == TOKEN_INDEXED_CHAR)
     return get_charinfo_by_index(val, suppress_creation);
   if (type == TOKEN_ESCAPE) {
@@ -8663,9 +8746,10 @@ charinfo *token::get_char(bool required, bool suppress_creation)
   }
   if (required) {
     if (type == TOKEN_EOF || type == TOKEN_NEWLINE)
-      warning(WARN_MISSING, "missing ordinary or special character");
+      warning(WARN_MISSING, "missing ordinary, special, or indexed"
+			    " character");
     else
-      error("expected ordinary or special character, got %1",
+      error("expected ordinary, special, or indexed character, got %1",
 	    description());
   }
   return 0 /* nullptr */;
@@ -8673,23 +8757,14 @@ charinfo *token::get_char(bool required, bool suppress_creation)
 
 charinfo *read_character(/* TODO?: bool required */)
 {
-  while (tok.is_space())
-    tok.next();
-  charinfo *ci = tok.get_char();
+  tok.skip_spaces();
+  charinfo *ci = tok.get_charinfo();
   // TODO?: if (required && (0 /* nullptr */ == ci))
   if (0 /* nullptr */ == ci)
-    check_missing_character();
+    tok.diagnose_non_character();
   else
     tok.next();
   return ci;
-}
-
-void check_missing_character()
-{
-  if (!tok.is_newline() && !tok.is_eof() && !tok.is_right_brace()
-      && !tok.is_tab())
-    error("expected ordinary or special character, got %1; treated as"
-	  " missing", tok.description());
 }
 
 // this is for \Z
@@ -8736,7 +8811,7 @@ bool token::add_to_zero_width_node_list(node **pp)
 			 curenv->get_fill_color());
     break;
   case TOKEN_SPECIAL_CHAR:
-    *pp = (*pp)->add_char(get_charinfo(nm), curenv, &w, &s);
+    *pp = (*pp)->add_char(lookup_charinfo(nm), curenv, &w, &s);
     break;
   case TOKEN_STRETCHABLE_SPACE:
     n = new unbreakable_space_node(curenv->get_space_width(),
@@ -8774,6 +8849,7 @@ void token::process()
 				      curenv->get_fill_color()));
     break;
   case TOKEN_CHAR:
+    // Optimize `curenv->add_char(get_charinfo())` for token type.
     curenv->add_char(charset_table[c]);
     break;
   case TOKEN_DUMMY:
@@ -8820,6 +8896,7 @@ void token::process()
     nd = 0;
     break;
   case TOKEN_INDEXED_CHAR:
+    // Optimize `curenv->add_char(get_charinfo())` for token type.
     curenv->add_char(get_charinfo_by_index(val));
     break;
   case TOKEN_REQUEST:
@@ -8831,7 +8908,8 @@ void token::process()
     curenv->space();
     break;
   case TOKEN_SPECIAL_CHAR:
-    curenv->add_char(get_charinfo(nm));
+    // Optimize `curenv->add_char(get_charinfo())` for token type.
+    curenv->add_char(lookup_charinfo(nm));
     break;
   case TOKEN_SPREAD:
     curenv->spread();
@@ -10141,7 +10219,7 @@ static node *read_drawing_command() // \D
 	  break;
 	}
 	++npoints;
-	tok.skip();
+	tok.skip_spaces();
 	point[i].v = V0;
 	if (tok == start_token) {
 	  no_last_v = true;
@@ -10151,7 +10229,7 @@ static node *read_drawing_command() // \D
 	  had_error = false;
 	  break;
 	}
-	tok.skip();
+	tok.skip_spaces();
       }
       while (tok != start_token && !tok.is_newline() && !tok.is_eof())
 	tok.next();
@@ -10515,7 +10593,7 @@ void debug_with_file_and_line(const char *filename,
 
 dictionary charinfo_dictionary(501);
 
-charinfo *get_charinfo(symbol nm, bool suppress_creation)
+charinfo *lookup_charinfo(symbol nm, bool suppress_creation)
 {
   void *p = charinfo_dictionary.lookup(nm);
   if (p != 0 /* nullptr */)
@@ -10897,9 +10975,9 @@ glyph *name_to_glyph(const char *nm)
   if (nm[1] == 0)
     ci = charset_table[nm[0] & 0xff];
   else if (nm[0] == '\\' && nm[2] == 0)
-    ci = get_charinfo(symbol(nm + 1));
+    ci = lookup_charinfo(symbol(nm + 1));
   else
-    ci = get_charinfo(symbol(nm));
+    ci = lookup_charinfo(symbol(nm));
   return ci->as_glyph();
 }
 

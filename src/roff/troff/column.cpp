@@ -669,7 +669,7 @@ node *vjustify_node::copy()
 
 const char *vjustify_node::type()
 {
-  return "vjustify_node";
+  return "vertical justification node";
 }
 
 int vjustify_node::same(node *nd)

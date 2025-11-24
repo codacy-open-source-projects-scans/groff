@@ -837,8 +837,10 @@ T}
 .
 .sp \n[PD]u
 tab	2048	T{
-A tab character was encountered where a number was expected,
-or appeared in an unquoted macro argument.
+A tab character appeared
+in a parameterized escape sequence
+or
+in an unquoted macro argument.
 T}
 .TE
 .

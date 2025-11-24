@@ -447,7 +447,7 @@ void assign_register_format_request()
     r = new number_reg;
     register_dictionary.define(nm, r);
   }
-  tok.skip();
+  tok.skip_spaces();
   char c = tok.ch();
   if (csdigit(c)) {
     int n = 0;

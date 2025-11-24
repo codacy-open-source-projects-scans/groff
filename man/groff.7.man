@@ -3713,14 +3713,18 @@ Define mappings for character codes in hyphenation pattern files.
 .
 .TPx
 .REQ .hw "word \fR.\|.\|.\fP"
-Define each
-.I "hyphenation exception"
+Define each argument
 .I word
-comprising ordinary or special characters with each hyphen-minus
+(comprising ordinary,
+special,
+or indexed characters)
+as a
+.I "hyphenation exception"
+such that each occurence of a hyphen-minus
 .RB \[lq] \- \[rq]
 in
 .I word
-indicating a hyphenation point.
+indicates a hyphenation point.
 .
 .TPx
 .REQ .hy
@@ -4342,22 +4346,29 @@ the list of font translations.
 .REQ .phw
 Report,
 to the standard error stream,
-the list of hyphenation exceptions
-associated with the current hyphenation language.
+the list of hyphenation exception words
+associated with the hyphenation language
+selected by the
+.B hla
+request.
 .
-Each hyphenation point is marked with
-.RB \[lq] \- \[rq].
+A
+.RB \[lq] \- \[rq]
+marks each hyphenation point.
 .
-Words that will not be hyphenated at all are prefixed with
-.RB \[lq] \- \[rq].
+A word prefixed with
+.RB \[lq] \- \[rq]
+is not hyphenated at all.
 .
-Those to which the automatic hyphenation mode applies
-(meaning those defined in a hyphenation pattern file rather than with
-the
+The report suffixes words
+to which automatic hyphenation applies
+(meaning those defined in a hyphenation pattern file
+rather than with the
 .B hw
 request)
-are suffixed with a tab and asterisk
-.RB ( * ).
+with a tab and asterisk
+.RB \[lq] * \[rq].
+.
 .
 .TPx
 .REQ .pi command

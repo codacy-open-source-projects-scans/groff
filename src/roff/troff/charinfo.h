@@ -122,7 +122,8 @@ public:
   void dump();
 };
 
-charinfo *get_charinfo(symbol, bool /* suppress_creation */ = false);
+extern charinfo *lookup_charinfo(symbol,
+				 bool /* suppress_creation */ = false);
 extern charinfo *charset_table[];
 
 inline bool charinfo::overlaps_horizontally()

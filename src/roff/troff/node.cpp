@@ -490,7 +490,7 @@ hunits font_info::get_space_width(font_size fs, int space_sz)
 
 hunits font_info::get_narrow_space_width(font_size fs)
 {
-  charinfo *ci = get_charinfo(symbol("|"));
+  charinfo *ci = lookup_charinfo(symbol("|"));
   if (fm->contains(ci->as_glyph()))
     return hunits(fm->get_width(ci->as_glyph(), fs.to_scaled_points()));
   else
@@ -499,7 +499,7 @@ hunits font_info::get_narrow_space_width(font_size fs)
 
 hunits font_info::get_half_narrow_space_width(font_size fs)
 {
-  charinfo *ci = get_charinfo(symbol("^"));
+  charinfo *ci = lookup_charinfo(symbol("^"));
   if (fm->contains(ci->as_glyph()))
     return hunits(fm->get_width(ci->as_glyph(), fs.to_scaled_points()));
   else
@@ -687,15 +687,15 @@ charinfo *tfont::get_lig(charinfo *c1, charinfo *c2)
     switch (c2->get_ascii_code()) {
     case 'f':
       if (fm->has_ligature(font::LIG_ff))
-	ci = get_charinfo(SYMBOL_ff);
+	ci = lookup_charinfo(SYMBOL_ff);
       break;
     case 'i':
       if (fm->has_ligature(font::LIG_fi))
-	ci = get_charinfo(SYMBOL_fi);
+	ci = lookup_charinfo(SYMBOL_fi);
       break;
     case 'l':
       if (fm->has_ligature(font::LIG_fl))
-	ci = get_charinfo(SYMBOL_fl);
+	ci = lookup_charinfo(SYMBOL_fl);
       break;
     }
   }
@@ -703,11 +703,11 @@ charinfo *tfont::get_lig(charinfo *c1, charinfo *c2)
     switch (c2->get_ascii_code()) {
     case 'i':
       if (fm->has_ligature(font::LIG_ffi))
-	ci = get_charinfo(SYMBOL_Fi);
+	ci = lookup_charinfo(SYMBOL_Fi);
       break;
     case 'l':
       if (fm->has_ligature(font::LIG_ffl))
-	ci = get_charinfo(SYMBOL_Fl);
+	ci = lookup_charinfo(SYMBOL_Fl);
       break;
     }
   }
@@ -2630,7 +2630,7 @@ bool hyphen_inhibitor_node::is_same_as(node *)
 
 const char *hyphen_inhibitor_node::type()
 {
-  return "hyphen_inhibitor_node";
+  return "hyphenation inhibitor node";
 }
 
 hyphenation_type hyphen_inhibitor_node::get_hyphenation_type()
@@ -4402,7 +4402,7 @@ bool device_extension_node::is_same_as(node *n)
 
 const char *device_extension_node::type()
 {
-  return "device_extension_node";
+  return "device extension command node";
 }
 
 int device_extension_node::ends_sentence()
@@ -4507,7 +4507,7 @@ bool suppress_node::is_same_as(node *n)
 
 const char *suppress_node::type()
 {
-  return "suppress_node";
+  return "suppressed output node";
 }
 
 node *suppress_node::copy()
@@ -4565,7 +4565,7 @@ bool tag_node::is_same_as(node *nd)
 
 const char *tag_node::type()
 {
-  return "tag_node";
+  return "tag node";
 }
 
 bool tag_node::causes_tprint()
@@ -5144,7 +5144,7 @@ bool draw_node::is_same_as(node *n)
 
 const char *draw_node::type()
 {
-  return "draw_node";
+  return "drawing command node";
 }
 
 bool draw_node::causes_tprint()
@@ -5594,7 +5594,7 @@ static node *make_glyph_node(charinfo *s, environment *env,
       gl += ' ';
       gl += s->nm.contents();
       gl += '\0';
-      charinfo *ci = get_charinfo(symbol(gl.contents()));
+      charinfo *ci = lookup_charinfo(symbol(gl.contents()));
       if (ci && ci->get_macro())
 	return make_composite_node(ci, env);
     }
@@ -5811,7 +5811,7 @@ bool extra_size_node::is_same_as(node *nd)
 
 const char *extra_size_node::type()
 {
-  return "extra_size_node";
+  return "extra vertical spacing node";
 }
 
 bool extra_size_node::causes_tprint()
@@ -5831,7 +5831,7 @@ bool vertical_size_node::is_same_as(node *nd)
 
 const char *vertical_size_node::type()
 {
-  return "vertical_size_node";
+  return "vertical spacing node";
 }
 
 bool vertical_size_node::set_unformat_flag()
@@ -5857,7 +5857,7 @@ bool hmotion_node::is_same_as(node *nd)
 
 const char *hmotion_node::type()
 {
-  return "hmotion_node";
+  return "horizontal motion node";
 }
 
 bool hmotion_node::set_unformat_flag()
@@ -5898,7 +5898,7 @@ bool space_char_hmotion_node::is_same_as(node *nd)
 
 const char *space_char_hmotion_node::type()
 {
-  return "space_char_hmotion_node";
+  return "space character horizontal motion node";
 }
 
 bool space_char_hmotion_node::causes_tprint()
@@ -5934,7 +5934,7 @@ bool vmotion_node::is_same_as(node *nd)
 
 const char *vmotion_node::type()
 {
-  return "vmotion_node";
+  return "vertical motion node";
 }
 
 bool vmotion_node::causes_tprint()
@@ -5955,7 +5955,7 @@ bool hline_node::is_same_as(node *nd)
 
 const char *hline_node::type()
 {
-  return "hline_node";
+  return "horizontal rule node";
 }
 
 bool hline_node::causes_tprint()
@@ -5976,7 +5976,7 @@ bool vline_node::is_same_as(node *nd)
 
 const char *vline_node::type()
 {
-  return "vline_node";
+  return "vertical rule node";
 }
 
 bool vline_node::causes_tprint()
@@ -5996,7 +5996,7 @@ bool dummy_node::is_same_as(node *)
 
 const char *dummy_node::type()
 {
-  return "dummy_node";
+  return "dummy node";
 }
 
 bool dummy_node::causes_tprint()
@@ -6016,7 +6016,7 @@ bool transparent_dummy_node::is_same_as(node *)
 
 const char *transparent_dummy_node::type()
 {
-  return "transparent_dummy_node";
+  return "transparent dummy node";
 }
 
 bool transparent_dummy_node::causes_tprint()
@@ -6041,7 +6041,7 @@ bool zero_width_node::is_same_as(node *nd)
 
 const char *zero_width_node::type()
 {
-  return "zero_width_node";
+  return "zero-width output node";
 }
 
 bool zero_width_node::causes_tprint()
@@ -6063,7 +6063,7 @@ bool italic_corrected_node::is_same_as(node *nd)
 
 const char *italic_corrected_node::type()
 {
-  return "italic_corrected_node";
+  return "italic-corrected node";
 }
 
 bool italic_corrected_node::causes_tprint()
@@ -6137,7 +6137,7 @@ void left_italic_corrected_node::tprint(troff_output_file *out)
 
 const char *left_italic_corrected_node::type()
 {
-  return "left_italic_corrected_node";
+  return "left italic-corrected node";
 }
 
 bool left_italic_corrected_node::causes_tprint()
@@ -6264,7 +6264,7 @@ bool overstrike_node::is_same_as(node *nd)
 
 const char *overstrike_node::type()
 {
-  return "overstrike_node";
+  return "overstricken node";
 }
 
 bool overstrike_node::causes_tprint()
@@ -6298,7 +6298,7 @@ bool bracket_node::is_same_as(node *nd)
 
 const char *bracket_node::type()
 {
-  return "bracket_node";
+  return "bracket-building node";
 }
 
 bool bracket_node::causes_tprint()
@@ -6320,7 +6320,7 @@ bool composite_node::is_same_as(node *nd)
 
 const char *composite_node::type()
 {
-  return "composite_node";
+  return "composite node"; // XXX: composite WHAT? (character macro?)
 }
 
 bool composite_node::causes_tprint()
@@ -6343,7 +6343,7 @@ bool glyph_node::is_same_as(node *nd)
 
 const char *glyph_node::type()
 {
-  return "glyph_node";
+  return "glyph node";
 }
 
 bool glyph_node::causes_tprint()
@@ -6365,7 +6365,7 @@ bool ligature_node::is_same_as(node *nd)
 
 const char *ligature_node::type()
 {
-  return "ligature_node";
+  return "ligature node";
 }
 
 bool ligature_node::causes_tprint()
@@ -6387,7 +6387,7 @@ bool kern_pair_node::is_same_as(node *nd)
 
 const char *kern_pair_node::type()
 {
-  return "kern_pair_node";
+  return "kerned character pair node";
 }
 
 bool kern_pair_node::causes_tprint()
@@ -6409,7 +6409,7 @@ bool dbreak_node::is_same_as(node *nd)
 
 const char *dbreak_node::type()
 {
-  return "dbreak_node";
+  return "discretionary breakpoint node";
 }
 
 bool dbreak_node::causes_tprint()
@@ -6455,7 +6455,7 @@ bool break_char_node::is_same_as(node *nd)
 
 const char *break_char_node::type()
 {
-  return "break_char_node";
+  return "breakpoint node";
 }
 
 bool break_char_node::causes_tprint()
@@ -6480,7 +6480,7 @@ bool line_start_node::is_same_as(node *)
 
 const char *line_start_node::type()
 {
-  return "line_start_node";
+  return "output line start node";
 }
 
 bool line_start_node::causes_tprint()
@@ -6502,7 +6502,7 @@ bool space_node::is_same_as(node *nd)
 
 const char *space_node::type()
 {
-  return "space_node";
+  return "space node";
 }
 
 bool word_space_node::is_same_as(node *nd)
@@ -6514,7 +6514,7 @@ bool word_space_node::is_same_as(node *nd)
 
 const char *word_space_node::type()
 {
-  return "word_space_node";
+  return "word space node";
 }
 
 bool word_space_node::causes_tprint()
@@ -6551,7 +6551,7 @@ bool unbreakable_space_node::is_same_as(node *nd)
 
 const char *unbreakable_space_node::type()
 {
-  return "unbreakable_space_node";
+  return "unbreakable space node";
 }
 
 node *unbreakable_space_node::add_self(node *nd, hyphen_list **p)
@@ -6576,7 +6576,7 @@ bool diverted_space_node::is_same_as(node *nd)
 
 const char *diverted_space_node::type()
 {
-  return "diverted_space_node";
+  return "diverted vertical space node";
 }
 
 bool diverted_space_node::causes_tprint()
@@ -6596,7 +6596,7 @@ bool diverted_copy_file_node::is_same_as(node *nd)
 
 const char *diverted_copy_file_node::type()
 {
-  return "diverted_copy_file_node";
+  return "diverted file throughput node";
 }
 
 bool diverted_copy_file_node::causes_tprint()
@@ -6965,7 +6965,7 @@ bool is_valid_font_mounting_position(int n)
 static bool read_font_identifier(font_lookup_info *finfo)
 {
   int n;
-  tok.skip();
+  tok.skip_spaces();
   if (tok.is_usable_as_delimiter()) {
     symbol s = read_identifier(true /* required */);
     finfo->requested_name = const_cast<char *>(s.contents());
@@ -7049,17 +7049,22 @@ static void remove_font_specific_character()
     symbol f = font_table[finfo.position]->get_name();
     while (!tok.is_newline() && !tok.is_eof()) {
       if (!tok.is_space() && !tok.is_tab()) {
-	charinfo *s = tok.get_char(true /* required */);
-	string gl(f.contents());
-	gl += ' ';
-	gl += s->nm.contents();
-	gl += '\0';
-	charinfo *ci = get_charinfo(symbol(gl.contents()));
-	if (!ci)
-	  break;
-	macro *m = ci->set_macro(0 /* nullptr */);
-	if (m != 0 /* nullptr */)
-	  delete m;
+	charinfo *s = tok.get_charinfo(true /* required */);
+	if (0 /* nullptr */ == s)
+	  assert(0 == "attempted to use token without charinfo in"
+		 " font-specific character removal request");
+	else {
+	  string gl(f.contents());
+	  gl += ' ';
+	  gl += s->nm.contents();
+	  gl += '\0';
+	  charinfo *ci = lookup_charinfo(symbol(gl.contents()));
+	  if (0 /* nullptr */ == ci)
+	    break;
+	  macro *m = ci->set_macro(0 /* nullptr */);
+	  if (m != 0 /* nullptr */)
+	    delete m;
+	}
       }
       tok.next();
     }
@@ -7490,7 +7495,7 @@ static void soft_hyphen_character_request()
 {
   soft_hyphen_char = read_character();
   if (0 /* nullptr */ == soft_hyphen_char)
-    soft_hyphen_char = get_charinfo(HYPHEN_SYMBOL);
+    soft_hyphen_char = lookup_charinfo(HYPHEN_SYMBOL);
   skip_line();
 }
 
@@ -7553,7 +7558,7 @@ void init_node_requests()
   register_dictionary.define(".lg",
       new readonly_register(&global_ligature_mode));
   register_dictionary.define(".P", new printing_reg);
-  soft_hyphen_char = get_charinfo(HYPHEN_SYMBOL);
+  soft_hyphen_char = lookup_charinfo(HYPHEN_SYMBOL);
 }
 
 // Local Variables:

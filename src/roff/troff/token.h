@@ -80,7 +80,8 @@ public:
   void operator=(const token &);
   void next();
   void process();
-  void skip();
+  void skip_spaces();
+  void diagnose_non_character();
   int nspaces();		// is_space() as integer
   bool is_eof();
   bool is_space();
@@ -109,8 +110,8 @@ public:
   bool operator!=(const token &); // ditto
   unsigned char ch();
   int character_index();
-  charinfo *get_char(bool /* required */ = false,
-		     bool /* suppress_creation */ = false);
+  charinfo *get_charinfo(bool /* required */ = false,
+			 bool /* suppress_creation */ = false);
   bool add_to_zero_width_node_list(node **);
   void make_space();
   void make_newline();
@@ -126,7 +127,6 @@ extern symbol read_identifier(bool /* required */ = false);
 extern symbol get_long_name(bool /* required */ = false);
 extern charinfo *read_character(); // TODO?: bool /* required */ = false
 extern char *read_rest_of_line_as_argument();
-extern void check_missing_character();
 extern void skip_line();
 extern void handle_initial_title();
 
@@ -188,7 +188,7 @@ inline bool token::is_special_character()
 
 inline int token::nspaces()
 {
-  return (int)(type == TOKEN_SPACE);
+  return int(type == TOKEN_SPACE);
 }
 
 inline bool token::is_white_space()

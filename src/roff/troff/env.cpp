@@ -1673,10 +1673,17 @@ void underline()
 
 void margin_character()
 {
-  while (tok.is_space())
-    tok.next();
-  charinfo *ci = tok.get_char();
-  if (ci != 0 /* nullptr */) {
+  tok.skip_spaces();
+  charinfo *ci = tok.get_charinfo();
+  if (0 /* nullptr */ == ci) { // no argument
+    tok.diagnose_non_character();
+    curenv->margin_character_flags &= ~environment::MC_ON;
+    if (curenv->margin_character_flags == 0U) {
+      delete curenv->margin_character_node;
+      curenv->margin_character_node = 0 /* nullptr */;
+    }
+  }
+  else {
     // Call tok.next() only after making the node so that
     // .mc \s+9\(br\s0 works.
     node *nd = curenv->make_char_node(ci);
@@ -1689,14 +1696,6 @@ void margin_character()
       hunits d;
       if (has_arg() && get_hunits(&d, 'm'))
 	curenv->margin_character_distance = d;
-    }
-  }
-  else {
-    check_missing_character();
-    curenv->margin_character_flags &= ~environment::MC_ON;
-    if (curenv->margin_character_flags == 0U) {
-      delete curenv->margin_character_node;
-      curenv->margin_character_node = 0 /* nullptr */;
     }
   }
   skip_line();
@@ -3773,7 +3772,7 @@ void environment_copy()
     return;
   }
   environment *e = 0 /* nullptr */;
-  tok.skip();
+  tok.skip_spaces();
   symbol nm = get_long_name();
   assert(nm != 0 /* nullptr */);
   e = static_cast<environment *>(env_dictionary.lookup(nm));
@@ -3828,14 +3827,14 @@ const int WORD_MAX = 256;	// we use unsigned char for offsets in
 static void add_hyphenation_exceptions()
 {
   if (!has_arg()) {
-    warning(WARN_MISSING, "hyphenation exception request expects one or"
-	    " more arguments");
+    warning(WARN_MISSING, "hyphenation exception word request expects"
+	    " one or more arguments");
     skip_line();
     return;
   }
   if (0 /* nullptr */ == current_language) {
-    error("cannot add hyphenation exceptions when no hyphenation"
-	  " language is set");
+    error("cannot add hyphenation exception words when no hyphenation"
+	  " language is selected");
     skip_line();
     return;
   }
@@ -3846,13 +3845,14 @@ static void add_hyphenation_exceptions()
       break;
     int i = 0;
     int npos = 0;
-    while (i < WORD_MAX && !tok.is_space() && !tok.is_newline()
+    while ((i < WORD_MAX)
+	   && !tok.is_space()
+	   && !tok.is_newline()
 	   && !tok.is_eof()) {
-      charinfo *ci = tok.get_char(true /* required */);
+      charinfo *ci = tok.get_charinfo(true /* required */);
       if (0 /* nullptr */ == ci) {
-	error("%1 has no associated character information(!)",
-	      tok.description());
-	assert(0 == "unexpected null pointer to charinfo of token");
+	assert(0 == "attempted to use token without charinfo in"
+	       " hyphenation exception word");
 	skip_line();
 	return;
       }

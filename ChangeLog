@@ -1,3 +1,294 @@
+2025-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (remove_font_specific_character):
+	Recover from invalid input more robustly.  If we encounter an
+	invalid character token in the `rfschar` argument list (one that
+	has a null pointer to its `charinfo`), and the build used
+	`NDEBUG` to suppress assertions, skip the character and process
+	the next token (if any) instead of ignoring the rest of the
+	input line, as the `cflags` and `rchar` requests do.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (define_character, get_line_arg)
+	(do_translate):
+	* src/roff/troff/node.cpp (remove_font_specific_character): Add
+	assertions.
+	* src/roff/troff/input.cpp (do_overstrike, do_bracket)
+	(token::description)
+	(encode_special_character_for_device_output)
+	(set_character_flags_request): Invert sense of test and add
+	assertion.
+	(token::next): Add assertions to `\z` escape sequence handler.
+	(token:description): Split conditional to accommodate assertion.
+	(encode_special_character_for_device_output): Lift assignment
+	out of conditional branch since a null pointer check now guards
+	it from execution with an early `return`.  Add assertion for
+	impossible situation of a special character already being
+	defined with a null groff `symbol` as its identifier.  For
+	`NDEBUG` builds, return early should that eventuate, as we can't
+	usefully call `map_special_character_for_device_output()` with a
+	null pointer argument.
+
+2025-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_title_parts): Slightly
+	refactor.  Lift return value of repeated `tok.get_charinfo()`
+	function call into a local variable, `ci`.
+
+2025-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Report the node
+	type of node tokens when describing them.
+
+2025-11-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Give node types self-reported type information
+	human-readable names.  That is, use English noun phrases for
+	them instead of C++ identifiers.
+
+	* src/roff/troff/column.cpp (vjustify_node::type) [0]:
+	* src/roff/troff/input.cpp (non_interpreted_char_node)
+	(token_node, non_interpreted_node):
+	* src/roff/troff/node.cpp (hyphen_inhibitor_node)
+	(device_extension_node, suppress_node, tag_node, draw_node)
+	(extra_size_node, vertical_size_node, hmotion_node)
+	(space_char_hmotion_node, vmotion_node, hline_node, vline_node)
+	(dummy_node, transparent_dummy_node, zero_width_node)
+	(italic_corrected_node, left_italic_corrected_node)
+	(overstrike_node, bracket_node, composite_node, glyph_node)
+	(ligature_node, kern_pair_node, dbreak_node, break_char_node)
+	(line_start_node, space_node, word_space_node)
+	(unbreakable_space_node, diverted_space_node)
+	(diverted_copy_file_node): Do it.
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (remove_font_specific_character): Add
+	null pointer check on `charinfo` object returned by
+	`get_charinfo()` on token (a character to be removed as a
+	font-specific fallback, which need not already exist).  If null,
+	break from the loop just as is already done when the lookup on
+	the same character as a font-specific character takes place.
+	{Font-specific fallback characters are implemented sneakily by
+	injecting spaces into their identifiers, making them otherwise
+	invalid.  Where `A`, `\[em]` or `\N'45'` are non-font-specific
+	characters (be they fallbacks or not), `TR \[em]` is a fallback
+	for `\[em]` specific to the font named `TR`.}
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (print_character_request): Slightly
+	refactor; delay gathering of the current token's `charinfo`
+	until we absolutely need it.
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp
+	(encode_special_character_for_device_output): Simplify logic.
+	Both branches in this function were doing the same thing, except
+	for a null pointer check.  Add anothing null pointer check
+	since, in theory, `charinfo::get_symbol()` can return one.
+	Continues commit c4259eb20a, 14 September 2024.
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (print_character_request)
+	(remove_character): Simplify logic.  `token::description()`
+	describes indexed characters adequately.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (add_hyphenation_exceptions): Fix code
+	style nit; parenthesize formally complex expressions.  Also
+	break lengthy chain of short-circuit operators across multiple
+	lines, using indentation to illuminate (lack of) nesting.
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Slightly refactor.  Make the global function
+	`check_missing_character()` a member function of the `token`
+	class since it operates only on token objects and can be more
+	economically expressed that way.  Rename it.
+
+	* src/roff/troff/token.h: Drop `extern` declaration of global
+	`check_missing_character()`.
+	(class token): Declare new member function.
+	* src/roff/troff/input.cpp (check_missing_character): Relocate
+	from here...
+	(token::diagnose_non_character): ...to here, renaming.
+	* src/roff/troff/env.cpp (margin_character):
+	* src/roff/troff/input.cpp (read_character): Update call sites.
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (define_character)
+	(check_missing_character): Revise wording of error diagnostics
+	to mention indexed characters alongside ordinary and special
+	ones.
+
+2025-11-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_title_parts): Avoid null
+	pointer dereference.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (add_hyphenation_exceptions): Revise
+	wording of diagnostic messages, better paralleling language in
+	our documentation.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (add_hyphenation_exceptions): Drop
+	`error()` call prior to `assert()`.  It's okay if, when built
+	with the preprocessor `NDEBUG` symbol defined, we silently
+	discard the remainder of the input line and resume reading the
+	next.  Should feel familiar to users of AT&T troff.  (Also, this
+	makes a forthcoming change easier.)
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (margin_character): Trivially refactor.
+	Invert test and resequence logic to handle the argumentless form
+	of the `mc` request first.  This is to facilitate a forthcoming
+	change.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (encode_character_for_device_output):
+	Avoid null pointer dereference.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_line_arg): Add assertion.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (token::nspaces): Fix code style nit.
+	Replace C-style type cast with value construction.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `skip()` member function of
+	`token` class to `skip_spaces()` so that it is obvious at all of
+	its (many) call sites what, exactly, it's doing with the input
+	stream.
+
+	* src/roff/troff/token.h (class token): Rename declaration.
+	* src/roff/troff/input.cpp (token::skip): Rename definition from
+	this...
+	(token::skip_spaces): ...to this.
+	* src/roff/troff/div.cpp (do_divert):
+	* src/roff/troff/env.cpp (margin_character, environment_copy):
+	* src/roff/troff/input.cpp (has_arg, read_identifier)
+	(do_get_long_name, define_character, print_character_request)
+	(do_register, nop_request, is_conditional_expression_true)
+	(do_translate, set_hyphenation_codes)
+	(hyphenation_patterns_file_code, define_class_request)
+	(read_character, read_drawing_command):
+	* src/roff/troff/node.cpp (read_font_identifier):
+	* src/roff/troff/number.cpp (is_valid_expression)
+	(is_valid_term):
+	* src/roff/troff/reg.cpp (assign_register_format_request):
+	Update call sites.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (margin_character):
+	* src/roff/troff/input.cpp (has_arg, get_long_name)
+	(print_character_request, do_register, nop_request)
+	(is_conditional_expression_true, read_character): Slightly
+	refactor.  Call `tok.space()` instead of open-coding exactly
+	what it does.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Slightly
+	refactor.  Use different technique (with `static` `const`
+	character literals) to construct computed string describing a
+	special character or character class token.  See
+	`assign_escape_character()` for a similar pattern.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_char()` member
+	function of `token` class to `get_charinfo()` to clearly
+	communicate the data type to which it returns a pointer.
+
+	* src/roff/troff/token.h (class token): Rename declaration.
+	* src/roff/troff/input.cpp (token::get_char): Rename definition
+	from this...
+	(token::get_charinfo): ...to this.
+	* src/roff/troff/env.cpp (margin_character)
+	(add_hyphenation_exceptions):
+	* src/roff/troff/input.cpp (do_overstrike, do_bracket)
+	(token::next, token::description, define_character)
+	(print_character_request, remove_character, get_line_arg)
+	(read_title_parts, encode_special_character_for_device_output)
+	(is_conditional_expression_true, do_translate)
+	(set_character_flags_request, set_hyphenation_codes)
+	(define_class_request, read_character):
+	* src/roff/troff/node.cpp (remove_font_specific_character):
+	Update call sites.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_charinfo()` global
+	function to `lookup_charinfo()` because (a) this parallels the
+	naming of other functions that look up (and potentially create)
+	entries in dictionaries (cf. `lookup_{color,family,request,
+	warning}()`), and (b) this function is not an accessor
+	{"getter"} for a property of a class object.
+
+	* src/roff/troff/charinfo.h (get_charinfo): Rename declaration
+	from this...
+	(lookup_charinfo): ...to this.
+	* src/roff/troff/input.cpp (get_charinfo): Rename definition
+	from this...
+	(lookup_charinfo): ...to this.
+	* src/roff/troff/input.cpp (token::next, define_character)
+	(init_charset_table, define_class_request, token::get_char)
+	(token::add_to_zero_width_node_list, token::process)
+	(name_to_glyph):
+	* src/roff/troff/node.cpp (font_info::get_narrow_space_width)
+	(font_info::get_half_narrow_space_width)
+	(tfont::get_lig, make_glyph_node)
+	(remove_font_specific_character, soft_hyphen_character_request)
+	(init_node_requests): Update call sites.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (define_class_request): Stop adding
+	the second end point of a character code range (to a character
+	class) duplicatively as a singleton, preventing redundant
+	population of the range.
+
+	Fixes <https://savannah.gnu.org/bugs/?67718>.
+
+2025-11-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (define_class_request): Eliminate
+	extraneous diagnostic message.  We already throw a more
+	contextually specific one subsequently.
+
+2025-11-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::get_char): Recognize
+	existence of indexed characters in diagnostic messages.
+
+2025-11-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Manipulating Hyphenation):
+	* man/groff.7.man (Request short reference): Fix error that
+	crept into groff 1.23.0 documentation; hypenation exception
+	words have no association with formatter environments (though
+	that is a contemplated change; see Savannah #66387).
+
+	Fixes <https://savannah.gnu.org/bugs/?66803>.  Thanks to Dave
+	Kemper for the report.  Problem introduced by me in commit
+	493a01c02d4, 28 June 2020.
+
 2025-11-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/devices/gropdf/gropdf.pl (Warn): Set exit status to 1, not
@@ -28,10 +319,10 @@
 2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (do_suppress): Improve diagnostic
-	message when input malformatted; the one we had wasn't clear in
-	the easily anticipated scenario where the user assumes that `\O`
-	is a delimited escape sequence (it isn't) and selects "'" as
-	the "delimiter".
+	message when input malfored; the one we had wasn't clear in the
+	easily anticipated scenario where the user assumes that `\O` is
+	a delimited escape sequence (it isn't) and selects "'" as the
+	"delimiter".
 
 2025-11-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -179,7 +470,7 @@
 2025-11-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (length_request): Drop erroneous
-	assertion, while failed and cored on `.length \&`.
+	assertion that failed and cored on `.length \&`.
 
 2025-11-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -205,8 +496,8 @@
 	* src/roff/troff/node.cpp (glyph_node::asciify):
 	* src/utils/hpftodit/hpftodit.cpp (unicode_to_ucode_name): Make
 	the compiler do the work of computing sufficiently large static
-	buffer sizes (for C strings), and so doing express the maximal
-	expected output to that buffer.
+	buffer sizes (for C strings), and in so doing express the
+	maximal expected output to that buffer.
 
 2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
