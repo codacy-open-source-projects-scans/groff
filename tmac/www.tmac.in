@@ -5,7 +5,7 @@ www.tmac - macro package for adding HTML elements to roff documents.
     Legalese
 ------------------------------------------------------------------------
 
-This file is part of groff, the GNU roff type-setting system.
+This file is part of groff, the GNU roff typesetting system.
 
 Copyright (C) 2001-2020 Free Software Foundation, Inc.
 written by Gaius Mulley <gaius@glam.ac.uk>, with additions by

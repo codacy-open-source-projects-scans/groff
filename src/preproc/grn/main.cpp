@@ -372,7 +372,7 @@ main(int argc,
 	}
 	// fallthrough
       default:
-	error("unrecognized command-line option '%1'", c);
+	error("unrecognized command-line option '%1'", *argv);
 	usage(stderr);
 	exit(2);
       }

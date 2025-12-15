@@ -133,7 +133,7 @@ Updating Copyright Notices
   Copyright protection extends to those portions of the work fixed in a
   tangible medium in the years declared in the copyright notice, except
   for those portions whose copyright durations have elapsed.  But these
-  are so lengthy that, in the United States as of 2024, no work of
+  are so lengthy that, in the United States as of 2025, no work of
   computer software or documentation has ever yet even _partially_ aged
   into the public domain.  (Some has been placed in the public domain
   deliberately, and some never enjoyed copyright protection at all.)
@@ -227,7 +227,7 @@ Here are some portability notes on writing automated tests.
 
   But see below regarding the opening braces.
 
-  Similarly, a brace sequence like that in this partial sed script:
+  Similarly, a brace sequence as shown in this partial sed script:
     /f1/p}}}}}}
   must be rewritten as follows (or with '-e' expressions).
     /f1/p;}

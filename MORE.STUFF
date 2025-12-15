@@ -42,20 +42,6 @@ language for typesetting graphs.
   http://www.lunabase.org/~faber/Vault/software/grap/
 
 
-troffcvt
---------
-
-Per its web page,
-
-  troffcvt is a translator that turns troff input into a form that can
-  be more easily processed.  The troffcvt distribution comes with
-  postprocessors that turn troffcvt into various destination formats
-  such as HTML (Hypertext Markup Language), RTF (Rich Text Format) or
-  plain text.
-
-  http://www.snake.net/software/troffcvt/
-
-
 unroff
 ------
 
@@ -113,13 +99,13 @@ The plotutils package is available at
 Miscellaneous
 -------------
 
-. Ralph Corderoy's excellent page on troff:
+* Ralph Corderoy's excellent page on troff:
 
     www.troff.org
 
   There are links for virtually everything related to troff.
 
-. Dr. Robert Hermann's groff gems are available from
+* Dr. Robert Hermann's groff gems are available from
 
     http://www.eas.slu.edu/People/RBHerrmann/GROFF/index.html
 
@@ -128,14 +114,14 @@ Miscellaneous
   o creating business cards
   o using groff to make large format posters for presentations
 
-. Robert Marks's collection of useful macros and scripts is available
+* Robert Marks's collection of useful macros and scripts is available
   from
 
     http://www.agsm.edu.au/~bobm/odds+ends/scripts.html
 
   Description:
 
-  o `polish': Is a sed (= the Unix stream editor) script that does many
+  - "polish": Is a sed (= the Unix stream editor) script that does many
     things to ASCII text.  Amongst other things, it breaks lines at new
     sentences, reduces upper-case acronyms by one point size, adds
     diacriticals, changes simple quotes into smart quotes, and makes a
@@ -143,35 +129,45 @@ Miscellaneous
     run it as a sed script file (or files) on a text file and then
     compare the output file with the original.
 
-  o `DropCaps' is a troff script which replaces the initial letters of
+  - "DropCaps" is a troff script which replaces the initial letters of
     paragraphs immediately after H1 and H2 headings with drop-capitals
     of specified point size, and automatically flows the text around the
     new drop cap.
 
-  o `AJM Header' is a set of troff macros used in production of the
+  - "AJM Header" is a set of troff macros used in production of the
     Australian Journal of Management.  They use the Memorandum Macros
     (mm) of AT&T, and so should be invoked with the Unix troff -mm flag;
     they should also work with the GNU troff -mm flag.
 
-. Thomas Baruchel <baruchel@libertysurf.fr> has developed Meta-tbl, a
+* Thomas Baruchel <baruchel@libertysurf.fr> has developed Meta-tbl, a
   tbl postprocessor to manipulate table cells (like adding gray shades).
   The latest version can be found at
 
     http://perso.libertysurf.fr/baruchel/
 
-. gpresent, written by Bob Diertens <bobd@science.uva.nl>.  From the
+* gpresent, written by Bob Diertens <B.Diertens@Uva.nl>.  From its
   README file:
 
-    gpresent is a package for making presentation with groff and
-    acroread.  It consist of a set of macros to be used with groff and a
-    post-processor for manipulating the PostScript output of groff.
-    Without the use of the PAUSE macro, it can also be used for making
-    slides.
+    gpresent is a package for making presentations with groff and
+    [a PDF viewer].  It consist[s] of a set of macros to be used with
+    groff and a post-processor for manipulating the PostScript output of
+    groff.  Without the use of the PAUSE macro, it can also be used for
+    making slides.
 
   It is available from
 
-    www.science.uva.nl/~bobd/useful/gpresent/
+    https://bob.diertens.org/corner/useful/gpresent/
 
+* groff-pdfmark, written by Keith Marshall.
+
+  Its home page describes it as providing "a suite of GNU roff macro
+  packages, together with a Bourne shell driver script, designed to
+  facilitate the creation of PDF files, using GNU roff as the primary
+  typesetting engine."
+
+  It is available from
+
+    <https://savannah.nongnu.org/projects/groff-pdfmark>.
 
 Documentation
 -------------

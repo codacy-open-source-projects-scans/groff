@@ -10,7 +10,8 @@ documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2020 Free Software Foundation, Inc.
+.\"           2020-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -347,7 +348,7 @@ reduces column separation as far as necessary
 .
 .I @g@tbl
 produces
-.I groff
+.I @g@troff
 input that issues a diagnostic if such compression occurs.
 .
 The column modifier
@@ -826,8 +827,9 @@ The last form is a GNU extension.
 .B ft
 request.)
 .
-A one-character argument not in parentheses must be separated by one or
-more spaces or tabs from what follows.
+A one-character argument not in parentheses
+must end the row description
+or be separated by one or more spaces or tabs from what follows.
 .
 .
 .TP
@@ -1045,12 +1047,14 @@ region option above.
 .
 Excess entries in a row of table data
 (those that have no corresponding column descriptor,
-not even an implicit one arising from rectangularization of the table)
-are discarded with a diagnostic message.
+not even an implicit one arising from rectangularization of the table),
+.I @g@tbl
+discards with a diagnostic message.
 .
+.I @g@tbl
+passes
 .I roff
-control lines are accepted between rows of table data and within text
-blocks.
+control lines through unaltered to its output.
 .
 If you wish to visibly mark an empty table entry in the document source,
 populate it with the
@@ -1109,33 +1113,33 @@ If a table row contains only an underscore or equals sign
 .RB ( _
 or
 .BR = ),
-a single or double horizontal rule (line),
+.I @g@tbl
+draws a a single or double horizontal rule (line),
 respectively,
-is drawn across the table at that point.
+across the table at that point.
 .
 .
 .IP \[bu]
-A table entry containing only
+If a table entry contains only
 .B _
 or
 .B =
-on an otherwise populated row is replaced by a single or double
-horizontal rule,
+on an otherwise populated row,
+.I @g@tbl
+populates its cell with a single or double horizontal rule,
 respectively,
-joining its
+that joins its
 neighbors.
 .
 .
 .IP \[bu]
-Prefixing a lone underscore or equals sign with a backslash also has
-meaning.
-.
-If a table entry consists only of
+If a table entry contains only
 .B \[rs]_
 or
 .B \[rs]=
 on an otherwise populated row,
-it is replaced by a single or double horizontal rule,
+.I @g@tbl
+populates its cell with a single or double horizontal rule,
 respectively,
 that does
 .I not
@@ -1143,7 +1147,7 @@ that does
 .
 .
 .IP \[bu]
-A table entry consisting of
+If a table entry contains only
 .BI \[rs]R x\c
 ,
 where
@@ -1153,10 +1157,11 @@ any
 ordinary,
 special,
 or indexed character,
-is replaced by enough repetitions of the glyph corresponding
+.I @g@tbl
+populates its cell with enough repetitions of the glyph corresponding
 .RI to\~ x
-to fill the column,
-albeit without joining its neighbors.
+to fill the column
+without joining its neighbors.
 .\" TODO: Bad things happen if there's garbage in the entry after 'x',
 .\" which can be a *roff special character escape sequence, so
 .\" validation is not trivial.
@@ -1329,7 +1334,9 @@ you can also control a text block's width by including an
 (line length)
 request in it prior to any text to be formatted.
 .
-Because a diversion is used to format the text block,
+Because
+.I @g@tbl
+uses a diversion to format the text block,
 its height and width are subsequently available
 in the
 .I troff \" generic
@@ -1459,13 +1466,15 @@ nor any limit on the number of text blocks.
 .
 .
 .IP \[bu]
-All table rows are considered when deciding column widths,
+GNU
+.I tbl \" GNU
+considers all table rows when computing column widths,
 not just those occurring in the first 200 input lines of a region.
 .
 Similarly,
-table continuation
+it recognizes table continuation tokens
 .RB ( .T& )
-tokens are recognized outside a region's first 200 input lines.
+outside a region's first 200 input lines.
 .
 .
 .IP \[bu]
@@ -1604,10 +1613,13 @@ if it encounters an error during operation.
 .SH Limitations
 .\" ====================================================================
 .
-In entries other than text blocks,
-avoid use of
+Within a
+.I tbl \" generic
+region
+(except in text blocks or on
 .I roff
-escape sequences that read to the end of the line,
+control lines),
+avoid escape sequences that read the rest of the input line,
 as
 .B \[rs]\[dq]
 and

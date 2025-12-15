@@ -44,15 +44,20 @@ static char *program_name;
 
 static void error(const char *s)
 {
-  fprintf(stderr, "%s: error: %s\n", program_name, s);
+  (void) fprintf(stderr, "%s: error: %s\n", program_name, s);
+}
+
+static void die(const char *s)
+{
+  error(s);
   exit(EXIT_FAILURE);
 }
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [pfb-file]\n"
-	  "usage: %s {-v | --version}\n"
-	  "usage: %s --help\n",
+  (void) fprintf(stream, "usage: %s [pfb-file]\n"
+		 "usage: %s {-v | --version}\n"
+		 "usage: %s --help\n",
 	  program_name, program_name, program_name);
   if (stdout == stream)
     fputs("\n"
@@ -108,7 +113,7 @@ static void get_text(int n)
       }
     }
     if (c == EOF)
-      error("end of file in text packet");
+      die("end of file in text packet");
     else if (c == '\r') {
       if (n-- == 0)
 	break;
@@ -162,7 +167,7 @@ static void get_binary(int n)
   while (--n >= 0) {
     c = getchar();
     if (c == EOF)
-      error("end of file in binary packet");
+      die("end of file in binary packet");
     if (count >= BYTES_PER_LINE) {
       putchar('\n');
       count = 0;
@@ -197,8 +202,17 @@ int main(int argc, char **argv)
       exit(EXIT_SUCCESS);
       break;
     case '?':
-      fprintf(stderr, "%s: error: unrecognized command-line option"
-	      " '%c'\n", program_name, (char) optopt);
+      if (optopt != 0) {
+	char errbuf[] = "unrecognized command-line option 'X'";
+	errbuf[(strchr(errbuf, 'X') - errbuf)] = optopt;
+	error(errbuf);
+      }
+      else
+	// We can't use `error()` because we have no idea how big the
+	// user-specified long option is.
+	(void) fprintf(stderr, "%s: error: unrecognized command-line"
+		       " option '%s'\n", program_name,
+		       argv[(optind - 1)]);
       usage(stderr);
       exit(2);
       break;
@@ -231,21 +245,21 @@ int main(int argc, char **argv)
 
     c = getchar();
     if (c != 0x80)
-      error("first byte of packet not 0x80");
+      die("first byte of packet not 0x80");
     type = getchar();
     if (type == 3)
       break;
     if (type != 1 && type != 2)
-      error("bad packet type");
+      die("bad packet type");
     n = 0;
     for (i = 0; i < 4; i++) {
       c = getchar();
       if (c == EOF)
-	error("end of file in packet header");
+	die("end of file in packet header");
       n |= (long)c << (i << 3);
     }
     if (n < 0)
-      error("negative packet length");
+      die("negative packet length");
     if (type == 1)
       get_text(n);
     else

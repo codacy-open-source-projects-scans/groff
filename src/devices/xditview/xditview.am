@@ -1,4 +1,5 @@
-# Copyright (C) 2014-2024 Free Software Foundation, Inc.
+# Copyright 2014-2023 Free Software Foundation, Inc.
+#           2021-2024 G. Branden Robinson
 #
 # This file is part of groff.
 #
@@ -73,6 +74,7 @@ src/devices/xditview/gxditview-device.$(OBJEXT): defs.h
 src/devices/xditview/gxditview-xditview.$(OBJEXT): $(XDITVIEW_GENHDRS)
 
 src/devices/xditview/GXditview-ad.h: $(xditview_srcdir)/GXditview.ad
+	$(AM_V_at)$(MKDIR_P) $(top_builddir)/src/devices/xditview
 	$(AM_V_GEN)$(SHELL) $(xditview_srcdir)/ad2c \
 	  $(xditview_srcdir)/GXditview.ad > $@
 endif

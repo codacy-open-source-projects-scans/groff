@@ -11,7 +11,7 @@ macros for authoring web pages
 .\"
 .\" Copyright (C) 2000-2020 Free Software Foundation, Inc.
 .\"
-.\" This file is part of groff, the GNU roff type-setting system.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" This program is free software: you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -536,15 +536,15 @@ and/or
 .
 .MR @g@tbl @MAN1EXT@
 tables are rendered as PNG images.
-.
-Paul DuBois's approach with
-.MR tblcvt 1 ,
-part of the
-.UR http://\:www\:.snake\:.net/\:software/\:troffcvt/
-.I troffcvt
-distribution
-.UE ,
-should be explored.
+.\"
+.\" Paul DuBois's approach with
+.\" .MR tblcvt 1 ,
+.\" part of the
+.\" .UR http://\:www\:.snake\:.net/\:software/\:troffcvt/
+.\" .I troffcvt
+.\" distribution
+.\" .UE ,
+.\" should be explored.
 .
 .
 .P

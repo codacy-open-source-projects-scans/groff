@@ -94,8 +94,9 @@ troff
    "tmac.s" if "s.tmac" was specified as the argument and not found, nor
    vice versa.  This feature was a convenience for some old AT&T troff
    installations, but few of those remain in the field, and of those
-   that we know to survive, neither (DWB 3.3 and Solaris 10) uses a
-   macro file naming convention for which this feature is any help.
+   that we know to survive, few use a macro file naming convention for
+   which this feature is any help.  (DWB 3.3 and Solaris do not, and we
+   think other System V troffs don't, either.  Only Plan 9 troff does.)
    `mso` now simply processes the macro search path for a file name
    matching the request argument, and succeeds or fails depending on an
    exact match.
@@ -104,8 +105,11 @@ troff
    that `mso` is itself a groff extension), consider the following.
 
      .\" Load the ms package, whatever it might be named.
-     .msoquiet s.tmac\" If file present, defines `LP` macro.
-     .if !d LP .msoquiet tmac.s
+     .\" troffs without groff extensions must know its full path.
+     .if !\n(.g .so /path/to/tmac.s
+     .\" The following requests do nothing on non-GNU troffs.
+     .do msoquiet s.tmac\" If file present, defines `LP` macro.
+     .do if !d LP .msoquiet tmac.s
 
 *  GNU troff no longer accepts nonpositive page lengths.  Attempting to
    set one with the `pl` request clamps the page length to the vertical
@@ -115,6 +119,11 @@ troff
 *  GNU troff no longer accepts a newline as a delimiter for the
    parameterized escape sequences `\A`, `\b`, `\o`, `\w`, `\X`, and
    `\Z`.
+
+*  GNU troff no longer accepts `\0`, `\^`, and `\|` as escape sequence
+   delimiters; doing so inadvertently permitted the delimited `\h`
+   escape sequence to serve as delimiter to another delimited escape
+   sequence.
 
 *  The `color`, `cp`, `kern`, `linetabs`, and `vpt` requests now
    interpret arguments with negative values as instructions to disable
@@ -214,8 +223,8 @@ troff
    line continuation (cf. the `it` and `itc` requests), and the name of
    the macro associated with the pending input trap, respectively.
 
-*  A new request, `pchar`, reports to the standard error stream data
-   about any ordinary, special, or indexed character arguments.
+*  A new request, `pchar`, reports to the standard error stream details
+   of any class or ordinary, special, or indexed character arguments.
 
 *  A new request, `pcolor`, reports to the standard error stream details
    of each color name specified as an argument, including its color
@@ -303,7 +312,7 @@ nroff
 -----
 
 *  nroff now recognizes the -a, -D, -I, and -Z options and passes them
-   through to groff.
+   to groff.
 
 *  nroff now supports clustered options ("-tzms", for example) as groff,
    troff, and other GNU getopt-using programs do.
@@ -338,7 +347,7 @@ Macro packages
 
 *  Keith Marshall's pdfmark package is no longer distributed with groff,
    but is now separately maintained.  Please visit
-   <https://osdn.net/users/keith/pf/groff-pdfmark/> for the latest
+   <https://savannah.nongnu.org/projects/groff-pdfmark> for the latest
    version.
 
 *  mom version 2.6 is distributed with this release.  It supports
@@ -383,9 +392,9 @@ Macro packages
    below.  Thanks to Deri James.
 
 *  The an (man) package now supports use of its hyperlink macros (`UR`,
-   `UE`, `MT`, and `ME`) as paragraph tags (that is, on the next line
+   `UE`, `MT`, and `ME`) in paragraph tags (that is, on the next line
    after a `TP` macro call).  Use of the `MR` man page cross reference
-   macro as a tag was already supported in groff 1.23.0.
+   macro in a tag was already supported in groff 1.23.0.
 
 *  The behavior of the an (man) package's `SY` and `YS` macros has been
    expanded to enable greater user control over vertical spacing and to
@@ -655,7 +664,7 @@ Macro packages
 
 *  The m (mm) macro package now supports the `E` register as DWB mm did.
 
-*  The m (mm) macro package now supports AT&T/DWB mm's `Rg` string.
+*  The m (mm) macro package now supports DWB mm's `Rg` string.
 
 *  The m (mm) macro package's `nP` macro now behaves more like DWB mm's.
    It applies a temporary indentation to the second output line of a
@@ -1005,7 +1014,7 @@ nroff
    family not yet corrected by the POSIX standard.
 
 *  nroff now recognizes the -b, -E, -k, -K, -R, and -z options and
-   passes them through to groff.
+   passes them to groff.
 
 *  nroff now supports spaces and tabs between option flag letters and
    arguments to options, like groff and troff themselves.
@@ -1204,10 +1213,10 @@ Macro packages
    the line length on nroff devices prior to processing a man page.
    This was deprecated in groff 1.18 (July 2002), and all known man
    program and macro package implementations either have set an LL
-   register since 2002 (man-db man), 2005 (Brouwer/Lucifredi man), or
+   register since 2002 (man-db man) or 2005 (Brouwer/Lucifredi man);
    don't let the user vary the line length freely (DWB troff, Solaris
-   troff, Plan 9 troff), don't permit its configuration via the `ll`
-   request (mandoc), or at all (Heirloom Doctools troff).
+   troff, Plan 9 troff); or don't permit its configuration via the `ll`
+   request (mandoc) or at all (Heirloom Doctools troff).
 
 *  The an (man) macro package now interprets the value of the `HY`
    register as a Boolean; using it to set a specific hyphenation mode is
@@ -1320,7 +1329,7 @@ Macro packages
    correctly if suffixed with a scaling unit, instead of requiring an
    unscaled value assumed to be points.
 
-*  The m (mm) macro package now supports AT&T/DWB mm's `Sm` string.
+*  The m (mm) macro package now supports DWB mm's `Sm` string.
 
 *  The m (mm) macro package now requires a title to be declared when
    memorandum type 5 is used (".MT 5"), just as type 4 has since groff
@@ -4094,7 +4103,7 @@ There is a alternative assignment operator `:=' which interacts
 differently with blocks.
 
 There is a new command `command', which allows the values of variables
-to be passed through to troff or TeX.
+to be passed to troff or TeX.
 
 The `print' command now accepts multiple arguments.
 

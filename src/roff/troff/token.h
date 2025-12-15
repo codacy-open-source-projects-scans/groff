@@ -83,13 +83,15 @@ public:
   void skip_spaces();
   void diagnose_non_character();
   int nspaces();		// is_space() as integer
+  bool is_node();
   bool is_eof();
   bool is_space();
   bool is_stretchable_space();
   bool is_unstretchable_space();
   bool is_horizontal_space();
   bool is_white_space();
-  bool is_character();
+  bool is_any_character();
+  // XXX: Do we need a `is_ordinary_character()`?
   bool is_special_character();
   bool is_indexed_character();
   bool is_newline();
@@ -115,6 +117,7 @@ public:
   bool add_to_zero_width_node_list(node **);
   void make_space();
   void make_newline();
+  void describe_node(char * /* buf */, size_t /* bufsz */);
   const char *description();
 
   friend void process_input_stack();
@@ -211,7 +214,7 @@ inline unsigned char token::ch()
   return type == TOKEN_CHAR ? c : '\0';
 }
 
-inline bool token::is_character()
+inline bool token::is_any_character()
 {
   return (TOKEN_CHAR == type) || (TOKEN_SPECIAL_CHAR == type)
 	  || (TOKEN_INDEXED_CHAR == type);
@@ -226,6 +229,11 @@ inline int token::character_index()
 {
   assert(TOKEN_INDEXED_CHAR == type);
   return val;
+}
+
+inline bool token::is_node()
+{
+  return type == TOKEN_NODE;
 }
 
 inline bool token::is_eof()

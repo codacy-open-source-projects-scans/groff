@@ -11,7 +11,7 @@ document formatting system
 .\"
 .\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
-.\" This file is part of groff, the GNU roff type-setting system.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" Permission is granted to copy, distribute and/or modify this
 .\" document under the terms of the GNU Free Documentation License,
@@ -281,7 +281,7 @@ options and their arguments to
 and output drivers;
 with the option letter changed to
 .BR \-M ,
-the same arguments are passed to
+it passes the same arguments to
 .MR @g@grn @MAN1EXT@ .
 .
 .
@@ -1168,11 +1168,21 @@ it is termed a
 .IR "macro package" .
 .
 .
+.br
+.ne 2v
 .P
-Macro packages can be loaded prior to any
+The
+.BR \-m \~option
+loads a macro package
+prior to any
 .I roff
-input documents with the
-.BR \-m \~option.
+input documents,
+and after performing any string and register assignments
+directed by
+.B \-d
+and
+.B \-r
+options.
 .
 The GNU
 .I roff
@@ -2376,7 +2386,7 @@ Preprocessors:
 .
 .
 .TP
-Macro packages and package-specific utilities:
+Macro packages:
 .MR groff_hdtbl @MAN7EXT@ , \" #9
 .MR groff_man @MAN7EXT@ , \" #55a
 .MR groff_man_style @MAN7EXT@ , \" #55b
@@ -2384,7 +2394,6 @@ Macro packages and package-specific utilities:
 .MR groff_me @MAN7EXT@ , \" #57
 .MR groff_mm @MAN7EXT@ , \" # 10
 .MR groff_mmse @MAN7EXT@ , \" # 11
-.MR mmroff @MAN1EXT@ , \" #12
 .MR groff_mom @MAN7EXT@ , \" #13
 .MR groff_ms @MAN7EXT@ , \" #58
 .MR groff_rfc1345 @MAN7EXT@ , \" 16
@@ -2424,6 +2433,7 @@ Formatter program:
 Formatter wrappers:
 .\".MR groff @MAN1EXT@ , \" 42 -- this page
 .MR @g@nroff @MAN1EXT@ , \" #44
+.MR mmroff @MAN1EXT@ , \" #12
 .MR pdfmom @MAN1EXT@ \" #30
 .\" MR pdfroff @MAN1EXT@ \" formerly #14
 .

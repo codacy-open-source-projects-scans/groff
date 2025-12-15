@@ -2207,7 +2207,7 @@ and a square \(sq labels \*G extensions.
 .$H
 \e\fI\,newline\fP	F\(sc	continue input line
 \e"	F\(sc	comment (to end of input line)
-\e*#	S	delayed text marker
+\e*#	S	delayed text mark
 \e$\fI\,n\fP	F\(sc	interpolate \fIn\/\fPth macro argument
 \en($0	R	section depth
 \&.$0	M\(dg	post-section heading hook
@@ -2262,7 +2262,7 @@ and a square \(sq labels \*G extensions.
 \&.)z	M	end floating keep
 \e*\fI\,x\fP	F\(sc	interpolate string \fIx\fP
 \e*(\fI\,xx\fP	F\(sc	interpolate string \fIxx\fP
-\e**	S	footnote marker
+\e**	S	footnote mark
 \&.++	M	set document segment type
 \&.+c	M	begin chapter or appendix
 \e\-	F\(sc	minus sign
@@ -2301,7 +2301,7 @@ and a square \(sq labels \*G extensions.
 \&.ar	M	use Arabic numerals for page numbers
 \&.as	M\(sc	append to string
 \&.b	M	embolden argument
-\&.ba	M	set base indentation
+\&.ba	M	set base indentation (cf.\& \fB.in\fP)
 \&.bc	M	begin new column
 \&.bi	M	embolden and italicize argument
 \en(bi	R	display (block) indentation

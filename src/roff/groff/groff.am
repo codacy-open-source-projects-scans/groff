@@ -51,7 +51,9 @@ groff_TESTS = \
   src/roff/groff/tests/break-zero-length-output-line-sanely.sh \
   src/roff/groff/tests/cf-request-early-does-not-fail.sh \
   src/roff/groff/tests/cf-request-works.sh \
+  src/roff/groff/tests/cflags-works-on-character-classes.sh \
   src/roff/groff/tests/check-delimiter-validity.sh \
+  src/roff/groff/tests/class-request-works.sh \
   src/roff/groff/tests/composite-nodes-produce-approximate-output.sh \
   src/roff/groff/tests/current-language-and-environment-in-sync.sh \
   src/roff/groff/tests/degenerate-control-flow-works.sh \
@@ -97,6 +99,7 @@ groff_TESTS = \
   src/roff/groff/tests/localization-works.sh \
   src/roff/groff/tests/msoquiet-request-works.sh \
   src/roff/groff/tests/output-request-works.sh \
+  src/roff/groff/tests/pchar-request-works.sh \
   src/roff/groff/tests/pi-request-works.sh \
   src/roff/groff/tests/ps-device-smoke-test.sh \
   src/roff/groff/tests/recognize-end-of-sentence.sh \

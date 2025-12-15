@@ -9,7 +9,8 @@ atp.chem:
 # Found at http://www.chemindustry.com/apps/chemicals.
 
 # Copyright (C) 2006-2020 Free Software Foundation, Inc.
-# Written by Bernd Warken <groff-bernd.warken-72@web.de>.
+# Written by Bernd Warken <groff-bernd.warken-72@web.de>,
+# corrected missing nitrogen atom by Norwid Behrnd <nbehrnd@yahoo.com>.
 
 # This file is part of 'chem', which is part of 'groff'.
 
@@ -25,8 +26,9 @@ atp.chem:
 # The GPL2 license text is available in the internet at
 # <http://www.gnu.org/licenses/gpl-2.0.html>.
 
-R1:	ring5 pointing left double 1,2 3,4 put N at 2 put N at 5
-B:	benzene put N at 2 with .V6 at R1.V3 with .V5 at R1.V4
+R1:	ring5 pointing left double 1,2 put N at 2 put N at 5
+B:	ring6 put N at 2 put N at 4 double 1,2 3,4 5,6 \
+		with .V6 at R1.V3 with .V5 at R1.V4
 	bond up ; NH2
 	backbond 170 length .7 from R1.V5
 R2:	ring5 pointing down with .V2 put O at 1

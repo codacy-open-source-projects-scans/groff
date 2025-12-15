@@ -29,7 +29,7 @@ use Config;
 # I do agree however that the previous way opened a whole bunch
 # of security holes.
 
-my $want_only_xref_update = 0;
+my $want_only_ref_update = 0;
 
 if (grep(/^--help$/, @ARGV)) {
 	print <<EOF;
@@ -54,7 +54,7 @@ if (grep(/^--version$/, @ARGV)) {
 
 # check for -x and remove it
 if (grep(/^-x$/, @ARGV)) {
-	$want_only_xref_update = 1;
+	$want_only_ref_update = 1;
 	@ARGV = grep(!/^-x$/, @ARGV);
 }
 
@@ -148,7 +148,7 @@ if ($rfilename) {
 	close(OUT);
 }
 
-exit 0 if $want_only_xref_update;
+exit 0 if $want_only_ref_update;
 exit system($second_pass);
 
 sub print_index {

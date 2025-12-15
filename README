@@ -83,8 +83,8 @@ headers for the "uchardet", "Xaw", and "Xmu" libraries (and their
 dependencies) assumes that their runtime counterparts remain installed
 to support the groff that is built.
 
-You can view or add to to groff's bug database via its issue tracker on
-the Savannah site (also linked from the groff home page).
+You can view or add to groff's bug database via its issue tracker on the
+Savannah site (also linked from the groff home page).
 
   http://savannah.gnu.org/bugs/?group=groff
 

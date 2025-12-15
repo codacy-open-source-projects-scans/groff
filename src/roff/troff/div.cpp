@@ -1,4 +1,6 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2020 Free Software Foundation, Inc.
+             2020-2025 G. Branden Robinson
+
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -156,22 +158,22 @@ void do_divert(bool appending, bool boxing)
   skip_line();
 }
 
-void divert()
+static void divert()
 {
   do_divert(false /* appending */, false /* boxing */);
 }
 
-void divert_append()
+static void divert_append()
 {
   do_divert(true /* appending */, false /* boxing */);
 }
 
-void box()
+static void box()
 {
   do_divert(false /* appending */, true /* boxing */);
 }
 
-void box_append()
+static void box_append()
 {
   do_divert(true /* appending */, true /* boxing */);
 }
@@ -747,7 +749,7 @@ void page_offset()
   skip_line();
 }
 
-void page_length()
+static void page_length()
 {
   vunits temp;
   if (has_arg() && get_vunits(&temp, 'v', topdiv->get_page_length())) {
@@ -764,7 +766,7 @@ void page_length()
   skip_line();
 }
 
-void when_request()
+static void when_request()
 {
   vunits n;
   if (get_vunits(&n, 'v')) {
@@ -777,7 +779,7 @@ void when_request()
   skip_line();
 }
 
-void begin_page()
+static void begin_page()
 {
   bool got_arg = false;
   int n = 0;
@@ -831,13 +833,13 @@ void begin_page()
   tok.next();
 }
 
-void no_space()
+static void no_space()
 {
   curdiv->is_in_no_space_mode = true;
   skip_line();
 }
 
-void restore_spacing()
+static void restore_spacing()
 {
   curdiv->is_in_no_space_mode = false;
   skip_line();
@@ -854,7 +856,7 @@ outputting of the line forced out by the break till after we have read
 the argument to the request.  If the break did cause a trap to be
 sprung, then we don't actually do the space. */
 
-void space_request()
+static void space_request()
 {
   postpone_traps();
   if (want_break)
@@ -885,7 +887,7 @@ void blank_line()
 /* need_space might spring a trap and so we must be careful that the
 BEGIN_TRAP token is not skipped over. */
 
-void need_space()
+static void need_space()
 {
   vunits n;
   if (!has_arg() || !get_vunits(&n, 'v'))
@@ -896,7 +898,7 @@ void need_space()
   tok.next();
 }
 
-void page_number()
+static void page_number()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "page number assignment request expects an"
@@ -918,7 +920,7 @@ void page_number()
 
 vunits saved_space;
 
-void save_vertical_space()
+static void save_vertical_space()
 {
   vunits x;
   if (!has_arg() || !get_vunits(&x, 'v'))
@@ -930,7 +932,7 @@ void save_vertical_space()
   skip_line();
 }
 
-void output_saved_vertical_space()
+static void output_saved_vertical_space()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -972,7 +974,7 @@ void top_level_diversion::clear_diversion_trap()
   error("cannot clear diversion trap when not diverting output");
 }
 
-void diversion_trap()
+static void diversion_trap()
 {
   vunits n;
   if (has_arg() && get_vunits(&n, 'v')) {
@@ -987,7 +989,7 @@ void diversion_trap()
   skip_line();
 }
 
-void change_trap()
+static void change_trap()
 {
   symbol s = read_identifier(true /* required */);
   if (!s.is_null()) {
@@ -1000,13 +1002,13 @@ void change_trap()
   skip_line();
 }
 
-void print_traps()
+static void print_traps()
 {
   topdiv->print_traps();
   skip_line();
 }
 
-void mark()
+static void mark()
 {
   symbol s = read_identifier();
   if (s.is_null())
@@ -1020,11 +1022,11 @@ void mark()
 
 // This is truly bizarre.  It is documented in the SQ manual.
 
-void return_request()
+static void return_request()
 {
   vunits dist = curdiv->marked_place - curdiv->get_vertical_position();
   if (has_arg()) {
-    if (tok.ch() == '-') {
+    if (tok.ch() == int('-')) { // TODO: grochar
       tok.next();
       vunits x;
       if (get_vunits(&x, 'v'))
@@ -1041,7 +1043,7 @@ void return_request()
   skip_line();
 }
 
-void vertical_position_traps()
+static void vertical_position_traps()
 {
   int n = 0;
   if (has_arg() && read_integer(&n))

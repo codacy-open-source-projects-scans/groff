@@ -1,3 +1,10 @@
+2025-12-09  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/atp.chem: The previous depiction of the ATP molecule
+	omitted a nitrogen atom in the pyrimidine moiety.
+
+	Fixes <https://savannah.gnu.org/bugs/?67792>.
+
 2024-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* chem.am (all): Drop seemingly spurious use of target.

@@ -44,7 +44,7 @@
 .ds FR 1
 .nr TC-MARGIN \w'00' \" expect 2-digit page numbers at most
 .ds header-title Using \f[I]groff\f[] with the \f[I]ms\f[] macros\"
-.ds date August 2025\"
+.ds date November 2025\"
 .ND \*[date]
 .ds CH \" empty
 .ie t \{\
@@ -332,12 +332,11 @@ This is an example of an
 .I "escape sequence,"
 the other kind of formatting instruction.
 .
-Escape sequences can appear almost anywhere.
+Escape sequences can appear almost anywhere,
 .\" ...but not where GNU troff expects an escape function selector or
 .\" delimiter.
-.
-They begin with the escape character
-.CW \[rs] ) (
+begin with the escape character
+.CW \[rs] ), (
 and are followed by at least one more character.
 .
 .I ms
@@ -359,6 +358,13 @@ _
 \[rs]n[\f[I]reg\f[]]	T{
 Interpolate value of register
 .I reg .
+T}
+\[rs]n\f[I]r	T{
+abbreviation of
+.CW \[rs]n[\f[I]r\f[]] ;
+the name
+.I r
+must be only one character
 T}
 \[rs]*[\f[I]str\f[]]	T{
 Interpolate contents of string
@@ -1147,11 +1153,11 @@ Set a paragraph with a first-line left indentation of
 .CW \[rs]n[PI] .
 T}
 _
-\&.IP \f[R][\f[I]marker\f[] [\f[I]width\f[]]]	T{
+\&.IP \f[R][\f[I]mark\f[] [\f[I]width\f[]]]	T{
 Set a paragraph with a left indentation.
 .
 The optional
-.I marker
+.I mark
 is not indented and is empty by default.
 .
 It has several applications;
@@ -1939,7 +1945,7 @@ Lists
 .
 .LP
 The
-.I marker
+.I mark
 argument to the
 .CW IP
 macro can be employed to present a variety of lists;
@@ -2064,11 +2070,11 @@ register's value.
 In the glossary example,
 observe how the
 .CW IP
-macro places the definition on the same line as the term if it has
-enough space.
+macro places the definition on the same line as the term
+if it has enough space.
 .
 If this is not what you want,
-there are a few workarounds we will illustrate by modifying the example.
+there are a few workarounds we illustrate by modifying the example.
 .
 First,
 you can use a
@@ -2090,10 +2096,10 @@ or label
 breaks the line.
 .
 Finally,
-you may append a horizontal motion to the marker with the
+you may append a horizontal motion to the mark with the
 .CW \[rs]h
 escape sequence;
-using the same amount as the indentation will ensure that the marker is
+using the same amount as the indentation ensures that the mark is
 too wide for
 .I groff
 to treat it as \[lq]fitting\[rq] on the same line as the paragraph text.
@@ -2799,7 +2805,7 @@ Footnotes
 .\" The following sentence is used below as an example as well.  Keep it
 .\" in sync.
 A footnote is typically anchored to a place in the text with a
-.I marker,
+.I mark,
 which is a small integer,\**
 .FS
 like this numeric footnote
@@ -2820,7 +2826,7 @@ _
 \[rs]**	T{
 Place an
 .I "automatic number,"
-an automatically updated numeric footnote marker,
+an automatically updated numeric footnote mark,
 in the text.
 .
 Each time this string is interpolated,
@@ -2850,7 +2856,7 @@ cb cb
 lfCR lx .
 Macro	Description
 _
-\&.FS \f[R][\f[I]marker\f[]]	T{
+\&.FS \f[R][\f[I]mark\f[]]	T{
 Begin a footnote.
 .
 The
@@ -2858,12 +2864,12 @@ The
 hook
 (see below)
 is called with any supplied
-.I marker
+.I mark
 argument,
 which is then also placed at the beginning of the footnote text.
 .
 If
-.I marker
+.I mark
 is omitted,
 the next pending automatic number enqueued by interpolation of the
 .CW *
@@ -2882,7 +2888,7 @@ You may not desire automatically numbered footnotes in spite of their
 convenience.
 .
 You can indicate a footnote with a symbol or other text by specifying
-its marker at the appropriate place
+its mark at the appropriate place
 (for example,
 by using
 .CW \[rs][dg]
@@ -2900,7 +2906,7 @@ You may wish to use
 .CW \[rs]*{
 and
 .CW \[rs]*}
-to superscript the marker at the anchor point,
+to superscript the mark at the anchor point,
 in the footnote text,
 or both.
 .
@@ -2939,7 +2945,7 @@ section.
 box center;
 lfCR.
 A footnote is anchored to a place in the text with a
-\&.I marker,
+\&.I mark,
 which is a small integer,\[rs]**
 \&.FS
 like this numeric footnote
@@ -3009,9 +3015,11 @@ paragraphs,
 and those for which
 .CW FS
 is given a
-.I marker
+.I mark
 argument,
 at the bottom of a column or page as follows.
+.
+This is a Berkeley extension.
 .
 .
 .TS
@@ -3040,7 +3048,9 @@ T}
 1	T{
 As
 .CW 0 ,
-but set the marker as regular text,
+but set
+.I mark
+as regular text,
 and follow an automatic number with a period.
 T}
 2	T{
@@ -3053,7 +3063,9 @@ T}
 3	T{
 As
 .CW 1 ,
-but set the footnote paragraph with the marker hanging
+but set the footnote paragraph with
+.I mark
+hanging
 (like
 .CW IP ).
 T}

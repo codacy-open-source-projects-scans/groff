@@ -538,7 +538,7 @@ void justification_spec::justify(output_line *col, vunits *bottomp) const
   assert(total == V0);
   *bottomp = height - gap;
 }
-  
+
 void column::justify(const justification_spec &js)
 {
   check_bottom();
@@ -546,7 +546,7 @@ void column::justify(const justification_spec &js)
   check_bottom();
 }
 
-void column_justify()
+static void column_justify()
 {
   vunits height;
   if (!the_column->is_active())
@@ -579,7 +579,7 @@ void column_justify()
   skip_line();
 }
 
-void column_start()
+static void column_start()
 {
   if (the_column->is_active())
     error("can't start column - column already active");
@@ -588,7 +588,7 @@ void column_start()
   skip_line();
 }
 
-void column_output()
+static void column_output()
 {
   if (!the_column->is_active())
     error("can't output column - column not active");
@@ -597,7 +597,7 @@ void column_output()
   skip_line();
 }
 
-void column_trim()
+static void column_trim()
 {
   if (!the_column->is_active())
     error("can't trim column - column not active");
@@ -606,7 +606,7 @@ void column_trim()
   skip_line();
 }
 
-void column_reset()
+static void column_reset()
 {
   if (!the_column->is_active())
     error("can't reset column - column not active");
@@ -698,13 +698,13 @@ void top_level_diversion::vjustify(symbol type)
   the_output->vjustify(vertical_position, type);
 }
 
-void no_vjustify()
+static void no_vjustify()
 {
   skip_line();
   no_vjustify_mode = 1;
 }
 
-void restore_vjustify()
+static void restore_vjustify()
 {
   skip_line();
   no_vjustify_mode = 0;
@@ -724,7 +724,7 @@ void init_column_requests()
   register_dictionary.define(".colx", new column_extra_space_reg);
   register_dictionary.define(".cola", new column_active_reg);
   register_dictionary.define(".nvj",
-			       new readonly_register(&no_vjustify_mode));
+			     new readonly_register(&no_vjustify_mode));
 }
 
 #endif /* COLUMN */

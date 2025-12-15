@@ -6015,7 +6015,7 @@ SMALLCAPS takes precedence.
 .    if !r #HDRFTR_RULE  .HDRFTR_RULE
 .    if !r #PAGE_NUM_SET .PAGENUMBER 1
 .\" Read in number registers and strings for type parameters
-.    LL \\n[#PAGE_WIDTH]u-\\n[.o]u-\\n[#R_MARGIN]u
+.    if !\\n[#L_LENGTH] .LL \\n[#PAGE_WIDTH]u-\\n[.o]u-\\n[#R_MARGIN]u
 .    nr #DOC_L_MARGIN \\n[#L_MARGIN]
 .    nr #DOC_L_LENGTH \\n[#L_LENGTH]
 .    nr #DOC_R_MARGIN \\n[#PAGE_WIDTH]-(\\n[#DOC_L_MARGIN]+\\n[#L_LENGTH])
@@ -9647,8 +9647,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          \}
 .          ie \\n[#HDRFTR_RULE_COLOR]=1 \{\
 \m[\\*[$HDRFTR_RULE_COLOR]]\
-\D't \\n[#HDRFTR_RULE_WEIGHT]u'\
-\h'|0'\
+\Z'\D't \\n[#HDRFTR_RULE_WEIGHT]u''\
 \v'+\\n[#HDRFTR_RULE_WEIGHT_ADJ]u'\
 \D'l \\n[#DOC_L_LENGTH]u 0'\
 \D't \\n[#RULE_WEIGHT]u'\
@@ -9656,8 +9655,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 \m[]
 .          \}
 .          el \{\
-\D't \\n[#HDRFTR_RULE_WEIGHT]u'\
-\h'|0'\
+\Z'\D't \\n[#HDRFTR_RULE_WEIGHT]u''\
 \v'+\\n[#HDRFTR_RULE_WEIGHT_ADJ]u'\
 \D'l \\n[#DOC_L_LENGTH]u 0'\
 \D't \\n[#RULE_WEIGHT]u'\
@@ -9690,8 +9688,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .          \}
 .          ie \\n[#HDRFTR_RULE_COLOR]=1 \{\
 \m[\\*[$HDRFTR_RULE_COLOR]]\
-\D't \\n[#HDRFTR_RULE_WEIGHT]u'\
-\h'|0'\
+\Z'\D't \\n[#HDRFTR_RULE_WEIGHT]u''\
 \v'+\\n[#HDRFTR_RULE_WEIGHT_ADJ]u'\
 \D'l \\n[#DOC_L_LENGTH]u 0'\
 \D't \\n[#RULE_WEIGHT]u'\
@@ -9699,8 +9696,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 \m[]
 .          \}
 .          el \{\
-\D't \\n[#HDRFTR_RULE_WEIGHT]u'\
-\h'|0'\
+\Z'\D't \\n[#HDRFTR_RULE_WEIGHT]u''\
 \v'+\\n[#HDRFTR_RULE_WEIGHT_ADJ]u'\
 \D'l \\n[#DOC_L_LENGTH]u 0'\
 \D't \\n[#RULE_WEIGHT]u'\
@@ -10208,6 +10204,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .MAC HEADERS END
 .    ie '\\$1'' .nr #HEADERS_ON 1
 .    el .nr #HEADERS_ON 0
+.    if !\\n[#HEADER_STATE] .nr #HEADER_STATE \\n[#HEADERS_ON]
 .END
 \#
 \# HEADER MARGIN
@@ -11017,12 +11014,12 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .       rm $USERDEF_HDRFTR_VERSO
 .       FOOTERS OFF
 .       HEADERS
+.       PAGINATE
+.       PAGENUM_POS BOTTOM CENTER
 .       if \\n[#COLLATE]=1 \{\
 .          nr #HEADER_STATE 1
 .          nr #PAGINATION_STATE 1
 .       \}
-.       PAGINATE
-.       PAGENUM_POS BOTTOM CENTER
 .       nr #HF_OFF 1
 .    \}
 .END
@@ -13266,6 +13263,7 @@ Shimming must be disabled with NO_SHIM before using FLEX.
 .MAC PAGINATE END
 .    ie '\\$1'' \{\
 .       nr #PAGINATE 1
+.       nr #PAGINATION_STATE 1
 .       if \\n[#SAVED_V_POS] \{\
 .          nr #PAGE_NUM_V_POS \\n[#SAVED_V_POS]
 .          rr #SAVED_V_POS
@@ -16437,11 +16435,10 @@ EN-\\n[#CH_NUM]\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|
 .       TRAPS
 .    \}
 .    el .DOC_LEAD \\*[$TOC_LEAD]
-.    ie \\n[#TOC_HEADER_V_POS] \
-.       DOCHEADER OFF \\n[#TOC_HEADER_V_POS]u-\\n[#DOC_LEAD]u
-.    el .DOCHEADER OFF
+.    DOCHEADER OFF
+.    if !\\n[#TOC_HEADER_V_POS] .nr #TOC_HEADER_V_POS \\n[#T_MARGIN]
 .    if (\\n[#PRINT_STYLE]=1)&(\\n[#SINGLE_SPACE]=1) \
-.       DOCHEADER OFF \\n[#T_MARGIN]u-(\\n[#DOC_LEAD]u*2u)
+.       nr #TOC_HEADER_V_POS \\n[#T_MARGIN]u-(\\n[#DOC_LEAD]u*2u)
 .    START
 .    PDF_BOOKMARK 1 \\*[$TOC_HEADER_STRING]
 .    if \\n[#PRINT_STYLE]=1 .TYPEWRITER
@@ -16455,7 +16452,7 @@ EN-\\n[#CH_NUM]\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|
 .    QUAD \\*[$TOC_HEADER_QUAD]
 .    if \\n[#TOC_STRING_CAPS] .CAPS
 .    if \\n[#TOC_STRING_SMALLCAPS] .SMALLCAPS
-.    sp |\\n[#T_MARGIN]u-1v
+.    sp |\\n[#TOC_HEADER_V_POS]u-1v
 .    if \\n[#PRINT_STYLE]=1 \
 .       UNDERSCORE 3p "\\*[$TOC_HEADER_STRING]"
 .    if \\n[#PRINT_STYLE]=2 \{\
@@ -21143,8 +21140,7 @@ EN-\\n[#CH_NUM]\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|
 .    ll \\n[ll-pre-tbl]u
 .    if (\\n[nl]=\\n[dc]):(\\n[nl]=\\n[#PAGE_TOP]) .ns
 .    if !'\\*[tbl*space-adj]'' .sp -\\*[tbl*space-adj]u
-.    if \\n[#MLA] \
-.       sp .5v
+.    sp .5v
 .    if !\\n[pdfbx-running] \{\
 .       ie !\\n[tbl*no-shim] \{\
 .           ie !\\n[#NO_SHIM] \

@@ -84,8 +84,8 @@ static bool CanonicalizeFontName(char *font_name, char *canon_font_name)
   XFontName parsed;
 
   if (!XParseFontName(font_name, &parsed, &attributes)) {
-    fprintf(stderr, "%s: not a standard font name: \"%s\"\n",
-	    program_name, font_name);
+    (void) fprintf(stderr, "%s: not a standard font name: \"%s\"\n",
+		   program_name, font_name);
     return false;
   }
 
@@ -107,15 +107,15 @@ FontNamesAmbiguous(const char *font_name, char **names, int count)
 
   for (i = 0; i < count; i++) {
     if (!CanonicalizeFontName(names[i], 0 == i ? name1 : name2)) {
-      fprintf(stderr, "%s: invalid font name: \"%s\"\n", program_name,
-	      names[i]);
+      (void) fprintf(stderr, "%s: invalid font name: \"%s\"\n",
+		     program_name, names[i]);
       return true;
     }
     if (i > 0 && strcmp(name1, name2) != 0) {
-      fprintf(stderr, "%s: ambiguous font name: \"%s\"", program_name,
-	      font_name);
-      fprintf(stderr, " matches \"%s\"", names[0]);
-      fprintf(stderr, " and \"%s\"", names[i]);
+      (void) fprintf(stderr, "%s: ambiguous font name: \"%s\"",
+		     program_name, font_name);
+      (void) fprintf(stderr, " matches \"%s\"", names[0]);
+      (void) fprintf(stderr, " and \"%s\"", names[i]);
       return true;
     }
   }
@@ -147,8 +147,8 @@ static bool MapFont(char *font_name, const char *troff_name)
   char name_string[2048];
 
   if (!XParseFontName(font_name, &parsed, &attributes)) {
-    fprintf(stderr, "%s: not a standard font name: \"%s\"\n",
-	    program_name, font_name);
+    (void) fprintf(stderr, "%s: not a standard font name: \"%s\"\n",
+		   program_name, font_name);
     return false;
   }
 
@@ -163,8 +163,8 @@ static bool MapFont(char *font_name, const char *troff_name)
 
   names = XListFonts(dpy, name_string, 100000, &count);
   if (count < 1) {
-    fprintf(stderr, "%s: invalid font name: \"%s\"\n", program_name,
-	    font_name);
+    (void) fprintf(stderr, "%s: invalid font name: \"%s\"\n",
+		   program_name, font_name);
     return false;
   }
 
@@ -173,26 +173,26 @@ static bool MapFont(char *font_name, const char *troff_name)
 
   XParseFontName(names[0], &parsed, &attributes);
   size_t sz = sizeof encoding;
-  snprintf(encoding, sz, "%s-%s", parsed.CharSetRegistry,
-	  parsed.CharSetEncoding);
+  (void) snprintf(encoding, sz, "%s-%s", parsed.CharSetRegistry,
+		  parsed.CharSetEncoding);
   for (s = encoding; *s; s++)
     if (isupper(*s))
       *s = tolower(*s);
   char_map = DviFindMap(encoding);
   if (!char_map) {
-    fprintf(stderr, "%s: not a standard encoding: \"%s\"\n",
-	    program_name, encoding);
+    (void) fprintf(stderr, "%s: not a standard encoding: \"%s\"\n",
+		   program_name, encoding);
     return false;
   }
 
   fi = XLoadQueryFont(dpy, names[0]);
   if (!fi) {
-    fprintf(stderr, "%s: font does not exist: \"%s\"\n", program_name,
-	    names[0]);
+    (void) fprintf(stderr, "%s: font does not exist: \"%s\"\n",
+		   program_name, names[0]);
     return false;
   }
 
-  printf("%s -> %s\n", names[0], troff_name);
+  (void) printf("%s -> %s\n", names[0], troff_name);
   char *file_name = (char *)troff_name;
   size_t dirlen = strlen(destdir);
 
@@ -200,8 +200,8 @@ static bool MapFont(char *font_name, const char *troff_name)
     size_t baselen = strlen(troff_name);
     file_name = malloc(dirlen + baselen + 2 /* '/' and '\0' */);
     if (NULL == file_name) {
-      fprintf(stderr, "%s: fatal error: unable to allocate memory\n",
-	      program_name);
+      (void) fprintf(stderr, "%s: fatal error:"
+		     " cannot allocate memory\n", program_name);
       xtotroff_exit(EXIT_FAILURE);
     }
     (void) strcpy(file_name, destdir);
@@ -217,20 +217,20 @@ static bool MapFont(char *font_name, const char *troff_name)
   }
 
   if (NULL == out) {
-    fprintf(stderr, "%s: unable to create '%s': %s\n", program_name,
-	    file_name, strerror(errno));
+    (void) fprintf(stderr, "%s: cannot create '%s': %s\n",
+		   program_name, file_name, strerror(errno));
     free(file_name);
     return false;
   }
-  fprintf(out, "name %s\n", troff_name);
+  (void) fprintf(out, "name %s\n", troff_name);
   if (!strcmp(char_map->encoding, "adobe-fontspecific"))
-    fprintf(out, "special\n");
+    (void) fprintf(out, "special\n");
   if (charExists(fi, ' ')) {
     int w = charWidth(fi, ' ');
     if (w > 0)
-      fprintf(out, "spacewidth %d\n", w);
+      (void) fprintf(out, "spacewidth %d\n", w);
   }
-  fprintf(out, "charset\n");
+  (void) fprintf(out, "charset\n");
   for (c = fi->min_char_or_byte2; c <= fi->max_char_or_byte2; c++) {
     const char *name = DviCharName(char_map, c, 0);
     if (charExists(fi, c)) {
@@ -238,7 +238,7 @@ static bool MapFont(char *font_name, const char *troff_name)
 
       wid = charWidth(fi, c);
 
-      fprintf(out, "%s\t%d", name ? name : "---", wid);
+      (void) fprintf(out, "%s\t%d", name ? name : "---", wid);
       param[0] = charHeight(fi, c);
       param[1] = charDepth(fi, c);
       param[2] = 0;		/* charRBearing (fi, c) - wid */
@@ -251,12 +251,12 @@ static bool MapFont(char *font_name, const char *troff_name)
 	if (param[j] != 0)
 	  break;
       for (k = 0; k <= j; k++)
-	fprintf(out, ",%d", param[k]);
-      fprintf(out, "\t0\t0%o\n", c);
+	(void) fprintf(out, ",%d", param[k]);
+      (void) fprintf(out, "\t0\t0%o\n", c);
 
       if (name) {
 	for (k = 1; DviCharName(char_map, c, k); k++) {
-	  fprintf(out, "%s\t\"\n", DviCharName(char_map, c, k));
+	  (void) fprintf(out, "%s\t\"\n", DviCharName(char_map, c, k));
 	}
       }
     }
@@ -269,12 +269,12 @@ static bool MapFont(char *font_name, const char *troff_name)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream,
-	  "usage: %s [-d destination-directory] [-r resolution]"
-	  " [-s type-size] font-map\n"
-	  "usage: %s {-v | --version}\n"
-	  "usage: %s --help\n",
-	  program_name, program_name, program_name);
+  (void) fprintf(stream,
+		 "usage: %s [-d destination-directory] [-r resolution]"
+		 " [-s type-size] font-map\n"
+		 "usage: %s {-v | --version}\n"
+		 "usage: %s --help\n",
+		 program_name, program_name, program_name);
 }
 
 int main(int argc, char **argv)
@@ -309,7 +309,8 @@ int main(int argc, char **argv)
       sscanf(optarg, "%u", &point_size);
       break;
     case 'v':
-      printf("GNU xtotroff (groff) version %s\n", Version_string);
+      (void) printf("GNU xtotroff (groff) version %s\n",
+		    Version_string);
       xtotroff_exit(EXIT_SUCCESS);
       break;
     case CHAR_MAX + 1: /* --help */
@@ -317,14 +318,20 @@ int main(int argc, char **argv)
       xtotroff_exit(EXIT_SUCCESS);
       break;
     case '?':
-      fprintf(stderr, "%s: unrecognized command-line option '%c'\n",
-	      program_name, (char) optopt);
+      if (optopt != 0)
+	(void) fprintf(stderr,
+		       "%s: error: unrecognized command-line option"
+		       " '%c'\n", program_name, (char) optopt);
+      else
+	(void) fprintf(stderr, "unrecognized command-line option '%1'",
+		argv[(optind - 1)]);
       usage(stderr);
       xtotroff_exit(2);
       break;
     case ':':
-      fprintf(stderr, "%s: error: command-line option '%c' requires an"
-	      " argument\n", program_name, (char) optopt);
+      (void) fprintf(stderr,
+		     "%s: error: command-line option '%c' requires an"
+		     " argument\n", program_name, (char) optopt);
       usage(stderr);
       exit(2);
       break;
@@ -339,16 +346,18 @@ int main(int argc, char **argv)
 
   dpy = XOpenDisplay(0);
   if (!dpy) {
-    fprintf(stderr, "%s: fatal error: can't connect to the X server;"
-	    " make sure the DISPLAY environment variable is set"
-	    " correctly\n", program_name);
+    (void) fprintf(stderr,
+		   "%s: fatal error: cannot connect to the X server;"
+		   " make sure the \"DISPLAY\" environment variable is"
+		   " set correctly\n", program_name);
     xtotroff_exit(EXIT_FAILURE);
   }
 
   map = fopen(argv[optind], "r");
   if (NULL == map) {
-    fprintf(stderr, "%s: fatal error: unable to open map file '%s':"
-	    " %s\n", program_name, argv[optind], strerror(errno));
+    (void) fprintf(stderr,
+		   "%s: fatal error: cannot map file '%s': %s\n",
+		   program_name, argv[optind], strerror(errno));
     xtotroff_exit(EXIT_FAILURE);
   }
 

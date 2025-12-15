@@ -44,7 +44,8 @@ This file describes how to prepare 'groff' for a new release.
 * Update the 'gnulib' sub-module and 'bootstrap' script to the latest
   stable versions.  See the 'HACKING' file for instructions.
 
-* Update the release version number where it is hard-coded.
+* Update the release version number where it is hard-coded or
+  represented as "next".
   + NEWS
   + BUG-REPORT
   + arch/mingw/grap2graph.cmd

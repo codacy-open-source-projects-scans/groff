@@ -10,9 +10,10 @@ language reference
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 2000-2025 Free Software Foundation, Inc.
+.\" Copyright 2000-2024 Free Software Foundation, Inc.
+.\"           2017-2025 G. Branden Robinson
 .\"
-.\" This file is part of groff, the GNU roff type-setting system.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" Permission is granted to copy, distribute and/or modify this
 .\" document under the terms of the GNU Free Documentation License,
@@ -1482,11 +1483,11 @@ Similarly,
 if the identifier is interpreted as a register name,
 the formatter initializes it to zero
 and interpolates that value.
-.I @g@troff
+GNU
+.I troff \" GNU
 emits a warning in category
-.RB \[lq] reg \[rq],
-.
-See section \[lq]Warnings\[rq] in
+.RB \[lq] reg \[rq];
+see section \[lq]Warnings\[rq] in
 .MR @g@troff @MAN1EXT@ ,
 and subsection \[lq]Interpolating registers\[rq] and section
 \[lq]Strings\[rq] below.
@@ -1861,13 +1862,26 @@ see below.
 .br
 .ne 3v
 .P
-The following escape sequences don't take arguments and thus are allowed
-as delimiters:
+The following escape sequences don't take arguments
+and thus are allowed as delimiters:
+.\" That explanation is kind of BS; it's actually because their token
+.\" types aren't shared with ones that are parameterized in input.
+.\" Allowing `\0`, `\^`, and `\|` also allows the delimited `\h`, which
+.\" presumably was not intentional.  Allowing special characters as
+.\" delimiters, which very much _was_ deliberate (see their use in tbl
+.\" and eqn) also allows the delimited `\C`, which is a wart that makes
+.\" the foregoing "thus" a lie.  But expecting the reader to have a
+.\" command of GNU troff's token types, which _should_ be a mere
+.\" implementation detail, is a tall order.  When we make GNU troff
+.\" handle UTF-8/Unicode internally we'll have a practically unlimited
+.\" space for token types (because the internal character type will go
+.\" from 8 to 32 bits wide), and can distinguish some that have been
+.\" collapsed to date.  That would in turn allow us to make
+.\" "unformatting" and "asciification" more representative of the
+.\" original input.
 .BI \[rs] space\c
 ,
 .BR \[rs]% ,
-.BR \[rs]| ,
-.BR \[rs]\[ha] ,
 .BR \[rs]{ ,
 .BR \[rs]} ,
 .BR \[rs]\[aq] ,
@@ -1882,7 +1896,6 @@ as delimiters:
 .BR \[rs]& ,
 .BR \[rs]: ,
 .BR \[rs]\[ti] ,
-.BR \[rs]0 ,
 .BR \[rs]a ,
 .BR \[rs]c ,
 .BR \[rs]d ,
@@ -1895,7 +1908,7 @@ and
 .BR \[rs]u .
 .
 However,
-using them this way is discouraged;
+we discourage using them this way;
 they can make the input confusing to read.
 .
 .
@@ -2019,6 +2032,76 @@ works as
 does,
 except that it does not cancel a pending end-of-sentence state.
 .\" END Keep (roughly) parallel with groff.texi node "Dummy Characters".
+.
+.
+.\" ====================================================================
+.SH "Page control"
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Page Control".
+Discretionary page breaks
+can prevent the unwanted separation of content.
+.
+A new page number takes effect during page ejection;
+see subsection \[lq]The implicit page trap\[rq] below.
+.
+The
+.B bp
+request breaks the page,
+incrementing the page number by one
+(or setting it per the supplied argument).
+.
+The
+.B ne
+request forces a page break if insufficient vertical space is available
+(it asserts \[lq]needed\[rq] space).
+.
+.B sv
+requires vertical space as
+.B ne
+does,
+but also
+.I saves
+it for later output by the
+.B os
+request.
+.
+.
+.P
+The
+.B nl
+register interpolates the vertical drawing position
+as of the most recently typeset output line.
+.
+It does not necessarily
+(and often does not)
+represent that of the pending output line,
+because the formatter does not determine the position of its baseline
+until it is output.
+.\" recall @ref{Manipulating Spacing}.
+.
+Assigning a value to
+.B nl
+sets the vertical drawing position
+in advance of further modifications to baseline positioning
+arising from alterations to type size,
+changes to vertical spacing,
+or application of extra pre- or post-vertical spacing.
+.
+.
+.P
+When the formatter starts,
+the transition to the first page
+.RB "has not yet happened\[em]" nl
+is negative.
+If you plant a page location trap at vertical position
+.RB \[lq] 0 \[rq]
+(idiomatically to format a header),
+you can assign a negative value to
+.B nl
+to spring that trap even if the page has already started
+(see subsection \[lq]Page location traps\[rq] below).
+.\" END Keep (roughly) parallel with groff.texi node "Page Control".
 .
 .
 .\" TODO: Add sections here about characters (including custom
@@ -2230,7 +2313,7 @@ request begins with a non-alphanumeric character apart from
 .RB \[lq] !\& \[rq]
 (see below)
 and is not a numeric expression,
-it performs an
+the formatter performs an
 .I output comparison test.
 .
 Shown first in the table above,
@@ -2375,8 +2458,10 @@ others false.
 .
 .TPx
 .I c
-denotes a single input character,
-ordinary or special.
+denotes a single character\[em]\c
+ordinary,
+special,
+or indexed.
 .
 .TPx
 .I command
@@ -2983,13 +3068,16 @@ Unsafe request;
 disabled by default.
 .
 .TPx
-.REQ .cflags "n c1 c2 \fR\&.\|.\|.\&\fP"
-Assign properties encoded
-.RI by\~ n
-to characters
-.IR c1 ,
-.IR c2 ,
-and so on.
+.REQ .cflags "n c\fR\&.\|.\|.\&\fP"
+Assign properties encoded by non-negative integer
+.I n
+to each character or class
+.IR c .
+.
+Spaces need not separate
+.I c
+arguments.
+.\" TODO: Add subsection discussing character flags.
 .
 .TPx
 .REQ .ch mac
@@ -3038,13 +3126,26 @@ or diversion
 .I name.
 .
 .TPx
-.REQ .class "ident c1 c2 \fR\&.\|.\|.\&\fP"
+.REQ .class "ident c \fR\&.\|.\|.\&\fP"
 Define a (character) class
 .I ident
 comprising the characters or range expressions
-.IR c1 ,
-.IR c2 ,
-and so on.
+.IR c ,
+where each
+.I c
+is an
+ordinary,
+special,
+or
+indexed
+character;
+or a
+.I "range expression."
+.
+A class thus defined can then be referred to
+in a
+.B \%cflags
+request in lieu of listing all the characters within it.
 .
 .TPx
 .REQ .close stream
@@ -3531,30 +3632,27 @@ are searched and before those named as arguments to the
 request.
 .
 .TPx
-.REQ .fspecial font
+.REQ .fspecial f
 Empty the list of fonts treated as special when
-.I font
+.I f
 is selected.
 .
 .TPx
-.REQ .fspecial "fnt sfnt \fR\&.\|.\|.\&\fP"
-When
-.RI font\~ fnt
-is selected,
-treat each font
-.I sfnt
-as
-.I special;
-that is,
-search it for any glyph not found in
-.IR f .
+.REQ .fspecial "f s \fR\&.\|.\|.\&\fP"
+Declare each font
+.I s
+as special only when
+.RB font\~ f
+is selected.
 .
+.\" TODO: Move this sentence to a new (sub)section describing the glyph
+.\" resolution procedure.
 GNU
 .I troff \" GNU
 searches fonts specified as arguments to the
 .RB \%\[lq] special \[rq]
 request after those given as arguments to the
-.B fspecial
+.B \%fspecial
 request.
 .
 .TPx
@@ -3719,7 +3817,7 @@ Define each argument
 special,
 or indexed characters)
 as a
-.I "hyphenation exception"
+.I "hyphenation exception word"
 such that each occurence of a hyphen-minus
 .RB \[lq] \- \[rq]
 in
@@ -3879,9 +3977,9 @@ Cancel any pending input line trap.
 .REQ .itc "npl mac"
 As
 .RB \[rq] it \[rq],
-except that input lines interrupted with the
+but lines interrupted with the
 .B \[rs]c
-escape sequence are not counted.
+escape sequence do not apply to the line count.
 .
 .TPx
 .REQ .kern
@@ -4262,10 +4360,12 @@ Change the page number character used in titles
 .REQ .pchar "c \fR\&.\|.\|.\&\fP"
 Report,
 to the standard error stream,
-information about each ordinary,
+information about each character
+(be it
+ordinary,
 special,
-or indexed
-.RI character\~ c .
+or indexed)
+.RI "or character class\~" c .
 .
 A character defined by a request
 .RB ( char ,
@@ -4537,7 +4637,7 @@ Change post-vertical line spacing according to
 .scaleindicator p ).
 .
 .TPx
-.REQ .rchar "c1 c2 \fR.\|.\|.\&\fP"
+.REQ .rchar "c\fR.\|.\|.\&\fP"
 Remove definition of each
 ordinary,
 special,
@@ -4552,6 +4652,11 @@ or
 .B \%schar
 request.
 .
+Spaces need not separate
+.I c
+arguments.
+.\" XXX: Removal of a class is unspecified.
+.
 The character definition removed
 (if any)
 is the first encountered in the resolution process documented
@@ -4562,8 +4667,6 @@ in section \[lq]Using Symbols\[rq] of
 Glyphs,
 which are defined by font description files,
 cannot be removed.
-.
-Spaces need not separate the arguments.
 .
 .TPx
 .REQ .rd
@@ -4579,6 +4682,7 @@ to standard error stream as prompt.
 .
 .TPx
 .REQ .return
+.\" XXX: useless request warning if not interpreting a macro?
 Stop interpreting an interpolated macro,
 skipping the remainder of its definition.
 .
@@ -4590,15 +4694,18 @@ but perform the skip twice\[em]once within the macro being interpreted
 and once in an enclosing macro.
 .
 .TPx
-.REQ .rfschar "f c1 c2 \fR\&.\|.\|.\&\fP"
-Remove font-specific character definitions
-.IR c1 ,
-.IR c2 ,
-\&.\|.\|.\& for
-created by
-.B \%fschar
-for
-.RI font\~ f .
+.REQ .rfschar "f c\fR\&.\|.\|.\&\fP"
+Remove each fallback special
+.RI character\~ c
+for font
+.IR f .
+.
+Spaces need not separate
+.I c
+arguments.
+.
+See
+.BR fschar .
 .
 .TPx
 .REQ .rj
@@ -4712,15 +4819,26 @@ Set the soft hyphen character
 .
 .TPx
 .REQ .shift
-In a macro definition,
-left-shift arguments by one position.
+Shift macro or string parameters one place
+.I n
+places:
+.RI argument\~ i
+becomes argument
+.IR i \|\-\| 1 ;
+argument 1
+becomes unavailable.
 .
 .TPx
 .REQ .shift n
-In a macro definition,
-left-shift arguments by
-.IR n \~\c
-positions.
+Shift macro or string parameters
+.I n
+places:
+.RI argument\~ i
+becomes argument
+.IR i \|\-\| n ;
+arguments 1
+.RI to\~ n
+become unavailable.
 .
 .TPx
 .REQ .sizes "s1 s2 \f[R].\|.\|.\&\f[] sn \f[R][\f[B]0\f[]]"
@@ -4776,33 +4894,38 @@ does not exist.
 Break and move the next text baseline down by one vee,
 or until springing a page location trap.
 .
+If invoked with the no-break control character,
+.B sp
+moves the text baseline applicable to the entire pending output line.
+.
 .TPx
-.REQ .sp dist
-Break and move the next text baseline down by
-.IR dist ,
-or until springing a page location trap
-(default scaling unit\~\c
-.scaleindicator v ).
+.REQ .sp vertical-distance
+As
+.BR sp ,
+but move by
+.I vertical-distance
+instead of
+.BR 1v .
+.
+Inside a diversion,
+the formatter ignores any argument.
 .
 A negative
-.I dist
-will not reduce the position of the text baseline below zero.
+.I vertical-distance
+cannot reduce the position of the text baseline below zero.
 .
-Prefixing
-.I dist
-with the
+Applying the boundary-relative measurement operator
 .B \[or]
-operator moves to a position relative to the page top for positive
+operator to
+.I vertical-distance,
+as in
+.RB \[lq] \[or]\c
+.IR N \[rq],
+moves to a position relative to the page top for positive
 .IR N ,
 and the bottom if
 .I N
-is negative;
-in all cases,
-one line height (vee) is added
-.RI to\~ dist .
-.
-.I dist
-is ignored inside a diversion.
+is negative.
 .
 .TPx
 .REQ .special
@@ -4813,9 +4936,24 @@ when given arguments.
 .REQ .special "s \fR\&.\|.\|.\&\fP"
 Declare each font
 .I s
-as
-.I special,
-searching it for glyphs not found in the selected font.
+as special,
+irrespective of its description file,
+populating a list that
+GNU
+.I troff \" GNU
+searches,
+in order,
+to find the glyph demanded.
+.
+.\" TODO: Move this sentence to a new (sub)section describing the glyph
+.\" resolution procedure.
+GNU
+.I troff \" GNU
+searches fonts specified as arguments to the
+.RB \%\[lq] special \[rq]
+request after those given as arguments to the
+.B \%fspecial
+request.
 .
 .TPx
 .REQ .spreadwarn
@@ -6403,7 +6541,7 @@ back to the initial drawing position.
 .\" XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
 .\" src/libs/libdriver/input.cpp.  It is neither the rightmost point
 .\" of the figure nor the initial drawing position that GNU troff
-.\" automatically returned to to close the figure.
+.\" automatically returned to close the figure.
 Afterward,
 the drawing position is left at
 .RI ( hn ,\~ vn ).
@@ -7755,6 +7893,52 @@ associate abstract styles and font names with mounting positions.
 .
 .
 .\" ====================================================================
+.SS "Special fonts"
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Special Fonts".
+Special fonts are those that the formatter searches,
+in mounting position order,
+when it cannot find a requested glyph in the selected font.
+.
+Typically,
+they are declared as such in their description files
+.\" @footnote{@xref{Font Description File Format}.}
+(see
+.MR groff_font @MAN5EXT@ ),
+and
+contain unstyled glyphs.
+.
+The \[lq]Symbol\[rq] and \[lq]Zapf Dingbats\[rq] fonts
+of the PostScript and PDF standards are examples.
+.
+Ordinarily,
+only typesetters have special fonts.
+.
+.
+.P
+GNU
+.IR troff 's \" GNU
+.B \%special
+and
+.B \%fspecial
+requests permit a document
+to supplement the set of fonts the device configures
+for glyph search
+without having to use
+the
+.B fp
+request to manipulate the list of mounting positions,
+which can be tedious\[em]by default,
+GNU
+.I troff \" GNU
+mounts 40 fonts at startup
+when using the
+.B ps
+device.
+.\" END Keep (roughly) parallel with groff.texi node "Special Fonts".
+.
+.\" ====================================================================
 .SH Hyphenation
 .\" ====================================================================
 .
@@ -7774,7 +7958,7 @@ escape sequences may be used to control the hyphenation and breaking of
 individual words.
 .
 The
-.B .hw
+.B hw
 request sets user-defined hyphenation points for specified words at any
 subsequent occurrence.
 .
@@ -7788,7 +7972,7 @@ Several requests influence automatic hyphenation.
 .
 Because conventions vary,
 a variety of hyphenation modes is available to the
-.B .hy
+.B hy
 request;
 these determine whether hyphenation will apply to a word prior to
 breaking a line at the end of a page
@@ -7891,24 +8075,24 @@ it is superfluous to add\~1 to any non-zero even mode.
 .P
 The places within a word that are eligible for hyphenation are
 determined by language-specific data
-.RB ( .hla ,
-.BR .hpf ,
+.RB ( hla ,
+.BR hpf ,
 and
-.BR .hpfa )
+.BR hpfa )
 and lettercase relationships
-.RB ( .hcode
+.RB ( hcode
 and
-.BR .hpfcode ).
+.BR hpfcode ).
 .
 Furthermore,
 hyphenation of a word might be suppressed due to a limit on
 consecutive hyphenated lines
-.RB ( .hlm ),
+.RB ( hlm ),
 a minimum line length threshold
-.RB ( .hym ),
+.RB ( hym ),
 or because the line can instead be adjusted with additional inter-word
 space
-.RB ( .hys ).
+.RB ( hys ).
 .
 .
 .\" ====================================================================
@@ -8127,12 +8311,16 @@ can be termed
 .
 .
 .P
-The escape character,
-.B \[rs]
-by default,
-can escape itself.
+The escape character
+.RB ( \[rs]
+by default)
+when used before itself
+.I quotes
+an escape character for later interpreation
+in an enclosing context.
 .
-This enables you to control whether a given
+Escape character quotation enables you to control
+whether the formatter interprets a given
 .BR \[rs]n ,
 .BR \[rs]g ,
 .BR \[rs]$ ,
@@ -8140,8 +8328,7 @@ This enables you to control whether a given
 .BR \[rs]V ,
 or
 .B \[rs]?\&
-escape sequence is interpreted at the time the macro containing it is
-defined,
+escape sequence at the time the macro containing it is defined,
 or later when the macro is called.
 .
 .
@@ -8154,16 +8341,16 @@ character has removed its special meaning.
 .
 Consequently,
 .B \[rs]\[rs]
-is not an escape sequence in the usual sense.
+is not best considered an escape sequence,
+but a quoted escape character.
 .
 In any escape sequence
 .BI \[rs] X
 that
 .I @g@troff
 does not recognize,
-the escape character is ignored and
-.IR X \~is
-output.
+the formatter discards the escape character and outputs
+.I X.
 .
 An unrecognized escape sequence causes a warning in category
 .RB \%\[lq] escape \[rq],
@@ -8173,20 +8360,21 @@ being one.
 .
 The other is
 .BR \[rs]. ,
-which escapes the control character.
+which quotes the control character.
 .
-It is used to permit nested macro definitions to end without a named
-macro call to conclude them.
+It is used to permit nested macro definitions to end
+without a named macro call to conclude them.
 .
-Without a syntax for escaping the control character,
+Without a syntax for quoting the control character,
 this would not be possible.
 .
+Outside of copy mode,
 .I roff
 documents should not use the
 .B \[rs]\[rs]
 or
 .B \[rs].\&
-character sequences outside of copy mode;
+character sequences;
 they serve only to obfuscate the input.
 .
 Use
@@ -8202,7 +8390,8 @@ and
 .B \[aq]
 where
 .I @g@troff
-expects them as control characters if you mean to use them literally.
+expects them as control characters
+if you mean to use them literally.
 .
 .
 .br
@@ -8210,15 +8399,32 @@ expects them as control characters if you mean to use them literally.
 .P
 Macro definitions can be nested to arbitrary depth.
 .
-In
-.RB \[lq] \|\[rs]\[rs] \[rq],
-each escape character is interpreted twice\[em]once in copy mode,
-when the macro is defined,
-and once in interpretation mode,
-when the macro is called.
+Given the input character sequence
+.RB \[lq] \|\[rs]\[rs] \[rq]
+in a macro or string definition,
+the formatter interpets each escape character in multiple contexts;
+once,
+when populating the macro or string,
+where the first
+.RB \[lq] \[rs] \[rq]
+serves its quotation function\[em]thus
+only one
+.RB \[lq] \[rs] \[rq]
+is stored in the definition.
 .
-This fact leads to exponential growth in the quantity of escape
-characters required to delay interpolation of
+(Verify this fact with the
+.B pm
+request.)
+.
+The formatter interprets the second
+.RB \[lq] \[rs] \[rq]
+as an escape character
+(assuming the escape character hasn't been changed in the meantime)
+each time it interpolates the macro or string definition.
+.
+This fact leads to exponential growth
+in the quantity of escape characters
+required to quote and thereby delay interpolation of
 .BR \[rs]n ,
 .BR \[rs]g ,
 .BR \[rs]$ ,
@@ -8268,22 +8474,14 @@ Its applications include setting page headers and footers,
 body text in multiple columns,
 and footnotes.
 .
-These traps can occur at a given location on the page
-.RB ( .wh ,\~ .ch );
-at a given location in the current diversion
-.RB ( .dt )\[em]together,
+These traps can occur at a given location either on the page
+.RB ( wh ,\~ ch )
+or in the current diversion
+.RB ( dt )\[em]together,
 these are known as
 vertical position traps,
 which can be disabled and re\[e ad]nabled
-.RB ( .vpt ).
-.
-Setting a trap is also called
-.I planting
-one.
-.
-It is said that a trap is
-.I sprung
-if its condition is fulfilled.
+.RB ( vpt ).
 .
 .
 .P
@@ -8298,15 +8496,27 @@ There can exist at most one such vertical position trap per diversion.
 .P
 Other kinds of trap can be planted
 at a blank line
-.RB ( .blm );
+.RB ( blm );
 at a line with leading space characters
-.RB ( .lsm );
+.RB ( lsm );
 after a certain number of productive input lines
-.RB ( .it ,\~ .itc );
+.RB ( it ,\~ itc );
 or at the end of input
-.RB ( .em ).
+.RB ( em ).
 .
-Macros called by traps are passed no arguments.
+.
+.P
+Setting a trap is also called
+.I planting
+one.
+.
+It is said that a trap is
+.I sprung
+if its condition is fulfilled.
+.
+.
+.P
+The formatter passes no arguments to macros called by traps.
 .\" END Keep (roughly) parallel with groff.texi node "Traps".
 .
 .
@@ -8349,14 +8559,12 @@ with its corresponding amount of motion
 .
 A
 .I "page location trap"
-is a vertical position trap that applies to
-the page;
+is a vertical position trap that applies to the page;
 that is,
-to undiverted output.
+to the top-level diversion.
 .
 Many can be present;
-manage them with
-the
+manage them with the
 .B wh
 and
 .B ch
@@ -8377,7 +8585,7 @@ trap
 (see below)
 at the same location is removed;
 this is
-.BR .wh 's
+.BR wh 's
 sole function if its second argument is missing.
 .
 .
@@ -8402,7 +8610,7 @@ page length;
 they are not converted to an absolute vertical position.
 .
 Use
-.B .ptr
+.B ptr
 to dump page location traps to the standard error stream;
 their positions are reported in basic units.
 .
@@ -8430,7 +8638,7 @@ requests.
 .
 You cannot hide it by placing another trap at its location,
 and can move it only by redefining the page length with
-.BR .pl .
+.BR pl .
 .
 Its operation is suppressed when vertical page traps are disabled with
 the
@@ -8615,7 +8823,7 @@ requests reprocess diversions.
 .SH "Punning names"
 .\" ====================================================================
 .
-.\" BEGIN Keep (roughly) parallel with groff.texi node "Punning names".
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Punning Names".
 Macros,
 strings,
 and diversions share a name space;
@@ -8629,13 +8837,13 @@ versa.
 .
 Interpolating a string does not hide existing macro arguments.
 .
-The sequence
+Place the sequence
 .B \[rs]\[rs]
-can be placed at the end of a line in a macro definition or,
+at the end of a line in a macro definition or,
 within a macro definition,
-immediately after the interpolation of a macro as a string to suppress
-the effect of a newline.
-.\" END Keep (roughly) parallel with groff.texi node "Punning names".
+immediately after the interpolation of a macro as a string,
+to suppress the effect of a newline.
+.\" END Keep (roughly) parallel with groff.texi node "Punning Names".
 .
 .
 .\" ====================================================================
@@ -8750,7 +8958,12 @@ stroke and fill colors
 .P
 The
 .B ev
-request pushes to and pops from the environment stack,
+request
+(with an argument)
+pushes to
+and
+(without)
+pops from the environment stack,
 while
 .B evc
 copies a named environment's parameters to the current one.
@@ -8809,7 +9022,7 @@ also permits the interpolation of macro or string contents
 as a device extension command.
 .
 The
-.B devicem
+.B \%devicem
 request and
 .B \[rs]Y
 escape sequence correspond to
@@ -8832,7 +9045,7 @@ further,
 may be a macro and thus contain newlines.
 .
 (There is no way to embed a newline in the arguments to
-.RB \[lq] device \[rq]
+.RB \%\[lq] device \[rq]
 or
 .BR \[rs]X .)
 .
@@ -9047,20 +9260,26 @@ as output.
 .SH "Compatibility mode"
 .\" ====================================================================
 .
-The differences between the
+.MR groff_diff @MAN7EXT@
+documents differences between the
 .I roff
-language recognized by GNU
+language recognized by
+GNU
 .I troff \" GNU
-and that of AT&T
+and that of
+AT&T
 .IR troff , \" AT&T
 as well as the device,
 font,
 and device-independent page description formats described by
-CSTR\~#54 are documented in
-.MR groff_diff @MAN7EXT@ .
+CSTR\~#54.
 .
-.I groff
-provides an AT&T compatibility mode.
+GNU
+.I troff \" GNU
+provides an
+AT&T
+.I troff \" AT&T
+compatibility mode.
 .
 The
 .request cp
@@ -9077,7 +9296,7 @@ set and test the enablement of this mode.
 .
 .\" BEGIN Keep (roughly) parallel with groff.texi node "Debugging".
 Preprocessors use the
-.B .lf
+.B lf
 request to preserve the identities of line numbers and names of input
 files.
 .
@@ -9085,7 +9304,7 @@ files.
 emits a variety of error diagnostics and supports several categories of
 warning;
 the output of these can be selectively suppressed with
-.B .warn
+.RB \[lq] warn \[rq]
 (and see the
 .BR \-E ,
 .BR \-w ,
@@ -9149,7 +9368,7 @@ page location traps
 Requests can also disclose
 to the standard error stream
 the internal properties and representations of
-characters
+characters and classes
 .RB ( pchar ),
 macros
 (and strings and diversions)

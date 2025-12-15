@@ -11,9 +11,10 @@ and AT&T
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2024 Free Software Foundation, Inc.
+.\"           2019-2025 G. Branden Robinson
 .\"
-.\" This file is part of groff, the GNU roff type-setting system.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" Permission is granted to copy, distribute and/or modify this
 .\" document under the terms of the GNU Free Documentation License,
@@ -543,6 +544,34 @@ For example,
 .
 .
 .\" ====================================================================
+.SS "Special fonts"
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Special Fonts".
+.\" (the second paragraph thereof; the first covers "portable" concepts)
+GNU
+.IR troff 's \" GNU
+.B \%special
+and
+.B \%fspecial
+requests permit a document
+to supplement the set of fonts the device configures
+for glyph search
+without having to use
+the
+.B fp
+request to manipulate the list of mounting positions,
+which can be tedious\[em]by default,
+GNU
+.I troff \" GNU
+mounts 40 fonts at startup
+when using the
+.B ps
+device.
+.\" END Keep (roughly) parallel with groff.texi node "Special Fonts".
+.
+.
+.\" ====================================================================
 .SS "Numeric expressions"
 .\" ====================================================================
 .
@@ -839,7 +868,7 @@ do not.
 .\" XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
 .\" src/libs/libdriver/input.cpp.  It is neither the rightmost point
 .\" of the figure nor the initial drawing position that GNU troff
-.\" automatically returned to to close the figure.
+.\" automatically returned to close the figure.
 Afterward,
 the drawing position is left at
 .RI ( hn ,\~ vn ).
@@ -2217,39 +2246,20 @@ in request form.
 .
 .
 .TP
-.BI .cflags\~ "n c1 c2\~"\c
+.BI .cflags\~ "n c"\c
 \&.\|.\|.
-Assign properties encoded by the number
+Assign properties encoded by non-negative integer
 .I n
-to characters
-.IR c1 ,
-.IR c2 ,
-and so on.
+to each character or class
+.IR c .
 .
-Characters,
-whether
-ordinary,
-special,
-or
-indexed,
-have certain associated properties.
-.
-The first argument is the sum of the desired flags and the remaining
-arguments are the characters to be assigned those properties.
-.
-Spaces need not separate the
-.I cn
+Spaces need not separate
+.I c
 arguments.
 .
-Any argument
-.I cn
-can be a character class defined with the
-.B class
-request rather than an individual character.
 .
-.
+.\" TODO: Bust discussion of character flags into its own subsection?
 .IP
-The non-negative integer
 .I n
 is the sum of any of the following.
 .
@@ -2553,21 +2563,23 @@ for discussion of nodes inserted by
 Define a character class
 (or simply \[lq]class\[rq])
 .I ident
-comprising the characters or range expressions
-.I c.
-.
-A class thus defined can then be referred to in lieu of listing all the
-characters within it.
-.
-Currently,
-only the
-.B cflags
-request can handle references to character classes.
-.
-In the request's simplest form,
-each
+comprising the members
+.IR c \&.\|.\|.,
+where each
 .I c
-is an ordinary or special character.
+is an
+ordinary,
+special,
+or
+indexed
+character;
+or a
+.I "range expression."
+.
+A class thus defined can then be referred to
+in a
+.B \%cflags
+request in lieu of listing all the characters within it.
 .
 .
 .IP
@@ -2577,8 +2589,9 @@ we recommend starting and ending the class name with
 and
 .RB \[lq] ] \[rq],
 respectively,
-to avoid collisions with existing character names defined by
-.I groff
+to avoid collisions with existing special character names defined by
+GNU
+.I troff \" GNU
 or the user
 (with
 .B char
@@ -2589,14 +2602,17 @@ This practice applies the presence of
 in the class name to prevent the usage of the special character escape
 form
 .RB \[lq] \[rs][ .\|.\|. ] \[rq],
-thus you must use the
+you must therefore access a class thus named via the
 .B \[rs]C
-escape sequence to access a class with such a name.
+escape sequence.
 .
 .
 .IP
-You can also use a character range expression consisting of a start
-character followed by
+An argument
+.I c
+can alternatively be a
+.I "range expression"
+consisting of a start character followed by
 .RB \[lq] \- \[rq]
 and then an end character.
 .
@@ -2609,33 +2625,13 @@ converts these two character names to Unicode code points
 glyph list [GGL]),
 which determine the start and end values of the range.
 .
-If that fails,
-the class definition is skipped.
-.
-Furthermore,
-classes can be nested.
-.
-.
-.IP
-If you want to include
-.RB \[lq] \- \[rq]
-in a class,
-it must be the first character value in the argument list,
-otherwise it gets misinterpreted as part of the range syntax.
-.
-.
-.IP
-It is not possible to use class names as end points of range
-definitions.
-.
-.
-.IP
-Typically,
-one sets up a character class
-to then apply breaking and hyphenation properties
-to it with the
-.B \%cflags
-request.
+If that conversion fails,
+GNU
+.I troff \" GNU
+skips the range expression and any remaining arguments.
+.\" .
+.\" Furthermore,
+.\" classes can be nested.
 .
 .
 .TP
@@ -3036,37 +3032,32 @@ are searched and before those named as arguments to the
 request.
 .
 .TP
-.BI .fspecial\~ fnt\~\c
-.RI [ sfnt\~ .\|.\|.]
-When
-.RI font\~ fnt
-is selected,
-treat each font
-.I sfnt
-as
-.I special;
-that is,
-search it for any glyph not found in
-.IR f .
+.BI .fspecial\~ f\~\c
+.RI [ s\~ .\|.\|.]
+Declare each font
+.I s
+as special only when
+.RB font\~ f
+is selected.
 .
+Initially,
+a font
+.IR f 's
+list of associated special fonts is empty for all
+.I f.
+.
+.\" TODO: Move this sentence to a new (sub)section describing the glyph
+.\" resolution procedure.
 GNU
 .I troff \" GNU
 searches fonts specified as arguments to the
 .RB \%\[lq] special \[rq]
 request after those given as arguments to the
-.B fspecial
+.B \%fspecial
 request.
 .
-Without
-.I sfnt
-arguments,
-.B \%fspecial
-empties the list of fonts treated as special when
-.RI font\~ fnt
-is selected.
-.
-Initially,
-this list is empty for all fonts.
+See
+.RB \%\[lq] special \[rq].
 .
 .
 .TP
@@ -3117,7 +3108,7 @@ Set zoom factor
 for font\~\c
 .IR f .
 .I zoom
-must a non-negative integer;
+must be a non-negative integer;
 it scales the magnification by thousandths with 1000 as a basis.
 If
 .I zoom
@@ -3201,7 +3192,8 @@ see the
 .B hpf
 request below.
 .
-The hyphenation language is associated with the environment.
+.\" XXX: Not true today, but see Savannah #66387.
+.\" The hyphenation language is associated with the environment.
 .
 .
 .TP
@@ -3510,13 +3502,13 @@ emitting a warning in category
 .
 .
 .TP
-.BR .itc\~ n\~\c
-.RI [ name ]
+.BR .itc\~ n\~\c\" TODO: borrow "npl" notation from groff(7)?
+.RI [ mac ]
 As
 .RB \[lq] it \[rq],
 but lines interrupted with the
 .B \[rs]c
-escape sequence are not applied to the line count.
+escape sequence do not apply to the line count.
 .
 .
 .TP
@@ -3762,10 +3754,12 @@ in the top-level diversion.
 \&.\|.\|.
 Report,
 to the standard error stream,
-information about each ordinary,
+information about each character
+(be it
+ordinary,
 special,
-or indexed
-.RI character\~ c .
+or indexed)
+.RI "or character class\~" c .
 .
 A character defined by a request
 .RB ( char ,
@@ -4003,7 +3997,7 @@ and the post-vertical line spacing set by this request.
 .
 .
 .TP
-.BI .rchar\~ c\~\c
+.BI .rchar\~ c\c
 \&.\|.\|.
 Remove definition of each
 ordinary,
@@ -4018,6 +4012,12 @@ undoing the effect of a
 or
 .B \%schar
 request.
+.
+Spaces need not separate
+.I c
+arguments.
+.\" XXX: Removal of a class is unspecified.
+.
 The character definition removed
 (if any)
 is the first encountered in the resolution process documented
@@ -4028,10 +4028,6 @@ in section \[lq]Using Symbols\[rq] of
 Glyphs,
 which are defined by font description files,
 cannot be removed.
-.
-Spaces need not separate the
-.I cn
-arguments.
 .
 .
 .TP
@@ -4155,22 +4151,28 @@ are considered when assigning the soft hyphen character.
 .
 .TP
 .BR .shift\~ [\c
-.\" XXX: useless request warning if not interpreting a macro?
 .IR n ]
-In a macro definition,
-shift arguments by
+.\" XXX: useless request warning if not interpreting a macro or string?
+Shift macro or string parameters
 .I n
-positions:
+places
+(by\~1 if
+.I n
+omitted):
 .RI argument\~ i
 becomes argument
 .IR i \|\-\| n ;
 arguments 1
 .RI to\~ n
-are no longer available.
+become unavailable.
 .
-.RI If\~ n
-is missing,
-arguments are shifted by\~1.
+Shifting by a non-positive amount,
+or outside of a macro or string definition,
+performs no operation.
+.
+The register
+.B .$
+adjusts its value accordingly.
 .
 .
 .TP
@@ -4213,16 +4215,41 @@ does not exist.
 .IR s\~ .\|.\|.]
 Declare each font
 .I s
-as
-.I special,
-searching it for glyphs not found in the selected font.
+as special,
+irrespective of its description file,
+populating a list that
+GNU
+.I troff \" GNU
+searches,
+in order,
+to find the glyph demanded.
 .
-Without arguments,
-.RB \[lq] \%special \[rq]
-empties this list of special fonts.
+GNU
+.I troff \" GNU
+mounts each font
+.I s.
+.
+Invoking
+.B \%special
+without arguments empties the list.
+.
+A font is not automatically unmounted
+if a subsequent
+.B \%special
+request removes it from the list.
 .
 Initially,
-this list is empty.
+the list is empty.
+.
+.\" TODO: Move this sentence to a new section description the glyph
+.\" resolution procedure.
+GNU
+.I troff \" GNU
+searches fonts specified as arguments to the
+.RB \%\[lq] special \[rq]
+request after those given as arguments to the
+.B \%fspecial
+request.
 .
 .
 .TP
@@ -5347,13 +5374,14 @@ GNU
 .IR troff , \" GNU
 when not in compatibility mode,
 recognizes a single consistent set of delimiters.
+.
 Compatibility mode
 emulates
 AT&T
 .I troff \" AT&T
 only up to a point.
 GNU
-.IR troff , \" GNU
+.I troff \" GNU
 accepts leaders and tabs as delimiters,
 as well as
 Control+D
@@ -5363,7 +5391,9 @@ Control+H
 and
 Control+L
 (FF or form feed),
-all of which cause
+all of which,
+when used as delimiters,
+cause
 AT&T
 .I troff \" AT&T
 to behave in ways difficult to predict.
@@ -5874,10 +5904,22 @@ registers after using such a drawing command in a
 .B \[rs]w
 escape sequence).
 .
+Thus after executing a
+.BR D \~command
+of the form
+.BI D z
+$x sub 1 ~ y sub 1 ~ ldots ~ x sub n ~ y sub n$,
+the drawing position increases by
+.
+$( sum from { i = 1 } to n x sub i , sum from { i = 1 } to n y sub i )$.
+.EQ
+delim off
+.EN
+.
 For the sake of compatibility,
 GNU
 .I troff \" GNU
-also follows this rule,
+follows this rule,
 even though it frustrates extensions to the
 .B D
 command that set drawing parameters rather than rendering objects,
@@ -5891,18 +5933,6 @@ GNU
 .IR troff 's \" GNU
 filled ellipse,
 .BR DE .
-.
-Thus after executing a
-.BR D \~command
-of the form
-.BI D z
-$x sub 1 ~ y sub 1 ~ ldots ~ x sub n ~ y sub n$,
-the drawing position should be increased by
-.
-$( sum from { i = 1 } to n x sub i , sum from { i = 1 } to n y sub i )$.
-.EQ
-delim off
-.EN
 .
 In a future release,
 GNU
@@ -6077,7 +6107,7 @@ page location traps
 Requests can also disclose
 to the standard error stream
 the internal properties and representations of
-characters
+characters and classes
 .RB ( pchar ),
 macros
 (and strings and diversions)
@@ -6105,7 +6135,7 @@ rendering well.
 .
 .
 .P
-Identifier names of arbitrary length may be
+Identifiers of arbitrary length may be
 GNU
 .IR troff 's \" GNU
 most obvious innovation.
@@ -6231,6 +6261,89 @@ turns compatibility mode
 while it interprets its argument list.
 .
 .
+.P
+GNU
+.I troff \" GNU
+normally tracks the interpolation depth of escape sequence parameters
+and other delimited structures,
+but not in compatibility mode.
+.
+See section \[lq]Miscellaneous\[rq] above.
+.
+.
+.P
+The escape sequences
+.BR \[rs]f ,
+.BR \[rs]H ,
+.BR \[rs]m ,
+.BR \[rs]M ,
+.BR \[rs]R ,
+.BR \[rs]s ,
+and
+.B \[rs]S
+are transparent to control character recognition
+at the beginning of an input line,
+or after the conditional expression of an
+.RB \[lq] if \^\[rq]
+or
+.B ie
+request,
+only in compatibility mode.
+.
+That is,
+upon interpreting them,
+GNU
+.I troff \" GNU
+normally no longer recognizes a control character on the input line;
+but in compatibility mode,
+it does,
+just like AT&T
+.I troff. \" AT&T
+.
+.
+.P
+Normally,
+the syntax form
+.BI \[rs]s n
+accepts only a single character
+(a digit)
+for
+.IR n ,
+consistently with other forms that originated in AT&T
+.IR troff , \" AT&T
+like
+.BR \[rs]* ,
+.BR \[rs]$ ,
+.BR \[rs]f ,
+.BR \[rs]g ,
+.BR \[rs]k ,
+.BR \[rs]n ,
+and
+.BR \[rs]z .
+.
+In compatibility mode only,
+a
+.RI non-zero\~ n
+must be in the range 4\[en]39.
+.
+Legacy documents relying upon this quirk of parsing should migrate
+to another
+.B \[rs]s
+form.
+.
+[Background:
+The Graphic Systems C/A/T phototypesetter
+(the original device target for AT&T
+.IR troff ) \" AT&T
+supported only a few discrete type sizes in the range 6\[en]36 points,
+so Ossanna contrived a special case in the parser to do what the user
+must have meant.
+.
+Kernighan warned of this in the 1992 revision of CSTR\~#54 (\[sc]2.3),
+and more recently,
+McIlroy referred to it as a \[lq]living fossil\[rq].]
+.
+.
 .\" ====================================================================
 .SH "Other differences"
 .\" ====================================================================
@@ -6265,39 +6378,14 @@ and Plan\~9 from User Space
 .I troff \" Plan 9
 (commit 93f8143600,
 2022-08-12),
-but not by Solaris\~10
+but not by Solaris
 or Documenter's Workbench
-.IR troff s, \" DWB, Solaris 10
+.IR troff s, \" DWB, Solaris
 which both render it as
 .RB \[lq] \[ti] \[rq].
 .\" as of this writing, 2022-08-13
 .\" END Keep in sync with groff.texi node "Other Differences" and
 .\" groff_man_style(7).
-.
-.
-.P
-GNU
-.I troff \" GNU
-does not allow the use of the escape sequences
-.BR \[rs]| ,
-.BR \[rs]\[ha] ,
-.BR \[rs]& ,
-.BR \[rs]{ ,
-.BR \[rs]} ,
-.BI \[rs] space\c
-,
-.BR \[rs]\[aq] ,
-.BR \[rs]\[ga] ,
-.BR \[rs]\- ,
-.BR \[rs]_ ,
-.BR \[rs]! ,
-.BR \[rs]% ,
-or
-.B \[rs]c
-in identifiers;
-AT&T
-.I troff \" AT&T
-does.
 .
 The
 .B \[rs]A
@@ -6379,7 +6467,7 @@ including English.
 .P
 Unlike
 GNU
-.I troff \" GNU
+.IR troff , \" GNU
 AT&T
 .I troff \" AT&T
 does not recognize an occurrence of
@@ -6460,7 +6548,7 @@ The existence of the
 .B .T
 string is a common feature of device-independent
 .IR troff s\[em]DWB\~3.3, \" others
-Solaris\~10,
+Solaris,
 Heirloom Doctools,
 and Plan\~9
 .I troff \" foreign
@@ -6525,95 +6613,12 @@ any number of environments may exist,
 using any valid identifiers for their names.
 .
 .
-.\" TODO: Resume Texinfo "Other Differences" synchronization work here.
 .P
-GNU
-.I troff \" GNU
-normally tracks the interpolation depth of escape sequence parameters
-and other delimited structures,
-but not in compatibility mode.
-.
-See section \[lq]Miscellaneous\[rq] above.
-.
-.
-.P
-The escape sequences
-.BR \[rs]f ,
-.BR \[rs]H ,
-.BR \[rs]m ,
-.BR \[rs]M ,
-.BR \[rs]R ,
-.BR \[rs]s ,
-and
-.B \[rs]S
-are transparent at the beginning of an input line,
-or after the conditional expression of an
-.RB \[lq] if \^\[rq]
-or
-.B ie
-request,
-only in compatibility mode.
-.
-That is,
-upon interpreting them,
-GNU
-.I troff \" GNU
-no longer recognizes a control character on the input line;
+As noted above in \[lq]Fractional type sizes and new scaling units\[rq],
 AT&T
-.I troff \" AT&T
-does.
-.
-.
-.P
-Normally,
-the syntax form
-.BI \[rs]s n
-accepts only a single character
-(a digit)
-for
-.IR n ,
-consistently with other forms that originated in AT&T
-.IR troff , \" AT&T
-like
-.BR \[rs]* ,
-.BR \[rs]$ ,
-.BR \[rs]f ,
-.BR \[rs]g ,
-.BR \[rs]k ,
-.BR \[rs]n ,
-and
-.BR \[rs]z .
-.
-In compatibility mode only,
-a
-.RI non-zero\~ n
-must be in the range 4\[en]39.
-.
-Legacy documents relying upon this quirk of parsing should migrate
-to another
-.B \[rs]s
-form.
-.
-[Background:
-The Graphic Systems C/A/T phototypesetter
-(the original device target for AT&T
-.IR troff ) \" AT&T
-supported only a few discrete type sizes in the range 6\[en]36 points,
-so Ossanna contrived a special case in the parser to do what the user
-must have meant.
-.
-Kernighan warned of this in the 1992 revision of CSTR\~#54 (\[sc]2.3),
-and more recently,
-McIlroy referred to it as a \[lq]living fossil\[rq].]
-.
-.
-.P
-Fractional type size support causes an incompatibility.
-.
-In AT&T
-.IR troff , \" AT&T
+.IR troff 's \" AT&T
 .B ps
-ignores scaling units
+request ignores scaling units
 and thus
 .RB \[lq] .ps\~10u \[rq]
 sets the type size to 10\~points,
@@ -6629,9 +6634,6 @@ AT&T's behavior also means that
 and
 .RB \[lq] .ps\~10z \[rq]
 are portable.
-.
-See subsection \[lq]Fractional type sizes and new scaling units\[rq]
-above.
 .
 .
 .P
@@ -6676,7 +6678,9 @@ GNU
 .I troff \" GNU
 reports their lengths in characters or nodes if given no arguments,
 and otherwise dumps
-the JSON-encoded name and contents of each named argument.
+the JSON-encoded name,
+contents,
+and other properties of each named argument.
 .
 .
 .P
@@ -6710,8 +6714,8 @@ have not (yet) been formatted.
 .
 Glyphs represent graphemes
 (supplied by the output device)
-and populate diversions
-or the pending output line.
+and populate diversions.
+.\" (recall @ref{Diversions}).
 .
 Formatting converts characters into
 (sequences of)

@@ -1,3 +1,18 @@
+2025-12-09  Alexis Hildebrandt <afh@surryhill.net>
+
+	* mm/0.MT: In troff mode, use default character for drawing
+	rules under the default affiliated firm letterhead, leaving use
+	of the em dash `\[em]` for nroff mode.
+
+	Fixes <https://savannah.gnu.org/bugs/?67791>.
+
+2025-12-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mmroff.pl: Rename scalar `want_only_xref_update` to
+	`want_only_ref_update` for clarity; the script deals with
+	references internal to the document, not cross references to
+	others.
+
 2025-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (debug@big-dump): Report value of `debug*m` since we go

@@ -15,7 +15,7 @@ typesetting
 .\"
 .\" Copyright (C) 2000-2024 Free Software Foundation, Inc.
 .\"
-.\" This file is part of groff, the GNU roff type-setting system.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" Permission is granted to copy, distribute and/or modify this
 .\" document under the terms of the GNU Free Documentation License,
@@ -205,7 +205,7 @@ the formatter treats several characters
 after the occurrence of an end-of-sentence character\[em]it does not
 cancel end-of-sentence status upon encountering them.
 .
-Such characters are often used as footnote markers
+Such characters are often used as footnote marks
 or to close quotations and parentheticals.
 .
 The default set is
@@ -844,10 +844,10 @@ one starts a footnote and the other ends it.
 They further set a trap a small distance above the page bottom,
 reserving a footnote area.
 .
-The author calls the first macro where a footnote marker is desired.
+The author calls the first macro where a footnote mark is desired.
 .
 The macro establishes a diversion so that the footnote text is collected
-at the place in the body text where its corresponding marker appears.
+at the place in the body text where its corresponding mark appears.
 .
 It further creates an environment for the footnote so that it sets
 at a smaller typeface.
@@ -1467,22 +1467,29 @@ standard today.
 .
 In 2007, \" TODO: verify
 Caldera/SCO and Sun Microsystems,
-having acquired rights to AT&T Documenter's Workbench (DWB)
-.I troff
-(a descendant of Bell Labs device-independent
-.IR troff ),
-released it under a free but GPL-incompatible license.
-.
-.UR https://\:github\:.com/\:n\-t\-roff/\:DWB3.3
-This implementation
-.UE
-was made portable to modern POSIX systems.
+having acquired rights to AT&T Unix System\~V
+.IR troff ,
+which was based on Documenter's Workbench (\[lq]DWB\[rq]) 2.0,
+itself a descendant of Bell Labs device-independent
+.IR troff ,
+released it under a free but GPL-incompatible license. \" CDDL
 .
 Gunnar Ritter and later Carsten Kunze then enhanced it to produce
 .UR https://github.com/n\-t\-roff/heirloom\-doctools
 Heirloom Doctools
 .I troff
 .UE .
+.
+Sometime later, \" TODO: when?
+AT&T Software Technology made available
+a subsequent revision of Documenter's Workbench
+.IR troff ,
+.UR https://\:github\:.com/\:n\-t\-roff/\:DWB3.3
+DWB 3.3
+.UE ,
+under yet another free but GPL-incompatible license. \" EPL
+.
+Kunze again ported the software to modern POSIX systems.
 .
 .
 .P
@@ -1780,8 +1787,8 @@ An
 .I output driver
 is a program that parses the output of
 .I troff \" generic
-and produces instructions specific to the device or file format it
-supports.
+and produces instructions or markup
+specific to the device or file format it supports.
 .
 An output driver might support multiple devices,
 particularly if they are similar.

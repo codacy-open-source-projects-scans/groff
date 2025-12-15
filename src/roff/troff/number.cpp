@@ -1,4 +1,6 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2020 Free Software Foundation, Inc.
+             2021-2025 G. Branden Robinson
+
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -103,7 +105,8 @@ bool read_integer(int *res)
   if (!is_valid_expression_start())
     return false;
   units x;
-  if (is_valid_expression(&x, 0, false /* is_parenthesized */)) {
+  if (is_valid_expression(&x, 0 /* dimensionless */,
+			  false /* is_parenthesized */)) {
     *res = x;
     return true;
   }
@@ -223,11 +226,11 @@ static incr_number_result get_incr_number(units *res, unsigned char si)
   if (!is_valid_expression_start())
     return INVALID;
   incr_number_result result = ASSIGN;
-  if (tok.ch() == '+') {
+  if (tok.ch() == int('+')) { // TODO: grochar
     tok.next();
     result = INCREMENT;
   }
-  else if (tok.ch() == '-') {
+  else if (tok.ch() == int('-')) { // TODO: grochar
     tok.next();
     result = DECREMENT;
   }
@@ -239,8 +242,7 @@ static incr_number_result get_incr_number(units *res, unsigned char si)
 
 static bool is_valid_expression_start()
 {
-  while (tok.is_space())
-    tok.next();
+  tok.skip_spaces();
   if (tok.is_newline()) {
     warning(WARN_MISSING, "numeric expression missing");
     return false;
@@ -264,7 +266,7 @@ static bool is_valid_expression(units *u, int scaling_unit,
   while (result) {
     if (is_parenthesized)
       tok.skip_spaces();
-    int op = tok.ch();
+    int op = tok.ch();// safely compares to char literals; TODO: grochar
     switch (op) {
     case '+':
     case '-':
@@ -277,29 +279,29 @@ static bool is_valid_expression(units *u, int scaling_unit,
       break;
     case '>':
       tok.next();
-      if (tok.ch() == '=') {
+      if (tok.ch() == int('=')) { // TODO: grochar
 	tok.next();
 	op = OP_GEQ;
       }
-      else if (tok.ch() == '?') {
+      else if (tok.ch() == int('?')) { // TODO: grochar
 	tok.next();
 	op = OP_MAX;
       }
       break;
     case '<':
       tok.next();
-      if (tok.ch() == '=') {
+      if (tok.ch() == int('=')) { // TODO: grochar
 	tok.next();
 	op = OP_LEQ;
       }
-      else if (tok.ch() == '?') {
+      else if (tok.ch() == int('?')) { // TODO: grochar
 	tok.next();
 	op = OP_MIN;
       }
       break;
     case '=':
       tok.next();
-      if (tok.ch() == '=')
+      if (tok.ch() == int('=')) // TODO: grochar
 	tok.next();
       break;
     default:
@@ -331,13 +333,13 @@ static bool is_valid_expression(units *u, int scaling_unit,
 	*u = u2;
       break;
     case '=':
-      *u = *u == u2;
+      *u = (*u == u2);
       break;
     case '&':
-      *u = *u > 0 && u2 > 0;
+      *u = (*u > 0) && (u2 > 0);
       break;
     case ':':
-      *u = *u > 0 || u2 > 0;
+      *u = (*u > 0) || (u2 > 0);
       break;
     case '+':
       if (ckd_add(u, *u, u2)) {
@@ -358,14 +360,14 @@ static bool is_valid_expression(units *u, int scaling_unit,
       }
       break;
     case '/':
-      if (u2 == 0) {
+      if (0 == u2) {
 	error("division by zero");
 	return false;
       }
       *u /= u2;
       break;
     case '%':
-      if (u2 == 0) {
+      if (0 == u2) {
 	error("modulus by zero");
 	return false;
       }
@@ -387,15 +389,15 @@ static bool is_valid_term(units *u, int scaling_unit,
   for (;;)
     if (is_parenthesized && tok.is_space())
       tok.next();
-    else if (tok.ch() == '+')
+    else if (tok.ch() == int('+')) // TODO: grochar
       tok.next();
-    else if (tok.ch() == '-') {
+    else if (tok.ch() == int('-')) { // TODO: grochar
       tok.next();
       is_negative = !is_negative;
     }
     else
       break;
-  unsigned char c = tok.ch();
+  int c = tok.ch(); // safely compares to char literals; TODO: grochar
   switch (c) {
   case '|':
     // | is not restricted to the outermost level
@@ -404,7 +406,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     if (!is_valid_term(u, scaling_unit, is_parenthesized, is_mandatory))
       return false;
     int tmp, position;
-    position = (scaling_unit == 'v'
+    position = (('v' == scaling_unit)
 		? curdiv->get_vertical_position().to_units()
 		: curenv->get_input_line_position().to_units());
     if (ckd_sub(&tmp, *u, position)) {
@@ -418,7 +420,7 @@ static bool is_valid_term(units *u, int scaling_unit,
   case '(':
     tok.next();
     c = tok.ch();
-    if (c == ')') {
+    if (')' == c) { // TODO: grochar
       if (is_mandatory)
 	return false;
       warning(WARN_SYNTAX, "empty parentheses");
@@ -428,7 +430,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     }
     else if (c != 0 && strchr(SCALING_UNITS, c) != 0) {
       tok.next();
-      if (tok.ch() == ';') {
+      if (tok.ch() == ';') { // TODO: grochar
 	tok.next();
 	scaling_unit = c;
       }
@@ -438,7 +440,7 @@ static bool is_valid_term(units *u, int scaling_unit,
 	return false;
       }
     }
-    else if (c == ';') {
+    else if (';' == c) {
       scaling_unit = 0;
       tok.next();
     }
@@ -446,7 +448,7 @@ static bool is_valid_term(units *u, int scaling_unit,
 			     true /* is_parenthesized */, is_mandatory))
       return false;
     tok.skip_spaces();
-    if (tok.ch() != ')') {
+    if (tok.ch() != ')') { // TODO: grochar
       if (is_mandatory)
 	return false;
       warning(WARN_SYNTAX, "expected ')', got %1", tok.description());
@@ -474,7 +476,6 @@ static bool is_valid_term(units *u, int scaling_unit,
   case '9':
     *u = 0;
     do {
-      // If wrapping, don't `break`; eat and discard further digits.
       if (!is_overflowing) {
 	  saved_u = *u;
 	  if (ckd_mul(u, *u, 10))
@@ -483,7 +484,8 @@ static bool is_valid_term(units *u, int scaling_unit,
 	    is_overflowing = true;
 	  if (is_overflowing)
 	    *u = saved_u;
-	}
+      }
+      // No `else` on overflow; consume and discard further digits.
       tok.next();
       c = tok.ch();
     } while (csdigit(c));
@@ -498,7 +500,8 @@ static bool is_valid_term(units *u, int scaling_unit,
   case '>':
   case '<':
   case '=':
-    warning(WARN_SYNTAX, "empty left operand to '%1' operator", c);
+    warning(WARN_SYNTAX, "empty left operand to '%1' operator",
+	    char(c));
     *u = 0;
     return !is_mandatory;
   default:
@@ -507,7 +510,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     return false;
   }
   int divisor = 1;
-  if (tok.ch() == '.') {
+  if (tok.ch() == int('.')) { // TODO: grochar
     tok.next();
     for (;;) {
       c = tok.ch();
@@ -528,20 +531,23 @@ static bool is_valid_term(units *u, int scaling_unit,
       && (strchr(SCALING_UNITS, c) != 0 /* nullptr */)) {
     switch (scaling_unit) {
     case 0:
-      warning(WARN_SCALE, "scaling unit '%1' invalid in context", c);
+      // We know it's a recognized scaling unit because it matched the
+      // `strchr()` above, so we don't use `tok.description()`.
+      warning(WARN_SCALE, "a scaling unit is not valid in this context"
+	      " (got '%1')", char(c));
       break;
     case 'f':
       if (c != 'f' && c != 'u') {
-	warning(WARN_SCALE, "'%1' scaling unit invalid in context;"
-		" use 'f' or 'u'", c);
+	warning(WARN_SCALE, "'%1' scaling unit invalid in this context;"
+		" use 'f' or 'u'", char(c));
 	break;
       }
       si = c;
       break;
     case 'z':
       if (c != 'u' && c != 'z' && c != 'p' && c != 's') {
-	warning(WARN_SCALE, "'%1' scaling unit invalid in context;"
-		" use 'z', 'p', 's', or 'u'", c);
+	warning(WARN_SCALE, "'%1' scaling unit invalid in this context;"
+		" use 'z', 'p', 's', or 'u'", char(c));
 	break;
       }
       si = c;
@@ -550,8 +556,8 @@ static bool is_valid_term(units *u, int scaling_unit,
       si = c;
       break;
     default:
-      if (c == 'z') {
-	warning(WARN_SCALE, "'z' scaling unit invalid in context");
+      if ('z' == c) {
+	warning(WARN_SCALE, "'z' scaling unit invalid in this context");
 	break;
       }
       si = c;
@@ -633,7 +639,7 @@ static bool is_valid_term(units *u, int scaling_unit,
 units scale(units n, units x, units y)
 {
   assert(x >= 0 && y > 0);
-  if (x == 0)
+  if (0 == x)
     return 0;
   if (n >= 0) {
     if (n <= INT_MAX / x)
@@ -659,7 +665,7 @@ units scale(units n, units x, units y)
 
 vunits::vunits(units x)
 {
-  if (vresolution == 1)
+  if (1 == vresolution)
     n = x;
   else {
     // Don't depend on rounding direction when dividing neg integers.
@@ -690,7 +696,7 @@ vunits::vunits(units x)
 
 hunits::hunits(units x)
 {
-  if (hresolution == 1)
+  if (1 == hresolution)
     n = x;
   else {
     // Don't depend on rounding direction when dividing neg integers.

@@ -137,8 +137,8 @@ and
 .B DF
 start static and floating displays,
 respectively;
-either is terminated with
-.BR DE .
+.B DE
+terminates either.
 .
 .
 .P
@@ -174,10 +174,11 @@ macros.
 .
 .
 .IP \[bu]
-The
+.I "groff mm"
+implements the
 .B CS
-(output cover sheet)
-macro is implemented only for memorandum type 4.
+(output cover page or \[lq]sheet\[rq])
+macro only for memorandum type 4.
 .
 .
 .IP \[bu]
@@ -300,6 +301,12 @@ assumes that horizontal measurements are reckoned in ens
 and vertical ones in vees
 (scaling unit
 .BR v ).
+.
+.I "groff mm"
+permits use of non-integral
+.I "typographical points"
+(scaling unit
+.BR z ).
 .
 Use explicit scaling units for clarity and predictable behavior.
 .
@@ -574,7 +581,9 @@ Use the
 .B fp
 request to mount substitute fonts at these positions as desired.
 .
-The default font family is Times.
+The default font family is
+.RB \[lq] T \[rq]
+(Times).
 .
 Select a different one
 by invoking
@@ -687,7 +696,7 @@ At most one can be declared;
 .I org-name
 is used by
 .B MT
-memoranda and available to cover sheets.
+memoranda and available to cover pages.
 .
 See
 .BR COVER .
@@ -830,7 +839,7 @@ Input up to the next
 call is included in the abstract.
 .
 .I placement
-influences the location of the abstract on the cover sheet of a
+influences the location of the abstract on the cover page of a
 memorandum
 (see
 .BR MT ).
@@ -852,23 +861,23 @@ lf(BI) lb
 l lx.
 placement@Effect
 0@T{
-The abstract appears on page\~1 and cover sheet if the document is a
+The abstract appears on page\~1 and cover page if the document is a
 \[lq]released paper\[rq] memorandum
 .RB (\[lq] ".MT 4" \[rq]);
 otherwise,
-it appears on page\~1 without a cover sheet.
+it appears on page\~1 without a cover page.
 T}
 1@T{
-The abstract appears only on the cover sheet
+The abstract appears only on the cover page
 .RB (\[lq] ".MT 4" \[rq]
 only).
 T}
 .\" XXX: This does not appear to be implemented.
 .\"2@T{
-.\"The abstract is printed only on the cover sheet (if not
+.\"The abstract is printed only on the cover page (if not
 .\".BR ".MT 4" )
 .\".
-.\"The cover sheet is printed without a need for \fBCS\fP.
+.\"The cover page is printed without a need for \fBCS\fP.
 .\"T}
 .TE
 .
@@ -919,7 +928,7 @@ memoranda.
 .
 The
 .I ms
-cover sheet style also formats these data.
+cover page style also formats these data.
 .
 .
 .br
@@ -942,7 +951,7 @@ terminates a document title started with
 .BR TL ,
 and can be called without arguments for that purpose.
 .
-Author information is used by cover sheets,
+Author information is used by cover page,
 .B MT
 memoranda,
 and
@@ -1117,10 +1126,10 @@ without space between the arguments.
 .B BS
 Begin bottom block.
 .
-Input is collected until
-.B BE
-is called,
-and output between the footnote area and footer of each page.
+.I mm
+collects input into the bottom block until the document calls
+.BR BE ,
+and outputs it between the footnote area and footer of each page.
 .
 .
 .\" XXX: Couldn't this have been done with an extra parameter to `VL`?
@@ -1215,6 +1224,7 @@ are required.
 \&.TL
 \&.AU
 \&.AT
+\&.\[rs]" Add additional AU and AT calls as needed.
 \&.AS
 .ne 2v
 \&.AE
@@ -1294,9 +1304,9 @@ to end the list.
 .IR right-indentation ]]]
 Begin static display.
 .
-Input until
-.B DE
-is called is collected into a display.
+.I mm
+collects input into a display until the document calls
+.BR DE .
 .
 The display is output on a single page unless it is taller than the
 height of the page.
@@ -1742,15 +1752,17 @@ captions this list.
 .
 .TP
 .BR FS \~[\c
-.IR label ]
+.IR mark ]
 Start footnote.
 .
-Input until
-.B FE
-is called is collected into a footnote.
+.I mm
+collects input into a footnote until the document calls,
+.BR FE ,
+outputting it when the vertical drawing position nears the page bottom.
 .
 By default,
-footnotes are automatically numbered starting at 1;
+.I mm
+automatically numbers footnotes starting at 1;
 the number is available in register
 .B Ftnum
 and,
@@ -1758,8 +1770,13 @@ with a trailing period,
 in
 .RB string\~ F .
 .
-This string precedes the footnote text at the bottom of the column or
-page.
+If desired,
+interpolate this string in the body text to format the footnote mark.
+.
+.I mm
+interpolates
+.RB string\~ F
+prior to the footnote text.
 .
 Footnotes are vertically separated by the product of
 .RB registers\~ Fs
@@ -1773,13 +1790,17 @@ footnotes may be used in displays.
 .
 .IP
 A
-.I label
-argument replaces the contents of the string
-.BR F ;
-it need not be numeric.
+.I mark
+argument,
+which need not be numeric,
+replaces the default footnote mark,
+leaving the
+.RB string\~ F
+unchanged.
 .
-In this event,
-the footnote marker in the body text must be explicitly written.
+In that event,
+you must explicitly write any footnote mark to appear
+in the footnote itself.
 .
 .
 .TP
@@ -1858,7 +1879,10 @@ Set a numbered section heading at
 .IR level .
 .
 .I mm
-produces numbered
+calls
+.B LC
+to clear any lists,
+then produces numbered
 .I "heading marks"
 of the form
 .IR a . b . c .\|.\|.,
@@ -1976,21 +2000,21 @@ thresholds.
 .IP
 .I Heading typeface and size.
 .
-The fonts used for heading marks and titles at each level are
-configured by the
+The
 .B HF
-string.
+string configures the fonts used
+for heading marks and titles at each level.
 .
 The string
 .B HP
 likewise assigns a type size to each heading level.
 .
 .\" XXX: Why not an "Hvs" string?
-The vertical spacing used by headings may be controlled by
-the user-definable macros
+The hook macros
 .B HX
 and/or
-.BR HZ .
+.B HZ
+can control the vertical spacing used by headings.
 .
 .
 .IP
@@ -2213,17 +2237,19 @@ switch font to italic style.
 .IR title ]]
 Specify the inside address in a letter.
 .
-Input is collected into the inside address until
-.B IE
-is called,
-and then output.
+The arguments give each recipient a name and title.
+.
+.I mm
+collects
+input into the inside address until the document calls
+.BR IE ,
+then outputs it.
 .
 You can specify multiple recipients with empty
 .BR IA / IE
 pairs;
-only the last address is used.
-.
-The arguments give each recipient a name and title.
+.I mm
+uses only the last address.
 .
 See
 .BR LT .
@@ -2526,14 +2552,6 @@ or only those from the current level down to
 .I list-level
 if specified.
 .
-.B H
-and
-.B HU
-call
-.B LC
-automatically.
-.\" `H` calls `LC`, and `HU` calls `H`.
-.
 .
 .TP
 .BR LE \~[ 1 ]
@@ -2555,10 +2573,11 @@ to follow the list.
 Begin a list item.
 .
 .I mm
-collects input into a list item until the current list terminates
-or
+collects input into a list item
+until the document terminates the current list
+or calls
 .B LI
-is called again.
+again.
 .
 By default,
 the item's text is preceded by any mark configured by the current list.
@@ -2596,7 +2615,11 @@ Specify letter options;
 see
 .BR LT .
 .
-Standard options are as follows.
+By default,
+.I mm
+recognizes the following
+.I option
+values.
 .
 See
 .B IA
@@ -2845,7 +2868,7 @@ implies
 .BR 1 .
 .
 .I addressee
-sets a string analogous to one used by AT&T cover sheet macros
+sets a string analogous to one used by AT&T cover page macros
 not implemented in
 .IR "groff mm" .
 .
@@ -2871,7 +2894,7 @@ string@captioned \fIstring\fP
 .IP
 See
 .B \%COVER
-for a more flexible cover sheet mechanism.
+for a more flexible cover page mechanism.
 .
 .
 .TP
@@ -2984,9 +3007,8 @@ The text corresponding to
 .I code
 is output,
 and filling is disabled
-until
-.B NE
-is called.
+until the document calls
+.BR NE .
 .
 Typically,
 a list of names or attachments lies within
@@ -3299,11 +3321,17 @@ without space between the arguments.
 .
 .TP
 .BR RD \~\c
-.RI [ prompt\~ [ div\~ [ string ]]]
-Read from standard input stream into a diversion and/or string.
-.
-The text is saved in a diversion named
-.IR div .
+.RI [ prompt\~ [ div\~ [ str ]]]
+Write
+.I prompt
+(if specified,
+a tab and colon \[lq]:\[rq]
+to the standard error stream
+and read response from standard input stream,
+optionally into a diversion
+.I div
+and/or string
+.I str.
 .
 Interpolate the saved text by calling its name like a macro.
 .
@@ -3418,7 +3446,7 @@ contains the reference list caption.
 .
 .TP
 .B RPX
-This user-definable hook macro assumes responsibility for formatting
+This hook macro assumes responsibility for formatting
 the heading of the reference page that
 .B RP
 produces.
@@ -3442,9 +3470,8 @@ Begin citation of an automatically numbered bibliographic reference
 entry.
 .
 .I mm
-collects input until
-.B RF
-is called.
+collects input into a reference entry until the document calls
+.BR RF .
 .
 A subsequent
 .B RP
@@ -3594,6 +3621,9 @@ In other memoranda,
 each of an author's titles is set on a subsequent line,
 indented to align with the name.
 .
+.\" DWB 3.3 mm's manual documented the following behavior, including
+.\" examples, but it, Plan 9 mm, and Heirloom Doctools mm don't actually
+.\" do it.  groff mm does.
 They furthermore encode a secretarial annotation
 including the location,
 department,
@@ -3619,14 +3649,15 @@ If
 .I n
 .RB is\~ 0
 or omitted,
-the page is broken unless the drawing position is already at the top of
-a page.
+.I mm
+breaks the page if necessary.
 .
 Otherwise,
+.I mm
+prints
 .I n
 pages,
-blank except for any headers and footers,
-are printed.
+blank except for any headers and footers.
 .
 .
 .br
@@ -3764,7 +3795,8 @@ register),
 along with its associated page number.
 .
 By default,
-an entry is indented by an amount corresponding to its heading level
+.I mm
+indents an entry by an amount corresponding to its heading level
 and the maximum heading length encountered at that heading level;
 if defined,
 the string
@@ -3806,12 +3838,12 @@ numbering of these pages is suppressed.
 .
 .
 .IP
-If
+If the document calls
 .B TC
-is called with at most four arguments,
-it calls the user-defined macro
+with at most four arguments,
+.I mm
+calls the hook macro
 .B TX
-(if defined)
 prior to formatting the contents caption,
 and
 .B TY
@@ -3886,7 +3918,7 @@ input into the title until a subsequent
 .B AU
 call and formats it as directed by the
 .B MT
-memorandum type or cover sheet macros.
+memorandum type or cover page macros.
 .
 .I mm
 saves
@@ -3964,7 +3996,7 @@ the default
 .
 Further arguments configure the
 .I type-size
-in scaled points
+in typographical points
 (on typesetting devices),
 and the face
 .RI ( font ).
@@ -4101,10 +4133,10 @@ Specify the writer(s) of an
 .B LT
 letter.
 .
-Input is collected into the writer's address until
-.B WA
-is called,
-and then output.
+.I mm
+collects input into the writer's address until the document calls
+.BR WA ,
+then outputs it.
 .
 You can specify multiple writers with empty
 .BR WA / WE
@@ -4295,7 +4327,7 @@ interpolates an em dash,
 .
 .TP
 .B F
-interpolates an automatically numbered footnote marker;
+interpolates an automatically numbered footnote mark;
 the number is used by the next
 .B FS
 call without an argument.
@@ -4303,7 +4335,7 @@ call without an argument.
 In
 .I troff
 mode,
-the marker is superscripted;
+the mark is superscripted;
 in
 .I nroff
 mode,
@@ -4354,8 +4386,10 @@ assigns type sizes,
 separated by spaces,
 to heading levels in one-to-one correspondence.
 .
-Each size is interpreted in scaled points;
-zero values are translated to
+.I "groff mm"
+interprets each size in typographical points,
+translating
+zero values to
 .BR 10 .
 .
 Omitted values are assumed to be\~0
@@ -4917,7 +4951,8 @@ see
 .
 .
 .\" XXX: This could be generalized to an "Hdot" threshold register with
-.\" a default of 2.
+.\" a default of 0.  ("Apply dots after heading marks beyond/above this
+.\" threshold.")
 .TP
 .B H1dot
 appends a period to the number of a level one heading;
@@ -4934,7 +4969,7 @@ is a copy of register
 .BR H1 ,
 but it is incremented just before a page break.
 .
-This can be useful in user-defined macros;
+This can be useful in hook macros;
 see
 .B H
 and
@@ -5809,7 +5844,7 @@ support for
 .I @TMAC_MDIR@/ms.cov
 implements an
 .IR ms -like
-cover sheet.
+cover page.
 .
 .
 .TP

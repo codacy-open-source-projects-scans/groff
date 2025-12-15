@@ -7059,11 +7059,13 @@ static void remove_font_specific_character()
 	  gl += s->nm.contents();
 	  gl += '\0';
 	  charinfo *ci = lookup_charinfo(symbol(gl.contents()));
-	  if (0 /* nullptr */ == ci)
-	    break;
-	  macro *m = ci->set_macro(0 /* nullptr */);
-	  if (m != 0 /* nullptr */)
-	    delete m;
+	  // Expect a null pointer if the font-specific character was
+	  // already removed or never existed.
+	  if (ci != 0 /* nullptr */) {
+	    macro *m = ci->set_macro(0 /* nullptr */);
+	    if (m != 0 /* nullptr */)
+	      delete m;
+	  }
 	}
       }
       tok.next();
@@ -7281,7 +7283,10 @@ static void embolden_font()
     skip_line();
     return;
   }
-  if ((!tok.is_character())
+  // XXX: Here's where `is_ordinary_character()` would be useful.
+  // (TOKEN_CHAR == type) means the same thing, but this file doesn't
+  // root around in token::token_type...
+  if ((!tok.is_any_character())
       || tok.is_special_character()
       || tok.is_indexed_character()) {
     error("emboldening request expects font name or mounting position"
@@ -7312,7 +7317,8 @@ static void embolden_font()
   }
   int n = finfo.position;
   if (has_arg()) {
-    if ((!tok.is_character())
+    // XXX: Here's another useful `is_ordinary_character()` spot.
+    if ((!tok.is_any_character())
 	|| tok.is_special_character()
 	|| tok.is_indexed_character()) {
       error("emboldening request expects font name or emboldening"

@@ -1,4 +1,6 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2020 Free Software Foundation, Inc.
+             2021-2025 G. Branden Robinson
+
      Written by James Clark (jjc@jclark.com)
 
 This file is part of groff.
@@ -226,7 +228,6 @@ const char *general_reg::get_string()
   return number_value_to_ascii(n, format, width);
 }
 
-
 void general_reg::increment()
 {
   int n;
@@ -326,7 +327,7 @@ bool variable_reg::get_value(units *res)
   return true;
 }
 
-void define_register_request()
+static void define_register_request()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "register definition request expects"
@@ -429,7 +430,7 @@ reg *look_up_register(symbol nm, bool suppress_creation)
   return r;
 }
 
-void assign_register_format_request()
+static void assign_register_format_request()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "register interpolation format assignment"
@@ -448,7 +449,7 @@ void assign_register_format_request()
     register_dictionary.define(nm, r);
   }
   tok.skip_spaces();
-  char c = tok.ch();
+  int c = tok.ch(); // safely compares to char literals; TODO: grochar
   if (csdigit(c)) {
     int n = 0;
     do {
@@ -457,7 +458,10 @@ void assign_register_format_request()
     } while (csdigit(tok.ch()));
     r->alter_format('1', n);
   }
-  else if (c == 'i' || c == 'I' || c == 'a' || c == 'A')
+  else if ((c == int('i'))
+	   || (c == int('I'))
+	   || (c == int('a'))
+	   || (c == int('A'))) // TODO: grochar * 4
     r->alter_format(c);
   else if (!has_arg())
     warning(WARN_MISSING, "register interpolation format assignment"
@@ -469,7 +473,7 @@ void assign_register_format_request()
   skip_line();
 }
 
-void remove_register_request()
+static void remove_register_request()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "register removal request expects arguments");
@@ -487,7 +491,7 @@ void remove_register_request()
   skip_line();
 }
 
-void alias_register_request()
+static void alias_register_request()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "register aliasing request expects"
@@ -511,7 +515,7 @@ void alias_register_request()
   skip_line();
 }
 
-void rename_register_request()
+static void rename_register_request()
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "register renaming request expects"
@@ -550,12 +554,14 @@ static void dump_register(symbol *id, reg *r)
   }
   else {
     const char *s = r->get_string();
-    errprint("%1", s);
+    // Some string-valued registers, like `.z` and `.itm`, can be empty.
+    if (s != 0 /* nullptr */)
+      errprint("%1", s);
   }
   errprint("\n");
 }
 
-void print_register_request()
+static void print_register_request()
 {
   reg *r;
   symbol identifier;

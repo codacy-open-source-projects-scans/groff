@@ -378,7 +378,11 @@ int main(int argc, char **argv)
       need_postdriver = false;
       break;
     case '?':
-      error("unrecognized command-line option '%1'", char(optopt));
+      if (optopt != 0)
+	error("unrecognized command-line option '%1'", char(optopt));
+      else
+	error("unrecognized command-line option '%1'",
+	      argv[(optind - 1)]);
       usage(stderr);
       xexit(2);
       break;
