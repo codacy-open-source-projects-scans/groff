@@ -1,7 +1,7 @@
 /* Copyright 2003-2024 Free Software Foundation, Inc.
      Written by Gaius Mulley (gaius@glam.ac.uk)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free

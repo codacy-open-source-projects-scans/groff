@@ -1,10 +1,11 @@
 .\" groff -me
 .\" nroff -me
 .\"
-.\" Copyright (c) 1986, 1993
+.\" Copyright 1986, 1993
 .\"   The Regents of the University of California.  All rights reserved.
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2021 Free Software Foundation, Inc.
+.\"           2021-2024 G. Branden Robinson
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -143,10 +144,10 @@ Default parameter values are shown in square brackets.
 The notation
 .i \(+-n
 indicates a numeric value with an optional leading sign.
-Without the sign,
+Without a sign,
 it assigns a value
 .i n.
-With it,
+With a sign,
 it expresses alteration of an existing value by the amount
 .i n.
 \*(ME's font registers may be set only to mounting positions.
@@ -557,7 +558,8 @@ and right-hand components
 .i L,
 .i M,
 and
-.i R.
+.i R,
+respectively.
 The components are separated
 by a
 .i delimiter,
@@ -1166,6 +1168,7 @@ footnotes,
 and
 chapter titles
 alter them.
+This macro has no effect in \*N mode.
 .pp
 \*(ME assumes that font positions 1 through 4 correspond to
 roman,
@@ -1248,7 +1251,7 @@ and
 Set
 .i W
 one point smaller than the surrounding type.
-It has no effect in \*N mode.
+This macro has no effect in \*N mode.
 .TL
 .b .u
 .i W

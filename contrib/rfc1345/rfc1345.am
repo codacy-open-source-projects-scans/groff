@@ -1,6 +1,6 @@
 # Copyright 2021 Free Software Foundation, Inc.
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,7 @@ rfc1345tmacdir = $(tmacdir)
 dist_rfc1345tmac_DATA = contrib/rfc1345/rfc1345.tmac
 
 rfc1345_TESTS= \
+  contrib/rfc1345/tests/character-definitions-lack-space.sh \
   contrib/rfc1345/tests/rfc1345-smoke-test.sh
 TESTS += $(rfc1345_TESTS)
 EXTRA_DIST += $(rfc1345_TESTS)

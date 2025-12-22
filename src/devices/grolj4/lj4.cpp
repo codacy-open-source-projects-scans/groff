@@ -1,7 +1,7 @@
 /* Copyright (C) 1994-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -37,6 +37,7 @@ X command to include bitmap graphics
 #include <assert.h>
 #include <locale.h> // setlocale()
 #include <math.h> // atan2(), floor()
+#include <stdcountof.h>
 #include <stdio.h> // EOF, FILE, fflush(), fprintf(), printf(),
 		   // setbuf(), stderr, stdout
 #include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
@@ -144,7 +145,7 @@ void lj4_font::handle_unknown_font_command(const char *command,
 					   const char *fn,
 					   int lineno)
 {
-  for (size_t i = 0; i < array_length(command_table); i++) {
+  for (size_t i = 0; i < countof(command_table); i++) {
     if (strcmp(command, command_table[i].s) == 0) {
       if (0 /* nullptr */ == arg)
 	fatal_with_file_and_line(fn, lineno,
@@ -179,7 +180,7 @@ void lj4_font::handle_unknown_font_command(const char *command,
 static ssize_t lookup_paper_size(const char *s)
 {
   // C++11: constexpr
-  const size_t paper_table_length = array_length(paper_table);
+  const size_t paper_table_length = countof(paper_table);
   // ...and once it's a constexpr, we can do this...
   //static_assert(paper_table_length < INT_MAX);
   // ...but until then...

@@ -1,7 +1,7 @@
 /* Copyright (C) 1989-2024 Free Software Foundation, Inc.
 Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include <stdcountof.h>
 
 #include "refer.h"
 #include "refid.h"
@@ -955,7 +957,7 @@ static int find_month(const char *start, const char *end)
     while (ptr < end && csalpha(*ptr))
       ptr++;
     if (ptr - start >= 3) {
-      for (unsigned int i = 0; i < sizeof(months)/sizeof(months[0]); i++) {
+      for (unsigned int i = 0; i < countof(months); i++) {
 	const char *q = months[i];
 	const char *p = start;
 	for (; p < ptr; p++, q++)

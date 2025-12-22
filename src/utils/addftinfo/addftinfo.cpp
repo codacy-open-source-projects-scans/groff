@@ -1,7 +1,7 @@
 /* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <errno.h>
+#include <stdcountof.h>
 #include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
 
 #include "lib.h"
@@ -115,7 +116,7 @@ int main(int argc, char **argv)
       usage("option requires argument");
     size_t j;
     for (j = 0;; j++) {
-      if (j >= array_length(param_table))
+      if (j >= countof(param_table))
 	fatal("parameter '%1' not recognized", argv[i] + 1);
       if (strcmp(param_table[j].name, argv[i] + 1) == 0)
 	break;
@@ -137,7 +138,7 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream, "usage: %s", program_name);
-  size_t len = array_length(param_table);
+  size_t len = countof(param_table);
   for (size_t i = 0; i < len; i++)
     fprintf(stream, " [-%s n]", param_table[i].name);
   fputs(" resolution unit-width font\n", stream);

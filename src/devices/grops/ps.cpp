@@ -1,7 +1,7 @@
 /* Copyright 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h>
 #include <locale.h> // setlocale()
 #include <math.h> // atan2(), sqrt(), tan()
+#include <stdcountof.h>
 #include <stdint.h> // uint16_t
 #include <stdio.h> // EOF, FILE, fclose(), fgets(), fileno(), fseek(),
 		   // getc(), SEEK_SET, setbuf(), stderr, stdout
@@ -1633,7 +1634,7 @@ void ps_printer::special(char *arg, const environment *env, char type)
     error("empty X command ignored");
     return;
   }
-  for (size_t i = 0; i < array_length(proc_table); i++)
+  for (size_t i = 0; i < countof(proc_table); i++)
     if (strncmp(command, proc_table[i].name, p - command) == 0) {
       flush_sbuf();
       if (sbuf_color != *env->col)

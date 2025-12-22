@@ -324,7 +324,7 @@ pic
    vertices.  The command furthermore accepts the `fill[ed]` modifier.
    You can address a polygon's vertices and the midpoints of its edges
    with the new `.v[er[tex]]` and `.mid[point]` syntax suffixed to an
-   object identifer, analogously to the existing compass point and
+   object identifier, analogously to the existing compass point and
    `.c[enter]` feature.  Thanks to Duncan Losin.
 
 *  The -S option now "locks" safer mode, rejecting any subsequent

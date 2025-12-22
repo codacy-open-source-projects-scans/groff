@@ -1,3 +1,12 @@
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* GPLv2: New file.
+	* gperl.am (EXTRA_DIST): Ship it.
+
+	The GNU GPLv2 covers Bernd Warken's work on gperl through 27
+	August 2015.  Copyrightable changes to gperl since October 2017
+	are licensed under the GNU GPLv3, not GPLv2.
+
 2025-08-02  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* gperl.pl: Revise usage and version messages.  Rename scalar

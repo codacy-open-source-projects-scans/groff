@@ -75,7 +75,7 @@ after these commands, otherwise the position is not changed.
 ..
 .de indexed_offset
 .offset \fI\\$1\/\fP\d\s-3\\$2\s+3\u\x'\n[.v]/4' \fI\\$3\/\fP\
-\d\s-3\\$4\s+3\u\x'\n[.v]/4' \\$5\x'\n[.v]/4'
+\d\s-3\\$4\s+3\u\x'\n[.v]/4' \\$5\x'\n[.v]/4'\\$6
 ..
 .\" format: .command <name> "<arguments>" <punctuation>
 .de command
@@ -942,7 +942,7 @@ position is moved to the terminal point of the drawn curve.
 .TP
 .Da-command
 Draw arc from current position to
-.indexed_offset h 1 v 1 \|+\|\c
+.indexed_offset h 1 v 1 \|+\| \c
 .indexed_offset h 2 v 2
 with center at
 .indexed_offset h 1 v 1 ;

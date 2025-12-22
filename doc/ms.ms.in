@@ -4,7 +4,7 @@
 .\" Copyright 2001 Larry Kollar
 .\" Copyright 2020-2025 G. Branden Robinson
 .\"
-.\" This file is part of groff.
+.\" This file is part of groff, the GNU roff typesetting system.
 .\"
 .\" groff is free software; you can redistribute it and/or modify it
 .\" under the terms of the GNU General Public License as published by
@@ -1741,7 +1741,7 @@ If you want
 to contain space,
 use unbreakable space or horizontal motion escape sequences
 .CW \[rs]\[ti] , (
-.CW \[rs]\c
+.CW \[rs] \c
 .I space ,
 .CW \[rs]\[ha] ,
 .CW \[rs]| ,

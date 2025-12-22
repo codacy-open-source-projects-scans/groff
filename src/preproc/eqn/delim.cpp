@@ -1,7 +1,7 @@
 /* Copyright 1989-2023 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include <stdcountof.h>
 
 #include <assert.h>
 
@@ -162,7 +164,8 @@ struct delimiter {
   },
 };
 
-const int DELIM_TABLE_SIZE = int(sizeof(delim_table)/sizeof(delim_table[0]));
+// C++11: constexpr
+const int DELIM_TABLE_SIZE = int(countof(delim_table));
 
 class delim_box : public box {
 private:

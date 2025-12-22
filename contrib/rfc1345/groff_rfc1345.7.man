@@ -7,7 +7,7 @@ groff_rfc1345 \- special character names from RFC 1345 and Vim digraphs
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (c) 2021-2024 Dorai Sitaram
+.\" Copyright 2021-2024 Dorai Sitaram
 .\"
 .\" Permission is hereby granted, free of charge, to any person
 .\" obtaining a copy of this software and associated documentation files

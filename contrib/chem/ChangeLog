@@ -1,3 +1,38 @@
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Our README files no longer contain '@g@' sequences, so they no
+	longer require build-time processing.
+
+	* README.txt:
+	* examples/README.txt:
+	* examples/122/README.txt: Rename these...
+	* README:
+	* examples/README:
+	* examples/122/README: ...to these.
+	* chem.am (EXTRA_DIST): Ship the suffixless files instead of
+	their now-nonexistent suffixed counterparts.
+	(contrib/chem/README)
+	(contrib/chem/examples/README)
+	(contrib/chem/examples/122/README): Drop target rules for
+	creating these files now that they already exist in the source
+	tree.
+	(CHEM_GENEXAMPLES, nodist_chemexample_DATA)
+	nodist_chemexample122_DATA): Drop now-unneeded macro
+	definitions.
+	(CHEM_EXAMPLES): Add "README" file.
+	(install_chem_extra): Update "lazy" `for` loop to install
+	"122/README" file as well, not just the files ending in `.chem`.
+	(MOSTLYCLEANFILES): Drop now-unneeded macro appendment.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* GPLv2: New file.
+	* chem.am (EXTRA_DIST): Ship it.
+
+	The GNU GPLv2 covers Bernd Warken's work on chem through 27
+	August 2015.  Copyrightable changes to chem since September 2017
+	are licensed under the GNU GPLv3, not GPLv2.
+
 2025-12-09  Norwid Behrnd <nbehrnd@yahoo.com>
 
 	* examples/atp.chem: The previous depiction of the ATP molecule

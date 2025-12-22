@@ -1,7 +1,7 @@
 /* Copyright 2004-2020 Free Software Foundation, Inc.
      Written by: Keith Marshall (keith.d.marshall@ntlworld.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free

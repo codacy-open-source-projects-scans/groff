@@ -226,9 +226,8 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" Use the em dash to draw the rule in nroff mode, since terminal
 .\" devices generally don't have a baseline rule glyph.  The "low line"
 .\" descends below the baseline and terminal fonts generally don't have
-.\" it span the character cell completely.  (Even a Unicode font might
-.\" do so for the em dash; we make a best-effort attempt to look
-.\" pleasant.)
+.\" it span the character cell completely.  (A Unicode font might do so
+.\" for the em dash; we make a best-effort attempt to look pleasant.)
 .ie t .nop \l'\\n[.l]u'
 .el   .nop \l'\\n[.l]u\[em]'
 .\" DWB 3.3 mm set the firm name in bold on nroff devices, and

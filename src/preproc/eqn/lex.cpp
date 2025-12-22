@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -20,7 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include "lib.h" // array_length()
+#include <stdcountof.h>
+
 #include "ptable.h"
 #include "stringclass.h"
 
@@ -285,13 +286,13 @@ static struct builtin_def mathml_defs[] = {
 void init_table(const char *device)
 {
   unsigned int i;
-  for (i = 0; i < array_length(token_table); i++) {
+  for (i = 0; i < countof(token_table); i++) {
     definition *def = new definition[1];
     def->is_macro = 0;
     def->tok = token_table[i].token;
     macro_table.define(token_table[i].name, def);
   }
-  for (i = 0; i < array_length(common_defs); i++) {
+  for (i = 0; i < countof(common_defs); i++) {
     definition *def = new definition[1];
     def->is_macro = 1;
     def->contents = strsave(common_defs[i].def);
@@ -299,7 +300,7 @@ void init_table(const char *device)
     macro_table.define(common_defs[i].name, def);
   }
   if (output_format == troff) {
-    for (i = 0; i < array_length(troff_defs); i++) {
+    for (i = 0; i < countof(troff_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
       def->contents = strsave(troff_defs[i].def);
@@ -308,7 +309,7 @@ void init_table(const char *device)
     }
   }
   else if (output_format == mathml) {
-    for (i = 0; i < array_length(mathml_defs); i++) {
+    for (i = 0; i < countof(mathml_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
       def->contents = strsave(mathml_defs[i].def);

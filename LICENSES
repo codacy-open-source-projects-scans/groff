@@ -12,31 +12,30 @@ Public License (GPL), version 3 or later.
 
 The file COPYING in the top directory of the groff source distribution
 contains a copy of the GPL that was downloaded from the GNU web site
-<http://www.gnu.org/copyleft/gpl.txt> on 3 January 2009.
+<https://www.gnu.org/copyleft/gpl.txt> on 18 December 2025.  Further
+information is available on the Web at <https://www.gnu.org/copyleft>.
 
 All files in the groff source distribution are distributed under the
 terms of this version of the GPL.  You are free to choose version 3 or
 any subsequent version of the GPL.  Some are distributed under
 alternative terms as well.
 
-The text of the GPL contains a postal address from which you can obtain
-the current version of the license.  Further information is available on
-the Web at <http://www.gnu.org/copyleft>.
-
 groff is an effort of the GNU Project of the Free Software Foundation
-(FSF); with the exceptions noted below, the copyrights of all files
-comprising it have been assigned to the FSF.  Information on GNU and the
-FSF may be found at <http://www.fsf.org/>.
+(FSF); with the exceptions noted below, the copyrights of files
+comprising it have largely been assigned to the FSF.  (Some contributors
+have not assigned copyright.)  Information on GNU and the FSF may be
+found at <https://www.fsf.org/>.
 
 The GNU troff manual, doc/groff.texi, written in Texinfo, is
 dual-licensed under the GNU Free Documentation License (FDL) _and_ the
 GNU GPL.  This status is to honor the intentions of its authors and to
 permit frictionless migration of material between that manual and
-groff's man pages, which are under the GPL as noted above.
+groff's man pages, which are under the GPL as noted above.  Find a copy
+of the FDL in the file "FDL".
 
 Files in the contrib/ subdirectory of the source distribution are not
 strictly part of groff.  That is, they are distributed with it and are
-Free Software <https://www.gnu.org/philosophy/free-sw.en.html>, but they
+free software <https://www.gnu.org/philosophy/free-sw.en.html>, but they
 are not considered essential parts of the distribution.  Further, they
 may bear licenses in addition to the GPL, or the FSF does not administer
 their copyrights.  For convenience, a "COPYRIGHT" file in the
@@ -49,6 +48,16 @@ elsewhere; often, the groff project has modified them, sometimes
 extensively.  These multi-licensed groff components are as follows.
 Their file names are not always identical to those in their original
 distributions, but we have kept them similar.
+
+libgroff static library
+=======================
+
+Two files in libgroff, a utility library statically linked into most
+executables that groff provides, are licensed under the LGPLv3.  Find a
+copy of the license in the file "LGPLv3".
+
+	src/include/relocate.h
+	src/libs/libgroff/relocate.cpp
 
 grn preprocessor
 ================

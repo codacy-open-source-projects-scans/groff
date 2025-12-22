@@ -3,7 +3,7 @@
 
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <assert.h>
 #include <errno.h> // ENOENT, errno
 #include <locale.h> // setlocale()
+#include <stdcountof.h>
 #include <stdio.h> // EOF, FILE, clearerr(), fclose(), fflush(),
 		   // fileno(), fopen(), fprintf(), fseek(), getc(),
 		   // pclose(), popen(), printf(), SEEK_SET, snprintf(),
@@ -39,7 +40,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <stack>
 
 #include "json-encode.h" // json_encode_char()
-#include "lib.h" // array_length()
 
 #include "troff.h"
 #include "dictionary.h"
@@ -113,8 +113,6 @@ static bool want_input_ignored = false;
 static void enable_warning(const char *);
 static void disable_warning(const char *);
 
-static unsigned char escape_char = (unsigned char)('\\');
-
 static symbol end_of_input_macro_name;
 static symbol blank_line_macro_name;
 static symbol leading_spaces_macro_name;
@@ -171,7 +169,7 @@ static void interpolate_number_format(symbol);
 static void interpolate_environment_variable(symbol);
 
 static symbol composite_glyph_name(symbol);
-static void interpolate_arg(symbol);
+static void interpolate_positional_parameter(symbol);
 static request_or_macro *lookup_request(symbol);
 static bool read_delimited_measurement(units *,
 	unsigned char /* scaling unit */);
@@ -179,7 +177,8 @@ static bool read_delimited_measurement(units *,
 	unsigned char /* scaling unit */, units /* previous value */);
 static symbol read_input_until_terminator(bool /* required */,
 					  unsigned char /* end char */);
-static bool get_line_arg(units *res, unsigned char si, charinfo **cp);
+static bool read_line_rule_expression(units *res, unsigned char si,
+				      charinfo **cp);
 static bool read_size(int *);
 static symbol read_delimited_identifier();
 static void init_registers();
@@ -192,8 +191,13 @@ const char *input_char_description(int);
 void process_input_stack();
 void chop_macro();	// declare to avoid friend name injection
 
+static const unsigned char default_escape_char = (unsigned char)('\\');
+static unsigned char escape_char = default_escape_char;
+static const unsigned char default_control_char = (unsigned char)('.');
+static const unsigned char default_no_break_control_char
+  = (unsigned char)('\'');
 
-static void assign_escape_character()
+static void assign_escape_character_request()
 {
   unsigned char ec = 0U;
   bool is_invalid = false;
@@ -204,7 +208,7 @@ static void assign_escape_character()
       ec = tok.ch();
   }
   else
-    ec = '\\';
+    ec = default_escape_char;
   bool do_nothing = false;
   static const char already_cc[] = "the control character is already";
   static const char already_nbcc[] = "the no-break control character is"
@@ -223,16 +227,16 @@ static void assign_escape_character()
 	  is_invalid ? "cannot select invalid escape character, and"
 	  : "", already_message, input_char_description(ec));
   else if (is_invalid) {
-    error("cannot select %1 as escape character; using '\\'",
-	  tok.description());
-    escape_char = '\\';
+    error("cannot select %1 as escape character; using '%2'",
+	  tok.description(), char(default_escape_char));
+    escape_char = default_escape_char;
   }
   else
     escape_char = ec;
   skip_line();
 }
 
-void escape_off()
+void escape_off_request()
 {
   escape_char = 0U;
   skip_line();
@@ -240,19 +244,19 @@ void escape_off()
 
 static unsigned char saved_escape_char = '\\';
 
-void save_escape_char()
+void save_escape_char_request()
 {
   saved_escape_char = escape_char;
   skip_line();
 }
 
-void restore_escape_char()
+void restore_escape_char_request()
 {
   escape_char = saved_escape_char;
   skip_line();
 }
 
-void assign_control_character()
+void assign_control_character_request()
 {
   unsigned char cc = 0U;
   bool is_invalid = false;
@@ -263,7 +267,7 @@ void assign_control_character()
       cc = tok.ch();
   }
   else
-    cc = '.';
+    cc = default_control_char;
   bool do_nothing = false;
   char already_ec[] = "the escape character is already";
   char already_nbcc[] = "the no-break control character is already";
@@ -282,9 +286,10 @@ void assign_control_character()
 	  is_invalid ? "cannot select invalid control character, and"
 	  : "", already_message, input_char_description(cc));
   else if (is_invalid) {
-    error("cannot select %1 as control character; using '.'",
-	  tok.description());
-    assignment_worked = curenv->set_control_character('.');
+    error("cannot select %1 as control character; using '%2'",
+	  tok.description(), char(default_control_char));
+    assignment_worked
+      = curenv->set_control_character(default_control_char);
   }
   else
     assignment_worked = curenv->set_control_character(cc);
@@ -292,7 +297,7 @@ void assign_control_character()
   skip_line();
 }
 
-void assign_no_break_control_character()
+void assign_no_break_control_character_request()
 {
   unsigned char nbcc = 0U;
   bool is_invalid = false;
@@ -303,7 +308,7 @@ void assign_no_break_control_character()
       nbcc = tok.ch();
   }
   else
-    nbcc = '\'';
+    nbcc = default_no_break_control_char;
   bool do_nothing = false;
   char already_ec[] = "the escape character is already";
   char already_cc[] = "the (breaking) control character is already";
@@ -324,8 +329,10 @@ void assign_no_break_control_character()
 	  : "", already_message, input_char_description(nbcc));
   else if (is_invalid) {
     error("cannot select %1 as no-break control character;"
-	  " using \"\'\"", tok.description());
-    assignment_worked = curenv->set_no_break_control_character('\'');
+	  " using \"%2\"", tok.description(),
+	  default_no_break_control_char);
+    assignment_worked
+      = curenv->set_no_break_control_character(default_no_break_control_char);
   }
   else
     assignment_worked = curenv->set_no_break_control_character(nbcc);
@@ -480,18 +487,18 @@ int file_iterator::fill(node **)
   unsigned char *e = p + BUF_SIZE;
   while (p < e) {
     int c = getc(fp);
-    if (c == EOF)
+    if (EOF == c)
       break;
     if (is_invalid_input_char(c))
-      warning(WARN_INPUT, "invalid input character code %1", int(c));
+      warning(WARN_INPUT, "invalid input character code %1", c);
     else {
       *p++ = c;
-      if (c == '\n') {
+      if ('\n' == c) {
 	seen_escape = false;
 	seen_newline = true;
 	break;
       }
-      seen_escape = (c == '\\');
+      seen_escape = ('\\' == c); // XXX: should be (escape_char == c)?
     }
   }
   if (p > buf) {
@@ -508,7 +515,7 @@ int file_iterator::peek()
 {
   int c = getc(fp);
   while (is_invalid_input_char(c)) {
-    warning(WARN_INPUT, "invalid input character code %1", int(c));
+    warning(WARN_INPUT, "invalid input character code %1", c);
     c = getc(fp);
   }
   if (c != EOF)
@@ -956,7 +963,8 @@ void shift()
   skip_line();
 }
 
-static char get_char_for_escape_parameter(bool allow_space = false)
+static char read_char_in_escape_sequence_parameter(bool allow_space
+						   = false)
 {
   int c = get_copy(0 /* nullptr */,
 		   false /* is defining */,
@@ -990,9 +998,9 @@ static char get_char_for_escape_parameter(bool allow_space = false)
 static symbol read_two_char_escape_parameter()
 {
   char buf[3];
-  buf[0] = get_char_for_escape_parameter();
+  buf[0] = read_char_in_escape_sequence_parameter();
   if (buf[0] != '\0') {
-    buf[1] = get_char_for_escape_parameter();
+    buf[1] = read_char_in_escape_sequence_parameter();
     if (buf[1] == '\0')
       buf[0] = '\0';
     else
@@ -1018,7 +1026,8 @@ static symbol read_long_escape_parameters(read_mode mode)
   char c;
   bool have_char = false;
   for (;;) {
-    c = get_char_for_escape_parameter(have_char && (WITH_ARGS == mode));
+    c = read_char_in_escape_sequence_parameter(have_char
+					       && (WITH_ARGS == mode));
     if ('\0' == c) {
       delete[] buf;
       return NULL_SYMBOL;
@@ -1062,7 +1071,7 @@ static symbol read_long_escape_parameters(read_mode mode)
 
 static symbol read_escape_parameter(read_mode mode)
 {
-  char c = get_char_for_escape_parameter();
+  char c = read_char_in_escape_sequence_parameter();
   if ('\0' == c)
     return NULL_SYMBOL;
   if ('(' == c)
@@ -1077,7 +1086,7 @@ static symbol read_escape_parameter(read_mode mode)
 
 static symbol read_increment_and_escape_parameter(int *incp)
 {
-  char c = get_char_for_escape_parameter();
+  char c = read_char_in_escape_sequence_parameter();
   switch (c) {
   case 0:
     *incp = 0;
@@ -1166,7 +1175,7 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
 	(void) input_stack::get(0 /* nullptr */);
 	symbol s = read_escape_parameter();
 	if (!(s.is_null() || s.is_empty()))
-	  interpolate_arg(s);
+	  interpolate_positional_parameter(s);
 	break;
       }
     case '*':
@@ -1328,7 +1337,7 @@ bool non_interpreted_char_node::is_tag()
 
 non_interpreted_char_node::non_interpreted_char_node(unsigned char cc) : c(cc)
 {
-  assert(cc != 0);
+  assert(cc != 0U);
 }
 
 void non_interpreted_char_node::asciify(macro *)
@@ -1397,10 +1406,11 @@ void do_fill_color(symbol nm) // \M
   }
 }
 
-static unsigned int get_color_element(const char *scheme, const char *col)
+static unsigned int read_color_channel_value(const char *scheme,
+					     const char *col)
 {
   units val;
-  if (!read_measurement(&val, 'f')) {
+  if (!read_measurement(&val, (unsigned char)('f'))) { // TODO: grochar
     warning(WARN_COLOR, "%1 in %2 definition set to 0", col, scheme);
     tok.next();
     return 0;
@@ -1414,7 +1424,7 @@ static unsigned int get_color_element(const char *scheme, const char *col)
     // we change 0x10000 to 0xffff
     return color::MAX_COLOR_VAL;
   }
-  return (unsigned int) val;
+  return (unsigned int)(val);
 }
 
 static color *read_rgb(unsigned char end = 0U)
@@ -1427,7 +1437,7 @@ static color *read_rgb(unsigned char end = 0U)
   }
   const char *s = component.contents();
   color *col = new color;
-  if (*s == '#') {
+  if ('#' == *s) {
     if (!col->read_rgb(s)) {
       warning(WARN_COLOR, "expecting rgb color definition,"
 	      " not '%1'", s);
@@ -1440,9 +1450,12 @@ static color *read_rgb(unsigned char end = 0U)
       input_stack::push(make_temp_iterator(" "));
     input_stack::push(make_temp_iterator(s));
     tok.next();
-    unsigned int r = get_color_element("rgb color", "red component");
-    unsigned int g = get_color_element("rgb color", "green component");
-    unsigned int b = get_color_element("rgb color", "blue component");
+    unsigned int r = read_color_channel_value("rgb color",
+					      "red component");
+    unsigned int g = read_color_channel_value("rgb color",
+					      "green component");
+    unsigned int b = read_color_channel_value("rgb color",
+					      "blue component");
     col->set_rgb(r, g, b);
   }
   return col;
@@ -1458,7 +1471,7 @@ static color *read_cmy(unsigned char end = 0U)
   }
   const char *s = component.contents();
   color *col = new color;
-  if (*s == '#') {
+  if ('#' == *s) {
     if (!col->read_cmy(s)) {
       warning(WARN_COLOR, "expecting cmy color definition,"
 	      " not '%1'", s);
@@ -1471,9 +1484,12 @@ static color *read_cmy(unsigned char end = 0U)
       input_stack::push(make_temp_iterator(" "));
     input_stack::push(make_temp_iterator(s));
     tok.next();
-    unsigned int c = get_color_element("cmy color", "cyan component");
-    unsigned int m = get_color_element("cmy color", "magenta component");
-    unsigned int y = get_color_element("cmy color", "yellow component");
+    unsigned int c = read_color_channel_value("cmy color",
+					      "cyan component");
+    unsigned int m = read_color_channel_value("cmy color",
+					      "magenta component");
+    unsigned int y = read_color_channel_value("cmy color",
+					      "yellow component");
     col->set_cmy(c, m, y);
   }
   return col;
@@ -1489,7 +1505,7 @@ static color *read_cmyk(unsigned char end = 0U)
   }
   const char *s = component.contents();
   color *col = new color;
-  if (*s == '#') {
+  if ('#' == *s) {
     if (!col->read_cmyk(s)) {
       warning(WARN_COLOR, "expecting cmyk color definition,"
 	      " not '%1'", s);
@@ -1502,10 +1518,14 @@ static color *read_cmyk(unsigned char end = 0U)
       input_stack::push(make_temp_iterator(" "));
     input_stack::push(make_temp_iterator(s));
     tok.next();
-    unsigned int c = get_color_element("cmyk color", "cyan component");
-    unsigned int m = get_color_element("cmyk color", "magenta component");
-    unsigned int y = get_color_element("cmyk color", "yellow component");
-    unsigned int k = get_color_element("cmyk color", "black component");
+    unsigned int c = read_color_channel_value("cmyk color",
+					      "cyan component");
+    unsigned int m = read_color_channel_value("cmyk color",
+					      "magenta component");
+    unsigned int y = read_color_channel_value("cmyk color",
+					      "yellow component");
+    unsigned int k = read_color_channel_value("cmyk color",
+					      "black component");
     col->set_cmyk(c, m, y, k);
   }
   return col;
@@ -1521,7 +1541,7 @@ static color *read_gray(unsigned char end = 0U)
   }
   const char *s = component.contents();
   color *col = new color;
-  if (*s == '#') {
+  if ('#' == *s) {
     if (!col->read_gray(s)) {
       warning(WARN_COLOR, "expecting gray definition,"
 	      " not '%1'", s);
@@ -1534,7 +1554,7 @@ static color *read_gray(unsigned char end = 0U)
       input_stack::push(make_temp_iterator("\n"));
     input_stack::push(make_temp_iterator(s));
     tok.next();
-    unsigned int g = get_color_element("gray", "gray value");
+    unsigned int g = read_color_channel_value("gray", "gray value");
     col->set_gray(g);
   }
   return col;
@@ -1563,7 +1583,7 @@ static void define_color()
     skip_line();
     return;
   }
-  symbol color_name = get_long_name();
+  symbol color_name = read_long_identifier();
   // Testing has_arg() should have ensured this.
   assert(color_name != 0 /* nullptr */);
   if (color_name == default_symbol) {
@@ -1571,7 +1591,7 @@ static void define_color()
     skip_line();
     return;
   }
-  symbol color_space = get_long_name();
+  symbol color_space = read_long_identifier();
   if (color_space.is_null()) {
     warning(WARN_MISSING, "missing color space in color definition"
 	    " request");
@@ -1670,7 +1690,7 @@ node *do_overstrike() // \o
     if (tok == start_token
 	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
-    if (tok.is_horizontal_space())
+    if (tok.is_horizontal_motion())
       osnode->overstrike(tok.nd->copy());
     else if (tok.is_unstretchable_space()) {
       node *n = new hmotion_node(curenv->get_space_width(),
@@ -1823,11 +1843,13 @@ static const char *do_expr_test() // \B
   warning_mask = 0;
   want_errors_inhibited = true;
   int dummy;
-  bool result = get_number_rigidly(&dummy, 'u');
+  // TODO: grochar
+  bool result = read_measurement(&dummy, (unsigned char)('u'),
+				 true /* is_mandatory */);
   warning_mask = saved_warning_mask;
   want_errors_inhibited = saved_want_errors_inhibited;
-  // get_number_rigidly() has left `token` pointing at the input
-  // character after the end of the expression.
+  // read_measurement() has left `token` pointing at the input character
+  // after the end of the expression.
   if (tok == start_token && input_stack::get_level() == start_level)
     return (result ? "1" : "0");
   // There may be garbage after the expression but before the closing
@@ -2044,8 +2066,8 @@ void token::diagnose_non_character()
   //   is_space()
   //   is_stretchable_space()
   //   is_unstrechable_space()
-  //   is_horizontal_space()
-  //   is_white_space()
+  //   is_horizontal_motion()
+  //   is_horizontal_whitespace()
   //   is_leader()
   //   is_backspace()
   //   is_dummy()
@@ -2188,13 +2210,13 @@ void token::next()
 	goto handle_escape_char;
       case ESCAPE_BAR:
       ESCAPE_BAR:
-	type = TOKEN_HORIZONTAL_SPACE;
+	type = TOKEN_HORIZONTAL_MOTION;
 	nd = new hmotion_node(curenv->get_narrow_space_width(),
 			      curenv->get_fill_color());
 	return;
       case ESCAPE_CIRCUMFLEX:
       ESCAPE_CIRCUMFLEX:
-	type = TOKEN_HORIZONTAL_SPACE;
+	type = TOKEN_HORIZONTAL_MOTION;
 	nd = new hmotion_node(curenv->get_half_narrow_space_width(),
 			      curenv->get_fill_color());
 	return;
@@ -2315,7 +2337,7 @@ void token::next()
       case '0':
 	nd = new hmotion_node(curenv->get_digit_width(),
 			      curenv->get_fill_color());
-	type = TOKEN_HORIZONTAL_SPACE;
+	type = TOKEN_HORIZONTAL_MOTION;
 	return;
       case '|':
 	goto ESCAPE_BAR;
@@ -2381,7 +2403,7 @@ void token::next()
 	{
 	  symbol s = read_escape_parameter();
 	  if (!(s.is_null() || s.is_empty()))
-	    interpolate_arg(s);
+	    interpolate_positional_parameter(s);
 	  break;
 	}
       case '*':
@@ -2437,7 +2459,7 @@ void token::next()
 	nm = read_delimited_identifier();
 	if (nm.is_null())
 	  break;
-	type = TOKEN_SPECIAL_CHAR;
+	type = TOKEN_DELIMITED_SPECIAL_CHAR;
 	return;
       case 'd':
 	type = TOKEN_NODE;
@@ -2458,21 +2480,23 @@ void token::next()
 		  " AT&T troff", char(cc));
 	goto handle_escape_char;
       case 'f':
-	{
-	  select_font(read_escape_parameter(ALLOW_EMPTY));
-	  if (!want_att_compat)
-	    have_formattable_input = true;
+	if (curenv->get_was_line_interrupted()) {
+	  warning(WARN_SYNTAX, "ignoring escaped '%1' on input line"
+		  " after output line continuation escape sequence",
+		  char(cc));
 	  break;
 	}
+	select_font(read_escape_parameter(ALLOW_EMPTY));
+	if (!want_att_compat)
+	  have_formattable_input = true;
+	break;
       case 'F':
 	if (want_att_compat)
 	  warning(WARN_SYNTAX, "an escaped '%1' is not portable to"
 		  " AT&T troff", char(cc));
-	{
-	  curenv->set_family(read_escape_parameter(ALLOW_EMPTY));
-	  have_formattable_input = true;
-	  break;
-	}
+	curenv->set_family(read_escape_parameter(ALLOW_EMPTY));
+	have_formattable_input = true;
+	break;
       case 'g':
 	{
 	  symbol s = read_escape_parameter();
@@ -2483,7 +2507,7 @@ void token::next()
       case 'h':
 	if (!read_delimited_measurement(&x, 'm'))
 	  break;
-	type = TOKEN_HORIZONTAL_SPACE;
+	type = TOKEN_DELIMITED_HORIZONTAL_MOTION;
 	nd = new hmotion_node(x, curenv->get_fill_color());
 	return;
       case 'H':
@@ -2511,10 +2535,11 @@ void token::next()
       case 'l':
       case 'L':
 	{
-	  charinfo *s = 0;
-	  if (!get_line_arg(&x, (cc == 'l' ? 'm': 'v'), &s))
+	  charinfo *s = 0 /* nullptr */;
+	  if (!read_line_rule_expression(&x, (cc == 'l' ? 'm': 'v'),
+					 &s))
 	    break;
-	  if (s == 0)
+	  if (0 /* nullptr */ == s)
 	    s = lookup_charinfo(cc == 'l' ? "ru" : "br");
 	  type = TOKEN_NODE;
 	  node *char_node = curenv->make_char_node(s);
@@ -2585,6 +2610,12 @@ void token::next()
 	  have_formattable_input = true;
 	break;
       case 's':
+	if (curenv->get_was_line_interrupted()) {
+	  warning(WARN_SYNTAX, "ignoring escaped '%1' on input line"
+		  " after output line continuation escape sequence",
+		  char(cc));
+	  break;
+	}
 	if (read_size(&x))
 	  curenv->set_size(x);
 	if (!want_att_compat)
@@ -2647,7 +2678,7 @@ void token::next()
 	    break;
 	  request_or_macro *p = lookup_request(s);
 	  macro *m = p->to_macro();
-	  if (!m) {
+	  if (0 /* nullptr */ == m) {
 	    error("cannot interpolate '%1' to device-independent"
 		  " output; it is a request, not a macro",
 		  s.contents());
@@ -2658,30 +2689,30 @@ void token::next()
 	  return;
 	}
       case 'z':
-	{
-	  next();
-	  if (type == TOKEN_NODE || type == TOKEN_HORIZONTAL_SPACE)
-	    nd = new zero_width_node(nd);
-	  else {
-	    // TODO: In theory, we could accept spaces and horizontal
-	    // motions.
-	    charinfo *ci = get_charinfo(true /* required */);
-	    if (0 /* nullptr */ == ci) {
-	      error("%1 is not supported in a zero-width character"
-		    " escape sequence argument", tok.description());
-	      break;
-	    }
-	    node *gn = curenv->make_char_node(ci);
-	    if (0 /* nullptr */ == gn) {
-	      assert("make_char_node failed to create a character"
-		     " node");
-	      break;
-	    }
-	    nd = new zero_width_node(gn);
-	    type = TOKEN_NODE;
+	next();
+	if ((TOKEN_NODE == type)
+	    || (TOKEN_HORIZONTAL_MOTION == type)
+	    || (TOKEN_DELIMITED_HORIZONTAL_MOTION == type))
+	  nd = new zero_width_node(nd);
+	else {
+	  // TODO: In theory, we could accept spaces and horizontal
+	  // motions.
+	  charinfo *ci = get_charinfo(true /* required */);
+	  if (0 /* nullptr */ == ci) {
+	    error("%1 is not supported in a zero-width character"
+		  " escape sequence argument", tok.description());
+	    break;
 	  }
-	  return;
+	  node *gn = curenv->make_char_node(ci);
+	  if (0 /* nullptr */ == gn) {
+	    assert("make_char_node failed to create a character"
+		   " node");
+	    break;
+	  }
+	  nd = new zero_width_node(gn);
+	  type = TOKEN_NODE;
 	}
+	return;
       case 'Z':
 	if (want_att_compat)
 	  warning(WARN_SYNTAX, "an escaped '%1' is not portable to"
@@ -2758,6 +2789,7 @@ bool token::operator==(const token &t)
   case TOKEN_CHAR:
     return c == t.c;
   case TOKEN_SPECIAL_CHAR:
+  case TOKEN_DELIMITED_SPECIAL_CHAR:
     return nm == t.nm;
   case TOKEN_INDEXED_CHAR:
     return val == t.val;
@@ -2778,6 +2810,7 @@ bool token::operator!=(const token &t)
 // doesn't tokenize it) and accepts a user-specified delimiter.
 static bool is_char_usable_as_delimiter(int c)
 {
+  // Reject all characters that can validly begin a numeric expression.
   switch (c) {
   case '0':
   case '1':
@@ -2915,7 +2948,9 @@ bool token::is_usable_as_delimiter(bool report_error,
       const size_t maxstr
 	= sizeof "space character horizontal motion node token";
       const size_t bufsz = maxstr + 1; // for trailing '\0'
+      // C++03: char[bufsz]();
       static char buf[bufsz];
+      (void) memset(buf, 0, bufsz);
       describe_node(buf, bufsz);
       error("%1 is not allowed as a delimiter", buf);
     }
@@ -2923,7 +2958,8 @@ bool token::is_usable_as_delimiter(bool report_error,
   case TOKEN_SPACE:
   case TOKEN_STRETCHABLE_SPACE:
   case TOKEN_UNSTRETCHABLE_SPACE:
-  case TOKEN_HORIZONTAL_SPACE:
+  case TOKEN_DELIMITED_HORIZONTAL_MOTION:
+  case TOKEN_DELIMITED_SPECIAL_CHAR:
   case TOKEN_NEWLINE:
   case TOKEN_EOF:
     if (report_error)
@@ -2945,7 +2981,8 @@ const char *token::description()
   //   "character code XXX (U+XXXX)" or similar
   const size_t maxstr
     = sizeof "space character horizontal motion node token";
-  const size_t bufsz = maxstr + 2; // for trailing '"' and null
+  const size_t bufsz = maxstr + 2; // for trailing '"' and '\0'
+  // C++03: char[bufsz]();
   static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   switch (type) {
@@ -2988,7 +3025,7 @@ const char *token::description()
     return "a newline";
   case TOKEN_NODE:
     {
-      static char nodebuf[bufsz];
+      static char nodebuf[bufsz - (sizeof " token")];
       (void) strcpy(nodebuf, "an undescribed node");
       describe_node(nodebuf, bufsz);
       (void) snprintf(buf, bufsz, "%s token", nodebuf);
@@ -3003,6 +3040,7 @@ const char *token::description()
   case TOKEN_SPACE:
     return "a space";
   case TOKEN_SPECIAL_CHAR:
+  case TOKEN_DELIMITED_SPECIAL_CHAR:
     // We normally use apostrophes for quotation in diagnostic messages,
     // but many special character names contain them.  Fall back to
     // double quotes if this one does.  A user-defined special character
@@ -3023,7 +3061,7 @@ const char *token::description()
       charinfo *ci = get_charinfo(false /* required */,
 				  true /* suppress creation */);
       if (0 /* nullptr */ == ci) {
-	assert(0 == "attempted to process token without charinfo");
+	// We can get here via, e.g., `.pl \(nlu` (likely a typo).
 	return "nonexistent special character or class";
       }
       else if (ci->is_class())
@@ -3037,7 +3075,9 @@ const char *token::description()
     return "an escaped '~'";
   case TOKEN_UNSTRETCHABLE_SPACE:
     return "an escaped ' '";
-  case TOKEN_HORIZONTAL_SPACE:
+  case TOKEN_DELIMITED_HORIZONTAL_MOTION:
+    return "a parameterized horizontal motion";
+  case TOKEN_HORIZONTAL_MOTION:
     return "a horizontal motion";
   case TOKEN_TAB:
     return "a tab character";
@@ -3132,10 +3172,10 @@ symbol read_identifier(bool required)
     }
   }
   else
-    return get_long_name(required);
+    return read_long_identifier(required);
 }
 
-symbol get_long_name(bool required)
+symbol read_long_identifier(bool required)
 {
   return read_input_until_terminator(required, 0U);
 }
@@ -3439,7 +3479,7 @@ void process_input_stack()
 	  // skip tabs as well as spaces here
 	  do {
 	    tok.next();
-	  } while (tok.is_white_space());
+	  } while (tok.is_horizontal_whitespace());
 	  symbol nm = read_identifier();
 #if defined(DEBUGGING)
 	  if (want_html_debugging) {
@@ -3601,22 +3641,31 @@ void process_input_stack()
     case token::TOKEN_EOF:
       return;
     case token::TOKEN_NODE:
-    case token::TOKEN_HORIZONTAL_SPACE:
-      {
-	if (possibly_handle_first_page_transition())
-	  ;
-	else if (tok.nd->need_reread(&reading_beginning_of_input_line)) {
-	  delete tok.nd;
-	  tok.nd = 0;
-	}
-	else {
-	  curenv->add_node(tok.nd);
-	  tok.nd = 0;
-	  reading_beginning_of_input_line = false;
-	  curenv->possibly_break_line(true /* must break here */);
-	}
-	break;
+    case token::TOKEN_DELIMITED_HORIZONTAL_MOTION:
+    case token::TOKEN_HORIZONTAL_MOTION:
+      if (curenv->get_was_line_interrupted()) {
+	// We don't want to warn about node types.  They might have been
+	// interpolated into the input by the formatter itself, as with
+	// the extra vertical space nodes appended to diversions.
+	if ((token::TOKEN_HORIZONTAL_MOTION == tok.type)
+	    || (token::TOKEN_DELIMITED_HORIZONTAL_MOTION == tok.type))
+	  warning(WARN_SYNTAX, "ignoring %1 on input line after"
+		  " output line continuation escape sequence",
+		  tok.description());
       }
+      else if (possibly_handle_first_page_transition())
+	;
+      else if (tok.nd->need_reread(&reading_beginning_of_input_line)) {
+	delete tok.nd;
+	tok.nd = 0;
+      }
+      else {
+	curenv->add_node(tok.nd);
+	tok.nd = 0;
+	reading_beginning_of_input_line = false;
+	curenv->possibly_break_line(true /* must break here */);
+      }
+      break;
     case token::TOKEN_PAGE_EJECTOR:
       {
 	continue_page_eject();
@@ -3667,6 +3716,7 @@ void process_input_stack()
       }
     case token::TOKEN_INDEXED_CHAR:
     case token::TOKEN_SPECIAL_CHAR:
+    case token::TOKEN_DELIMITED_SPECIAL_CHAR:
       if (curenv->get_was_line_interrupted())
 	warning(WARN_SYNTAX, "ignoring %1 on input line after output"
 		" line continuation escape sequence",
@@ -5170,7 +5220,7 @@ static void interpolate_string(symbol nm)
 {
   request_or_macro *p = lookup_request(nm);
   macro *m = p->to_macro();
-  if (!m)
+  if (0 /* nullptr */ == m)
     error("cannot interpolate request '%1'", nm.contents());
   else {
     if (m->is_string()) {
@@ -5190,7 +5240,7 @@ static void interpolate_string_with_args(symbol nm)
 {
   request_or_macro *p = lookup_request(nm);
   macro *m = p->to_macro();
-  if (!m)
+  if (0 /* nullptr */ == m)
     error("cannot interpolate request '%1'", nm.contents());
   else {
     macro_iterator *mi = new macro_iterator(nm, *m);
@@ -5199,10 +5249,10 @@ static void interpolate_string_with_args(symbol nm)
   }
 }
 
-static void interpolate_arg(symbol nm)
+static void interpolate_positional_parameter(symbol nm)
 {
   const char *s = nm.contents();
-  if (!s || *s == '\0')
+  if (0 /* nullptr */ == s || '\0' == *s)
     copy_mode_error("missing positional argument number in copy mode");
   else if (s[1] == 0 && csdigit(s[0]))
     input_stack::push(input_stack::get_arg(s[0] - '0'));
@@ -5593,7 +5643,7 @@ void chop_macro()
   if (!s.is_null()) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
-    if (!m)
+    if (0 /* nullptr */ == m)
       error("cannot chop request '%1'", s.contents());
     else if (m->is_empty())
       error("cannot chop empty %1 '%2'",
@@ -5643,7 +5693,7 @@ void do_string_case_transform(case_xform_mode mode)
   }
   request_or_macro *p = lookup_request(s);
   macro *m = p->to_macro();
-  if (!m) {
+  if (0 /* nullptr */ == m) {
     error("cannot apply string case transformation to request '%1'",
 	  s.contents());
     skip_line();
@@ -5706,7 +5756,7 @@ void substring_request()
   if (!s.is_null() && read_integer(&start)) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
-    if (!m)
+    if (0 /* nullptr */ == m)
       error("cannot extract substring of request '%1'", s.contents());
     else {
       int end = -1;
@@ -5880,7 +5930,7 @@ void unformat_macro()
   if (!s.is_null()) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
-    if (!m)
+    if (0 /* nullptr */ == m)
       error("cannot unformat request '%1'", s.contents());
     else {
       macro am;
@@ -5999,7 +6049,11 @@ static bool read_delimited_measurement(units *n, unsigned char si)
 }
 
 // \l, \L
-static bool get_line_arg(units *n, unsigned char si, charinfo **cip)
+//
+// Here's some syntax unique to these escape sequences: a horizontal
+// measurment followed immediately by a character.
+static bool read_line_rule_expression(units *n, unsigned char si,
+				      charinfo **cip)
 {
   assert(cip != 0 /* nullptr */);
   token start_token;
@@ -6131,7 +6185,7 @@ static bool read_size(int *x) // \s
       inc = (c == '+') ? 1 : -1;
       tok.next();
     }
-    if (!read_measurement(&val, 'z'))
+    if (!read_measurement(&val, (unsigned char)('z'))) // TODO: grochar
       return false;
     // safely compares to char literals; TODO: grochar
     int s = start.ch();
@@ -6287,7 +6341,7 @@ static void do_register() // \R
     return;
 #endif
   tok.next();
-  symbol nm = get_long_name(true /* required */);
+  symbol nm = read_long_identifier(true /* required */);
   if (nm.is_null())
     return;
   tok.skip_spaces();
@@ -6296,7 +6350,8 @@ static void do_register() // \R
   if ((0 /* nullptr */ == r) || !r->get_value(&prev_value))
     prev_value = 0;
   int val;
-  if (!read_measurement(&val, 'u', prev_value))
+  // TODO: grochar
+  if (!read_measurement(&val, (unsigned char)('u'), prev_value))
     return;
   // token::description() writes to static, class-wide storage, so we
   // must allocate a copy of it before issuing the next diagnostic.
@@ -6383,6 +6438,9 @@ void read_title_parts(node **part, hunits *part_width)
   if (!has_arg())
     return;
   token start(tok);
+  if (!want_att_compat && !tok.is_usable_as_delimiter())
+    warning(WARN_DELIM, "using %1 as a title request delimiter"
+			" is deprecated", tok.description());
   int start_level = input_stack::get_level();
   tok.next();
   for (int i = 0; i < 3; i++) {
@@ -7117,7 +7175,7 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'm') {
     tok.next();
-    symbol nm = get_long_name(true /* required */);
+    symbol nm = read_long_identifier(true /* required */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -7142,7 +7200,7 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'F') {
     tok.next();
-    symbol nm = get_long_name(true /* required */);
+    symbol nm = read_long_identifier(true /* required */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -7151,7 +7209,7 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'S') {
     tok.next();
-    symbol nm = get_long_name(true /* required */);
+    symbol nm = read_long_identifier(true /* required */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -7175,12 +7233,12 @@ static bool is_conditional_expression_true()
   else {
     // Evaluate numeric expression.
     units n;
-    if (!read_measurement(&n, 'u')) {
+    if (!read_measurement(&n, (unsigned char)('u'))) { // TODO: grochar
       skip_branch();
       return false;
     }
     else
-      result = n > 0;
+      result = (n > 0);
   }
   if (perform_output_comparison)
     result = are_comparands_equal();
@@ -7844,7 +7902,7 @@ void ps_bbox_request() // .psbb
   }
   // Parse input line, to extract file name.
   //
-  symbol nm = get_long_name(true /* required */);
+  symbol nm = read_long_identifier(true /* required */);
   if (nm.is_null())
     //
     // No file name specified: ignore the entire request.
@@ -8333,7 +8391,7 @@ void write_macro_request()
   }
   request_or_macro *p = lookup_request(s);
   macro *m = p->to_macro();
-  if (!m)
+  if (0 /* nullptr */ == m)
     error("cannot write request '%1' to a stream", s.contents());
   else {
     string_iterator iter(*m);
@@ -8381,7 +8439,7 @@ void warnscale_request()
 void spreadwarn_request()
 {
   hunits n;
-  if (has_arg() && get_hunits(&n, 'm')) {
+  if (has_arg() && read_hunits(&n, 'm')) {
     if (n < 0)
       n = 0;
     hunits em = curenv->get_size();
@@ -8737,7 +8795,7 @@ static void define_class_request()
     else if (child1 != 0 /* nullptr */) {
       if (child1->is_class()) {
 	if (ci == child1) {
-	  warning(WARN_SYNTAX, "invalid cyclic class nesting");
+	  warning(WARN_SYNTAX, "cannot nest character classes");
 	  skip_line();
 	  return;
 	}
@@ -8778,7 +8836,7 @@ static void define_class_request()
   if (child1 != 0 /* nullptr */) {
     if (child1->is_class()) {
       if (ci == child1) {
-	warning(WARN_SYNTAX, "invalid cyclic class nesting");
+	warning(WARN_SYNTAX, "cannot nest character classes");
 	skip_line();
 	return;
       }
@@ -8815,26 +8873,27 @@ static charinfo *get_charinfo_by_index(int n,
 
 charinfo *token::get_charinfo(bool required, bool suppress_creation)
 {
-  if (type == TOKEN_CHAR)
+  if (TOKEN_CHAR == type)
     return charset_table[c];
-  if (type == TOKEN_SPECIAL_CHAR)
+  if ((TOKEN_SPECIAL_CHAR == type)
+      || (TOKEN_DELIMITED_SPECIAL_CHAR == type))
     return lookup_charinfo(nm, suppress_creation);
-  if (type == TOKEN_INDEXED_CHAR)
+  if (TOKEN_INDEXED_CHAR == type)
     return get_charinfo_by_index(val, suppress_creation);
-  if (type == TOKEN_ESCAPE) {
+  if (TOKEN_ESCAPE == type) {
     if (escape_char != 0U)
       return charset_table[escape_char];
     else {
       // XXX: Is this possible?  token::add_to_zero_width_node_list()
       // and token::process() don't add this token type if the escape
       // character is null.  If not, this should be an assert().  Also
-      // see escape_off().
+      // see escape_off_request().
       error("escaped 'e' used while escape sequences disabled");
       return 0 /* nullptr */;
     }
   }
   if (required) {
-    if (type == TOKEN_EOF || type == TOKEN_NEWLINE)
+    if (TOKEN_EOF == type || TOKEN_NEWLINE == type)
       warning(WARN_MISSING, "missing ordinary, special, or indexed"
 			    " character");
     else
@@ -8886,7 +8945,8 @@ bool token::add_to_zero_width_node_list(node **pp)
     set_register(nm, curenv->get_input_line_position().to_units());
     break;
   case TOKEN_NODE:
-  case TOKEN_HORIZONTAL_SPACE:
+  case TOKEN_DELIMITED_HORIZONTAL_MOTION:
+  case TOKEN_HORIZONTAL_MOTION:
     n = nd;
     nd = 0 /* nullptr */;
     break;
@@ -8900,6 +8960,7 @@ bool token::add_to_zero_width_node_list(node **pp)
 			 curenv->get_fill_color());
     break;
   case TOKEN_SPECIAL_CHAR:
+  case TOKEN_DELIMITED_SPECIAL_CHAR:
     *pp = (*pp)->add_char(lookup_charinfo(nm), curenv, &w, &s);
     break;
   case TOKEN_STRETCHABLE_SPACE:
@@ -8980,7 +9041,8 @@ void token::process()
     curenv->newline();
     break;
   case TOKEN_NODE:
-  case TOKEN_HORIZONTAL_SPACE:
+  case TOKEN_DELIMITED_HORIZONTAL_MOTION:
+  case TOKEN_HORIZONTAL_MOTION:
     curenv->add_node(nd);
     nd = 0 /* nullptr */;
     break;
@@ -8997,6 +9059,7 @@ void token::process()
     curenv->space();
     break;
   case TOKEN_SPECIAL_CHAR:
+  case TOKEN_DELIMITED_SPECIAL_CHAR:
     // Optimize `curenv->add_char(get_charinfo())` for token type.
     curenv->add_char(lookup_charinfo(nm));
     break;
@@ -9195,14 +9258,15 @@ void abort_request()
   cleanup_and_exit(EXIT_FAILURE);
 }
 
-// Consume the rest of the input line in copy mode; if, after spaces,
-// the argument starts with a `"`, discard it, letting any immediately
-// subsequent spaces populate the returned string.
+// Consume the rest of the input line in copy mode and return it as a C
+// string; if, after spaces, the argument starts with a `"`, discard it,
+// letting any immediately subsequent spaces populate the returned
+// string.
 //
 // The caller must subsequently call `tok.next()` to advance the input
 // stream pointer.
 //
-// The caller has responsibility for `delete`ing the returned array.
+// The caller has responsibility for `delete`ing the returned buffer.
 char *read_rest_of_line_as_argument()
 {
   int buf_size = 256;
@@ -9346,7 +9410,7 @@ void vjustify()
     handle_initial_request(VJUSTIFY_REQUEST);
     return;
   }
-  symbol type = get_long_name(true /* required */);
+  symbol type = read_long_identifier(true /* required */);
   if (!type.is_null())
     curdiv->vjustify(type);
   skip_line();
@@ -9604,7 +9668,8 @@ static int evaluate_expression(const char *expr, units *res)
 {
   input_stack::push(make_temp_iterator(expr));
   tok.next();
-  int success = read_measurement(res, 'u');
+  // TODO: grochar
+  int success = read_measurement(res, (unsigned char)('u'));
   while (input_stack::get(0 /* nullptr */) != EOF)
     ;
   return success;
@@ -10048,8 +10113,8 @@ void init_input_requests()
   init_request("backtrace", backtrace_request);
   init_request("blm", blank_line_macro);
   init_request("break", while_break_request);
-  init_request("cc", assign_control_character);
-  init_request("c2", assign_no_break_control_character);
+  init_request("cc", assign_control_character_request);
+  init_request("c2", assign_no_break_control_character_request);
   init_request("cf", unsafe_transparent_throughput_file_request);
   init_request("cflags", set_character_flags_request);
   init_request("char", define_character_request);
@@ -10070,12 +10135,12 @@ void init_input_requests()
   init_request("do", do_request);
   init_request("ds", define_string);
   init_request("ds1", define_nocomp_string);
-  init_request("ec", assign_escape_character);
-  init_request("ecr", restore_escape_char);
-  init_request("ecs", save_escape_char);
+  init_request("ec", assign_escape_character_request);
+  init_request("ecr", restore_escape_char_request);
+  init_request("ecs", save_escape_char_request);
   init_request("el", else_request);
   init_request("em", eoi_macro);
-  init_request("eo", escape_off);
+  init_request("eo", escape_off_request);
   init_request("ex", exit_request);
   init_request("fchar", define_fallback_character_request);
 #ifdef WIDOW_CONTROL
@@ -10306,7 +10371,7 @@ static node *read_drawing_command() // \D
 	  had_error = true;
 	  break;
 	}
-	if (!get_hunits(&point[i].h,
+	if (!read_hunits(&point[i].h,
 			type == 'f' || type == 't' ? 'u' : 'm')) {
 	  had_error = true;
 	  break;
@@ -10318,7 +10383,7 @@ static node *read_drawing_command() // \D
 	  no_last_v = true;
 	  break;
 	}
-	if (!get_vunits(&point[i].v, 'v')) {
+	if (!read_vunits(&point[i].v, 'v')) {
 	  had_error = false;
 	  break;
 	}
@@ -10461,7 +10526,7 @@ static struct warning_category {
 
 static unsigned int lookup_warning(const char *name)
 {
-  for (unsigned int i = 0U; i < array_length(warning_table); i++)
+  for (unsigned int i = 0U; i < countof(warning_table); i++)
     if (strcmp(name, warning_table[i].name) == 0)
       return warning_table[i].mask;
   return 0U;
@@ -10834,7 +10899,7 @@ int charinfo::get_number()
 bool charinfo::contains(int c, bool already_called)
 {
   if (already_called) {
-    warning(WARN_SYNTAX, "cyclic nested class detected while processing"
+    warning(WARN_SYNTAX, "nested class detected while processing"
 	    " character code %1", c);
     return false;
   }
@@ -10851,6 +10916,8 @@ bool charinfo::contains(int c, bool already_called)
     ++ranges_iter;
   }
 
+  // Nested classes don't work.  See Savannah #67770.
+#if 0
   std::vector<charinfo *>::const_iterator nested_iter;
   nested_iter = nested_classes.begin();
   while (nested_iter != nested_classes.end()) {
@@ -10858,6 +10925,7 @@ bool charinfo::contains(int c, bool already_called)
       return true;
     ++nested_iter;
   }
+#endif
 
   return false;
 }
@@ -10865,9 +10933,8 @@ bool charinfo::contains(int c, bool already_called)
 bool charinfo::contains(symbol s, bool already_called)
 {
   if (already_called) {
-    warning(WARN_SYNTAX,
-	    "cyclic nested class detected while processing symbol %1",
-	    s.contents());
+    warning(WARN_SYNTAX, "nested class detected while processing symbol"
+	    " %1", s.contents());
     return false;
   }
   const char *unicode = glyph_name_to_unicode(s.contents());

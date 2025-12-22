@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2024 Free Software Foundation, Inc.
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -34,7 +34,7 @@ cleanup () {
 }
 
 # A process handling a fatal signal should:
-#   1.  Mask _all_ fatal signals.
+#   1.  Mask all fatal signals of interest.  (GBR often excludes ABRT.)
 #   2.  Perform cleanup operations.
 #   3.  Unmask the signal (removing the handler).
 #   4.  Signal its own process group with the signal caught so that the

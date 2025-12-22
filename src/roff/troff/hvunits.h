@@ -1,7 +1,7 @@
 /* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -76,10 +76,10 @@ public:
 
 extern const hunits H0;
 
-extern bool get_vunits(vunits *, unsigned char si);
-extern bool get_hunits(hunits *, unsigned char si);
-extern bool get_vunits(vunits *, unsigned char si, vunits prev_value);
-extern bool get_hunits(hunits *, unsigned char si, hunits prev_value);
+extern bool read_vunits(vunits *, unsigned char si);
+extern bool read_hunits(hunits *, unsigned char si);
+extern bool read_vunits(vunits *, unsigned char si, vunits prev_value);
+extern bool read_hunits(hunits *, unsigned char si, hunits prev_value);
 
 inline vunits:: vunits() : n(0)
 {

@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 void do_divert(bool /* appending */, bool /* boxing */);
 void end_diversions();
-void page_offset();
 
 class diversion {
   friend void do_divert(bool /* appending */, bool /* boxing */);
@@ -125,6 +124,8 @@ public:
   void vjustify(symbol);
 #endif /* COLUMN */
   hunits get_page_offset() { return page_offset; }
+  hunits get_previous_page_offset() { return prev_page_offset; }
+  void set_page_offset(hunits /* h */);
   vunits get_page_length() { return page_length; }
   vunits distance_to_next_trap();
   const char *get_next_trap_name();
@@ -149,6 +150,12 @@ public:
   void set_last_page() { last_page_count = page_count; }
   bool is_diversion() { return false; }
 };
+
+inline void top_level_diversion::set_page_offset(hunits h)
+{
+  prev_page_offset = page_offset;
+  page_offset = h;
+}
 
 extern top_level_diversion *topdiv;
 extern diversion *curdiv;

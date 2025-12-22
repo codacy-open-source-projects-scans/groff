@@ -3,7 +3,7 @@
 
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -6808,7 +6808,7 @@ static void mount_font_at_position()
     else {
       symbol internal_name = read_identifier(true /* required */);
       if (!internal_name.is_null()) {
-	symbol filename = get_long_name();
+	symbol filename = read_long_identifier();
 	if (!mount_font(n, internal_name, filename)) {
 	  string msg;
 	  if (filename != 0 /* nullptr */)
@@ -7430,9 +7430,9 @@ static void configure_track_kerning()
     hunits min_a, max_a;
     if (has_arg()
 	&& read_measurement(&min_s, 'z')
-	&& get_hunits(&min_a, 'p')
+	&& read_hunits(&min_a, 'p')
 	&& read_measurement(&max_s, 'z')
-	&& get_hunits(&max_a, 'p')) {
+	&& read_hunits(&max_a, 'p')) {
       track_kerning_function tk(min_s, min_a, max_s, max_a);
       font_table[n]->set_track_kern(tk);
     }

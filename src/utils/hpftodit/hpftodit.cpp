@@ -1,7 +1,7 @@
 /* Copyright (C) 1994-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -30,6 +30,7 @@ put filename in error messages (or fix lib)
 #include <assert.h>
 #include <errno.h>
 #include <math.h> // cos(), sin()
+#include <stdcountof.h>
 #include <stdio.h> // FILE, fclose(), fgets(), fopen(), fprintf(),
 		   // freopen(), printf(), sprintf()
 #include <stdlib.h> // atoi(), exit(), EXIT_FAILURE, EXIT_SUCCESS,
@@ -51,7 +52,6 @@ put filename in error messages (or fix lib)
 extern "C" const char *Version_string;
 extern const char *hp_msl_to_unicode_code(const char *);
 
-#define SIZEOF(v) (sizeof(v)/sizeof(v[0]))
 #define equal(a, b) (strcmp(a, b) == 0)
 // only valid if is_uname(c) has returned true
 #define is_decomposed(c) strchr(c, '_')
@@ -829,7 +829,7 @@ output_ligatures()
     if (charcode < charcode_name_table_size
 	&& char_table[i].symbol_set != NO_SYMBOL_SET) {
       for (name_list *p = charcode_name_table[charcode]; p; p = p->next)
-	for (unsigned int j = 0; j < SIZEOF(ligature_chars); j++)
+	for (unsigned int j = 0; j < countof(ligature_chars); j++)
 	  if (strcmp(p->name, ligature_chars[j]) == 0) {
 	    ligature_mask |= 1 << j;
 	    break;
@@ -838,7 +838,7 @@ output_ligatures()
     }
   if (ligature_mask) {
     printf("ligatures");
-    for (i = 0; i < SIZEOF(ligature_names); i++)
+    for (i = 0; i < countof(ligature_names); i++)
       if (ligature_mask & (1 << i))
 	printf(" %s", ligature_names[i]);
     printf(" 0\n");

@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -41,7 +41,7 @@ class charinfo : glyph {
   char_mode mode;
   // Unicode character classes
   std::vector<std::pair<int, int> > ranges;
-  std::vector<charinfo *> nested_classes;
+  std::vector<charinfo *> nested_classes; // XXX: see Savannah #67770
 public:
   // Values for the flags bitmask.  See groff manual, description of the
   // '.cflags' request.

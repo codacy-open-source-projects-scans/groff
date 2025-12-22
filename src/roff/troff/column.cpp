@@ -1,7 +1,7 @@
 /* Copyright 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -551,21 +551,21 @@ static void column_justify()
   vunits height;
   if (!the_column->is_active())
     error("can't justify column - column not active");
-  else if (get_vunits(&height, 'v')) {
+  else if (read_vunits(&height, 'v')) {
     justification_spec js(height);
-    symbol nm = get_long_name(true /* required */);
+    symbol nm = read_long_identifier(true /* required */);
     if (!nm.is_null()) {
       vunits v;
-      if (get_vunits(&v, 'v')) {
+      if (read_vunits(&v, 'v')) {
 	js.append(nm, v);
 	int err = 0;
 	while (has_arg()) {
-	  nm = get_long_name(true /* required */);
+	  nm = read_long_identifier(true /* required */);
 	  if (nm.is_null()) {
 	    err = 1;
 	    break;
 	  }
-	  if (!get_vunits(&v, 'v')) {
+	  if (!read_vunits(&v, 'v')) {
 	    err = 1;
 	    break;
 	  }

@@ -1,7 +1,7 @@
 /* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
   int Xflag = 0;
   int oflag = 0;
   bool is_safer_mode_locked = false; // made true if `-S` explicit
-  bool want_unsafe_mode = true;
+  bool want_unsafe_mode = false;
   int is_xhtml = 0;
   int eflag = 0;
   int need_pic = 0;

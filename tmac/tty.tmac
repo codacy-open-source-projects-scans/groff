@@ -1,4 +1,4 @@
-.\" Configure grotty(1) output devices: "ascii", "latin1", and "utf8".
+.\" Configure groff output devices "ascii", "latin1", and "utf8".
 .\"
 .do nr *groff_tty_tmac_C \n[.cp]
 .cp 0
@@ -6,6 +6,9 @@
 .nroff
 .ta T 0.8i
 .
+.\" Set the page offset twice to clobber the "previous" page offset and
+.\" simulate AT&T nroff behavior.  See Savannah #67843.
+.po 0
 .po 0
 .
 .\" Traditionally, an em dash is rendered on a typewriter with two

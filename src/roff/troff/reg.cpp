@@ -3,7 +3,7 @@
 
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -351,14 +351,16 @@ static void define_register_request()
     skip_line();
     return;
   }
-  if (read_measurement(&v, 'u', prev_value)) {
+  // TODO: grochar
+  if (read_measurement(&v, (unsigned char)('u'), prev_value)) {
     if (0 /* nullptr */ == r) {
       r = new number_reg;
       register_dictionary.define(nm, r);
     }
     r->set_value(v);
     if (tok.is_space()) {
-      if (has_arg() && read_measurement(&v, 'u'))
+      // TODO: grochar
+      if (has_arg() && read_measurement(&v, (unsigned char)('u')))
 	r->set_increment(v);
     }
     else if (has_arg() && !tok.is_tab())

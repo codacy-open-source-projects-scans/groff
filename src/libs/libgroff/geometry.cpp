@@ -2,7 +2,7 @@
      Written by Gaius Mulley <gaius@glam.ac.uk>
      using adjust_arc_center() from printer.cpp, written by James Clark.
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free

@@ -1,6 +1,6 @@
 # Copyright 2014 Free Software Foundation, Inc.
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -39,7 +39,6 @@ libgroff_a_SOURCES = \
   src/libs/libgroff/geometry.cpp \
   src/libs/libgroff/glyphuni.cpp \
   src/libs/libgroff/htmlhint.cpp \
-  src/libs/libgroff/hypot.cpp \
   src/libs/libgroff/iftoa.c \
   src/libs/libgroff/invalid.cpp \
   src/libs/libgroff/itoa.c \

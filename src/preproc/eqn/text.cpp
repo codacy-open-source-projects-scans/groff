@@ -1,7 +1,7 @@
 /* Copyright (C) 1989-2020 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include <stdcountof.h>
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -396,9 +398,7 @@ struct map entity_table[] = {
 const char *special_to_entity(const char *sp)
 {
   struct map *mp;
-  for (mp = entity_table; 
-       mp < entity_table + sizeof(entity_table)/sizeof(entity_table[0]); 
-       mp++) {
+  for (mp = entity_table; mp < entity_table + countof(entity_table); mp++) {
     if (strcmp(mp->from, sp) == 0)
       return mp->to;
   }

@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h> // EDOM, ERANGE, errno
 #include <math.h> // atan2(), cos(), floor(), fmod(), log10(), pow(),
 		  // sin(), sqrt()
+#include <stdcountof.h>
 #include <stdio.h> // fflush(), fprintf(), snprintf(), sprintf(), stderr
 #include <stdlib.h> // rand(), srand(), system()
 #include <string.h> // strcat(), strchr(), strcmp(), strcpy(), strlen()
@@ -1849,7 +1850,7 @@ void define_variable(const char *name, double val)
   if (strcmp(name, "scale") == 0) {
     // When the scale changes, reset all scaled predefined variables to
     // their default values.
-    for (size_t i = 0; i < array_length(defaults_table); i++)
+    for (size_t i = 0; i < countof(defaults_table); i++)
       if (defaults_table[i].scaled)
 	define_variable(defaults_table[i].name,
 			(val * defaults_table[i].val));
@@ -1869,7 +1870,7 @@ void parse_init()
 
 void reset(const char *nm)
 {
-  for (size_t i = 0; i < array_length(defaults_table); i++)
+  for (size_t i = 0; i < countof(defaults_table); i++)
     if (strcmp(nm, defaults_table[i].name) == 0) {
       double val = defaults_table[i].val;
       if (defaults_table[i].scaled) {
@@ -1889,7 +1890,7 @@ void reset_all()
   // aren't scaled because 'scale' is not scaled, and changing the
   // value of 'scale' will reset all the predefined variables that
   // are scaled.
-  for (size_t i = 0; i < array_length(defaults_table); i++)
+  for (size_t i = 0; i < countof(defaults_table); i++)
     if (!defaults_table[i].scaled)
       define_variable(defaults_table[i].name, defaults_table[i].val);
 }

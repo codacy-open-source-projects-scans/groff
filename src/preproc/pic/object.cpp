@@ -1,7 +1,7 @@
 /* Copyright 1989-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -207,7 +207,7 @@ double operator*(const position &a, const position &b)
 
 double hypot(const position &a)
 {
-  return groff_hypot(a.x, a.y);
+  return hypot(a.x, a.y);
 }
 
 struct arrow_head_type {

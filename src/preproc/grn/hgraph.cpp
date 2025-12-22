@@ -24,8 +24,8 @@
 #define PointsPerInterval 64
 #define pi		3.14159265358979324
 #define twopi		(2.0 * pi)
-#define len(a, b)	groff_hypot((double)(b.x-a.x), \
-			            (double)(b.y-a.y))
+#define len(a, b)	hypot((double)(b.x-a.x), \
+			      (double)(b.y-a.y))
 
 
 extern int dotshifter;		/* for the length of dotted curves */
@@ -610,7 +610,7 @@ HGArc(int cx,
 
   length = 0;
 
-  resolution = (1.0 + groff_hypot(xs, ys) / res) * PointsPerInterval;
+  resolution = (1.0 + hypot(xs, ys) / res) * PointsPerInterval;
   /* mask = (1 << (int) log10(resolution + 1.0)) - 1; */
   (void) frexp(resolution, &m);		/* more elegant than log10 */
   for (mask = 1; mask < m; mask = mask << 1);
@@ -681,14 +681,14 @@ picurve(int *x,
   for (; npts--; x++, y++) {	/* traverse the line segments */
     xp = x[0] - x[1];
     yp = y[0] - y[1];
-    nseg = (int) groff_hypot((double) xp, (double) yp);
+    nseg = (int) hypot((double) xp, (double) yp);
     xp = x[1] - x[2];
     yp = y[1] - y[2];
 				/* 'nseg' is the number of line    */
 				/* segments that will be drawn for */
 				/* each curve segment.             */
-    nseg = (int) ((double) (nseg + (int) groff_hypot((double) xp,
-						     (double) yp)) /
+    nseg = (int) ((double) (nseg + (int) hypot((double) xp,
+					       (double) yp)) /
 		  res * PointsPerInterval);
 
     for (i = 1; i < nseg; i++) {
@@ -806,7 +806,7 @@ Parameterize(int x[],
       dy = y[j + 1] - y[j];
       /* Here was overflowing, so I changed it.       */
       /* u[i] += sqrt ((double) (dx * dx + dy * dy)); */
-      u[i] += groff_hypot((double) dx, (double) dy);
+      u[i] += hypot((double) dx, (double) dy);
     }
   }
   for (i = 1; i < n; ++i)

@@ -1,4 +1,5 @@
-/* Determine a canonical name for the current locale's character encoding.
+/* Determine a canonical name for the current locale's character
+   encoding.
 
    Copyright 2000-2020 Free Software Foundation, Inc.
 
@@ -12,8 +13,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+*/
 
 /* Written by Bruno Haible <bruno@clisp.org>.  */
 

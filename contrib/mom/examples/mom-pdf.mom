@@ -46,7 +46,7 @@
 .HY off
 .IB 8P
 .\" Copyright notice
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 .SP .5v
 Groff is free software.  You can redistribute it
 and\*[FU3]/or modify it under the terms of the GNU

@@ -111,7 +111,7 @@ non-integral type sizes,
 user-defined characters,
 and automatic hyphenation of languages other than English;
 adds more conditional expression operators;
-recognizes additional scaling units and numeric operators;
+recognizes additional scaling units and arithmetic operators;
 enables general file I/O
 (in \[lq]unsafe mode\[rq] only);
 and exposes more formatter state.
@@ -492,14 +492,16 @@ and
 registers represent the type size selected by the formatter
 as it understands a device's capability.
 .
-The last
-.I requested
-type size is interpolated in scaled points
-by the read-only register
+the read-only registers
 .B .psr
-and in points as a decimal fraction by the read-only string-valued
-register
-.BR .sr .
+and
+(string-valued)
+.B .sr
+interpolate the last
+.I requested
+in scaled points
+and in points as a decimal fraction,
+respectively.
 .
 Like the actual current and previous type size,
 the requested ones are properties of an environment.
@@ -551,7 +553,7 @@ For example,
 .\" (the second paragraph thereof; the first covers "portable" concepts)
 GNU
 .IR troff 's \" GNU
-.B \%special
+.RB \%\[lq] special \[rq]
 and
 .B \%fspecial
 requests permit a document
@@ -747,6 +749,44 @@ than a stroked one using the same parameters
 because the former is drawn only within its defined area,
 whereas strokes have a line thickness,
 set with another new drawing command.
+.
+.
+.\" ====================================================================
+.SS "Notational conventions"
+.\" ====================================================================
+.
+In the request and escape sequence descriptions below,
+GNU
+.I troff \" GNU
+reads arguments named
+.I character-sequence,
+.I command,
+.I contents,
+.I file,
+and
+.I message
+in copy mode
+until the end of the input line.
+.
+A
+.I character-sequence
+comprises one or more ordinary,
+special,
+or indexed characters;
+spaces;
+or escape sequences that interpolate only these.
+.\" XXX: or tabs, leaders, backspace, and delete characters
+.
+We name the remaining arguments for clarity;
+they are also
+.I character-sequences.
+.
+A neutral double quote
+.RB \[oq] \[dq] \[cq] \" single quotes around double quote
+can optionally prefix a
+.I character-sequence;
+the formatter discards one if present,
+permitting initial embedded spaces in the argument.
 .
 .
 .\" ====================================================================
@@ -1948,19 +1988,20 @@ Create alias
 (additional name)
 .I new-register
 of
-.IR existing-register .
+.IR existing-register ,
+causing the names to refer to the same stored object.
 .
 If
 .I existing-register
 is undefined,
+the formatter ignores the request.
 GNU
 .I troff \" GNU
 produces a warning in category
-.RB \[lq] reg \[rq]
-and ignores the request.
+.RB \[lq] reg \[rq].
 .
 See section \[lq]Warnings\[rq] of
-.MR @g@groff 1
+.MR @g@troff 1
 regarding the enablement and suppression of warnings.
 .
 To remove a register alias,
@@ -1987,11 +2028,11 @@ causing the names to refer to the same stored object.
 If
 .I existing-name
 is undefined,
+the formatter ignores the request.
 GNU
 .I troff \" GNU
 produces a warning in category
-.RB \[lq] mac \[rq]
-and ignores the request.
+.RB \[lq] mac \[rq].
 .
 If
 .I new-name
@@ -1999,7 +2040,7 @@ already exists,
 its contents are lost unless already aliased.
 .
 See section \[lq]Warnings\[rq] of
-.MR @g@groff 1
+.MR @g@troff 1
 regarding the enablement and suppression of warnings.
 .
 To remove an alias,
@@ -2439,7 +2480,10 @@ Defining
 a
 .RI character\~ c
 creates a formatter object
-that is recognized like any other ordinary,
+that
+GNU
+.I troff \" GNU
+recognizes like any other ordinary,
 special,
 or indexed character on input,
 and produces
@@ -2512,7 +2556,7 @@ in kerning adjustments or italic corrections.
 The formatter prevents infinite recursion
 by treating an occurrence
 of a character in its own definition
-as if were undefined;
+as if it were undefined;
 when interpolating such a character,
 GNU
 .I troff \" GNU
@@ -3725,12 +3769,9 @@ and
 .I file
 As
 .RB \[lq] open \[rq],
-but if
+but appends to
 .I file
-already exists,
-GNU
-.I troff \" GNU
-appends to it instead of overwriting it.
+if it already exists instead of overwriting it.
 .
 .
 .TP
@@ -6830,6 +6871,25 @@ See subsection \[lq]Escape sequences\[rq] above and sections
 the
 .I groff
 Texinfo manual.
+.
+.
+.P
+Like
+AT&T
+.I troff, \" AT&T
+GNU
+.I troff \" GNU
+maintains a buffer of device-independent output commands,
+populating the buffer as input accumulates.
+GNU
+.I troff \" GNU
+always flushes this buffer when processing a break;
+AT&T
+.I troff \" AT&T
+does so according to no obvious schedule
+(perhaps,
+if the buffer is of fixed size,
+the formatter performs the flush when the buffer runs out of room).
 .
 .
 .P

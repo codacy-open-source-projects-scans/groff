@@ -8,14 +8,14 @@
 # Rewritten in Perl by Bernd Warken <groff-bernd.warken-72@web.de>.
 # Hacked up by G. Branden Robinson, 2021.
 
-# This file is part of 'grog', which is part of 'groff'.
+# This file is part of 'grog', which is part of groff.
 
-# 'groff' is free software; you can redistribute it and/or modify it
+# groff is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 
-# 'groff' is distributed in the hope that it will be useful, but
+# groff is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
@@ -395,11 +395,15 @@ sub interpret_line {
   # mm and mmse
   if ($macro =~ /^(
 		   AL|BL|BVL|DL|ML|RL|VL|
-		   EPIC|
-		   H|
-		   HU|
+		   APP|APPSK|
+		   AF|AS|
+		   COVEND|EPIC|
+		   H|HU|
+		   INITI|IND|INDP|
+		   INITR|SETR|GETHN|GETPN|
+		   ISODATE|
 		   LB|LE
-		   MULB|
+		   MULB|MULN|MULE|
 		   LO|
 		   LT|
 		   NCOL|
@@ -407,7 +411,11 @@ sub interpret_line {
 		   SA
 		  )$/x) {
     # `LI` is unique to mm among full-service macro packages, but
-    # www.tmac muddies the waters, so omit it.  `MT` also used by man.
+    # www.tmac muddies the waters, so omit it.
+    # P and MT are also used by man.
+    # COVER and SP are also used by mom.
+    # 1C, 2C, AE, AU, B1, B2, DE, DS, MC, ND, TL, and RP are also used
+    # by mm.
     if ($macro =~ /^LO$/) {
       if ($args =~ /^(DNAMN|MDAT|BIL|KOMP|DBET|BET|SIDOR)/) {
 	push_main_package('mse');
@@ -455,6 +463,8 @@ sub interpret_line {
 		   TOC|
 		   T_MARGIN|
 		  )$/x) {
+    # PP is also used by man.
+    # SP is also used by mm.
     push_main_package('om');
     return;
   }
@@ -495,29 +505,31 @@ sub infer_preprocessors {
 
 # Return true (1) if either the man or ms package is inferred.
 sub infer_man_or_ms_package {
-  my @macro_ms = ('RP', 'TL', 'AU', 'AI', 'DA', 'ND', 'AB', 'AE',
+  my @macro_ms = ('AI', 'DA', 'AB',
 		  'QP', 'QS', 'QE', 'XP',
 		  'NH',
 		  'R',
 		  'CW',
 		  'BX', 'UL', 'LG', 'NL',
-		  'KS', 'KF', 'KE', 'B1', 'B2',
-		  'DS', 'DE', 'LD', 'ID', 'BD', 'CD', 'RD',
+		  'KS', 'KF', 'KE',
+		  'LD', 'ID', 'BD', 'CD', 'RD',
 		  'FS', 'FE',
 		  'OH', 'OF', 'EH', 'EF', 'P1',
-		  'TA', '1C', '2C', 'MC',
+		  'TA',
 		  'XS', 'XE', 'XA', 'TC', 'PX',
 		  'IX', 'SG');
+  # 1C, 2C, AE, AU, B1, B2, DE, DS, MC, ND, TL, RP are also used by mm.
 
-  my @macro_man = ('BR', 'IB', 'IR', 'RB', 'RI', 'P', 'TP', 'SS',
+  my @macro_man = ('BR', 'IB', 'IR', 'RB', 'RI', 'TP', 'SS',
 		   'HP', 'PD',
 		   'AT', 'UC',
 		   'SB',
-		   'EE', 'EX',
+		   'EE',
 		   'OP',
 		   'ME', 'SY', 'YS', 'TQ', 'UR', 'UE', 'MR');
   # TH can be used by ms, mm, me, mdoc, and mom.
-  # MT is also used by mm.
+  # EX, P, and MT are also used by mm.
+  # PP is also used by mom.
 
   my @macro_man_or_ms = ('B', 'I', 'BI',
 			 'DT',

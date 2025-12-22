@@ -684,7 +684,7 @@ T}
 .
 .sp \n[PD]u
 file	1048576	T{
-An attempt was made to load a file that does not exist,
+An attempt was made to read a file that does not exist.
 or a stream remained open at formatter exit.
 .
 This category is enabled by default.
@@ -693,10 +693,7 @@ T}
 .
 .sp \n[PD]u
 font	131072	T{
-A non-existent font was selected,
-or the selection was ignored because a font selection escape sequence
-was used after the output line continuation escape sequence on an input
-line.
+A non-existent font was selected.
 .
 This category is enabled by default.
 T}

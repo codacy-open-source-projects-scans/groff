@@ -3,7 +3,7 @@
 #      Automake migration by Bertrand Garrigues
 #        <bertrand.garrigues@laposte.net>
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -224,12 +224,19 @@ endif
 $(devpdffont_descriptions_for_urw) $(DEFAULT_BASE35_FONTS) \
   $(URW_BASE35_FONTS): font/devpdf/download
 
+if HAVE_URW_FONTS
+buildfoundries_extra_arg=--dirURW=$(urwfontsdir)
+else
+buildfoundries_extra_arg=
+endif
+
 font/devpdf/download: $(devpdffontencdata) $(devpdffontmapdata) \
   $(devpdffont_descriptions_from_devps) \
   font/devpdf/DESC font/devpdf/Foundry font/devpdf/util/BuildFoundries
 	$(AM_V_GEN)$(MKDIR_P) $(top_builddir)/font/devpdf \
 	&& PATH="$(abs_top_builddir)$(GROFF_PATH_SEPARATOR)$(abs_top_builddir)/build-aux$(GROFF_PATH_SEPARATOR)$(PATH)" \
 	$(abs_top_builddir)/font/devpdf/util/BuildFoundries \
+	  $(buildfoundries_extra_arg) \
 	  --download $(abs_top_srcdir)/font/devpdf/download.in \
 	  $(abs_top_builddir)/font/devpdf \
 	  '$(abs_top_srcdir)/font/devpdf:$(abs_top_builddir)/font/devpdf' \

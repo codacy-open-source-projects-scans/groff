@@ -1,6 +1,4 @@
-.\" -*- nroff -*-
-.\"
-.\" html-end.tmac
+.\" Configure groff output device "html".
 .\"
 .do nr *groff_html-end_tmac_C \n[.cp]
 .cp 0
@@ -18,6 +16,9 @@
 .
 .\" tell grohtml some default parameter values
 .pl \n[.R]u-1v
+.\" Set the page offset twice to clobber the "previous" page offset for
+.\" consistency with nroff-mode devices.  See Savannah #67843.
+.po 0
 .po 0
 .ll \n[.l]u
 .ta \n[.tabs]

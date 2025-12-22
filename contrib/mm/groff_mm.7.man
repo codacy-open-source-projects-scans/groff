@@ -4135,7 +4135,7 @@ letter.
 .
 .I mm
 collects input into the writer's address until the document calls
-.BR WA ,
+.BR WE ,
 then outputs it.
 .
 You can specify multiple writers with empty

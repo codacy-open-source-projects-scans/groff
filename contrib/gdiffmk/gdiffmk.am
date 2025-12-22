@@ -1,12 +1,14 @@
 # Automake rules for 'gdiffmk' (integration into the groff source tree)
 #
-# Copyright (C) 2004-2024 Free Software Foundation, Inc.
+# Copyright 2004-2024 Free Software Foundation, Inc.
+#
 # Written by Mike Bianchi <MBianchi@Foveal.com>
 # Automake migration by Bertrand Garrigues
 # Changes from May 2015 onward by the groff development team
 #
-# This file is part of gdiffmk, which is part of groff, the GNU roff
-# typesetting system.
+# This file is part of gdiffmk.
+#
+# gdiffmk is distributed with groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by

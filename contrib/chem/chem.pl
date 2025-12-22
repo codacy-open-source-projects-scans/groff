@@ -2,23 +2,26 @@
 
 # chem - a groff preprocessor for producing chemical structure diagrams
 
-my $copyright = 'Copyright (C) 2006-2014, 2022'
+my $copyright = 'Copyright 2006-2014, 2022'
                 . ' Free Software Foundation, Inc.';
 # Written by Bernd Warken <groff-bernd.warken-72@web.de>.
-
-# This file is part of 'chem', which is part of 'groff'.
-
-# 'groff' is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License (GPL) version 2 as
-# published by the Free Software Foundation.
-
-# 'groff' is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-
-# The GPL2 license text is available in the internet at
-# <http://www.gnu.org/licenses/gpl-2.0.html>.
+#
+# This file is part of chem.
+#
+# chem is distributed with groff, the GNU roff typesetting system.
+#
+# groff is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # settings

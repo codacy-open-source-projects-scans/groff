@@ -1,7 +1,7 @@
 /* Copyright 1989-2003 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -21,13 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <errno.h>
+#include <stdcountof.h>
 #include <stdio.h> // EOF, FILE, fclose(), fgets(), getc(), ungetc()
 #include <stdlib.h> // getenv(), putenv(), strtoul()
 #include <string.h> // strerror(), strtok()
 
 #include "cset.h"
 #include "driver.h"
-#include "lib.h" // array_length(), strsave()
+#include "lib.h" // strsave()
 #include "stringclass.h"
 
 #include "ps.h"
@@ -66,7 +67,8 @@ const char *extension_table[] = {
   "FileSystem",
 };
 
-const size_t NEXTENSIONS = array_length(extension_table);
+// C++11: constexpr
+const size_t NEXTENSIONS = countof(extension_table);
 
 // this must stay in sync with 'resource_type' in 'ps.h'
 const char *resource_table[] = {
@@ -79,7 +81,8 @@ const char *resource_table[] = {
   "pattern",
 };
 
-const size_t NRESOURCES = array_length(resource_table);
+// C++11: constexpr
+const size_t NRESOURCES = countof(resource_table);
 
 static bool read_uint_arg(const char **pp, unsigned *res)
 {
@@ -946,7 +949,8 @@ void resource_manager::process_file(int rank, FILE *fp,
     "DocumentSuppliedFiles:",
   };
 
-  const size_t NHEADER_COMMENTS = array_length(header_comment_table);
+  // C++11: constexpr
+  const size_t NHEADER_COMMENTS = countof(header_comment_table);
 
   static const comment_info comment_table[] = {
     { "BeginResource:", &resource_manager::do_begin_resource },
@@ -967,7 +971,8 @@ void resource_manager::process_file(int rank, FILE *fp,
     { "BeginBinary:", &resource_manager::do_begin_binary },
   };
 
-  const size_t NCOMMENTS = array_length(comment_table);
+  // C++11: constexpr
+  const size_t NCOMMENTS = countof(comment_table);
   string buf;
   int saved_lineno = current_lineno;
   const char *saved_filename = current_filename;

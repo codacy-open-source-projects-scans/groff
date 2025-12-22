@@ -1366,7 +1366,7 @@ after the first paragraphing macro,
 and invoking the
 .B sp
 request before calling
-.B B2 .
+.BR B2 .
 .
 .
 .P

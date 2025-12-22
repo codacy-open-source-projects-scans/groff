@@ -2,28 +2,28 @@
 
 # gperl - preprocess troff(1) input to execute embedded Perl code
 #
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
-#                    2025 G. Branden Robinson
+# Copyright 2014-2020 Free Software Foundation, Inc.
+#                2025 G. Branden Robinson
 #
 # Written by Bernd Warken <groff-bernd.warken-72@web.de>.
 # Enhanced by: G. Branden Robinson <g.branden.robinson@gmail.com>
 #
-# This file is part of 'gperl'.
+# This file is part of gperl.
 #
-# 'gperl' is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# gperl is distributed with groff, the GNU roff typesetting system.
 #
-# 'gperl' is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
+# groff is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
 #
-# You can find a copy of the GNU General Public License in the internet
-# at <http://www.gnu.org/licenses/gpl-2.0.html>.
-
-########################################################################
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use strict;
 use warnings;

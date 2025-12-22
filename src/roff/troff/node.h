@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -682,7 +682,6 @@ public:
   void dump_properties();
 };
 
-class charinfo;
 node *make_node(charinfo *, environment *);
 bool character_exists(charinfo *, environment *);
 

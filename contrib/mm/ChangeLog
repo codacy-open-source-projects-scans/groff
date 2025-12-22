@@ -1,3 +1,36 @@
+2025-12-21  Alexis Hildebrandt <afh@surryhill.net>
+
+	* groff_mm.7.man (Macros) <WA>: Fix typo.
+
+	Fixes <https://savannah.gnu.org/bugs/?67840>.
+
+2025-12-05  Alexis Hildebrandt <afh@surryhill.net>
+
+	* m.tmac (TC, lix*print-line): Use the new `Cap*` string names
+	instead of the old `Li*` ones.
+
+	[Continues (completes?) changes overlooked by me in November of
+	last year and again in August of this one. --GBR]
+
+2025-12-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (B2): In nroff mode, space by one vee before and after
+	interpolating the `box*div` boxed text diversion.  This prevents
+	the box lines and text from overprinting.
+
+	Fixes <https://savannah.gnu.org/bugs/?67811>.
+
+2025-12-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (B1): In the environment we set up for boxed text,
+	shorten the line length of title lines.  This (a) makes sense
+	and (b) parallelizes more closely with the `B1` and `B2` macros
+	in the ms(7) package.
+
+2025-12-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (B1, B2): Break on all calls, even erroneous ones.
+
 2025-12-09  Alexis Hildebrandt <afh@surryhill.net>
 
 	* mm/0.MT: In troff mode, use default character for drawing

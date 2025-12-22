@@ -1,3 +1,789 @@
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Delimiters):
+	* man/groff.7.man (Delimiters): Clarify that an invalid escape
+	sequence is valid as a delimiter if the character after the
+	escape character would be valid as one.
+
+	Fixes <https://savannah.gnu.org/bugs/?67375>.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Delimiters):
+	* man/groff.7.man (Delimiters): Clarify what makes an escape
+	sequence ineligible for use as a delimiter--not its
+	parameterization, but its own use of delimiters.  Relatedly,
+	document the clever hack (dirty trick?) GNU eqn and tbl use to
+	surround arbitrary user input with delimiters that are nigh upon
+	guaranteed not to collide with that input.
+
+	Fixes <https://savannah.gnu.org/bugs/?67372>.  I hope.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Split `TOKEN_SPECIAL_CHAR` token type into two, leaving
+	the existing one for `\(` and `\[` escape sequences, and
+	creating a new `TOKEN_DELIMITED_SPECIAL_CHAR` for the delimited
+	`\C` escape sequence.
+
+	* src/roff/troff/token.h (class token): Add new
+	`TOKEN_DELIMITED_SPECIAL_CHAR` enumeration constant.
+	(token::is_special_character, token::is_any_character): Return
+	`true` for both new and old token types.
+	* src/roff/troff/input.cpp (token::next) <C>: Tokenize `C`
+	escape sequence as `TOKEN_DELIMITED_SPECIAL_CHAR`.
+	(token::is_usable_as_delimiter): Reject
+	`TOKEN_DELIMITED_SPECIAL_CHAR` as a delimiter.
+	(token::operator==, token::description, process_input_stack)
+	(token::get_charinfo, token::add_to_zero_width_node_list)
+	(token::process): Treat new token type the same as the old one.
+
+	Fixes <https://savannah.gnu.org/bugs/?67842>.  Problem appears
+	to date back to groff's birth.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/check-delimiter-validity.sh: Add
+	regression test for Savannah #67842.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Drop
+	`assert()`-ion that is reachable with invalid input.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/div.cpp (page_offset, page_length): Rename
+	these...
+	(configure_page_offset_request, configure_page_length_request):
+	...to these.
+	(init_div_requests): Update wire-uppery.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Move page offset access from language
+	parser logic into "engine" logic.
+
+	* src/roff/troff/div.h: Drop unnecessary declaration of
+	`page_offset()` returning `void`.  This concealed a latent
+	symbol visibility problem.
+	(class top_level_diversion): Declare new member function
+	`get_previous_page_offset()`, giving it a simple inline
+	definition akin to the existing `get_page_offset()`.
+	* src/roff/troff/div.cpp (page_offset): Make request handler
+	use accessor member functions instead of retrieving the
+	diversion's properties directly.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Move page offset updates from language
+	parser logic into "engine" logic.
+
+	* src/roff/troff/div.h (class top_level_diversion): Declare new
+	member function `set_page_offset()`.
+	(top_level_diversion::set_page_offset): Define it, and make it
+	responsible for updating both `page_offset` and
+	`prev_page_offset` private member variables.
+	* src/roff/troff/div.cpp (page_offset): Make request handler
+	call this new mutator member function instead of manipulating
+	the diversion's properties directly.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grohtml,grotty]: Fix Savannah #67843.
+
+	* tmac/html-end.tmac:
+	* tmac/tty.tmac: Set the page offset to zero _twice_, to better
+	simulate AT&T nroff behavior.  (Do it for the "html" device too;
+	it better resembles an nroff-mode device than a troff-mode one.)
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Regression-test Savannah #67843.
+
+	* src/roff/groff/tests/po-request-works: New file.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Split `TOKEN_HORIZONTAL_MOTION` token type
+	into two, leaving the existing one for `\0`, `\^`, and `\|`
+	escape sequences, and creating a new
+	`TOKEN_DELIMITED_HORIZONTAL_MOTION` for the parameterized `\h`
+	escape sequence.
+
+	* src/roff/troff/token.h (class token): Add new
+	`TOKEN_DELIMITED_HORIZONTAL_MOTION` enumeration constant.
+	(token::is_horizontal_motion): Return `true` for both new and
+	old token types.
+	* src/roff/troff/input.cpp (token::next) <h>: Tokenize `h`
+	escape sequence as `TOKEN_DELIMITED_HORIZONTAL_MOTION`.
+	(token::is_usable_as_delimiter): Reject
+	`TOKEN_DELIMITED_HORIZONTAL_MOTION` instead of
+	`TOKEN_HORIZONTAL_MOTION` as a delimiter.
+	(token::next <z>, process_input_stack)
+	(token::add_to_zero_width_node_list, token::process): Treat new
+	token type the same as the old one.
+	(token::description): Describe new token type distinctly.
+
+	* src/roff/groff/tests/check-delimiter-validity.sh: Delete check
+	for invalidity of `\0`, `\^`, and `\|` as delimiters--they're
+	valid again now.
+
+	* doc/groff.texi.in (Delimiters):
+	* man/groff.7.man (Delimiters): Re-document `\0`, `\^`, and `\|`
+	as valid delimiters.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (class token): Trivially refactor.
+	Sort enumeration constants lexicographically by their symbol
+	names.  It seems that they once were thus sorted (except for
+	`TOKEN_EOF`), but my renaming activities have effaced that.
+	Restore that ordering, but stop treating `TOKEN_EOF` specially.
+	Its magnitude is never compared to anything (and shouldn't be).
+
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/pdf-device-smoke-test.sh: New file.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/lj4-device-smoke-test.sh: New file.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/lbp-device-smoke-test.sh: New file.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/safer-mode-works.sh: Fix newly added test
+	to actually test what it means to test.  Continues commit
+	49cbc926cf, 15 December.
+
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/check-delimiter-validity.sh: Check
+	unparameterized and invalid escape sequences for usability as
+	escape sequence delimiters.  See Savannah #67375.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_title_parts): Throw deprecation
+	warning in category "delim" if the delimiter is invalid and
+	we're not in compatibility mode.  This is a training wheel to
+	get people off of ambiguous delimiters.  See Savannah #66009.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/check-delimiter-validity.sh: Improve
+	tests.  Clarify progress messages to distinguish escape
+	sequence, title request, and output comparison contexts.  Test
+	two characters ('@', '_') that weren't tested before because I
+	ran out of steam.  Test delimiters used with title requests and
+	output comparisons even when not in compatibility mode.  Also
+	cosmetically sort big lists to vertically align punctuation
+	characters that aren't significant in numeric expressions,
+	pairing them up by low-order bits of their ISO 646 code points.
+
+2025-12-07  Alejandro Colomar <alx@kernel.org>
+
+	* src/libs/libgroff/uniglyph.cpp:
+	* src/preproc/eqn/delim.cpp:
+	* src/preproc/eqn/text.cpp:
+	* src/preproc/pic/lex.cpp:
+	* src/preproc/refer/command.cpp:
+	* src/preproc/refer/ref.cpp:
+	* src/utils/hpftodit/hpuni.cpp:
+	* src/utils/tfmtodit/tfmtodit.cpp: Include "stdcountof.h" header
+	file.
+
+	* src/preproc/eqn/delim.cpp: Initialize global constant
+	`DELIM_TABLE_SIZE` using `countof()` instead of `sizeof` and
+	division.
+
+	* src/libs/libgroff/uniglyph.cpp
+	(unicode_to_glyph_init::unicode_decompose_init):
+	* src/preproc/eqn/text.cpp (special_to_entity):
+	* src/preproc/pic/lex.cpp (lookup_keyword):
+	* src/preproc/refer/command.cpp (execute_command):
+	* src/preproc/refer/ref.cpp (find_month):
+	* src/utils/hpftodit/hpuni.cpp
+	(hp_msl_to_unicode_init::hp_msl_to_unicode_init):
+	* src/utils/tfmtodit/tfmtodit.cpp (main): Use `countof()`
+	instead of `sizeof` and division.
+
+	countof() is [expected to be --GBR] standard (ISO C2y).
+
+	Continues the long process of fixing Savannah #66518.
+
+2025-12-07  Alejandro Colomar <alx@kernel.org>
+
+	* src/utils/hpftodit/hpftodit.cpp: Include "stdcountof.h" header
+	file.  Drop `SIZEOF()` function-like preprocessor macro.
+	(output_ligatures): Use `countof()` instead of `SIZEOF()`.
+
+	countof() is [expected to be --GBR] standard (ISO C2y).
+
+	Continues the long process of fixing Savannah #66518.
+
+2025-12-07  Alejandro Colomar <alx@kernel.org>
+
+	* src/devices/grolbp/lbp.cpp:
+	* src/devices/grolj4/lj4.cpp:
+	* src/devices/grops/ps.cpp:
+	* src/devices/grops/psrm.cpp:
+	* src/libs/libgroff/font.cpp:
+	* src/libs/libgroff/glyphuni.cpp:
+	* src/libs/libgroff/make-uniuni:
+	* src/libs/libgroff/uniuni.cpp:
+	* src/preproc/eqn/box.cpp:
+	* src/preproc/eqn/lex.cpp:
+	* src/preproc/pic/pic.ypp:
+	* src/preproc/preconv/preconv.cpp:
+	* src/roff/troff/input.cpp:
+	* src/utils/addftinfo/addftinfo.cpp: Include "stdcountof.h"
+	header file.
+
+	* src/devices/grolbp/lbp.cpp (set_papersize):
+	* src/devices/grolj4/lj4.cpp
+	(lj4_font::handle_unknown_font_command, lookup_paper_size):
+	* src/devices/grops/ps.cpp (ps_printer::special):
+	* src/devices/grops/psrm.cpp (resource_manager::process_file):
+	* src/libs/libgroff/font.cpp (font::load_desc):
+	* src/libs/libgroff/glyphuni.cpp
+	(glyph_to_unicode_init::glyph_to_unicode_init):
+	* src/libs/libgroff/make-uniuni
+	(unicode_decompose_init::unicode_decompose_init):
+	* src/libs/libgroff/uniuni.cpp
+	(unicode_decompose_init::unicode_decompose_init):
+	* src/preproc/eqn/box.cpp (set_param, reset_param, get_param)
+	(init_param_table, free_param_table):
+	* src/preproc/eqn/lex.cpp (init_table):
+	* src/preproc/pic/pic.ypp (define_variable, reset, reset_all):
+	* src/preproc/preconv/preconv.cpp (get_BOM):
+	* src/roff/troff/input.cpp (lookup_warning):
+	* src/utils/addftinfo/addftinfo.cpp (main, usage): Use countof()
+	instead of [groff's template function --GBR] array_length().
+
+	* src/devices/grops/psrm.cpp: Initialize constant globals with
+	`countof()` instead of `array_length()`.
+
+	countof() is [expected to be --GBR] standard (ISO C2y).
+
+	Continues the long process of fixing Savannah #66518.
+
+2025-12-07  Alejandro Colomar <alx@kernel.org>
+
+	* bootstrap.conf (gnulib_modules): Add stdcountof-h.
+
+	Continues the long process of fixing Savannah #66518.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_long_name()` to
+	`read_long_identifier()`, because it's used for more than just
+	reading "names" (request, macro, string, or diversion
+	identifiers), but also identifiers of environments, colors,
+	registers, fonts, styles, and file names.  (The last occurs only
+	in `ps_bbox_request()` and might be inapposite; GNU troff now
+	handles file names with spaces in thim, and that might not work
+	because the `psbb` request is not parsing its arguments
+	appropriately.)
+	* src/roff/troff/token.h: Rename in declaration.
+	* src/roff/troff/input.cpp (get_long_name): Rename this...
+	(read_long_identifier): ...to this.
+	* src/roff/troff/column.cpp (column_justify) [COLUMN]:
+	* src/roff/troff/env.cpp (environment_copy, environment_switch):
+	* src/roff/troff/input.cpp (define_color, read_identifier)
+	(do_register, is_conditional_expression_true, ps_bbox_request)
+	(vjustify) [COLUMN]:
+	* src/roff/troff/node.cpp (mount_font_at_position): Update call
+	sites.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h: Relocate declaration of "input.cpp"
+	function `has_arg()` to sit alongside others for the same file,
+	and mark it `extern`.  Arrange nearby declarations to match the
+	order of their definition in "input.cpp", in case any deep
+	meaning is thereby revealed (perhaps not).
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor for conceptual clarity.  In *roff,
+	spaces and horizontal motions are distinct kinds of thing.
+	Spaces are potentially breakable, discardable (at the distal
+	ends of text lines), and adjustable.  Horizontal motions are
+	none of these.
+
+	* src/roff/troff/token.h (class token): Rename enumeration
+	constant from `TOKEN_HORIZONTAL_SPACE` to
+	`TOKEN_HORIZONTAL_MOTION`.  Rename member function declaration
+	from `is_horizontal_space()` to `is_horizontal_motion()`.
+	(token::is_horizontal_space): Rename this...
+	(token::is_horizontal_motion): ...to this.
+	* src/roff/troff/input.cpp (do_overstrike): Update lone call
+	site of `is_horizontal_space()`.
+	* src/roff/troff/token.h (token::is_horizontal_motion):
+	* src/roff/troff/input.cpp (token::next): Update sites of
+	comparisons to `TOKEN_HORIZONTAL_SPACE`.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (class token): Rename member function
+	{declared} from `is_white_space()` to
+	`is_horizontal_whitespace()`.  Whitespace isn't "white" in the
+	chromatic sense (cf. "red" or "black") but in an abstract one;
+	further, this member function does not test for form feeds or
+	any other conceivable "vertical whitespace".
+	(token::is_white_space): Rename {definition} from this...
+	(token::is_horizontal_whitespace): ...to this.
+	* src/roff/troff/input.cpp (process_input_stack): Update lone
+	call site.  (So why have `is_horizontal_whitespace()` in the
+	`token` class at all?)
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.h: Drop duplicate incomplete type
+	declaration.
+	* src/roff/troff/token.h: Drop unneeded incomplete type
+	declaration.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (token::ch): Compare member variable
+	`c` to literal of `unsigned char` type, not a character literal
+	of undefined signedness.
+
+	Continues the long process of fixing Savannah #67735.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next, token::get_charinfo)
+	(is_conditional_expression_true):
+	* src/roff/troff/token.h (token::is_newline, token::is_space)
+	(token::is_stretchable_space, token::is_unstretchable_space)
+	(token::is_horizontal_space, token::is_special_character)
+	(token::nspaces, token::is_white_space, token::is_transparent)
+	(token::is_page_ejector, token::ch, token::is_any_character)
+	(token::is_indexed_character, token::is_node, token::is_eof)
+	(token::is_dummy, token::is_transparent_dummy)
+	(token::is_left_brace, token::is_right_brace, token::is_tab)
+	(token::is_leader, token::is_backspace)
+	(token::is_hyphen_indicator, token::is_zero_width_break): Fix
+	code style nits.  Parenthesize formally complex expressions.
+	Arrange equality comparisons to avoid inadvertent lvalue
+	assignment.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor to use the C++ default argument force.  Merge
+	function `get_number_rigidly()` into `read_measurement(), which
+	differed by one line out of a dozen, by extending the latter's
+	signature with a default argument `is_mandatory` of type `bool`.
+	This coincidentally made GCC's overload resolver more sensitive
+	to arguments of ambiguous integral type, so take this
+	opportunity to stop punning between character literals and
+	`unsigned char`, in favor of the explicitness we'll need anyway
+	for GNU troff's planned wider fundamental character type.
+
+	* src/roff/troff/token.h: Drop declaration of
+	`get_number_rigidly()`.  Update declaration of
+	`read_measurement()` with `bool`-valued 3rd argument defaulting
+	`false`.
+	* src/roff/troff/input.cpp (read_color_channel_value)
+	(do_expr_test, read_size, do_register)
+	(is_conditional_expression_true, evaluate_expression):
+	* src/roff/troff/reg.cpp (define_register_request):
+	Explicitly construct literal of `unsigned char` type as argument
+	to `read_measurement()`.
+	* src/roff/troff/input.cpp (do_expr_test): Migrate only call
+	site of `get_number_rigidly()` to `read_measurement()` with an
+	explicit `true` 3rd argument.
+	* src/roff/troff/number.cpp (get_number_rigidly): Delete.
+	(read_measurement): Accept third argument, `is_mandatory`, of
+	type `bool`.  Pass it to `is_valid_expression()`, which is
+	already prepared for same.
+
+	Continues the long process of fixing Savannah #67735.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Fix code style nits.  Replace
+	preprocessor macro `SCALING_UNITS` with `static const char`
+	array `valid_scaling_units`.
+	(is_valid_term): Use the array instead of the string literal
+	macro as the haystack in strchr(3) call; explicitly construct a
+	`char`-typed needle from an `int`-typed argument.
+	(is_valid_term, scale): Parenthesize formally complex
+	expressions.
+	(scale): Split one `&&`-using assert(3)ion into two.  Construct
+	temporary `unsigned int` objects using the syntax C++ seems to
+	support for this.  Return object of type `units` rather than
+	`int`.  (They're type-aliased with `typedef`, but scrupulous
+	type correctness is more conceptually coherent and forecloses an
+	avenue of future error.)
+	(is_valid_expression, is_valid_term): Prepare (I think) all
+	comparisons of C++ character literals to the input read by our
+	numeric expression parser for groff's planned wider fundamental
+	character type.  Construct `int`s from character literals, and
+	annotate their need to be constructed as that future type.
+
+	Continues the long process of fixing Savannah #67735.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/hvunits.h (get_vunits, get_hunits): Rename (in
+	declarations) these...
+	(read_vunits, read_hunits): ...to these, because they advance
+	the input stream pointer.
+	* src/roff/troff/number.cpp (get_vunits, get_hunits): Rename (in
+	definitions) these...
+	(read_vunits, read_hunits): ...to these.  Update literals in
+	assertions.
+	* src/roff/troff/column.cpp (column_justify) [COLUMN]:
+	* src/roff/troff/div.cpp (page_offset, when_request)
+	(space_request, need_space, save_vertical_space, diversion_trap)
+	(change_trap, return_request):
+	* src/roff/troff/env.cpp (line_length, title_length)
+	(vertical_spacing, post_vertical_spacing, indent)
+	(temporary_indent, margin_character, hyphenation_space_request)
+	(hyphenation_margin_request, configure_tab_stops_request):
+	Update call sites.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Drop unnecessary header file
+	inclusion.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Further conceal broken nested class feature.
+
+	* src/roff/troff/charinfo.h (class charinfo): Annotate
+	nonfunctional member variable.
+	* src/roff/troff/input.cpp (define_class_request)
+	(charinfo::get_number, charinfo::contains): Drop word "cyclic"
+	from warning diagnostics in category "syntax"; we don't
+	implemented nested classes _at all_; lack of support is not
+	limited to non-cyclic ones.
+	(charinfo::contains): `#if 0`-disable code that searches
+	`nested_classes` member variable for matching `charinfo`
+	objects.
+
+	Fixes <https://savannah.gnu.org/bugs/?67770>.  Continues commit
+	d330127900, 6 December.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/devpdf.am: Fix "BuildFoundries" failure if the URW
+	fonts can't be found in its built-in search path.  If the macro
+	`HAVE_URW_FONTS` is defined, define new macro
+	`buildfoundries_extra_arg` so as to construct a `--dirURW=`
+	argument; otherwise, make `buildfoundries_extra_arg` empty.
+	(font/devpdf/download): Interpolate `buildfoundries_extra_arg`
+	macro when running "BuildFoundries" command.
+
+	Fixes <https://savannah.gnu.org/bugs/?67683>.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Size the buffer
+	housing the node description more scrupulously, avoiding
+	potential string truncation.
+
+	Fixes problem introduced by me in commit 1fb72c15e6, 3 December.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/xtotroff/xtotroff.c (main): Fix thinko in fprintf(3)
+	call; that's not one of groff's diagnostic functions, so we must
+	use `%s` in its format string, not `%1`.
+
+	Fixes problem introduced by me in commit 4b7a0fe5ab, 6 December.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Recognize materials licensed under LGPLv3.
+
+	* LGPLv3: New file, retrieved from gnu.org on this date.
+	* LICENSES: Discuss materials distributed under LGPLv3.  State
+	where to find texts of FDL and LGPLv3 licenses.  (It's not a big
+	mystery.)
+	* MANIFEST: Document presence of "LGPLv3" file.
+	* Makefile.am (EXTRA_DIST): Ship "LGPLv3" file.
+	* src/include/relocate.h:
+	* src/libs/libgroff/relocate.cpp: Cosmetically reindent and
+	reflow copyright and license notices.  Reflect renaming of LGPL
+	from "Library" to "Lesser" General Public License.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Retire our hypot(3) replacement in favor of gnulib's.  Werner
+	Lemberg borrowed ours from glibc in 2005 to work around a
+	problem with its Interix implementation.  Interix has been dead
+	a long time.  We still want a replacement, though, as gnulib
+	documents hypot(3) as broken on mingw and MSVC 2014.  We
+	certainly wish to keep working on the former.
+
+	* bootstrap.conf: Add "hypot" to "gnulib_modules".
+	* src/include/lib.h: Drop declaration of `groff_hypot()`.
+	* src/libs/libgroff/hypot.cpp: Delete.
+	* src/libs/libgroff/libgroff.am (libgroff_a_SOURCES): Drop
+	foregoing file.
+	* src/preproc/grn/hgraph.cpp (len, HGArc, picurve)
+	(Parameterize):
+	* src/preproc/pic/object.cpp (hypot): Migrate `groff_hypot()`
+	calls to `hypot()`.
+
+	Continues the long process of fixing Savannah #66518.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/ps.tmac: Delete internal macros after we're done using
+	them.  They are not documented and therefore not supported for
+	use by documents.  They consequently should not litter the macro
+	name space after formatter startup.
+
+2025-12-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/safer-mode-works.sh: Unit-test "locking"
+	of safer mode after `-S` option is specified.
+
+2025-12-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp (main): Initialize `want_unsafe_mode`
+	to `false`, not `true`.  When flipping the semantics of this
+	variable name in commit 3a1b01474d (to make it easier to
+	implement "locking" `-S` option behavior), I neglected to flip
+	its default value.
+
+	Fixes <https://savannah.gnu.org/bugs/?67815>.  Thanks to Dave
+	Kemper for the report and root-cause analysis.  Problem
+	introduced by me in commit 3a1b01474d, 7 October.
+
+2025-12-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Regression-test Savannah #67815.
+
+	* src/roff/groff/tests/safer-mode-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (interpolate_rg): Rename this...
+	(interpolate_positional_parameter): ...to this.
+	(get_copy, token::next): Update call sites.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_color_element): Rename this...
+	(read_color_channel_value): ...to this.
+	(read_rgb, read_cmy, read_cmyk, read_gray): Update call sites.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_char_for_escape_parameter):
+	Rename this...
+	(read_char_in_escape_sequence_parameter): ...to this.
+	(read_long_escape_parameters, read_escape_parameter)
+	(read_increment_and_escape_parameter): Update call sites.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (get_line_arg): Rename this...
+	(read_line_rule_expression): ...to this.  Update forward
+	declaration.
+	(token:next): Update call site.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::is_usable_as_delimiter):
+	Explicitly clear stack-allocated buffer before otherwise writing
+	to it, for paranoia's sake.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Fix code style nits.
+	(get_color_element): Favor value constructor over C-style type
+	cast.
+	(read_rgb, read_cmy, read_cmyk, read_gray)
+	(interpolate_string_with_args): Arrange equality comparisons to
+	avoid inadvertent lvalue assignment.
+	(token::next, interpolate_string, interpolate_string_with_args)
+	(chop_macro, do_string_case_transform, substring_request)
+	(unformat_macro, write_macro_request): Explicitly compare value
+	of pointer type to null pointer literal instead of letting it
+	pun down to a Boolean.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Fix code style nits.
+	(file_iterator::fill, file_iterator::peek): Stop pointlessly
+	constructing a new `int` from an existing one.
+	(file_iterator::fill): Arrange equality comparisons to avoid
+	inadvertent lvalue assignment.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (assign_control_character): Rename
+	this...
+	(assign_control_character_request): ...to this.
+	(assign_no_break_control_character): Rename this...
+	(assign_no_break_control_character_request): ...to this.
+	(init_input_requests): Update wire-uppery of request names to
+	their handlers.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Add new `const` globals
+	`default_control_char` and `default_no_break_control_char`.
+	(assign_control_character): Use `default_control_char` instead of
+	a `.` character literal.
+	(assign_no_break_control_character): Use
+	`default_no_break_control_char` instead of a `'` character
+	literal.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (assign_escape_character): Rename
+	this...
+	(assign_escape_character_request): ...to this.
+	(escape_off): Rename this...
+	(escape_off_request): ...to this.
+	(save_escape_char): Rename this...
+	(save_escape_char_request): ...to this.
+	(restore_escape_char): Rename this...
+	(restore_escape_char_request): ...to this.
+	(init_input_requests): Update wire-uppery of request names to
+	their handlers.
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Add new `const` global
+	`default_escape_char`.  Initialize `escape_char` using it.
+	(assign_escape_character): Use `default_escape_char` instead of
+	a `\\` character literal.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (process_input_stack): Emit warning
+	in category "syntax", and otherwise ignore, horizontal space
+	tokens (including `\h`, `\0`, `\|`, and `\^) after `\c` on an
+	input line.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::next): Reject `\s` escape
+	sequence after `\c` on an input line.  Throw warning in category
+	"syntax" and don't interpret it at all.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::set_font): Move warning
+	thrown (and recast it, and change its category from "font" to
+	"syntax") when font selection attempted on the ignored part of
+	an input line interrupted/continued with `\c` from here...
+	* src/roff/troff/input.cpp (token::next): ...to here.
+
+	* doc/groff.texi.in (Warnings):
+	* man/groff_diff.7.man (Warnings): Simplify description of
+	warning category "font" accordingly.
+
+2025-12-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(override_available_type_sizes_request): Fix code style nits.
+	Arrange equality comparisons to avoid inadvertent lvalue
+	assignment.  Parenthesize formally complex expressions.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::possibly_break_line): Fix
+	code style nits.  Parenthesize formally complex expressions.
+	Arrange equality comparisons to avoid inadvertent lvalue
+	assignment.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp
+	(non_interpreted_char_node::non_interpreted_char_node): Fix code
+	style nit.  Migrate input character handling constructor to deal
+	in the type `unsigned char` rather than `char`.  Use explicitly
+	unsigned literal in comparison.
+
+	Continues the long process of fixing Savannah #67735.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (process_input_stack): Fix code style
+	nit.  Eliminate unnecessary brace scopes that introduces no new
+	local variables in switch `case`s.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::set_size): Fix code style
+	nit.  Arrange equality comparison to avoid inadvertent lvalue
+	assignment.
+
+2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* README.git: Delete file not distributed in archives.
+	* bootstrap.conf (checkout_only_file): Identify "FOR-RELEASE"
+	instead of "README.git" as the indicator of a Git checkout.
+
+	Fixes <https://savannah.gnu.org/bugs/?67787>.  Thanks to Dave
+	Kemper for the report.
+
+2025-12-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/grog/grog.pl: Improve heuristics for distinguishing
+	mm(7) documents from those for other packages.
+	(interpret_line): Recognize `APP`, `APPSK`, `AF`, `AS`,
+	`COVEND`, `INITI`, `IND`, `INDP`, `INITR`, `SETR`, `GETHN`,
+	`GETPN`, `ISODATE`, `MULB`, `MULN`, and `MULE` as unique to mm.
+	(infer_man_or_ms_package): Stop recognizing `RP`, `TL`, `AU`,
+	`ND`, `AE`, `B1`, `B2`, `DS`, `DE`, `1C`, `2C`, and `MC` as
+	unique to ms, since mm also defines them.  Stop recognizing `P`
+	and `EX` as unique to man, since mm also defines them.
+	* src/utils/grog/tests/smoke-test.sh: Add most mm examples as
+	test cases.  A couple are deeply ambiguous, like "B1B2", which
+	is so limited that it is valid (and renders sensibly) with
+	either the mm(7) _or_ ms(7) packages, and "story.mm" which uses
+	only macro names that are shared variously among man(7), mm(7),
+	mom(7), and ms(7).
+
+	Fixes <https://savannah.gnu.org/bugs/?67802>.
+
+2025-12-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/xtotroff/xtotroff.c (MapFont): Make fatal error
+	diagnostic on memory allocation failure disclose how many bytes
+	we attempted to grab from the heap.  This way the user can
+	better distinguish system starvation scenarios from attempted
+	denial-of-service attacks (or worse).  (Admittedly, few people
+	ever run xtotroff at all, let alone in scenarios where a busy
+	system is so pinned that `malloc(PATH_MAX)` is likely to fail.
+	But I feel that since we have this information, we should
+	disclose it.)
+
+2025-12-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in (Other Differences):
+	* man/groff_diff.7.man (Other differences): Document difference
+	in timing of output flushes between AT&T and GNU troffs.
+
+	Fixes <https://savannah.gnu.org/bugs/?67380>.  Thanks to Dave
+	Kemper for the discussion.
+
 2025-12-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (read_input_until_terminator): Fix
@@ -125,6 +911,8 @@
 	* src/utils/xtotroff/xtotroff.c (MapFont, main): Tweak wording
 	of error diagnostics; favor "cannot" over "unable to" or
 	"can't".  Also quote name of environment variable.
+
+	Continues fixing Savannah #66519.
 
 2025-12-06  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -1024,7 +1812,7 @@
 
 	* doc/groff.texi.in (Manipulating Hyphenation):
 	* man/groff.7.man (Request short reference): Fix error that
-	crept into groff 1.23.0 documentation; hypenation exception
+	crept into groff 1.23.0 documentation; hyphenation exception
 	words have no association with formatter environments (though
 	that is a contemplated change; see Savannah #66387).
 
@@ -2628,13 +3416,6 @@
 	* src/roff/troff/env.cpp: Add forward declaration.
 	  (hyphenation): Mark function as `static`.
 	* src/roff/troff/node.h: Drop declaration.
-
-2025-10-04  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* src/roff/troff/env.cpp (environment::hyphenate_line): Add
-	assertion for an apparently impossible scenario.  The formatter
-	should not attempt to hyphenate an output line with no nodes in
-	it.  An output line containing no nodes is nonsense.
 
 2025-09-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -15887,7 +16668,7 @@
 	will prompt warnings if GNU troff is given the `-wmac` option
 	{or equivalent}.
 
-2024-03-19  Alexis <surryhill@gmail.com>
+2024-03-19  Alexis Hildebrandt <afh@surryhill.net>
 
 	[grohtml]: Migrate from psselect(1) to ps2ps(1).
 

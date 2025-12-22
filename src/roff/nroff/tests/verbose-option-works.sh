@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# Copyright (C) 2020-2025 Free Software Foundation, Inc.
+# Copyright 2020-2025 G. Branden Robinson
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 nroff="${abs_top_builddir:-.}/nroff"
 
@@ -113,4 +112,4 @@ echo "checking argument declustering: 'nroff -V -tzms'" >&2
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

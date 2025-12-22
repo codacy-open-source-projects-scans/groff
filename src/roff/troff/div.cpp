@@ -3,7 +3,7 @@
 
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -735,24 +735,23 @@ diversion::~diversion()
 {
 }
 
-void page_offset()
+void configure_page_offset_request()
 {
   hunits n;
   // The troff manual says that the default scaling indicator is v,
   // but it is in fact m: v wouldn't make sense for a horizontally
   // oriented request.
-  if (!has_arg() || !get_hunits(&n, 'm', topdiv->page_offset))
-    n = topdiv->prev_page_offset;
-  topdiv->prev_page_offset = topdiv->page_offset;
-  topdiv->page_offset = n;
+  if (!has_arg() || !read_hunits(&n, 'm', topdiv->get_page_offset()))
+    n = topdiv->get_previous_page_offset();
+  topdiv->set_page_offset(n);
   topdiv->modified_tag.incl(MTSM_PO);
   skip_line();
 }
 
-static void page_length()
+static void configure_page_length_request()
 {
   vunits temp;
-  if (has_arg() && get_vunits(&temp, 'v', topdiv->get_page_length())) {
+  if (has_arg() && read_vunits(&temp, 'v', topdiv->get_page_length())) {
     if (temp < vresolution) {
       warning(WARN_RANGE, "setting computed page length %1u to device"
 			  " vertical motion quantum",
@@ -769,7 +768,7 @@ static void page_length()
 static void when_request()
 {
   vunits n;
-  if (get_vunits(&n, 'v')) {
+  if (read_vunits(&n, 'v')) {
     symbol s = read_identifier();
     if (s.is_null())
       topdiv->remove_trap_at(n);
@@ -862,7 +861,7 @@ static void space_request()
   if (want_break)
     curenv->do_break();
   vunits n;
-  if (!has_arg() || !get_vunits(&n, 'v'))
+  if (!has_arg() || !read_vunits(&n, 'v'))
     n = curenv->get_vertical_spacing();
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -890,7 +889,7 @@ BEGIN_TRAP token is not skipped over. */
 static void need_space()
 {
   vunits n;
-  if (!has_arg() || !get_vunits(&n, 'v'))
+  if (!has_arg() || !read_vunits(&n, 'v'))
     n = curenv->get_vertical_spacing();
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -923,7 +922,7 @@ vunits saved_space;
 static void save_vertical_space()
 {
   vunits x;
-  if (!has_arg() || !get_vunits(&x, 'v'))
+  if (!has_arg() || !read_vunits(&x, 'v'))
     x = curenv->get_vertical_spacing();
   if (curdiv->distance_to_next_trap() > x)
     curdiv->space(x, true /* forcing */);
@@ -977,7 +976,7 @@ void top_level_diversion::clear_diversion_trap()
 static void diversion_trap()
 {
   vunits n;
-  if (has_arg() && get_vunits(&n, 'v')) {
+  if (has_arg() && read_vunits(&n, 'v')) {
     symbol s = read_identifier();
     if (!s.is_null())
       curdiv->set_diversion_trap(s, n);
@@ -994,7 +993,7 @@ static void change_trap()
   symbol s = read_identifier(true /* required */);
   if (!s.is_null()) {
     vunits x;
-    if (has_arg() && get_vunits(&x, 'v'))
+    if (has_arg() && read_vunits(&x, 'v'))
       topdiv->change_trap(s, x);
     else
       topdiv->remove_trap(s);
@@ -1029,12 +1028,12 @@ static void return_request()
     if (tok.ch() == int('-')) { // TODO: grochar
       tok.next();
       vunits x;
-      if (get_vunits(&x, 'v'))
+      if (read_vunits(&x, 'v'))
 	dist = -x;
     }
     else {
       vunits x;
-      if (get_vunits(&x, 'v'))
+      if (read_vunits(&x, 'v'))
 	dist = x >= V0 ? x - curdiv->get_vertical_position() : V0;
     }
   }
@@ -1277,9 +1276,9 @@ void init_div_requests()
   init_request("ne", need_space);
   init_request("ns", no_space);
   init_request("os", output_saved_vertical_space);
-  init_request("pl", page_length);
+  init_request("pl", configure_page_length_request);
   init_request("pn", page_number);
-  init_request("po", page_offset);
+  init_request("po", configure_page_offset_request);
   init_request("ptr", print_traps);
   init_request("rs", restore_spacing);
   init_request("rt", return_request);

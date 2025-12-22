@@ -1964,7 +1964,7 @@ lines without counting them, try the following technique.
 
 @Example
 .ce 1000
-@slanted{many lines of input}
+@slanted{up to one thousand lines of input}
 .ce 0
 @endExample
 
@@ -2003,11 +2003,13 @@ are then collected into a @slanted{macro package}.
 
 @c BEGIN Keep roughly parallel with groff_tmac(5) section "Macro
 @c packages".
-Some macro packages assume responsibility for page layout
-and other critical functions
-(``major'' or ``full-service'');
-others do not
-(``supplemental'' or ``auxiliary'').
+Some macro packages
+(``major'' or ``full-service'')
+assume responsibility for page layout
+and other critical functions;
+others
+(``supplemental'' or ``auxiliary'')
+do not.
 @c END Keep roughly parallel with groff_tmac(5) section "Macro
 @c packages".
 
@@ -2339,11 +2341,18 @@ groff -m man -m ms foo.man bar.doc
 @cindex auxiliary macro package
 @cindex package, macro, auxiliary
 @cindex macro package, auxiliary
-Many auxiliary, or ``minor'', macro packages are also available.  They
-may in general be used with any full-service macro package and handle a
-variety of tasks from character encoding selection, to language
-localization, to inlining of raster images.  See
-@cite{groff_tmac@r{(5)}} for a list.
+Many auxiliary,
+or supplemental,
+macro packages are also available.
+They may in general be used
+with any full-service macro package
+and handle a variety of tasks
+from character encoding selection,
+to language localization,
+to inlining of raster images.
+See
+@cite{groff_tmac@r{(5)}}
+for a list.
 
 @menu
 * man::
@@ -2833,6 +2842,10 @@ Begin comment; ignore remainder of line.
 
 @item \n[@var{reg}]
 Interpolate value of register @var{reg}.
+
+@item \n@var{r}
+abbreviation of @code{\n[@var{r}]};
+the name @var{r} must be only one character
 
 @item \*[@var{str}]
 Interpolate contents of string @var{str}.
@@ -7909,12 +7922,19 @@ macro is called, its contents are interpreted literally.
 
 @cindex @code{'}, as delimiter
 @cindex @code{"}, as delimiter
-Some escape sequences that require parameters use delimiters.  The
-neutral apostrophe @code{'} is a popular choice and shown in this
-document.  The neutral double quote @code{"} is also commonly seen.
-Letters, numerals, and leaders can be used.  Punctuation characters
-are likely better choices, except for those meaningful in numeric
-expressions; see below.
+Some escape sequences that require parameters delimit them.
+The neutral apostrophe
+@code{'}
+is a popular delimiter choice and shown in this document.
+The neutral double quote
+@code{"}
+is also commonly seen.
+Punctuation characters are the best choice
+(and most portable to other
+@command{troff}s), @c generic
+except for those meaningful in numeric expressions;
+see below.
+@c GNU troff happily accepts tabs and leaders; AT&T troff doesn't.
 
 @Example
 \l'1.5i\[bu]' \" draw 1.5 inches of bullet glyphs
@@ -7948,25 +7968,12 @@ expressions; see below.
 @cindex @code{\r}, as delimiter
 @cindex @code{\t}, as delimiter
 @cindex @code{\u}, as delimiter
-The following escape sequences don't take arguments
+The following escape sequences are not themselves delimited,
 and thus are allowed as delimiters:
-@c That explanation is kind of BS; it's actually because their token
-@c types aren't shared with ones that are parameterized in input.
-@c Allowing `\0`, `\^`, and `\|` also allows the delimited `\h`, which
-@c presumably was not intentional.  Allowing special characters as
-@c delimiters, which very much _was_ deliberate (see their use in tbl
-@c and eqn) also allows the delimited `\C`, which is a wart that makes
-@c the foregoing "thus" a lie.  But expecting the reader to have a
-@c command of GNU troff's token types, which _should_ be a mere
-@c implementation detail, is a tall order.  When we make GNU troff
-@c handle UTF-8/Unicode internally we'll have a practically unlimited
-@c space for token types (because the internal character type will go
-@c from 8 to 32 bits wide), and can distinguish some that have been
-@c collapsed to date.  That would in turn allow us to make
-@c "unformatting" and "asciification" more representative of the
-@c original input.
 @code{\@key{SPC}},
 @code{\%},
+@code{\|},
+@code{\^},
 @code{\@{},
 @code{\@}},
 @code{\'},
@@ -7981,6 +7988,7 @@ and thus are allowed as delimiters:
 @code{\&},
 @code{\:},
 @code{\~},
+@code{\0},
 @code{\a},
 @code{\c},
 @code{\d},
@@ -7993,7 +8001,19 @@ and
 @code{\u}.
 However,
 we discourage using them this way;
-they can make the input confusing to read.
+they can make the input confusing to read.@footnote{The
+GNU
+@cite{eqn@r{(1)}}
+and
+@cite{tbl@r{(1)}}
+preprocessors use parameterized but non-delimited special characters
+escape sequences
+@code{\(}
+and
+@code{\[}
+to bracket portions of their output.}
+An invalid escape sequence is valid as a delimiter
+if the character after the escape character would be valid.
 
 @cindex @code{\D}, delimiters allowed by
 @cindex @code{\h}, delimiters allowed by
@@ -8170,7 +8190,9 @@ Another commenting scheme sometimes seen
 is three consecutive neutral apostrophes
 (@code{'''})
 at the beginning of an input line.
-This works, but GNU
+This works,@footnote{except in copy mode on Plan 9
+@command{troff}} @c Plan 9
+but GNU
 @command{troff} @c GNU
 emits a warning diagnostic
 (if enabled)
@@ -8454,13 +8476,11 @@ causing the names to refer to the same stored object.
 If
 @var{existing-register}
 is undefined,
-GNU
+the formatter ignores the request.@footnote{GNU
 @command{troff} @c GNU
-produces a warning in category
-@samp{reg}
-and ignores the request.
-@xref{Warnings},
-regarding the enablement and suppression of warnings.
+emits a warning in category
+@samp{reg}.
+@xref{Warnings}.}
 
 @cindex alias, register, removing (@code{rr})
 @cindex removing alias of register (@code{rr})
@@ -8481,7 +8501,9 @@ names.
 @cindex interpolating registers (@code{\n})
 @cindex registers, interpolating (@code{\n})
 
-Register contents are interpolated with the @code{\n} escape sequence.
+The
+@code{\n}
+escape sequence interpolates register contents.
 
 @DefescList {\\n, , i, }
 @DefescItem {\\n, (, id, }
@@ -8490,11 +8512,20 @@ Register contents are interpolated with the @code{\n} escape sequence.
 @cindex assignments, nested
 @cindex indirect assignments
 @cindex assignments, indirect
-Interpolate register with name @var{ident} (one-character
-name@tie{}@var{i}, two-character name @var{id}).  If the register is
-undefined, it is created and assigned a value of@tie{}@samp{0}, that
-value is interpolated, and a warning in category @samp{reg} is emitted.
-@xref{Warnings}, regarding the enablement and suppression of warnings.
+Interpolate register with name
+@var{ident}
+(one-character
+name@tie{}@var{i},
+two-character name
+@var{id}).
+If the register is undefined,
+the formatter creates it and assigns it a value
+of@tie{}@samp{0},
+and interpolates that value.@footnote{GNU
+@command{troff} @c GNU
+emits a warning in category
+@samp{reg}.
+@xref{Warnings}.}
 @cindex @code{\n}, interpretation in copy mode
 @code{\n} is interpreted even in copy mode (@pxref{Copy Mode}).
 
@@ -8912,6 +8943,22 @@ This document was formatted in \n(y4.
 @endExample
 @end table
 
+If you wish to embed the date and/or time of a document's formatting
+into its output,
+interpolate these registers into its text.
+Use the @code{af} request to format their values for output.
+
+@Example
+.af year 0000
+.af mo 00
+.af dy 00
+.af hours 00
+.af minutes 00
+.af seconds 00
+ISO 8601 date stamp:
+\n[year]-\n[mo]-\n[dy]T\n[hours]:\n[minutes]:\n[seconds]
+    @result{} ISO 8601 date stamp: 2025-12-07T02:17:54
+@endExample
 
 @c =====================================================================
 
@@ -9126,21 +9173,29 @@ right
 @endDefreq
 
 @Defreq {na, }
-Disable output line adjustment.  This produces the same output as
-left-alignment, but the value of the adjustment mode register @code{.j}
-is altered differently.  The adjustment mode and enablement status are
-associated with the environment (@pxref{Environments}).
+Disable output line adjustment,
+produciing the same output as left-alignment,
+but altering the value of the adjustment mode register
+@code{.j}
+differently.
+The adjustment mode
+and enablement status
+are associated with the environment.@footnote{@xref{Environments}.}
 @endDefreq
 
 @DefreqList {brp, }
 @DefescListEndx {\\p, , , }
-Break, adjusting the line per the current adjustment mode.  @code{\p}
-schedules a break with adjustment at the next word boundary.  The escape
-sequence is itself neither a break nor a space of any kind; it can thus
-be placed in the middle of a word to cause a break at the end of that
-word.
+Break,
+adjusting the line per the current adjustment mode.
+@code{\p}
+schedules a break with adjustment at the next word boundary.
+The escape sequence
+is itself neither a break nor a space of any kind;
+it can thus be placed in the middle of a word
+to cause a break at the end of that word.
 
-@code{\p} is typically used for fine-tuning of typeset output
+@code{\p}
+is typically used for fine-tuning of typeset output
 late in the document revision process.
 One of its applications is prevention of a break
 after an explicit hyphen when this occurs in an undesired place,
@@ -9150,8 +9205,7 @@ The hyphenation mode can be configured to prevent breaks
 after
 @emph{automatically}
 placed hyphens,
-but not explicit ones
-(@pxref{Manipulating Hyphenation}).
+but not explicit ones.@footnote{@xref{Manipulating Hyphenation}).}
 What one can do in this scenario
 is place @code{\p} at the end of the word
 @emph{before}
@@ -9272,13 +9326,20 @@ between the `.ce' and the `.ad c' requests.
     @result{}         the @quoteleft{}.ad c@quoteright{} requests.
 @endExample
 
-The previous example illustrates a common idiom of turning centering on
+The previous example
+illustrates a common idiom
+of turning centering on
 for a quantity of lines far in excess of what is required,@footnote{The
-@code{.R} register interpolates the largest value that GNU
-@command{troff} can work with.  @xref{Built-in Registers}.} and off
-again after the text to be centered.  This technique relieves humans of
-counting lines for requests that take a count of input lines as an
-argument.
+@code{.R}
+register interpolates the largest value that
+GNU
+@command{troff} @c GNU
+can work with.
+Recall
+@ref{Built-in Registers}.}
+and off again after the text to be centered.
+This technique relieves humans of counting lines
+for requests that take a count of input lines as an argument.
 @endDefreq
 
 @DefreqList {rj, [@Var{n}]}
@@ -9604,13 +9665,21 @@ mind, not a scrupulous enumeration of conceivable parameters.  GNU
 possible, favoring compatibility with older implementations over a more
 intuitive arrangement.  The means of hyphenation mode control is a set
 of numbers that can be added up to encode the behavior
-sought.@footnote{The mode is a vector of Booleans encoded as an integer.
-To a programmer, this fact is easily deduced from the exclusive use of
-powers of two for the configuration parameters; they are computationally
-easy to ``mask off'' and compare to zero.  To almost everyone else, the
-arrangement seems recondite and unfriendly.}  The entries in the
-following table are termed @dfn{values}; the sum of the desired
-values is the @dfn{mode}.
+sought.@footnote{The mode is a vector
+of Boolean values encoded as an integer.
+To a programmer,
+this fact is easily deduced
+from the exclusive use of powers of two
+for the configuration parameters;
+they are computationally easy to ``mask off''
+and compare to zero.
+To almost everyone else,
+the arrangement seems recondite and unfriendly.}
+The entries in the following table
+are termed
+@dfn{values};
+the sum of the desired values is the
+@dfn{mode}.
 
 @table @code
 @item 0
@@ -11217,16 +11286,27 @@ The register @code{%} interpolates the page number.
 @endExample
 
 @strong{Caution:@:} Interpolations occur before formatting operations.
-The act of filling, breaking, and adjusting a line can change the page
-number.  @code{%} is a register like any other, not a placeholder that
-is populated after the line it appears on is formatted.  Consider, for
-example, an extremely long page number at the end of the last line on
-the page; numbers aren't hyphenated, so the word containing the page
-number might break the line and the page, causing the reported page
-number to lag by one.  This sequencing also means that interpolating the
-@code{%} register inside a diversion (such as a footnote) records the
-page number at the time the diversion is populated, not when it is
-output.
+The process of filling,
+breaking,
+and adjusting a line can change the page number.
+@code{%}
+is a register like any other,
+not a placeholder
+that is rewritten after the line it appears on is formatted.
+Consider,
+for example,
+an extremely long page number
+at the end of the last line on the page;
+numbers aren't hyphenated,
+so the word containing the page number
+might break the line and the page,
+causing the reported page number to lag by one.
+This sequencing also means that interpolating the
+@code{%}
+register inside a diversion
+(such as a footnote)
+records the page number at the time the diversion is populated,
+not when it is output.
 @endDefreq
 
 @Defreq {ne, [@Var{space}]}
@@ -12493,7 +12573,10 @@ Defining
 a
 character@tie{}@var{c}
 creates a formatter object
-that is recognized like any other ordinary,
+that
+GNU
+@command{troff} @c GNU
+recognizes like any other ordinary,
 special,
 or indexed character on input,
 and produces
@@ -12556,7 +12639,7 @@ in kerning adjustments or italic corrections.
 The formatter prevents infinite recursion
 by treating an occurrence
 of a character in its own definition
-as if were undefined;
+as if it were undefined;
 when interpolating such a character,
 GNU
 @command{troff} @c GNU
@@ -12918,46 +13001,56 @@ necessary in GNU @code{troff}.  Nevertheless, they are supported.
 @cindex changing the font height (@code{\H})
 @cindex font height, changing (@code{\H})
 @cindex height, font, changing (@code{\H})
-Change (increment, decrement) the height of the current font,
-but not the width.
+Set
+(increment, decrement)
+the height of the current font,
+but not its width.
 If
 @var{height}
 is zero,
-set the font height to the selected type size.
-The default scaling unit is @samp{z}.
+the formatter uses the font's inherent height for its type size.
+The default scaling unit is
+@samp{z}.
 
 Changing the font height does not affect vertical spacing;
 dramatic changes may be better accompanied by an
 @code{\x}
 escape sequence to add extra pre-vertical space to the output line.
-@xref{Manipulating Spacing}.
+Recall @ref{Manipulating Spacing}.
 
-The read-only register @code{.height} contains the font height as set by
-@code{\H}.
+The read-only register
+@code{.height}
+interpolates the font height.
 
-Currently, only the @option{-T ps} and @option{-T pdf} devices support
-this feature.
+As of this writing,
+only the
+@option{ps}
+and
+@option{pdf}
+output devices support this feature.
 
 @cindex @code{\H} escape sequence, untokenized on input
 @cindex untokenized escape sequence, @code{\H}
-GNU
-@command{troff} @c GNU
-does not tokenize
+The formatter does not tokenize
 @code{\H}
 when reading it;
-the escape sequence updates the environment.
+the escape sequence
+updates the environment.@footnote{@xref{Environments}.}
 It thus can be used in requests that expect a single-character argument.
-We can alter the font height of a margin character as follows
-(@pxref{Miscellaneous}).
+We can alter the font height
+of a margin character@footnote{@xref{Miscellaneous}.}
+as follows.
 
 @Example
 .mc \H'+5z'x\H'0'
 @endExample
 
-In compatibility mode, @command{gtroff} behaves differently: If an
-increment or decrement is used, it is always taken relative to the
-current type size and not relative to the previously selected font
-height.  Thus,
+In compatibility mode,
+GNU
+@command{troff}
+behaves differently:
+it applies an increment or decrement to the current type size
+and not to the previously selected font height.
 
 @Example
 .cp 1
@@ -12965,8 +13058,10 @@ height.  Thus,
 @endExample
 
 @noindent
-prints the word @samp{test} twice with the same font height (five points
-larger than the current font size).
+prints the word
+@samp{test}
+twice with the same font height---five points larger
+than the current font size.
 @endDefesc
 
 @DefescList {\\S, @code{'}, slant, @code{'}}
@@ -12974,26 +13069,34 @@ larger than the current font size).
 @cindex changing the font slant (@code{\S})
 @cindex font slant, changing (@code{\S})
 @cindex slant, font, changing (@code{\S})
-Slant the current font by @var{slant} degrees.  Positive values slant to
-the right.  Only integer values are possible.
+Slant the glyphs of the currently selected font by
+@var{slant}
+degrees.
+Positive values slant in the direction of text flow.
+Only integer values are possible.
 
-The read-only register @code{.slant} contains the font slant as set by
-@code{\S}.
+The read-only register
+@code{.slant}
+interpolates the font slant.
 
-Currently, only the @option{-T ps} and @option{-T pdf} devices support
-this feature.
+As of this writing,
+only the
+@option{ps}
+and
+@option{pdf}
+output devices support this feature.
 
 @cindex @code{\S} escape sequence, untokenized on input
 @cindex untokenized escape sequence, @code{\S}
-GNU
-@command{troff} @c GNU
-does not tokenize
+The formatter does not tokenize
 @code{\S}
 when reading it;
-the escape sequence updates the environment.
+the escape sequence
+updates the environment.@footnote{@xref{Environments}.}
 It thus can be used in requests that expect a single-character argument.
-We can apply a slant to a margin character as follows
-(@pxref{Miscellaneous}).
+We can apply a slant
+to a margin character@footnote{@xref{Miscellaneous}.}
+as follows.
 
 @Example
 .mc \S'20'x\S'0'
@@ -13001,8 +13104,12 @@ We can apply a slant to a margin character as follows
 
 @cindex CSTR@tie{}#54 errata
 @cindex CSTR@tie{}#54 erratum, @code{\S} escape
-This escape is incorrectly documented in the @acronym{AT&T}
-@code{troff} manual; the slant is always set to an absolute value.
+This escape sequence is incorrectly documented in the
+@acronym{AT&T}
+@code{troff} @c AT&T
+manual:
+the slant is only assigned,
+never incremented or decremented.
 @endDefesc
 
 @Defreq {ul, [@Var{lines}]}
@@ -14513,17 +14620,15 @@ causing the names to refer to the same stored object.
 If
 @var{existing-name}
 is undefined,
-GNU
+the formatter ignores the request.@footnote{GNU
 @command{troff} @c GNU
-produces a warning in category
-@samp{mac}
-and ignores the request.
+emits a warning in category
+@samp{mac}.
+@xref{Warnings}.}
 If
 @var{new-name}
 already exists,
 its contents are lost unless already aliased.
-@xref{Warnings},
-regarding the enablement and suppression of warnings.
 
 To understand how the @code{als} request works, consider two different
 storage pools:@: one for objects (macros, strings, etc.), and another
@@ -18591,38 +18696,32 @@ The writable register @code{systat} contains the return value of the
 @cite{system@r{(3)}} function executed by the most recent @code{sy}
 request.
 
-@c XXX: This is a really lame example because we already have built-in
-@c registers for this.  Come up with something better.
-The following code fragment introduces the current time into a document.
-
-@pindex perl
-@Example
-.sy perl -e 'printf ".nr H %d\\n.nr M %d\\n.nr S %d\\n",\
-             (localtime(time))[2,1,0]' > /tmp/x\n[$$]
-.so /tmp/x\n[$$]
-.sy rm /tmp/x\n[$$]
-\nH:\nM:\nS
-@endExample
-
-@noindent
-This works by having the Perl script (run by @code{sy}) write
-@code{nr} requests that set the registers @code{H}, @code{M}, and
-@code{S} to a temporary file.  The @code{roff} document then reads the
-temporary file using the @code{so} request.
-
-@cindex time, formatting
-@cindex formatting the time
-The registers @code{seconds}, @code{minutes}, and @code{hours},
-initialized at startup of GNU @code{troff}, should satisfy most
-requirements.  Use the @code{af} request to format their values for
-output.
+Real-world
+(and non-malicious)
+applications of
+@code{sy}
+are esoteric;
+the request interpolates
+neither the standard output nor the standard error streams of
+@var{command}
+into the document.
+We therefore offer a silly example of its use,
+to make a document refuse to format if the system user name
+running the formatter is
+@samp{branden}.@footnote{@acronym{POSIX}
+command environments
+and @code{roff} formatters employ different integer-to-Boolean
+interpretation conventions;
+a @acronym{POSIX} command exits with a positive status
+if it
+@emph{fails},
+whereas a @code{roff} register
+tests ``true'' if it has a positive value.}
 
 @Example
-.af hours 00
-.af minutes 00
-.af seconds 00
-\n[hours]:\n[minutes]:\n[seconds]
-    @result{} 02:17:54
+.sy test "$(id -un)" != branden
+.if \n[systat] .ab formatting refused
+Hello, world!
 @endExample
 @endDefreq
 
@@ -18645,10 +18744,9 @@ The
 @code{opena}
 request is like
 @code{open},
-but if
+but appends to
 @var{file}
-already exists,
-appends to it instead of overwriting it.
+if it already exists instead of overwriting it.
 
 @cindex safer mode
 @cindex mode, safer
@@ -20082,10 +20180,8 @@ occurs in compatibility mode.
 
 @item font
 @itemx 131072
-A non-existent font was selected, or the selection was ignored because a
-font selection escape sequence was used after the output line
-continuation escape sequence on an input line.  This category is enabled
-by default.
+A non-existent font was selected.
+This category is enabled by default.
 
 @item ig
 @itemx 262144
@@ -20102,8 +20198,9 @@ color.
 
 @item file
 @itemx 1048576
-An attempt was made to load a file that does not exist.  This category
-is enabled by default.
+An attempt was made to read a file that does not exist,
+or a stream remained open at formatter exit.
+This category is enabled by default.
 @end table
 
 Two warning names group other warning categories for convenience.
@@ -20999,6 +21096,29 @@ transparent output facility, or, if this is unsuitable,
 @c XXX: Why would it be unsuitable?  Line breaking behavior?
 the new @code{\?} escape sequence.  @xref{Diversions} and @ref{Gtroff
 Internals}.
+
+@cindex timing of output flushes, incompatibilities with @acronym{AT&T} @command{troff}
+@cindex output flushes, timing of, incompatibilities with @acronym{AT&T} @command{troff}
+@cindex flushing of output, timing of, incompatibilities with @acronym{AT&T} @command{troff}
+Like @acronym{AT&T}
+@command{troff}, @c AT&T
+GNU
+@command{troff} @c GNU
+maintains a buffer of device-independent output commands,@footnote{In
+GNU
+@command{troff}, @c GNU
+node objects produce these commands;
+recall @ref{Gtroff Internals}.}
+populating the buffer as input accumulates.
+GNU
+@command{troff} @c GNU
+always flushes this buffer when processing a break;
+@acronym{AT&T}
+@command{troff} @c AT&T
+does so according to no obvious schedule
+(perhaps,
+if the buffer is of fixed size,
+the formatter performs the flush when the buffer runs out of room).
 
 In the somewhat pathological case where a diversion exists containing a
 partially collected line and a partially collected line at the top-level

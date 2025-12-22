@@ -1,7 +1,7 @@
 /* Copyright (C) 1992-2024 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -198,10 +198,12 @@ static bool MapFont(char *font_name, const char *troff_name)
 
   if (dirlen > 0) {
     size_t baselen = strlen(troff_name);
-    file_name = malloc(dirlen + baselen + 2 /* '/' and '\0' */);
+    size_t bufsz = dirlen + baselen + 2 /* '/' and '\0' */;
+    file_name = malloc(bufsz);
     if (NULL == file_name) {
       (void) fprintf(stderr, "%s: fatal error:"
-		     " cannot allocate memory\n", program_name);
+		     " cannot allocate %ld bytes for font description"
+		     " file name\n", program_name, bufsz);
       xtotroff_exit(EXIT_FAILURE);
     }
     (void) strcpy(file_name, destdir);
@@ -323,7 +325,7 @@ int main(int argc, char **argv)
 		       "%s: error: unrecognized command-line option"
 		       " '%c'\n", program_name, (char) optopt);
       else
-	(void) fprintf(stderr, "unrecognized command-line option '%1'",
+	(void) fprintf(stderr, "unrecognized command-line option '%s'",
 		argv[(optind - 1)]);
       usage(stderr);
       xtotroff_exit(2);

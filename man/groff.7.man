@@ -1850,38 +1850,24 @@ The neutral double quote
 .B \[dq]
 is also commonly seen.
 .
-Letters,
-numerals,
-and leaders can be used.
-.
-Punctuation characters are likely better choices,
+Punctuation characters are the best choice
+(and most portable to other
+.IR troff s, \" generic
 except for those meaningful in numeric expressions;
 see below.
+.\" GNU troff happily accepts tabs and leaders; AT&T troff doesn't.
 .
 .
 .br
 .ne 3v
 .P
-The following escape sequences don't take arguments
+The following escape sequences are not themselves delimited,
 and thus are allowed as delimiters:
-.\" That explanation is kind of BS; it's actually because their token
-.\" types aren't shared with ones that are parameterized in input.
-.\" Allowing `\0`, `\^`, and `\|` also allows the delimited `\h`, which
-.\" presumably was not intentional.  Allowing special characters as
-.\" delimiters, which very much _was_ deliberate (see their use in tbl
-.\" and eqn) also allows the delimited `\C`, which is a wart that makes
-.\" the foregoing "thus" a lie.  But expecting the reader to have a
-.\" command of GNU troff's token types, which _should_ be a mere
-.\" implementation detail, is a tall order.  When we make GNU troff
-.\" handle UTF-8/Unicode internally we'll have a practically unlimited
-.\" space for token types (because the internal character type will go
-.\" from 8 to 32 bits wide), and can distinguish some that have been
-.\" collapsed to date.  That would in turn allow us to make
-.\" "unformatting" and "asciification" more representative of the
-.\" original input.
 .BI \[rs] space\c
 ,
 .BR \[rs]% ,
+.BR \[rs]| ,
+.BR \[rs]\[ha] ,
 .BR \[rs]{ ,
 .BR \[rs]} ,
 .BR \[rs]\[aq] ,
@@ -1896,6 +1882,7 @@ and thus are allowed as delimiters:
 .BR \[rs]& ,
 .BR \[rs]: ,
 .BR \[rs]\[ti] ,
+.BR \[rs]0 ,
 .BR \[rs]a ,
 .BR \[rs]c ,
 .BR \[rs]d ,
@@ -1910,6 +1897,20 @@ and
 However,
 we discourage using them this way;
 they can make the input confusing to read.
+.
+(The
+.MR @g@eqn @MAN1EXT@
+and
+.MR @g@tbl @MAN1EXT@
+preprocessors use parameterized but non-delimited special characters
+escape sequences
+.B \[rs](
+and
+.B \[rs][
+to bracket portions of their output.)
+.
+An invalid escape sequence is valid as a delimiter
+if the character after the escape character would be valid.
 .
 .
 .br
@@ -2752,7 +2753,17 @@ Create alias
 (additional name)
 .I new-register
 of
-.IR existing-register .
+.IR existing-register ,
+causing the names to refer to the same stored object.
+.
+If
+.I existing-register
+is undefined,
+the formatter ignores the request.
+GNU
+.I troff \" GNU
+emits a warning in category
+.RB \[lq] reg \[rq].
 .
 .TPx
 .REQ .als "new-name existing-name"
@@ -2763,16 +2774,17 @@ of request,
 string,
 macro,
 or diversion
-.IR existing-name .
+.IR existing-name ,
+causing the names to refer to the same stored object.
 .
 If
 .I existing-name
 is undefined,
+the formatter ignores the request.
 GNU
 .I troff \" GNU
-produces a warning in category
-.RB \[lq] mac \[rq]
-and ignores the request.
+emits a warning in category
+.RB \[lq] mac \[rq].
 .
 If
 .I new-name
@@ -5921,15 +5933,17 @@ Positive motion is rightward.
 .
 .TP
 .ESCq H N
-Set height of current font to
-.IR N \~scaled
-points
-(or specified units).
+Set
+(increment, decrement)
+the height of the current font,
+but not its width.
 .
 If
 .I N
 is zero,
-set the font height to the selected type size.
+the formatter uses the font's inherent height for its type size
+default scaling unit\~\c
+.scaleindicator z ).
 .
 .TP
 .ESC k r
@@ -6210,10 +6224,13 @@ request.
 .
 .TP
 .ESCq S N
-Slant output glyphs by
-.I N
-degrees;
-the direction of text flow is positive.
+Slant the glyphs of the currently selected font by
+@var{N}
+degrees.
+.
+Positive values slant in the direction of text flow.
+.
+Only integer values are possible.
 .
 .
 .TP

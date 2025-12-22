@@ -1,7 +1,7 @@
 /* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -53,6 +53,7 @@ both be zero. */
 #include <assert.h>
 #include <errno.h>
 #include <math.h> // atan2()
+#include <stdcountof.h>
 #include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
 
 #include <getopt.h> // getopt_long()
@@ -812,8 +813,8 @@ int main(int argc, char **argv)
   // Print the list of ligatures.
   // First find the indices of each character that can participate in
   // a ligature.
-  size_t lig_char_entries = sizeof(lig_chars)/sizeof(lig_chars[0]);
-  size_t lig_table_entries = sizeof(lig_table)/sizeof(lig_table[0]);
+  size_t lig_char_entries = countof(lig_chars);
+  size_t lig_table_entries = countof(lig_table);
   for (i = 0; i < 256; i++)
     for (unsigned int j = 0; j < lig_char_entries; j++)
       for (char_list *p = table[i]; p; p = p->next)
@@ -874,7 +875,7 @@ int main(int argc, char **argv)
       m[5] = g.get_right_adjustment(i);
       printf("%s\t%d", p->ch, m[0]*MULTIPLIER);
       int j;
-      for (j = int(sizeof(m)/sizeof(m[0])) - 1; j > 0; j--)
+      for (j = int(countof(m)) - 1; j > 0; j--)
 	if (m[j] != 0)
 	  break;
       for (k = 1; k <= j; k++)

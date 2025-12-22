@@ -1,6 +1,6 @@
 Rem Copyright (C) 2000-2020 Free Software Foundation, Inc.
 Rem
-Rem This file is part of groff.
+Rem This file is part of groff, the GNU roff typesetting system.
 Rem
 Rem groff is free software; you can redistribute it and/or modify it under
 Rem the terms of the GNU General Public License as published by the Free

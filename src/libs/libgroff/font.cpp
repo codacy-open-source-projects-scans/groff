@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -25,11 +25,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h>
 #include <limits.h> // INT_MAX, INT_MIN, LONG_MAX
 #include <math.h>
+#include <stdcountof.h>
 #include <stdlib.h>
 #include <string.h> // strerror()
 #include <wchar.h>
 
-#include "lib.h" // array_length()
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
@@ -1288,8 +1289,7 @@ const char *font::load_desc()
     bool numeric_directive_found = false;
     size_t idx;
     for (idx = 0;
-	 (!numeric_directive_found
-	  && (idx < array_length(numeric_directive_table)));
+	 !numeric_directive_found && (idx < countof(numeric_directive_table));
 	 idx++)
       if (strcmp(numeric_directive_table[idx].name, p) == 0)
 	numeric_directive_found = true;

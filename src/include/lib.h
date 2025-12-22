@@ -1,7 +1,7 @@
 /* Copyright (C) 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -47,7 +47,6 @@ extern "C" {
 
 char *strsave(const char *s);
 unsigned ceil_prime(unsigned);
-double groff_hypot(double, double);
 
 #include <stdio.h>
 #include <string.h>
@@ -120,14 +119,6 @@ int mksdir(char *tmpl);
 #endif
 
 static const double PI = 3.14159265358979323846;
-
-#ifdef __cplusplus
-template <typename T, size_t N>
-// constexpr // C++11
-size_t array_length(T(&)[N]) {
-    return N;
-}
-#endif
 
 #endif /* GROFF_LIB_H */
 

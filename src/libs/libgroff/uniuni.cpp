@@ -1,7 +1,7 @@
 /* Copyright 2002-2024  Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include <stdcountof.h>
 
 #include "lib.h"
 
@@ -2137,7 +2139,7 @@ static struct unicode_decompose_init {
 
 unicode_decompose_init::unicode_decompose_init()
 {
-  for (size_t i = 0; i < array_length(unicode_decompose_list); i++) {
+  for (size_t i = 0; i < countof(unicode_decompose_list); i++) {
     unicode_decompose *dec = new unicode_decompose[1];
     dec->value = const_cast<char *>(unicode_decompose_list[i].value);
     unicode_decompose_table.define(unicode_decompose_list[i].key, dec);

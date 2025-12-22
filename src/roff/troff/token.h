@@ -3,7 +3,7 @@
 
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 class charinfo;
 struct node;
-class vunits;
 
 enum delimiter_context {
   DELIMITER_GROFF_EXPRESSION,
@@ -45,11 +44,16 @@ class token {
     TOKEN_BACKSPACE,		// ^H
     TOKEN_BEGIN_TRAP,
     TOKEN_CHAR,			// ordinary character
+    TOKEN_DELIMITED_HORIZONTAL_MOTION,	// \h
+    TOKEN_DELIMITED_SPECIAL_CHAR,	// \C
     TOKEN_DUMMY,		// dummy character: \&
     TOKEN_EMPTY,		// this is the initial value
     TOKEN_END_TRAP,
+    TOKEN_EOF,			// end of file
     TOKEN_ESCAPE,		// \e
+    TOKEN_HORIZONTAL_MOTION,	// fixed horizontal motion: \|, \^, \0
     TOKEN_HYPHEN_INDICATOR,	// \%
+    TOKEN_INDEXED_CHAR,		// \N
     TOKEN_INTERRUPT,		// \c
     TOKEN_ITALIC_CORRECTION,	// \/
     TOKEN_LEADER,		// ^A
@@ -57,21 +61,18 @@ class token {
     TOKEN_MARK_INPUT,		// \k
     TOKEN_NEWLINE,		// ^J
     TOKEN_NODE,
-    TOKEN_INDEXED_CHAR,		// \N
     TOKEN_PAGE_EJECTOR,
     TOKEN_REQUEST,
     TOKEN_RIGHT_BRACE,		// \}
     TOKEN_SPACE,		// ' ' -- ordinary space
-    TOKEN_SPECIAL_CHAR,	// \(, \[
+    TOKEN_SPECIAL_CHAR,		// \(, \[
     TOKEN_SPREAD,		// \p -- break and spread output line
     TOKEN_STRETCHABLE_SPACE,	// \~
-    TOKEN_UNSTRETCHABLE_SPACE,	// '\ '
-    TOKEN_HORIZONTAL_SPACE,	// horizontal motion: \|, \^, \0, \h
     TOKEN_TAB,			// ^I
     TOKEN_TRANSPARENT,		// \!
     TOKEN_TRANSPARENT_DUMMY,	// \)
-    TOKEN_ZERO_WIDTH_BREAK,	// \:
-    TOKEN_EOF			// end of file
+    TOKEN_UNSTRETCHABLE_SPACE,	// '\ '
+    TOKEN_ZERO_WIDTH_BREAK	// \:
   } type;
 public:
   token();
@@ -88,8 +89,8 @@ public:
   bool is_space();
   bool is_stretchable_space();
   bool is_unstretchable_space();
-  bool is_horizontal_space();
-  bool is_white_space();
+  bool is_horizontal_motion();
+  bool is_horizontal_whitespace();
   bool is_any_character();
   // XXX: Do we need a `is_ordinary_character()`?
   bool is_special_character();
@@ -126,12 +127,13 @@ public:
 
 extern token tok;		// the current token
 
+extern bool has_arg(bool /* want_peek */ = false);
+extern void skip_line();
 extern symbol read_identifier(bool /* required */ = false);
-extern symbol get_long_name(bool /* required */ = false);
+extern symbol read_long_identifier(bool /* required */ = false);
+extern void handle_initial_title();
 extern charinfo *read_character(); // TODO?: bool /* required */ = false
 extern char *read_rest_of_line_as_argument();
-extern void skip_line();
-extern void handle_initial_title();
 
 enum char_mode {
   CHAR_NORMAL,
@@ -146,9 +148,9 @@ extern void define_character(char_mode,
 class hunits;
 extern void read_title_parts(node **part, hunits *part_width);
 
-extern bool get_number_rigidly(units *result, unsigned char si);
-
-extern bool read_measurement(units *result, unsigned char si);
+extern bool read_measurement(units * /* result */,
+			     unsigned char /* scale indicator */,
+			     bool /* is_mandatory */ = false);
 extern bool read_integer(int *result);
 
 extern bool read_measurement(units *result, unsigned char si,
@@ -161,68 +163,72 @@ const char *asciify(int c);
 
 inline bool token::is_newline()
 {
-  return type == TOKEN_NEWLINE;
+  return (TOKEN_NEWLINE == type);
 }
 
 inline bool token::is_space()
 {
-  return type == TOKEN_SPACE;
+  return (TOKEN_SPACE == type);
 }
 
 inline bool token::is_stretchable_space()
 {
-  return type == TOKEN_STRETCHABLE_SPACE;
+  return (TOKEN_STRETCHABLE_SPACE == type);
 }
 
 inline bool token::is_unstretchable_space()
 {
-  return type == TOKEN_UNSTRETCHABLE_SPACE;
+  return (TOKEN_UNSTRETCHABLE_SPACE == type);
 }
 
-inline bool token::is_horizontal_space()
+inline bool token::is_horizontal_motion()
 {
-  return type == TOKEN_HORIZONTAL_SPACE;
+  return ((TOKEN_HORIZONTAL_MOTION == type)
+	  || (TOKEN_DELIMITED_HORIZONTAL_MOTION == type));
 }
 
 inline bool token::is_special_character()
 {
-  return type == TOKEN_SPECIAL_CHAR;
+  return ((TOKEN_SPECIAL_CHAR == type)
+	  || (TOKEN_DELIMITED_SPECIAL_CHAR == type));
 }
 
 inline int token::nspaces()
 {
-  return int(type == TOKEN_SPACE);
+  return int(TOKEN_SPACE == type);
 }
 
-inline bool token::is_white_space()
+inline bool token::is_horizontal_whitespace()
 {
-  return type == TOKEN_SPACE || type == TOKEN_TAB;
+  return (TOKEN_SPACE == type || TOKEN_TAB == type);
 }
 
 inline bool token::is_transparent()
 {
-  return type == TOKEN_TRANSPARENT;
+  return (TOKEN_TRANSPARENT == type);
 }
 
 inline bool token::is_page_ejector()
 {
-  return type == TOKEN_PAGE_EJECTOR;
+  return (TOKEN_PAGE_EJECTOR == type);
 }
 
 inline unsigned char token::ch()
 {
-  return type == TOKEN_CHAR ? c : '\0';
+  return ((TOKEN_CHAR == type) ? c : 0U); // TODO: grochar
 }
 
 inline bool token::is_any_character()
 {
-  return (TOKEN_CHAR == type) || (TOKEN_SPECIAL_CHAR == type)
-	  || (TOKEN_INDEXED_CHAR == type);
+  return ((TOKEN_CHAR == type)
+	  || (TOKEN_SPECIAL_CHAR == type)
+	  || (TOKEN_DELIMITED_SPECIAL_CHAR == type)
+	  || (TOKEN_INDEXED_CHAR == type));
 }
 
 inline bool token::is_indexed_character()
 {
-  return TOKEN_INDEXED_CHAR == type;
+  return (TOKEN_INDEXED_CHAR == type);
 }
 
 inline int token::character_index()
@@ -233,60 +239,58 @@ inline int token::character_index()
 
 inline bool token::is_node()
 {
-  return type == TOKEN_NODE;
+  return (TOKEN_NODE == type);
 }
 
 inline bool token::is_eof()
 {
-  return type == TOKEN_EOF;
+  return (TOKEN_EOF == type);
 }
 
 inline bool token::is_dummy()
 {
-  return type == TOKEN_DUMMY;
+  return (TOKEN_DUMMY == type);
 }
 
 inline bool token::is_transparent_dummy()
 {
-  return type == TOKEN_TRANSPARENT_DUMMY;
+  return (TOKEN_TRANSPARENT_DUMMY == type);
 }
 
 inline bool token::is_left_brace()
 {
-  return type == TOKEN_LEFT_BRACE;
+  return (TOKEN_LEFT_BRACE == type);
 }
 
 inline bool token::is_right_brace()
 {
-  return type == TOKEN_RIGHT_BRACE;
+  return (TOKEN_RIGHT_BRACE == type);
 }
 
 inline bool token::is_tab()
 {
-  return type == TOKEN_TAB;
+  return (TOKEN_TAB == type);
 }
 
 inline bool token::is_leader()
 {
-  return type == TOKEN_LEADER;
+  return (TOKEN_LEADER == type);
 }
 
 inline bool token::is_backspace()
 {
-  return type == TOKEN_BACKSPACE;
+  return (TOKEN_BACKSPACE == type);
 }
 
 inline bool token::is_hyphen_indicator()
 {
-  return type == TOKEN_HYPHEN_INDICATOR;
+  return (TOKEN_HYPHEN_INDICATOR == type);
 }
 
 inline bool token::is_zero_width_break()
 {
-  return type == TOKEN_ZERO_WIDTH_BREAK;
+  return (TOKEN_ZERO_WIDTH_BREAK == type);
 }
-
-bool has_arg(bool /* want_peek */ = false);
 
 // Local Variables:
 // fill-column: 72

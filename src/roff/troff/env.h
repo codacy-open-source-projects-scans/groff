@@ -1,7 +1,7 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -35,7 +35,7 @@ public:
   int to_units();
   int operator==(font_size);
   int operator!=(font_size);
-  static void init_size_list(int *sizes);
+  static void init_size_list(int * /* sizes */);
   static void dump_size_list();
 };
 
@@ -60,7 +60,7 @@ inline int font_size::to_scaled_points()
 
 inline int font_size::to_points()
 {
-  return p/sizescale;
+  return (p / sizescale);
 }
 
 class environment;
@@ -81,14 +81,18 @@ class tab_stops {
   tab *repeated_list;
 public:
   tab_stops();
-  tab_stops(hunits distance, tab_type type);
+  tab_stops(hunits /* distance */, tab_type /* type */);
   tab_stops(const tab_stops &);
   ~tab_stops();
   void operator=(const tab_stops &);
-  tab_type distance_to_next_tab(hunits pos, hunits *distance);
-  tab_type distance_to_next_tab(hunits curpos, hunits *distance, hunits *leftpos);
+  tab_type distance_to_next_tab(hunits /* pos */,
+				hunits * /* distance */);
+  tab_type distance_to_next_tab(hunits /* curpos */,
+				hunits * /* distance */,
+				hunits * /* leftpos */);
   void clear();
-  void add_tab(hunits pos, tab_type type, bool is_repeated);
+  void add_tab(hunits /* pos */, tab_type /* type */,
+	       bool /* is_repeated */);
   const char *to_string();
 };
 

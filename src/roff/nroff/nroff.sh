@@ -2,18 +2,19 @@
 #
 # Emulate nroff with groff.
 #
-# Copyright (C) 1992-2025 Free Software Foundation, Inc.
+# Copyright 1992-2021 Free Software Foundation, Inc.
+#           2019-2024 G. Branden Robinson
 #
 # Written by James Clark, Werner Lemberg, and G. Branden Robinson.
 #
-# This file is part of 'groff'.
+# This file is part of groff, the GNU roff typesetting system.
 #
-# 'groff' is free software; you can redistribute it and/or modify it
+# groff is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License (GPL) as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# 'groff' is distributed in the hope that it will be useful, but
+# groff is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
@@ -21,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Screen for shells non-conforming with POSIX Issue 4 (1994).
+# Screen out shells non-conforming with POSIX Issue 4 (1994).
 badshell=yes
 # Solaris 10 /bin/sh is so wretched that it not only doesn't support
 # standard parameter expansion, but it also writes diagnostic messages
@@ -251,7 +252,7 @@ groff=${GROFF_TEST_GROFF-groff}
 # If POSIX adopts Bash's ${var@Q} or an equivalent, this issue can be
 # revisited.
 #
-# Note 2: The construction '${1+"@$"}' preserves the absence of
+# Note 2: The construction '${1+"$@"}' preserves the absence of
 # arguments in old shells; see "Shell Substitutions" in the GNU Autoconf
 # manual.  We don't want 'nroff' to become 'groff ... ""' if $# equals
 # zero.

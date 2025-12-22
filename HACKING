@@ -24,11 +24,9 @@ promises to be advantageous, it may be annotated in a code comment.
 
 Portability notes:
 
-* `std::size` is not available in C++98.  Use the `array_length`
-  template function in src/include/lib.h instead of `sizeof` and
-  dividing.  Types passed to template functions cannot be anonymous in
-  C++98; in other words, the "tag" of a `struct` or `enum` type must not
-  be empty.
+* `std::size` is not available in C++98.  Use `countof()`, which is
+  provided by the gnulib module `stdcountof-h` and expected to be
+  standardized in C2y, instead of `sizeof` and dividing.
 
 * C++98 lacks value initialization for array types.
 

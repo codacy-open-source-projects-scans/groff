@@ -1,10 +1,11 @@
-# Copyright (C) 2002-2020 Free Software Foundation, Inc.
-#               2021-2023 G. Branden Robinson
+# Copyright 2002-2020 Free Software Foundation, Inc.
+#           2021-2023 G. Branden Robinson
+#
 # Original Makefile.sub written by Werner Lemberg <wl@gnu.org>.
 # Adapted to Automake by Bertrand Garrigues
 #   (bertrand.garrigues@laposte.net).
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -23,13 +24,13 @@ doc_srcdir = $(abs_top_srcdir)/doc
 doc_builddir = $(abs_top_builddir)/doc
 
 # Some document sources are parameterized in configuration options like
-# the groff version number and the command prefix.  Use this in target
-# rules to prepare formattable versions of them from .in files.
+# the groff version number and the command prefix.  Use this in rules to
+# prepare formattable versions of them from .in files.
 DOC_SED = $(SED) \
   -e "s;[@]VERSION[@];$(VERSION);" \
   -e "s;[@]g[@];$(g);g;"
 
-# Use this in target rules to run the build tree's groff.
+# Use this in rules to run the build tree's groff.
 #
 # It includes flags to locate its tmac and device/font description
 # directories and to produce verbose diagnostics in the event of syntax

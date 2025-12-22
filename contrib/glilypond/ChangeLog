@@ -1,3 +1,15 @@
+2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* README.txt: Rename this...
+	* README: ...to this.
+	* glilypond.am (EXTRA_DIST): Ship the suffixless file instead of
+	its now-nonexistent suffixed counterpart.
+
+2025-12-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* GPLv2: New file.
+	* glilypond.am (EXTRA_DIST): Ship it.
+
 2024-01-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* glilypond.pl (BEGIN): Trivially refactor; simplify code.

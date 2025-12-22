@@ -3,7 +3,7 @@
 # Copyright (C) 1994-2020 Free Software Foundation, Inc.
 #   Written by James Clark (jjc@jclark.com)
 #
-# This file is part of groff.
+# This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free

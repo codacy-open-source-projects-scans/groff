@@ -1,7 +1,7 @@
 /* Copyright (C) 2005-2025 Free Software Foundation, Inc.
      Written by Werner Lemberg (wl@gnu.org)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 # endif
 #endif
 #include <locale.h> // setlocale()
+#include <stdcountof.h>
 #include <stdio.h> // EOF, FILE, fclose(), ferror(), fflush(), fileno(),
 		   // fopen(), fprintf(), fread(), fseek(), ftell(),
 		   // getc(), printf(), putchar(), rewind(), SEEK_SET,
@@ -44,7 +45,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <getopt.h> // getopt_long()
 
-#include "lib.h" // array_length()
+#include "lib.h"
 
 #include "errarg.h"
 #include "error.h"
@@ -809,7 +810,7 @@ get_BOM(FILE *fp, string &BOM, string &data)
   //   UTF-8: 0xEFBBBF
   //   UTF-16: 0xFEFF or 0xFFFE
   //   UTF-32: 0x0000FEFF or 0xFFFE0000
-  const int BOM_table_len = array_length(BOM_table);
+  const int BOM_table_len = countof(BOM_table);
   char BOM_string[4];
   const char *retval = 0 /* nullptr */;
   int len;

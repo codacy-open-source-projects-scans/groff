@@ -1,3 +1,17 @@
+2025-12-18  Alexis Hildebrandt <afh@surryhill.net>
+
+	* rfc1345.tmac: Strip undesired spaces from ends of character
+	definitions {`sed -i -Ee 's@( +)\\"@\\"\1@'`}.
+
+	Fixes <https://savannah.gnu.org/bugs/?67827>.
+
+2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test Savannah #67827.
+
+	* tests/character-definitions-lack-space.sh: Do it.
+	* rfc1345.am (rfc1345_TESTS): Run test.
+
 2025-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* rfc1345.tmac: Add Vim 9.1.1065 digraph `.=` for U+2250
@@ -33,3 +47,16 @@
 	* rfc1345.tmac: Add new macro package.
 
 	Fixes <https://savannah.gnu.org/bugs/?59839>.
+
+________________________________________________________________________
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Local Variables:
+fill-column: 72
+mode: change-log
+version-control: never
+End:
+vim:set autoindent textwidth=72:

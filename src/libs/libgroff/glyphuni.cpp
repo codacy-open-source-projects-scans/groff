@@ -1,7 +1,7 @@
 /* Copyright 2002-2024 Free Software Foundation, Inc.
      Written by Werner Lemberg <wl@gnu.org>
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include <stdcountof.h>
 
 #include "lib.h"
 
@@ -516,7 +518,7 @@ static struct glyph_to_unicode_init {
 
 glyph_to_unicode_init::glyph_to_unicode_init()
 {
-  for (size_t i = 0; i < array_length(glyph_to_unicode_list); i++) {
+  for (size_t i = 0; i < countof(glyph_to_unicode_list); i++) {
     glyph_to_unicode_map *gtu = new glyph_to_unicode_map[1];
     gtu->value = (char *)glyph_to_unicode_list[i].value;
     glyph_to_unicode_table.define(glyph_to_unicode_list[i].key, gtu);

@@ -2863,7 +2863,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \w@\\$3@>0 .nr toc*tlevel \\$3
 .if \w@\\$4@>0 .nr toc*tab \\$4
 .if \\n[pg*cols-per-page]>1 .1C
-.ds H1txt \\*[Licon]
+.ds H1txt \\*[Captc]
 .ds Tcstatus co
 .pg@clear-hd
 .EF ""
@@ -2895,7 +2895,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ie d TY .if \\n[.$]<=4 .TY
 .el \{\
 .	ce
-\\*[Licon]
+\\*[Captc]
 .	br
 .	SP 3
 .\}
@@ -3023,13 +3023,13 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ie !\\n[Of] .ds lix*ds-form .\ \ \"
 .el          .ds lix*ds-form "\ \[em]\ \"
 .nr lix*in \\n[.i]
-.ds lix*label \\*[Li\\$1]\ \\*[lix*numb]\\*[lix*ds-form]
-.if \\n[D]>=2 .tm \\*[Li\\$1] "\\$4"
+.ds lix*label \\*[Cap\\$1]\ \\*[lix*numb]\\*[lix*ds-form]
+.if \\n[D]>=2 .tm \\*[Cap\\$1] "\\$4"
 .if \\n[D]>=6 .tm \\$0: lix*label="\\*[lix*label]"
 .if !'\\$5'' \{\
-.	if !0\\$6 .ds lix*label \\*[Li\\$1]\ \\$5\\*[lix*numb]\\*[lix*ds-form]
-.	if 0\\$6=1 .ds lix*label \\*[Li\\$1]\ \\*[lix*numb]\\$5\\*[lix*ds-form]
-.	if 0\\$6=2 .ds lix*label \\*[Li\\$1]\ \\$5\\*[lix*ds-form]
+.	if !0\\$6 .ds lix*label \\*[Cap\\$1]\ \\$5\\*[lix*numb]\\*[lix*ds-form]
+.	if 0\\$6=1 .ds lix*label \\*[Cap\\$1]\ \\*[lix*numb]\\$5\\*[lix*ds-form]
+.	if 0\\$6=2 .ds lix*label \\*[Cap\\$1]\ \\$5\\*[lix*ds-form]
 .\}
 .\" print line if not between DS/DE
 .ie (\\n[ds*lvl]<1)&(\\n[df*float]=0) \{\
@@ -3191,6 +3191,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr box*ll 0
 .\" .B1 and .B2 works like .DS
 .de B1
+.br
 .if \\n[box*ll] .@error \\$0: cannot nest; missing B2?
 .nr box*ll \\n[.l]
 .nr box*ind \\n[.i]
@@ -3204,12 +3205,16 @@ exceeds depth of nested lists (\\n[li*lvl])
 .vs \\n[@vs]u
 .in 1n
 .ll (u;\\n[box*wid]-1n)
+.lt (u;\\n[box*wid]-1n)
 .@enable-hyphenation
 ..
 .de B2
-.if !\\n[box*ll] .@error \\$0: no corresponding B1
 .br
+.if !\\n[box*ll] .@error \\$0: no corresponding B1
+.\" In nroff mode, make room for the horizontal rules taking up 1v each.
+.if n .sp
 .debug@di
+.if n .sp
 .nr box*height \\n[dn]
 .ne \\n[dn]u+1v
 .ll \\n[box*ll]u

@@ -3,7 +3,7 @@
 
      Written by James Clark (jjc@jclark.com)
 
-This file is part of groff.
+This file is part of groff, the GNU roff typesetting system.
 
 groff is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -604,10 +604,8 @@ static void warn_if_font_name_deprecated(symbol nm)
 
 bool environment::set_font(symbol nm)
 {
-  if (was_line_interrupted) {
-    warning(WARN_FONT, "ignoring font selection on interrupted line");
+  if (was_line_interrupted)
     return true; // "no operation" is successful
-  }
   // TODO: Kill this off in groff 1.24.0 release + 2 years.
   if (is_device_ps_or_pdf)
     warn_if_font_name_deprecated(nm);
@@ -689,7 +687,7 @@ void environment::set_size(int n)
 {
   if (was_line_interrupted)
     return;
-  if (n == 0) {
+  if (0 == n) {
     font_size temp = prev_size;
     prev_size = size;
     size = temp;
@@ -1374,11 +1372,11 @@ static void override_available_type_sizes_request()
   (void) memset(sizes, 0, (n * sizeof(int)));
   int i = 0;
   char *buf = read_rest_of_line_as_argument();
-  if (!buf)
+  if (0 /* nullptr */ == buf)
     return;
   char *p = strtok(buf, " \t");
   for (;;) {
-    if (!p)
+    if (0 /* nullptr */ == p)
       break;
     int lower, upper;
     switch (sscanf(p, "%d-%d", &lower, &upper)) {
@@ -1386,14 +1384,14 @@ static void override_available_type_sizes_request()
       upper = lower;
       // fall through
     case 2:
-      if (lower <= upper && lower >= 0)
+      if ((lower <= upper) && (lower >= 0))
 	break;
       // fall through
     default:
       warning(WARN_RANGE, "invalid size range '%1'", p);
       return;
     }
-    if (i + 2 > n) {
+    if ((i + 2) > n) {
       int *old_sizes = sizes;
       sizes = new int[n * 2]; // C++03: new int[n * 2]();
       (void) memset(sizes, 0, (n * 2 * sizeof(int)));
@@ -1402,10 +1400,10 @@ static void override_available_type_sizes_request()
       delete[] old_sizes;
     }
     sizes[i++] = lower;
-    if (lower == 0)
+    if (0 == lower)
       break;
     sizes[i++] = upper;
-    p = strtok(0, " \t");
+    p = strtok(0 /* nullptr */, " \t");
   }
   font_size::init_size_list(sizes);
   tok.next();
@@ -1495,7 +1493,7 @@ void right_justify()
 void line_length()
 {
   hunits temp;
-  if (has_arg() && get_hunits(&temp, 'm', curenv->line_length)) {
+  if (has_arg() && read_hunits(&temp, 'm', curenv->line_length)) {
     if (temp < hresolution) {
       warning(WARN_RANGE, "setting computed line length %1u to device"
 			  " horizontal motion quantum",
@@ -1514,7 +1512,7 @@ void line_length()
 void title_length()
 {
   hunits temp;
-  if (has_arg() && get_hunits(&temp, 'm', curenv->title_length)) {
+  if (has_arg() && read_hunits(&temp, 'm', curenv->title_length)) {
     if (temp < hresolution) {
       warning(WARN_RANGE, "setting computed title length %1u to device"
 			  " horizontal motion quantum",
@@ -1532,7 +1530,7 @@ void title_length()
 void vertical_spacing()
 {
   vunits temp;
-  if (has_arg() && get_vunits(&temp, 'p', curenv->vertical_spacing)) {
+  if (has_arg() && read_vunits(&temp, 'p', curenv->vertical_spacing)) {
     if (temp < V0) {
       warning(WARN_RANGE, "vertical spacing must be nonnegative");
       temp = vresolution;
@@ -1548,7 +1546,7 @@ void vertical_spacing()
 void post_vertical_spacing()
 {
   vunits temp;
-  if (has_arg() && get_vunits(&temp, 'p',
+  if (has_arg() && read_vunits(&temp, 'p',
 			      curenv->post_vertical_spacing)) {
     if (temp < V0) {
       warning(WARN_RANGE, "post-vertical spacing must be nonnegative");
@@ -1582,7 +1580,7 @@ void line_spacing()
 void indent()
 {
   hunits temp;
-  if (has_arg() && get_hunits(&temp, 'm', curenv->indent)) {
+  if (has_arg() && read_hunits(&temp, 'm', curenv->indent)) {
     if (temp < H0) {
       warning(WARN_RANGE, "treating %1u indentation as zero",
 	      temp.to_units());
@@ -1614,7 +1612,7 @@ void temporary_indent()
     // character this request still breaks the line.
   }
   else {
-    if (!get_hunits(&temp, 'm', curenv->get_indent()))
+    if (!read_hunits(&temp, 'm', curenv->get_indent()))
       is_valid = false;
     while (!tok.is_newline() && !tok.is_eof())
       tok.next();
@@ -1695,7 +1693,7 @@ void margin_character()
       curenv->margin_character_flags = environment::MC_ON
 				       | environment::MC_NEXT;
       hunits d;
-      if (has_arg() && get_hunits(&d, 'm'))
+      if (has_arg() && read_hunits(&d, 'm'))
 	curenv->margin_character_distance = d;
     }
   }
@@ -2022,7 +2020,7 @@ hunits environment::get_hyphenation_space()
 void hyphenation_space_request()
 {
   hunits n;
-  if (get_hunits(&n, 'm')) {
+  if (read_hunits(&n, 'm')) {
     if (n < H0) {
       warning(WARN_RANGE, "hyphenation space cannot be negative");
       n = H0;
@@ -2040,7 +2038,7 @@ hunits environment::get_hyphenation_margin()
 void hyphenation_margin_request()
 {
   hunits n;
-  if (get_hunits(&n, 'm')) {
+  if (read_hunits(&n, 'm')) {
     if (n < H0) {
       warning(WARN_RANGE, "hyphenation margin cannot be negative");
       n = H0;
@@ -2168,7 +2166,6 @@ void environment::possibly_hyphenate_line(bool must_break_here)
 	break;
       prev_type = this_type;
     }
-  assert(*startp != 0 /* nullptr */);
   if (*startp == 0 /* nullptr */)
     return;
   node *tem = *startp;
@@ -2278,18 +2275,18 @@ extern char warn_scaling_unit;
 void environment::possibly_break_line(bool must_break_here,
 				      bool must_adjust)
 {
-  bool was_centered = centered_line_count > 0;
+  bool was_centered = (centered_line_count > 0);
   if (!is_filling || (current_tab != TAB_NONE) || has_current_field
       || is_dummy_env)
     return;
-  while (line != 0 /* nullptr */
+  while ((line != 0 /* nullptr */)
 	 && (must_adjust
 	     // When a macro follows a paragraph in fill mode, the
 	     // current line should not be empty.
-	     || (width_total - line->width()) > target_text_length)) {
+	     || ((width_total - line->width()) > target_text_length))) {
     possibly_hyphenate_line(must_break_here);
     breakpoint *bp = choose_breakpoint();
-    if (bp == 0 /* nullptr */)
+    if (0 /* nullptr */ == bp)
       // we'll find one eventually
       return;
     node *pre, *post;
@@ -2301,7 +2298,7 @@ void environment::possibly_break_line(bool must_break_here,
     // The space deficit tells us how much the line is overset if
     // negative, or underset if positive, relative to the configured
     // line length.
-    hunits space_deficit = target_text_length - bp->width;
+    hunits space_deficit = (target_text_length - bp->width);
     // An overset line always gets a warning.
     if (space_deficit < H0) {
       double dsd = static_cast<double>(space_deficit.to_units());
@@ -3016,7 +3013,7 @@ static void configure_tab_stops_request()
       is_repeating_stop = true;
       prev_pos = 0;
     }
-    if (!get_hunits(&pos, 'm', prev_pos))
+    if (!read_hunits(&pos, 'm', prev_pos))
       break;
     tab_type type = TAB_LEFT;
     if (tok.ch() == int('C')) { // TODO: grochar
@@ -3778,7 +3775,7 @@ void environment_copy()
   }
   environment *e = 0 /* nullptr */;
   tok.skip_spaces();
-  symbol nm = get_long_name();
+  symbol nm = read_long_identifier();
   assert(nm != 0 /* nullptr */);
   e = static_cast<environment *>(env_dictionary.lookup(nm));
   if (e != 0 /* nullptr */)
@@ -3795,7 +3792,7 @@ void environment_switch()
     error("cannot switch out of dummy environment");
   }
   else {
-    symbol nm = get_long_name();
+    symbol nm = read_long_identifier();
     if (nm.is_null()) {
       if (env_stack == 0 /* nullptr */)
 	error("environment stack underflow");

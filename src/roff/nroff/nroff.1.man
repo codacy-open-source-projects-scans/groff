@@ -9,7 +9,8 @@ for terminal (\[lq]TTY\[rq]) devices
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2024 Free Software Foundation, Inc.
+.\" Copyright 1989-2023 Free Software Foundation, Inc.
+.\"           2018-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
