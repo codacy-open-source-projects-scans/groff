@@ -295,7 +295,7 @@
 	* hdtbl.am (MOSTLYCLEANFILES): Remove 'hdmisc.tmac-s'
 	and 'hdtbl.tmac-s' (these files are no longer present).
 
-	Fixes https://savannah.gnu.org/bugs/index.php?55083, reported by
+	Fixes https://savannah.gnu.org/bugs/?55083, reported by
 	Bjarni Ingi Gislason <bjarniig@rhi.hi.is>.
 
 2018-11-13  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -309,7 +309,7 @@
 	in-tree builds.  Give it its own variable, $(hdtbl_TESTS).
 	Now it clobbers no more.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?55020>.
+	Fixes <https://savannah.gnu.org/bugs/?55020>.
 
 2018-11-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 

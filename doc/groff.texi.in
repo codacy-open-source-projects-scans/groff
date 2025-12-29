@@ -7192,7 +7192,10 @@ name
 (macro,
 string,
 or diversion),
-typeface,
+typeface
+(font,
+family,
+or style),
 color,
 special character or character class,
 hyphenation language code,
@@ -7242,19 +7245,25 @@ rejects all of the foregoing.
 @cindex character, ordinary
 An
 @slanted{ordinary character}
-is an input character that is not the escape character,
-a leader,
-tab,
-newline,
-space,
-or invalid as GNU
-@command{troff} @c GNU
-input;
+is any Unicode Basic Latin character
+that is not a space and not the escape character;
 recall @ref{Input Format}.
-Thus, the identifiers @samp{br}, @samp{PP}, @samp{end-list},
-@samp{ref*normal-print}, @samp{|}, @samp{@@_}, and @samp{!"#$%'()*+,-./}
-are all valid.  Discretion should be exercised to prevent confusion.
-Identifiers starting with @samp{(} or @samp{[} require care.
+Thus,
+the identifiers
+@samp{br},
+@samp{PP},
+@samp{end-list},
+@samp{ref*normal-print},
+@samp{|},
+@samp{@@_},
+and @samp{!"#$%'()*+,-./}
+are all valid.
+Discretion should be exercised to prevent confusion.
+Identifiers starting with
+@samp{(}
+or
+@samp{[}
+require care.
 
 @Example
 .nr x 9
@@ -8006,7 +8015,7 @@ GNU
 @cite{eqn@r{(1)}}
 and
 @cite{tbl@r{(1)}}
-preprocessors use parameterized but non-delimited special characters
+preprocessors use parameterized but non-delimited special character
 escape sequences
 @code{\(}
 and
@@ -20648,9 +20657,27 @@ to behave in ways difficult to predict.
 @node Other Differences, , Compatibility Mode, Implementation Differences
 @subsection Other Differences
 
-Other
-@command{troff} @c generic
-formatters that don't implement request names that are
+@c BEGIN Keep in sync with groff_diff(7).
+Use of C0 control characters in identifiers is not portable;
+Solaris,
+Plan@tie{}9,
+and Heirloom Doctools
+@command{troff}s @c Solaris, Plan 9, Heirloom
+accept
+@key{Control+B},
+@key{Control+C},
+@key{Control+E},
+@key{Control+F},
+and
+@key{Control+G} (only),
+DWB@tie{}3.3
+@command{troff} @c DWB
+does not.
+GNU
+@command{troff} @c GNU
+rejects C0 controls in identifiers with an error diagnostic.
+
+Formatters that don't implement request names that are
 GNU
 @command{troff} @c GNU
 extensions tend to ignore them,
@@ -20661,10 +20688,10 @@ extension escape sequence,
 they are liable to format its function selector character as text.
 @cindex @code{\~}, incompatibilities with @acronym{AT&T} @code{troff}
 For example,
+@c NESTED BEGIN Keep in sync with groff_man_style(7).
 the adjustable,
 non-breaking space escape sequence
 @code{\~}
-@c BEGIN Keep in sync with groff_diff(7) and groff_man_style(7).
 is also supported by Heirloom Doctools
 @command{troff} @c Heirloom
 050915 (September 2005),
@@ -20682,7 +20709,7 @@ or Documenter's Workbench
 which both render it as
 @samp{~}.
 @c as of this writing, 2022-08-13
-@c END Keep in sync with groff_diff(7) and groff_man_style(7).
+@c NESTED END Keep in sync with groff_man_style(7).
 @xref{Manipulating Filling and Adjustment}.
 GNU
 @command{troff}'s @c GNU
@@ -21120,11 +21147,21 @@ does so according to no obvious schedule
 if the buffer is of fixed size,
 the formatter performs the flush when the buffer runs out of room).
 
-In the somewhat pathological case where a diversion exists containing a
-partially collected line and a partially collected line at the top-level
-diversion has never existed, @acronym{AT&T} @code{troff} outputs a
-partially collected but otherwise empty line (as if @samp{\c} were in
-the top-level diversion) at the end of input; GNU @code{troff} does not.
+In the somewhat pathological case where a diversion exists
+containing a partially collected line
+and a partially collected line at the top-level diversion
+has never existed,
+@acronym{AT&T}
+@command{troff} @c AT&T
+outputs a partially collected but otherwise empty line
+(as if
+@samp{\c}
+were in the top-level diversion)
+at the end of input;
+GNU
+@command{troff} @c GNU
+does not.
+@c END Keep in sync with groff_diff(7).
 
 
 

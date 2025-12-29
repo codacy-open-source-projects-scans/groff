@@ -125,6 +125,14 @@ troff
    escape sequence to serve as delimiter to another delimited escape
    sequence.
 
+*  GNU troff no longer accepts C0 controls or Latin-1 Supplement
+   characters in identifiers.  We prohibit C0 controls to make the
+   language less tolerant of unreadable input, and Latin-1 Supplement
+   code points to enable us to pivot to reading UTF-8-encoded input in a
+   future release.  (Thus, we plan for Latin-1 Supplement characters to
+   again be accepted in identifiers, but only as components of multibyte
+   UTF-8 sequences.)
+
 *  The `color`, `cp`, `kern`, `linetabs`, and `vpt` requests now
    interpret arguments with negative values as instructions to disable
    the corresponding feature, using the *roff integer-to-Boolean

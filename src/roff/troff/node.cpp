@@ -2169,7 +2169,7 @@ node *glyph_node::add_self(node *n, hyphen_list **p)
 {
   assert(ci->get_hyphenation_code() == (*p)->hyphenation_code);
   next = 0 /* nullptr */;
-  node *nn;
+  node *nn = 0 /* nullptr */;
   if ((0 /* nullptr */ == n) ||
       (0 /* nullptr */ == (nn = n->merge_glyph_node(this)))) {
     next = n;
@@ -2180,6 +2180,7 @@ node *glyph_node::add_self(node *n, hyphen_list **p)
   hyphen_list *pp = *p;
   *p = (*p)->next;
   delete pp;
+  assert(nn != 0 /* nullptr */);
   return nn;
 }
 

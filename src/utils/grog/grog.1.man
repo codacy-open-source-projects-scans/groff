@@ -9,7 +9,8 @@ command a document requires
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2021 Free Software Foundation, Inc.
+.\" Copyright 1989-2014 Free Software Foundation, Inc.
+.\"           2021-2023 G. Branden Robinson
 .\"
 .\" This file is part of grog, which is part of groff, a free software
 .\" project.  You can redistribute it and/or modify it under the terms
@@ -235,7 +236,7 @@ document can also be written without recourse to any macro package.
 .
 In such cases,
 .I grog
-will infer a
+infers a
 .I groff
 command without an
 .B \-m
@@ -276,7 +277,7 @@ Introduction
 .EE
 .RE
 .
-will conceal the use of the
+conceals the use of the
 .I ms
 macros
 .B NH

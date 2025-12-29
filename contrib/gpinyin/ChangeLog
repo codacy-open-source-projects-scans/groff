@@ -35,7 +35,7 @@
 	* gpinyin.1.man: Render the tone mark table only if the output
 	device might be capable.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?55215>.
+	Fixes <https://savannah.gnu.org/bugs/?55215>.
 
 2021-05-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 

@@ -70,22 +70,6 @@ bool read_hunits(hunits *res, unsigned char si)
     return false;
 }
 
-// for \B
-
-bool get_number_rigidly(units *res, unsigned char si)
-{
-  if (!is_valid_expression_start())
-    return false;
-  units x;
-  if (is_valid_expression(&x, si, false /* is_parenthesized */,
-			  true /* is_mandatory */)) {
-    *res = x;
-    return true;
-  }
-  else
-    return false;
-}
-
 bool read_measurement(units *res, unsigned char si, bool is_mandatory)
 {
   if (!is_valid_expression_start())
@@ -174,6 +158,7 @@ bool read_hunits(hunits *res, unsigned char si, hunits prev_value)
   return true;
 }
 
+// TODO: Default `prev_value` to 0.
 bool read_measurement(units *res, unsigned char si, units prev_value)
 {
   units u;

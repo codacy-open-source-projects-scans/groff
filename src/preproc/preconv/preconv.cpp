@@ -1194,7 +1194,7 @@ do_file(const char *filename)
   // Translate from MIME/Emacs encoding names to locale encoding names.
   encoding = emacs2mime(encoding_string);
   if (encoding[0] == '\0') {
-    error("unportable encoding '%1' not supported", encoding_string);
+    error("non-portable encoding '%1' not supported", encoding_string);
     return false;
   }
   if (is_debugging)

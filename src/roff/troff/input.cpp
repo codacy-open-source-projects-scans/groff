@@ -153,7 +153,9 @@ search_path *mac_path = &safer_macro_path;
 // Initialize inclusion search path with only the current directory.
 search_path include_search_path(0 /* nullptr */, 0 /* nullptr */, 0, 1);
 
-static int get_copy(node**, bool = false, bool = false);
+static int read_char_in_copy_mode(node ** /* nd; 0 to discard */,
+				  bool /* is_defining */ = false,
+				  bool /* handle_escaped_E */ = false);
 static void copy_mode_error(const char *,
 			    const errarg & = empty_errarg,
 			    const errarg & = empty_errarg,
@@ -171,14 +173,14 @@ static void interpolate_environment_variable(symbol);
 static symbol composite_glyph_name(symbol);
 static void interpolate_positional_parameter(symbol);
 static request_or_macro *lookup_request(symbol);
-static bool read_delimited_measurement(units *,
-	unsigned char /* scaling unit */);
-static bool read_delimited_measurement(units *,
-	unsigned char /* scaling unit */, units /* previous value */);
+static bool read_delimited_measurement(units * /* n */,
+    unsigned char /* si */);
+static bool read_delimited_measurement(units * /* n */,
+    unsigned char /* si */, units /* prev_value */);
 static symbol read_input_until_terminator(bool /* required */,
-					  unsigned char /* end char */);
-static bool read_line_rule_expression(units *res, unsigned char si,
-				      charinfo **cp);
+    unsigned char /* end_char */, bool /* want_identifier */ = false);
+static bool read_line_rule_expression(units * /* res */,
+    unsigned char /* si */, charinfo ** /* cp */);
 static bool read_size(int *);
 static symbol read_delimited_identifier();
 static void init_registers();
@@ -963,12 +965,13 @@ void shift()
   skip_line();
 }
 
+// TODO: return unsigned char (future: grochar)?  We handle EOF here.
 static char read_char_in_escape_sequence_parameter(bool allow_space
 						   = false)
 {
-  int c = get_copy(0 /* nullptr */,
-		   false /* is defining */,
-		   true /* handle \E */);
+  int c = read_char_in_copy_mode(0 /* nullptr */,
+				 false /* is_defining */,
+				 true /* handle_escaped_E  */);
   switch (c) {
   case EOF:
     copy_mode_error("end of input in escape sequence");
@@ -1114,7 +1117,13 @@ static symbol read_increment_and_escape_parameter(int *incp)
   return symbol(buf);
 }
 
-static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
+// In copy mode, we don't tokenize normally; characters on the input
+// stream are typically read into the contents of an existing node (like
+// a string or macro definition), or discarded.  A handful of escape
+// sequences (\n, etc.) interpolate as they do outside of copy mode.
+static int read_char_in_copy_mode(node **nd,
+				  bool is_defining,
+				  bool handle_escaped_E)
 {
   for (;;) {
     int c = input_stack::get(nd);
@@ -1142,7 +1151,7 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
     }
     if (c == DOUBLE_QUOTE)
       continue;
-    if (c == ESCAPE_E && handle_escape_E)
+    if ((c == ESCAPE_E) && handle_escaped_E)
       c = escape_char;
     if (c == ESCAPE_NEWLINE) {
       if (is_defining)
@@ -1200,7 +1209,7 @@ static int get_copy(node **nd, bool is_defining, bool handle_escape_E)
       return ESCAPE_e;
     case 'E':
       (void) input_stack::get(0 /* nullptr */);
-      if (handle_escape_E)
+      if (handle_escaped_E)
 	goto again;
       return ESCAPE_E;
     case 'n':
@@ -2102,7 +2111,7 @@ bool has_arg(bool want_peek)
     for (;;) {
       c = input_stack::peek();
       if (' ' == c)
-	(void) get_copy(0 /* nullptr */);
+	(void) read_char_in_copy_mode(0 /* nullptr */);
       else
 	break;
     }
@@ -2945,9 +2954,11 @@ bool token::is_usable_as_delimiter(bool report_error,
   case TOKEN_NODE:
     if (report_error) {
       // Reserve a buffer large enough to handle the lengthiest case.
-      const size_t maxstr
-	= sizeof "space character horizontal motion node token";
-      const size_t bufsz = maxstr + 1; // for trailing '\0'
+      // See `token::description()`.
+      const size_t bufsz
+	= sizeof "space character horizontal motion node token"
+	  + sizeof "bracketrighttp"
+	  + 2 /* for trailing '"' and '\0' */;
       // C++03: char[bufsz]();
       static char buf[bufsz];
       (void) memset(buf, 0, bufsz);
@@ -2972,17 +2983,20 @@ bool token::is_usable_as_delimiter(bool report_error,
 
 const char *token::description()
 {
-  // Reserve a buffer large enough to handle the lengthiest cases.
+  // Reserve a buffer large enough to handle the lengthiest cases.  The
+  // user can still contrive, by accident or otherwise, an arbitrarily
+  // long identifier.
   //   "character code XXX"
   //   "special character 'bracketrighttp'"
   //   "indexed character -2147483648"
   //   "space character horizontal motion node token"
+  //   "nonexistent special character or class"
   // Future:
   //   "character code XXX (U+XXXX)" or similar
-  const size_t maxstr
-    = sizeof "space character horizontal motion node token";
-  const size_t bufsz = maxstr + 2; // for trailing '"' and '\0'
-  // C++03: char[bufsz]();
+  const size_t bufsz
+    = sizeof "space character horizontal motion node token"
+      + sizeof "bracketrighttp"
+      + 2 /* for trailing '"' and '\0' */;
   static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   switch (type) {
@@ -3032,7 +3046,7 @@ const char *token::description()
       return buf;
     }
   case TOKEN_INDEXED_CHAR:
-    (void) snprintf(buf, maxstr, "indexed character %d",
+    (void) snprintf(buf, bufsz, "indexed character %d",
 		    character_index());
     return buf;
   case TOKEN_RIGHT_BRACE:
@@ -3057,16 +3071,16 @@ const char *token::description()
       // closing quotation mark.)
       static const char special_character[] = "special character";
       static const char character_class[] = "character class";
+      static const char nonexistent[] = "nonexistent special character"
+					" or class";
       const char *ctype = special_character;
       charinfo *ci = get_charinfo(false /* required */,
 				  true /* suppress creation */);
-      if (0 /* nullptr */ == ci) {
-	// We can get here via, e.g., `.pl \(nlu` (likely a typo).
-	return "nonexistent special character or class";
-      }
+      if (0 /* nullptr */ == ci)
+	ctype = nonexistent;
       else if (ci->is_class())
 	ctype = character_class;
-      (void) snprintf(buf, maxstr, "%s %c%s%c", ctype, qc, sc, qc);
+      (void) snprintf(buf, bufsz, "%s %c%s%c", ctype, qc, sc, qc);
       return buf;
     }
   case TOKEN_SPREAD:
@@ -3177,13 +3191,15 @@ symbol read_identifier(bool required)
 
 symbol read_long_identifier(bool required)
 {
-  return read_input_until_terminator(required, 0U);
+  return read_input_until_terminator(required, 0U,
+				     true /* want identifier */);
 }
 
 // Read bytes from input until reaching a null byte or the specified
 // `end_char`; construct and return a `symbol` object therefrom.
 static symbol read_input_until_terminator(bool required,
-					  unsigned char end_char)
+					  unsigned char end_char,
+					  bool want_identifier)
 {
   tok.skip_spaces();
   int buf_size = default_buffer_size;
@@ -3198,11 +3214,11 @@ static symbol read_input_until_terminator(bool required,
   }
   (void) memset(buf, 0, (buf_size * sizeof(unsigned char)));
   int i = 0;
+  const unsigned char terminator = end_char; // TODO: grochar
   for (;;) {
-    // If `end_char` != U0 we normally have to append a null byte.
+    // If `terminator` != 0U we normally have to append a null byte.
     if ((i + 2) > buf_size) {
-      // TODO: grochar
-      unsigned char *old_buf = buf;
+      unsigned char *old_buf = buf; // TODO: grochar
       int new_buf_size = buf_size * 2;
       // C++03: new char[new_buf_size]();
       try {
@@ -3216,8 +3232,18 @@ static symbol read_input_until_terminator(bool required,
       buf_size = new_buf_size;
       delete[] old_buf;
     }
-    if (((buf[i] = tok.ch()) == 0U) || (buf[i] == end_char))
+    buf[i] = tok.ch();
+    if ((0U == buf[i]) || (terminator == buf[i]))
       break;
+    else if (want_identifier && ((buf[i] < ' ') || (buf[i] > 159))) {
+      // Of C0 controls, Solaris, Heirloom, and Plan 9 troff support
+      // ^[BCEFG] (only) in identifiers.  DWB 3.3 supports none.
+      assert(buf[i] != ' '); // ensure caller handled spaces
+      error("character code %1 is not allowed in an identifier",
+	    static_cast<int>(buf[i]));
+      delete[] buf;
+      return NULL_SYMBOL;
+    }
     i++;
     tok.next();
   }
@@ -3226,7 +3252,7 @@ static symbol read_input_until_terminator(bool required,
     delete[] buf;
     return NULL_SYMBOL;
   }
-  if ((end_char != 0U) && (buf[i] == end_char))
+  if ((terminator != 0U) && (terminator == buf[i]))
     buf[i + 1] = '\0';
   else
     diagnose_invalid_identifier();
@@ -3546,7 +3572,7 @@ void process_input_stack()
 	    int cc;
 	    do {
 	      node *n;
-	      cc = get_copy(&n);
+	      cc = read_char_in_copy_mode(&n);
 	      if (cc != EOF) {
 		if (cc != '\0')
 		  curdiv->transparent_output(transparent_translate(cc));
@@ -4595,10 +4621,10 @@ static void decode_macro_call_arguments(macro_iterator *mi)
 {
   if (!tok.is_newline() && !tok.is_eof()) {
     node *n;
-    int c = get_copy(&n);
+    int c = read_char_in_copy_mode(&n);
     for (;;) {
       while (c == ' ')
-	c = get_copy(&n);
+	c = read_char_in_copy_mode(&n);
       if (c == '\n' || c == EOF)
 	break;
       macro arg;
@@ -4609,7 +4635,7 @@ static void decode_macro_call_arguments(macro_iterator *mi)
       if (c == '"') {
 	arg.append(DOUBLE_QUOTE);
 	quote_input_level = input_stack::get_level();
-	c = get_copy(&n);
+	c = read_char_in_copy_mode(&n);
       }
       while (c != EOF && c != '\n'
 	     && !(c == ' ' && quote_input_level == 0)) {
@@ -4617,10 +4643,10 @@ static void decode_macro_call_arguments(macro_iterator *mi)
 	    && (want_att_compat
 		|| input_stack::get_level() == quote_input_level)) {
 	  arg.append(DOUBLE_QUOTE);
-	  c = get_copy(&n);
+	  c = read_char_in_copy_mode(&n);
 	  if (c == '"') {
 	    arg.append(c);
-	    c = get_copy(&n);
+	    c = read_char_in_copy_mode(&n);
 	  }
 	  else
 	    break;
@@ -4636,7 +4662,7 @@ static void decode_macro_call_arguments(macro_iterator *mi)
 	    }
 	    arg.append(c);
 	  }
-	  c = get_copy(&n);
+	  c = read_char_in_copy_mode(&n);
 	}
       }
       arg.append(POP_GROFFCOMP_MODE);
@@ -4648,10 +4674,10 @@ static void decode_macro_call_arguments(macro_iterator *mi)
 static void decode_escape_sequence_arguments(macro_iterator *mi)
 {
   node *n;
-  int c = get_copy(&n);
+  int c = read_char_in_copy_mode(&n);
   for (;;) {
     while (c == ' ')
-      c = get_copy(&n);
+      c = read_char_in_copy_mode(&n);
     if (c == '\n' || c == EOF) {
       error("missing ']' in parameterized escape sequence");
       break;
@@ -4663,17 +4689,17 @@ static void decode_escape_sequence_arguments(macro_iterator *mi)
     bool was_warned = false; // about an input tab character
     if (c == '"') {
       quote_input_level = input_stack::get_level();
-      c = get_copy(&n);
+      c = read_char_in_copy_mode(&n);
     }
     while (c != EOF && c != '\n'
 	   && !(c == ']' && quote_input_level == 0)
 	   && !(c == ' ' && quote_input_level == 0)) {
       if (quote_input_level > 0 && c == '"'
 	  && input_stack::get_level() == quote_input_level) {
-	c = get_copy(&n);
+	c = read_char_in_copy_mode(&n);
 	if (c == '"') {
 	  arg.append(c);
-	  c = get_copy(&n);
+	  c = read_char_in_copy_mode(&n);
 	}
 	else
 	  break;
@@ -4690,7 +4716,7 @@ static void decode_escape_sequence_arguments(macro_iterator *mi)
 	  }
 	  arg.append(c);
 	}
-	c = get_copy(&n);
+	c = read_char_in_copy_mode(&n);
       }
     }
     mi->add_arg(arg, (c == ' '));
@@ -4919,16 +4945,16 @@ void read_request()
   int reading_from_terminal = isatty(fileno(stdin));
   int had_prompt = 0;
   if (has_arg(true /* peek */)) {
-    int c = get_copy(0);
+    int c = read_char_in_copy_mode(0 /* nullptr */);
     while (c == ' ')
-      c = get_copy(0);
+      c = read_char_in_copy_mode(0 /* nullptr */);
     while (c != EOF && c != '\n' && c != ' ') {
       if (!is_invalid_input_char(c)) {
 	if (reading_from_terminal)
 	  fputc(c, stderr);
 	had_prompt = 1;
       }
-      c = get_copy(0);
+      c = read_char_in_copy_mode(0 /* nullptr */);
     }
     if (c == ' ') {
       tok.make_space();
@@ -4968,7 +4994,7 @@ enum define_mode { DEFINE_NORMAL, DEFINE_APPEND, DEFINE_IGNORE };
 enum calling_mode { CALLING_NORMAL, CALLING_INDIRECT };
 enum comp_mode { COMP_IGNORE, COMP_DISABLE, COMP_ENABLE };
 
-void do_define_string(define_mode mode, comp_mode comp)
+static void do_define_string(define_mode mode, comp_mode comp)
 {
   symbol nm;
   node *n = 0 /* nullptr */;
@@ -4987,11 +5013,11 @@ void do_define_string(define_mode mode, comp_mode comp)
     return;
   }
   else
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   while (c == ' ')
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   if (c == '"')
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   macro mac;
   request_or_macro *rm
     = static_cast<request_or_macro *>(request_dictionary.lookup(nm));
@@ -5007,7 +5033,7 @@ void do_define_string(define_mode mode, comp_mode comp)
       mac.append(n);
     else
       mac.append((unsigned char) c);
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   }
   if (comp == COMP_DISABLE || comp == COMP_ENABLE)
     mac.append(POP_GROFFCOMP_MODE);
@@ -5019,24 +5045,24 @@ void do_define_string(define_mode mode, comp_mode comp)
   tok.next();
 }
 
-void define_string()
+static void define_string()
 {
   do_define_string(DEFINE_NORMAL,
 		   want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
-void define_nocomp_string()
+static void define_nocomp_string()
 {
   do_define_string(DEFINE_NORMAL, COMP_DISABLE);
 }
 
-void append_string()
+static void append_string()
 {
   do_define_string(DEFINE_APPEND,
 		   want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
-void append_nocomp_string()
+static void append_nocomp_string()
 {
   do_define_string(DEFINE_APPEND, COMP_DISABLE);
 }
@@ -5100,11 +5126,11 @@ void define_character(char_mode mode, const char *font_name)
     return;
   }
   else
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   while (c == ' ' || c == '\t')
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   if (c == '"')
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   macro *m = new macro;
   // Construct a macro from input characters; if the input character
   // code is 0, we've read a node--append that.
@@ -5113,7 +5139,7 @@ void define_character(char_mode mode, const char *font_name)
       m->append(static_cast<unsigned char>(c));
     else
       m->append(n);
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   }
   // Assign the macro to the character, discarding any previous macro.
   m = ci->set_macro(m, mode);
@@ -5379,7 +5405,8 @@ void handle_initial_title()
   handle_initial_request(TITLE_REQUEST);
 }
 
-void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
+static void do_define_macro(define_mode mode, calling_mode calling,
+			    comp_mode comp)
 {
   symbol nm, term, dot_symbol(".");
   if (calling == CALLING_INDIRECT) {
@@ -5418,7 +5445,7 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
 				&start_lineno);
   node *n;
   // doing this here makes the line numbers come out right
-  int c = get_copy(&n, true /* is defining*/);
+  int c = read_char_in_copy_mode(&n, true /* is_defining */);
   macro mac;
   macro *mm = 0 /* nullptr */;
   if (mode == DEFINE_NORMAL || mode == DEFINE_APPEND) {
@@ -5439,29 +5466,30 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
       mac.clear_string_flag();
     while (c == ESCAPE_NEWLINE) {
       if (mode == DEFINE_NORMAL || mode == DEFINE_APPEND)
-	mac.append(c);
-      c = get_copy(&n, true /* is defining */);
+	// TODO: grochar; may need NFD decomposition and UTF-8 encoding
+	mac.append(static_cast<unsigned char>(c));
+      c = read_char_in_copy_mode(&n, true /* is_defining */);
     }
-    if (reading_beginning_of_input_line && c == '.') {
+    if (reading_beginning_of_input_line && (c == '.')) {
       const char *s = term.contents();
-      int d = 0;
+      int d = '\0';
       // see if it matches term
       int i = 0;
-      if (s[0] != 0) {
-	while ((d = get_copy(&n)) == ' ' || d == '\t')
+      if (s[0] != '\0') {
+	while (((d = read_char_in_copy_mode(&n)) == ' ') || (d == '\t'))
 	  ;
-	if ((unsigned char) s[0] == d) {
-	  for (i = 1; s[i] != 0; i++) {
-	    d = get_copy(&n);
-	    if ((unsigned char) s[i] != d)
+	if (s[0] == d) {
+	  for (i = 1; s[i] != '\0'; i++) {
+	    d = read_char_in_copy_mode(&n);
+	    if (s[i] != d)
 	      break;
 	  }
 	}
       }
-      if (s[i] == 0
-	  && ((i == 2 && want_att_compat)
-	      || (d = get_copy(&n)) == ' '
-	      || d == '\n')) {	// we found it
+      if (s[i] == '\0'
+	  && (((i == 2) && want_att_compat)
+	      || ((d = read_char_in_copy_mode(&n)) == ' ')
+	      || (d == '\n'))) { // we found it
 	if (d == '\n')
 	  tok.make_newline();
 	else
@@ -5483,83 +5511,88 @@ void do_define_macro(define_mode mode, calling_mode calling, comp_mode comp)
 	  skip_line();
 	return;
       }
-      if (mode == DEFINE_APPEND || mode == DEFINE_NORMAL) {
-	mac.append(c);
+      if ((mode == DEFINE_APPEND) || (mode == DEFINE_NORMAL)) {
+	// TODO: grochar; may need NFD decomposition and UTF-8 encoding
+	mac.append(static_cast<unsigned char>(c));
 	for (int j = 0; j < i; j++)
-	  mac.append(s[j]);
+	  // TODO: grochar; may need NFD decomposition & UTF-8 encoding
+	  mac.append(static_cast<unsigned char>(s[j]));
       }
       c = d;
     }
     if (c == EOF) {
-      if (mode == DEFINE_NORMAL || mode == DEFINE_APPEND) {
+      if ((mode == DEFINE_APPEND) || (mode == DEFINE_NORMAL)) {
 	if (have_start_location)
 	  error_with_file_and_line(start_filename, start_lineno,
-				   "end of file while defining macro '%1'",
+				   "encountered end of file"
+				   " while defining macro '%1'",
 				   nm.contents());
 	else
 	  error("end of file while defining macro '%1'", nm.contents());
       }
       else {
+	static const char msg[] = "encountered end of file while"
+				  " ignoring input";
 	if (have_start_location)
-	  error_with_file_and_line(start_filename, start_lineno,
-				   "end of file while ignoring input lines");
+	  error_with_file_and_line(start_filename, start_lineno, msg);
 	else
-	  error("end of file while ignoring input lines");
+	  error(msg);
       }
       tok.next();
       return;
     }
-    if (mode == DEFINE_NORMAL || mode == DEFINE_APPEND) {
-      if (c == 0)
+    if ((mode == DEFINE_NORMAL) || (mode == DEFINE_APPEND)) {
+      if (c == '\0')
 	mac.append(n);
       else
-	mac.append(c);
+	// TODO: grochar; may need NFD decomposition and UTF-8 encoding
+	mac.append(static_cast<unsigned char>(c));
     }
     reading_beginning_of_input_line = (c == '\n');
-    c = get_copy(&n, true /* is defining */);
+    c = read_char_in_copy_mode(&n, true /* is_defining */);
   }
 }
 
-void define_macro()
+static void define_macro()
 {
   do_define_macro(DEFINE_NORMAL, CALLING_NORMAL,
 		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
-void define_nocomp_macro()
+static void define_nocomp_macro()
 {
   do_define_macro(DEFINE_NORMAL, CALLING_NORMAL, COMP_DISABLE);
 }
 
-void define_indirect_macro()
+static void define_indirect_macro()
 {
   do_define_macro(DEFINE_NORMAL, CALLING_INDIRECT,
 		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
-void define_indirect_nocomp_macro()
+static void define_indirect_nocomp_macro()
 {
   do_define_macro(DEFINE_NORMAL, CALLING_INDIRECT, COMP_DISABLE);
 }
 
-void append_macro()
+static void append_macro()
 {
   do_define_macro(DEFINE_APPEND, CALLING_NORMAL,
 		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
-void append_nocomp_macro()
+static void append_nocomp_macro()
 {
   do_define_macro(DEFINE_APPEND, CALLING_NORMAL, COMP_DISABLE);
 }
 
-void append_indirect_macro()
+static void append_indirect_macro()
 {
   do_define_macro(DEFINE_APPEND, CALLING_INDIRECT,
 		  want_att_compat ? COMP_ENABLE : COMP_IGNORE);
 }
 
-void append_indirect_nocomp_macro()
+static void append_indirect_nocomp_macro()
 {
   do_define_macro(DEFINE_APPEND, CALLING_INDIRECT, COMP_DISABLE);
 }
@@ -5864,15 +5897,15 @@ void length_request()
     return;
   }
   else
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   while (c == ' ')
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   if (c == '"')
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   int len = 0;
   while (c != '\n' && c != EOF) {
     ++len;
-    c = get_copy(&n);
+    c = read_char_in_copy_mode(&n);
   }
   reg *r = static_cast<reg *>(register_dictionary.lookup(ret));
   if (r != 0 /* nullptr */)
@@ -5980,7 +6013,7 @@ static void interpolate_number_format(symbol nm)
 
 static bool read_delimited_measurement(units *n,
 				       unsigned char si,
-				       int prev_value)
+				       units prev_value)
 {
   token start_token;
   start_token.next();
@@ -6016,6 +6049,8 @@ static bool read_delimited_measurement(units *n,
   return false;
 }
 
+// TODO: Merge into other `read_delimited_measurement()`, using default
+// argument of 0 for `prev_value`.
 static bool read_delimited_measurement(units *n, unsigned char si)
 {
   token start_token;
@@ -6546,7 +6581,9 @@ static node *do_non_interpreted() // \?
   node *n;
   int c;
   macro mac;
-  while ((c = get_copy(&n)) != ESCAPE_QUESTION && c != EOF && c != '\n')
+  while (((c = read_char_in_copy_mode(&n)) != ESCAPE_QUESTION)
+	 && (c != EOF)
+	 && (c != '\n'))
     if (c == 0)
       mac.append(n);
     else
@@ -6759,9 +6796,9 @@ static void device_request()
   macro mac;
   int c;
   for (;;) {
-    c = get_copy(0 /* nullptr */);
+    c = read_char_in_copy_mode(0 /* nullptr */);
     if ('"' == c) {
-      c = get_copy(0 /* nullptr */);
+      c = read_char_in_copy_mode(0 /* nullptr */);
       break;
     }
     if (c != ' ' && c != '\t')
@@ -6771,7 +6808,7 @@ static void device_request()
     topdiv->begin_page();
   for (;
       (c != '\0') && (c != '\n') && (c != EOF);
-       c = get_copy(0 /* nullptr */)) {
+       c = read_char_in_copy_mode(0 /* nullptr */)) {
     // We may encounter some of the C0 and C1 character codes GNU troff
     // uses for special purposes; see src/roff/troff/input.h.  They
     // produce nothing in grout.  Warn only about the ones that are left
@@ -6787,7 +6824,7 @@ static void device_request()
     else if (c != '\\')
       mac.append(c);
     else {
-      int c1 = get_copy(0 /* nullptr */);
+      int c1 = read_char_in_copy_mode(0 /* nullptr */);
       if (c1 != '[') {
 	mac.append(c);
 	mac.append(c1);
@@ -6811,9 +6848,9 @@ static void device_request()
 	// character escape sequence?
 	bool is_valid = false;
 	string sc = "";
-	int c2 = get_copy(0 /* nullptr */);
+	int c2 = read_char_in_copy_mode(0 /* nullptr */);
 	for (; (c2 != '\0') && (c2 != '\n') && (c2 != EOF);
-	     c2 = get_copy(0 /* nullptr */)) {
+	     c2 = read_char_in_copy_mode(0 /* nullptr */)) {
 	  // XXX: `map_special_character_for_device_output()` will need
 	  // the closing bracket in the iterator we construct, but a
 	  // composite character mapping mustn't see it.
@@ -6872,15 +6909,17 @@ static void output_request()
   }
   int c;
   for (;;) {
-    c = get_copy(0 /* nullptr */);
+    c = read_char_in_copy_mode(0 /* nullptr */);
     if ('"' == c) {
-      c = get_copy(0 /* nullptr */);
+      c = read_char_in_copy_mode(0 /* nullptr */);
       break;
     }
     if (c != ' ' && c != '\t')
       break;
   }
-  for (; c != '\n' && c != EOF; c = get_copy(0 /* nullptr */))
+  for (;
+       (c != '\n') && (c != EOF);
+       (c = read_char_in_copy_mode(0 /* nullptr */)))
     topdiv->transparent_output(c);
   topdiv->transparent_output('\n');
   tok.next();
@@ -8059,16 +8098,18 @@ void tag()
     string s;
     int c;
     for (;;) {
-      c = get_copy(0);
+      c = read_char_in_copy_mode(0 /* nullptr */);
       if (c == '"') {
-	c = get_copy(0);
+	c = read_char_in_copy_mode(0 /* nullptr */);
 	break;
       }
       if (c != ' ' && c != '\t')
 	break;
     }
     s = "x X ";
-    for (; c != '\n' && c != EOF; c = get_copy(0))
+    for (;
+	 (c != '\n') && (c != EOF);
+	 (c = read_char_in_copy_mode(0 /* nullptr */)))
       s += (char) c;
     s += '\n';
     curenv->add_node(new tag_node(s, 0));
@@ -8082,16 +8123,18 @@ void taga()
     string s;
     int c;
     for (;;) {
-      c = get_copy(0);
+      c = read_char_in_copy_mode(0 /* nullptr */);
       if (c == '"') {
-	c = get_copy(0);
+	c = read_char_in_copy_mode(0 /* nullptr */);
 	break;
       }
       if (c != ' ' && c != '\t')
 	break;
     }
     s = "x X ";
-    for (; c != '\n' && c != EOF; c = get_copy(0))
+    for (;
+	 (c != '\n') && (c != EOF);
+	 (c = read_char_in_copy_mode(0 /* nullptr */)))
       s += (char) c;
     s += '\n';
     curenv->add_node(new tag_node(s, 1));
@@ -8106,15 +8149,17 @@ void do_terminal(int newline, int string_like)
   if (has_arg(true /* peek */)) {
     int c;
     for (;;) {
-      c = get_copy(0);
+      c = read_char_in_copy_mode(0 /* nullptr */);
       if (string_like && c == '"') {
-	c = get_copy(0);
+	c = read_char_in_copy_mode(0 /* nullptr */);
 	break;
       }
       if (c != ' ' && c != '\t')
 	break;
     }
-    for (; c != '\n' && c != EOF; c = get_copy(0))
+    for (;
+	 (c != '\n') && (c != EOF);
+	 (c = read_char_in_copy_mode(0 /* nullptr */)))
       fputs(asciify(c), stderr);
   }
   if (newline)
@@ -8343,14 +8388,14 @@ void do_write_request(int newline)
     return;
   }
   if (has_arg(true /* peek */)) {
-    int c = get_copy(0 /* nullptr */);
+    int c = read_char_in_copy_mode(0 /* nullptr */);
     while (' ' == c)
-      c = get_copy(0 /* nullptr */);
+      c = read_char_in_copy_mode(0 /* nullptr */);
     if ('"' == c)
-      c = get_copy(0 /* nullptr */);
+      c = read_char_in_copy_mode(0 /* nullptr */);
     while (c != '\n' && c != EOF) {
       fputs(asciify(c), fp);
-      c = get_copy(0 /* nullptr */);
+      c = read_char_in_copy_mode(0 /* nullptr */);
     }
   }
   if (newline)
@@ -9246,11 +9291,13 @@ void abort_request()
   else if (tok.is_newline())
     c = '\n';
   else {
-    while ((c = get_copy(0)) == ' ')
+    while ((c = read_char_in_copy_mode(0 /* nullptr */)) == ' ')
       ;
   }
   if (!(c == EOF || c == '\n')) {
-    for (; c != '\n' && c != EOF; c = get_copy(0))
+    for (;
+	 (c != '\n') && (c != EOF);
+	 (c = read_char_in_copy_mode(0 /* nullptr */)))
       fputs(asciify(c), stderr);
     fputc('\n', stderr);
   }
@@ -9272,11 +9319,11 @@ char *read_rest_of_line_as_argument()
   int buf_size = 256;
   char *s = new char[buf_size]; // C++03: new char[buf_size]();
   (void) memset(s, 0, (buf_size * sizeof(char)));
-  int c = get_copy(0 /* nullptr */);
+  int c = read_char_in_copy_mode(0 /* nullptr */);
   while (' ' == c)
-    c = get_copy(0 /* nullptr */);
+    c = read_char_in_copy_mode(0 /* nullptr */);
   if ('"' == c)
-    c = get_copy(0 /* nullptr */);
+    c = read_char_in_copy_mode(0 /* nullptr */);
   int i = 0;
   while ((c != '\n') && (c != EOF)) {
     if (!is_invalid_input_char(c)) {
@@ -9290,7 +9337,7 @@ char *read_rest_of_line_as_argument()
       }
       s[i++] = c;
     }
-    c = get_copy(0 /* nullptr */);
+    c = read_char_in_copy_mode(0 /* nullptr */);
   }
   s[i] = '\0';
   if (0 == i) {

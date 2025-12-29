@@ -1,28 +1,31 @@
 #!@PERL@
-# grog - guess options for groff command
-# Inspired by doctype script in Kernighan & Pike, Unix Programming
-# Environment, pp 306-8.
-
-# Copyright (C) 1993-2024 Free Software Foundation, Inc.
-# Written by James Clark.
-# Rewritten in Perl by Bernd Warken <groff-bernd.warken-72@web.de>.
-# Hacked up by G. Branden Robinson, 2021.
-
-# This file is part of 'grog', which is part of groff.
-
-# groff is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-
-# groff is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-
+# grog - guess groff command line for rendering a document argument
+#
+# Inspired by "doctype" script in Kernighan & Pike, _The Unix
+# Programming Environment_, pp. 306-8.
+#
+# Copyright 1991-2014 Free Software Foundation, Inc.
+#                2021 G. Branden Robinson
+#
+# Written in Bourne shell in groff 1.01 (ca. May 1991) by James Clark.
+# Rewritten in Perl by James Clark in groff 1.02 (ca. June 1991).
+# Many changes by Bernd Warken from May 2000-July 2015.
+# Hacked on by G. Branden Robinson since October 2017.
+#
+# This file is part of groff, the GNU roff typesetting system.
+#
+# groff is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see
-# <http://www.gnu.org/licenses/gpl-2.0.html>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use warnings;
 use strict;

@@ -141,7 +141,7 @@ Version 1.22.4 released 2018-12-23
 	prohibiting it before the last character of a word, in
 	congruence with the TeX-based hyphenation patterns we use.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?55066>.
+	Fixes <https://savannah.gnu.org/bugs/?55066>.
 
 2018-11-19  Bertrand Garrigues <bertrand.garrigues@laposte.net>
 
@@ -156,7 +156,7 @@ Version 1.22.4 released 2018-12-23
 
 	* m4/groff.m4 (GROFF_PAGE): Try /etc/papersize first.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?53271>.
+	Fixes <https://savannah.gnu.org/bugs/?53271>.
 
 2018-11-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -287,7 +287,7 @@ Version 1.22.4 released 2018-12-23
 	unusual characters in Makefile variables in other aspects of the
 	groff build are offered.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?55004>.
+	Fixes <https://savannah.gnu.org/bugs/?55004>.
 
 2018-11-06  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -297,7 +297,7 @@ Version 1.22.4 released 2018-12-23
 
 	"lookbib -v" now reports a version number, instead of "(null)".
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?54972>.
+	Fixes <https://savannah.gnu.org/bugs/?54972>.
 
 2018-11-06  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -311,7 +311,7 @@ Version 1.22.4 released 2018-12-23
 
 	Example: lookbib:fatal error: no databases
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?54971>.
+	Fixes <https://savannah.gnu.org/bugs/?54971>.
 
 2018-11-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -335,7 +335,7 @@ Version 1.22.4 released 2018-12-23
 	  and the sed section of "Limitations of Usual Tools" in the
 	  GNU Autoconf Manual.
 
-	Invalidates <https://savannah.gnu.org/bugs/index.php?53784>.
+	Invalidates <https://savannah.gnu.org/bugs/?53784>.
 
 2018-11-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -355,7 +355,7 @@ Version 1.22.4 released 2018-12-23
 	long-form Emacs coding declaration at end of file.  Vim's
 	auto-detection seems to be fine, so did not update its modeline.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?54530>.
+	Fixes <https://savannah.gnu.org/bugs/?54530>.
 
 2018-11-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -376,7 +376,7 @@ Version 1.22.4 released 2018-12-23
 
 	* man/groff.7.man: Similar, but terser.
 
-	Fixes https://savannah.gnu.org/bugs/index.php?54894.
+	Fixes https://savannah.gnu.org/bugs/?54894.
 
 2018-10-04  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
@@ -562,7 +562,7 @@ Version 1.22.4 released 2018-12-23
 	part of the footer from overrunning the date, even in dirty
 	trees on 80-column terminals.
 
-	Fixes https://savannah.gnu.org/bugs/index.php?53721.
+	Fixes https://savannah.gnu.org/bugs/?53721.
 
 2018-04-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -1516,7 +1516,7 @@ Version 1.22.4 released 2018-12-23
 
 	* doc/groff.texi: Dp instead of DP used
 
-	https://savannah.gnu.org/bugs/index.php?42251
+	https://savannah.gnu.org/bugs/?42251
 
 2017-04-28  Rich Burridge
 
@@ -1740,7 +1740,7 @@ Version 1.22.4 released 2018-12-23
 
 	See
 
-	https://savannah.gnu.org/bugs/index.php?49272
+	https://savannah.gnu.org/bugs/?49272
 
 	and
 

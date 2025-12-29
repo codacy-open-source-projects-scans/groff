@@ -1416,15 +1416,10 @@ or stream.
 Valid identifiers consist of one or more ordinary characters.
 .
 An
-.I ordinary character
-is an input character that is not the escape character,
-a leader,
-tab,
-newline,
-space,
-or invalid as GNU
-.I troff \" GNU
-input.
+.I "ordinary character"
+is any Unicode Basic Latin character
+that is not a space and not the escape character;
+recall section \[lq]Input format\[rq] above.
 .
 .
 .P
@@ -1902,7 +1897,7 @@ they can make the input confusing to read.
 .MR @g@eqn @MAN1EXT@
 and
 .MR @g@tbl @MAN1EXT@
-preprocessors use parameterized but non-delimited special characters
+preprocessors use parameterized but non-delimited special character
 escape sequences
 .B \[rs](
 and

@@ -1,3 +1,164 @@
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Add new Boolean-valued parameter to
+	`read_input_until_terminator()`, `want_identifier`, defaulting
+	to false, so that we can distinguish callers that want a GNU
+	troff identifier from those gathering some other kind of input.
+	This is so that can we can reject (all) C0 control and Latin-1
+	Supplement characters in identifiers.  (C1 controls are already
+	rejected on input.)  The prohibition against C0 controls is to
+	make the language less tolerant of unreadable input, and the
+	latter is to enable us to pivot to reading UTF-8-encoded input
+	in a future release.
+	(read_input_until_terminator): Update declaration to add new
+	parameter with default value.  Update definition to reject, with
+	error diagnostic, character codes less than 32 and greater than
+	159.  Add assertion that the putative identifier character is
+	not a space (character code 32); these have never been valid in
+	*roff identifiers.  This function's callers must ensure that the
+	terminator precedes any space in the input.
+
+	Fixes <https://savannah.gnu.org/bugs/?67734>.
+
+2025-12-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_delimited_measurement): Make
+	function definition agree with declaration; return object of
+	type `units` rather than `int`.  (They're type-aliased with
+	`typedef`, but scrupulous type correctness is more conceptually
+	coherent and forecloses an avenue of future error.)
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_input_until_terminator):
+	Slightly refactor.  Introduce `const`-qualified local variable
+	to defeat inadvertent lvalue assignment.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_input_until_terminator):
+	Trivially refactor.  Split assignment-within-comparison into its
+	own statement.  Arrange equality comparisons to (prepare to)
+	avoid inadvertent lvalue assignment.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_define_string, define_string)
+	(define_nocomp_string, append_string, append_nocomp_macro)
+	(do_define_macro, define_macro, define_nocomp_string)
+	(define_indirect_macro, define_indirect_nocomp_macro)
+	(append_macro, append_nocomp_macro, append_indirect_macro)
+	(append_indirect_nocomp_macro): Fix code style nit.  Mark
+	functions `static` since they do not require external linkage.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_define_macro): Work on Savannah
+	#67735.  Assign `char`-valued literals to temporary `int`
+	storing value we got from `read_char_in_copy_mode()` (which
+	calls `input_iterator::fill()`, which in turn calls getc(3)),
+	since it is destined to become an input character--if we don't
+	have to handle EOF.  Since we must, drop C-style type casts to
+	`unsigned char` while still scanning input.  Absence of a
+	premature EOF established, use `static_cast` operator to demote
+	this `int` to `unsigned char` before appending it to a macro.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_define_macro): Improve
+	diagnostic.  Communicate error to the user by _describing what
+	happened_, rather than just throwing a noun phrase at them.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_define_macro): Slightly refactor.
+	Parallelize wording of error diagnostic when encountering EOF
+	inside `ig`nored input, pull it into a local `static const`
+	character array, and pass that to our diagnostic functions.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_char_in_copy_mode, do_define_macro): Parenthesize formally
+	complex expressions.
+
+2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	`get_copy()` to `read_char_in_copy_mode()`, because this
+	function advances the input stream pointer and because it
+	changes the formatter's lexing and parsing rules from the
+	default to "copy mode", a fundamental *roff concept since J. F.
+	Ossanna transformed roff(1) into the macro language nroff(1)
+	with the introduction of macro definitions circa 1972.
+	(get_copy): Rename this...
+	(read_char_in_copy_mode): ...to this (decl and defn).
+	(read_char_in_copy_mode): Rename Boolean-valued argument
+	`handle_escape_E` to `handle_escaped_E`, to appease the ruthless
+	grammarian in my head.
+	(read_char_in_escape_sequence_parameter)
+	(has_arg)
+	(process_input_stack)
+	(decode_macro_call_arguments)
+	(decode_escape_sequence_arguments)
+	(read_request)
+	(do_define_string)
+	(define_character)
+	(do_define_macro)
+	(length_request)
+	(do_non_interpreted)
+	(device_request)
+	(output_request)
+	(tag)
+	(taga)
+	(do_terminal)
+	(do_write_request)
+	(abort_request)
+	(read_rest_of_line_as_argument): Update call sites.
+
+2025-12-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (get_number_rigidly): Delete.  It no
+	longer has a caller; that has migrated to `read_measurement(...,
+	..., true)`.  Continues commit 6dcbaa0a7a, 19 December.
+
+2025-12-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (glyph_node::add_self): Initialize
+	local pointer variable `nn` to `0`.  Before returning,
+	`assert(3)` that it is no longer a null pointer.
+
+2025-12-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::is_usable_as_delimiter)
+	(token::description): Double the size of the stack-allocated
+	buffer we use to populate diagnostic messages about characters
+	being unsuitable for use as delimiter, or unsuitable for use at
+	all, respectively.  I'm thrilled about neither potentially
+	truncating identifiers nor about grabbing a potentially
+	unbounded amount of space from the stack, nor about leaking
+	memory on the heap--there's no good place to free this memory
+	because we return a `char` pointer to our caller.  Risking
+	truncation seems the best of a bad set of choices.
+
+2025-12-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Improve
+	diagnostic when describing a nonexistent special character or
+	class by reporting its identifier, at least up to the point
+	where the size of our buffer truncates it.  (How do you get a
+	"nonexistent special character or class" that nevertheless has
+	an identifier?  It's part of the input syntax.  What you do is
+	attempt to interpolate a special character (or class--an invalid
+	operation anyway, but stay with me) in a context where character
+	interpolation makes no sense, as in a numeric expression.
+
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/preconv/preconv.cpp (do_file): Say "non-portable"
+	instead of "unportable" in diagnostic message.  Prompted by a
+	similar change to the tzdata project by Paul Eggert.
+
 2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* doc/groff.texi.in (Delimiters):

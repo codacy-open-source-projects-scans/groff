@@ -1,3 +1,12 @@
+2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* rfc1345.tmac: Track Unicode 16 recommended practice and a Vim
+	9.1.1640 change.  Add `<[` and `]>` character definition for
+	U+27E[89] left and right mathematical angle brackets.
+	Redefine `</` and `/>` characters as U+300[89] left and right
+	angle brackets instead of U+232[9A] left- and right-pointing
+	angle brackets.
+
 2025-12-18  Alexis Hildebrandt <afh@surryhill.net>
 
 	* rfc1345.tmac: Strip undesired spaces from ends of character

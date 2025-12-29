@@ -807,10 +807,9 @@ permitting initial embedded spaces in the argument.
 .\" eliminating its need to groff before you groff.
 .I groff
 introduces several new escape sequences,
-extends the syntax of a few AT&T
+extends the syntax of the AT&T
 .I troff \" AT&T
 escape sequences
-(namely,
 .BR \[rs]D ,
 .BR \[rs]f ,
 .BR \[rs]k ,
@@ -818,7 +817,7 @@ escape sequences
 .BR \[rs]s ,
 .BR \[rs]$ ,
 and
-.BR \[rs]* ),
+.BR \[rs]* ,
 and alters the behavior of
 .BR \[rs]X .
 .
@@ -6389,9 +6388,30 @@ McIlroy referred to it as a \[lq]living fossil\[rq].]
 .SH "Other differences"
 .\" ====================================================================
 .
-Other
-.I troff \" generic
-formatters that don't implement request names that are
+.\" BEGIN Keep in sync with groff.texi node "Other Differences".
+Use of C0 control characters in identifiers is not portable;
+Solaris,
+Plan\~9,
+and Heirloom Doctools
+.IR troff s \" Solaris, Plan 9, Heirloom
+accept
+Control+B,
+Control+C,
+Control+E,
+Control+F,
+and
+Control+G (only),
+DWB\~3.3
+.I troff \" DWB
+does not.
+.
+GNU
+.I troff \" GNU
+rejects C0 controls in identifiers with an error diagnostic.
+.
+.
+.P
+Formatters that don't implement request names that are
 GNU
 .I troff \" GNU
 extensions tend to ignore them,
@@ -6402,11 +6422,10 @@ extension escape sequence,
 they are liable to format its function selector character as text.
 .
 For example,
+.\" NESTED BEGIN Keep in sync with groff_man_style(7).
 the adjustable,
 non-breaking space escape sequence
 .B \[rs]\[ti]
-.\" BEGIN Keep in sync with groff.texi node "Other Differences" and
-.\" groff_man_style(7).
 is also supported by Heirloom Doctools
 .I troff \" Heirloom
 050915 (September 2005),
@@ -6425,8 +6444,7 @@ or Documenter's Workbench
 which both render it as
 .RB \[lq] \[ti] \[rq].
 .\" as of this writing, 2022-08-13
-.\" END Keep in sync with groff.texi node "Other Differences" and
-.\" groff_man_style(7).
+.\" NESTED END Keep in sync with groff_man_style(7).
 .
 The
 .B \[rs]A
@@ -6466,6 +6484,8 @@ in this adjustment mode
 to prevent \[lq]rivers\[rq] in the text.
 .
 .
+.br
+.ne 2v
 .P
 GNU
 .I troff \" GNU
@@ -6893,19 +6913,21 @@ the formatter performs the flush when the buffer runs out of room).
 .
 .
 .P
-In the somewhat pathological case where a diversion exists containing a
-partially collected line and a partially collected line at the top-level
-diversion has never existed,
+In the somewhat pathological case where a diversion exists
+containing a partially collected line
+and a partially collected line at the top-level diversion
+has never existed,
 AT&T
-.I troff
-will output a partially collected but otherwise empty line
+.I troff \" AT&T
+outputs a partially collected but otherwise empty line
 (as if
 .RB \[lq] \[rs]c \[rq]
 were in the top-level diversion)
 at the end of input;
 GNU
 .I troff \" GNU
-will not.
+does not.
+.\" END Keep in sync with groff.texi node "Other Differences".
 .
 .
 .\" ====================================================================

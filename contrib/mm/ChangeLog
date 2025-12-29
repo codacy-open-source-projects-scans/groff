@@ -2114,7 +2114,7 @@
 	omitted completely".  And, regarding the salutation, #60390.
 
 	Fixes <https://savannah.gnu.org/bugs/?60373> and
-	<https://savannah.gnu.org/bugs/index.php?60390>.
+	<https://savannah.gnu.org/bugs/?60390>.
 
 2021-05-30  Bjarni Ingi Gislason <bjarniig@rhi.hi.is>
 
