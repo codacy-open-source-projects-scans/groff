@@ -6,7 +6,9 @@
 #      adapted from groff *.am files by
 #          Bertrand Garrigues <bertrand.garrigues@laposte.net>
 #
-# This file is part of groff, the GNU roff typesetting system.
+# This file is part of sboxes.
+#
+# sboxes is distributed with groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free

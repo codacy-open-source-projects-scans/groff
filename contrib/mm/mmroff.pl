@@ -1,12 +1,15 @@
 #!@PERL@
 # Copyright 1989-2025 Free Software Foundation, Inc.
 #
-# This file is part of groff, the GNU roff typesetting system.
+# This file is part of mm, a reimplementation of the Documenter's
+# Workbench (DWB) troff memorandum macro package for use with GNU troff.
+#
+# mm is distributed with groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
-# Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
 #
 # groff is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -15,6 +18,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Please submit bug reports using groff's 'BUG-REPORT' file to
+# http://savannah.gnu.org/bugs/?group=groff.
 
 use strict;
 use warnings;

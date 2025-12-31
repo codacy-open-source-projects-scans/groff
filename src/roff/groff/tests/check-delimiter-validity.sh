@@ -211,7 +211,7 @@ done
 
 # 'v' as a conditional expression operator is a vtroff extension, not a
 # GNU one.  vtroff is also unobtainium in the 21st century.  DWB 3.3,
-# Plan 9, and Solaris 10 troffs don't treat 'v' specially.
+# Plan 9, and Solaris troffs don't treat 'v' specially.
 #
 # TODO: Ideally, we should permit only AT&T-compatible (plus 'v'?)
 # operators when in compatibility mode.  (If you want the extensions,

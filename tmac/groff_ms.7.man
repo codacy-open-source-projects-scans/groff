@@ -762,13 +762,14 @@ register.
 .
 .TP
 .BR .IP \~[\c
-.IR marker \~[ width ]]
+.IR mark \~[ width ]]
 Set a paragraph with a left indentation.
 .
 The optional
 .I mark
-is not indented and is empty by default;
-it is useful in the construction of lists.
+is not indented,
+is useful in the construction of lists,
+and is empty by default.
 .
 .I width
 overrides the indentation amount in
@@ -863,8 +864,9 @@ Only non-zero values are output.
 If
 .I depth
 is omitted,
-it is taken to be
-.BR 1 .
+.I ms
+assumes
+.RB \[lq] 1 \[rq].
 .
 If you specify
 .I depth

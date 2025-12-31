@@ -120,11 +120,6 @@ troff
    parameterized escape sequences `\A`, `\b`, `\o`, `\w`, `\X`, and
    `\Z`.
 
-*  GNU troff no longer accepts `\0`, `\^`, and `\|` as escape sequence
-   delimiters; doing so inadvertently permitted the delimited `\h`
-   escape sequence to serve as delimiter to another delimited escape
-   sequence.
-
 *  GNU troff no longer accepts C0 controls or Latin-1 Supplement
    characters in identifiers.  We prohibit C0 controls to make the
    language less tolerant of unreadable input, and Latin-1 Supplement

@@ -631,7 +631,7 @@ T}
 color	524288	T{
 An undefined color name was selected,
 an attempt was made to define a color using an unrecognized color space,
-an invalid component in a color definition was encountered,
+an invalid channel value in a color definition was encountered,
 or an attempt was made to redefine a default color.
 T}
 .
@@ -769,11 +769,12 @@ reg	1024	T{
 An undefined register was used.
 .
 When an undefined register is dereferenced,
-it is automatically defined with a value of\~0.
+the formatter automatically defines it with a value of\~0.
 .
 So,
 unless it is later deleted,
-.I @g@troff
+GNU
+.I troff \" GNU
 issues at most one warning for each.
 T}
 .

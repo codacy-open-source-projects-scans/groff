@@ -42,9 +42,9 @@ CHEM_EXAMPLES =  \
 chemexampledir = $(exampledir)/chem
 dist_chemexample_DATA = $(CHEM_EXAMPLES)
 
-# Files installed in $(exampledir)/chem/122.  All the .chem files in 122
-# are lazily installed by the local install target.
-chemexample122dir = $(chemexampledir)/122
+# Files installed in $(exampledir)/chem/cstr-122.  All the .chem files
+# in that directory are lazily installed by the local install target.
+chemexample122dir = $(chemexampledir)/cstr-122
 EXTRA_DIST += \
   contrib/chem/ChangeLog \
   contrib/chem/GPLv2 \
@@ -52,7 +52,7 @@ EXTRA_DIST += \
   contrib/chem/chem.1.man \
   contrib/chem/chem.pic \
   contrib/chem/chem.pl \
-  contrib/chem/examples/122/README \
+  contrib/chem/examples/cstr-122/README \
   contrib/chem/examples/README
 
 man1_MANS += contrib/chem/chem.1
@@ -74,24 +74,24 @@ install-data-local: install_chem_extra
 install_chem_extra:
 	-test -d $(DESTDIR)$(chemexample122dir) \
           || $(mkinstalldirs) $(DESTDIR)$(chemexample122dir);
-	for i in $(chem_srcdir)/examples/122/*; do \
-	  n=`echo $$i | sed 's|$(chem_srcdir)/examples/122/||g'`; \
+	for i in $(chem_srcdir)/examples/cstr-122/*; do \
+	  n=`echo $$i | sed 's|$(chem_srcdir)/examples/cstr-122/||g'`; \
 	  $(INSTALL_DATA) $$i $(DESTDIR)$(chemexample122dir)/$$n; \
 	done
 
 uninstall-local: uninstall_chem_hook
 uninstall_chem_hook:
-	$(RM) $(DESTDIR)$(exampledir)/chem/122/*
-	-rmdir $(DESTDIR)$(exampledir)/chem/122
+	$(RM) $(DESTDIR)$(exampledir)/chem/cstr-122/*
+	-rmdir $(DESTDIR)$(exampledir)/chem/cstr-122
 	$(RM) $(DESTDIR)$(exampledir)/chem/*
 	-rmdir $(DESTDIR)$(exampledir)/chem
 	-rmdir $(DESTDIR)$(tmacdir)
 
 dist-hook: dist_chem
 dist_chem:
-	chmod u+w $(distdir)/contrib/chem/examples/122
-	for i in $(chem_srcdir)/examples/122/*.chem; do \
-	  cp -f $$i $(distdir)/contrib/chem/examples/122; \
+	chmod u+w $(distdir)/contrib/chem/examples/cstr-122
+	for i in $(chem_srcdir)/examples/cstr-122/*.chem; do \
+	  cp -f $$i $(distdir)/contrib/chem/examples/cstr-122; \
 	done
 
 

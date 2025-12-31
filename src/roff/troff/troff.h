@@ -26,8 +26,6 @@ typedef int units;
 
 extern units scale(units n, units x, units y); // scale n by x/y
 
-extern units units_per_inch;
-
 extern bool want_abstract_output;
 extern bool want_output_suppressed;
 extern bool want_color_output;
@@ -35,8 +33,10 @@ extern bool is_writing_html;
 extern bool in_nroff_mode;
 
 extern bool device_has_tcommand;
-extern int vresolution;
-extern int hresolution;
+
+extern units hresolution;
+extern units vresolution;
+extern units units_per_inch;
 extern int sizescale;
 
 extern search_path *mac_path;

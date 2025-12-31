@@ -1,3 +1,212 @@
+2025-12-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Work on Savannah #67735.
+
+	* src/roff/troff/node.h (struct node):
+	* src/roff/troff/node.cpp (class break_char_node)
+	(node::get_break_code): Demote type of hyphenation codes from
+	`int` to `unsigned char`, since the range of the latter is as
+	much as has ever been stored in them anyway.  (This was
+	discovered the hard way in Savannah #66919.)  Retype
+	`break_code` and `prev_break_code` private member variables and
+	`get_break_code()` public member function accordingly.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Improve type-correctness (slightly).
+
+	* src/roff/troff/number.cpp: Define globals `hresolution`,
+	`vresolution`, and `units_per_inch` as having `units` type
+	rather than `int`.  This is merely _documentary_
+	type-correctness, however, as `units` isn't strongly typed, but
+	merely a slovenly `typedef` alias of `int`.
+	* src/roff/troff/troff.h: Align declarations with foregoing
+	definitions.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Fix code style nits.
+	(font_info::set_bold)
+	(troff_output_file::fill_color): Parenthesize formally complex
+	expressions.
+	(tfont::tfont)
+	(real_output_file::~real_output_file)
+	(zero_width_node::tprint)
+	(translate_font): Explicitly compare value of pointer type to
+	null pointer literal instead of letting it pun down to a
+	Boolean.
+	(translate_font)
+	(configure_track_kerning)
+	(constantly_space_font): Drop unnecessary parentheses from
+	expression.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/div.h: Rename declaration `cleanup_and_exit()`
+	to `write_any_trailer_and_exit()`.  Comment formal argument
+	name as a compromise with the Stroustrup-style C++ used in most
+	of groff.
+	* src/roff/troff/div.cpp (cleanup_and_exit): Rename this...
+	(write_any_trailer_and_exit): ...to this.
+	* src/roff/troff/div.cpp (top_level_diversion::begin_page):
+	* src/roff/troff/input.cpp (exit_troff, abort_request, do_error)
+	(fatal_with_file_and_line): Migrate call sites.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Refactor.
+	(abort_request): Replace open-coded logic duplicating an
+	existing function with a call of `terminal_write()`.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(do_terminal)
+	(terminal)
+	(terminal1)
+	(terminal_continue): Rename these...
+	(terminal_write)
+	(terminal_message_request)
+	(terminal_message1_request)
+	(terminal_message_continuation_request): ...to these.
+	(init_input_requests): Update wire-uppery.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor for clarity.  "asciify" is one of
+	the code base's more overloaded terms.  Rename one application
+	of it.
+
+	* src/roff/troff/token.h: Rename `asciify()` and relocate its
+	declaration from here...
+	* src/roff/troff/input.h: ...to here, as
+	`encode_for_stream_output()`.
+
+	* src/roff/troff/input.cpp (asciify): Rename this definition...
+	(encode_for_stream_output): ...to this.
+
+	* src/roff/troff/div.cpp
+	(top_level_diversion::transparent_output):
+	* src/roff/troff/input.cpp:
+	(device_extension_node::tprint)
+	(input_char_description)
+	(do_terminal)
+	(do_write_request)
+	(stream_write_macro_request)
+	(abort_request): Update call sites.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(write_request)
+	(write_request_continue)
+	(write_macro_request): Rename these...
+	(stream_write_request)
+	(stream_write_continuation_request):
+	(stream_write_macro_request): ...to these.
+	(init_input_requests): Update wire-uppery.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_terminal): Fix code style nits.
+	Parenthesize formally complex expressions.  Arrange equality
+	comparisons to avoid inadvertent lvalue assignment.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Fix code style nits.
+	(do_terminal, terminal, terminal1, terminal_continue)
+	(do_write_request, write_request, write_request_continue)
+	(write_macro_request): Mark functions `static` since they do not
+	require external linkage.
+	(do_terminal): Demote argument types from `int` to `bool`.
+	Rename them from `newline` and `string_like` to
+	`do_append_newline` and `interpret_leading_spaces`.
+	(terminal, terminal1, terminal_continue): Update call sites to
+	use Boolean rather than integer literals.
+	(do_write_request): Demote argument type from `int` to `bool`.
+	Rename it from `newline` to `do_append_newline`.
+	(write_request, write_request_continue): Update call sites to
+	use Boolean rather than integer literals.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (process_macro_package_argument):
+	Clarify fatal diagnostic message.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Slightly refactor.
+
+	* src/roff/troff/env.h: Rename `want_break` global Boolean,
+	relocating its declaration from here...
+	* src/roff/troff/input.h: ...to here, as
+	`was_invoked_with_regular_control_character`.  Yes, it's a
+	mouthful, but it is the task of the request handlers, which are
+	input processing functions, to interpret *roff's two distinct
+	control characters, giving them one of them break suppression
+	semantics.
+	* src/roff/troff/div.cpp (begin_page, space_request)
+	(flush_request):
+	* src/roff/troff/env.cpp (fill, no_fill, center, right_justify)
+	(indent, temporary_indent)
+	(break_without_forced_adjustment_request)
+	(break_with_forced_adjustment_request):
+	* src/roff/troff/input.cpp (process_input_stack)
+	(macro_iterator::macro_iterator)
+	(unsafe_transparent_throughput_file_request)
+	(transparent_throughput_file_request): Update dereference sites.
+	* src/roff/troff/input.cpp: Update definition.
+	* src/roff/troff/div.cpp: Include local "input.h" header file to
+	get at the symbol's relocated declaration.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Refactor.  Further separate input
+	processing logic from engine logic.
+	(environment::do_break): Rename argument from `want_adjustment`
+	to `want_forced_adjustment` for clarity.
+	(break_output_line): Stop checking value of `want_break` global
+	here, as that's determined by the input control character used
+	to invoke the request, a front-end rather than an engine concern
+	{albeit brearing an engine-oriented name}.  However, removing
+	that conditional leaves this function as a one-liner with two
+	call sites differing only by a Boolean literal argument, so drop
+	the function altogether, instead open-coding it...
+	(break_without_adjustment, break_without_adjustment): ...here.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `br` and `brp` requests.
+
+	* src/roff/groff/tests/br-and-brp-requests-work.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Trivially refactor.
+	(break_output_line): Rename argument from `want_adjustment` to
+	`want_forced_adjustment` for clarity.
+	(break_without_adjustment): Rename this request handler...
+	(break_without_forced_adjustment_request): ...to this.
+	(break_with_adjustment): Rename this request handler...
+	(break_with_forced_adjustment_request): ...to this.
+	(init_env_requests): Update wire-uppery.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Refactor.  More cleanly separate input
+	processing logic from engine logic.
+	(do_break_request): Rename this...
+	(break_output_line): ...to this.  Mark it `static` since it does
+	not require external linkage.  Drop its manipulation of the
+	input stream via the global `tok` object...
+	(break_without_adjustment, break_without_adjustment): ...in
+	favor of simply calling `skip_line()` from these handlers for
+	the `br` and `brp` requests, which take no arguments.
+
 2025-12-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp: Add new Boolean-valued parameter to
@@ -149,9 +358,9 @@
 	where the size of our buffer truncates it.  (How do you get a
 	"nonexistent special character or class" that nevertheless has
 	an identifier?  It's part of the input syntax.  What you do is
-	attempt to interpolate a special character (or class--an invalid
-	operation anyway, but stay with me) in a context where character
-	interpolation makes no sense, as in a numeric expression.
+	attempt to interpolate a special character [or class--an invalid
+	operation anyway, but stay with me] in a context where character
+	interpolation makes no sense, as in a numeric expression.)
 
 2025-12-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -451,11 +660,11 @@
 	`read_long_identifier()`, because it's used for more than just
 	reading "names" (request, macro, string, or diversion
 	identifiers), but also identifiers of environments, colors,
-	registers, fonts, styles, and file names.  (The last occurs only
-	in `ps_bbox_request()` and might be inapposite; GNU troff now
-	handles file names with spaces in thim, and that might not work
-	because the `psbb` request is not parsing its arguments
-	appropriately.)
+	registers, typefaces (fonts, famililies, and styles), and file
+	names.  (The last occurs only in `ps_bbox_request()` and might
+	be inapposite; GNU troff now handles file names with spaces in
+	them, and that might not work because the `psbb` request is not
+	parsing its arguments appropriately.)
 	* src/roff/troff/token.h: Rename in declaration.
 	* src/roff/troff/input.cpp (get_long_name): Rename this...
 	(read_long_identifier): ...to this.
@@ -544,13 +753,13 @@
 
 2025-12-19  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Refactor to use the C++ default argument force.  Merge
-	function `get_number_rigidly()` into `read_measurement(), which
-	differed by one line out of a dozen, by extending the latter's
-	signature with a default argument `is_mandatory` of type `bool`.
-	This coincidentally made GCC's overload resolver more sensitive
-	to arguments of ambiguous integral type, so take this
-	opportunity to stop punning between character literals and
+	[troff]: Refactor to use the force--C++ default argument force.
+	Merge function `get_number_rigidly()` into `read_measurement(),
+	which differed by one line out of a dozen, by extending the
+	latter's signature with a default argument `is_mandatory` of
+	type `bool`.  This coincidentally made GCC's overload resolver
+	more sensitive to arguments of ambiguous integral type, so take
+	this opportunity to stop punning between character literals and
 	`unsigned char`, in favor of the explicitness we'll need anyway
 	for GNU troff's planned wider fundamental character type.
 
@@ -635,7 +844,7 @@
 	(charinfo::get_number, charinfo::contains): Drop word "cyclic"
 	from warning diagnostics in category "syntax"; we don't
 	implemented nested classes _at all_; lack of support is not
-	limited to non-cyclic ones.
+	limited to cyclic ones.
 	(charinfo::contains): `#if 0`-disable code that searches
 	`nested_classes` member variable for matching `charinfo`
 	objects.
@@ -886,7 +1095,7 @@
 2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (process_input_stack): Fix code style
-	nit.  Eliminate unnecessary brace scopes that introduces no new
+	nit.  Eliminate unnecessary brace scopes that introduce no new
 	local variables in switch `case`s.
 
 2025-12-13  G. Branden Robinson <g.branden.robinson@gmail.com>

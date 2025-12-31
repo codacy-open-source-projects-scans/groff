@@ -99,7 +99,7 @@ void errprint(const char *format,
 	      const errarg &arg2,
 	      const errarg &arg3)
 {
-  assert(format != 0);
+  assert(format != 0 /* nullptr */);
   char c;
   while ((c = *format++) != '\0') {
     if (c == '%') {

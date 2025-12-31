@@ -1,3 +1,20 @@
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* chem.pl: Drop `copyright` scalar; see below.  Bump revision or
+	"micro" portion of version number.
+	(version): Stop reporting copyright and license notice
+	after version disclosure.  No other program groff installs, not
+	even others authored by Bernd Warken, handles `--version` in
+	this way, except for the namesake program groff(1) itself.
+
+2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/122: Rename this directory...
+	* examples/cstr-122: ...to this.
+	* chem.am (chemexample122dir, EXTRA_DIST, install_chem_extra)
+	(uninstall_chem_hook, dist_chem): Update macro and rule
+	definitions accordingly.
+
 2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Our README files no longer contain '@g@' sequences, so they no

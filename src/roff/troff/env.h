@@ -435,7 +435,6 @@ void init_environments();
 
 extern double spread_limit;
 
-extern bool want_break;
 extern symbol default_family;
 extern bool translate_space_to_dummy;
 

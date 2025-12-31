@@ -48,6 +48,7 @@ groff_TESTS = \
   src/roff/groff/tests/backslash-exclamation-early-does-not-fail.sh \
   src/roff/groff/tests/backslash-s-works-with-single-digit-argument.sh \
   src/roff/groff/tests/bd-request-works.sh \
+  src/roff/groff/tests/br-and-brp-requests-work.sh \
   src/roff/groff/tests/break-zero-length-output-line-sanely.sh \
   src/roff/groff/tests/cf-request-early-does-not-fail.sh \
   src/roff/groff/tests/cf-request-works.sh \

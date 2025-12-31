@@ -159,8 +159,6 @@ extern bool read_integer(int *result, int prev_value);
 
 extern void interpolate_register(symbol, int);
 
-const char *asciify(int c);
-
 inline bool token::is_newline()
 {
   return (TOKEN_NEWLINE == type);

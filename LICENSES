@@ -26,12 +26,20 @@ comprising it have largely been assigned to the FSF.  (Some contributors
 have not assigned copyright.)  Information on GNU and the FSF may be
 found at <https://www.fsf.org/>.
 
-The GNU troff manual, doc/groff.texi, written in Texinfo, is
-dual-licensed under the GNU Free Documentation License (FDL) _and_ the
-GNU GPL.  This status is to honor the intentions of its authors and to
-permit frictionless migration of material between that manual and
-groff's man pages, which are under the GPL as noted above.  Find a copy
-of the FDL in the file "FDL".
+The GNU troff manual, doc/groff.texi, written in Texinfo, is licensed
+under the GNU Free Documentation License (FDL), and by dint of the
+notice above is also distributed under the terms of the GNU GPLv3 or
+later.  This status is to honor the intentions of its authors and to
+permit frictionless migration of material between that manual and man
+pages documenting the formatter and related topics; see below.  Find a
+copy of the FDL in the file "FDL".
+
+groff man pages documenting the formatter, its associated file formats,
+and the groff(1) program are also licensed under the FDL (and
+distributed under the terms of the GNU GPLv3 or later).  Most other man
+pages provided by the groff project are licensed under the traditional
+GNU documentation license, also known as the "LaTeX 2e license".  See
+<https://spdx.org/licenses/Latex2e.html>.
 
 Files in the contrib/ subdirectory of the source distribution are not
 strictly part of groff.  That is, they are distributed with it and are

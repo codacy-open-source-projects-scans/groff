@@ -175,7 +175,7 @@ void continue_page_eject();
 void handle_first_page_transition();
 void blank_line();
 
-extern void cleanup_and_exit(int);
+extern void write_any_trailer_and_exit(int /* exit_code */);
 
 // Local Variables:
 // fill-column: 72

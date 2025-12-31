@@ -747,8 +747,8 @@ and
 (since 1.12.2)
 support them.
 .
-Solaris\~10
-.I troff \" Solaris 10
+Solaris
+.I troff \" Solaris
 does not.
 .\" Neatroff doesn't ship (m)an macros.
 .
@@ -830,16 +830,17 @@ leading tags followed by a paragraph that has an additional indentation.
 .
 The indented paragraph
 .RB ( IP )
-macro is useful to continue the indented content of a narrative started
+macro
+can continue the indented content of a narrative started
 with
 .BR TP ,
-or to present an itemized or ordered list.
+or present an itemized or ordered list.
 .
-If paragraph macro has been called since
+If a paragraphing macro has been called since
 .B SH
 or
 .BR SS ,
-all except for
+all except
 .B TQ
 follow the break with vertical space
 (in an amount configured by the deprecated
@@ -969,7 +970,7 @@ is a GNU extension supported by
 Heirloom Doctools
 .I troff \" Heirloom
 .\" commit 5e4181af2a1562c542caaa3b2cc129e40e3e76e5
-(since Git snapshot 151220)
+(since Git snapshot 151218)
 and
 .I mandoc
 (since 1.14.5)
@@ -977,8 +978,8 @@ but not by
 DWB,
 Plan\~9,
 or
-Solaris\~10
-.IR troff s. \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff s. \" DWB, Plan 9, Solaris
 _ifstyle()dnl
 .
 .
@@ -1067,15 +1068,17 @@ to summarize syntax using familiar Unix conventions.
 .
 Heirloom Doctools
 .I troff \" Heirloom
+.\" commit 5e4181af2a1562c542caaa3b2cc129e40e3e76e5
+(since Git snapshot 151218)
 and
 .I mandoc
 (since 1.14.5)
 support these GNU extensions;
 DWB,
 Plan\~9,
-or
-Solaris\~10
-.IR troff s \" DWB, Plan 9, Solaris 10
+and
+Solaris
+.IR troff s \" DWB, Plan 9, Solaris
 do not.
 .
 .
@@ -1100,7 +1103,7 @@ are set in bold.
 When
 .I suffix
 is present,
-.I "groff man"
+the package
 sets the next word after it without intervening space.
 .
 If a break is required in subsequent text
@@ -1456,7 +1459,11 @@ after the linked text.
 and
 .B UE
 are GNU extensions supported by
-Heirloom Doctools and
+Heirloom Doctools
+.I troff \" Heirloom
+.\" commit 5e4181af2a1562c542caaa3b2cc129e40e3e76e5
+(since Git snapshot 151218)
+and
 .I mandoc
 .RB ( UR / UE
 since 1.12.3;
@@ -1466,8 +1473,8 @@ but not by
 DWB,
 Plan\~9 (original),
 or
-Solaris\~10
-.IR troff s. \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff s. \" DWB, Plan 9, Solaris
 .
 Plan\~9 from User Space's
 .I troff \" plan9port
@@ -2433,7 +2440,7 @@ and macros that change it restore its original value afterward.
 .
 Better alternatives exist for the rest;
 simply use the
-.BR \[rs][rg] , \" Heirloom Doctools, mandoc, neatmkfn, Plan 9, Solaris 10
+.BR \[rs][rg] , \" Heirloom Doctools, mandoc, neatmkfn, Plan 9, Solaris
 .BR \[rs][lq] , \" Heirloom Doctools, mandoc, neatmkfn, Plan 9
 .BR \[rs][rq] , \" Heirloom Doctools, mandoc, neatmkfn, Plan 9
 and
@@ -2443,7 +2450,7 @@ special character escape sequences directly.
 Unless you are aiming for a pathological level of portability\[em]\
 perhaps composing a man page
 for consumption on simulators of 1980s Unix systems
-(or Solaris\~10
+(or Solaris
 .IR troff ,
 though even it supports
 .RB \[lq]\^ \[rs](rg \[rq])\[em]\c
@@ -2763,8 +2770,8 @@ but not by
 DWB,
 Plan\~9,
 or
-Solaris\~10
-.IR troff s. \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff s. \" DWB, Plan 9, Solaris
 .\" as of this writing, 2022-08-13
 .
 .
@@ -2808,8 +2815,8 @@ Plan\~9 from User Space
 but not by
 DWB
 or
-Solaris\~10
-.IR troff s. \" DWB, Solaris 10
+Solaris
+.IR troff s. \" DWB, Solaris
 .\" as of this writing, 2022-08-13
 .\" END Keep in sync with groff.texi node "Other Differences" and
 .\" groff_diff(7).
@@ -3051,8 +3058,8 @@ like
 DWB,
 Plan\~9,
 or
-Solaris\~10
-.IR troff , \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff , \" DWB, Plan 9, Solaris
 can be made to support them by defining them in font description files,
 making them aliases of existing glyphs if necessary;
 see
@@ -3072,8 +3079,8 @@ but not
 DWB,
 Plan\~9,
 or
-Solaris\~10
-.IR troff s. \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff s. \" DWB, Plan 9, Solaris
 .
 .
 .TP
@@ -4645,8 +4652,8 @@ described in subsection \[lq]Portability\[rq] above.
 DWB,
 Plan\~9,
 and
-Solaris\~10
-.IR troff s \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff s \" DWB, Plan 9, Solaris
 do not.
 .
 Interpolating the strings
@@ -4673,7 +4680,11 @@ Historically,
 man pages used
 .B \[ga]
 and
-.B \[aq]
+.B \[aq],
+which
+.I troff \" generic
+rendered on typesetters
+as \[oq] and \[cq],
 exclusively for them.
 .
 However,
@@ -4769,8 +4780,8 @@ and
 DWB,
 Plan\~9,
 and
-Solaris\~10
-.IR troff s \" DWB, Plan 9, Solaris 10
+Solaris
+.IR troff s \" DWB, Plan 9, Solaris
 don't implement it.
 .
 If your man page requires portability to these formatters,

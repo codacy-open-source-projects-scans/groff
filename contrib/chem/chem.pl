@@ -1,9 +1,9 @@
 #!@PERL@
 
 # chem - a groff preprocessor for producing chemical structure diagrams
-
-my $copyright = 'Copyright 2006-2014, 2022'
-                . ' Free Software Foundation, Inc.';
+#
+# Copyright 2006 Free Software Foundation, Inc.
+#
 # Written by Bernd Warken <groff-bernd.warken-72@web.de>.
 #
 # This file is part of chem.
@@ -27,7 +27,7 @@ my $copyright = 'Copyright 2006-2014, 2022'
 # settings
 ########################################################################
 
-my $chem_version = '1.0.6';
+my $chem_version = '1.0.7';
 my $groff_version = 'DEVELOPMENT';
 
 require v5.6;
@@ -1215,12 +1215,6 @@ EOF
 sub version {
   print <<EOF;
 $prog (groff $groff_version) $chem_version
-$copyright
-License GPLv2: GNU GPL version 2
-<https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-EOF
 }
 
 1;

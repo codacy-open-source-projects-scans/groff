@@ -37,6 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "token.h"
 #include "div.h"
 #include "reg.h"
+#include "input.h" // was_invoked_with_regular_control_character
 
 #include "nonposix.h"
 
@@ -496,7 +497,7 @@ void top_level_diversion::transparent_output(unsigned char c)
     fatal("attempting transparent output from top-level diversion"
 	  " before first page has started, when a top-of-page trap is"
 	  " defined; invoke break or flush request beforehand");
-  const char *s = asciify(c);
+  const char *s = encode_for_stream_output(c);
   while (*s)
     the_output->transparent_char(*s++);
 }
@@ -635,10 +636,10 @@ void end_diversions()
   }
 }
 
-// TODO: This might be better named `write_trailer_and_exit()`.  Most
-// formatter state is "cleaned up" in input.cpp:exit_troff().
-void cleanup_and_exit(int exit_code)
+// input.cpp:exit_troff() cleans up most formatter state.
+void write_any_trailer_and_exit(int exit_code)
 {
+  // If output was never initialized, there is no trailer to write.
   if (the_output != 0 /* nullptr */) {
     the_output->trailer(topdiv->get_page_length());
     // If we're already dying, don't call the_output's destructor.  See
@@ -659,12 +660,12 @@ bool top_level_diversion::begin_page(vunits n)
 	? curenv->is_empty()
 	: (is_eoi_macro_finished && (seen_last_page_ejector
 				      || began_page_in_eoi_macro)))
-      cleanup_and_exit(EXIT_SUCCESS);
+      write_any_trailer_and_exit(EXIT_SUCCESS);
     if (!is_eoi_macro_finished)
       began_page_in_eoi_macro = true;
   }
   if (last_page_number > 0 && page_number == last_page_number)
-    cleanup_and_exit(EXIT_SUCCESS);
+    write_any_trailer_and_exit(EXIT_SUCCESS);
   if (0 /* nullptr */ == the_output)
     init_output();
   ++page_count;
@@ -788,7 +789,7 @@ static void begin_page()
     tok.next();
   if (curdiv == topdiv) {
     if (topdiv->before_first_page_status > 0) {
-      if (!want_break) {
+      if (!was_invoked_with_regular_control_character) {
 	if (got_arg)
 	  topdiv->set_next_page_number(n);
 	if (got_arg || !topdiv->is_in_no_space_mode)
@@ -821,7 +822,7 @@ static void begin_page()
     }
     else {
       push_page_ejector();
-      if (want_break)
+      if (was_invoked_with_regular_control_character)
 	curenv->do_break();
       if (got_arg)
 	topdiv->set_next_page_number(n);
@@ -858,7 +859,7 @@ sprung, then we don't actually do the space. */
 static void space_request()
 {
   postpone_traps();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   vunits n;
   if (!has_arg() || !read_vunits(&n, 'v'))
@@ -945,7 +946,7 @@ static void flush_request()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   if (the_output != 0 /* nullptr */)
     the_output->flush();

@@ -490,6 +490,8 @@ The requested operation takes effect at the next break.
 .
 It makes
 .request br
+and
+.request brp
 nilpotent.
 .
 The no-break control character can be changed with the
@@ -1911,10 +1913,6 @@ if the character after the escape character would be valid.
 .br
 .ne 3v
 .P
-Conditional expressions prohibit delimiters
-that are meaningful in numeric expressions,
-because the latter are a subset of the former.
-.
 The escape sequences
 .BR \[rs]D ,
 .BR \[rs]h ,
@@ -1928,10 +1926,28 @@ The escape sequences
 .BR \[rs]v ,
 and
 .B \[rs]x
-similarly prohibit them
+prohibit delimiters that are meaningful in numeric expressions,
 because they accept numeric expressions as
 (or within)
 their arguments.
+.
+For consistency,
+GNU
+.I troff \" GNU
+prohibits the same delimiters in the argument to the
+.B tl
+request.
+.
+The
+.RB \[lq] if \[rq],
+.BR ie ,
+and
+.RB \[lq] while \[rq]
+requests each interpret their first argument
+as a conditional expression;
+only characters that are not meaningful as operators
+in that context
+can be used as output comparison delimiters.
 .
 .
 .RS
@@ -1965,12 +1981,15 @@ and
 .
 .
 .P
-Delimiter syntax is complex and flexible primarily for historical
-reasons;
+Delimiter syntax is flexible
+(and laborious to describe)
+primarily for historical reasons;
 the foregoing restrictions need be kept in mind mainly when using
-.I groff
+GNU
+.I troff \" GNU
 in AT&T compatibility mode.
 .
+Normally,
 GNU
 .I troff \" GNU
 keeps track of the nesting depth of escape sequence interpolations,
@@ -3004,8 +3023,8 @@ Break output line.
 .
 .TPx
 .REQ .brp
-Break output line;
-adjust if applicable.
+Break and force adjustment of the output line
+per the current adjustment mode.
 .
 .TPx
 .REQ .break

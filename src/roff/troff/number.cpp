@@ -34,9 +34,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 const vunits V0; // zero in vertical units
 const hunits H0; // zero in horizontal units
 
-int hresolution = 1;
-int vresolution = 1;
-int units_per_inch;
+units hresolution = 1;
+units vresolution = 1;
+units units_per_inch;
 int sizescale; // subdivisions per point
 
 static bool is_valid_expression(units *u, int scaling_unit,

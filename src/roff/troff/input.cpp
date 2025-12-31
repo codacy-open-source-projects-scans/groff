@@ -97,7 +97,7 @@ void vjustify();
 static void transparent_throughput_file_request();
 
 token tok;
-bool want_break = false;
+bool was_invoked_with_regular_control_character = false;
 bool using_character_classes = false;
 static bool permit_color_output = true;
 bool want_color_output = true;
@@ -3319,7 +3319,7 @@ void exit_troff()
     process_input_stack();
   }
   // TODO: delete pointers in file name set.
-  cleanup_and_exit(EXIT_SUCCESS);
+  write_any_trailer_and_exit(EXIT_SUCCESS);
 }
 
 // This implements .ex.  The input stack must be cleared before calling
@@ -3501,7 +3501,8 @@ void process_input_stack()
 	if (reading_beginning_of_input_line && !have_formattable_input
 	    && (curenv->get_control_character() == ch
 		|| curenv->get_no_break_control_character() == ch)) {
-	  want_break = (curenv->get_control_character() == ch);
+	  was_invoked_with_regular_control_character
+	    = (curenv->get_control_character() == ch);
 	  // skip tabs as well as spaces here
 	  do {
 	    tok.next();
@@ -4748,7 +4749,7 @@ macro_iterator::macro_iterator(symbol s, macro &m,
 			       const char *how_called,
 			       bool want_arguments_initialized)
 : string_iterator(m, how_called, s), args(0 /* nullptr */), argc(0),
-  with_break(want_break)
+  with_break(was_invoked_with_regular_control_character)
 {
   if (want_arguments_initialized) {
     arg_list *al = input_stack::get_arg_list();
@@ -4760,7 +4761,8 @@ macro_iterator::macro_iterator(symbol s, macro &m,
 }
 
 macro_iterator::macro_iterator()
-: args(0 /* nullptr */), argc(0), with_break(want_break)
+: args(0 /* nullptr */), argc(0),
+  with_break(was_invoked_with_regular_control_character)
 {
 }
 
@@ -7004,7 +7006,9 @@ void device_extension_node::tprint(troff_output_file *out)
   for (;;) {
     int c = iter.get(0 /* nullptr */);
     if (c != EOF)
-      for (const char *s = ::asciify(c); *s != 0 /* nullptr */; s++)
+      for (const char *s = encode_for_stream_output(c);
+	   *s != 0 /* nullptr */;
+	   s++)
 	tprint_char(out, *s);
     else
       break;
@@ -7967,7 +7971,9 @@ void ps_bbox_request() // .psbb
   }
 }
 
-const char *asciify(int c)
+// Encode a token for output to an operating system file stream.
+// Express unencodable tokens as null characters.
+const char *encode_for_stream_output(int c)
 {
   static char buf[3];
   buf[0] = (0U == escape_char) ? '\\' : escape_char;
@@ -8065,7 +8071,7 @@ const char *input_char_description(int c)
   static char buf[bufsz];
   (void) memset(buf, 0, bufsz);
   if (is_invalid_input_char(c)) {
-    const char *s = asciify(c);
+    const char *s = encode_for_stream_output(c);
     if (*s) {
       buf[0] = '\'';
       strcpy(buf + 1, s);
@@ -8144,43 +8150,59 @@ void taga()
 
 // .tm, .tm1, and .tmc
 
-void do_terminal(int newline, int string_like)
+// TODO: Migrate `tm` (and `ab`) to work like `tm1`, interpreting a
+// leading `"` as `ds` does (and a bunch of other requests do).
+//
+// This would leave `tm1` without a distinct function, so we could
+// retire it.
+//
+// Separately, we could make `tm` (and/or `ab`) do old-style argument
+// interpretation only in compatibility mode.  We still wouldn't need
+// `tm1` because a compatibility mode document could say ".do tm foo".
+
+static void terminal_write(bool do_append_newline,
+			   bool interpret_leading_spaces)
 {
   if (has_arg(true /* peek */)) {
     int c;
     for (;;) {
       c = read_char_in_copy_mode(0 /* nullptr */);
-      if (string_like && c == '"') {
+      if (interpret_leading_spaces && ('"' == c)) {
 	c = read_char_in_copy_mode(0 /* nullptr */);
 	break;
       }
-      if (c != ' ' && c != '\t')
+      if ((c != ' ') && (c != '\t'))
 	break;
     }
     for (;
 	 (c != '\n') && (c != EOF);
 	 (c = read_char_in_copy_mode(0 /* nullptr */)))
-      fputs(asciify(c), stderr);
+      fputs(encode_for_stream_output(c), stderr);
   }
-  if (newline)
+  if (do_append_newline)
     fputc('\n', stderr);
   fflush(stderr);
   tok.next();
 }
 
-void terminal()
+// old and busted
+static void terminal_message_request() // .tm
 {
-  do_terminal(1, 0);
+  terminal_write(true /* do append newline */ ,
+		 false /* interpret leading spaces */);
 }
 
-void terminal1()
+// the new hotness
+static void terminal_message1_request() // .tm1
 {
-  do_terminal(1, 1);
+  terminal_write(true /* do append newline */ ,
+		 true /* interpret leading spaces */);
 }
 
-void terminal_continue()
+static void terminal_message_continuation_request() // .tmc
 {
-  do_terminal(0, 1);
+  terminal_write(false /* do append newline */ ,
+		 true /* interpret leading spaces */);
 }
 
 struct grostream : object {
@@ -8202,7 +8224,7 @@ grostream::~grostream()
 
 object_dictionary stream_dictionary(20);
 
-static void print_stream_request()
+static void print_stream_request() // .pstream
 {
   object_dictionary_iterator iter(stream_dictionary);
   symbol stream_name;
@@ -8365,7 +8387,7 @@ static void close_request() // .close
 
 // .write and .writec
 
-void do_write_request(int newline)
+static void do_write_request(bool do_append_newline)
 {
   symbol stream = read_identifier(true /* required */);
   if (stream.is_null()) {
@@ -8394,27 +8416,27 @@ void do_write_request(int newline)
     if ('"' == c)
       c = read_char_in_copy_mode(0 /* nullptr */);
     while (c != '\n' && c != EOF) {
-      fputs(asciify(c), fp);
+      fputs(encode_for_stream_output(c), fp);
       c = read_char_in_copy_mode(0 /* nullptr */);
     }
   }
-  if (newline)
+  if (do_append_newline)
     fputc('\n', fp);
   fflush(fp);
   tok.next();
 }
 
-void write_request()
+static void stream_write_request() // .write
 {
-  do_write_request(1);
+  do_write_request(true /* do append newline */);
 }
 
-void write_request_continue()
+static void stream_write_continuation_request() // .writec
 {
-  do_write_request(0);
+  do_write_request(false /* do append newline */);
 }
 
-void write_macro_request()
+static void stream_write_macro_request() // .writem
 {
   symbol stream = read_identifier(true /* required */);
   if (stream.is_null()) {
@@ -8444,14 +8466,14 @@ void write_macro_request()
       int c = iter.get(0 /* nullptr */);
       if (c == EOF)
 	break;
-      fputs(asciify(c), fp);
+      fputs(encode_for_stream_output(c), fp);
     }
     fflush(fp);
   }
   skip_line();
 }
 
-void warnscale_request()
+void warnscale_request() // .warnscale
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "warning scaling unit configuration request"
@@ -8481,7 +8503,7 @@ void warnscale_request()
   skip_line();
 }
 
-void spreadwarn_request()
+void spreadwarn_request() // .spreadwarn
 {
   hunits n;
   if (has_arg() && read_hunits(&n, 'm')) {
@@ -8600,7 +8622,7 @@ static void do_translate(bool transparently, bool as_input)
   skip_line();
 }
 
-void translate()
+void translate() // .tr
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "character translation request expects"
@@ -8611,7 +8633,7 @@ void translate()
   do_translate(true /* transparently */, false /* as_input */);
 }
 
-void translate_no_transparent()
+void translate_no_transparent() // .trnt
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "character non-diversion translation request"
@@ -8622,7 +8644,7 @@ void translate_no_transparent()
   do_translate(false /* transparently */, false /* as_input */);
 }
 
-void translate_input()
+void translate_input() // .trin
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "character non-asciification translation"
@@ -8633,7 +8655,7 @@ void translate_input()
   do_translate(true /* transparently */, true /* as_input */);
 }
 
-static void set_character_flags_request()
+static void set_character_flags_request() // .cflags
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "character flags configuration request"
@@ -8683,7 +8705,7 @@ static void set_character_flags_request()
   skip_line();
 }
 
-static void set_hyphenation_codes()
+static void set_hyphenation_codes() // .hcode
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "hyphenation code assignment request expects"
@@ -8745,7 +8767,7 @@ static void set_hyphenation_codes()
   skip_line();
 }
 
-void hyphenation_patterns_file_code()
+void hyphenation_patterns_file_code() // .hpfcode
 {
   error("hyphenation pattern file code assignment request will be"
 	" withdrawn in a future groff release; migrate to 'hcode'");
@@ -8781,7 +8803,7 @@ void hyphenation_patterns_file_code()
 
 dictionary char_class_dictionary(501);
 
-static void define_class_request()
+static void define_class_request() // .class
 {
   tok.skip_spaces();
   symbol nm = read_identifier(true /* required */);
@@ -9285,24 +9307,9 @@ const char *readonly_mask_register::get_string()
 
 void abort_request()
 {
-  int c;
-  if (tok.is_eof())
-    c = EOF;
-  else if (tok.is_newline())
-    c = '\n';
-  else {
-    while ((c = read_char_in_copy_mode(0 /* nullptr */)) == ' ')
-      ;
-  }
-  if (!(c == EOF || c == '\n')) {
-    for (;
-	 (c != '\n') && (c != EOF);
-	 (c = read_char_in_copy_mode(0 /* nullptr */)))
-      fputs(asciify(c), stderr);
-    fputc('\n', stderr);
-  }
-  fflush(stderr);
-  cleanup_and_exit(EXIT_FAILURE);
+  terminal_write(true /* do append newline */ ,
+		 false /* interpret leading spaces */);
+  write_any_trailer_and_exit(EXIT_FAILURE);
 }
 
 // Consume the rest of the input line in copy mode and return it as a C
@@ -9435,7 +9442,7 @@ static void unsafe_transparent_throughput_file_request()
     return;
   }
   char *filename = read_rest_of_line_as_argument();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   if (filename != 0 /* nullptr */)
     curdiv->copy_file(filename);
@@ -9478,7 +9485,7 @@ static void transparent_throughput_file_request()
     return;
   }
   char *filename = read_rest_of_line_as_argument();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   if (filename != 0 /* nullptr */) {
     errno = 0;
@@ -9621,8 +9628,8 @@ static void process_macro_package_argument(const char *mac)
   char *path;
   FILE *fp = open_macro_package(mac, &path);
   if (0 /* nullptr */ == fp)
-    fatal("cannot open macro file for -m argument '%1': %2", mac,
-	  strerror(errno));
+    fatal("cannot open macro file named in '-m' command-line argument"
+	  " '%1': %2", mac, strerror(errno));
   const char *s = symbol(path).contents();
   free(path);
   input_stack::push(new file_iterator(fp, s));
@@ -10234,9 +10241,9 @@ void init_input_requests()
   init_request("sy", system_request);
   init_request("tag", tag);
   init_request("taga", taga);
-  init_request("tm", terminal);
-  init_request("tm1", terminal1);
-  init_request("tmc", terminal_continue);
+  init_request("tm", terminal_message_request);
+  init_request("tm1", terminal_message1_request);
+  init_request("tmc", terminal_message_continuation_request);
   init_request("tr", translate);
   init_request("trf", transparent_throughput_file_request);
   init_request("trin", translate_input);
@@ -10249,9 +10256,9 @@ void init_input_requests()
   init_request("warn", set_warning_mask_request);
   init_request("warnscale", warnscale_request);
   init_request("while", while_request);
-  init_request("write", write_request);
-  init_request("writec", write_request_continue);
-  init_request("writem", write_macro_request);
+  init_request("write", stream_write_request);
+  init_request("writec", stream_write_continuation_request);
+  init_request("writem", stream_write_macro_request);
   register_dictionary.define(".$", new nargs_reg);
   register_dictionary.define(".br", new break_flag_reg);
   register_dictionary.define(".C", new readonly_boolean_register(&want_att_compat));
@@ -10688,7 +10695,7 @@ static void do_error(error_type type,
   fputc('\n', stderr);
   fflush(stderr);
   if (type == FATAL)
-    cleanup_and_exit(EXIT_FAILURE);
+    write_any_trailer_and_exit(EXIT_FAILURE);
 }
 
 // This function should have no callers in production builds.
@@ -10759,7 +10766,7 @@ void fatal_with_file_and_line(const char *filename, int lineno,
   errprint(format, arg1, arg2, arg3);
   fputc('\n', stderr);
   fflush(stderr);
-  cleanup_and_exit(EXIT_FAILURE);
+  write_any_trailer_and_exit(EXIT_FAILURE);
 }
 
 void error_with_file_and_line(const char *filename, int lineno,

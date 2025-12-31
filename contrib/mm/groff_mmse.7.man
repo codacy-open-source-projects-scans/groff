@@ -15,6 +15,12 @@ groff_mmse \- svenska \(rqmemorandum\(rq makro f\(:or GNU
 .\"
 .\" Copyright 1989-2020 Free Software Foundation, Inc.
 .\"
+.\" This file is part of mm, a reimplementation of the Documenter's
+.\" Workbench (DWB) troff memorandum macro package for use with GNU
+.\" troff.
+.\"
+.\" mm is distributed with groff, the GNU roff typesetting system.
+.\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
 .\" preserved on all copies.

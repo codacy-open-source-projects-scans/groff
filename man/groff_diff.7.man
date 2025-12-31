@@ -2277,12 +2277,12 @@ See
 .
 .TP
 .B .brp
-Break and adjust line;
-this is the AT&T
-.I troff \" AT&T
-escape sequence
-.B \[rs]p
-in request form.
+Break and force adjustment of the output line
+per the current adjustment mode.
+.
+Like
+.BR br ,
+it does nothing if invoked with the no-break control character.
 .
 .
 .TP
@@ -5406,7 +5406,10 @@ escape sequence),
 string expressions
 (as with the
 .B \[rs]w
-escape sequence),
+escape sequence
+and
+.B tl
+request),
 and output comparisons
 (as in
 .RB \[lq] ".if #foo#bar# .tm match" \[rq]).
@@ -6400,7 +6403,7 @@ Control+C,
 Control+E,
 Control+F,
 and
-Control+G (only),
+Control+G (only);
 DWB\~3.3
 .I troff \" DWB
 does not.
@@ -6411,10 +6414,11 @@ rejects C0 controls in identifiers with an error diagnostic.
 .
 .
 .P
-Formatters that don't implement request names that are
+Formatters that don't implement
 GNU
 .I troff \" GNU
-extensions tend to ignore them,
+extension request names
+tend to ignore them,
 and if they don't support a
 GNU
 .I troff \" GNU
@@ -6565,6 +6569,7 @@ Heirloom Doctools
 does not honor an explicit hyphenation point marked with
 .B \[rs]%
 after a word-initial one.
+.\" The foregoing observations may have the same cause.
 .
 .
 .P
@@ -6900,7 +6905,7 @@ AT&T
 GNU
 .I troff \" GNU
 maintains a buffer of device-independent output commands,
-populating the buffer as input accumulates.
+populating the buffer as formatted output accumulates.
 GNU
 .I troff \" GNU
 always flushes this buffer when processing a break;

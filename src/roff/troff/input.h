@@ -68,6 +68,8 @@ const int INPUT_SOFT_HYPHEN = 0255;		// \u00ad
 extern void do_stroke_color(symbol);
 extern void do_fill_color(symbol);
 
+extern const char *encode_for_stream_output(int c);
+extern bool was_invoked_with_regular_control_character;
 extern bool suppress_push;
 extern bool want_nodes_dumped;
 

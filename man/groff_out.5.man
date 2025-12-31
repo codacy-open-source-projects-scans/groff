@@ -315,7 +315,7 @@ In GNU
 the device extension (sub)command
 .RB \[lq] x\~X \[rq]
 uniquely supports a line continuation syntax;
-all other commands occupy one input line.
+a single input line contains any other.
 .
 .
 .\" ====================================================================

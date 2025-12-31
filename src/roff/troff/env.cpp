@@ -1439,7 +1439,7 @@ void fill()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   curenv->is_filling = true;
   tok.next();
@@ -1449,7 +1449,7 @@ void no_fill()
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   curenv->is_filling = false;
   curenv->suppress_next_eol = true;
@@ -1465,7 +1465,7 @@ void center()
     n = 0;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   curenv->right_aligned_line_count = 0;
   curenv->centered_line_count = n;
@@ -1482,7 +1482,7 @@ void right_justify()
     n = 0;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   curenv->centered_line_count = 0;
   curenv->right_aligned_line_count = n;
@@ -1591,7 +1591,7 @@ void indent()
     temp = curenv->prev_indent;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   curenv->have_temporary_indent = false;
   curenv->prev_indent = curenv->indent;
@@ -1617,7 +1617,7 @@ void temporary_indent()
     while (!tok.is_newline() && !tok.is_eof())
       tok.next();
   }
-  if (want_break)
+  if (was_invoked_with_regular_control_character)
     curenv->do_break();
   if (temp < H0) {
     warning(WARN_RANGE, "treating total indentation %1u as zero",
@@ -2578,7 +2578,11 @@ void environment::construct_new_line_state(node *nd)
 
 extern int global_diverted_space;
 
-void environment::do_break(bool want_adjustment)
+// "Forced adjustment" refers to spreading of adjustable spaces (and
+// perhaps only that, even if in the future we implement "squeezing"),
+// when it is not normally called for, as at the end of a paragraph.
+
+void environment::do_break(bool want_forced_adjustment)
 {
   bool was_centered = false;
   if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0)) {
@@ -2593,7 +2597,8 @@ void environment::do_break(bool want_adjustment)
       line = new space_node(H0, get_fill_color(), line);
       space_total++;
     }
-    possibly_break_line(false /* must break here */, want_adjustment);
+    possibly_break_line(false /* must break here */,
+			want_forced_adjustment);
   }
   while (line != 0 /* nullptr */ && line->discardable()) {
     width_total -= line->width();
@@ -2640,23 +2645,18 @@ bool environment::is_empty()
 	  && pending_lines == 0 /* nullptr */;
 }
 
-void do_break_request(bool want_adjustment)
+static void break_without_forced_adjustment_request()
 {
-  while (!tok.is_newline() && !tok.is_eof())
-    tok.next();
-  if (want_break)
-    curenv->do_break(want_adjustment);
-  tok.next();
+  if (was_invoked_with_regular_control_character)
+    curenv->do_break(false /* want forced adjustment */);
+  skip_line();
 }
 
-static void break_without_adjustment()
+static void break_with_forced_adjustment_request()
 {
-  do_break_request(false);
-}
-
-static void break_with_adjustment()
-{
-  do_break_request(true);
+  if (was_invoked_with_regular_control_character)
+    curenv->do_break(true /* want forced adjustment */);
+  skip_line();
 }
 
 void title()
@@ -4333,8 +4333,8 @@ const char *hyphenation_default_mode_reg::get_string()
 void init_env_requests()
 {
   init_request("ad", adjust);
-  init_request("br", break_without_adjustment);
-  init_request("brp", break_with_adjustment);
+  init_request("br", break_without_forced_adjustment_request);
+  init_request("brp", break_with_forced_adjustment_request);
   init_request("ce", center);
   init_request("cu", continuous_underline);
   init_request("ev", environment_switch);

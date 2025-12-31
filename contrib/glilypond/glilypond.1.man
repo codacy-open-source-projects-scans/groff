@@ -153,6 +153,17 @@ operands,
 even if their names start with a dash.
 .
 .
+.P
+.I \%glilypond
+requires the
+.I \%File::HomeDir
+Perl module,
+available via
+.UR \%https://\:www\:.cpan\:.org/
+CPAN
+.UE .
+.
+.
 .\" ====================================================================
 .SH Usage
 .\" ====================================================================
