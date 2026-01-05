@@ -157,11 +157,14 @@ of this release.
    instance with "grep -i -A1 thanks ChangeLog".  A manual merge of
    similar from the contrib/ change log files may also be necessary. ]]
 
+Alan Coopersmith
 Alex Colomar
 Alexander Kanavin
 Alexander Monakov
 Alexis Hildebrandt
+Andreas Kusalananda Kähäri
 Andrew Bower
+Axel Kielhorn
 Benno Schulenberg
 Bjarni Ingi Gislason
 Brian Inglis
@@ -178,9 +181,12 @@ Doug McIlroy
 Duncan Losin
 Eli Schwartz
 Eloi Montañés
+Frazer Williams
 Frederic Chartier
 Gavin Smith
+Gene
 Grisha Levit
+Günther Noack
 Hanno Boeck
 Hans Bezemer
 Heinz-Jürgen Oertel
@@ -193,8 +199,11 @@ James Youngman
 Jeff Conrad
 Joerg van den Hoff
 Jonathan Gray
+Ken Mandelberg
+Larry Kollar
 Lennart Jablonka
 Lukas Javorsky
+Martin D. Kealey
 Michał Kruszewski
 Mike Fulton
 Morten Bo Johansen
@@ -204,6 +213,7 @@ Oliver Corff
 onf
 Patrice Dumas
 Paul Eggert
+Peter Chubb
 Peter Schaffter
 Phil Chadwick
 Pim
@@ -215,8 +225,10 @@ Russ Allbery
 Sebastien Peterson-Boudreau
 Stefan Möding
 Sven Schober
+T. Kurt Bond
 TANAKA Takuji
 Tadziu Hoffman
+Thomas Dickey
 Thorsten Glaser
 Thérèse Godefroy
 Walter Alejandro Iglesias

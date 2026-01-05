@@ -1,3 +1,8 @@
+2025-12-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gperl.am (EXTRA_DIST): Ship "COPYRIGHT" file in distribution
+	archive.
+
 2025-12-20  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* GPLv2: New file.

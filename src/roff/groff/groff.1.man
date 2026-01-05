@@ -171,6 +171,19 @@ several best-selling software engineering texts.
 .I groff
 can create typographically sophisticated documents
 while consuming minimal system resources.
+.
+.
+.P
+Like its predecessor \[lq]troff\[rq],
+the term \[lq]groff\[rq] affords two pronunciations:
+as one syllable
+(like the surname),
+rhyming with \[lq]trough\[rq],
+or as \[lq]jee-roff\[rq],
+in analogy to the Bell Labs pronunciation \[lq]tee-roff\[rq].
+.
+Little risk of confusion exists;
+use whichever suits you.
 .\" END Keep parallel with groff.texi node "What Is groff?".
 .
 .

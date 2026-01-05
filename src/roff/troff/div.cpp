@@ -106,13 +106,13 @@ void do_divert(bool appending, bool boxing)
   tok.skip_spaces();
   symbol nm = read_identifier();
   if (nm.is_null()) {
-    // Why the asymmetric diagnostic severity?  See Savannah #67139.
-    if (!(curdiv->is_box) && boxing)
-      fatal("cannot close ordinary diversion with box request");
-    if (curdiv->is_box && !boxing)
-      error("cannot close box diversion with ordinary diversion"
-	    " request");
-    else if (curdiv->prev) {
+    if (curdiv->prev != 0 /* nullptr */) {
+      // Why the asymmetric diagnostic severity?  See Savannah #67139.
+      if (!(curdiv->is_box) && boxing)
+	fatal("cannot close ordinary diversion with box request");
+      if (curdiv->is_box && !boxing)
+	error("cannot close box diversion with ordinary diversion"
+	      " request");
       curenv->seen_break = curdiv->saved_seen_break;
       curenv->seen_space = curdiv->saved_seen_space;
       curenv->seen_eol = curdiv->saved_seen_eol;

@@ -507,7 +507,7 @@ to appear in the output,
 use
 .Ql \[rs]e
 or
-.Ql \[rs](rs
+.Ql \[rs][rs]
 instead.
 .
 Technically,
@@ -518,7 +518,7 @@ it works reliably as long as no
 request is used to change it,
 which should never happen in man pages.
 .
-.Ql \[rs](rs
+.Ql \[rs][rs]
 is a
 .Xr groff
 special character escape sequence that explicitly formats the
@@ -556,17 +556,53 @@ Don't try to use the neutral double quote character
 to represent itself in an argument.
 .
 Use the special character escape sequence
-.Ql \[rs](dq
+.Ql \[rs][dq]
 to format it.
 .\" That's NOT a groffism, but showed up in the "post" and "Latin1"
 .\" devices of Documenter's Workbench (DWB) 3.3 troff.
 .
 Avoid using
-.Ql \[rs](dq
+.Ql \[rs][dq]
 for conventional quotation;
 see subsection
 .Sx "Enclosure and quoting macros"
 below.
+.
+.
+.Pp
+If your document must be portable to legacy systems like
+.Bx 4.4 ,
+special character escape sequences shown here in the form
+.Li \[rs][ Ns Va xx Ns Li ]
+must be spelled
+.Li \[rs]( Ns Va xx
+instead.
+.
+No version of
+.Xr groff
+or
+.Xr mandoc
+requires the latter form.
+.
+.Xr groff_char @MAN7EXT@
+annotates special character identifers that are portable
+to legacy systems.
+.
+.
+.Pp
+As a typesetting system,
+.Xr roff
+distinguishes hyphens,
+minus signs,
+and various sorts of dash.
+.
+When inputting a hyphen or dash
+.Pq Dq hyphen-minus
+that is intended for copy-and-paste to shell prompts,
+program code,
+or URLs,
+prefix it with the escape character:
+.Ql \[rs]\- .
 .
 .
 .Pp
@@ -4855,22 +4891,22 @@ for a full discussion of these special character escape sequences.
 Cb Lb2 Lb2 Lb Lb Lb
 Lf(CR) L2 L2 L Lf(CR) L.
 String	7-bit	8-bit	UCS	Prefer	Meaning
-\[rs]*(<=	<=	<=	\*[<=]	\[rs](<=	less than or equal to
-\[rs]*(>=	>=	>=	\*[>=]	\[rs](>=	greater than or equal to
-\[rs]*(Rq	"	"	\*[Rq]	\[rs](rq	right double quote
-\[rs]*(Lq	"	"	\*[Lq]	\[rs](lq	left double quote
-\[rs]*(ua	\[ha]	\[ha]	\*[ua]	\[rs](ua	vertical arrow up
-\[rs]*(aa	\[aq]	\'	\*[aa]	\[rs](aa	acute accent
-\[rs]*(ga	\`	\`	\*[ga]	\[rs](ga	grave accent
-\[rs]*(q	\&"	\&"	\*[q]	\[rs](dq	neutral double quote
-\[rs]*(Pi	pi	pi	\*[Pi]	\[rs](*p	lowercase pi
-\[rs]*(Ne	!=	!=	\*[Ne]	\[rs](!=	not equals
-\[rs]*(Le	<=	<=	\*[Le]	\[rs](<=	less than or equal to
-\[rs]*(Ge	>=	>=	\*[Ge]	\[rs](>=	greater than or equal to
+\[rs]*(<=	<=	<=	\*[<=]	\[rs][<=]	less than or equal to
+\[rs]*(>=	>=	>=	\*[>=]	\[rs][>=]	greater than or equal to
+\[rs]*(Rq	"	"	\*[Rq]	\[rs][rq]	right double quote
+\[rs]*(Lq	"	"	\*[Lq]	\[rs][lq]	left double quote
+\[rs]*(ua	\[ha]	\[ha]	\*[ua]	\[rs][ua]	vertical arrow up
+\[rs]*(aa	\[aq]	\'	\*[aa]	\[rs][aa]	acute accent
+\[rs]*(ga	\`	\`	\*[ga]	\[rs][ga]	grave accent
+\[rs]*(q	\&"	\&"	\*[q]	\[rs][dq]	neutral double quote
+\[rs]*(Pi	pi	pi	\*[Pi]	\[rs][*p]	lowercase pi
+\[rs]*(Ne	!=	!=	\*[Ne]	\[rs][!=]	not equals
+\[rs]*(Le	<=	<=	\*[Le]	\[rs][<=]	less than or equal to
+\[rs]*(Ge	>=	>=	\*[Ge]	\[rs][>=]	greater than or equal to
 \[rs]*(Lt	<	<	\*[Lt]	<	less than
 \[rs]*(Gt	>	>	\*[Gt]	>	greater than
-\[rs]*(Pm	+\-	\[+-]	\*[Pm]	\[rs](+\-	plus or minus
-\[rs]*(If	infinity	infinity	\*[If]	\[rs](if	infinity
+\[rs]*(Pm	+\-	\[+-]	\*[Pm]	\[rs][+\-]	plus or minus
+\[rs]*(If	infinity	infinity	\*[If]	\[rs][if]	infinity
 \[rs]*(Am	\*[Am]	\*[Am]	\*[Am]	&	ampersand
 \[rs]*(Na	\*[Na]	\*[Na]	\*[Na]	.Em NaN	not a number (slanted)
 \[rs]*(Ba	\*[Ba]	\*[Ba]	\*[Ba]	|	bar (upright)

@@ -28,7 +28,7 @@ This manual documents GNU @command{troff} version @VERSION@.
 
 @display
 Copyright @copyright{} 1994--2018 Free Software Foundation, Inc.
-Copyright @copyright{} 2018--2025 G. Branden Robinson
+Copyright @copyright{} 2018--2026 G. Branden Robinson
 @end display
 
 @quotation
@@ -467,7 +467,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle December 2025
+@subtitle January 2026
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -603,6 +603,16 @@ Unix manuals, including man pages.  It and its predecessor have produced
 several best-selling software engineering texts.  @code{groff} can
 create typographically sophisticated documents while consuming minimal
 system resources.
+
+Like its predecessor ``troff'',
+the term ``groff'' affords two pronunciations:
+as one syllable
+(like the surname),
+rhyming with ``trough'',
+or as ``jee-roff'',
+in analogy to the Bell Labs pronunciation ``tee-roff''.
+Little risk of confusion exists;
+use whichever suits you.
 @c END Keep parallel with groff(1), section "Description" (after the
 @c first sentence).
 
@@ -762,11 +772,27 @@ distribution.  Being a GNU project, @code{groff} supports the familiar
 @node Conventions Used in This Manual, Credits, Installation, Introduction
 @section Conventions Used in This Manual
 
-We apply the term ``groff'' to the language documented here, the GNU
-implementation of the overall system, the project that develops that
-system, and the command of that name.  In the first sense, @code{groff}
-is an extended dialect of the @code{roff} language, for which many
+@c BEGIN Keep parallel with groff(7), portion of "Description"
+@c (introduction).
+We apply the term ``groff'' to the language documented here,
+the GNU implementation of the overall system,
+the project that develops that system,
+and the command of that name.
+In the first sense,
+@code{groff}
+is an extended dialect of the
+@code{roff}
+language,
+for which many
 similar implementations exist.
+When say ``the formatter'' when speaking of behavior
+that is generally true of
+@command{troff} @c generic
+and
+@command{nroff} @c generic
+programs.
+@c END Keep parallel with groff(7), portion of "Description"
+@c (introduction).
 
 A tradition has arisen that GNU programs' names bear a prefix @samp{g}
 where necessary to distinguish them from other implementations on the
@@ -1518,7 +1544,8 @@ human-readable form using UTC.
 A macro file must have a name in the form @code{@var{name}.tmac} or
 @code{tmac.@var{name}} and be placed in a @dfn{tmac directory} to be
 found by the @option{-m @var{mac}} command-line option.@footnote{The
-@code{mso} request loads a macro file of any name.  @xref{I/O}.}
+@code{mso} request loads a macro file of any name.
+@xref{Host System Service Access}.}
 @cindex tmac, directory
 @cindex directory, for tmac files
 @cindex tmac, path
@@ -1813,11 +1840,20 @@ fruitfully.@footnote{The remainder of this chapter is based on
 which is distributed with @code{groff} as @file{meintro.me}.}
 References are made throughout to more detailed information.
 
-GNU @command{troff} reads input prepared by the user and outputs a
-formatted document suitable for publication or framing.  The input
-consists of text, or words to be printed, and embedded commands
-(@slanted{requests} and @slanted{escape sequences}), which tell GNU
-@code{troff} how to format the output.  @xref{Formatter Instructions}.
+GNU
+@command{troff} @c GNU
+reads input prepared by the user
+and outputs a formatted document suitable for publication or framing.
+The input consists of text,
+or words to be printed,
+and embedded commands
+(@slanted{requests}
+and
+@slanted{escape sequences}),
+which tell GNU
+@command{troff} @c GNU
+how to format the output.
+@xref{Formatter Instructions}.
 
 @cindex break (introduction)
 @cindex line break (introduction)
@@ -4316,7 +4352,7 @@ and @code{refer} preprocessors.
 Mark text meant for preprocessors by enclosing it in pairs of tokens
 as follows, with nothing between the dot and the macro name.
 Preprocessors match these tokens only at the start of an input line.
-@code{troff} interprets them as macro calls.
+The formatter interprets them as macro calls.
 
 @DefmacList {TS, [@code{H}], ms}
 @DefmacListEndx {TE, , ms}
@@ -4907,12 +4943,21 @@ spread the dots.  The width of the page number field is stored in the
 @cindex @file{ms} macros, @code{groff} differences from @acronym{AT&T}
 @cindex @acronym{AT&T} @file{ms}, macro package differences
 
-The @code{groff} @file{ms} macros are an independent reimplementation,
-using no @acronym{AT&T} code.  Since they take advantage of the extended
-features of @code{groff}, they cannot be used with @acronym{AT&T}
-@code{troff}.  @code{groff} @file{ms} supports features described above
-as Berkeley and Research Tenth Edition Unix extensions, and adds several
-of its own.
+The
+@code{groff}
+@file{ms}
+macros are an independent reimplementation,
+using no @acronym{AT&T} code.
+Since they take advantage of the extended features of
+GNU
+@command{troff}, @c GNU
+they cannot be used with @acronym{AT&T}
+@command{troff}. @c AT&T
+@code{groff}
+@file{ms}
+supports features described above
+as Berkeley and Research Tenth Edition Unix extensions,
+and adds several of its own.
 
 @itemize @bullet
 @item
@@ -4947,8 +4992,13 @@ Unix supported @code{P1}/@code{P2} macros to bracket code
 examples; @code{groff} @file{ms} does not.
 
 @item
-@code{groff} @file{ms} does not work in GNU @code{troff}'s
-@acronym{AT&T} compatibility mode.  If loaded when that mode is enabled,
+@code{groff}
+@file{ms}
+does not work in
+GNU
+@code{troff}'s @c GNU
+@acronym{AT&T} compatibility mode.
+If loaded when that mode is enabled,
 it aborts processing with a diagnostic message.
 
 @item
@@ -5339,14 +5389,17 @@ Names constructed to implement arrays are of the form
 
 @node GNU troff Reference, File Formats, Major Macro Packages, Top
 @anchor{gtroff Reference} @c 1.22.4
-@chapter GNU @code{troff} Reference
+@chapter GNU @command{troff} Reference
 @cindex reference, @command{gtroff}
 @cindex @command{gtroff}, reference
 @cindex @command{troff}, GNU, reference
 
-This chapter covers @emph{all} of the facilities of the GNU
-@code{troff} formatting engine.  Users of macro packages may skip it if
-not interested in details.
+This chapter covers
+@emph{all}
+of the facilities of the GNU
+@command{troff}
+formatting program.
+Users of macro packages may skip it if not interested in details.
 
 
 @menu
@@ -5375,6 +5428,7 @@ not interested in details.
 * Conditionals and Loops::
 * Writing Macros::
 * Page Motions::
+* Output Line Annotation::
 * Drawing Geometric Objects::
 * Deferring Output::
 * Traps::
@@ -5382,7 +5436,7 @@ not interested in details.
 * Punning Names::
 * Environments::
 * Suppressing Output::
-* I/O::
+* Host System Service Access::
 * Postprocessor Access::
 * Miscellaneous::
 * GNU @command{troff} Internals::
@@ -5396,24 +5450,44 @@ not interested in details.
 @c BEGIN Keep roughly parallel with roff(7) section "Concepts".
 @node Text, Measurements, GNU troff Reference, GNU troff Reference
 @section Text
-@cindex text, GNU @code{troff} processing
+@cindex text, GNU @command{troff} processing of
 
-@acronym{AT&T} @code{troff} was designed to take input as it would be
-composed on a typewriter, including the teletypewriters used as early
-computer terminals, and relieve the user drafting a document of concern
-with details like line length, hyphenation breaking, and the achievement
-of straight margins.  Early in its development, the program gained the
-ability to prepare output for a phototypesetter; a document could then
-be prepared for output to either a teletypewriter, a phototypesetter, or
-both.  GNU @code{troff} continues this tradition of permitting an author
-to compose a single master version of a document which can then be
-rendered for a variety of output formats or devices.
+@acronym{AT&T}
+@command{troff} @c AT&T
+was designed to take input as it would be composed on a typewriter,
+including the teletypewriters used as early computer terminals,
+and relieve the user drafting a document of concern with details like
+line length maintenance,
+hyphenation breaking,
+and consistent paragraph indentation.
+Early in its development,
+the program gained the ability to prepare output for a phototypesetter;
+a document could then be prepared for output to a teletypewriter,
+a phototypesetter,
+or both.
+GNU
+@command{troff}
+continues this tradition of permitting an author
+to compose a single master version of a document
+which can then be rendered upon a variety of output formats or devices,
+including PDF,
+HTML,
+laser printers,
+and terminal displays.
 
-@code{roff} input contains text interspersed with instructions to
-control the formatter.  Even in the absence of such instructions, GNU
-@code{troff} still processes its input in several ways, by filling,
-hyphenating, breaking, and adjusting it, and supplementing it with
-inter-sentence space.
+@code{roff}
+input contains text interspersed with instructions
+to control the formatter.
+Even in the absence of such instructions,
+GNU
+@command{troff} @c GNU
+still processes its input in several ways,
+by filling,
+hyphenating,
+breaking,
+and
+adjusting it,
+and supplementing it with inter-sentence space.
 
 @menu
 * Filling::
@@ -5435,24 +5509,43 @@ inter-sentence space.
 @anchor{Filling and Adjusting} @c 1.22.4
 @subsection Filling
 
-When GNU @code{troff} starts up, it obtains information about the device
+When
+GNU
+@command{troff} @c GNU
+starts up,
+it obtains information about the device
 for which it is preparing output.@footnote{@xref{Device and Font
 Description Files}.}  An essential property is the length of the output
 line, such as ``6.5 inches''.
 
 @cindex word, definition of
 @cindex filling
-GNU @code{troff} interprets plain text files employing the Unix
-line-ending convention.  It reads input a character at a time,
-collecting words as it goes, and fits as many words together on an
-output line as it can---this is known as @dfn{filling}.  To GNU
-@code{troff}, a @dfn{word} is any sequence of one or more characters
-that aren't spaces or newlines.  The exceptions separate
-words.@footnote{@slanted{Tabs} and @slanted{leaders} also separate
-words.  @slanted{Escape sequences} can function as word characters, word
-separators, or neither---the last simply have no effect on GNU
-@code{troff}'s idea of whether an input character is within a word.
-We'll discuss all of these in due course.}  To disable filling, see
+GNU
+@command{troff}
+interprets plain text files employing the Unix line-ending convention.
+It reads input a character at a time,
+collecting words as it goes,
+and fits as many words together on an output line
+as it can---this is known as
+@dfn{filling}.
+To
+GNU
+@command{troff}, @c GNU
+a
+@dfn{word}
+is any sequence of one or more characters
+that aren't spaces or newlines.
+The exceptions separate words.@footnote{@slanted{Tabs}
+and @slanted{leaders} also separate words.
+@slanted{Escape sequences} can function as word characters,
+word separators,
+or neither---the last simply have no effect on
+GNU
+@command{troff}'s @c GNU
+idea of whether an input character is within a word.
+We'll discuss all of these in due course.}
+To disable filling,
+see
 @ref{Manipulating Filling and Adjustment}.
 
 @Example
@@ -5477,7 +5570,10 @@ what other circumstances should influence this spacing.@footnote{A
 well-researched jeremiad appreciated by @code{groff} contributors on
 both sides of the sentence-spacing debate can be found at
 @uref{https://web.archive.org@//web@//20171217060354@//http://www.heracliteanriver.com@//?p=324}.}
-GNU @code{troff} follows the example of @acronym{AT&T} @code{troff};
+GNU
+@command{troff} @c GNU
+follows the example of @acronym{AT&T}
+@command{troff}; @c AT&T
 it attempts to detect the boundaries between sentences, and supplements
 them with inter-sentence space.
 
@@ -5492,12 +5588,26 @@ Welcome to groff.
 @cindex inter-sentence space
 @cindex space between sentences
 @cindex French spacing
-GNU @code{troff} flags certain characters (normally @samp{!}, @samp{?},
-and @samp{.}) as potentially ending a sentence.  When GNU @code{troff}
-encounters one of these @dfn{end-of-sentence characters} at the end of
-an input line, or one of them is followed by two (unescaped) spaces on
-the same input line, it appends an inter-word space followed by an
-inter-sentence space in the output.
+GNU
+@command{troff} @c GNU
+flags certain characters
+(normally
+@samp{!},
+@samp{?},
+and
+@samp{.})
+as potentially ending a sentence.
+When
+GNU
+@command{troff} @c GNU
+encounters one of these
+@dfn{end-of-sentence characters}
+at the end of an input line,
+or one of them is followed by two
+(unescaped)
+spaces on the same input line,
+it appends an inter-word space
+followed by an inter-sentence space in the output.
 
 @Example
 R. Harper subscribes to a maxim of P. T. Barnum.
@@ -5517,17 +5627,29 @@ Barnum.
     @result{} P. T.  Barnum.
 @endExample
 
-``Barnum'' doesn't begin a sentence!  What to do?  Let us meet our first
-@dfn{escape sequence}, a series of input characters that give
-instructions to GNU @code{troff} instead of being used to construct
-output device glyphs.@footnote{This statement oversimplifies; there are
-escape sequences whose purpose is precisely to produce glyphs on the
-output device, and input characters that @emph{aren't} part of escape
-sequences can undergo a great deal of processing before getting to the
-output.} An escape sequence begins with the backslash character @code{\}
-by default, an uncommon character in natural language text, and is
-@emph{always} followed by at least one other character, hence the term
-``sequence''.
+``Barnum'' doesn't begin a sentence!
+What to do?
+Let us meet our first
+@dfn{escape sequence},
+a series of input characters that give instructions to
+GNU
+@command{troff} @c GNU
+instead of being used to construct output device glyphs.@footnote{This
+statement oversimplifies;
+there are escape sequences
+whose purpose is precisely to produce glyphs on the output device,
+and input characters that
+@emph{aren't}
+part of escape sequences
+can undergo a great deal of processing before getting to the output.}
+An escape sequence begins with the backslash character
+@code{\}
+by default,
+an uncommon character in natural language text,
+and is
+@emph{always}
+followed by at least one other character,
+hence the term ``sequence''.
 
 @cindex @code{\&}, at end of sentence
 The dummy character escape sequence @code{\&} can be used after an
@@ -5563,11 +5685,12 @@ editing activities.  Further advice along these lines will follow in
 @cindex characters, special
 Normally, the occurrence of a visible non-end-of-sentence character (as
 opposed to a space or tab) immediately after an end-of-sentence
-character cancels detection of the end of a sentence.  For example, it
-would be incorrect for GNU @code{troff} to infer the end of a sentence
+character cancels detection of the end of a sentence.
+For example,
+it would be incorrect for the formatter to infer the end of a sentence
 after the dot in @samp{3.14159}.
 However,
-the formatter treats several characters
+it treats several characters
 @emph{transparently}
 after the occurrence of an end-of-sentence character---it does not
 cancel end-of-sentence status upon encountering them.
@@ -5575,12 +5698,16 @@ Such characters are often used as footnote marks
 or to close quotations and parentheticals.
 The default set is @samp{"}, @samp{'}, @samp{)},
 @samp{]}, @samp{*}, @code{\[dg]}, @code{\[dd]}, @code{\[rq]}, and
-@code{\[cq]}.  The last four are examples of @dfn{special characters},
-escape sequences whose purpose is to obtain glyphs that are not easily
-typed at the keyboard, or which have special meaning to GNU @code{troff}
+@code{\[cq]}.
+The last four are examples of
+@dfn{special characters},
+escape sequences whose purpose is to obtain glyphs
+that are not easily typed at the keyboard,
+or which have special meaning to the formatter
 (like @code{\} itself).@footnote{The mnemonics for the special
 characters shown here are ``dagger'', ``double dagger'', ``right
-(double) quote'', and ``closing (single) quote''.  See
+(double) quote'', and ``closing (single) quote''.
+See
 @cite{groff_char@r{(7)}}.}
 
 @Example
@@ -5656,30 +5783,46 @@ Once an output line is full,
 the formatter places the next word
 (or remainder of a hyphenated one)
 on a different output line;
-this is called a @dfn{break}.
-In this manual and in @code{roff} discussions generally, a ``break'' if
-not further qualified always refers to the termination of an output
-line.  When the formatter is filling text, it introduces breaks
-automatically to keep output lines from exceeding the configured line
-length.  After an automatic break, GNU @code{troff} adjusts the line if
-applicable (see below), and then resumes collecting and filling text on
-the next output line.
+this is called a
+@dfn{break}.
+In this manual and in
+@code{roff}
+discussions generally,
+a ``break'' if not further qualified
+always refers to the termination of an output line.
+When the formatter is filling text,
+it introduces breaks automatically to keep output lines from exceeding
+the configured line length.
+After an automatic break,
+the formatter adjusts the line if applicable
+(see below),
+and then resumes collecting and filling text on the next output line.
 
-Sometimes, a line cannot be broken automatically.  This usually does
-not happen with natural language text unless the output line length has
-been manipulated to be extremely short, but it can with specialized
-text like program source code.  We can use @code{perl} at the shell
-prompt to contrive an example of failure to break the line.  We also
-employ the @option{-z} option to suppress normal output.
+Sometimes,
+a line cannot be broken automatically.
+This usually does not happen with natural language text
+unless the output line length
+has been manipulated to be extremely short,
+but it can with specialized text like program source code.
+We can use
+@command{perl}
+at the shell prompt to contrive an example of failure to break the line.
+We also employ the
+@option{-z}
+option to suppress normal output.
 
 @Example
 $ perl -e 'print "#" x 80, "\n";' | gnroff -z
     @error{} cannot adjust line; overset by 15n
 @endExample
 
-The remedy for these cases is to tell GNU @code{troff} where the line
-may be broken without hyphens.  This is done with the non-printing break
-point escape sequence @samp{\:}; see @ref{Manipulating Hyphenation}.
+The remedy for these cases is to tell
+GNU
+@command{troff}
+where the line may be broken without hyphens.
+This is done with the non-printing break point escape sequence
+@samp{\:};
+see @ref{Manipulating Hyphenation}.
 
 @cindex blank line
 @cindex empty line
@@ -5721,12 +5864,16 @@ This is discussed in @ref{Manipulating Filling and Adjustment}.
 @subsection Adjustment
 
 @cindex extra spaces between words
-After GNU @code{troff} performs an automatic break, it may then
-@dfn{adjust} the line, widening inter-word spaces until the text reaches
-the right margin.  Extra spaces between words are preserved.  Leading
-and trailing spaces are handled as noted above.  Text can be aligned to
-the left or right margin only, or centered; see @ref{Manipulating
-Filling and Adjustment}.
+After performing an automatic break,
+the formatter may then
+@dfn{adjust}
+the line,
+widening inter-word spaces until the text reaches the right margin.
+Extra spaces between words are preserved.
+Leading and trailing spaces are handled as noted above.
+You can align text to the left or right margin only,
+or center it;
+see @ref{Manipulating Filling and Adjustment}.
 @c END Keep roughly parallel with roff(7) section "Concepts".
 
 @c ---------------------------------------------------------------------
@@ -5742,7 +5889,7 @@ Filling and Adjustment}.
 @cindex character, leader
 @cindex tab stops
 @cindex stops, tab
-GNU @code{troff} translates input horizontal tab characters (``tabs'')
+The formatter translates input horizontal tab characters (``tabs'')
 and @key{Control+A} characters (``leaders'') into movements to the next
 tab stop.  Tabs simply move to the next tab stop; leaders place enough
 periods to fill the space.  Tab stops are by default located every half
@@ -5798,30 +5945,39 @@ These characters were chosen because it is uncommon for lines of text in
 natural languages to begin with them.
 @cindex dummy character (@code{\&}), as control character suppressor
 @cindex character, dummy (@code{\&}), as control character suppressor
-If you require a formatted period or apostrophe (closing single
-quotation mark) where GNU @code{troff} is expecting a control character,
-prefix the dot or neutral apostrophe with the dummy character escape
-sequence, @samp{\&}.
+If you require a formatted period or apostrophe
+(closing single quotation mark)
+where the formatter expects a control character,
+prefix the dot or neutral apostrophe
+with the dummy character escape sequence,
+@samp{\&}.
 
 @cindex control line
 An input line beginning with a control character is called a
 @dfn{control line}.
 @cindex text line
-Every line of input that is not a control line is a @dfn{text
-line}.@footnote{The @code{\@key{RET}} escape sequence can alter how an
-input line is classified; see @ref{Line Continuation}.}
+Every line of input that is not a control line is a
+@dfn{text line}.@footnote{The @code{\@key{RET}} escape sequence
+can alter how an input line is classified;
+see @ref{Line Continuation}.}
 
 @cindex argument
-Requests often take @dfn{arguments}, words (separated from the request
-name and each other by spaces) that specify details of the action GNU
-@code{troff} is expected to perform.  If a request is meaningless
-without arguments, it is typically ignored.
+Requests often take
+@dfn{arguments},
+words
+(separated from the request name and each other by spaces)
+that specify details of the action you expect the formatter to perform.
+If a request is meaningless without arguments,
+it is typically ignored.
 
-GNU @code{troff}'s requests and escape sequences comprise the control
-language of the formatter.  Of key importance are the requests that
-define macros.  Macros are invoked like requests, enabling the request
-repertoire to be extended or overridden.@footnote{Argument handling in
-macros is more flexible but also more complex.  @xref{Calling Macros}.}
+Requests and escape sequences comprise the control language
+of the formatter.
+Of key importance are the requests that define macros.
+Macros are invoked like requests,
+enabling the request repertoire
+to be extended or overridden.@footnote{Argument handling in macros
+is more flexible but also more complex.
+@xref{Calling Macros}.}
 
 @anchor{Macros} @c 1.22.4
 @cindex macro
@@ -5845,9 +6001,15 @@ the formatter scans the replacement for further requests,
 macro calls,
 and escape sequences.
 
-In @code{roff} systems, the @code{de} request defines a
-macro.@footnote{GNU @code{troff} offers additional ones.  @xref{Writing
-Macros}.}
+In
+@code{roff}
+systems,
+the
+@code{de}
+request defines a macro.@footnote{GNU
+@command{troff}
+offers additional ones.
+@xref{Writing Macros}.}
 
 @Example
 .de DATE
@@ -6259,14 +6421,24 @@ Euro @samp{\[Eu]} and per mille @samp{\[%0]} glyphs.}
 @cindex input conventions
 @cindex conventions for input
 
-Since GNU @code{troff} fills text automatically, it is common practice
-in the @code{roff} language to avoid visual composition of text in input
-files: the esthetic appeal of the formatted output is what matters.
-Therefore, @code{roff} input should be arranged such that it is easy for
-authors and maintainers to compose and develop the document, understand
-the syntax of @code{roff} requests, macro calls, and preprocessor
-languages used, and predict the behavior of the formatter.  Several
-traditions have accrued in service of these goals.
+Since a
+@code{roff}
+formatter fills text automatically,
+its experienced users tend to avoid visual composition
+of text in input files:
+the esthetic appeal of the formatted output is what matters.
+Therefore,
+@code{roff}
+input should be arranged
+such that it is easy for authors and maintainers
+to compose and develop the document,
+understand the syntax of
+@code{roff}
+requests,
+macro calls,
+and preprocessor languages used,
+and predict the behavior of the formatter.
+Several traditions have accrued in service of these goals.
 
 @itemize @bullet
 @item
@@ -6318,10 +6490,13 @@ region option
 causes the program to ignore spaces at the boundaries of table cells.)
 
 @item
-Comment your document.  It is never too soon to apply comments to
-record information of use to future document maintainers (including your
-future self).  We thus introduce another escape sequence, @code{\"},
-which causes GNU @code{troff} to ignore the remainder of the input line.
+Comment your document.
+It is never too soon to apply comments
+to record information of use to future document maintainers
+(including your future self).
+We thus introduce another escape sequence,
+@code{\"},
+which causes the formatter to ignore the remainder of the input line.
 
 @item
 Use the empty request---a control character followed immediately by a
@@ -6695,11 +6870,14 @@ Hundredth of an em.
 
 @c BEGIN Keep (roughly) parallel with subsection "Motion quanta" of
 @c groff(7).
-An output device's basic unit @code{u} is not necessarily its smallest
-addressable length; @code{u} can be smaller to avoid problems with
-integer roundoff.  The minimum distances that a device can work with in
-the horizontal and vertical directions are termed its @dfn{motion
-quanta}.
+The basic unit
+@code{u}
+is not necessarily an output device's smallest addressable length;
+@code{u}
+can be smaller to avoid integer rounding errors.
+The minimum distances that a device can work with
+in the horizontal and vertical directions are termed its
+@dfn{motion quanta}.
 The formatter rounds measurements to applicable motion quanta.
 Half-quantum fractions round toward zero.
 
@@ -6741,15 +6919,24 @@ follows.  @xref{Drawing Geometric Objects}.
 
 @c BEGIN Keep (roughly) parallel with subsection "Default units" of
 @c groff(7).
-A general-purpose register (one created or updated with the @code{nr}
-request; see @pxref{Registers}) is implicitly dimensionless, or reckoned
-in basic units if interpreted in a measurement context.  But it is
-convenient for many requests and escape sequences to infer a scaling
-unit for an argument if none is specified.  An explicit scaling unit
-(not after a closing parenthesis) can override an undesirable default.
-Effectively, the default unit is suffixed to the expression if a scaling
-unit is not already present.  GNU @code{troff}'s use of integer
-arithmetic should also be kept in mind (@pxref{Numeric Expressions}).
+A general-purpose register
+(one created or updated with the
+@code{nr}
+request@footnote{@xref{Registers}.})
+is implicitly dimensionless,
+or reckoned in basic units if interpreted in a measurement context.
+But it is convenient for many requests and escape sequences
+to infer a scaling unit for an argument if none is specified.
+An explicit scaling unit
+(not after a closing parenthesis)
+can override an undesirable default.
+Effectively,
+the default unit is suffixed to the expression
+if a scaling unit is not already present.
+GNU
+@command{troff}'s @c GNU
+use of integer arithmetic
+should also be kept in mind.@footnote{@xref{Numeric Expressions}.}
 
 The @code{ll} request interprets its argument in ems by default.
 Consider several attempts to set a line length of 3.5@tie{}inches when
@@ -7131,11 +7318,14 @@ In the foregoing example, we've used the @code{\Z} escape sequence
 (@pxref{Page Motions}) to restore the drawing position after formatting
 @samp{C}, then moved vertically to the first text baseline on the page.
 
-@Defesc {\\B, @code{'}, anything, @code{'}}
+@Defesc {\\B, @code{'}, input, @code{'}}
 @cindex numeric expression, valid
 @cindex valid numeric expression
-Interpolate@tie{}1 if @var{anything} is a valid numeric expression,
-and@tie{}0 otherwise.  The delimiter need not be a neutral apostrophe;
+Interpolate@tie{}1 if
+@var{input}
+is a valid numeric expression,
+and@tie{}0 otherwise.
+The delimiter need not be a neutral apostrophe;
 see @ref{Delimiters}.
 @endDefesc
 
@@ -7315,13 +7505,23 @@ and
 @samp{.]}
 as bibliographic reference delimiters.
 
-@Defesc {\\A, @code{'}, anything, @code{'}}
-Interpolate@tie{}1 if @var{anything} is a valid identifier, and@tie{}0
-otherwise.  The delimiter need not be a neutral apostrophe; see
-@ref{Delimiters}.  Because GNU @command{troff} ignores any input
-character with an invalid code when reading it, invalid identifiers are
-empty or contain spaces, tabs, newlines, or escape sequences that
-interpolate something other than a sequence of ordinary characters.
+@Defesc {\\A, @code{'}, input, @code{'}}
+Interpolate@tie{}1 if
+@var{input}
+is a valid identifier,
+and@tie{}0 otherwise.
+The delimiter need not be a neutral apostrophe; see
+@ref{Delimiters}.
+Because GNU
+@command{troff} @c GNU
+ignores any input character with an invalid code when reading it,
+invalid identifiers are empty or contain
+spaces,
+tabs,
+newlines,
+or
+escape sequences
+that interpolate something other than a sequence of ordinary characters.
 
 You can employ @code{\A} to validate a macro argument before using it to
 construct another escape sequence or identifier.
@@ -8489,8 +8689,9 @@ or subtract the expression of interest from zero.
     @result{} -3
 @endExample
 
-If a register's prior value does not exist (the register was undefined),
-an increment or decrement is applied as if to@tie{}0.
+If a register's prior value does not exist---the
+register was undefined---an increment or decrement is applied as if
+to@tie{}0.
 @endDefreq
 
 @cindex CSTR@tie{}#54 errata
@@ -8817,9 +9018,12 @@ A register name is often associated with a request of the same name
 found in @ref{Register Index}.
 
 We present here a few built-in registers that are not described
-elsewhere in this manual; they have to do with invariant properties of
-GNU @code{troff}, or obtain information about the formatter's
-command-line options, processing progress, or the operating environment.
+elsewhere in this manual;
+they have to do with invariant properties of
+GNU
+@command{troff}, @c GNU
+or obtain information about the formatter's command-line options
+or processing progress.
 
 @table @code
 @item \n[.A]
@@ -8903,96 +9107,6 @@ contains@tie{}@samp{23}.
 @cindex revision number register (@code{.Y})
 Revision number of the running GNU @code{troff} formatter.  For example,
 if the version number is 1.23.0, then @code{.Y} contains@tie{}@samp{0}.
-
-@item \n[$$]
-@vindex $$
-@cindex process ID of GNU @code{troff} register (@code{$$})
-@cindex PID of GNU @code{troff} register (@code{$$})
-@cindex GNU @code{troff}, process ID register (@code{$$})
-@cindex GNU @code{troff}, PID register (@code{$$})
-Process identifier (PID) of the GNU @code{troff} program in its
-operating environment.
-@end table
-
-Date- and time-related registers are set per the local time as
-determined by @cite{localtime@r{(3)}} when the formatter launches.  This
-initialization can be influenced by the environment variable @env{TZ} or
-overridden by @env{SOURCE_DATE_EPOCH}; see @ref{Environment}.
-
-@table @code
-@item \n[seconds]
-@cindex seconds, current time (@code{seconds})
-@cindex time, current, seconds (@code{seconds})
-@cindex current time, seconds (@code{seconds})
-@vindex seconds
-Count of seconds elapsed in the minute (0--60). @c not 59; see POSIX
-
-@item \n[minutes]
-@cindex minutes, current time (@code{minutes})
-@cindex time, current, minutes (@code{minutes})
-@cindex current time, minutes (@code{minutes})
-@vindex minutes
-Count of minutes elapsed in the hour (0--59).
-
-@item \n[hours]
-@cindex hours, current time (@code{hours})
-@cindex time, current, hours (@code{hours})
-@cindex current time, hours (@code{hours})
-@vindex hours
-Count of hours elapsed since midnight (0--23).
-
-@item \n[dw]
-@cindex day of the week register (@code{dw})
-@cindex date, day of the week register (@code{dw})
-@vindex dw
-Day of the week (1--7; 1 is Sunday).
-
-@item \n[dy]
-@cindex day of the month register (@code{dy})
-@cindex date, day of the month register (@code{dy})
-@vindex dy
-Day of the month (1--31).
-
-@item \n[mo]
-@cindex month of the year register (@code{mo})
-@cindex date, month of the year register (@code{mo})
-@vindex mo
-Month of the year (1--12).
-
-@item \n[year]
-@cindex date, year register (@code{year}, @code{yr})
-@cindex year, current, register (@code{year}, @code{yr})
-@vindex year
-Gregorian year.
-
-@cindex CSTR@tie{}#54 errata
-@cindex CSTR@tie{}#54 erratum, @code{yr} register
-@item \n[yr]
-@vindex yr
-Gregorian year minus@tie{}1900.  This register is incorrectly documented
-in the @acronym{AT&T} @code{troff} manual as storing the last two digits
-of the current year.  That claim stopped being true in 2000.  Old
-@code{troff} input that looks like:
-
-@Example
-'\" The year number is a surprise after 1999.
-This document was formatted in 19\n(yr.
-@endExample
-
-@noindent
-can be corrected to:
-
-@Example
-This document was formatted in \n[year].
-@endExample
-
-@noindent
-or, for portability across many @code{roff} programs, to the following.
-
-@Example
-.nr y4 1900+\n(yr
-This document was formatted in \n(y4.
-@endExample
 @end table
 
 If you wish to embed the date and/or time of a document's formatting
@@ -9286,7 +9400,7 @@ is typically used for fine-tuning of typeset output
 late in the document revision process.
 One of its applications is prevention of a break
 after an explicit hyphen when this occurs in an undesired place,
-such as at the end of a verso page,
+such as at the end of a recto page,
 or before a displayed figure.
 The hyphenation mode can be configured to prevent breaks
 after
@@ -15063,16 +15177,32 @@ interpolations with @code{\n} and @code{\*} escape sequences do.
 @subsection if-then
 @cindex if-then
 
-@Defreq {if, cond-expr anything}
-Evaluate the conditional expression @var{cond-expr}, and if it evaluates
-true (or to a positive value), interpret the remainder of the line
-@var{anything} as if it were an input line.  Recall from @ref{Invoking
-Requests} that any quantity of spaces between arguments to requests
-serves only to separate them; leading spaces in @var{anything} are thus
-not seen.  @var{anything} effectively @emph{cannot} be omitted; if
-@var{cond-expr} is true and @var{anything} is empty, the newline at the
-end of the control line is interpreted as a blank input line (and
-therefore a blank text line).
+@Defreq {if, cond-expr input}
+Evaluate the conditional expression
+@var{cond-expr},
+and if it evaluates true
+(or to a positive value),
+interpret the remainder of the line
+@var{input}
+as if it were an input line.
+Recall from @ref{Invoking Requests}
+that any quantity of spaces between arguments to requests
+serves only to separate them;
+leading spaces in
+@var{input}
+are thus not seen.
+@var{input}
+effectively
+@emph{cannot}
+be omitted;
+if
+@var{cond-expr}
+is true and
+@var{input}
+is empty,
+the formatter interprets the newline at the end of the control line
+as a blank input line
+(and therefore a blank text line).
 
 @Example
 super\c
@@ -15085,12 +15215,21 @@ tanker
 @endExample
 @endDefreq
 
-@Defreq {nop, [@Var{anything}]}
-Interpret @var{anything} as if it were an input line.  @code{nop}
-resembles @samp{.if 1}; it puts a break on the output if @code{anything}
-is empty.  Unlike @code{if}, it cannot govern conditional blocks.  Its
-application is to maintain consistent indentation within macro
-definitions even when formatting output.
+@Defreq {nop, [@Var{input}]}
+Interpret
+@var{input}
+as if it were an input line.
+@code{nop}
+resembles
+@samp{.if 1};
+it puts a break on the output if
+@var{input}
+is empty.
+Unlike
+@code{if},
+it cannot govern conditional blocks.
+Its application is to maintain consistent indentation
+within macro definitions even when formatting output.
 
 @Example
 .als real-MAC MAC
@@ -15103,8 +15242,12 @@ definitions even when formatting output.
 .als MAC real-MAC
 @endExample
 
-In the above, we've used aliasing, @code{nop}, and the interpolation of
-a macro as a string to interpose a wrapper around the macro @samp{MAC}
+In the above,
+we've used aliasing,
+@code{nop},
+and the interpolation of a macro as a string
+to interpose a wrapper around the macro
+@samp{MAC}
 (perhaps to debug it).
 @endDefreq
 
@@ -15114,13 +15257,22 @@ a macro as a string to interpose a wrapper around the macro @samp{MAC}
 @subsection if-else
 @cindex if-else
 
-@DefreqList {ie, cond-expr anything}
-@DefreqListEndx {el, anything}
-Use the @code{ie} and @code{el} requests to write an if-then-else.  The
-first request is the ``if'' part and the latter is the ``else'' part.
-Unusually among programming languages, any number of non-conditional
-requests may be interposed between the @code{ie} branch and the
-@code{el} branch.
+@DefreqList {ie, cond-expr input}
+@DefreqListEndx {el, input}
+Use the
+@code{ie}
+and
+@code{el}
+requests to write an if-then-else.
+The first request is the ``if'' part
+and the latter is the ``else'' part.
+Unusually among programming languages,
+any number of non-conditional
+requests may be interposed between the
+@code{ie}
+branch and the
+@code{el}
+branch.
 
 @Example
 .nr a 0
@@ -15267,15 +15419,31 @@ package.  Indentation is used to clarify the logic.
 @subsection while
 @cindex @code{while} request
 
-@code{groff} provides a looping construct:@: the @code{while} request.
-Its syntax matches the @code{if} request.
+GNU
+@command{troff} @c GNU
+provides a looping construct:@:
+the
+@code{while}
+request.
+Its syntax matches the
+@code{if}
+request.
 
 @cindex body, of a while request
-@Defreq {while, cond-expr anything}
-Evaluate the conditional expression @var{cond-expr}, and repeatedly
-execute @var{anything} unless and until @var{cond-expr} evaluates false.
-@var{anything}, which is often a conditional block, is referred to as
-the @code{while} request's @dfn{body}.
+@Defreq {while, cond-expr input}
+Evaluate the conditional expression
+@var{cond-expr},
+and repeatedly execute
+@var{input}
+unless and until
+@var{cond-expr}
+evaluates false.
+@var{input},
+which is often a conditional block,
+is referred to as the
+@code{while}
+request's
+@dfn{body}.
 
 @Example
 .nr a 0 1
@@ -15287,13 +15455,26 @@ the @code{while} request's @dfn{body}.
 @endExample
 
 @cindex @code{de} request, and @code{while}
-GNU @code{troff} treats the body of a @code{while} request similarly to
-that of a @code{de} request (albeit one not read in copy
-mode@footnote{@xref{Copy Mode}.}), but stores it under an internal name
-and deletes it when the loop finishes.  The operation of a macro
-containing a @code{while} request can slow significantly if the
-@code{while} body is large.  Each time the macro is executed, the
-@code{while} body is parsed and stored again.
+GNU
+@command{troff} @c GNU
+treats the body of a
+@code{while}
+request similarly to that of a
+@code{de}
+request
+(albeit one not read in copy mode@footnote{@xref{Copy Mode}.}),
+but stores it under an internal name
+and deletes it when the loop finishes.
+The operation of a macro containing a
+@code{while}
+request can slow significantly if its body is large.
+Each time
+GNU
+@command{troff} @c GNU
+interpolates the macro,
+it parses and stores the
+@code{while}
+body again.
 
 @Example
 .de xxx
@@ -15308,10 +15489,13 @@ containing a @code{while} request can slow significantly if the
 @cindex recursive macros
 @cindex macros, recursive
 @noindent
-An often better solution---and one that is more portable, since
-@acronym{AT&T} @code{troff} lacked the @code{while} request---is to
-instead write a recursive macro.  It will be parsed only
-once.@footnote{unless you redefine it}
+An often better solution---and one that is more portable,
+since @acronym{AT&T}
+@command{troff} @c AT&T
+lacked the
+@code{while}
+request---is to instead write a recursive macro,
+which is parsed only once.@footnote{unless you redefine it}
 
 @Example
 .de yy
@@ -15329,13 +15513,23 @@ once.@footnote{unless you redefine it}
 @endExample
 
 @noindent
-To prevent infinite loops, the default number of available recursion
-levels is 1,000 or somewhat less.@footnote{``somewhat less'' because
-things other than macro calls can be on the input stack}  You can
-disable this protective measure, or alter the limit, by setting the
-@code{slimit} register.  @xref{Debugging}.
+To prevent infinite loops,
+GNU
+@command{troff} @c GNU
+limits the default number of available recursion levels
+to 1,000 or somewhat less.@footnote{``somewhat less'' because
+things other than macro calls can be on the input stack}
+You can disable this protective measure,
+or alter the limit,
+by setting the
+@code{slimit}
+register.
+@xref{Debugging}.
 
-As noted above, if a @code{while} body begins with a conditional block,
+As noted above,
+if a
+@code{while}
+body begins with a conditional block,
 its closing brace must end an input line.
 
 @Example
@@ -15568,12 +15762,22 @@ normally, they modify the value of an existing object.  @xref{als,,the
 description of the @code{als} request}, for pitfalls when redefining a
 macro that is aliased.
 
-@Defreq {return, [@Var{anything}]}
-Stop interpreting a macro, skipping to the end of its definition.  Do
-not confuse @code{return} with @code{rt}.  If called with an argument
-@var{anything}, the skip is performed twice---once within the macro
-being interpreted and once in an enclosing macro.  @file{trace.tmac}
-uses this feature to define a wrapper macro for @code{return}.
+@Defreq {return, [@Var{input}]}
+Stop interpreting an interpolated macro,
+skipping to the end of its definition.
+Do not confuse
+@code{return}
+with
+@code{rt}.
+If called with an argument
+@var{input},
+GNU
+@command{troff} @c GNU
+performs the skip twice---once within the macro being interpreted
+and once in an enclosing macro,
+permitting a macro to wrap the request.@footnote{as
+@file{trace.tmac}
+does}
 @endDefreq
 
 @menu
@@ -16064,7 +16268,7 @@ sequence for the minus sign glyph.
 
 @c =====================================================================
 
-@node Page Motions, Drawing Geometric Objects, Writing Macros, GNU troff Reference
+@node Page Motions, Output Line Annotation, Writing Macros, GNU troff Reference
 @section Page Motions
 @cindex page motions
 @cindex motions, page
@@ -16288,7 +16492,7 @@ Move right by the width of a numeral in the current font.
 Horizontal motions are not discarded at the end of an output line as
 word spaces are.  @xref{Breaking}.
 
-@DefescList {\\w, @code{'}, anything, @code{'}}
+@DefescList {\\w, @code{'}, input, @code{'}}
 @DefregItemx {st}
 @DefregItemx {sb}
 @DefregItemx {rst}
@@ -16297,8 +16501,12 @@ word spaces are.  @xref{Breaking}.
 @DefregItemx {ssc}
 @DefregListEndx {skw}
 @cindex width computation escape sequence (@code{\w})
-Interpolate the width of @var{anything} in basic units.  This escape
-sequence allows several properties of formatted output to be measured
+Interpolate the width of
+@var{input},
+as interpreted,
+in basic units.
+This escape sequence
+allows several properties of formatted output to be measured
 without writing it out.
 
 @Example
@@ -16309,7 +16517,7 @@ The length of the string 'abc' is \w'abc'u.
 @cindex dummy environment, used by @code{\w} escape sequence
 @cindex environment, dummy, used by @code{\w} escape sequence
 The formatter processes
-@var{anything}
+@var{input}
 in a dummy environment:@:
 this means that font and type size changes,
 for example,
@@ -16333,13 +16541,26 @@ to @code{\w}] relative to the baseline''.
 
 @item rst
 @itemx rsb
-Like @code{st} and @code{sb}, but taking account of the heights and
-depths of glyphs.  In other words, these registers store the highest and
-lowest vertical positions attained by @var{anything}, doing what
-@acronym{AT&T} @code{troff} documented @code{st} and @code{sb} as doing.
+Like
+@code{st}
+and
+@code{sb},
+but taking account of the heights and depths of glyphs.
+In other words,
+these registers store
+the highest and lowest vertical positions attained by
+@var{input},
+doing what
+@acronym{AT&T}
+@code{troff} @c AT&T
+documented
+@code{st}
+and
+@code{sb} as doing.
 
 @item ct
-Characterizes the geometry of glyphs occurring in @var{anything}.
+Characterizes the geometry of glyphs occurring in
+@var{input}.
 
 @table @asis
 @item 0
@@ -16422,11 +16643,18 @@ the drawing position.  Use @code{\z} to overstrike glyphs aligned to
 their left edges, in contrast to @code{\o}'s centering.
 @endDefesc
 
-@Defesc {\\Z, @code{'}, anything, @code{'}}
+@Defesc {\\Z, @code{'}, input}}
 @cindex zero-width printing (@code{\z}, @code{\Z})
 @cindex printing, zero-width (@code{\z}, @code{\Z})
-Save the drawing position, format @var{anything}, then restore it.  Tabs
-and leaders in the argument are ignored with an error diagnostic.
+Save the drawing position,
+format
+@var{input},
+then restore it.
+GNU
+@command{troff} @c GNU
+ignores tabs and leaders in
+@var{input}
+with an error diagnostic.
 
 We might implement a strike-through macro thus.
 
@@ -16445,7 +16673,227 @@ an actual emergency!
 
 @c =====================================================================
 
-@node Drawing Geometric Objects, Deferring Output, Page Motions, GNU troff Reference
+@node Output Line Annotation, Drawing Geometric Objects, Page Motions, GNU troff Reference
+@section Output Line Annotation
+@cindex output line annotation
+@cindex line annotation, output
+@cindex annotation, output line
+
+After an output line is broken
+(and adjusted,
+if applicable),
+it can be annotated in the margins.
+You can indicate line numbers on the left,
+and apply a margin character on the right.
+
+@DefreqList {nm, [@Var{start} [@Var{increment} [@Var{space} [@Var{indentation}]]]]}
+@DefregItemx {ln}
+@DefregListEndx {.nm}
+@cindex printing line numbers (@code{nm})
+@cindex line numbers, printing (@code{nm})
+@cindex numbers, line, printing (@code{nm})
+Begin (or, with no arguments, cease) numbering output lines.
+@var{start} assigns the number of the @emph{next} output line.  Only
+line numbers divisible by @var{increment} are marked (default:
+@samp{1}).  @var{space} configures the horizontal spacing between the
+number and the text (default: @samp{1}).  Any given @var{indentation} is
+applied to the numbers (default: @samp{0}).  The third and fourth
+arguments are reckoned in numeral widths (@code{\0}).  @var{start} must
+be non-negative and @var{increment} positive.
+
+The formatter aligns the number to the right in a width of three numeral
+spaces plus @var{indentation}, then catenates @var{space} and the output
+line.  The line length is @emph{not} reduced.  Depending on the value of
+the page offset,@footnote{Recall @ref{Line Layout}.} numbers wider than
+the allocated space protrude into the left margin, or shift the output
+line to the right.
+
+Line numbering parameters corresponding to missing arguments are not
+altered.  After numbering is disabled, @samp{.nm +0} resumes it using
+the previously active parameters.
+
+The parameters of @code{nm} are associated with the environment
+(@pxref{Environments}).
+
+@cindex output line number register (@code{ln})
+@cindex line number, output, register (@code{ln})
+While numbering is enabled, the output line number register @code{ln} is
+updated as each line is output, even if no line number is formatted with
+it because it is being skipped (it is not a multiple of @var{increment})
+or because numbering is suppressed (see the @code{nn} request below).
+
+The @code{.nm} register tracks the enablement status of numbering.
+Temporary suspension of numbering with the @code{nn} request does
+@emph{not} alter its value.
+
+@Example
+.po 5n
+.ll 44n
+Programming,
+when stripped of all its circumstantial irrelevancies,
+.nm 999 1 1 -4
+boils down to no more and no less than
+.nm +0 3
+very effective thinking so as to avoid unmastered
+.nn 2
+complexity,
+to very vigorous separation of your many
+different concerns.
+.br
+\(em Edsger Dijkstra
+.sp
+.nm 1 1 1
+This guy's arrogance takes your breath away.
+.br
+\(em John Backus
+    @result{}      Programming,  when  stripped of all its cir-
+    @result{}  999 cumstantial irrelevancies, boils down to  no
+    @result{}      more  and no less than very effective think-
+    @result{}      ing so as to avoid unmastered complexity, to
+    @result{}      very vigorous separation of your  many  dif-
+    @result{}      ferent concerns.
+    @result{} 1002 -- Edsger Dijkstra
+    @result{}
+    @result{}    1 This guy@quoteright{}s arrogance takes your breath away.
+    @result{}    2 -- John Backus
+@endExample
+@endDefreq
+
+@DefreqList {nn, [@Var{skip}]}
+@DefregListEndx {.nn}
+Suppress numbering of the next
+@var{skip}
+output lines counted by the
+@code{nm}
+request.
+If
+@var{skip} is@tie{}@samp{0},
+@c XXX: negative values accepted; check AT&T troff
+cancel suppression.
+The default is@tie{}1.
+@code{nn}
+can be invoked when line numbering is not active;
+suppression of numbering takes effect for
+@var{skip}
+lines once
+@code{nm}
+enables it.
+
+The @code{.nn} register stores the
+count of lines remaining in the environment
+for which numbering is suppressed
+while output line numbering is enabled.
+
+This count is associated with the environment (@pxref{Environments}).
+@endDefreq
+
+@need 1000
+To test whether the current output line will be numbered, you must check
+both the @code{.nm} and @code{.nn} registers.
+
+@Example
+  .de is-numbered
+  .  nop This line
+  .  ie (\\n[.nm] & (1-\\n[.nn])) IS
+  .  el                           ISN'T
+  .  nop numbered.
+  .  br
+  ..
+  Test line numbering.
+  .is-numbered
+  .nm 1
+  .nn 1
+  .is-numbered
+  .is-numbered
+  .nm
+  .is-numbered
+    @result{} Test line numbering.  This line ISN@quoteright{}T numbered.
+    @result{} This line ISN@quoteright{}T numbered.
+    @result{}   1 This line IS numbered.
+    @result{} This line ISN@quoteright{}T numbered.
+@endExample
+
+@Defreq {mc, [@Var{margin-character} [@Var{distance}]]}
+@cindex margin character (@code{mc})
+@cindex character, margins (@code{mc})
+Begin (or, with no arguments, cease) writing a @dfn{margin-character} to
+the right of each output line.  The @var{distance} argument separates
+@var{margin-character} from the right margin.  If absent, the most
+recent value is used; the default is 10@tie{}points.  If an output line
+exceeds the line length, the margin character is appended to it.
+@cindex @code{tl} request, and @code{mc}
+No margin character is written on lines produced by the @code{tl}
+request.
+
+The margin character is a property of the output line.  Only one margin
+character is in effect at one time; the most recent @code{mc} call
+determines its value.  If the margin character is disabled before an
+output line breaks, none is output (but see below).
+
+The margin character is associated with the environment
+(@pxref{Environments}).
+
+@Example
+.ll 5i
+.nf
+.mc \[br]
+This paragraph is marked with a margin character.
+.sp
+As seen above, vertical space isn't thus marked.
+\&
+An output line that is present, but empty, is.
+@c We deliberately overset these lines to mimic `mc`'s behavior.
+    @result{} This paragraph is marked with a margin character.  |
+    @result{}
+    @result{} As seen above, vertical space isn@quoteright{}t thus marked.   |
+    @result{}                                                    |
+    @result{} An output line that is present, but empty, is.     |
+@endExample
+@endDefreq
+
+For compatibility with @acronym{AT&T} @code{troff}, a call to @code{mc}
+to set the margin character can't be undone immediately; at least one
+line gets a margin character.
+
+@Example
+.ll 10n
+.nf
+.mc |
+.mc *
+.mc
+foo
+bar
+    @result{} foo        *
+    @result{} bar
+@endExample
+
+@pindex gdiffmk
+@pindex nrchbar
+@pindex changebar
+@pindex diffmk
+The margin character mechanism
+is commonly used to annotate changes in documents.
+The
+@code{groff}
+distribution ships a program,
+@command{gdiffmk},
+to assist with this task.@footnote{Historically,
+tools named
+@command{nrchbar}
+and
+@command{changebar}
+were developed for marking changes with margin characters
+and could be found in archives of the
+@code{comp.sources.unix}
+Usenet group.
+Some proprietary Unices also offer(ed) a
+@command{diffmk}
+program.}
+
+
+@c =====================================================================
+
+@node Drawing Geometric Objects, Deferring Output, Output Line Annotation, GNU troff Reference
 @anchor{Drawing Requests} @c 1.22.4
 @section Drawing Geometric Objects
 @cindex drawing requests
@@ -16998,16 +17446,30 @@ CFIT (controlled flight into terrain) incident of
 .\" @i{...and so on...}
 @endExample
 
-A trap above the top or at or below the bottom of the page can be made
-visible by either moving it into the page area or increasing the page
-length so that the trap is on the page.  Negative trap values always use
-the @emph{current} page length; they are not converted to an absolute
-vertical position.
+A trap above the top or at or below the bottom of the page
+can be made visible
+by either moving it into the page area
+or increasing the page length so that the trap is on the page.
+A negative trap value always uses the
+@emph{current}
+page length;
+the formatter does not convert it to an absolute vertical position.
 @cindex page location traps, debugging
 @cindex debugging page location traps
-We can use the @code{ptr} request to dump our page location traps to the
-standard error stream (@pxref{Debugging}).  Their positions are reported
-in basic units; an @code{nroff} device example follows.
+We can use the
+@code{ptr}
+request to dump page location traps to the standard error stream
+(@pxref{Debugging}).
+GNU
+@command{troff} @c GNU
+reports their positions in basic units,
+and includes empty slots in the list,
+where a trap had been planted
+but subsequently (re)moved,
+because they can affect the visibility of subsequently planted traps.
+An
+@code{nroff}
+device example follows.
 
 @Example
 .pl 5i
@@ -17222,14 +17684,26 @@ every output line your document produces, and once the value of
 something trap-like happens---the page is ejected, a new one begins, and
 the value of @code{.t} becomes large once more.
 
-This @dfn{implicit page trap} always exists in the top-level
-diversion;@footnote{@xref{Diversions}.} it works like a trap in some
-ways but not others.  Its purpose is to eject the current page and start
-the next one.  It has no name, so it cannot be moved or deleted with
-@code{wh} or @code{ch} requests.  You cannot hide it by placing another
-trap at its location, and can move it only by redefining the page length
-with @code{pl}.  Its operation is suppressed when vertical page traps
-are disabled with GNU @code{troff}'s @code{vpt} request.
+This
+@dfn{implicit page trap}
+always exists in the top-level diversion;@footnote{@xref{Diversions}.}
+its purpose is to eject the current page and start the next one.
+It works like a trap in some ways but not others.
+It has no name,
+so it cannot be moved or deleted with
+@code{wh}
+or
+@code{ch}
+requests.
+You cannot hide it by placing another trap at its location,
+and can move it only by redefining the page length with
+@code{pl}.
+Its operation is suppressed when vertical page traps are disabled
+with
+GNU
+@code{troff}'s @c GNU
+@code{vpt}
+request.
 @c END Keep (roughly) parallel with subsection "The implicit trap" of
 @c groff(7).
 
@@ -17602,35 +18076,61 @@ end-of-input macro using the @code{am} request.
 @section Diversions
 @cindex diversions
 
-In @code{roff} systems it is possible to format text as if for output,
-but instead of writing it immediately, one can @dfn{divert} the
-formatted text into a named storage area.  It is retrieved later by
-specifying its name after a control character.   The same name space is
-used for such @slanted{diversions} as for strings and macros; see
-@ref{Identifiers}.  Such text is sometimes said to be ``stored in a
-macro'', but this coinage obscures the important distinction between
-macros and strings on one hand and diversions on the other; the former
-store @emph{unformatted} input text, and the latter capture
-@emph{formatted} output.  Diversions also do not interpret arguments.
-Applications of diversions include ``keeps'' (preventing a page break
-from occurring at an inconvenient place by forcing a set of output lines
-to be set as a group), footnotes, tables of contents, and indices.
+In
+@code{roff}
+systems it is possible to format text as if for output,
+but instead of writing it immediately,
+one can
+@dfn{divert}
+the formatted text into a named storage area.
+It is retrieved later by specifying its name after a control character.
+The formatter uses the same name space for such
+@slanted{diversions}
+as for strings and macros;
+recall @ref{Identifiers}.
+Such text is sometimes said to be ``stored in a macro'',
+but this coinage obscures the important distinction
+between macros and strings on one hand
+and diversions on the other;
+the former store
+@emph{unformatted}
+input text,
+and the latter capture
+@emph{formatted}
+output.@footnote{@xref{GNU @command{troff} Internals}.}
+Diversions also do not interpret arguments.
+Applications of diversions include
+footnotes,
+tables of contents,
+indices,
+and ``keeps''
+(preventing a page break from occurring at an inconvenient place
+by forcing a set of output lines to be set as a group).
 @cindex top-level diversion
 @cindex diversion, top-level
-For orthogonality it is said that GNU @command{troff} is in the
-@dfn{top-level diversion} if no diversion is active (that is, formatted
-output is being ``diverted'' immediately to the output device).  The
-top-level diversion has no name.
+For orthogonality it is said that
+GNU
+@command{troff} @c GNU
+populates the
+@dfn{top-level diversion}
+if no diversion is active
+(that is,
+formatted output is being ``diverted'' directly
+to the output device).
+The top-level diversion has no name.
 
-Dereferencing an undefined diversion creates an empty one of that
-name and emits a warning in category @samp{mac}.
-@xref{Warnings}, regarding the enablement and suppression of warnings.
+Dereferencing an undefined diversion creates an empty one
+of that name.@footnote{GNU
+@command{troff} @c GNU
+emits a warning in category
+@samp{mac}.
+@xref{Warnings}.}
 A diversion does not exist for the purpose of testing with the
 @code{d}
 conditional expression operator
-until its initial definition ends
-(@pxref{Operators in Conditionals}).
-The following requests are used to create and alter diversions.
+until its initial definition ends;
+recall @ref{Operators in Conditionals}.
+The following requests create and alter diversions.
 
 @DefreqList {di, [@Var{name}]}
 @DefreqListEndx {da, [@Var{name}]}
@@ -17640,20 +18140,45 @@ The following requests are used to create and alter diversions.
 @cindex diversion, ending (@code{di}, @code{box})
 @cindex appending to a diversion (@code{da}, @code{boxa})
 @cindex diversion, appending to (@code{da}, @code{boxa})
-Start collecting formatted output in a diversion called @var{name}.  The
-@code{da} request appends to a diversion called @var{name}, creating it
-if necessary.  If @var{name} already exists as an alias, the target of
-the alias is replaced or appended to; recall @ref{Strings}.  The pending
-output line is diverted as well.  Switching to another environment (with
-the @code{ev} request) before invoking @code{di} or @code{da} avoids
-including any pending output line in the diversion; see
-@ref{Environments}.
+Start collecting formatted output in a diversion called
+@var{name}.
+The
+@code{da}
+request appends to a diversion called
+@var{name},
+creating it if necessary.
+If
+@var{name}
+already exists as an alias,
+the target of the alias is replaced or appended to;
+recall @ref{Strings}.
+The pending output line is diverted as well.
+Switching to another environment
+(with the
+@code{ev}
+request)
+before invoking
+@code{di}
+or
+@code{da}
+avoids including any pending output line in the diversion.@footnote{@xref{Environments}.}
 
-Invoking @code{di} or @code{da} without an argument stops diverting
-output to the diversion named by the most recent corresponding request.
-If @code{di} or @code{da} is invoked without an argument when there is
-no current diversion, a warning in category @samp{di} is produced.
-@xref{Warnings}, regarding the enablement and suppression of warnings.
+Invoking
+@code{di}
+or
+@code{da}
+without an argument stops diverting output
+to the diversion named by the most recent corresponding request.
+Invoking
+@code{di}
+or
+@code{da}
+without an argument
+when no diversion is being populated does nothing.@footnote{GNU
+@command{troff} @c GNU
+emits a warning in category
+@samp{di}.
+@xref{Warnings}.}
 
 @Example
 .ll 56n
@@ -17780,8 +18305,13 @@ baselines and thus does not increase the value interpolated by
 @cindex @code{dl} register, and @code{da} (@code{boxa})
 @cindex @code{da} request, and @code{dn} (@code{dl})
 @cindex @code{boxa} request, and @code{dn} (@code{dl})
-After completing a diversion, the writable registers @code{dn} and
-@code{dl} contain its vertical and horizontal sizes, respectively.
+After output to a (named) diversion stops,
+the formatter stores its vertical and horizontal sizes,
+to the writable registers
+@code{dn}
+and
+@code{dl},
+respectively.
 @c XXX Do these measure:
 @c  net motion of the drawing position,
 @c  maximal motion of the drawing position relative to that where the
@@ -17832,28 +18362,52 @@ respectively---lines that have been already stored in the diversion
 @endExample
 @endDefreg
 
-@DefescList {\\!, , anything, }
-@DefescListEndx {\\?, , anything, \\?}
+@DefescList {\\!, , character-sequence, }
+@DefescListEndx {\\?, , character-sequence, \\?}
 @cindex transparent output (@code{\!}, @code{\?})
 @cindex output, transparent (@code{\!}, @code{\?})
-@dfn{Transparently} embed @var{anything} into the current diversion,
-preventing requests, macro calls, and escape sequences from being
-interpreted when read into a diversion.  This is useful for preventing
-them from taking effect until the diverted text is actually output.  The
-@code{\!} escape sequence transparently embeds input up to and including
-the end of the line.  The @code{\?} escape sequence transparently embeds
-input, read in copy mode, until its own next occurrence on the input
-line.
+@dfn{Transparently}
+embed
+@var{character-sequence}
+into the current diversion,
+preventing the formatter from interpreting
+requests,
+macro calls,
+and escape sequences
+when reading them into a diversion.
+Doing so prevents them from taking effect
+until the diverted text is actually output.
+The
+@code{\!}
+escape sequence transparently embeds input
+up to and including the end of the line.
+The
+@code{\?}
+escape sequence transparently embeds input,
+read in copy mode,
+up to its own next occurrence on the input line.
 @cindex @code{\?}, and copy mode
 @cindex copy mode, and @code{\?}
 @cindex mode, copy, and @code{\?}
 @cindex @code{\!}, and copy mode
 @cindex copy mode, and @code{\!}
 @cindex mode, copy, and @code{\!}
-Use @code{\!} by itself to embed newlines in a diversion.
+Use
+@code{\!}
+by itself to embed newlines in a diversion.
 @cindex @code{\?}, interpretation in copy mode
-Unlike @code{\!}, @code{\?} is interpreted even in copy mode
-(@pxref{Copy Mode}).
+Unlike
+@code{\!},
+@code{\?}
+is interpreted even in copy mode
+(@pxref{Copy Mode});
+consequently,
+comparands protected with
+@code{\?}
+need not even be valid
+GNU
+@command{troff} @c GNU
+syntax.
 
 @Example
 .nr x 1
@@ -17879,16 +18433,23 @@ Both escape sequences read the data in copy mode.
 @cindex @code{\!}, in top-level diversion
 @cindex top-level diversion, and @code{\!}
 @cindex diversion, top-level, and @code{\!}
-If @code{\!} is used in the top-level diversion, its argument is
-embedded into GNU @command{troff}'s device-independent output.  One of
-its applications is control of a postprocessor that transforms the data
-that are subsequently read by an output driver.
+If
+@code{\!}
+is used in the top-level diversion,
+its argument is embedded into
+GNU
+@command{troff}'s @c GNU
+device-independent output.
+One of its applications is control of a postprocessor
+that transforms the data that are subsequently read by an output driver.
 
 @cindex @code{\?}, in top-level diversion
 @cindex top-level diversion, and @code{\?}
 @cindex diversion, top-level, and @code{\?}
-Using the @code{\?} escape sequence in the top-level diversion produces
-no output at all; its argument is simply ignored.
+Using the
+@code{\?}
+escape sequence in the top-level diversion produces no output at all;
+its argument is simply ignored.
 @endDefesc
 
 @cindex @code{\!}, and @code{output} request
@@ -17896,16 +18457,23 @@ no output at all; its argument is simply ignored.
 @cindex @code{output} request, and copy mode
 @cindex copy mode, and @code{output} request
 @cindex mode, copy, and @code{output} request
-@Defreq {output, [@code{"}]@Var{contents}}
-Emit @var{contents} directly to GNU @command{troff}'s output; this usage
-is similar to that of @code{\!} in the top-level diversion.
+@Defreq {output, [@code{"}]@Var{character-sequence}}
+Emit
+@var{character-sequence}
+directly to
+GNU
+@command{troff}'s @c GNU
+output;
+this usage is similar to that of
+@code{\!}
+when it occurs in the top-level diversion.
 
 GNU
 @command{troff} @c GNU
 removes a leading neutral double quote
 @samp{"}
 from
-@var{anything}, @c TODO: -> character-sequence
+@var{character-sequence},
 permitting initial embedded spaces in it,
 and reads it to the end of the input line in copy mode.
 Recall @ref{Copy Mode}.
@@ -17922,7 +18490,7 @@ and of
 @code{\!}
 from the top-level diversion is to pass instructions
 to a postprocessor that interprets
-@var{anything}
+@var{character-sequence}
 and filters it out
 before sending it to the output device.
 @c TODO: Once the dust settles from Savannah #63074, document how these
@@ -18036,10 +18604,13 @@ Truly.
 @endExample
 
 @noindent
-By ending each text line of the macros with an escaped @key{RET}, we get
-the desired effect (recall @pxref{Line Continuation}).@footnote{We must
-double the backslash.  @xref{Copy Mode}.}  What would have happened if
-we had used only one backslash in each case?
+By ending each text line of the macros with an escaped
+@key{RET},
+we get the desired effect
+(recall @pxref{Line Continuation}).@footnote{We must
+double the backslash.
+Recall @ref{Copy Mode}.}
+What would have happened if we had used only one backslash in each case?
 
 Interpolating a string does not hide existing macro arguments.  We can
 also place the escaped newline outside the string interpolation instead
@@ -18330,7 +18901,7 @@ line emitted in the environment.
 
 @c =====================================================================
 
-@node Suppressing Output, I/O, Environments, GNU troff Reference
+@node Suppressing Output, Host System Service Access, Environments, GNU troff Reference
 @anchor{Suppressing output} @c 1.22.4
 @section Suppressing Output
 
@@ -18412,23 +18983,120 @@ escape sequences.
 @codequotebacktick on
 @codequoteundirected on
 
-@c TODO: Rename this node to "Operating Environment Access" or similar,
-@c and move the date/time, process ID, etc., read-only registers here.
-@node I/O, Postprocessor Access, Suppressing Output, GNU troff Reference
-@section I/O
-@cindex i/o
+@node Host System Service Access, Postprocessor Access, Suppressing Output, GNU troff Reference
+@anchor{I/O} @c 1.23.0
+@section Host System Service Access
+@cindex Host System Service Access
 @cindex input and output requests
 @cindex requests for input and output
 @cindex output and input requests
 
-Occasionally a document wants to access the file system
+Occasionally a document wants to access the system clock,
+file storage,
 or other services provided by the operating environment.
+
+@Defreg {$$}
+@cindex process ID of GNU @command{troff} register (@code{$$})
+@cindex PID of GNU @command{troff} register (@code{$$})
+@cindex GNU @command{troff}, process ID register (@code{$$})
+@cindex GNU @command{troff}, PID register (@code{$$})
+@vindex $$
+Process identifier (PID) of the
+GNU
+@command{troff}
+program in its operating environment.
+@endDefreq
+
+Date- and time-related registers are set per the local time as
+determined by @cite{localtime@r{(3)}} when the formatter launches.  This
+initialization can be influenced by the environment variable @env{TZ} or
+overridden by @env{SOURCE_DATE_EPOCH}; see @ref{Environment}.
+
+@table @code
+@item \n[seconds]
+@cindex seconds, current time (@code{seconds})
+@cindex time, current, seconds (@code{seconds})
+@cindex current time, seconds (@code{seconds})
+@vindex seconds
+Count of seconds elapsed in the minute (0--60). @c not 59; see POSIX
+
+@item \n[minutes]
+@cindex minutes, current time (@code{minutes})
+@cindex time, current, minutes (@code{minutes})
+@cindex current time, minutes (@code{minutes})
+@vindex minutes
+Count of minutes elapsed in the hour (0--59).
+
+@item \n[hours]
+@cindex hours, current time (@code{hours})
+@cindex time, current, hours (@code{hours})
+@cindex current time, hours (@code{hours})
+@vindex hours
+Count of hours elapsed since midnight (0--23).
+
+@item \n[dw]
+@cindex day of the week register (@code{dw})
+@cindex date, day of the week register (@code{dw})
+@vindex dw
+Day of the week (1--7; 1 is Sunday).
+
+@item \n[dy]
+@cindex day of the month register (@code{dy})
+@cindex date, day of the month register (@code{dy})
+@vindex dy
+Day of the month (1--31).
+
+@item \n[mo]
+@cindex month of the year register (@code{mo})
+@cindex date, month of the year register (@code{mo})
+@vindex mo
+Month of the year (1--12).
+
+@item \n[year]
+@cindex date, year register (@code{year}, @code{yr})
+@cindex year, current, register (@code{year}, @code{yr})
+@vindex year
+Gregorian year.
+
+@cindex CSTR@tie{}#54 errata
+@cindex CSTR@tie{}#54 erratum, @code{yr} register
+@item \n[yr]
+@vindex yr
+Gregorian year minus@tie{}1900.
+This register is incorrectly documented in the @acronym{AT&T}
+@command{troff} @c AT&T
+manual as storing the last two digits of the current year.
+That claim stopped being true in 2000.
+Old
+@code{troff} @c generic
+input that looks like:
+
+@Example
+'\" The year number is a surprise after 1999.
+This document was formatted in 19\n(yr.
+@endExample
+
+@noindent
+can be corrected to:
+
+@Example
+This document was formatted in \n[year].
+@endExample
+
+@noindent
+or, for portability across many @code{roff} programs, to the following.
+
+@Example
+.nr y4 1900+\n(yr
+This document was formatted in \n(y4.
+@endExample
 GNU
 @command{troff} @c GNU
 permits the reading of files into the input stream.
 Enabling unsafe mode at the command line permits
 the writing of files and execution of external commands,
 with or without inclusion of their output in the document.
+@end table
 
 @cindex spaces in file name or system command arguments
 @cindex comments, after file name or system command arguments
@@ -18535,8 +19203,13 @@ Read the standard output from the specified @var{command} when passed to
 @cindex mode, safer
 @cindex unsafe mode
 @cindex mode, unsafe
-It is an error to use this request in safer mode, which is the
-default.  Invoke GNU @code{troff} or a front end with the @option{-U}
+It is an error to use this request in safer mode,
+which is the default.
+Invoke
+GNU
+@command{troff} @c GNU
+or a front end with the
+@option{-U}
 option to enable unsafe mode.
 
 The cautionary note regarding a final newline in the stream read by the
@@ -18556,7 +19229,7 @@ except that GNU
 searches for the specified
 @var{file}
 in the same directories as macro files;
-see
+recall
 @env{GROFF_TMAC_PATH}
 in
 @ref{Environment}
@@ -18644,15 +19317,17 @@ file@tie{}@file{f}, use
 
 @noindent
 The calls to @code{ev} prevent the partially collected output line
-from becoming part of the diversion (@pxref{Diversions}).
+from becoming part of the diversion; recall @ref{Diversions}.
 
 @cindex AT&T troff bugs
 @cindex AT&T troff bug, in @code{cf} request
 @cindex bug, in AT&T troff @code{cf} request
-In @acronym{AT&T} @code{troff},
+In @acronym{AT&T}
+@code{troff}, @c AT&T
 @code{cf}
-copies the contents of @var{file} to the output immediately
-even if a diversion is active;
+copies the contents of
+@var{file}
+to the output immediately even if a diversion is active;
 this behavior is so anomalous that it must be considered a bug.
 @endDefreq
 
@@ -18660,8 +19335,13 @@ this behavior is so anomalous that it must be considered a bug.
 @cindex read next file (@code{nx})
 @cindex file, next, read (@code{nx})
 @cindex next file, read (@code{nx})
-Stop processing the input file.  If @var{file} is specified, read it;
-otherwise, read the next pending input file, if any.
+Stop processing the input file.
+If
+@var{file} is specified,
+read it;
+otherwise,
+read the next pending input file,
+if any.
 @endDefreq
 
 @Defreq {rd, [@Var{prompt} [@Var{arg1} @Var{arg2} @dots{}]]}
@@ -18734,46 +19414,76 @@ Dear Mr. Adollar,
 @endExample
 
 @Defreq {pi, [@code{"}]@Var{command}}
-Use GNU @command{troff}'s device-independent output as the input to the
-commands specified in @var{pipe} and emit their output to the standard
-output stream instead of GNU @command{troff}'s usual output.
-@cindex @code{groff}, and @code{pi} request
-@cindex @code{pi} request, and @code{groff}
-Since that output is in a page description
-language,@footnote{@xref{gtroff Output}.} using this request without
-specifying the @option{-Z} option to @command{groff} is likely to
-provoke fatal errors from an output driver.
+Use
+the formatter's device-independent output
+as the input to the commands specified in
+@var{pipe}
+and emit their output to the standard output stream
+instead of the formatter's usual output.
+The formatter reads the remainder of the input line into
+@var{command}
+and passes it to
+@cite{popen@r{(3)}}.
+The formatter does not capture output produced by the command(s).
 
-The formatter reads the remainder of the input line into @var{command}
-and passes it to @cite{popen@r{(3)}}.  Output produced by the
-command(s) is not captured by GNU @command{troff}.
+Multiple
+@code{pi}
+requests construct a multi-stage pipeline
+in the same order as the formatter encounters the requests.
 
-Multiple @code{pi} requests construct a multi-stage pipeline in the same
-order as the formatter encounters the requests.
-
-@code{pi} must be invoked before GNU @command{troff} writes any nodes
-to its output.@footnote{@xref{GNU @command{troff} Internals}.}
+@code{pi}
+must be invoked before
+GNU
+@command{troff} @c GNU
+writes any nodes to its output.@footnote{@xref{GNU
+@command{troff}
+Internals}.} @c GNU
 The formatter reports an error and ignores the request if
 @code{pi}
 is invoked ``too late''.
-Roughly, this means you should set up your @code{pi} pipeline early in a
-document, before anything but register, string, and macro definitions
+Roughly,
+this means you should set up your
+@code{pi}
+pipeline early in a document,
+before anything but register,
+string,
+and macro definitions
 (and/or sourcing of files that comprise these exclusively).
 
 @cindex safer mode
 @cindex mode, safer
 @cindex unsafe mode
 @cindex mode, unsafe
-Use of this request in safer mode (GNU @command{troff}'s default) is
-erroneous.  Invoke GNU @command{troff} or a front end with the
-@option{-U} option to enable unsafe mode.
+Use of this request in safer mode
+(GNU
+@command{troff}'s @c GNU
+default)
+is erroneous.
+Invoke
+GNU
+@command{troff} @c GNU
+or a front end with the
+@option{-U}
+option to enable unsafe mode.
+
+@strong{Caution:@:}
+Use of the
+@code{pi}
+request can put syntactically invalid content
+into the formatter's output,
+which
+@code{groff}'s
+output drivers then fail to process.
+The pipeline you construct is responsible
+for maintaining the validity of the input to the output driver.
 
 @Example
 .pi foo
 .pi bar
 @endExample
 
-is the same as @w{@samp{.pi foo | bar}}.
+is the same as
+@w{@samp{.pi foo | bar}}.
 @endDefreq
 
 @cindex system commands, running
@@ -18930,7 +19640,8 @@ two-character
 name @var{ev})
 as returned by @cite{getenv@r{(3)}}.
 @cindex @code{\V}, interpretation in copy mode
-@code{\V} is interpreted even in copy mode (@pxref{Copy Mode}).
+@code{\V} is interpreted even in copy mode;
+recall @ref{Copy Mode}.
 @endDefesc
 
 
@@ -18938,7 +19649,7 @@ as returned by @cite{getenv@r{(3)}}.
 
 @c BEGIN Keep (roughly) parallel with section "Postprocessor access" of
 @c groff(7).
-@node Postprocessor Access, Miscellaneous, I/O, GNU troff Reference
+@node Postprocessor Access, Miscellaneous, Host System Service Access, GNU troff Reference
 @section Postprocessor Access
 @cindex postprocessor access
 @cindex access to postprocessor
@@ -18949,7 +19660,7 @@ and
 @code{trf}
 requests
 (recall
-@ref{I/O}),
+@ref{Host System Service Access}),
 two escape sequences and two requests enable documents
 to pass information directly to a postprocessor.
 These are useful for exercising device-specific capabilities that the
@@ -18964,12 +19675,19 @@ such as
 or
 @cite{grotty@r{(1)}}.
 
-@DefreqList {device, [@code{"}]@Var{contents}}
+@DefreqList {device, [@code{"}]@Var{character-sequence}}
 @DefescListEndx {\\X, @code{'}, contents @r{@dots{}}, @code{'}}
-Embed @var{contents} into GNU @command{troff} output as parameters to an
-@w{@samp{x X}} device extension command.@footnote{@xref{gtroff Output}.}
-The interpretation of such parameters is determined by the output driver
-or other postprocessor.
+Embed
+@var{character-sequence}
+into
+GNU
+@command{troff}
+output as parameters to an
+@w{@samp{x X}}
+device extension command.@footnote{@xref{gtroff Output}.}
+The output driver or other postprocessor interprets
+@var{character-sequence}
+as it sees fit.
 
 @cindex @code{device} request, and copy mode
 @cindex copy mode, and @code{device} request
@@ -18996,13 +19714,20 @@ Recall @ref{Copy Mode}.
 @ifinfo
 @cindex @code{\@r{<colon>}}, in device extension commands
 @end ifinfo
-The @code{groff} special character repertoire is unknown to output
-drivers outside of glyphs named in a device's fonts, and even then they
-may not possess complete coverage of the names documented in the
-@cite{groff_char@r{(7)}} man page.  Further, escape sequences that
-produce horizontal or vertical motions, hyphenation breaks, or that are
-dummy characters may appear in strings or be converted to nodes,
-particularly in diversions (@pxref{GNU @command{troff} Internals}).
+The
+@code{groff}
+special character repertoire is unknown to output drivers
+outside of glyphs named in a device's fonts,
+and even then they may not possess complete coverage
+of the names documented in the
+@cite{groff_char@r{(7)}} man page.
+Further,
+escape sequences that produce horizontal or vertical motions,
+hyphenation breaks,
+or that are dummy characters
+may appear in strings or be converted to nodes,
+particularly in diversions.@footnote{@xref{GNU @command{troff}
+Internals}.}
 These are not representable
 when interpolated directly into device-independent output,
 as might be done when writing out tag names for PDF bookmarks,
@@ -19010,24 +19735,34 @@ which can appear in a viewer's navigation pane.
 
 So that documents or macro packages do not have to laboriously
 ``sanitize'' strings destined for interpolation in device extension
-commands, the @code{\X} escape sequence
+commands,
+the
+@code{\X}
+escape sequence
 @c XXX: and soon other things
-performs certain transformations on its argument.  For these
-transformations, character translations and definitions are ignored.
+performs certain transformations on its argument.
+For these transformations,
+character translations and definitions are ignored.
 
-GNU @command{troff} converts several ordinary characters that typeset as
+GNU
+@command{troff} @c GNU
+converts several ordinary characters that typeset as
 non-basic Latin code points to code points outside that range so that
 they are used consistently whether they are formatted as glyphs or used
 in a device extension command argument.  These ordinary characters are
 @samp{'}, @samp{-}, @samp{^}, @samp{`}, and @samp{~}; others are written
 as-is.
 
-Special characters that typeset as Unicode basic Latin characters are
-translated to basic Latin characters accordingly.  So that any Unicode
-code point can be represented in device extension commands, for example
-in an author's name in document metadata or as a usefully named bookmark
-or hyperlink anchor, GNU @command{troff} maps other special characters
-to Unicode special character notation.  @xref{Using Symbols}.
+Special characters that typeset as Unicode basic Latin characters
+are translated to basic Latin characters accordingly.
+So that any Unicode code point can be represented
+in device extension commands,
+for example in an author's name in document metadata
+or as a usefully named bookmark or hyperlink anchor,
+GNU
+@command{troff} @c GNU
+maps other special characters to Unicode special character notation.
+Recall @ref{Using Symbols}.
 
 GNU
 @command{troff} @c GNU
@@ -19035,10 +19770,10 @@ does not write special characters
 without a Unicode representation
 and escape sequences that do not interpolate
 a sequence of ordinary and/or special characters
-as arguments to device extension commands;
-when encountered,
-these produce warnings in category @samp{char}.
-@xref{Warnings}.
+as arguments to device extension commands.@footnote{When encountered,
+these produce warnings in category
+@samp{char}.
+@xref{Warnings}.}
 @endDefesc
 
 GNU
@@ -19078,8 +19813,8 @@ or
 The inclusion of newlines requires an extension to the @acronym{AT&T}
 @command{troff} @c AT&T
 device-independent page description language,
-and their presence confuses drivers that do not know about it
-(@pxref{Device Control Commands}).
+and their presence confuses drivers
+that do not know about it.@footnote{@xref{Device Control Commands}.}
 @endDefesc
 
 @DefreqList {tag, name}
@@ -19095,200 +19830,10 @@ Reserved for internal use.
 @node Miscellaneous, GNU @command{troff} Internals, Postprocessor Access, GNU troff Reference
 @section Miscellaneous
 
-We document here GNU @code{troff} features that fit poorly elsewhere.
-
-@DefreqList {nm, [@Var{start} [@Var{increment} [@Var{space} [@Var{indentation}]]]]}
-@DefregItemx {ln}
-@DefregListEndx {.nm}
-@cindex printing line numbers (@code{nm})
-@cindex line numbers, printing (@code{nm})
-@cindex numbers, line, printing (@code{nm})
-Begin (or, with no arguments, cease) numbering output lines.
-@var{start} assigns the number of the @emph{next} output line.  Only
-line numbers divisible by @var{increment} are marked (default:
-@samp{1}).  @var{space} configures the horizontal spacing between the
-number and the text (default: @samp{1}).  Any given @var{indentation} is
-applied to the numbers (default: @samp{0}).  The third and fourth
-arguments are reckoned in numeral widths (@code{\0}).  @var{start} must
-be non-negative and @var{increment} positive.
-
-The formatter aligns the number to the right in a width of three numeral
-spaces plus @var{indentation}, then catenates @var{space} and the output
-line.  The line length is @emph{not} reduced.  Depending on the value of
-the page offset,@footnote{Recall @ref{Line Layout}.} numbers wider than
-the allocated space protrude into the left margin, or shift the output
-line to the right.
-
-Line numbering parameters corresponding to missing arguments are not
-altered.  After numbering is disabled, @samp{.nm +0} resumes it using
-the previously active parameters.
-
-The parameters of @code{nm} are associated with the environment
-(@pxref{Environments}).
-
-@cindex output line number register (@code{ln})
-@cindex line number, output, register (@code{ln})
-While numbering is enabled, the output line number register @code{ln} is
-updated as each line is output, even if no line number is formatted with
-it because it is being skipped (it is not a multiple of @var{increment})
-or because numbering is suppressed (see the @code{nn} request below).
-
-The @code{.nm} register tracks the enablement status of numbering.
-Temporary suspension of numbering with the @code{nn} request does
-@emph{not} alter its value.
-
-@Example
-.po 5n
-.ll 44n
-Programming,
-when stripped of all its circumstantial irrelevancies,
-.nm 999 1 1 -4
-boils down to no more and no less than
-.nm +0 3
-very effective thinking so as to avoid unmastered
-.nn 2
-complexity,
-to very vigorous separation of your many
-different concerns.
-.br
-\(em Edsger Dijkstra
-.sp
-.nm 1 1 1
-This guy's arrogance takes your breath away.
-.br
-\(em John Backus
-    @result{}      Programming,  when  stripped of all its cir-
-    @result{}  999 cumstantial irrelevancies, boils down to  no
-    @result{}      more  and no less than very effective think-
-    @result{}      ing so as to avoid unmastered complexity, to
-    @result{}      very vigorous separation of your  many  dif-
-    @result{}      ferent concerns.
-    @result{} 1002 -- Edsger Dijkstra
-    @result{}
-    @result{}    1 This guy@quoteright{}s arrogance takes your breath away.
-    @result{}    2 -- John Backus
-@endExample
-@endDefreq
-
-@DefreqList {nn, [@Var{skip}]}
-@DefregListEndx {.nn}
-Suppress numbering of the next
-@var{skip}
-output lines counted by the
-@code{nm}
-request.
-If
-@var{skip} is@tie{}@samp{0},
-@c XXX: negative values accepted; check AT&T troff
-cancel suppression.
-The default is@tie{}1.
-@code{nn}
-can be invoked when line numbering is not active;
-suppression of numbering takes effect for
-@var{skip}
-lines once
-@code{nm}
-enables it.
-
-The @code{.nn} register stores the
-count of lines remaining in the environment
-for which numbering is suppressed
-while output line numbering is enabled.
-
-This count is associated with the environment (@pxref{Environments}).
-@endDefreq
-
-@need 1000
-To test whether the current output line will be numbered, you must check
-both the @code{.nm} and @code{.nn} registers.
-
-@Example
-  .de is-numbered
-  .  nop This line
-  .  ie (\\n[.nm] & (1-\\n[.nn])) IS
-  .  el                           ISN'T
-  .  nop numbered.
-  .  br
-  ..
-  Test line numbering.
-  .is-numbered
-  .nm 1
-  .nn 1
-  .is-numbered
-  .is-numbered
-  .nm
-  .is-numbered
-    @result{} Test line numbering.  This line ISN@quoteright{}T numbered.
-    @result{} This line ISN@quoteright{}T numbered.
-    @result{}   1 This line IS numbered.
-    @result{} This line ISN@quoteright{}T numbered.
-@endExample
-
-@Defreq {mc, [@Var{margin-character} [@Var{distance}]]}
-@cindex margin character (@code{mc})
-@cindex character, margins (@code{mc})
-Begin (or, with no arguments, cease) writing a @dfn{margin-character} to
-the right of each output line.  The @var{distance} argument separates
-@var{margin-character} from the right margin.  If absent, the most
-recent value is used; the default is 10@tie{}points.  If an output line
-exceeds the line length, the margin character is appended to it.
-@cindex @code{tl} request, and @code{mc}
-No margin character is written on lines produced by the @code{tl}
-request.
-
-The margin character is a property of the output line.  Only one margin
-character is in effect at one time; the most recent @code{mc} call
-determines its value.  If the margin character is disabled before an
-output line breaks, none is output (but see below).
-
-The margin character is associated with the environment
-(@pxref{Environments}).
-
-@Example
-.ll 5i
-.nf
-.mc \[br]
-This paragraph is marked with a margin character.
-.sp
-As seen above, vertical space isn't thus marked.
-\&
-An output line that is present, but empty, is.
-@c We deliberately overset these lines to mimic `mc`'s behavior.
-    @result{} This paragraph is marked with a margin character.  |
-    @result{}
-    @result{} As seen above, vertical space isn@quoteright{}t thus marked.   |
-    @result{}                                                    |
-    @result{} An output line that is present, but empty, is.     |
-@endExample
-@endDefreq
-
-For compatibility with @acronym{AT&T} @code{troff}, a call to @code{mc}
-to set the margin character can't be undone immediately; at least one
-line gets a margin character.
-
-@Example
-.ll 10n
-.nf
-.mc |
-.mc *
-.mc
-foo
-bar
-    @result{} foo        *
-    @result{} bar
-@endExample
-
-@pindex gdiffmk
-@pindex nrchbar
-@pindex changebar
-@pindex diffmk
-The margin character mechanism is commonly used to annotate changes in
-documents.  The @code{groff} distribution ships a program,
-@command{gdiffmk}, to assist with this task.@footnote{Historically,
-tools named @command{nrchbar} and @command{changebar} were developed for
-marking changes with margin characters and could be found in archives of
-the @code{comp.sources.unix} @acronym{USENET} group.  Some proprietary
-Unices also offer(ed) a @command{diffmk} program.}
+We document here
+GNU
+@command{troff} @c GNU
+features that fit poorly elsewhere.
 
 @DefreqList {psbb, file}
 @DefregItemx {llx}
@@ -19313,7 +19858,7 @@ command-line option.
 @c =====================================================================
 
 @node GNU @command{troff} Internals, Debugging, Miscellaneous, GNU troff Reference
-@anchor{gtroff Internals} @c 1.22.4
+@anchor{gtroff Internals} @c 1.23.0
 @section GNU @command{troff} Internals
 
 @cindex input token
@@ -19322,7 +19867,7 @@ command-line option.
 @cindex node
 @cindex flushing, of an output line
 GNU
-@command{troff}
+@command{troff} @c GNU
 processes input in three steps.
 It gathers one or more input characters into a
 @dfn{token},@footnote{The escape sequences
@@ -19361,8 +19906,7 @@ accumulated output line(s) to the output device,
 a process that translates each node
 into a device-independent output language representation
 understood by all output drivers.
-To summarize,
-copy mode tokenizes but does not format;
+Copy mode tokenizes but does not format;
 diversions
 (apart from that at the top level)
 format but do not write output.
@@ -19391,15 +19935,14 @@ or to code points outside the Unicode encoding space
 in a future release.}
 and further character tokens.
 You can observe this process
-by storing the foregoing input into a string
-(which,
+by storing the foregoing input into a string---which,
 because its contents are read in copy mode,
 is only tokenized,
-not formatted)
-and dumping it with the
+not formatted---and
+dumping it with the
 @code{pm} request.@footnote{Because
 GNU
-@command{troff}'s
+@command{troff}'s @c GNU
 internals are subject to revision,
 we do not show the output of these examples.
 The names and structures of node types may change over time.
@@ -19408,6 +19951,8 @@ The @acronym{JSON} interpreter
 is not essential,
 but can be helpful in understanding the topology of the node trees
 populating output lines and diversions in particular.}
+(Using @cite{printf@r{(1)}} requires us to double the @samp{\}
+and @samp{%} characters.)
 
 @Example
 $ printf '.ds str Gi\\[:u]\\%%seppe\n.pm str\n' \
@@ -19423,8 +19968,7 @@ and invoking the
 request.
 
 @Example
-$ printf 'Gi\\[:u]\\%%seppe\n.pline\n' | groff -z 2>&1 \
-    | jq
+$ printf 'Gi\\[:u]\\%%seppe\n.pline\n' | groff -z 2>&1 | jq
 @endExample
 
 We now see a list of nodes,
@@ -19438,7 +19982,24 @@ a glyph node for the special character
 @samp{hy}
 (hyphen),
 and a word space node at the end
-corresponding to the newline at the end of input.
+corresponding to the newline at the end of input.@footnote{You may
+wonder why a glyph node for
+@samp{hy}
+exists when this example
+doesn't produce one on the output.
+That's because the break is @emph{discretionary};
+at the time a word is formatted into nodes,
+GNU
+@command{troff} @c GNU
+doesn't know where the output line will break.
+Later,
+when processesing a pending output line,
+GNU
+@command{troff} @c GNU
+has that knowledge,
+and iterates through the output line's node list,
+using its discretion to discard these hyphen glyph nodes
+everywhere except when hyphenating a word at the end of the line.}
 
 If we change
 @samp{G}
@@ -19625,7 +20186,8 @@ the internal properties and representations of
 characters and classes,
 macros
 (and strings and diversions),
-and the list of output nodes corresponding to the pending input line.
+and the list of output nodes corresponding to the pending output line.
+Recall @ref{GNU @command{troff} Internals}.
 @c END Keep parallel with section "Debugging" of groff(7).
 
 @Defreq {lf, input-line-number [[@code{"}]@Var{file-identifier}]}
@@ -19723,7 +20285,8 @@ request below.
 @cindex exiting (@code{ex})
 Exit GNU @code{troff}; that is, stop processing and terminate
 successfully.  To stop processing only the current file, use the
-@code{nx} request; see @ref{I/O}.
+@code{nx} request;
+see @ref{Host System Service Access}.
 @endDefreq
 
 When doing something complicated, it is useful to leave the debugging
@@ -20233,17 +20796,27 @@ without an argument when there was no current diversion.
 @cindex @code{da} request, and warnings
 @cindex @code{box}, @code{boxa} requests, and warnings
 @cindex @code{\*}, and warnings
-An undefined string, macro, or diversion was used.  When such an object
-is dereferenced, an empty one of that name is automatically created.
+An undefined string,
+macro,
+or diversion was used.
+When such an object is dereferenced,
+an empty one of that name is automatically created.
 So,
 unless it is later deleted,
-GNU @command{troff}
+GNU
+@command{troff} @c GNU
 issues at most one warning for each.
 
-GNU @command{troff} also uses this category to warn of an attempt to
-move an unplanted trap macro (@pxref{Page Location Traps}).  In such
-cases, the unplanted macro is @emph{not} dereferenced, so it is not
-created if it does not exist.
+GNU
+@command{troff} @c GNU
+also uses this category to warn of an attempt to move an unplanted trap
+macro;
+recall @ref{Page Location Traps}.
+In such cases,
+the unplanted macro is
+@emph{not}
+dereferenced,
+so it is not created if it does not exist.
 
 @item reg
 @itemx 1024
@@ -20366,25 +20939,25 @@ implementations.
 @cindex @code{sy} request, disabled by default
 GNU
 @command{troff} @c GNU
-operates in ``safer'' mode by default;
+operates in
+@dfn{safer mode}
+by default;
 to mitigate risks from untrusted input documents,
-the
+it disables the
 @code{cf},
 @code{pi},
 and
 @code{sy}
-requests are disabled.
+requests.
 GNU
 @command{troff}'s
 @option{-U}
 option enables ``unsafe mode'',
-restoring their function and enabling additional
-@code{groff}
-extension requests,
+restoring their function and enabling additional extension requests,
 @code{open},
 @code{opena},
 and @code{pso}.
-@xref{I/O}.
+Recall @ref{Host System Service Access}.
 
 @c ---------------------------------------------------------------------
 
@@ -20788,7 +21361,7 @@ GNU
 @command{troff} @c GNU
 rejects C0 controls in identifiers with an error diagnostic.
 
-Formatters that don't implement request names
+Formatters that don't implement
 GNU
 @command{troff} @c GNU
 extension request names
@@ -20822,7 +21395,7 @@ which both render it as
 @samp{~}.
 @c as of this writing, 2022-08-13
 @c NESTED END Keep in sync with groff_man_style(7).
-@xref{Manipulating Filling and Adjustment}.
+Recall @ref{Manipulating Filling and Adjustment}.
 GNU
 @command{troff}'s @c GNU
 features sometimes cause incompatibilities with documents written
@@ -21041,7 +21614,7 @@ and
 In GNU
 @command{troff},
 any number of environments may exist,
-using any valid identifiers for their names
+using any valid identifiers for their names.
 Recall @ref{Identifiers}.
 
 @c TODO: Resume groff_diff(7) synchronization work here.
@@ -21243,12 +21816,18 @@ as of its 060716 release (July 2006).}
 @c resemblance between Research Unix troff--the version maintained by
 @c Kernighan--and DWB troff, of which 3.4 was the final release.)
 
-To store an escape sequence in a diversion that is interpreted when the
-diversion is interpolated, either use the traditional @code{\!}
-transparent output facility, or, if this is unsuitable,
+To store in a diversion an escape sequence
+that is interpreted when the diversion is interpolated,
+either use the traditional
+@code{\!}
+transparent output facility,
+or,
+if this is unsuitable,
 @c XXX: Why would it be unsuitable?  Line breaking behavior?
-the new @code{\?} escape sequence.  @xref{Diversions} and
-@ref{GNU @command{troff} Internals}.
+the new
+@code{\?}
+escape sequence.
+Recall @ref{Diversions} and @ref{GNU @command{troff} Internals}.
 
 @cindex timing of output flushes, incompatibilities with @acronym{AT&T} @command{troff}
 @cindex output flushes, timing of, incompatibilities with @acronym{AT&T} @command{troff}
@@ -21268,10 +21847,10 @@ GNU
 always flushes this buffer when processing a break;
 @acronym{AT&T}
 @command{troff} @c AT&T
-does so according to no obvious schedule
-(perhaps,
+does so according to no obvious schedule.
+(Perhaps,
 if the buffer is of fixed size,
-the formatter performs the flush when the buffer runs out of room).
+the formatter performs the flush when the buffer runs out of room.)
 
 In the somewhat pathological case where a diversion exists
 containing a partially collected line
@@ -21310,19 +21889,658 @@ those lacking a final newline character---and the
 @code{cf}
 and
 @code{trf} requests read arbitrary files.
-Recall @ref{I/O}.}
+Recall @ref{Host System Service Access}.}
 The next two sections describe their format.
 
 @menu
-* gtroff Output::
 * Device and Font Description Files::
+* gtroff Output::
 @end menu
 
 
 @c =====================================================================
 
+@c BEGIN Keep parallel with groff_font(5).
+@node Device and Font Description Files, , File Formats
+@anchor{Font Files} @c 1.22.4
+@section Device and Font Description Files
+@cindex font files
+@cindex files, font
+
+The @code{groff} font and output device description formats are slight
+extensions of those used by @acronym{AT&T} device-independent
+@code{troff}.  In distinction to the @acronym{AT&T} implementation,
+@code{groff} lacks a binary format; all files are text
+files.@footnote{Plan@tie{}9 @code{troff} has also abandoned the binary
+format.}  The device and font description files for a device @var{name}
+are stored in a @file{dev@var{name}} directory.  The device description
+file is called @file{DESC}, and, for each font supported by the device,
+a font description file is called@tie{}@file{@var{f}}, where
+@var{f}@tie{}is usually an abbreviation of a font's name and/or style.
+For example,
+the
+@code{ps}
+(PostScript)
+device has
+@code{groff}
+font
+description files for Times roman
+(@file{TR})
+and Zapf Chancery Medium italic
+(@file{ZCMI}),
+among many others,
+while the
+@code{utf8}
+device
+(for terminals)
+has font descriptions for the roman,
+italic,
+bold,
+and bold-italic styles
+(@file{R},
+@file{I},
+@file{B},
+and
+@file{BI},
+respectively).
+
+Device and font description files are read both by the formatter, GNU
+@code{troff}, and by output drivers.  The programs delegate these files'
+processing to an internal library, @file{libgroff}, ensuring their
+consistent interpretation.
+
+@menu
+* DESC File Format::
+* Font Description File Format::
+@end menu
+
+@c ---------------------------------------------------------------------
+
+@node DESC File Format, Font Description File Format, , Device and Font Description Files
+@subsection @file{DESC} File Format
+@cindex @file{DESC} file format
+@cindex font description file format
+@cindex format of font description file
+
+The @file{DESC} file contains a series of directives; each begins a
+line.  Their order is not important, with two exceptions: (1) the
+@code{res} directive must precede any @code{papersize} directive; and
+(2) the @code{charset} directive must come last (if at all).  If a
+directive name is repeated, later entries in the file override previous
+ones (except that the paper dimensions are computed based on the
+@code{res} directive last seen when @code{papersize} is encountered).
+Spaces and/or tabs separate words and are ignored at line boundaries.
+@cindex comments in device description files
+@cindex device description files, comments
+@kindex #
+Comments start with the @samp{#} character and extend to the end of a
+line.  Empty lines are ignored.
+
+@table @code
+@item family @var{fam}
+@kindex family
+The default font family is @var{fam}.
+
+@item fonts @var{n} @var{F1} @r{@dots{}} @var{Fn}
+@kindex fonts
+Fonts @var{F1}, @dots{}, @var{Fn} are mounted at font positions
+@var{m}+1, @dots{}, @var{m}+@var{n} where @var{m} is the number of
+@code{styles} (see below).  This directive may extend over more than one
+line.  A font name of@tie{}@code{0} causes no font to be mounted at the
+corresponding position.
+
+@item hor @var{n}
+@kindex hor
+@cindex horizontal motion quantum
+@cindex motion quantum, horizontal
+@cindex quantum, horizontal motion
+@cindex horizontal resolution
+@cindex resolution, horizontal
+The horizontal motion quantum is @var{n}@tie{}basic
+units.
+Horizontal measurements round to multiples of@tie{}@var{n}.
+
+@item image_generator @var{program}
+@kindex image_generator
+@cindex PostScript, PNG image generation
+@cindex PNG image generation from PostScript
+Use @var{program} to generate PNG images from PostScript input.  Under
+GNU/Linux, this is usually @code{gs}, but under other systems (notably
+Cygwin) it might be set to another name.  The @code{grohtml} driver uses
+this directive.
+
+@item paperlength @var{n}
+@kindex paperlength
+The vertical dimension of the output medium is @var{n}@tie{}basic units
+(deprecated: use @code{papersize} instead).
+
+@item papersize @var{format-or-dimension-pair-or-file-name} @r{@dots{}}
+@kindex papersize
+The dimensions of the output medium are as according to the
+argument, which is either a standard paper format, a pair of dimensions,
+or the name of a plain text file containing either of the foregoing.
+
+Recognized paper formats are the ISO and DIN formats
+@code{A0}--@code{A7}, @code{B0}--@code{B7}, @code{C0}--@code{C7},
+@code{D0}--@code{D7}; the U.S.@: paper types @code{letter},
+@code{legal}, @code{tabloid}, @code{ledger}, @code{statement}, and
+@code{executive}; and the envelope formats @code{com10}, @code{monarch},
+and @code{DL}.  Matching is performed without regard for lettercase.
+
+Alternatively, the argument can be a custom paper format in the format
+@code{@var{length},@var{width}} (with no spaces before or after the
+comma).  Both @var{length} and @var{width} must have a unit appended;
+valid units are @samp{i} for inches, @samp{c} for centimeters, @samp{p}
+for points, and @samp{P} for picas.  Example: @samp{12c,235p}.  An
+argument that starts with a digit is always treated as a custom paper
+format.
+
+Finally, the argument can be a file name (e.g., @file{/etc/papersize});
+if the file can be opened, the first line is read and a match attempted
+against each of the other forms.  No comment syntax is supported.
+
+More than one argument can be specified;
+each is scanned in turn and the first valid paper specification used.
+
+@item paperwidth @var{n}
+@kindex paperwidth
+The horizontal dimension of the output medium is @var{n}@tie{}basic
+units (deprecated: use @code{papersize} instead).
+
+@item pass_filenames
+@kindex pass_filenames
+Direct GNU @code{troff} to emit the name of the source file being
+processed.  This is achieved with the intermediate output command
+@samp{x F}, which @code{grohtml} interprets.
+
+@item postpro @var{program}
+@kindex postpro
+Use @var{program} as the postprocessor.
+
+@item prepro @var{program}
+@kindex prepro
+Use @var{program} as a preprocessor.  The @code{html} and @code{xhtml}
+output devices use this directive.
+
+@item print @var{program}
+@kindex print
+Use @var{program} as a spooler program for printing.  If omitted, the
+@option{-l} and @option{-L} options of @code{groff} are ignored.
+
+@item res @var{n}
+@kindex res
+@cindex device resolution
+@cindex resolution, device
+The device resolution is @var{n}@tie{}basic units per inch.
+
+@item sizes @var{s1} @r{@dots{}} @var{sn} 0
+@kindex sizes
+The device has fonts at @var{s1}, @dots{}, @var{sn} scaled points (see
+below).  The list of sizes must be terminated by@tie{}@code{0}.  Each
+@var{si} can also be a range of sizes @var{m}--@var{n}.  The list can
+extend over more than one line.
+
+@item sizescale @var{n}
+@kindex sizescale
+A typographical point is subdivided into @var{n}@tie{}scaled points.
+The default is@tie{}@code{1}.  @xref{Using Fractional Type Sizes}.
+
+@item styles @var{S1} @r{@dots{}} @var{Sm}
+@kindex styles
+The first@tie{}@var{m} mounting positions are associated with styles
+@var{S1}, @dots{}, @var{Sm}.
+
+@item tcommand
+@kindex tcommand
+The postprocessor can handle the @samp{t} and @samp{u} intermediate
+output commands.
+
+@item unicode
+@kindex unicode
+The output device supports the complete Unicode repertoire.  This
+directive is useful only for devices that produce character entities
+instead of glyphs.
+
+If @code{unicode} is present, no @code{charset} section is required in
+the font description files since the Unicode handling built into
+@code{groff} is used.  However, if there are entries in a font
+description file's @code{charset} section, they either override the
+default mappings for those particular characters or add new mappings
+(normally for composite characters).
+
+The @code{utf8}, @code{html}, and @code{xhtml} output devices use this
+directive.
+
+@item unitwidth @var{n}
+@kindex unitwidth
+Arbitary basis with respect to which font metrics are proportionally
+scaled when rendering glyphs at a type size of one point.
+
+@item unscaled_charwidths
+@kindex unscaled_charwidths
+Make the font handling module always return unscaled character widths.
+The @code{grohtml} driver uses this directive.
+
+@c XXX: Savannah #63074 is trying to make this obsolescent.
+@item use_charnames_in_special
+@kindex use_charnames_in_special
+GNU @code{troff} should encode special characters in arguments to device
+extension commands; see @ref{Postprocessor Access}.  The @code{grohtml}
+driver uses this directive.
+
+@item vert @var{n}
+@kindex vert
+@cindex vertical motion quantum
+@cindex motion quantum, vertical
+@cindex quantum, vertical motion
+@cindex vertical resolution
+@cindex resolution, vertical
+The vertical motion quantum is @var{n}@tie{}basic
+units.
+Vertical measurements round to multiples of@tie{}@var{n}.
+
+@item charset
+@kindex charset
+This line and everything following it in the file are ignored.  It is
+recognized for compatibility with other @code{troff} implementations.
+In GNU @code{troff}, character set repertoire is described on a
+per-font basis.
+@end table
+
+@kindex spare1
+@kindex spare2
+@kindex biggestfont
+GNU @code{troff} recognizes but ignores the directives @code{spare1},
+@code{spare2}, and @code{biggestfont}.
+
+The @code{res}, @code{unitwidth}, @code{fonts}, and @code{sizes} lines
+are mandatory.  Directives not listed above are ignored by GNU
+@code{troff} but may be used by postprocessors to obtain further
+information about the device.
+
+@c ---------------------------------------------------------------------
+
+@node Font Description File Format,  , DESC File Format, Device and Font Description Files
+@anchor{Font File Format} @c 1.22.4
+@subsection Font Description File Format
+@cindex font file, format
+@cindex font description file, format
+@cindex format of font files
+@cindex format of font description files
+
+On typesetting output devices, each font is typically available at
+multiple sizes.  While paper measurements in the device description file
+are in absolute units, measurements applicable to fonts must be
+proportional to the type size.
+The font's
+@slanted{unit width}
+establishes a numerical basis
+that permits all of its metrics to be expressed as integers
+if rendered at one point.
+When the formatter configures a type size,
+it scales the metrics linearly relative to that basis.
+The unit width has no inherent relationship to the device resolution,
+and the same division procedure applies to all font metrics.
+Observe that whatever unit might one select for the unit width,
+the division operation implied by scaling cancels it out,
+leaving a dimensionless quantity.
+
+For instance,
+@code{groff}'s
+@code{lbp}
+device uses a
+@code{unitwidth}
+directive with an argument
+of@tie{}800.
+Its Times roman font
+@samp{TR}
+has a
+@code{spacewidth}
+of@tie{}833;
+this is also the width of its comma,
+period,
+centered period,
+and mathematical asterisk,
+while its
+@samp{M}
+has a width of 2,963.
+Thus,
+an
+@samp{M}
+on the
+@code{lbp}
+device is 2,963 ÷ 800 times the unit width,
+or approximately 3.7.
+At a type size of 10 points,
+a Times roman
+@samp{M}
+is therefore 37 units wide.
+
+@Example
+$ groff -T lbp
+.ps 10
+.nr Mw \w'M'
+.tm width of 'M' at 10 points=\n(Mw
+    @error{} width of 'M' at 10 points=37
+@endExample
+
+A font description file has two sections.  The first is a sequence of
+directives, and is parsed similarly to the @file{DESC} file described
+above.  Except for the directive names that begin the second section,
+their ordering is immaterial.  Later directives of the same name
+override earlier ones, spaces and tabs are handled in the same way,
+@cindex comments in font description files
+@cindex font description files, comments
+@kindex #
+and the same comment syntax is supported.  Empty lines are ignored
+throughout.
+
+@table @code
+@item name @var{f}
+@kindex name
+The name of the font is@tie{}@var{f}.  @samp{DESC} is an invalid font
+name.  Simple integers are valid, but their use is
+discouraged.@footnote{@code{groff} requests and escape sequences
+interpret non-negative integers as mounting positions instead.  Further,
+a font named @samp{0} cannot be automatically mounted by the
+@code{fonts} directive of a @file{DESC} file.}
+
+@item spacewidth @var{n}
+@kindex spacewidth
+The width of an unadjusted inter-word space is @var{n},
+relative to the device's unit width.
+@end table
+
+The directives above must appear in the first section; those below are
+optional.
+
+@table @code
+@item slant @var{n}
+@kindex slant
+The font's glyphs have a slant of @var{n}@tie{}degrees; a positive
+@var{n} slants in the direction of text flow.
+
+@item ligatures @var{lig1} @r{@dots{}} @var{lign} @r{[}0@r{]}
+@kindex ligatures
+Glyphs @var{lig1}, @dots{}, @var{lign} are ligatures; possible ligatures
+are @samp{ff}, @samp{fi}, @samp{fl}, @samp{ffi} and @samp{ffl}.  For
+compatibility with other @code{troff} implementations, the list of
+ligatures may be terminated with a@tie{}@code{0}.  The list of ligatures
+must not extend over more than one line.
+
+@item special
+@cindex special fonts
+@kindex special
+The font is @dfn{special}:@:
+when the document attempts to format a glyph
+that is not present in the formatter's currently selected font,
+the glyph is sought in any mounted fonts that bear this property.
+Often,
+such fonts are
+@dfn{unstyled},
+having no heavy (bold) or slanted
+(italic or oblique)
+variants.
+@end table
+
+Other directives in this section are ignored by GNU
+@command{troff},
+but may be used by postprocessors to obtain further information about
+the font.
+
+The second section contains one to three subsections,
+which can appear in any order,
+and any of which starts the second section.
+Each starts with a directive on a line by itself.
+A
+@code{charset}
+subsection is mandatory unless the associated
+@file{DESC}
+file contains the
+@code{unicode}
+directive.
+Another subsection,
+@code{kernpairs},
+is optional.
+
+@kindex charset
+The directive @code{charset} starts the character set
+subsection.@footnote{On typesetters, this directive is misnamed since it
+starts a list of glyphs, not characters.}  It precedes a series of glyph
+descriptions, one per line.  Each such glyph description comprises a set
+of fields separated by spaces or tabs and organized as follows.
+
+@quotation
+@var{name} @var{metrics} @var{type} @var{index} [@var{entity-name}]
+[@code{--} @var{comment}]
+@end quotation
+
+@cindex accessing unnamed glyphs with @code{\N}
+@cindex unnamed glyphs, accessing with @code{\N}
+@cindex characters, unnamed, accessing with @code{\N}
+@cindex glyphs, unnamed, accessing with @code{\N}
+@kindex ---
+@noindent
+@var{name} identifies the glyph:
+@c XXX: Move this footnote to a more general discussion since it is
+@c applicable to the groff system overall.
+@c
+@c @footnote{The distinction between input, characters, and output,
+@c glyphs, is not clearly separated in the terminology of @code{groff};
+@c for example, the @code{char} request should be called @code{glyph}
+@c since it defines an output entity.}
+if @var{name} is a printable character@tie{}@var{c}, it corresponds to
+the @code{troff} ordinary character@tie{}@var{c}.  If @var{name} is a
+multi-character sequence not beginning with @code{\}, it corresponds to
+the GNU @code{troff} special character escape sequence
+@samp{\[@var{name}]}.  A name consisting of three minus signs,
+@samp{---}, is special and indicates that the glyph is unnamed: such
+glyphs can be accessed only by the @code{\N} escape sequence in
+@code{troff}.  A special character named @samp{---} can still be defined
+using @code{char} and similar requests.  The @var{name} @samp{\-}
+defines the minus sign glyph.  Finally, @var{name} can be the
+unbreakable one-sixth and one-twelfth space escape sequences, @code{\|}
+and @code{\^} (``thin'' and ``hair'' spaces, respectively), in which
+case only the width metric described below is interpreted; a font can
+thus customize the widths of these spaces.
+@c XXX: For exhaustivity purposes...you can define "\whatever", which
+@c has to be accessed with \C'\\whatever' or \[\\whatever], but the
+@c parser matches predefined escape sequences before looking up special
+@c characters.  Most such definitions are inaccessible from the
+@c language, because nearly every '\x', where 'x' is a Unicode basic
+@c Latin character, is a predefined groff escape sequence.
+@c
+@c XXX: Commented out because the charXXX feature is very legacy, and as
+@c noted below, discouraged in font description files.
+@c
+@c GNU @code{troff} supports 8-bit input characters; however some
+@c utilities have difficulties with eight-bit characters.  For this
+@c reason, there is a convention that the entity name @samp{char@var{n}}
+@c is equivalent to the single input character whose code
+@c is@tie{}@var{n}.  For example, @samp{char163} would be equivalent to
+@c the character with code@tie{}163, which is the pounds sterling sign
+@c in the ISO@tie{}@w{Latin-1} character set.  You shouldn't use
+@c @samp{char@var{n}} entities in font description files since they are
+@c related to input, not output.  Otherwise, you get hard-coded
+@c connections between input and output encoding, which prevents use of
+@c different (input) character sets.
+
+The form of the @var{metrics} field is as follows.
+
+@display
+@group
+@var{width}[@code{,}[@var{height}[@code{,}[@var{depth}[@code{,}[@var{italic-correction}
+  [@code{,}[@var{left-italic-correction}[@code{,}[@var{subscript-correction}]]]]]]]]]]
+@end group
+@end display
+
+@noindent
+Spaces,
+tabs,
+and newlines are prohibited
+between these
+@dfn{subfields},
+which are expressed as decimal integers
+(and have been split here into two lines only for better legibility).
+The unit of measure is that established by the
+@code{unitwidth}
+directive and scaled to the type size.
+Unspecified subfields default
+to@tie{}@code{0}.
+Since there is no associated binary format,
+these values are not required to fit
+into the C language data type
+@samp{char}
+as they are in @acronym{AT&T} device-independent
+@code{troff}. @c AT&T
+
+The
+@var{width}
+subfield gives the width of the glyph.
+The
+@var{height}
+subfield gives the height of the glyph
+(upward is positive);
+if a glyph does not extend above the baseline,
+give it a zero height,
+not a negative height.
+The
+@var{depth}
+subfield gives the depth of the glyph---that is,
+the distance below the baseline to which the glyph extends
+(downward is positive);
+if a glyph does not extend below the baseline,
+give it a zero depth,
+not a negative depth.
+Italic corrections apply when upright and slanted
+(italic or oblique)
+styles are typeset adjacently.
+The
+@var{italic-correction}
+is the amount of space
+to add after a slanted glyph
+to be followed immediately by an upright glyph.
+The
+@var{left-italic-correction}
+is the amount of space
+to add before a slanted glyph
+to be preceded immediately by an upright glyph.
+The
+@var{subscript-correction}
+is the amount of space
+to add after a slanted glyph
+to be followed by a subscript;
+it should be less than the italic correction.
+
+For fonts used with typesetters, the @var{type} field gives a featural
+description of the glyph: it is a bit mask recording whether the glyph
+is an ascender, descender, both, or neither.  When a @code{\w} escape
+sequence is interpolated, these values are bitwise or-ed together for
+each glyph and stored in the @code{nr} register.  In font descriptions
+for terminals, all glyphs might have a type of zero, regardless of their
+appearance.
+
+@table @code
+@item 0
+means the glyph lies entirely between the baseline and a horizontal line
+at the ``x-height'' of the font; typical examples are @samp{a},
+@samp{c}, and @samp{x};
+
+@item 1
+means the glyph descends below the baseline, like @samp{p};
+
+@item 2
+means the glyph ascends above the font's x-height, like @samp{A} or
+@samp{b}; and
+
+@item 3
+means the glyph is both an ascender and a descender---this is true of
+parentheses in some fonts.
+@end table
+
+The
+@var{index}
+field is an integer that uniquely identifies a glyph within the font;
+any integer is accepted as input,@footnote{that is,
+any integer parsable
+by the C standard library's
+@cite{strtol@r{(3)}}
+function}
+but no practical font employs all possible values.
+An
+@var{index}
+is limited to the range of the system's C language data type
+@code{int}.
+In a
+@command{troff} @c generic
+document,
+use the indexed character escape sequence
+@code{\N}
+to specify a glyph by index.
+
+The @var{entity-name} field defines an identifier for the glyph that the
+postprocessor uses to print the GNU @code{troff} glyph @var{name}.  This
+field is optional; it was introduced so that the @code{grohtml} output
+driver could encode its character set.  For example, the glyph
+@samp{\[Po]} is represented by @samp{&pound;} in HTML 4.0.
+For efficiency, these data are now compiled directly into
+@code{grohtml}.  @code{grops} uses the field to build sub-encoding
+arrays for PostScript fonts containing more than 256 glyphs.  Anything
+on the line after the @var{entity-name} field or @samp{--} is ignored.
+
+A line in the @code{charset} section can also have the form
+
+@Example
+@var{name} "
+@endExample
+
+@noindent
+identifying @var{name} as another name for the glyph mentioned in the
+preceding line.  Such aliases can be chained.
+
+@kindex charset-range
+A
+@code{charset-range}
+subsection works like the
+@code{charset}
+directive except that the glyph descriptions use a
+@var{name} of the form
+@code{u}@var{AAAA}@code{..u}@var{FFFF},
+where
+@var{AAAA}
+and
+@var{FFFF}
+are hexadecimal digit sequences;
+the specified metrics then apply identically
+to all glyphs in the designated range.
+
+@kindex kernpairs
+The directive @code{kernpairs} starts a list of kerning adjustments to
+be made to adjacent glyph pairs from this font.  It contains a sequence
+of lines formatted as follows.
+
+@Example
+@var{g1} @var{g2} @var{n}
+@endExample
+
+@noindent
+The foregoing means that when glyph
+@var{g1}
+is typeset immediately before @var{g2},
+the space between them should be increased
+by@tie{}@var{n}.
+The unit of measure is that established by the
+@code{unitwidth}
+directive and scaled to the type size.
+Most kerning pairs should have a negative value
+for@tie{}@var{n}.
+@c END Keep parallel with groff_font(5).
+
+
+@c =====================================================================
+
 @c BEGIN TODO: Make parallel with groff_out(5).
-@node gtroff Output, Device and Font Description Files, File Formats, File Formats
+@node gtroff Output, Device and Font Description Files, , File Formats
 @section @command{gtroff} Output
 @cindex @command{gtroff}, output
 @cindex output, @command{gtroff}
@@ -22254,645 +23472,6 @@ follow quite naturally.
 
 @end itemize
 @c END TODO: Make parallel with groff_out(5).
-
-
-@c =====================================================================
-
-@c BEGIN Keep parallel with groff_font(5).
-@node Device and Font Description Files,  , gtroff Output, File Formats
-@anchor{Font Files} @c 1.22.4
-@section Device and Font Description Files
-@cindex font files
-@cindex files, font
-
-The @code{groff} font and output device description formats are slight
-extensions of those used by @acronym{AT&T} device-independent
-@code{troff}.  In distinction to the @acronym{AT&T} implementation,
-@code{groff} lacks a binary format; all files are text
-files.@footnote{Plan@tie{}9 @code{troff} has also abandoned the binary
-format.}  The device and font description files for a device @var{name}
-are stored in a @file{dev@var{name}} directory.  The device description
-file is called @file{DESC}, and, for each font supported by the device,
-a font description file is called@tie{}@file{@var{f}}, where
-@var{f}@tie{}is usually an abbreviation of a font's name and/or style.
-For example,
-the
-@code{ps}
-(PostScript)
-device has
-@code{groff}
-font
-description files for Times roman
-(@file{TR})
-and Zapf Chancery Medium italic
-(@file{ZCMI}),
-among many others,
-while the
-@code{utf8}
-device
-(for terminals)
-has font descriptions for the roman,
-italic,
-bold,
-and bold-italic styles
-(@file{R},
-@file{I},
-@file{B},
-and
-@file{BI},
-respectively).
-
-Device and font description files are read both by the formatter, GNU
-@code{troff}, and by output drivers.  The programs delegate these files'
-processing to an internal library, @file{libgroff}, ensuring their
-consistent interpretation.
-
-@menu
-* DESC File Format::
-* Font Description File Format::
-@end menu
-
-@c ---------------------------------------------------------------------
-
-@node DESC File Format, Font Description File Format, Device and Font Description Files, Device and Font Description Files
-@subsection @file{DESC} File Format
-@cindex @file{DESC} file format
-@cindex font description file format
-@cindex format of font description file
-
-The @file{DESC} file contains a series of directives; each begins a
-line.  Their order is not important, with two exceptions: (1) the
-@code{res} directive must precede any @code{papersize} directive; and
-(2) the @code{charset} directive must come last (if at all).  If a
-directive name is repeated, later entries in the file override previous
-ones (except that the paper dimensions are computed based on the
-@code{res} directive last seen when @code{papersize} is encountered).
-Spaces and/or tabs separate words and are ignored at line boundaries.
-@cindex comments in device description files
-@cindex device description files, comments
-@kindex #
-Comments start with the @samp{#} character and extend to the end of a
-line.  Empty lines are ignored.
-
-@table @code
-@item family @var{fam}
-@kindex family
-The default font family is @var{fam}.
-
-@item fonts @var{n} @var{F1} @r{@dots{}} @var{Fn}
-@kindex fonts
-Fonts @var{F1}, @dots{}, @var{Fn} are mounted at font positions
-@var{m}+1, @dots{}, @var{m}+@var{n} where @var{m} is the number of
-@code{styles} (see below).  This directive may extend over more than one
-line.  A font name of@tie{}@code{0} causes no font to be mounted at the
-corresponding position.
-
-@item hor @var{n}
-@kindex hor
-@cindex horizontal motion quantum
-@cindex motion quantum, horizontal
-@cindex quantum, horizontal motion
-@cindex horizontal resolution
-@cindex resolution, horizontal
-The horizontal motion quantum is @var{n}@tie{}basic
-units.
-Horizontal measurements round to multiples of@tie{}@var{n}.
-
-@item image_generator @var{program}
-@kindex image_generator
-@cindex PostScript, PNG image generation
-@cindex PNG image generation from PostScript
-Use @var{program} to generate PNG images from PostScript input.  Under
-GNU/Linux, this is usually @code{gs}, but under other systems (notably
-Cygwin) it might be set to another name.  The @code{grohtml} driver uses
-this directive.
-
-@item paperlength @var{n}
-@kindex paperlength
-The vertical dimension of the output medium is @var{n}@tie{}basic units
-(deprecated: use @code{papersize} instead).
-
-@item papersize @var{format-or-dimension-pair-or-file-name} @r{@dots{}}
-@kindex papersize
-The dimensions of the output medium are as according to the
-argument, which is either a standard paper format, a pair of dimensions,
-or the name of a plain text file containing either of the foregoing.
-
-Recognized paper formats are the ISO and DIN formats
-@code{A0}--@code{A7}, @code{B0}--@code{B7}, @code{C0}--@code{C7},
-@code{D0}--@code{D7}; the U.S.@: paper types @code{letter},
-@code{legal}, @code{tabloid}, @code{ledger}, @code{statement}, and
-@code{executive}; and the envelope formats @code{com10}, @code{monarch},
-and @code{DL}.  Matching is performed without regard for lettercase.
-
-Alternatively, the argument can be a custom paper format in the format
-@code{@var{length},@var{width}} (with no spaces before or after the
-comma).  Both @var{length} and @var{width} must have a unit appended;
-valid units are @samp{i} for inches, @samp{c} for centimeters, @samp{p}
-for points, and @samp{P} for picas.  Example: @samp{12c,235p}.  An
-argument that starts with a digit is always treated as a custom paper
-format.
-
-Finally, the argument can be a file name (e.g., @file{/etc/papersize});
-if the file can be opened, the first line is read and a match attempted
-against each of the other forms.  No comment syntax is supported.
-
-More than one argument can be specified;
-each is scanned in turn and the first valid paper specification used.
-
-@item paperwidth @var{n}
-@kindex paperwidth
-The horizontal dimension of the output medium is @var{n}@tie{}basic
-units (deprecated: use @code{papersize} instead).
-
-@item pass_filenames
-@kindex pass_filenames
-Direct GNU @code{troff} to emit the name of the source file being
-processed.  This is achieved with the intermediate output command
-@samp{x F}, which @code{grohtml} interprets.
-
-@item postpro @var{program}
-@kindex postpro
-Use @var{program} as the postprocessor.
-
-@item prepro @var{program}
-@kindex prepro
-Use @var{program} as a preprocessor.  The @code{html} and @code{xhtml}
-output devices use this directive.
-
-@item print @var{program}
-@kindex print
-Use @var{program} as a spooler program for printing.  If omitted, the
-@option{-l} and @option{-L} options of @code{groff} are ignored.
-
-@item res @var{n}
-@kindex res
-@cindex device resolution
-@cindex resolution, device
-The device resolution is @var{n}@tie{}basic units per inch.
-
-@item sizes @var{s1} @r{@dots{}} @var{sn} 0
-@kindex sizes
-The device has fonts at @var{s1}, @dots{}, @var{sn} scaled points (see
-below).  The list of sizes must be terminated by@tie{}@code{0}.  Each
-@var{si} can also be a range of sizes @var{m}--@var{n}.  The list can
-extend over more than one line.
-
-@item sizescale @var{n}
-@kindex sizescale
-A typographical point is subdivided into @var{n}@tie{}scaled points.
-The default is@tie{}@code{1}.  @xref{Using Fractional Type Sizes}.
-
-@item styles @var{S1} @r{@dots{}} @var{Sm}
-@kindex styles
-The first@tie{}@var{m} mounting positions are associated with styles
-@var{S1}, @dots{}, @var{Sm}.
-
-@item tcommand
-@kindex tcommand
-The postprocessor can handle the @samp{t} and @samp{u} intermediate
-output commands.
-
-@item unicode
-@kindex unicode
-The output device supports the complete Unicode repertoire.  This
-directive is useful only for devices that produce character entities
-instead of glyphs.
-
-If @code{unicode} is present, no @code{charset} section is required in
-the font description files since the Unicode handling built into
-@code{groff} is used.  However, if there are entries in a font
-description file's @code{charset} section, they either override the
-default mappings for those particular characters or add new mappings
-(normally for composite characters).
-
-The @code{utf8}, @code{html}, and @code{xhtml} output devices use this
-directive.
-
-@item unitwidth @var{n}
-@kindex unitwidth
-Arbitary basis with respect to which font metrics are proportionally
-scaled when rendering glyphs at a type size of one point.
-
-@item unscaled_charwidths
-@kindex unscaled_charwidths
-Make the font handling module always return unscaled character widths.
-The @code{grohtml} driver uses this directive.
-
-@c XXX: Savannah #63074 is trying to make this obsolescent.
-@item use_charnames_in_special
-@kindex use_charnames_in_special
-GNU @code{troff} should encode special characters in arguments to device
-extension commands; see @ref{Postprocessor Access}.  The @code{grohtml}
-driver uses this directive.
-
-@item vert @var{n}
-@kindex vert
-@cindex vertical motion quantum
-@cindex motion quantum, vertical
-@cindex quantum, vertical motion
-@cindex vertical resolution
-@cindex resolution, vertical
-The vertical motion quantum is @var{n}@tie{}basic
-units.
-Vertical measurements round to multiples of@tie{}@var{n}.
-
-@item charset
-@kindex charset
-This line and everything following it in the file are ignored.  It is
-recognized for compatibility with other @code{troff} implementations.
-In GNU @code{troff}, character set repertoire is described on a
-per-font basis.
-@end table
-
-@kindex spare1
-@kindex spare2
-@kindex biggestfont
-GNU @code{troff} recognizes but ignores the directives @code{spare1},
-@code{spare2}, and @code{biggestfont}.
-
-The @code{res}, @code{unitwidth}, @code{fonts}, and @code{sizes} lines
-are mandatory.  Directives not listed above are ignored by GNU
-@code{troff} but may be used by postprocessors to obtain further
-information about the device.
-
-@c ---------------------------------------------------------------------
-
-@node Font Description File Format,  , DESC File Format, Device and Font Description Files
-@anchor{Font File Format} @c 1.22.4
-@subsection Font Description File Format
-@cindex font file, format
-@cindex font description file, format
-@cindex format of font files
-@cindex format of font description files
-
-On typesetting output devices, each font is typically available at
-multiple sizes.  While paper measurements in the device description file
-are in absolute units, measurements applicable to fonts must be
-proportional to the type size.
-The font's
-@slanted{unit width}
-establishes a numerical basis
-that permits all of its metrics to be expressed as integers
-if rendered at one point.
-When the formatter configures a type size,
-it scales the metrics linearly relative to that basis.
-The unit width has no inherent relationship to the device resolution,
-and the same division procedure applies to all font metrics.
-Observe that whatever unit might one select for the unit width,
-the division operation implied by scaling cancels it out,
-leaving a dimensionless quantity.
-
-For instance,
-@code{groff}'s
-@code{lbp}
-device uses a
-@code{unitwidth}
-directive with an argument
-of@tie{}800.
-Its Times roman font
-@samp{TR}
-has a
-@code{spacewidth}
-of@tie{}833;
-this is also the width of its comma,
-period,
-centered period,
-and mathematical asterisk,
-while its
-@samp{M}
-has a width of 2,963.
-Thus,
-an
-@samp{M}
-on the
-@code{lbp}
-device is 2,963 ÷ 800 times the unit width,
-or approximately 3.7.
-At a type size of 10 points,
-a Times roman
-@samp{M}
-is therefore 37 units wide.
-
-@Example
-$ groff -T lbp
-.ps 10
-.nr Mw \w'M'
-.tm width of 'M' at 10 points=\n(Mw
-    @error{} width of 'M' at 10 points=37
-@endExample
-
-A font description file has two sections.  The first is a sequence of
-directives, and is parsed similarly to the @file{DESC} file described
-above.  Except for the directive names that begin the second section,
-their ordering is immaterial.  Later directives of the same name
-override earlier ones, spaces and tabs are handled in the same way,
-@cindex comments in font description files
-@cindex font description files, comments
-@kindex #
-and the same comment syntax is supported.  Empty lines are ignored
-throughout.
-
-@table @code
-@item name @var{f}
-@kindex name
-The name of the font is@tie{}@var{f}.  @samp{DESC} is an invalid font
-name.  Simple integers are valid, but their use is
-discouraged.@footnote{@code{groff} requests and escape sequences
-interpret non-negative integers as mounting positions instead.  Further,
-a font named @samp{0} cannot be automatically mounted by the
-@code{fonts} directive of a @file{DESC} file.}
-
-@item spacewidth @var{n}
-@kindex spacewidth
-The width of an unadjusted inter-word space is @var{n},
-relative to the device's unit width.
-@end table
-
-The directives above must appear in the first section; those below are
-optional.
-
-@table @code
-@item slant @var{n}
-@kindex slant
-The font's glyphs have a slant of @var{n}@tie{}degrees; a positive
-@var{n} slants in the direction of text flow.
-
-@item ligatures @var{lig1} @r{@dots{}} @var{lign} @r{[}0@r{]}
-@kindex ligatures
-Glyphs @var{lig1}, @dots{}, @var{lign} are ligatures; possible ligatures
-are @samp{ff}, @samp{fi}, @samp{fl}, @samp{ffi} and @samp{ffl}.  For
-compatibility with other @code{troff} implementations, the list of
-ligatures may be terminated with a@tie{}@code{0}.  The list of ligatures
-must not extend over more than one line.
-
-@item special
-@cindex special fonts
-@kindex special
-The font is @dfn{special}:@:
-when the document attempts to format a glyph
-that is not present in the formatter's currently selected font,
-the glyph is sought in any mounted fonts that bear this property.
-Often,
-such fonts are
-@dfn{unstyled},
-having no heavy (bold) or slanted
-(italic or oblique)
-variants.
-@end table
-
-Other directives in this section are ignored by GNU
-@command{troff},
-but may be used by postprocessors to obtain further information about
-the font.
-
-The second section contains one to three subsections,
-which can appear in any order,
-and any of which starts the second section.
-Each starts with a directive on a line by itself.
-A
-@code{charset}
-subsection is mandatory unless the associated
-@file{DESC}
-file contains the
-@code{unicode}
-directive.
-Another subsection,
-@code{kernpairs},
-is optional.
-
-@kindex charset
-The directive @code{charset} starts the character set
-subsection.@footnote{On typesetters, this directive is misnamed since it
-starts a list of glyphs, not characters.}  It precedes a series of glyph
-descriptions, one per line.  Each such glyph description comprises a set
-of fields separated by spaces or tabs and organized as follows.
-
-@quotation
-@var{name} @var{metrics} @var{type} @var{index} [@var{entity-name}]
-[@code{--} @var{comment}]
-@end quotation
-
-@cindex accessing unnamed glyphs with @code{\N}
-@cindex unnamed glyphs, accessing with @code{\N}
-@cindex characters, unnamed, accessing with @code{\N}
-@cindex glyphs, unnamed, accessing with @code{\N}
-@kindex ---
-@noindent
-@var{name} identifies the glyph:
-@c XXX: Move this footnote to a more general discussion since it is
-@c applicable to the groff system overall.
-@c
-@c @footnote{The distinction between input, characters, and output,
-@c glyphs, is not clearly separated in the terminology of @code{groff};
-@c for example, the @code{char} request should be called @code{glyph}
-@c since it defines an output entity.}
-if @var{name} is a printable character@tie{}@var{c}, it corresponds to
-the @code{troff} ordinary character@tie{}@var{c}.  If @var{name} is a
-multi-character sequence not beginning with @code{\}, it corresponds to
-the GNU @code{troff} special character escape sequence
-@samp{\[@var{name}]}.  A name consisting of three minus signs,
-@samp{---}, is special and indicates that the glyph is unnamed: such
-glyphs can be accessed only by the @code{\N} escape sequence in
-@code{troff}.  A special character named @samp{---} can still be defined
-using @code{char} and similar requests.  The @var{name} @samp{\-}
-defines the minus sign glyph.  Finally, @var{name} can be the
-unbreakable one-sixth and one-twelfth space escape sequences, @code{\|}
-and @code{\^} (``thin'' and ``hair'' spaces, respectively), in which
-case only the width metric described below is interpreted; a font can
-thus customize the widths of these spaces.
-@c XXX: For exhaustivity purposes...you can define "\whatever", which
-@c has to be accessed with \C'\\whatever' or \[\\whatever], but the
-@c parser matches predefined escape sequences before looking up special
-@c characters.  Most such definitions are inaccessible from the
-@c language, because nearly every '\x', where 'x' is a Unicode basic
-@c Latin character, is a predefined groff escape sequence.
-@c
-@c XXX: Commented out because the charXXX feature is very legacy, and as
-@c noted below, discouraged in font description files.
-@c
-@c GNU @code{troff} supports 8-bit input characters; however some
-@c utilities have difficulties with eight-bit characters.  For this
-@c reason, there is a convention that the entity name @samp{char@var{n}}
-@c is equivalent to the single input character whose code
-@c is@tie{}@var{n}.  For example, @samp{char163} would be equivalent to
-@c the character with code@tie{}163, which is the pounds sterling sign
-@c in the ISO@tie{}@w{Latin-1} character set.  You shouldn't use
-@c @samp{char@var{n}} entities in font description files since they are
-@c related to input, not output.  Otherwise, you get hard-coded
-@c connections between input and output encoding, which prevents use of
-@c different (input) character sets.
-
-The form of the @var{metrics} field is as follows.
-
-@display
-@group
-@var{width}[@code{,}[@var{height}[@code{,}[@var{depth}[@code{,}[@var{italic-correction}
-  [@code{,}[@var{left-italic-correction}[@code{,}[@var{subscript-correction}]]]]]]]]]]
-@end group
-@end display
-
-@noindent
-Spaces,
-tabs,
-and newlines are prohibited
-between these
-@dfn{subfields},
-which are expressed as decimal integers
-(and have been split here into two lines only for better legibility).
-The unit of measure is that established by the
-@code{unitwidth}
-directive and scaled to the type size.
-Unspecified subfields default
-to@tie{}@code{0}.
-Since there is no associated binary format,
-these values are not required to fit
-into the C language data type
-@samp{char}
-as they are in @acronym{AT&T} device-independent
-@code{troff}. @c AT&T
-
-The
-@var{width}
-subfield gives the width of the glyph.
-The
-@var{height}
-subfield gives the height of the glyph
-(upward is positive);
-if a glyph does not extend above the baseline,
-give it a zero height,
-not a negative height.
-The
-@var{depth}
-subfield gives the depth of the glyph---that is,
-the distance below the baseline to which the glyph extends
-(downward is positive);
-if a glyph does not extend below the baseline,
-give it a zero depth,
-not a negative depth.
-Italic corrections apply when upright and slanted
-(italic or oblique)
-styles are typeset adjacently.
-The
-@var{italic-correction}
-is the amount of space
-to add after a slanted glyph
-to be followed immediately by an upright glyph.
-The
-@var{left-italic-correction}
-is the amount of space
-to add before a slanted glyph
-to be preceded immediately by an upright glyph.
-The
-@var{subscript-correction}
-is the amount of space
-to add after a slanted glyph
-to be followed by a subscript;
-it should be less than the italic correction.
-
-For fonts used with typesetters, the @var{type} field gives a featural
-description of the glyph: it is a bit mask recording whether the glyph
-is an ascender, descender, both, or neither.  When a @code{\w} escape
-sequence is interpolated, these values are bitwise or-ed together for
-each glyph and stored in the @code{nr} register.  In font descriptions
-for terminals, all glyphs might have a type of zero, regardless of their
-appearance.
-
-@table @code
-@item 0
-means the glyph lies entirely between the baseline and a horizontal line
-at the ``x-height'' of the font; typical examples are @samp{a},
-@samp{c}, and @samp{x};
-
-@item 1
-means the glyph descends below the baseline, like @samp{p};
-
-@item 2
-means the glyph ascends above the font's x-height, like @samp{A} or
-@samp{b}; and
-
-@item 3
-means the glyph is both an ascender and a descender---this is true of
-parentheses in some fonts.
-@end table
-
-The
-@var{index}
-field is an integer that uniquely identifies a glyph within the font;
-any integer is accepted as input,@footnote{that is,
-any integer parsable
-by the C standard library's
-@cite{strtol@r{(3)}}
-function}
-but no practical font employs all possible values.
-An
-@var{index}
-is limited to the range of the system's C language data type
-@code{int}.
-In a
-@command{troff} @c generic
-document,
-use the indexed character escape sequence
-@code{\N}
-to specify a glyph by index.
-
-The @var{entity-name} field defines an identifier for the glyph that the
-postprocessor uses to print the GNU @code{troff} glyph @var{name}.  This
-field is optional; it was introduced so that the @code{grohtml} output
-driver could encode its character set.  For example, the glyph
-@samp{\[Po]} is represented by @samp{&pound;} in HTML 4.0.
-For efficiency, these data are now compiled directly into
-@code{grohtml}.  @code{grops} uses the field to build sub-encoding
-arrays for PostScript fonts containing more than 256 glyphs.  Anything
-on the line after the @var{entity-name} field or @samp{--} is ignored.
-
-A line in the @code{charset} section can also have the form
-
-@Example
-@var{name} "
-@endExample
-
-@noindent
-identifying @var{name} as another name for the glyph mentioned in the
-preceding line.  Such aliases can be chained.
-
-@kindex charset-range
-A
-@code{charset-range}
-subsection works like the
-@code{charset}
-directive except that the glyph descriptions use a
-@var{name} of the form
-@code{u}@var{AAAA}@code{..u}@var{FFFF},
-where
-@var{AAAA}
-and
-@var{FFFF}
-are hexadecimal digit sequences;
-the specified metrics then apply identically
-to all glyphs in the designated range.
-
-@kindex kernpairs
-The directive @code{kernpairs} starts a list of kerning adjustments to
-be made to adjacent glyph pairs from this font.  It contains a sequence
-of lines formatted as follows.
-
-@Example
-@var{g1} @var{g2} @var{n}
-@endExample
-
-@noindent
-The foregoing means that when glyph
-@var{g1}
-is typeset immediately before @var{g2},
-the space between them should be increased
-by@tie{}@var{n}.
-The unit of measure is that established by the
-@code{unitwidth}
-directive and scaled to the type size.
-Most kerning pairs should have a negative value
-for@tie{}@var{n}.
-@c END Keep parallel with groff_font(5).
 
 @codequotebacktick off
 @codequoteundirected off

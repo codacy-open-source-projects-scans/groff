@@ -2529,8 +2529,7 @@ with nothing between the dot and the macro name.
 .
 Preprocessors match these tokens only at the start of an input line.
 .
-.I troff
-interprets them as macro calls.
+The formatter interprets them as macro calls.
 .
 .
 .TS

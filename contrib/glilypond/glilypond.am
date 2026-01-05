@@ -32,6 +32,7 @@ man1_MANS += contrib/glilypond/glilypond.1
 glilyponddir = $(glilypond_dir)
 
 EXTRA_DIST += \
+  contrib/glilypond/COPYRIGHT \
   contrib/glilypond/ChangeLog \
   contrib/glilypond/ChangeLog.0x \
   contrib/glilypond/GPLv2 \

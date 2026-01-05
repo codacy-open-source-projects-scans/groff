@@ -115,6 +115,33 @@ and recommend further reading materials.
 .
 .\" BEGIN Keep roughly parallel with groff.texi nodes "Text" through
 .\" "Tabs and Leaders".
+AT&T
+.I troff \" AT&T
+was designed to take input as it would be composed on a typewriter,
+including the teletypewriters used as early computer terminals,
+and relieve the user drafting a document of concern with details like
+line length maintenance,
+hyphenation breaking,
+and consistent paragraph indentation.
+.
+Early in its development,
+the program gained the ability to prepare output for a phototypesetter;
+a document could then be prepared for output to a teletypewriter,
+a phototypesetter,
+or both.
+.
+GNU
+.I troff \" GNU
+continues this tradition of permitting an author
+to compose a single master version of a document
+which can then be rendered upon a variety of output formats or devices,
+including PDF,
+HTML,
+laser printers,
+and terminal displays.
+.
+.
+.P
 .I roff
 input contains text interspersed with instructions to control the
 formatter.
@@ -270,17 +297,15 @@ this is called a
 In this document and in
 .I roff
 discussions generally,
-a \[lq]break\[rq] if not further qualified always refers to the
-termination of an output line.
+a \[lq]break\[rq] if not further qualified
+always refers to the termination of an output line.
 .
 When the formatter is filling text,
 it introduces breaks automatically to keep output lines from exceeding
 the configured line length.
 .
 After an automatic break,
-a
-.I roff
-formatter
+the formatter
 .I adjusts
 the line if applicable
 (see below),
@@ -337,8 +362,8 @@ upon encountering the end of input.
 .
 .
 .P
-After the formatter performs an automatic break,
-it may then
+After performing an automatic break,
+the formatter may then
 .I adjust
 the line,
 widening inter-word spaces until the text reaches the right margin.
@@ -347,8 +372,8 @@ Extra spaces between words are preserved.
 .
 Leading and trailing spaces are handled as noted above.
 .
-Text can be aligned to the left or right margin only,
-or centered,
+You can align text to the left or right margin only,
+or center it,
 using
 .I requests.
 .
@@ -422,10 +447,9 @@ natural languages to begin with them.
 If you require a formatted period or apostrophe
 (closing single quotation mark)
 where
-.\" GNU @code{troff}
-the formatter is expecting a control character,
-prefix the dot or neutral apostrophe with the dummy character escape
-sequence,
+the formatter expects a control character,
+prefix the dot or neutral apostrophe
+with the dummy character escape sequence,
 .RB \[lq] \[rs]& \[rq].
 .
 .
@@ -442,23 +466,22 @@ Requests often take
 .I arguments,
 words
 (separated from the request name and each other by spaces)
-that specify details of the action
-.\" GNU @code{troff}
-the formatter is expected to perform.
+that specify details of the action you expect the formatter to perform.
 .
 If a request is meaningless without arguments,
 it is typically ignored.
 .
-.\" TODO: roff(7): We haven't introduced escape sequences yet.
-.\" GNU @code{troff}'s requests and escape sequences comprise the
-.\" control language of the formatter.
+.\" TODO: We haven't introduced escape sequences yet.
+Requests and escape sequences comprise the control language
+of the formatter.
 .
 Of key importance are the requests that define macros.
 .
 Macros are invoked like requests,
 enabling the request repertoire to be extended or overridden.
-.\" @footnote{Argument handling in macros is more flexible but also more
-.\" complex.  @xref{Calling Macros}.}
+.
+(Argument handling in macros is more flexible but also more complex.)
+.\" @xref{Calling Macros}.
 .
 .
 .P
@@ -2095,12 +2118,11 @@ suffix.
 .SH "Input conventions"
 .\" ====================================================================
 .
-Since
-.I @g@troff
-fills text automatically,
-it is common practice in the
+Since a
 .I roff
-language to avoid visual composition of text in input files:
+formatter fills text automatically,
+its experienced users tend to avoid visual composition
+of text in input files:
 the esthetic appeal of the formatted output is what matters.
 .
 Therefore,
@@ -2112,8 +2134,7 @@ understand the syntax of
 requests,
 macro calls,
 and preprocessor languages used,
-and predict the behavior of the
-formatter.
+and predict the behavior of the formatter.
 .
 Several traditions have accrued in service of these goals.
 .
@@ -2196,16 +2217,14 @@ causes the program to ignore spaces at the boundaries of table cells.)
 .IP \[bu]
 Comment your document.
 .
-It is never too soon to apply comments to record information of use to
-future document maintainers
+It is never too soon to apply comments
+to record information of use to future document maintainers
 (including your future self).
 .\" Texinfo: We thus introduce another escape sequence, @code{\"}, which
 The
 .B \[rs]\[dq]
 escape sequence
-causes
-.I @g@troff
-to ignore the remainder of the input line.
+causes the formatter to ignore the remainder of the input line.
 .
 .
 .IP \[bu]

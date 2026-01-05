@@ -143,7 +143,7 @@ install_charset_data:
 	    $(DESTDIR)$(libdir)/charset.alias; \
 	  $(RM) $(DESTDIR)$(libdir)/t-charset.alias; \
 	else \
-	  if test $(GLIBC21) = no; then \
+	  if test $(GLIBC21) = no && grep -q '^[^#]' charset.alias; then \
 	    sed -f ref-add.sed charset.alias \
 	      > $(DESTDIR)$(libdir)/t-charset.alias; \
 	    $(INSTALL_DATA) $(DESTDIR)$(libdir)/t-charset.alias \

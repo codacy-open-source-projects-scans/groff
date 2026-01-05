@@ -1,3 +1,68 @@
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Add tests of footnote area layout and vertical margins.
+
+	* tests/footnote-area-layout-is-correct.sh:
+	* tests/vertical-margins-are-correct.sh: Do it.
+	* mm.am (mm_TESTS): Run tests.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Revise page layout computations.
+
+	* m.tmac: Add new register `pg*below-text-gap` to track the size
+	of the gap we want below the text area regardless of any other
+	material that follows (footnotes, bottom blocks, secondary
+	footers, or primary footers).  Initialize it to `1v` (stealing
+	this amount from `ft*margin-below` when it is nonzero).
+	(hd@set-page): Compute `pg*foot-trap` using it, and report this
+	computation at appropriate debugging level.
+	(FE): Reduce `ft*margin-below` to 1v.
+	(ft@check-old): When a footnote is _not_ still pending after a
+	page break, set `ft*margin-below` back to zero and update trap
+	locations.
+	(pg@header): Revise computation to include `pg*below-text-gap`.
+	If a page is insufficiently long, report how much the package
+	needs.
+	* tests/short-pages-do-not-overflow-stack.sh: Update test
+	expectations.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Put a two-vee margin between the footnote area and
+	page footers.  New register `ft*margin-below` stores this
+	measurement, which initalizes to zero because a page does not
+	always bear footnotes.
+	(hd@set-page): Compute `pg*foot-trap` using it, and report this
+	computation at appropriate debugging level.
+	(FE): Set `ft*margin-below` to 2v.
+
+	Fixes <https://savannah.gnu.org/bugs/?67875>.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (pg@header): Drop spurious quotation marks from
+	argument to `tl` request.
+
+	Fixes <https://savannah.gnu.org/bugs/?67874>.  Problem
+	introduced by me in commit 88cd50aa3c, 27 October 2024.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/PH-PF-OH-OF-EH-EF-work.sh: Unit-test the named macros.
+	* mm.am (mm_TESTS): Run test.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ft@init-footnote): Draw footnote separator with
+	em dash `\[em]` in nroff mode, for better cosmetics.
+	(let*mt-sign): Annotate why we don't do the same here.
+
+2025-12-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm.am (EXTRA_DIST): Ship "COPYRIGHT" file in distribution
+	archive.
+
 2025-12-21  Alexis Hildebrandt <afh@surryhill.net>
 
 	* groff_mm.7.man (Macros) <WA>: Fix typo.

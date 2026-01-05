@@ -1,3 +1,54 @@
+2026-01-02  Helmut Grohne <helmut@subdivi.de>
+
+	* src/libs/libgroff/libgroff.am (install_charset_data): Don't
+	ship a "charset.alias" file if it's empty or contains nothing
+	but comments.  Such files, a common product of certain gnulib
+	internals, aggrieve a Debian's packaging assistance tool.
+
+	Fixes <https://savannah.gnu.org/bugs/?67886>.
+
+2026-01-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/groff_mdoc.7.man (Other possible pitfalls): Advise
+	composers of mdoc(7) documents to use `\-` for copy-and-pastable
+	hyphen-minus characters.
+
+	Fixes <https://savannah.gnu.org/bugs/?67881>.  Thanks to Bjarni
+	Ingi Gislason for pointing out incorrect usage in sudo(8).
+
+2026-01-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/\
+	double-do-request-does-not-raise-assertion.sh: Rename this...
+	* src/roff/groff/tests/\
+	double-do-request-does-not-fail-assertion.sh: ...to this.
+	* src/roff/groff/groff.am (groff_TESTS): Track rename.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gnulib: Refresh stable/2025-07 branch.  We need some
+	recent fixes that have landed there.  See
+	<https://lists.gnu.org/archive/html/bug-gnulib/2025-12/msg00158.html>
+	and
+	<https://lists.gnu.org/archive/html/bug-gnulib/2026-01/msg00000.html>.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/preconv/preconv.cpp (conversion_iconv): Use
+	`const_cast<>` to cast away `const`, not `static_cast<>`.  Fixes
+	build on Solaris 11/sparc64/GCC 5.5.  Problem introduced by me
+	in commit 1740c22b4a, 11 July.  Thanks to Bruno Haible for the
+	clue.
+
+2025-12-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (do_divert): Shift checks resulting in
+	error diagnostics, including a fatal one, later in the logic.
+	It's not a problem to close a diversion of mismatched "boxing"
+	{see Savannah #67139} when the diversion stack is empty.  We can
+	simply emit a warning as groff 1.23.0 and earlier did.
+	Continues commit 251115ed5a, 19 May.
+
 2025-12-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Work on Savannah #67735.
@@ -19,7 +70,7 @@
 	`vresolution`, and `units_per_inch` as having `units` type
 	rather than `int`.  This is merely _documentary_
 	type-correctness, however, as `units` isn't strongly typed, but
-	merely a slovenly `typedef` alias of `int`.
+	only a slovenly `typedef` alias of `int`.
 	* src/roff/troff/troff.h: Align declarations with foregoing
 	definitions.
 

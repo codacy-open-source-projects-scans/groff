@@ -163,6 +163,7 @@ typesetting system.
 _endif()dnl
 .P
 .if t .vs 11.75p \" begin hideous cheat for U.S. letter paper
+.if n .if \n[LL]<68n .RS -3n \" begin shameless cheat for slim terminals
 .TS
 l l l.
 Macro	Meaning	Subsection
@@ -174,7 +175,7 @@ _
 \&.BR	Bold, roman alternating	Font style macros
 \&.EE	Example end	Document structure macros
 \&.EX	Example begin	Document structure macros
-\&.HP	Begin paragraph with hanging indent	Paragraphing macros
+\&.HP	Begin hanging paragraph	Paragraphing macros
 \&.I	Italic	Font style macros
 \&.IB	Italic, bold alternating	Font style macros
 \&.IP	Indented paragraph	Paragraphing macros
@@ -200,6 +201,7 @@ _
 \&.UR	URI start	Hyperlink macros
 \&.YS	Synopsis end	Synopsis macros
 .TE
+.if n .if \n[LL]<68n .RE \" end shameless cheat for slim terminals
 .if t .vs \" end hideous cheat for U.S. letter paper
 .
 .
@@ -1305,13 +1307,8 @@ Several features of the above example are of note.
 The empty request (.),
 which does nothing,
 vertically spaces the input file for readability by the document
-maintainer.
-.
-Do not put blank (empty) lines in a man page source document.
-.
-Some
-.MR man 1
-programs \[lq]squeeze\[rq] multiple blank output lines into one.
+maintainer;
+see subsection \[lq]Portability\[rq] below regarding blank lines.
 .
 .
 .IP \[bu]
@@ -2576,7 +2573,6 @@ that employs special character escape sequences
 to access other glyphs.
 .
 .
-.
 .P
 AT&T
 .IR troff 's \" AT&T
@@ -2640,6 +2636,16 @@ and macro definitions,
 causing a document's contents
 to be presented incomprehensibly
 or omitted entirely.
+.
+.
+.P
+Do not put blank (empty) lines in a man page source document.
+.
+They can produce excessive space in the output,
+or less than is attempted;
+some
+.MR man 1
+programs \[lq]squeeze\[rq] multiple blank output lines into one.
 .
 .
 .P
@@ -4315,6 +4321,7 @@ often a shorter or clearer alternative is available.
 .
 .
 .IP
+.if n .if \n[LL]<72n .RS -4n \" begin shameless cheat for slim terminals
 .if t .ne 10v
 .if n .ne 16v \" account for horizontal rules
 .TS
@@ -4338,6 +4345,7 @@ _
 _
 \&.B one two \[dq]\[dq] three	.B one two three
 .TE
+.if n .if \n[LL]<68n .RE \" end shameless cheat for slim terminals
 .
 .
 .IP
@@ -4743,7 +4751,12 @@ escape sequence to interpolate the quotation mark strings.
 .
 .
 .P
-.RS
+.\" begin shameless cheat for slim terminals
+.ds Indent \" empty
+.if n .if \n[LL]<68n .ds Indent 2n
+.RS \*[Indent]
+.rm Indent
+.\" end shameless cheat for slim terminals
 .EX
 The command
 \&.RB \[rs]*(oq "while !\[rs]& git pull; do sleep 10; done" \[rs]*(cq

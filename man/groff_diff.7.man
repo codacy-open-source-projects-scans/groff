@@ -789,6 +789,17 @@ the formatter discards one if present,
 permitting initial embedded spaces in the argument.
 .
 .
+.P
+.I input
+refers to arbitrary character sequences
+(up to a newline or delimiter)
+that
+GNU
+.I troff \" GNU
+fully interprets,
+in contrast to copy mode.
+.
+.
 .\" ====================================================================
 .SS "Escape sequences"
 .\" ====================================================================
@@ -836,11 +847,10 @@ see subsection \[lq]Miscellaneous\[rq]
 and section \[lq]Compatibility Mode\[rq] below.
 .
 .
-.\"TP 10n \" "\D'E h v'" + 2n + hand-tuned for PDF
-.TP 14n \" "\A'anything'" + 2n
-.BI \[rs]A\[aq] anything \[aq]
+.TP 10n \" "\D'E h v'" + 2n + hand-tuned for PDF
+.BI \[rs]A\[aq] input \[aq]
 Interpolate 1 if
-.I anything
+.I input
 is a valid identifier,
 and\~0 otherwise.
 .
@@ -859,9 +869,9 @@ to validate a macro argument before using it to construct another escape
 sequence or identifier.
 .
 .TP
-.BI \[rs]B\[aq] anything \[aq]
+.BI \[rs]B\[aq] input \[aq]
 Interpolate 1 if
-.I anything
+.I input
 is a valid numeric expression,
 and\~0 otherwise.
 .
@@ -1368,12 +1378,17 @@ and their presence confuses drivers that do not know about it
 .
 .
 .TP
-.BI \[rs]Z\[aq] anything \[aq]
+.BI \[rs]Z\[aq] input \[aq]
 Save the drawing position,
 format
-.I anything
-(except tabs and leaders),
+.IR input ,
 then restore it.
+.
+GNU
+.I troff \" GNU
+ignores tabs and leaders in
+.I input
+with an error diagnostic.
 .
 .
 .TP
@@ -1561,9 +1576,9 @@ The remainder of the word is subject to hyphenation as normal.
 .
 .
 .TP
-.BI \[rs]? anything \[rs]?
+.BI \[rs]? character-sequence \[rs]?
 Suppress formatting of
-.I anything.
+.I character-sequence.
 .
 This feature has two applications.
 .
@@ -1605,8 +1620,8 @@ Unlike
 .BR \[rs]! ,
 .B \[rs]?\&
 is interpreted even in copy mode,
-and
-.I anything
+and a
+.I character-sequence
 in the top-level diversion
 is not sent to device-independent output.
 .
@@ -2856,13 +2871,20 @@ above.
 .BR .device\~ [\c
 .RB [ \[dq] ]\c
 .IR character-sequence ]
-Write
-.IR character-sequence ,
-a sequence of ordinary or special characters and spaces
-read in copy mode,
-to
-.I @g@troff
-output as the argument to a device extension command.
+Embed
+.I character-sequence
+into
+GNU
+.I troff \" GNU
+output as parameters to an
+.RB \[lq]x X\[rq]
+device extension command;
+see
+.MR groff_out @MAN5EXT@ .
+.
+The output driver or other postprocessor interprets
+.I character-sequence
+as it sees fit.
 .
 .
 .TP
@@ -3709,16 +3731,16 @@ does not exist.
 .
 .TP
 .BR .nop \~[\c
-.IR anything ]
+.IR input ]
 Interpret
-.I anything
+.I input
 as if it were an input line.
 .
 .B nop
 resembles
 .RB \[lq] ".if 1" \[rq];
 it puts a break on the output if
-.I anything
+.I input
 is empty.
 .
 Unlike
@@ -3778,15 +3800,13 @@ if it already exists instead of overwriting it.
 .I character-sequence
 Emit
 .IR character-sequence ,
-a sequence of ordinary characters and spaces read in copy mode,
-\[lq]transparently\[rq]
-(directly) to
-.IR @g@troff 's
-output.
-.
-This usage is similar to that of
+transparently to
+GNU
+.I troff \" GNU
+output;
+this usage is similar to that of
 .B \[rs]!\&
-in the top-level diversion.
+when it occurs in the top-level diversion.
 .
 .
 .TP
@@ -3999,7 +4019,9 @@ and its mode
 .
 .TP
 .B .ptr
-Report the names and vertical positions of all page location traps
+Report the names and vertical positions,
+in basic units,
+of all page location traps
 to the standard error stream.
 .
 GNU
@@ -4072,11 +4094,10 @@ cannot be removed.
 .
 .TP
 .BR .return\~ [\c
-.IR anything ]
+.IR input ]
 .\" XXX: useless request warning if not interpreting a macro?
-In a macro definition,
-stop interpretation,
-skipping to its end.
+Stop interpreting an interpolated macro,
+skipping to the end of its definition.
 .
 Do not confuse
 .RB \[lq] return \[rq]
@@ -4084,10 +4105,16 @@ with
 .BR rt .
 .
 If called with an argument
-.I anything,
-the skip is performed twice\[em]once within the macro being interpreted
+.I input,
+GNU
+.I troff \" GNU
+performs the skip twice\[em]once within the macro being interpreted
 and once in an enclosing macro,
-permitting a macro to wrap the request.
+permitting a macro to wrap the request
+(as
+.I trace\:.tmac
+does).
+.
 .
 .
 .TP
@@ -4585,16 +4612,16 @@ and the horizontal page location in ens.
 .
 .
 .TP
-.BI .while \~cond-expr\~anything
+.BI .while \~cond-expr\~input
 Evaluate the conditional expression
 .IR cond-expr ,
 and repeatedly execute
-.I anything
+.I input
 unless and until
 .I cond-expr
 evaluates false.
 .
-.I anything,
+.I input,
 which is often a conditional block,
 is referred to as the
 .RB \[lq] while \[rq]
@@ -4611,31 +4638,37 @@ request similarly to that of a
 .B de
 request
 (albeit one not read in copy mode),
-but stores it under an internal name and deletes it when the loop
-finishes.
+but stores it under an internal name
+and deletes it when the loop finishes.
 .
 The operation of a macro containing a
 .RB \[lq] while \[rq]
 request can slow significantly if its
 body is large.
 .
-Each time the macro is executed,
-the
+Each time
+GNU
+.I troff \" GNU
+interpolates the macro,
+it parses and stores the
 .RB \[lq] while \[rq]
-body is parsed and stored again.
+body again.
 .
 An often better solution\[em]and one that is more portable,
 since AT&T
 .I troff \" AT&T
 lacked the
 .RB \[lq] while \[rq]
-request\[em]is to instead write a recursive macro.
-.
-It will be parsed only once (unless you redefine it).
+request\[em]is to instead write a recursive macro,
+which is parsed only once
+(unless you redefine it).
 .
 To prevent infinite loops,
-the default number of available recursion levels is 1,000 or somewhat
-less (because things other than macro calls can be on the input stack).
+GNU
+.I troff \" GNU
+limits the default number of available recursion levels
+to 1,000 or somewhat less
+(because things other than macro calls can be on the input stack).
 .
 You can disable this protective measure,
 or alter the limit,
@@ -4758,7 +4791,7 @@ exposes more formatter state via many new read-only registers.
 Their names often correspond to the requests that affect them.
 .
 .
-.TP 13n \" "\n[.height]" + 2n
+.TP 14n \" "\n[.hydefault]" + 2n
 .B \[rs]n[.br]
 Within a macro definition,
 interpolate\~1
@@ -5634,6 +5667,8 @@ see
 .\"names of fonts and special characters.
 .
 .
+.br
+.ne 3v
 .P
 Glyph and font names can be of arbitrary length;
 postprocessors should not assume that they are at most two characters.
@@ -6114,6 +6149,8 @@ request.
 .\" node "Debugging".
 .
 .
+.br
+.ne 2v
 .P
 .I groff
 also adds more flexible diagnostic output requests

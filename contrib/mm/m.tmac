@@ -1377,12 +1377,14 @@ numeric; got '\\$1'
 .\"
 .nr pg*top-margin 0
 .nr pg*foot-margin 0
+.nr pg*below-text-gap 1v
 .nr pg*block-size 0
 .nr pg*footer-size 6v\"			 1v+footer+even/odd footer+3v
 .nr pg*header-size 7v\"			 3v+header+even/odd header+2v
 .nr pg*extra-footer-size 0
 .nr pg*extra-header-size 0
 .nr ft*note-size 0
+.nr ft*margin-below 0
 .nr pg*cur-column 0
 .nr pg*cols-per-page 1
 .nr pg*cur-po \n[@po]
@@ -1394,12 +1396,16 @@ numeric; got '\\$1'
 .\"-------------------------
 .\" footer TRAPS: set, enable and disable
 .de pg@set-new-trap
-.nr pg*foot-trap \\n[@pl]u-(\\n[pg*block-size]u+\
-\\n[ft*note-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
+.nr pg*foot-trap \\n[@pl]u-(\
+\\n[pg*below-text-gap]u+\\n[pg*block-size]u+\
+\\n[ft*note-size]u+\\n[ft*margin-below]u+\
+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
 \\n[pg*extra-footer-size]u)
 .\"
-.if \\n[D]>=6 .tm \\$0: pg*foot-trap=\\n[@pl]u-(\\n[pg*block-size]u+\
-\\n[ft*note-size]u+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
+.if \\n[D]>=6 .tm \\$0: pg*foot-trap=\
+\\n[pg*below-text-gap]u+\\n[pg*block-size]u+\
+\\n[ft*note-size]u+\\n[ft*margin-below]u+\
+\\n[pg*foot-margin]u+\\n[pg*footer-size]u+\
 \\n[pg*extra-footer-size]u)=\\n[pg*foot-trap]u
 .\"
 .\" last-pos points to the position of the footer and bottom
@@ -1477,11 +1483,17 @@ numeric; got '\\$1'
 .if \\n[D] .tm Page #\\n[%] (\\n[.F]:\\n[c.])
 .\" Disable in HTML mode
 .if !'\*[.T]'html' \{\
-.	if (u;(\\n[pg*header-size] + \\n[pg*extra-header-size] \
-            +  \\n[pg*footer-size] + \\n[pg*extra-footer-size] \
-            +  \\n[.V]) >= \\n[.p]) \{\
+.	\" We need room for all this plus one line of body text (`.V`).
+.	nr pg*required-page-length \
+(u;\\n[pg*header-size]    + \\n[pg*extra-header-size] \
+ + \\n[pg*footer-size]    + \\n[pg*extra-footer-size] \
+ + \\n[pg*below-text-gap] + \\n[.V])
+.	if (\\n[pg*required-page-length] > \\n[.p]) \{\
 .		pl \\n[nl]u
-.		@error insufficient page length; aborting
+.		ds pg*msg insufficient page length; need at least
+.		as pg*msg " \\n[pg*required-page-length]u,
+.		as pg*msg " have \\n[.p]u; aborting
+.		@error \\*[pg*msg]
 .	\}
 .\}
 .ie \\n[Hy] .@enable-hyphenation
@@ -1520,7 +1532,7 @@ numeric; got '\\$1'
 .			ie o \{\
 .				if \\n[D]>=3 \
 .					tm Header "\\*[pg*odd-header]"
-.				tl "\\*[pg*odd-header]"
+.				tl \\*[pg*odd-header]
 .			\}
 .			el \{\
 .				if \\n[D]>=3 \
@@ -1740,6 +1752,7 @@ numeric; got '\\$1'
 .if \\n[D]>=5 .tm \\$0: end-of-input macro: shutting down
 .if \\n[D]>=4 .tm End of document text
 .nr pg*at-end-of-input 1
+.\" XXX: What about spilled footnotes?
 .df@eot-print
 .ref@eot-print
 ..
@@ -2060,7 +2073,13 @@ breaking page
 .\" init footnote diversion
 .de ft@init-footnote
 .debug@di ft*div
-\l'20n'
+.\" Use the em dash to draw the rule in nroff mode, since terminal
+.\" devices generally don't have a baseline rule glyph.  The "low line"
+.\" descends below the baseline and terminal fonts generally don't have
+.\" it span the character cell completely.  (A Unicode font might do so
+.\" for the em dash; we make a best-effort attempt to look pleasant.)
+.ie t .nop \l'20n'
+.el   .nop \l'20n\[em]'
 .br
 .debug@di
 .nr ft*note-size \\n[dn]
@@ -2092,6 +2111,7 @@ dn=\\n[dn]
 .	debug@emit ft*tmp-div
 .	debug@di
 .	nr ft*note-size +\\n[dn]
+.	nr ft*margin-below 1v
 .\}
 .rm ft*tmp-div
 .ev
@@ -2115,7 +2135,7 @@ dn=\\n[dn]
 .\"-----------------
 .\" check if any pending footnotes, see pg@header
 .de ft@check-old
-.if d ft*next-div \{\
+.ie d ft*next-div \{\
 .	ev ft*ev
 .	ft@init
 .	ft@init-footnote
@@ -2128,6 +2148,10 @@ dn=\\n[dn]
 .	rm ft*next-div
 .	ev
 .	nr ft*exist 0
+.	pg@move-trap
+.\}
+.el \{\
+.	nr ft*margin-below 0
 .	pg@move-trap
 .\}
 ..
@@ -3926,6 +3950,10 @@ undefined
 .\" Approval signature
 .nr let*name-line-length 40n
 .nr let*date-line-length 15n
+.\" We _don't_ use em dashes instead of low lines in nroff mode here
+.\" (see ft@init-footnote).  The low line better approximates a baseline
+.\" rule to indicate where a human should apply a stylus to paper, and
+.\" a broken rather than a solid rule is not a defect for this purpose.
 .ds let*name-line \l'\n[let*name-line-length]u'
 .ds let*date-line \l'\n[let*date-line-length]u'
 .nr let*approval-gap 5m

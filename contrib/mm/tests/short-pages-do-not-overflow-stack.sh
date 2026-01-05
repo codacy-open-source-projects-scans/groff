@@ -45,11 +45,11 @@ output=$(printf "%s\n" "$input" \
 echo "$output"
 test "$(echo "$output" | wc -l)" -eq 132 || wail # 66 lines * 2 pages
 
-echo "checking that sample document fits using -rL5v" >&2
+echo "checking that sample document fits using -rL15v" >&2
 output=$(printf "%s\n" "$input" \
-    | "$groff" -b -rL6v -mm -Tascii -P-cbou | nl -ba)
+    | "$groff" -b -rL15v -mm -Tascii -P-cbou | nl -ba)
 echo "$output"
-test "$(echo "$output" | wc -l)" -eq 48 || wail # 6 lines * 8 pages
+test "$(echo "$output" | wc -l)" -eq 45 || wail # 15 lines * 3 pages
 
 echo "checking that sample document fails gracefully using -rL5v" >&2
 error=$(printf "%s\n" "$input" \

@@ -298,20 +298,30 @@ may be available in
 .IR @DOCDIR@ .
 .
 .
+.\" BEGIN Keep parallel with groff.texi node "Conventions Used in This
+.\" Manual", first paragraph.
 .P
-.I groff
-is also a name for an extended dialect of the
-.I roff
-language.
-.
-We use \[lq]roff\[rq] to denote features that are universal,
-or nearly so,
-among implementations of this family.
-.
 We apply the term \[lq]groff\[rq] to the language documented here,
 the GNU implementation of the overall system,
 the project that develops that system,
 and the command of that name.
+.
+In the first sense,
+.I groff
+is an extended dialect of the
+.I roff
+language,
+for which many
+similar implementations exist.
+.
+When say \[lq]the formatter\[rq] when speaking of behavior
+that is generally true of
+.I troff \" generic
+and
+.I nroff \" generic
+programs.
+.\" END Keep parallel with groff.texi node "Conventions Used in This
+.\" Manual", first paragraph.
 .
 .
 .P
@@ -977,14 +987,14 @@ Hundredth of an em.
 .\" ====================================================================
 .
 .\" BEGIN Keep (roughly) parallel with groff.texi node "Motion Quanta".
-An output device's basic unit
+The basic unit
 .B u
-is not necessarily its smallest addressable length;
+is not necessarily an output device's smallest addressable length;
 .B u
-can be smaller to avoid problems with integer roundoff.
+can be smaller to avoid integer rounding errors.
 .
-The minimum distances that a device can work with in the horizontal and
-vertical directions are termed its
+The minimum distances that a device can work with
+in the horizontal and vertical directions are termed its
 .I "motion quanta,"
 stored in the
 .B .H
@@ -1025,8 +1035,8 @@ already present.
 .
 GNU
 .IR troff 's \" GNU
-use of integer arithmetic should also be kept in mind;
-see below.
+use of integer arithmetic in numeric expressions
+should also be kept in mind.
 .\" END Keep (roughly) parallel with groff.texi node "Default Units".
 .
 .
@@ -2144,23 +2154,23 @@ the request name is
 followed by a conditional expression
 .IR cond-expr ;
 the remainder of the line,
-.IR anything ,
+.IR input ,
 is interpreted as if it were an input line.
 .
 Any quantity of spaces between arguments to requests serves only to
 separate them;
 leading spaces in
-.I anything
+.I input
 are therefore not seen.
 .
-.I anything
+.I input
 effectively
 .I cannot
 be omitted;
 if
 .I cond-expr
 is true and
-.I anything
+.I input
 is empty,
 the newline at the end of the control line is interpreted as a blank
 line
@@ -2211,6 +2221,56 @@ a
 closing the body of a
 .RB \[lq] while \[rq]
 request must be the last such escape sequence on an input line.
+.
+.
+.P
+GNU
+.I troff \" GNU
+treats the body of a
+.RB \[lq] while \[rq]
+request similarly to that of a
+.B de
+request
+(albeit one not read in copy mode),
+but stores it under an internal name
+and deletes it when the loop finishes.
+.
+The operation of a macro containing a
+.RB \[lq] while \[rq]
+request can slow significantly if its
+body is large.
+.
+Each time
+GNU
+.I troff \" GNU
+interpolates the macro,
+it parses and stores the
+.RB \[lq] while \[rq]
+body again.
+.
+An often better solution\[em]and one that is more portable,
+since AT&T
+.I troff \" AT&T
+lacked the
+.RB \[lq] while \[rq]
+request\[em]is to instead write a recursive macro,
+which is parsed only once
+(unless you redefine it).
+.
+To prevent infinite loops,
+GNU
+.I troff \" GNU
+limits the default number of available recursion levels
+to 1,000 or somewhat less
+(because things other than macro calls can be on the input stack).
+.
+You can disable this protective measure,
+or alter the limit,
+by setting the
+.B slimit
+register.
+.
+See section \[lq]Debugging\[rq] below.
 .
 .
 .\" ====================================================================
@@ -2438,32 +2498,56 @@ escape sequences do.
 In the following request and escape sequence specifications,
 most argument names were chosen to be descriptive.
 .
-A few denotations may require introduction.
+GNU
+.I troff \" GNU
+reads arguments named
+.I character-sequence,
+.I command,
+.I contents,
+.I file,
+and
+.I message
+in copy mode
+(see section \[lq]Copy Mode\[rq] below)
+until the end of the input line.
+.
+A
+.I character-sequence
+comprises one or more ordinary,
+special,
+or indexed characters;
+spaces;
+or escape sequences that interpolate only these.
+.\" XXX: or tabs, leaders, backspace, and delete characters
+.
+We name the remaining arguments for clarity;
+they are also
+.I character-sequences.
+.
+A neutral double quote
+.RB \[oq] \[dq] \[cq] \" single quotes around double quote
+can optionally prefix a
+.I character-sequence;
+the formatter discards one if present,
+permitting initial embedded spaces in the argument.
+.
+.I input
+refers to arbitrary character sequences
+(up to a newline or delimiter)
+that
+GNU
+.I troff \" GNU
+fully interprets,
+in contrast to copy mode.
+.
+.
+.P
+A few denotations are more specific.
 .
 .
 .P
 .LS
 .RS
-.
-.TPx
-.I anything
-includes all characters up to the end of the input line
-(which may be continued with
-.BI \[rs] newline\c
-),
-to the closing delimiter for the escape sequence,
-or within
-.esc {
-and
-.esc } .
-.
-Escape sequences in
-.I anything
-are interpreted normally except where otherwise stated,
-as when read in copy mode.
-.
-Comments are ignored;
-trailing whitespace generally is not.
 .
 .TPx
 .I b
@@ -2487,7 +2571,9 @@ to be passed to the system as a command
 (potentially with arguments).
 .\" ...limiting the file names you can express; see Savannah #64071.
 .
-A leading neutral double quote is stripped,
+GNU
+.I troff \" GNU
+strips a leading neutral double quote,
 allowing embedded leading spaces.
 .
 .TPx
@@ -2516,7 +2602,9 @@ is an instance of
 naming a file on the system.
 .\" ...limiting the file names you can express; see Savannah #65108.
 .
-A leading neutral double quote is stripped,
+GNU
+.I troff \" GNU
+strips a leading neutral double quote,
 allowing embedded leading spaces.
 .
 GNU
@@ -2554,7 +2642,9 @@ is an instance of
 to emit on the standard error stream.
 .\" ...limiting the messages you can express; see Savannah #62787.
 .
-A leading neutral double quote is stripped,
+GNU
+.I troff \" GNU
+strips a leading neutral double quote,
 allowing embedded leading spaces.
 .
 .TPx
@@ -2648,7 +2738,7 @@ with its operand in parentheses
 or subtract the expression of interest from zero.
 .
 If a prior value does not exist\c
-\[em](the register was undefined\[em]\c
+\[em]the register was undefined\[em]\c
 an increment or decrement applies as if to\~0.
 .
 .
@@ -2656,41 +2746,6 @@ an increment or decrement applies as if to\~0.
 .SH "Request short reference"
 .\" ====================================================================
 .
-GNU
-.I troff \" GNU
-reads arguments named
-.I character-sequence,
-.I command,
-.I contents,
-.I file,
-and
-.I message
-in copy mode
-(see section \[lq]Copy Mode\[rq] below)
-until the end of the input line.
-.
-A
-.I character-sequence
-comprises one or more ordinary,
-special,
-or indexed characters;
-spaces;
-or escape sequences that interpolate only these.
-.\" XXX: or tabs, leaders, backspace, and delete characters
-.
-We name the remaining arguments for clarity;
-they are also
-.I character-sequences.
-.
-A neutral double quote
-.RB \[oq] \[dq] \[cq] \" single quotes around double quote
-can optionally prefix a
-.I character-sequence;
-the formatter discards one if present,
-permitting initial embedded spaces in the argument.
-.
-.
-.P
 Not all details of request behavior are outlined here.
 .
 See the
@@ -3393,12 +3448,20 @@ with compatibility mode disabled when the macro is interpreted.
 .
 .TPx
 .REQ .device character-sequence
-Write
-.IR character-sequence ,
-a sequence of ordinary or special characters and spaces,
-to
-.I @g@troff
-output as the argument to a device extension command.
+Embed
+.I character-sequence
+into
+GNU
+.I troff \" GNU
+output as parameters to an
+.RB \[lq]x X\[rq]
+device extension command;
+see
+.MR groff_out @MAN5EXT@ .
+.
+The output driver or other postprocessor interprets
+.I character-sequence
+as it sees fit.
 .
 .TPx
 .REQ .devicem name
@@ -3494,9 +3557,9 @@ Interpolate a newline if the conditional expression of the corresponding
 request was false.
 .
 .TPx
-.REQ .el anything
+.REQ .el input
 Interpret
-.I anything
+.I input
 as if it were an input line if the conditional expression of the
 corresponding
 .request ie
@@ -3915,12 +3978,12 @@ otherwise skip to a corresponding
 request.
 .
 .TPx
-.REQ .ie "cond-expr anything"
+.REQ .ie "cond-expr input"
 If
 .I cond-expr
 is true,
 interpret
-.I anything
+.I input
 as if it were an input line,
 otherwise skip to a corresponding
 .request el
@@ -3933,12 +3996,12 @@ Interpolate a newline if
 is true.
 .
 .TPx
-.REQ .if "cond-expr anything"
+.REQ .if "cond-expr input"
 If
 .I cond-expr
 is true,
 then interpret
-.I anything
+.I input
 as if it were an input line.
 .
 .TPx
@@ -4278,9 +4341,9 @@ cancel suppression.
 Interpolate a newline.
 .
 .TPx
-.REQ .nop anything
+.REQ .nop input
 Interpret
-.I anything
+.I input
 as if it were an input line.
 .
 .TPx
@@ -4713,7 +4776,7 @@ Stop interpreting an interpolated macro,
 skipping the remainder of its definition.
 .
 .TPx
-.REQ .return anything
+.REQ .return input
 As
 .BR return ,
 but perform the skip twice\[em]once within the macro being interpreted
@@ -5397,9 +5460,9 @@ Interpolate newlines unless and until
 evaluates false.
 .
 .TPx
-.REQ .while "cond-expr anything"
+.REQ .while "cond-expr input"
 Repeatedly execute
-.I anything
+.I input
 unless and until
 .I cond-expr
 evaluates false.
@@ -5636,25 +5699,27 @@ prevent it from being otherwise hyphenated.
 .
 .
 .TP
-.ESC !
-Transparent throughput.
+.ESC ! character-sequence
+.I Transparently
+embed
+.IR character-sequence ,
+up to and including the end of the line,
+into the current diversion,
+requests,
+macro calls,
+and escape sequences
+when reading them into a diversion.
 .
-Read everything up to the next newline in copy mode and ignore it,
-but pass it through to
-(1) an enclosing diversion,
-or
-(2) if appearing in the top-level diversion,
-GNU
-.I troff \" GNU
-output.
+Doing so prevents them from taking effect
+until the diverted text is actually output.
 .
 .
 .TP
-.ESC? anything
+.ESC? character-sequence
 Transparently embed
-.IR anything ,
-read in copy mode,
-in a diversion,
+.IR character-sequence ,
+up to its own next occurrence on the input line,
+into a diversion,
 or unformatted as an output comparand in a conditional expression.
 .
 Ignored in the top-level diversion.
@@ -5792,11 +5857,22 @@ and
 Interpolate a leader in copy mode.
 .
 .TP
-.ESCq A anything
+.ESCq A input
 Interpolate 1 if
-.I anything
+.I input
 is a valid identifier,
 and\~0 otherwise.
+.
+Because GNU
+.I troff \" GNU
+ignores any input character with an invalid code when reading it,
+invalid identifiers are empty or contain
+spaces,
+tabs,
+newlines,
+or
+escape sequences
+that interpolate something other than a sequence of ordinary characters.
 .
 .TP
 .ESCq b string
@@ -5807,9 +5883,9 @@ vertically,
 and center it vertically on the output line.
 .
 .TP
-.ESCq B anything
+.ESCq B input
 Interpolate 1 if
-.I anything
+.I input
 is a valid numeric expression,
 and\~0 otherwise.
 .
@@ -6299,10 +6375,22 @@ as returned by
 .
 .
 .TP
-.ESCq w anything
-Interpolate width of
-.IR anything ,
-formatted in a dummy environment.
+.ESCq w input
+Interpolate the width of
+.IR input ,
+as interpreted,
+in basic units.
+.
+This escape sequence
+allows several properties of formatted output to be measured
+without writing it out.
+.
+The formatter processes
+.I input
+in a dummy environment:
+this means that font and type size changes,
+for example,
+may occur within it without affecting subsequent output.
 .
 .
 .TP
@@ -6430,11 +6518,17 @@ Format character
 with zero width\[em]without advancing the drawing position.
 .
 .TP
-.ESCq Z anything
+.ESCq Z input
 Save the drawing position,
 format
-.IR anything ,
-then restore the saved drawing position.
+.IR input ,
+then restore it.
+.
+GNU
+.I troff \" GNU
+ignores tabs and leaders in
+.I input
+with an error diagnostic.
 .LE
 .
 .
@@ -8631,19 +8725,28 @@ on a page of length \[lq]11i\[rq].)
 .
 .
 .P
-A trap above the top or at or below the bottom of the page can be made
-visible by either moving it into the page area or increasing the page
-length so that the trap is on the page.
+A trap above the top or at or below the bottom of the page
+can be made visible
+by either moving it into the page area
+or increasing the page length so that the trap is on the page.
 .
-Negative trap values always use the
+A negative trap value always uses the
 .I current
 page length;
-they are not converted to an absolute vertical position.
+the formatter does not convert it to an absolute vertical position.
 .
-Use
+We can use the
 .B ptr
-to dump page location traps to the standard error stream;
-their positions are reported in basic units.
+request to dump page location traps to the standard error stream;
+see section \[lq]Debugging\[rq] below.
+.
+GNU
+.I troff \" GNU
+reports their positions in basic units,
+and includes empty slots in the list,
+where a trap had been planted
+but subsequently (re)moved,
+because they can affect the visibility of subsequently planted traps.
 .
 .
 .br
@@ -8656,9 +8759,9 @@ An
 .I implicit page trap
 always exists in the top-level diversion
 (see below);
-it works like a trap in some ways but not others.
+its purpose is to eject the current page and start the next one.
 .
-Its purpose is to eject the current page and start the next one.
+It works like a trap in some ways but not others.
 .
 It has no name,
 so it cannot be moved or deleted with
@@ -8672,7 +8775,8 @@ and can move it only by redefining the page length with
 .BR pl .
 .
 Its operation is suppressed when vertical page traps are disabled with
-the
+GNU
+.I troff's \" GNU
 .B vpt
 request.
 .
@@ -8692,56 +8796,62 @@ the formatted text into a named storage area.
 .
 It is retrieved later by specifying its name after a control character.
 .
-The same name space is used for such
+The formatter uses the same name space for such
 .I diversions
 as for strings and macros;
 see section \[lq]Identifiers\[rq] above.
 .
 Such text is sometimes said to be \[lq]stored in a macro\[rq],
-but this coinage obscures the important distinction between macros and
-strings on one hand and diversions on the other;
+but this coinage obscures the important distinction
+between macros and strings on one hand
+and diversions on the other;
 the former store
 .I unformatted
 input text,
 and the latter capture
 .I formatted
 output.
+.\" TODO: Add forward reference when we add a "GNU troff internals"
+.\" subsection to this page.
 .
 Diversions also do not interpret arguments.
 .
-Applications of diversions include \[lq]keeps\[rq]
-(preventing a page break from occurring at an inconvenient place by
-forcing a set of output lines to be set as a group),
+Applications of diversions include
 footnotes,
 tables of contents,
-and indices.
+indices,
+and \[lq]keeps\[rq]
+(preventing a page break from occurring at an inconvenient place
+by forcing a set of output lines to be set as a group).
 .
 For orthogonality it is said that GNU
 .I troff \" GNU
-is in the
+populates the
 .I top-level diversion
 if no diversion is active
 (that is,
-formatted output is being \[lq]diverted\[rq] immediately to the output
-device).
+formatted output is being \[lq]diverted\[rq] directly
+to the output device).
 .
 The top-level diversion has no name.
 .
 .
 .P
-Dereferencing an undefined diversion creates an empty one of that name
-and emits a warning in category
-.BR mac .
+Dereferencing an undefined diversion creates an empty one of that name.
 .
-See section \[lq]Warnings\[rq] in
-.MR @g@troff @MAN1EXT@
-regarding the enablement and suppression of warnings.
+(GNU
+.I troff \" GNU
+also emits a warning in category
+\[lq]mac\[rq];
+see section \[lq]Warnings\[rq] of
+.MR @g@troff @MAN1EXT@ .)
 .
 A diversion does not exist for the purpose of testing with the
 .B d
-conditional expression operator until its initial definition ends
-(see subsection \[lq]Conditional expressions\[rq] above).
-.\" The following requests are used to create and alter diversions.
+conditional expression operator
+until its initial definition ends;
+see subsection \[lq]Conditional expressions\[rq] above.
+.\" The following requests create and alter diversions.
 .
 .
 .P
@@ -8758,6 +8868,44 @@ If the diversion's name already exists as an alias,
 the target of the alias is replaced or appended to;
 see section \[lq]Strings\[rq] above.
 .
+The pending output line is diverted as well.
+.
+Switching to another environment
+(with the
+.B ev
+request)
+before invoking
+.B di
+or
+.B da
+avoids including any pending output line in the diversion.
+(See section \[lq]Environments[\[rq] below.)
+.
+.
+.P
+Invoking
+.B di
+or
+.B da
+without an argument stops diverting output
+to the diversion named by the most recent corresponding request.
+.
+Invoking
+.B di
+or
+.B da
+without an argument
+when no diversion is being populated does nothing.
+.
+(GNU
+.I troff \" GNU
+emits a warning in category
+\[lq]di\[rq];
+see section \[lq]Warnings\[rq] of
+.MR @g@troff @MAN1EXT@ .)
+.
+.
+.P
 .B box
 and
 .B boxa
@@ -8789,12 +8937,12 @@ including the top-level one.
 .
 .
 .P
-After completing a diversion,
-the writable registers
+After output to a (named) diversion stops,
+the formatter stores its vertical and horizontal sizes,
+to the writable registers
 .B dn
 and
-.B dl
-contain its vertical and horizontal sizes,
+.BR dl ,
 respectively.
 .\" XXX Do these measure:
 .\"  net motion of the drawing position,

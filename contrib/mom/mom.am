@@ -130,6 +130,7 @@ PDFDOCFILE = mom-pdf.pdf
 
 EXTRA_DIST += $(MOMHTMLDOCFILES) $(MOMEXAMPLEFILES) \
   contrib/mom/BUGS \
+  contrib/mom/COPYRIGHT \
   contrib/mom/ChangeLog \
   contrib/mom/NEWS \
   contrib/mom/TODO \

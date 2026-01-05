@@ -1,3 +1,8 @@
+2025-12-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* sboxes.am (EXTRA_DIST): Ship "COPYRIGHT" file in distribution
+	archive.
+
 2023-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* sboxes.am (uninstall_sboxes): Clean more fastidiously; try to

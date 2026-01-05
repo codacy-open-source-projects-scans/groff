@@ -31,6 +31,7 @@ sboxestmacdir = $(tmacdir)
 dist_sboxestmac_DATA = contrib/sboxes/sboxes.tmac
 
 EXTRA_DIST += \
+    contrib/sboxes/COPYRIGHT \
     contrib/sboxes/ChangeLog \
     contrib/sboxes/msboxes.ms.in \
     contrib/sboxes/notquine.sed

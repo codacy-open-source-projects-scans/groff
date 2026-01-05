@@ -23,6 +23,7 @@
 bin_SCRIPTS += gperl
 man1_MANS += contrib/gperl/gperl.1
 EXTRA_DIST += \
+  contrib/gperl/COPYRIGHT \
   contrib/gperl/ChangeLog \
   contrib/gperl/GPLv2 \
   contrib/gperl/gperl.1.man \

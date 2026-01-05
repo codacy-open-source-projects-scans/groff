@@ -207,7 +207,7 @@ and produces HTML character references
 for most non-composite,
 non-basic Latin
 Unicode characters.
-.\" XXX: Exception: ˚.  Why?
+.\" XXX: Exception: degree sign (U+00B0).  Why?
 .
 In spite of this,
 .I groff

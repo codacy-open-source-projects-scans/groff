@@ -578,7 +578,9 @@ Macro packages
    half-inch margin, just like the existing top margin.)  When
    formatting for terminals, content aligned to the bottom of the page
    (footers, footnotes, `BS`/`BE` bottom blocks, and similar) now sets
-   one line higher than before.
+   one line higher than before.  Further, the margin between the body
+   text and any page footers is now 2v, like that between the body text
+   and page headers, not 1v.
 
 *  The m (mm) macro package's `Limsp` register (a GNU extension) has
    been removed; see the item regarding the `LI` macro below.

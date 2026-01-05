@@ -25,6 +25,7 @@ bin_SCRIPTS += gpinyin
 gpinyindir = $(gpinyin_dir)
 man1_MANS += contrib/gpinyin/gpinyin.1
 EXTRA_DIST += \
+  contrib/gpinyin/COPYRIGHT \
   contrib/gpinyin/ChangeLog \
   contrib/gpinyin/GPLv2 \
   contrib/gpinyin/gpinyin.1.man \

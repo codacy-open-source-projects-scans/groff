@@ -31,8 +31,8 @@ TESTS += $(rfc1345_TESTS)
 EXTRA_DIST += $(rfc1345_TESTS)
 
 EXTRA_DIST += \
-  contrib/rfc1345/groff_rfc1345.7.man \
-  contrib/rfc1345/COPYRIGHT
+  contrib/rfc1345/COPYRIGHT \
+  contrib/rfc1345/groff_rfc1345.7.man
 
 
 # Local Variables:
