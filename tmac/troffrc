@@ -68,6 +68,13 @@ troffrc!html
 .do mso pspic.tmac
 .do mso pdfpic.tmac
 .
+.do de ptr
+.  tmc troffrc: groff 1.25 renamed the 'ptr' request to 'pwh';
+.  tm1 " please migrate
+.  pwh
+..
+.
+.
 .\" Local Variables:
 .\" mode: nroff
 .\" fill-column: 72

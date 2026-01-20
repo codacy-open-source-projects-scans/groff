@@ -89,7 +89,7 @@ cmd left top right bottom weight\[aq]
 .BI
 cmd left top right bottom weight
 .LP
-each produce a background rectangle on the page, where
+Produce a background rectangle on the page.
 .IP \f[I]cmd 8n \" indent enough to fit "bottom" tag
 is the command, which can be any of
 .Qq page|fill|box

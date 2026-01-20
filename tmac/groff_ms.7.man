@@ -1972,8 +1972,9 @@ This is a Berkeley extension.
 .P
 For even greater flexibility,
 .I ms
-permits redefinition of the macros called when the page header and
-footer traps are sprung.
+is designed to permit the redefinition of the macros that are called
+when formatter traps
+that ordinarily cause the headers and footers to be output are sprung.
 .
 .B PT
 (\[lq]page trap\[rq])
@@ -2647,7 +2648,7 @@ or another implementation.
 .
 .
 .\" ====================================================================
-.SS "Unix Version\~7 macros not implemented by \f[I]groff ms\f[]"
+.SS "Unix Version\~7 macros unimplemented by \f[I]groff ms\f[]"
 .\" ====================================================================
 .
 Several macros described in the Unix Version\~7
@@ -2820,8 +2821,8 @@ avoid those reserved by
 .I "groff ms"
 and those defined by
 GNU
-.IR troff ;\" GNU
-see
+.IR troff .\" GNU
+See
 .MR groff @MAN7EXT@
 for complete lists thereof.
 .

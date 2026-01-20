@@ -2504,7 +2504,7 @@ end
 \f[\\*[$FONT_FOR_PAD]]\s[\\n[#SIZE_FOR_PAD]u]
 .    ie '\\$2'' .nop \\*[$PAD_STRING]
 .    el \{\
-.       ie !'\\$2'NOBREAK' .pdfhref L -D "\\$2" -E -- \&\\*[$PAD_STRING]
+.       ie !'\\$2'NOBREAK' .pdfhref L -D "\\$2" -- \&\\*[$PAD_STRING]
 .       el .nop \\*[$PAD_STRING]
 .    \}
 .    if \\n[#SILENT] .SILENT OFF
@@ -15937,7 +15937,7 @@ EN-\\n[#CH_NUM]\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|
 \\n[#TOC_HEAD_\\n[#LEVEL]_INDENT]u+\
 \w'\\*[$TOC_HD_NUM]'u
 .          ti -\w'\\*[$TOC_HD_NUM]'u
-.          pdfhref L -D "\\*[PDFBOOKMARK.NAME]" -E -- \
+.          pdfhref L -D "\\*[PDFBOOKMARK.NAME]" -- \
 \&\\*[$TOC_HD_NUM]\\*[$TOC_HEAD_\\n[#LEVEL]_ITEM]
 \!.        ll
 '          in
@@ -15988,7 +15988,7 @@ EN-\\n[#CH_NUM]\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|
 .             fam \\*[$TOC_TITLE_FAM]
 .             ft \\*[$TOC_TITLE_FT]
 .             in \\n[#TOC_TITLE_INDENT]u
-.             pdfhref L -D "\\*[PDFBOOKMARK.NAME]" -E -- \
+.             pdfhref L -D "\\*[PDFBOOKMARK.NAME]" -- \
 \&\\*[$TOC_TITLE_ITEM]
 \!.           ll
 '             in
@@ -23864,7 +23864,7 @@ No room to start \\*[MN-pos] margin note #\\n[MN-curr] on page \\n[#P].
 .            el .as PDF_TXT Unknown
 .       \}
 .    \}
-.    pdfhref L \\*[PDF_PRE] \\*[PDF_POST] -D \\*[PDF_NM] -- \\*[PDF_TXT]
+.    pdfhref L -D \\*[PDF_NM] \\*[PDF_PRE] \\*[PDF_POST] -- \\*[PDF_TXT]
 .    rm PDF_NM
 .    rm PDF_PRE
 .    rm PDF_POST

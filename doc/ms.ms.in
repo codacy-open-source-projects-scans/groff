@@ -3111,8 +3111,9 @@ or
 .
 .
 .PP
+Prefer
 .CW \[rs]*[FR]
-should be used in preference to
+over
 .CW \[rs]n[FL]
 in contemporary documents.
 .
@@ -3120,11 +3121,11 @@ The footnote line length is effectively computed as
 .I column-width "" \[lq]
 .CW "\~*\~\[rs]*[FR]" \[rq].
 .
-If an absolute footnote line length is required,
-recall that arithmetic expressions in the
+If you require an absolute footnote line length,
+recall that
 .I roff
-language are evaluated strictly from left to right,
-with no operator precedence
+formatters evaluate numeric expressions strictly from left to right,
+without operator precedence
 (parentheses are honored).
 .
 .
@@ -3414,10 +3415,8 @@ T}
 For even greater flexibility,
 .I ms
 is designed to permit the redefinition of the macros that are called
-when the
-.I groff
-traps that ordinarily cause the headers and footers to be output are
-sprung.
+when formatter traps
+that ordinarily cause the headers and footers to be output are sprung.
 .
 .CW PT
 (\[lq]page trap\[rq])
@@ -4355,12 +4354,12 @@ do.
 .NH 2
 Unix Version\~7
 .BI ms
-macros not implemented by
+macros unimplemented by
 .BI "groff ms"
 .XS
 	Unix Version 7
 .I ms
-macros not implemented by
+macros unimplemented by
 .I "groff ms"
 .XE
 .LP
@@ -4409,11 +4408,12 @@ we advise your documents to invoke the
 request to remove any such macros it uses and then define replacements
 with an authentically typeset original at hand.\**
 .FS
-The removal beforehand is necessary because
+Removal beforehand is necessary
+because
 .I "groff ms"
-aliases these macros to a diagnostic macro,
-and you want to redefine the aliased name,
-not its target.
+aliases these macros with a diagnostic one;
+you want to reorient the aliased name
+before (re-)populating the macro.
 .FE
 .
 For informal purposes,

@@ -48,6 +48,7 @@ EXTRA_DIST += \
 src/preproc/pic/pic-lex.$(OBJEXT): src/preproc/pic/pic.hpp
 
 pic_TESTS = \
+  src/preproc/pic/tests/do-not-crash-when-reading-macro-arguments.sh \
   src/preproc/pic/tests/passes-through-input-with-eighth-bit-set.sh \
   src/preproc/pic/tests/polygon-command-works.sh
 TESTS += $(pic_TESTS)

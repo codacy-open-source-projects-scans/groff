@@ -9,7 +9,8 @@ output driver for Portable Document Format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2011-2025 Free Software Foundation, Inc.
+.\" Copyright 2011-2025 Free Software Foundation, Inc.
+.\"                2026 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -74,7 +75,7 @@ output driver for Portable Document Format
 .RB [ \-p\~\c
 .IR paper-format ]
 .RB [ \-\-pdfver\~\c
-.RI { 1.4 \~|\~ 1.7 }]
+.RB { 1.4 \||\| 1.7 }]
 \#.RB [ \-w\~\c
 \#.IR n ]
 .RB [ \-u
@@ -240,7 +241,7 @@ Compress all streams.
 T}
 8	T{
 .\" Why don't we flip the sense of this bit and the default can be
-.\" 15--all bits on? --GBR
+.\" 15--all bits on?  See Savannah #66342.  --GBR
 Don't embed font files.
 .
 (A font required by the document is not embedded;
@@ -282,12 +283,16 @@ for details.
 .
 .
 .TP
-.BI \-\-pdfver\~ 1.4 \~|\~ 1.7
-PDF version 1.7 introduced a more compact object format, this is
-now the default.
-If you require the original format (as produced by
+.BR "\-\-pdfver " { 1.4 \||\| 1.7 }
+PDF version 1.7 introduced a more compact object format;
+this is now the default.
+.
+If you require the original format
+(as produced by
 .I gropdf
-1.23) set the version to 1.4.
+1.23)
+set the version to
+.BR 1.4 .
 .
 .
 .TP
@@ -919,25 +924,6 @@ can be one of the following values.
 2 = Projecting square cap
 .
 .
-.LP
-.TP
-.BR "\[rs]X\[aq]ps:\~" .\|.\|.\& "\~pdfmark\[aq]"
-All the
-.I pdfmark
-macros installed by using
-.I \-m pdfmark
-or
-.I \-m mspdf
-(see documentation in
-.IR pdfmark.pdf ).
-.
-A subset of these macros are installed automatically when you use
-.B \-Tpdf
-so you should not need to use
-.RB \[lq] "\-m pdfmark" \[rq]
-to access most PDF functionality.
-.
-.
 .br
 .ne 3v
 .P
@@ -1062,13 +1048,285 @@ supports several more device extensions using the
 .B pdf:
 tag.
 .
-Some have counterpart
-.I convenience macros
+The following have counterpart
+.I "convenience macros"
 that take the same arguments and behave equivalently.
 .
 .
 .TP
-.BI "\[rs]X\[aq]pdf: pdfpic\~" file\~\c
+.BI ".pdfbackground " "cmd left top right bottom weight"
+.TQ
+.B ".pdfbackground off"
+.TQ
+.BI ".pdfbackground footnote " bottom
+.TQ
+.BI "\eX\[aq]pdf: background " "cmd left top right bottom weight" \[aq]
+.TQ
+.B "\eX\[aq]pdf: background off\[aq]"
+.TQ
+.BI "\eX\[aq]pdf: background footnote " bottom \[aq]
+Produce a background rectangle on the page.
+.
+.
+.RS
+.TP 8n \" "bottom" + 2n
+.I cmd
+is the command,
+which can be any of
+.RB \[lq] page | fill | box \[rq]
+in combination.
+.
+Thus,
+.RB \[lq] pagefill \[rq]
+would draw a rectangle which covers the whole current page size
+(in which case the rest of the parameters can be omitted because the box
+dimensions are taken from the current media size).
+.
+.RB \[lq] boxfill \[rq],
+on the other hand,
+requires the given dimensions to place the box.
+.
+Including
+.RB \[lq] fill \[rq]
+in the command paints the rectangle with the current fill colour
+(as with
+.BR \[rs]M[] )
+and including
+.RB \[lq] box \[rq]
+gives the rectangle a border in the current stroke colour
+(as with
+.BR \[rs]m[] ).
+.
+.
+.IP
+.I cmd
+may also be
+.RB \[lq] off \[rq]
+on its own,
+which terminates drawing the current box.
+.
+If you have specified a page colour with
+.RB \[lq] pagefill \[rq],
+it is always the first box in the stack,
+and if you specify it again,
+it replaces the first entry.
+.
+Be aware that the
+.RB \[lq]  pagefill \[rq]
+box renders the page opaque,
+so tools that \[lq]watermark\[rq] PDF pages are unlikely to be
+successful.
+.
+To return the background to transparent,
+issue an
+.RB \[lq] off \[rq]
+command with no other boxes open.
+.
+.
+.IP
+Finally,
+.I cmd
+may be
+.RB \[lq] footnote \[rq]
+followed by a new value for
+.IR bottom ,
+which is used for all open boxes on the current page.
+This is to allow room for footnote areas that grow while a page is
+processed
+(to accommodate multiple footnotes,
+for instance).
+.
+(If the value is negative,
+it is used as an offset from the bottom of the page.)
+.
+.
+.TP
+.I left
+.TQ
+.I top
+.TQ
+.I right
+.TQ
+.I bottom
+are the coordinates of the box.
+.
+The
+.I top
+and
+.I bottom
+coordinates are the minimum and maximum for the box,
+since the actual start of the box is
+.IR groff 's
+drawing position when you issue the command,
+and the bottom of the box is the point where you turn the box
+.RB \[lq] off \[rq].
+.
+The top and bottom coordinates are used only if the box drawing extends
+onto the next page;
+ordinarily,
+they would be set to the header and footer margins.
+.
+.
+.TP
+.I weight
+provides the line width for the border if
+.RB \[lq] box \[rq]
+is included in the command.
+.
+.
+.P
+An
+.I sboxes
+macro file is also available;
+see
+.MR groff_tmac @MAN5EXT@ .
+.RE
+.
+.
+.br
+.ne 5v
+.TP
+.BI ".pdfmarkstart " /ANN-definition
+.TQ
+.B .pdfmarkend
+.TQ
+.BI "\[rs]X\[aq]pdf: markstart " /ANN-definition \[aq]
+.TQ
+.B \[rs]X\[aq]pdf: markend\[aq]
+Macros that support PDF bookmarks use these calls internally to
+start and stop (respectively) the placement of the bookmark's
+.I hotspot;
+the user will have called
+.RB \[lq] .pdfhref\~L \[rq]
+with the text of the hotspot.
+.
+.
+.TP
+.B .pdfmarksuspend
+.TQ
+.B .pdfmarkrestart
+.TQ
+.B \[rs]X\[aq]pdf: marksuspend\[aq]
+.TQ
+.B \[rs]X\[aq]pdf: markrestart\[aq]
+If you use a page location trap to produce a header or footer,
+or otherwise interrupt a document's text,
+you need to use these commands if a PDF
+.I hotspot
+crosses a trap boundary;
+otherwise any text output by the trap will be marked as part
+of the hotspot.
+.
+To prevent this error,
+place these device extension escape sequences or their corresponding
+convenience macros
+.B \%.pdfmarksuspend
+and
+.B \%.pdfmarkrestart
+at the start and end of the trap macro,
+respectively.
+.
+.
+.TP
+.BI ".pdfpagename " name
+.TQ
+.BI "\[rs]X\[aq]pdf: pagename " name \[aq]
+Assign the current page a
+.IR name .
+.
+All documents bear two default names,
+.RB \[oq] top "\[cq] and \[oq]" bottom \[cq].
+.
+.
+.TP
+.BI ".pdfpagenumbering " "type prefix start"
+.TQ
+.BI "\[rs]X\[aq]pdf: pagenumbering " "type prefix start" \[aq]
+.RS
+Control the page numbering shown in a PDF reader's outline
+(which also contains bookmarks).
+.
+Normally,
+the page number associated with each bookmark is its sequence number in
+the file,
+but this might not match the desired numbering scheme.
+.
+A document may bear a cover sheet
+(which has no page number);
+front matter
+(possibly including a table of contents)
+that uses lowercase roman numerals;
+the main matter,
+which uses arabic numerals;
+and back matter,
+which may include appendices that are each prefixed with a letter and
+independently numbered.
+.
+Place this command prior to breaking the page to which the new numbering
+scheme is to apply.
+.
+It then persists until changed again.
+.
+.
+.P
+.TP 8n \" "prefix" + 2n
+.I type
+specifies the numbering system to use. It
+should be one of
+.RB \[lq] Decimal \[rq],
+.RB \[lq] Roman \[rq],
+.RB \[lq] roman \[rq],
+.RB \[lq] Alpha \[rq],
+or
+.RB \[lq] alpha \[rq].
+.
+This parameter may be abbreviated to the first letter,
+whose lettercase determines that used for the numbers where applicable.
+.
+The ordering used by the alphabetic numbering systems is
+A-Z \&.\|.\|.\& AA-AZ \&.\|.\|.\& ZA-ZZ.
+.
+.I type
+can also be
+.RB \[lq] .\& \[rq],
+which selects no numbering system;
+you may still provide a
+.I prefix.
+.
+.
+.TP
+.I prefix
+specifies text to precede the page number.
+.
+For example,
+to number the pages of an appendix
+\[lq]A-1\[rq],
+\[lq]A-2\[rq],
+and so forth,
+use a
+.I prefix
+of
+.RB \[lq] A- \[rq]
+and a
+.I type
+of
+.RB \[lq] Decimal \[rq].
+.
+.
+.TP
+.I start
+determines the page number.
+.
+It defaults to 1.
+.RE
+.
+.
+.TP
+.BI ".pdfpic " "file alignment width height line-length"
+.TQ
+.\" XXX: For consistency, this device extension command should be "pic".
+.\" --GBR
+.BI "\[rs]X\[aq]pdf: pdfpic " file\~\c
 .IB "alignment width height line-length" \[aq]
 Place an image from file
 .I file
@@ -1139,73 +1397,9 @@ various graphic file formats.
 .
 .
 .TP
-.B \[rs]X\[aq]pdf: xrev\[aq]
-Toggle the reversal of glyph direction.
-.
-This feature works by reversing all following text.
-Each separate letter is also mirrored.
-.
-One application is the reversal of glyphs in the Zapf Dingbats font.
-.
-To restore the normal glyph orientation,
-repeat the command.
-.
-.
-.br
-.ne 5v
-.TP
-.BI "\[rs]X\[aq]pdf: markstart " "/ANN-definition" \[aq]
+.BI ".pdfswitchtopage " "when name"
 .TQ
-.B \[rs]X\[aq]pdf: markend\[aq]
-Macros that support PDF bookmarks use these calls internally to
-start and stop (respectively) the placement of the bookmark's
-.I hot spot;
-the user will have called
-.RB \[lq] .pdfhref\~L \[rq]
-with the text of the hot spot.
-.
-Normally,
-these are never used except from within the
-.I pdfmark
-macros.
-.
-.
-.TP
-.B \[rs]X\[aq]pdf: marksuspend\[aq]
-.TQ
-.B \[rs]X\[aq]pdf: markrestart\[aq]
-If you use a page location trap to produce a header or footer,
-or otherwise interrupt a document's text,
-you need to use these commands if a PDF
-.I hot spot
-crosses a trap boundary;
-otherwise any text output by the trap will be marked as part of the hot
-spot.
-.
-To prevent this error,
-place these device extension escape sequences or their corresponding
-convenience macros
-.B \%.pdfmarksuspend
-and
-.B \%.pdfmarkrestart
-at the start and end of the trap macro,
-respectively.
-.
-.
-.TP
-.BI "\[rs]X\[aq]pdf: pagename\~" name \[aq]
-Assign the current page a
-.IR name .
-.
-All documents bear two default names,
-.RB \[oq] top "\[cq] and \[oq]" bottom \[cq].
-.
-The convenience macro for this command is
-.BR \%.pdfpagename .
-.
-.
-.TP
-.BI "\[rs]X\[aq]pdf: switchtopage\~" "when name" \[aq]
+.BI "\[rs]X\[aq]pdf: switchtopage " "when name" \[aq]
 Normally each new page is appended to the end of the document,
 this command allows following pages to be inserted at a
 .I \[oq]named\[cq]
@@ -1223,20 +1417,27 @@ This allows pages such as a TOC to be moved to elsewhere in the
 document,
 but more esoteric uses are possible.
 .
-The convenience macro for this command is
-.BR \%.pdfswitchtopage .
-.
 .
 .TP
-.BI \[rs]X\[aq]pdf:\~transition\~ feature\~\c
+.BI ".pdftransition " "scope mode duration dimension motion direction\
+ scale bool"
+.TQ
+.BI "\[rs]X\[aq]pdf: transition " scope\~\c
 .IB "mode duration dimension motion direction scale bool" \[aq]
-where
-.I feature
-can be either SLIDE or BLOCK.
-When it is SLIDE the transition is used
-when a new slide is introduced to the screen,
-if BLOCK then this transition is used for the individual blocks which
-make up the slide.
+Configure the style of page transitions,
+as used in \[lq]slides\[rq]
+(or \[lq]foils\[rq]).
+.
+.I scope
+can be either
+.B SLIDE
+or
+.BR BLOCK .
+.
+.B SLIDE
+applies the transition when a new slide is introduced to the screen;
+.B BLOCK
+applies it to the individual blocks making up the slide.
 .
 .
 .IP
@@ -1416,9 +1617,6 @@ the area that shall be flown
 in is rectangular and opaque.
 .LP
 .IP
-This command can be used by calling the macro
-.B .pdftransition
-using the parameters described above.
 Any of the parameters may be
 replaced with a "." which signifies the parameter retains its
 previous value, also any trailing missing parameters are ignored.
@@ -1430,215 +1628,17 @@ not all PDF Readers support any or all these transitions.
 .
 .
 .TP
-.BI "\eX\[aq]pdf: background\~" "cmd left top right bottom weight" \[aq]
-.TQ
-.B "\eX\[aq]pdf: background off\[aq]"
-.TQ
-.BI "\eX\[aq]pdf: background footnote\~" bottom \[aq]
-produces a background rectangle on the page,
-where
-.RS
-.TP 8n \" "bottom" + 2n
-.I cmd
-is the command,
-which can be any of
-.RB \[lq] page | fill | box \[rq]
-in combination.
+.\" XXX: No convenience macro for this one?  --GBR
+.B \[rs]X\[aq]pdf: xrev\[aq]
+Toggle the reversal of glyph direction.
 .
-Thus,
-.RB \[lq] pagefill \[rq]
-would draw a rectangle which covers the whole current page size
-(in which case the rest of the parameters can be omitted because the box
-dimensions are taken from the current media size).
+This feature works by reversing all following text.
+Each separate letter is also mirrored.
 .
-.RB \[lq] boxfill \[rq],
-on the other hand,
-requires the given dimensions to place the box.
+One application is the reversal of glyphs in the Zapf Dingbats font.
 .
-Including
-.RB \[lq] fill \[rq]
-in the command paints the rectangle with the current fill colour
-(as with
-.BR \[rs]M[] )
-and including
-.RB \[lq] box \[rq]
-gives the rectangle a border in the current stroke colour
-(as with
-.BR \[rs]m[] ).
-.
-.
-.IP
-.I cmd
-may also be
-.RB \[lq] off \[rq]
-on its own,
-which terminates drawing the current box.
-.
-If you have specified a page colour with
-.RB \[lq] pagefill \[rq],
-it is always the first box in the stack,
-and if you specify it again,
-it replaces the first entry.
-.
-Be aware that the
-.RB \[lq]  pagefill \[rq]
-box renders the page opaque,
-so tools that \[lq]watermark\[rq] PDF pages are unlikely to be
-successful.
-.
-To return the background to transparent,
-issue an
-.RB \[lq] off \[rq]
-command with no other boxes open.
-.
-.
-.IP
-Finally,
-.I cmd
-may be
-.RB \[lq] footnote \[rq]
-followed by a new value for
-.IR bottom ,
-which is used for all open boxes on the current page.
-This is to allow room for footnote areas that grow while a page is
-processed
-(to accommodate multiple footnotes,
-for instance).
-.
-(If the value is negative,
-it is used as an offset from the bottom of the page.)
-.
-.
-.TP
-.I left
-.TQ
-.I top
-.TQ
-.I right
-.TQ
-.I bottom
-are the coordinates of the box.
-.
-The
-.I top
-and
-.I bottom
-coordinates are the minimum and maximum for the box,
-since the actual start of the box is
-.IR groff 's
-drawing position when you issue the command,
-and the bottom of the box is the point where you turn the box
-.RB \[lq] off \[rq].
-.
-The top and bottom coordinates are used only if the box drawing extends
-onto the next page;
-ordinarily,
-they would be set to the header and footer margins.
-.
-.
-.TP
-.I weight
-provides the line width for the border if
-.RB \[lq] box \[rq]
-is included in the command.
-.
-.
-.P
-The convenience macro for this escape sequence is
-.BR .pdfbackground .
-.
-An
-.I sboxes
-macro file is also available;
-see
-.MR groff_tmac @MAN5EXT@ .
-.RE
-.
-.
-.TP
-.BI "\[rs]X\[aq]pdf: pagenumbering\~" "type prefix start" \[aq]
-.RS
-Control the page numbering shown in a PDF reader's outline
-(which also contains bookmarks).
-.
-Normally,
-the page number associated with each bookmark is its sequence number in
-the file,
-but this might not match the desired numbering scheme.
-.
-A document may bear a cover sheet
-(which has no page number);
-front matter
-(possibly including a table of contents)
-that uses lowercase roman numerals;
-the main matter,
-which uses arabic numerals;
-and back matter,
-which may include appendices that are each prefixed with a letter and
-independently numbered.
-.
-Place this command prior to breaking the page to which the new numbering
-scheme is to apply.
-.
-It then persists until changed again.
-.
-.
-.P
-.TP 8n \" "prefix" + 2n
-.I type
-specifies the numbering system to use. It
-should be one of
-.RB \[lq] Decimal \[rq],
-.RB \[lq] Roman \[rq],
-.RB \[lq] roman \[rq],
-.RB \[lq] Alpha \[rq],
-or
-.RB \[lq] alpha \[rq].
-.
-This parameter may be abbreviated to the first letter,
-whose lettercase determines that used for the numbers where applicable.
-.
-The ordering used by the alphabetic numbering systems is
-A-Z \&.\|.\|.\& AA-AZ \&.\|.\|.\& ZA-ZZ.
-.
-.I type
-can also be
-.RB \[lq] .\& \[rq],
-which selects no numbering system;
-you may still provide a
-.I prefix.
-.
-.
-.TP
-.I prefix
-specifies text to precede the page number.
-.
-For example,
-to number the pages of an appendix
-\[lq]A-1\[rq],
-\[lq]A-2\[rq],
-and so forth,
-use a
-.I prefix
-of
-.RB \[lq] A- \[rq]
-and a
-.I type
-of
-.RB \[lq] Decimal \[rq].
-.
-.
-.TP
-.I start
-determines the page number.
-.
-It defaults to 1.
-.
-.
-.P
-The convenience macro for this escape sequence is
-.BR \%.pdfpagenumbering .
-.RE
+To restore the normal glyph orientation,
+repeat the command.
 .
 .
 .\" ====================================================================
@@ -1654,10 +1654,160 @@ Some features have no direct device extension escape sequence
 counterpart.
 .
 .
-.\" pdfhref
+.TP
+.BR ".pdfbookmark " [ \-T\~\c
+.IR tag-name ]\~ "level text"
+Mark the nearest page location as a bookmark,
+and optionally a named destination as well.
+.
+.I Bookmarks
+populate the outline pane of the reader.
+.
+They are organized into a hierarchical tree;
+each level of the tree is numbered,
+starting at 1,
+and named as
+.I text
+in the outline.
+.
+.I "Named destinations"
+permit hyperlink-style navigation within the document.
+.
+Specifying
+.B \-T
+followed by
+.I tag-name
+creates a named destination
+making the page location eligible as a target named by
+.RB \[lq] ".pdfhref L" \~.\|.\|.\&\[rq].
 .
 .
 .TP
+.BR ".pdfhref L" \~\c
+.BI \-D\~ dest\~\c
+.RB [ \-S ] \~\c
+.RB [ \-P \~\c
+.IR prefix-text "] \c"
+.RB [ \-A \~\c
+.IR suffix-text "] \c"
+.RI [ link-text ]
+Create a hotspot link to
+.I dest,
+which a
+.RB \[lq] .pdfbookmark \~.\|.\|.\&\[rq]
+or
+.RB \[lq] ".pdfhref M" \~.\|.\|.\&\[rq]
+call elsewhere in the document should define.
+.
+(If the document employs forward references,
+it must be processed twice;
+see
+.MR pdfmom @MAN1EXT@ .)
+.
+If
+.I link-text
+is omitted,
+.I dest
+is formatted as the link text.
+.
+The
+.B \-P
+and
+.B \-A
+arguments format their successors as text
+before and after the link text,
+respectively,
+without intervening space.
+.
+Specifying
+.B \-S
+prevents
+.B pdfhref
+from \[lq]closing\[rq] the hotspot,
+requiring the document
+(or macro package wrapping
+.BR pdfhref )
+to do so itself with
+.B \%pdfmarkend
+or
+.RB \[lq] "\[rs]X\[aq]pdf: markend\[aq]" \[rq].
+.
+.
+.TP
+.BR ".pdfhref M" \~\c
+.RB [ \-E ]\~\c
+.RB [ \-N \~\c
+.IR tag-name ]\~\c
+.I dest
+Mark the nearest page location as a destionation named
+(the first word of)
+.I dest,
+which should be unique within a document.
+.
+Specifying
+.B \-T
+followed by
+.I tag-name
+overrides this default.
+.
+Specifying
+.B \-E
+formats
+.I dest
+as text in the document as well.
+.
+.
+.TP
+.BR ".pdfhref W" \~\c
+.BI \-D\~ uri\~\c
+.RB [ \-S ] \~\c
+.RB [ \-P \~\c
+.IR prefix-text "] \c"
+.RB [ \-A \~\c
+.IR suffix-text "] \c"
+.I link-text
+.\" The link-text argument is not, presently, optional.  See Savannah
+.\" #67916.
+.\" RI [ link-text ]
+Create a hotspot link to
+.I uri,
+a World Wide Web
+Universal Resource Identifer (URI).
+.
+.\" XXX: Nope--pdf.tmac formats "Unknown" as the link text instead.  See
+.\" Savannah #67916.
+.\" If
+.\" .I link-text
+.\" is omitted,
+.\" .I uri
+.\" is formatted as the link text.
+.
+The
+.B \-P
+and
+.B \-A
+arguments format their successors as text
+before and after the link text,
+respectively,
+without intervening space.
+.
+Specifying
+.B \-S
+prevents
+.B pdfhref
+from \[lq]closing\[rq] the hotspot,
+requiring the document
+(or macro package wrapping
+.BR pdfhref )
+to do so itself with
+.B \%pdfmarkend
+or
+.RB \[lq] "\[rs]X\[aq]pdf: markend\[aq]" \[rq].
+.
+.
+.TP
+.\" XXX: We don't need to expose PDF's '/' syntax in a *roff macro
+.\" file.  It should prefix "field" with '/' itself.  -- GBR
 .BI ".pdfinfo /" "field content"\~\c
 \&.\|.\|.
 Define PDF metadata.
@@ -1672,6 +1822,21 @@ or another datum supported by the PDF standard or your reader.
 .
 .I field
 must be prefixed with a slash.
+.
+.
+.TP
+.BR ".pdfnote " [ \-T\~\c
+.IR title ]\~ text
+Create an annotation in the document.
+.
+Reader support for this feature varies.
+.
+Some place an icon in the margin;
+hovering over the icon reveals any
+.IR title ,
+while clicking on the icon
+pops up a window containing
+.IR text .
 .
 .
 .\" ====================================================================
@@ -1988,6 +2153,16 @@ If set and evaluates to a true value
 .I gropdf
 ignores commands specific to presentation PDFs,
 producing a normal PDF instead.
+.
+.
+.TP
+.I GROPDF_OPTIONS
+.I gropdf
+interprets the contents of this environment variable
+as a space-separated list of command-line options.
+.
+Explicit command-line options override any settings
+from this environment variable.
 .
 .
 .TP

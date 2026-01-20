@@ -25,7 +25,7 @@ preconv="${abs_top_builddir:-.}/preconv"
 fail=
 
 wail () {
-    echo FAILED >&2
+    echo ...FAILED >&2
     fail=YES
 }
 

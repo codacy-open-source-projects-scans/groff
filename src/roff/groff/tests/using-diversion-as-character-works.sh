@@ -20,6 +20,27 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
+# Locate directory containing our test artifacts.
+artifact_dir=
+base=src/roff/groff/tests
+dir=artifacts
+
+for buildroot in . .. ../..
+do
+    d=$buildroot/$base/$dir
+    if [ -d "$d" ]
+    then
+        artifact_dir=$d
+        break
+    fi
+done
+
+# If we can't find it, we can't test.
+test -z "$artifact_dir" && exit 77 # skip
+
+# Ensure we _shipped_ the artifact.
+test -f "$artifact_dir"/small-gnu-head.png || exit 99 # fail hard
+
 # Regression-test Savannah #66587.  Based on a reproducer by Peter
 # Schaffter.
 

@@ -160,6 +160,38 @@ These processes are basic to typesetting,
 and can be controlled at the input document's discretion.
 .
 .
+.\" This paragraph and the subsequent example are unique to roff(7); in
+.\" Texinfo we introduce escape sequences and requests more gently.
+.P
+Instructions to
+.I roff
+take two forms.
+.
+One is the
+.IR request ,
+which occupies an input line and starts with the
+.IR "control character" ,
+a dot
+.RB \[lq] . \[rq].
+.
+The other is the
+.IR "escape sequence" ,
+which can occur almost anywhere and starts with the
+.IR "escape character" ,
+a backslash
+.RB \[lq] \[rs] \[rq].
+.
+Both characters are configurable.
+.
+.
+.RS
+.PP
+.EX
+\&.br \[rs]" break the output line
+.EE
+.RE
+.
+.
 .P
 When a device-independent
 .I roff

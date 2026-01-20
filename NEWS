@@ -1,5 +1,5 @@
     Copyright 1992-2023 Free Software Foundation, Inc.
-              2018-2025 G. Branden Robinson
+              2018-2026 G. Branden Robinson
                    2022 Ingo Schwarze
 
     Copying and distribution of this file, with or without modification,
@@ -9,8 +9,8 @@
 This file describes recent user-visible changes in groff.  Bug fixes are
 not described.  There are more details in the man and info pages.
 
-VERSION next
-============
+VERSION 1.24.0 release candidate
+================================
 
 Noteworthy incompatible changes
 -------------------------------
@@ -79,7 +79,7 @@ troff
    an error diagnostic.
 
 *  The `cf` request is now disabled in safer mode; as with `pi` and
-   `sy`, you must specify the "unsafe mode" option `-U` to use it.
+   `sy`, you must specify troff's "unsafe mode" option `-U` to use it.
    Alternatively, use the `trf` request, available since groff 0.6
    (circa 1990), to embed a file in GNU troff's output while discarding
    characters (most C0 and C1 controls) that are invalid as GNU troff
@@ -269,6 +269,13 @@ troff
    name of each stream opened with the `open` or `opena` requests, the
    name of the file backing it, and its mode (writing or appending).
 
+*  The `ptr` request has been renamed to `pwh` (mnemonic: "Print WHen
+   traps will spring").  As a rule, debugging requests starting with `p`
+   correspond to a request name that manipulates the objects reported on
+   when the `p` is removed.  However, `ptr` had nothing to do with the
+   `tr` request.  The only exceptions to the stated rule of `p`-removal
+   are now `line`, `m`, and `stream`, none of which are request names.
+
 *  The `hla` request, when invoked with no arguments, now clears the
    hyphenation language, disabling automatic hyphenation.
 
@@ -280,8 +287,8 @@ troff
    units, such as the `ps` request and `\s` escape sequence, now also
    accept `p` and `s`.
 
-*  The `-c` command-line option now also removes the `color` request's
-   ability to enable multi-color output.
+*  troff's `-c` command-line option now also removes the `color`
+   request's ability to enable multi-color output.
 
 eqn
 ---
@@ -330,7 +337,7 @@ pic
    object identifier, analogously to the existing compass point and
    `.c[enter]` feature.  Thanks to Duncan Losin.
 
-*  The -S option now "locks" safer mode, rejecting any subsequent
+*  pic's -S option now "locks" safer mode, rejecting any subsequent
    specification of -U on the command line with an error diagnostic.
 
 soelim
@@ -585,6 +592,11 @@ Macro packages
 *  The m (mm) macro package's `Limsp` register (a GNU extension) has
    been removed; see the item regarding the `LI` macro below.
 
+*  The m (mm) macro package's `Le` register now defaults to `1`,
+   consistently with the `Lf`, `Lt`, and `Lx` registers of similar
+   purpose, but inconsistently with DWB 3.3 mm.  Explicitly assigning
+   the `Le` register in a document's preamble works as it always has.
+
 *  The m (mm) macro package's `AST` macro (a GNU extension) is
    deprecated, warns upon usage, and is slated for withdrawal in a
    future release.  Assign to the new string `Abstract` instead.
@@ -744,6 +756,48 @@ Output drivers
    16 degrees to the upright glyphs available in the standard symbol
    font "S".  That technique produced glyphs slightly larger than those
    in grops's "SS" font.  Thanks to Deri James.
+
+*  gropdf now subsets embedded fonts by default, meaning that it stores
+   only the glyphs a document actually uses.  Font subsetting usually
+   reduces the size of the PDF gropdf creates.  Thanks to Deri James.
+
+*  gropdf supports a new `--opt` command-line option, permitting a few
+   features, including font subsetting, to be selectively enabled.
+   Thanks to Deri James.
+
+*  gropdf now emits PDFs that conform to the PDF 1.7 standard (also
+   known as ISO 32000).  Its new `--pdfver` command-line option permits
+   production of PDF 1.4-conformant output instead.  Thanks to Deri
+   James.
+
+*  gropdf supports a new `pdf: pagenumbering` device extension command
+   and `pdfpagenumbering` convenience macro, allowing control of the
+   page numbers in a PDF reader's overview panel.  It is common for a
+   document to number early pages with Roman numerals and then restart
+   page enumeration at decimal 1 for its main matter.  Thanks to Deri
+   James.
+
+*  gropdf now offers its own implementations of the "pdfmark" macro
+   package's "pdfhref" and other macros, supporting internal (bookmarks,
+   named destinations) and external (URL) hyperlinks, and the
+   specification of hotspots for link text.  For example, when bundling
+   multiple man pages into a collection, as the supplied
+   groff-man-pages.pdf document and the Linux man-pages project do,
+   references to man pages within the collection are supported with
+   internal hyperlinks, and those outside with external ones.  Thanks to
+   Deri James.
+
+*  gropdf now supports characters outside the Unicode Basic Latin subset
+   in bookmarks, named destinations, and external hyperlinks.  (They
+   must be encoded using groff's Unicode special character escape
+   sequences; the preconv preprocessor is helpful to simply this
+   requirement.)  Thanks to Deri James.
+
+*  gropdf now recognizes a `GROPDF_OPTIONS` environment variable,
+   interpreting it as a space-separated list of command-line options.
+   Explicit command-line options override any settings from this
+   environment variable.  You can use this variable to obviate passing
+   options to gropdf via groff's `-P` option.  Thanks to Deri James.
 
 *  grops(1), the PostScript output driver, now supports fonts encoded
    using UTF-16.  Indicate the encoding by including the string

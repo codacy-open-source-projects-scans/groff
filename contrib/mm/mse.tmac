@@ -64,8 +64,6 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds LetSIDOR
 .\" Svensk standard med högerställd löptext. ---------------------
 .de let@init_SVH
-.in 4.57c
-.ll 17.57c
 ..
 .de let@head_SVH
 .rm let@header
@@ -156,6 +154,8 @@ Datum:
 .\"
 .\" Ta hand om special
 .if d TP .TP
+.in 0
+.fi
 .sp |17
 ..
 .\"  -----------------------------------

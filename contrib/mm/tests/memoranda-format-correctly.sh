@@ -22,7 +22,7 @@ groff="${abs_top_builddir:-.}/test-groff"
 fail=
 
 wail () {
-    echo FAILED >&2
+    echo ...FAILED >&2
     fail=YES
 }
 

@@ -10,7 +10,7 @@ groff_mm \- memorandum macros for GNU
 .\" ====================================================================
 .\"
 .\" Copyright 1989-2019 Free Software Foundation, Inc.
-.\"           2020-2024 G. Branden Robinson
+.\"           2020-2026 G. Branden Robinson
 .\"
 .\" This file is part of mm, a reimplementation of the Documenter's
 .\" Workbench (DWB) troff memorandum macro package for use with GNU
@@ -151,7 +151,8 @@ terminates either.
 .I groff mm
 is intended to be compatible with the
 .I mm
-implementation found in the AT&T Documenter's Workbench (DWB) 3.3,
+implementation found in the AT&T Documenter's Workbench 3.3
+(\[lq]DWB\[rq]),
 with the following limitations and changes.
 .
 .
@@ -210,8 +211,7 @@ set from the
 .I troff \" generic
 or
 .I nroff \" generic
-command lines with DWB
-.IR mm ,
+command lines with DWB,
 are not recognized.
 .
 .
@@ -222,6 +222,23 @@ or
 .B W
 from the command line,
 use an explicit scaling unit to avoid surprises.
+.
+.
+.IP \[bu]
+The
+.B Le
+register defaults to
+.BR 1 ,
+consistently with
+.BR Lf ,
+.BR Lt ,
+and
+.B Lx
+in DWB;
+equations captioned with
+.B EC
+appear in tables of contents produced by
+.BR TC .
 .
 .
 .IP \[bu]
@@ -247,9 +264,7 @@ Cut marks are not supported.
 .
 .
 .P
-DWB
-.I mm
-supported only seven levels of heading.
+DWB supported only seven heading levels.
 .
 As a compatible extension,
 .I groff mm
@@ -279,9 +294,8 @@ Forward references require two-pass formatting.
 See the
 .B INITR
 macro description below
-and the
-.MR mmroff @MAN1EXT@
-man page.
+and
+.MR mmroff @MAN1EXT@ .
 .
 .
 .P
@@ -634,15 +648,12 @@ macros are undefined by default;
 .I mm
 calls them to enable customization of its behavior.
 .
-(DWB
-.I mm
-termed these \[lq]exits\[rq].)
+(DWB termed these \[lq]exits\[rq].)
 .
 .
 .P
 Macro names longer than two characters are GNU extensions;
-some shorter names were not part of DWB
-.IR mm 's
+some shorter names were not part of DWB's
 published interface but are documented aspects of
 .I groff mm.
 .
@@ -895,8 +906,7 @@ An abstract does not appear at all in external letters
 .RI A\~ placement
 of
 .B 2
-was supported by DWB
-.I mm
+was supported by DWB,
 but is not by
 .IR "groff mm" .
 .
@@ -957,7 +967,7 @@ terminates a document title started with
 .BR TL ,
 and can be called without arguments for that purpose.
 .
-Author information is used by cover page,
+Author information is used by cover pages,
 .B MT
 memoranda,
 and
@@ -1352,8 +1362,7 @@ and \[lq]CB\[rq] can also be specified as \[lq]0\[rq],
 and
 \[lq]3\[rq],
 respectively,
-for compatibility with
-.RI DWB\~ mm.
+for compatibility with DWB.
 .
 .
 .br
@@ -1374,8 +1383,7 @@ F@Enable filling.
 \[lq]N\[rq] and \[lq]F\[rq] can also be specified as \[lq]0\[rq] and
 \[lq]1\[rq],
 respectively,
-for compatibility with
-.RI DWB\~ mm.
+for compatibility with DWB.
 .
 .
 .IP
@@ -2967,6 +2975,12 @@ does not interpret
 it can be a revision identifier
 (or empty).
 .
+.\" Explain debugging output at level 5 or higher.
+.I mm
+calls
+.B ND
+itself when initializing.
+.
 .
 .TP
 .B NE
@@ -3156,7 +3170,11 @@ and
 .BR EOP .
 .
 .TP
-.BI PGFORM\  "\fR[\fPlinelength \fR[\fPpagelength \fR[\fPpageoffset\ " \fR[\fP1\fR]]]]\fP
+.BR PGFORM \~\c
+.RI [ line-length \~\c
+.RI [ page-length \~\c
+.RI [ page-offset \~\c
+.RB [ 1 ]]]]
 Set line length, page length, and/or page offset.
 .
 This macro can be used for letterheads and similar.
@@ -3866,7 +3884,14 @@ tables,
 equations,
 and exhibits,
 in that order.
-A list appears only if at least one such captioned item is present.
+A list appears only if at least one such captioned item is present,
+and if its corresponding register
+.RB ( Le ,
+.BR Lf ,
+.BR Lt ,
+or
+.BR Lx )
+is set.
 .
 .BI TX xx
 and
@@ -3908,8 +3933,7 @@ the heading repeats at the top of each page.
 .I "groff mm"
 does not implement the
 .B N
-argument supported by DWB
-.IR mm .
+argument supported by DWB.
 .
 .
 .TP
@@ -4126,9 +4150,8 @@ if using
 and setting top and/or bottom margin to values less than the default.
 .
 .I groff mm
-exposes this undocumented DWB
-.I mm
-macro to enable greater user control of page layout.
+exposes this undocumented DWB macro
+to enable greater user control of page layout.
 .
 .
 .TP
@@ -4270,11 +4293,6 @@ interpolates a bullet mark,
 .
 .
 .TP
-.B Captc
-\[lq]CONTENTS\[rq]
-.
-.
-.TP
 .B Capec
 \[lq]Equation\[rq]
 .
@@ -4292,6 +4310,11 @@ interpolates a bullet mark,
 .TP
 .B Captb
 \[lq]Table\[rq]
+.
+.
+.TP
+.B Captc
+\[lq]CONTENTS\[rq]
 .
 .
 .TP
@@ -4380,9 +4403,7 @@ The default is
 .RB \[lq] "2 2 2 2 2 2 2 2 2 2 2 2 2 2" \[rq],
 which places all headings in italics.
 .
-DWB
-.IR mm 's
-default was
+DWB's default was
 .RB \[lq] "3 3 2 2 2 2 2" \[rq].
 .
 .
@@ -4940,9 +4961,7 @@ recognizes
 .B :p
 as an alias of
 .B Ftnum
-for DWB
-.I mm
-compatibility.
+for DWB compatibility.
 .
 .
 .TP
@@ -5186,11 +5205,9 @@ respectively,
 after a table of contents;
 see
 .B TC
-(Boolean-valued;
-.BR Le :\~ 0 ;
-.BR Lf ,
-.BR Lt ,
-.BR Lx :\~ 1 ).
+(all:
+Boolean-valued;
+.BR 1 ).
 .
 .
 .\" XXX: What is the rationale for this feature?
@@ -5525,9 +5542,7 @@ recognizes
 .B :R
 as an alias of
 .B Rfnum
-for DWB
-.I mm
-compatibility.
+for DWB compatibility.
 .
 .
 .TP
@@ -5734,9 +5749,7 @@ and
 to 0 and\~5,
 respectively.
 .
-(DWB
-.I mm
-used a value of 3 for
+(DWB used a value of 3 for
 .BR Pi .)
 .
 It then calls an initialization macro corresponding to the type.

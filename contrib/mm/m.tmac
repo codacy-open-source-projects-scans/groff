@@ -239,7 +239,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .ds Lx LIST OF EXHIBITS
 .nr Lx 1
 .ds Le LIST OF EQUATIONS
-.nr Le 0
+.nr Le 1 \" This default differs from DWB 3.3 mm.
 .\"	list indentation in ens
 .nr Li 5
 .\"	put vertical space before list items of nesting level <= Ls
@@ -493,7 +493,7 @@ http://savannah.gnu.org/bugs/?group=groff.
 .\" A sketch of debugging level meanings:
 .\"   0: no non-diagnostic output
 .\"   1: gross formatting progress: report each page start
-.\"   2: report output of conditional structural elements*
+.\"   2: report output of certain structural elements*
 .\"   3: report output of headers/footers
 .\"   4: report init, EOI macro, population and emission of diversions
 .\"   5: trace API macro calls, sprung traps, and init/shutdown
@@ -619,6 +619,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 ..
 .\" ####### module line #######################################
 .de SP
+\\*[debug@dump-args]\\
 .br
 .if !r line*lp\\n[.z] .nr line*lp\\n[.z] 0
 .if !r line*ac\\n[.z] .nr line*ac\\n[.z] 0
@@ -651,6 +652,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 .\" might be better...
 .nr misc@adjust 14
 .de SA
+\\*[debug@dump-args]\\
 .if \\n[.$] \{\
 .	if !\B'\\$1' .@error \\$0: argument is not numeric: '\\$1'
 .	if (\\$1<0):(\\$1>1) .@error \\$0: invalid argument: '\\$1'
@@ -710,6 +712,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 .\"-----------
 .\" reset tabs
 .de TAB
+\\*[debug@dump-args]\\
 .ta T 5n
 ..
 .\"-------------
@@ -749,13 +752,14 @@ hd*last-hsize=\\n[hd*last-hsize]u
 .pg@move-trap
 .if \\n[D]>=6 \{\
 .	tm Traps:
-.	ptr
+.	pwh
 .\}
 ..
 .\"-------------
 .\" .MOVE y [[x] linelength]
 .\" move to line y, indent to x
 .de MOVE
+\\*[debug@dump-args]\\
 .if !\\n[.$] \{\
 .	@warning \\$0: ignoring; no arguments specified
 .	return
@@ -776,6 +780,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 ..
 .\"-------------
 .de SM
+\\*[debug@dump-args]\\
 .if !\\n[.$] \{\
 .	@warning \\$0: ignoring; no arguments specified
 .	return
@@ -846,6 +851,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 ..
 .\"------------
 .de HC
+\\*[debug@dump-args]\\
 .ev 0
 .hc \\$1
 .ev
@@ -912,6 +918,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 .\}
 ..
 .de VERBOFF
+\\*[debug@dump-args]\\
 .ec
 .br
 .if (\\n[misc*verb]%8)/4 .SP \\n[Lsp]u
@@ -955,6 +962,7 @@ hd*last-hsize=\\n[hd*last-hsize]u
 .\" I assume that the number variable pict*id is the same
 .\" between two runs.
 .de PIC
+\\*[debug@dump-args]\\
 .br
 .nr pict*ind 0
 .nr pict*box 0
@@ -1072,6 +1080,7 @@ numeric; got '\\$1'
 .\" external picture
 .\" -L	left align
 .de EPIC
+\\*[debug@dump-args]\\
 .nr pict*adj 0		\" centered
 .if '\\$1'-L' \{\
 .	shift
@@ -1179,6 +1188,8 @@ numeric; got '\\$1'
 ..
 .\"-------------
 .de H
+.if \\n[.$]=0 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
+.if !\B'\\$1' .@error \\$0: level argument is not numeric: '\\$1'
 \\*[debug@dump-args]\\
 .if !r hd*cur-bline .nr hd*cur-bline \\n[nl]
 .br
@@ -1344,6 +1355,7 @@ numeric; got '\\$1'
 ..
 .\"--------
 .de HM
+\\*[debug@dump-args]\\
 .nr hd*i 0 1
 .while \\n+[hd*i]<15 .af H\\n[hd*i] \\$[\\n[hd*i]] 1
 ..
@@ -1424,7 +1436,7 @@ numeric; got '\\$1'
 .	if \\n[D]>=6 \{\
 .		tm \\$0: .t=\\n[.t]u, nl=\\n[nl]u
 .		tm Traps:
-.		ptr
+.		pwh
 .	\}
 .\}
 ..
@@ -1447,6 +1459,7 @@ numeric; got '\\$1'
 ..
 .\" no header on the next page
 .de PGNH
+\\*[debug@dump-args]\\
 .nr pg*top-enabled (-1)
 ..
 .\" set first trap for pagefooter
@@ -1734,12 +1747,14 @@ numeric; got '\\$1'
 .\"-------------------------
 .\" define bottom block
 .de BS
+\\*[debug@dump-args]\\
 .misc@ev-keep pg*block-ev
 .@reset
 .debug@box pg*block-div
 ..
 .\"-------------------------
 .de BE
+\\*[debug@dump-args]\\
 .br \" in case the user forgot
 .debug@box
 .nr pg*block-size \\n[dn]u
@@ -1760,6 +1775,7 @@ numeric; got '\\$1'
 .\" set top and bottom margins
 .\" -T	sets pg*footer-size and pg*header-size instead
 .de VM
+\\*[debug@dump-args]\\
 .ie '\\$1'-T' \{\
 .	shift
 .	if \\n[.$]=0 \{\
@@ -1808,6 +1824,7 @@ numeric; got '\\$1'
 ..
 .\" An argument disables the page-break.
 .de 1C
+\\*[debug@dump-args]\\
 .if \\n[pg*cols-per-page]<=1 \{\
 .	@warning \\$0: multicolumn mode not active
 .	return
@@ -1836,6 +1853,7 @@ messy
 .\}
 ..
 .de 2C
+\\*[debug@dump-args]\\
 .if \\n[pg*cols-per-page]>1 .@error \\$0: multicolumn mode already \
 active
 .br
@@ -1850,6 +1868,7 @@ active
 ..
 .\" MC column-size [ column-separation ]
 .de MC
+\\*[debug@dump-args]\\
 .if \\n[pg*cols-per-page]>1 .@error \\$0: multicolumn mode already \
 active
 .br
@@ -1875,6 +1894,7 @@ page
 ..
 .\" begin a new column if using `2C` or `MC`
 .de NCOL
+\\*[debug@dump-args]\\
 .if \\n[pg*cols-per-page]<2 .@warning \\$0: not in multi-column mode; \
 breaking page
 .br
@@ -1883,6 +1903,7 @@ breaking page
 ..
 .\" skip pages
 .de SK
+\\*[debug@dump-args]\\
 .br
 .bp
 .nr pg*i 0 1
@@ -1895,6 +1916,7 @@ breaking page
 .\"-------------------------------
 .\" MULB width1 space1 width2 space2 width3 space3 ...
 .de MULB
+\\*[debug@dump-args]\\
 .br
 .nr pg*i 0 1
 .nr pg*mul-x 0 1
@@ -1920,6 +1942,7 @@ breaking page
 ..
 .\"-----------
 .de MULN
+\\*[debug@dump-args]\\
 .if \\n[pg*cols-per-page]<2 .@error \\$0: not in multi-column mode
 .if \\n[pg*mul-x]>=\\n[pg*mul-max-col] \{\
 .	ds pg*msg .@abort undefined column width \"
@@ -1936,6 +1959,7 @@ breaking page
 .\"-----------
 .\" MULE
 .de MULE
+\\*[debug@dump-args]\\
 .br
 .if \\n[.d]>\\n[pg*mul-last] .nr pg*mul-last \\n[.d]
 .debug@di
@@ -1950,6 +1974,7 @@ breaking page
 ..
 .\"-----------
 .de OP
+\\*[debug@dump-args]\\
 .br
 .ie o .if !\\n[pg*head-mark]=\\n[nl] \{\
 .	bp +1
@@ -1994,6 +2019,7 @@ breaking page
 .\" set footnote format
 .\" no support for two column processing (yet). $$$
 .de FD
+\\*[debug@dump-args]\\
 .if \\n[.$]=0 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .ie \\n[.$]=2 .nr ft*clear-at-header 1
 .el           .nr ft*clear-at-header 0
@@ -2165,6 +2191,7 @@ dn=\\n[dn]
 .nr df*float 0\"	>0 if previous display was floating
 .\"--------------------------------------------
 .de DE
+\\*[debug@dump-args]\\
 .ie \\n[df*float] .df@end \\$@
 .el               .ds@end \\$@
 ..
@@ -2172,6 +2199,7 @@ dn=\\n[dn]
 .\" floating display start
 .\" nested DF/DE is not allowed.
 .de DF
+\\*[debug@dump-args]\\
 .if \\n[df*float] \{\
 .	ds df*msg \\$0: cannot nest floating displays;\"
 .	as df*msg " use DS within DF/DE\"
@@ -2415,6 +2443,7 @@ h=\\n[df*height!\\n[df*o-fnr]]
 .\" static display start
 .\" nested DS/DE is allowed. No limit on depth.
 .de DS
+\\*[debug@dump-args]\\
 .ds ds@macro \\$0
 .br
 .nr ds*lvl +1
@@ -2774,6 +2803,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr tbl*have-header 0
 .nr tbl*header-written 0
 .de TS
+\\*[debug@dump-args]\\
 .br
 .if ''\\n[.z]' .SP
 .if '\\$1'H' .debug@di tbl*header-div
@@ -2801,6 +2831,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr tbl*header-written 1
 ..
 .de TH
+\\*[debug@dump-args]\\
 .ie '\\n[.z]'tbl*header-div' \{\
 .	nr T. 0
 .	T#
@@ -2815,6 +2846,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .el .@error \\$0: .TH without .TS H"
 ..
 .de TE
+\\*[debug@dump-args]\\
 .ie '\\n[.z]'tbl*header-div' .@error \\$0: .TS H but no .TH before .TE
 .el \{\
 .	nr tbl*have-header 0
@@ -2823,9 +2855,11 @@ exceeds depth of nested lists (\\n[li*lvl])
 .TAB
 ..
 .de T&
+\\*[debug@dump-args]\\
 ..
 .\" ####### module pic #######################################
 .de PS
+\\*[debug@dump-args]\\
 .if !\\n[.$]=2 \{\
 .	ds pic*msg \\$0: expected 2 arguments, got \\n[.$]\"
 .	as pic*msg ; not preprocessed with pic?\"
@@ -2837,10 +2871,12 @@ exceeds depth of nested lists (\\n[li*lvl])
 .HTML-IMAGE
 ..
 .de PY
+\\*[debug@dump-args]\\
 .@reset
 .HTML-IMAGE-END
 ..
 .de PE
+\\*[debug@dump-args]\\
 .PY
 .SP .5
 ..
@@ -2849,6 +2885,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr eq*number 0 1
 .ds eq*label
 .de EQ
+\\*[debug@dump-args]\\
 .ds eq*label "\\$1
 ..
 .de eq@check
@@ -2872,6 +2909,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ds eq*label
 ..
 .de EN
+\\*[debug@dump-args]\\
 ..
 .\"########### module toc ###################
 .\" table of contents
@@ -2882,6 +2920,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"-----------
 .\" Table of contents with friends (module lix)
 .de TC
+\\*[debug@dump-args]\\
 .br
 .\" print any pending displays and references
 .df@print-float 3
@@ -3029,15 +3068,19 @@ exceeds depth of nested lists (\\n[li*lvl])
 .aln Ex lix*ex-nr
 .\"------------
 .de FG
+\\*[debug@dump-args]\\
 .lix@print-line fg Lf \\n+[lix*fg-nr] "\\$1" "\\$2" "\\$3" "\\$4"
 ..
 .de TB
+\\*[debug@dump-args]\\
 .lix@print-line tb Lt \\n+[lix*tb-nr] "\\$1" "\\$2" "\\$3" "\\$4"
 ..
 .de EC
+\\*[debug@dump-args]\\
 .lix@print-line ec Le \\n+[lix*ec-nr] "\\$1" "\\$2" "\\$3" "\\$4"
 ..
 .de EX
+\\*[debug@dump-args]\\
 .lix@print-line ex Lx \\n+[lix*ex-nr] "\\$1" "\\$2" "\\$3" "\\$4"
 ..
 .\"------------
@@ -3129,6 +3172,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .ds H1txt \\$3
 .ds Tcstatus \\$1
 .if !\\n[Cp] .pg@next-page
+.in 0
 .\" print LIST OF XXXX
 .\" execute user-defined macros
 .if \\$4<=4 .if d TX\\$2 .TX\\$2
@@ -3185,33 +3229,42 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\"-----------
 .de B
+\\*[debug@dump-args]\\
 .ie \\n[.$] .fnt@switch \f3 \f[\\n[.f]] \\$@
 .el         .ft 3
 ..
 .de I
+\\*[debug@dump-args]\\
 .ie \\n[.$] .fnt@switch \f2 \f[\\n[.f]] \\$@
 .el         .ft 2
 ..
 .de R
+\\*[debug@dump-args]\\
 .ie \\n[.$] .fnt@switch \f1 \f[\\n[.f]] \\$@
 .el         .ft 1
 ..
 .de IB
+\\*[debug@dump-args]\\
 .if \\n[.$] .fnt@switch \f2 \f3 \\$@
 ..
 .de BI
+\\*[debug@dump-args]\\
 .if \\n[.$] .fnt@switch \f3 \f2 \\$@
 ..
 .de IR
+\\*[debug@dump-args]\\
 .if \\n[.$] .fnt@switch \f2 \f1 \\$@
 ..
 .de RI
+\\*[debug@dump-args]\\
 .if \\n[.$] .fnt@switch \f1 \f2 \\$@
 ..
 .de RB
+\\*[debug@dump-args]\\
 .if \\n[.$] .fnt@switch \f1 \f3 \\$@
 ..
 .de BR
+\\*[debug@dump-args]\\
 .if \\n[.$] .fnt@switch \f3 \f1 \\$@
 ..
 .\"########################### module box ############################
@@ -3220,6 +3273,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .nr box*ll 0
 .\" .B1 and .B2 works like .DS
 .de B1
+\\*[debug@dump-args]\\
 .br
 .if \\n[box*ll] .@error \\$0: cannot nest; missing B2?
 .nr box*ll \\n[.l]
@@ -3238,6 +3292,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .@enable-hyphenation
 ..
 .de B2
+\\*[debug@dump-args]\\
 .br
 .if !\\n[box*ll] .@error \\$0: no corresponding B1
 .\" In nroff mode, make room for the horizontal rules taking up 1v each.
@@ -3317,8 +3372,10 @@ exceeds depth of nested lists (\\n[li*lvl])
 .am ref*mac RF
 ..
 .\"------------
+.\" Argument dumping belated because RS turned the escape character off.
 .de RF
 .ec
+\\*[debug@dump-args]\\
 .am ref*mac
 .ref@stop-print
 \\..
@@ -3418,6 +3475,7 @@ argument: '\\$2'
 .\" .APP name text
 .\" name == "" -> autonumber
 .de APP
+\\*[debug@dump-args]\\
 .\" .if \\n[.$]<2 .@error "APP: too few arguments"
 .app@set-ind "\\$1"
 .\"
@@ -3432,6 +3490,7 @@ argument: '\\$2'
 .\" .APPSK name pages text
 .\" name == "" -> autonumber
 .de APPSK
+\\*[debug@dump-args]\\
 .if \\n[.$]<2 .@error \\$0: expected 2 or 3 arguments, got \\n[.$]
 .app@set-ind "\\$1"
 .\"
@@ -3509,9 +3568,10 @@ argument: '\\$2'
 ..
 .\"-------------------
 .\" .AU [name [initials [loc [dept [ext [room [arg [arg [arg]]]]]]]]]
+.\" Argument dumping belated because TL turned the escape character off.
 .de AU
-.\"\\*[debug@dump-args]\\
 .cov@title-end
+\\*[debug@dump-args]\\
 .if !\\n[.$] .return \" AU is being used only to end a TL.
 .pg@disable-top-trap
 .nr cov*au +1
@@ -3550,6 +3610,7 @@ argument: '\\$2'
 ..
 .\" TODO: Kill this off in groff 1.24.0 release + 2 years.
 .de AST
+\\*[debug@dump-args]\\
 .@warning \\$0: macro is deprecated; define string 'Abstract' instead
 .ds Abstract "\\$1\"
 ..
@@ -3587,6 +3648,7 @@ argument: '\\$2'
 .el          .ds cov*date \\*[cov*iso-date-format]
 ..
 .de ISODATE
+\\*[debug@dump-args]\\
 .@warning \\$0: macro is deprecated; define register 'Isodate' instead
 .cov*set-date \\$@
 ..
@@ -3624,6 +3686,7 @@ argument: '\\$2'
 .ds cov*mt-file!6 0.MT
 .\"------------
 .de MT
+\\*[debug@dump-args]\\
 .ds @cover \\$0
 .@disable COVER IA IE WA WE LO LT
 .ie \\n[.$] \{\
@@ -3638,6 +3701,7 @@ argument: '\\$2'
 .mso \\*[cov*str]\\*[cov*mt-file!\\*[cov*mt-type]]
 ..
 .de COVER
+\\*[debug@dump-args]\\
 .ds @cover \\$0
 .@disable IA IE WA WE LO LT MT
 .ie !\\n[.$] .ds cov*cov-type ms
@@ -3717,6 +3781,7 @@ argument: '\\$2'
 .\" Interpolate or retrieve reference ref-name's auxiliary datum.
 .\" GETST ref-name [string]
 .de GETST
+\\*[debug@dump-args]\\
 .if \\n[.$]<1 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .if !r qrf*pass .@error \\$0: references uninitialized; call INITR first
 .ds qrf*caller \\$0\"
@@ -3735,6 +3800,7 @@ argument: '\\$2'
 .\" Interpolate or retrieve reference ref-name's heading number.
 .\" GETHN ref-name [string]
 .de GETHN
+\\*[debug@dump-args]\\
 .if \\n[.$]<1 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .if !r qrf*pass .@error \\$0: references uninitialized; call INITR first
 .ds qrf*caller \\$0\"
@@ -3753,6 +3819,7 @@ argument: '\\$2'
 .\" Interpolate or retrieve reference ref-name's page number.
 .\" GETPN ref-name [string]
 .de GETPN
+\\*[debug@dump-args]\\
 .if \\n[.$]<1 .@error \\$0: expected 1 or 2 arguments, got \\n[.$]
 .if !r qrf*pass .@error \\$0: references uninitialized; call INITR first
 .ds qrf*caller \\$0\"
@@ -3771,6 +3838,7 @@ argument: '\\$2'
 .\" Retrieve and interpolate reference ref-name's heading and page data.
 .\" GETR ref-name
 .de GETR
+\\*[debug@dump-args]\\
 .if \\n[.$]<1 .@error \\$0: expected an argument
 .if !r qrf*pass .@error \\$0: references uninitialized; call INITR first
 .ds qrf*caller \\$0\"
@@ -3816,6 +3884,7 @@ argument: '\\$2'
 .\" collect index entry
 .\" IND term ...
 .de IND
+\\*[debug@dump-args]\\
 .if !d ind*file .@error \\$0: no active index; call INITI first
 .if \\n[.$]<1 .@error \\$0: expected an argument
 .if '\\$1'' .@error \\$0: cannot record empty index entry
@@ -3833,6 +3902,7 @@ argument: '\\$2'
 ..
 .\" print index
 .de INDP
+\\*[debug@dump-args]\\
 .ie \\n[Ref] .tm .\\\\" Index: \\*[ind*file]
 .el \{\
 .	if !\\n[Cp] .pg@next-page
@@ -3862,6 +3932,7 @@ argument: '\\$2'
 .\"------------------------
 .\" Formal closing
 .de FC
+\\*[debug@dump-args]\\
 .df@print-float 3
 .ie \\n[.$] .ds let*i \\$1
 .el         .ds let*i \\*[Letfc]
@@ -3958,6 +4029,7 @@ undefined
 .ds let*date-line \l'\n[let*date-line-length]u'
 .nr let*approval-gap 5m
 .de AV
+\\*[debug@dump-args]\\
 .ne 6v
 .nf
 .sp
@@ -3977,6 +4049,7 @@ undefined
 .\"------------------------
 .\" Letter signature
 .de AVL
+\\*[debug@dump-args]\\
 .ne 6v
 .nf
 .sp 3
@@ -3990,7 +4063,7 @@ undefined
 .\" to remove the alias itself.
 .de LT
 \\*[debug@dump-args]\\
-.ds @cover LT
+.ds @cover \\$0
 .@disable AF AS AE AT AU COVER CS OK TL MT \" same list as LO
 .ds let*type BL
 .nr Pi 5
@@ -4159,6 +4232,7 @@ undefined
 ..
 .de IE
 .ec
+\\*[debug@dump-args]\\
 .debug@di
 .ev
 ..
@@ -4184,8 +4258,9 @@ undefined
 ..
 .\"------
 .de WE
-.it
 .ec
+\\*[debug@dump-args]\\
+.it
 .debug@di
 .ev
 .if d let@wa-junk .rm let@wa-junk

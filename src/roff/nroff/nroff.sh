@@ -137,7 +137,7 @@ do
       #
       # Solaris 2.2 through at least Solaris 9 'man' invokes
       # 'nroff -u0 ... | col -x'.  Ignore the -u0, since 'less' and
-      # 'more' can use the emboldening info.  But disable SGR, since
+      # 'more' interpret overstriking sequences.  But disable SGR, since
       # Solaris 'col' mishandles it.
       opts="$opts -P-c" ;;
     -V)

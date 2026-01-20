@@ -23,7 +23,7 @@ refer="${abs_top_builddir:-.}/refer"
 fail=
 
 wail () {
-    echo FAILED >&2
+    echo ...FAILED >&2
     fail=YES
 }
 

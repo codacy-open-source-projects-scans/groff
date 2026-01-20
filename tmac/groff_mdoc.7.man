@@ -497,7 +497,7 @@ Should the need arise to put a formattable space at the end of a line,
 do so with the unadjustable or unbreakable space escape sequences.
 .
 .
-.Ss "Formatting the backslash glyph"
+.Ss "Formatting the backslash and other glyphs"
 .
 When you need the
 .Xr roff
@@ -510,7 +510,7 @@ or
 .Ql \[rs][rs]
 instead.
 .
-Technically,
+Strictly,
 .Ql \[rs]e
 formats the current escape character;
 it works reliably as long as no
@@ -521,9 +521,34 @@ which should never happen in man pages.
 .Ql \[rs][rs]
 is a
 .Xr groff
-special character escape sequence that explicitly formats the
+.Em "special character"
+escape sequence that explicitly formats the
 .Dq "reverse solidus"
 (backslash) glyph.
+.
+In general,
+use special character escape sequences to format characters
+outside the ISO\~646
+.Pf ( Dq Tn ASCII )
+or Unicode Basic Latin range,
+and to format correct glyphs for the characters
+.Sq \[dq] ,
+.Dq \[aq] ,
+.Sq \- ,
+.Sq \[ha] ,
+.Sq \[ga] ,
+and
+.Sq \[ti] .
+.
+.Xr groff_char @MAN7EXT@
+presents the formatter's special character identifers,
+annotating those that are portable to legacy systems.
+.
+Section
+.Sx "Predefined strings"
+below lists characters commonly used by
+.Xr mdoc
+documents.
 .
 .
 .Ss "Other possible pitfalls"
@@ -584,23 +609,20 @@ or
 .Xr mandoc
 requires the latter form.
 .
-.Xr groff_char @MAN7EXT@
-annotates special character identifers that are portable
-to legacy systems.
-.
 .
 .Pp
 As a typesetting system,
 .Xr roff
 distinguishes hyphens,
 minus signs,
-and various sorts of dashes.
+and dashes of various widths.
 .
 When inputting a hyphen or dash
 .Pq Dq hyphen-minus
-that is intended for copy-and-paste to shell prompts,
-program code,
-or URLs,
+(Unicode U+002D)
+that should be usable
+in URLs
+or copy-and-paste operations to shell prompts or program code,
 prefix it with the escape character:
 .Ql \[rs]\- .
 .

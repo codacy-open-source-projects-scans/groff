@@ -67,6 +67,7 @@ EXTRA_DIST += \
   contrib/mm/mmroff.pl
 
 mm_TESTS = \
+  contrib/mm/tests/Captc-translates.sh \
   contrib/mm/tests/LB-mark-format-works.sh \
   contrib/mm/tests/LT-BL-spaces-before-date.sh \
   contrib/mm/tests/LT-SP-AU-without-AT-works.sh \
@@ -93,6 +94,7 @@ mm_TESTS = \
   contrib/mm/tests/place-equation-labels-correctly-in-displays.sh \
   contrib/mm/tests/remove-stale-bib-entry-data.sh \
   contrib/mm/tests/short-pages-do-not-overflow-stack.sh \
+  contrib/mm/tests/toc-captions-ident-correctly.sh \
   contrib/mm/tests/vertical-margins-are-correct.sh
 TESTS += $(mm_TESTS)
 EXTRA_DIST += \

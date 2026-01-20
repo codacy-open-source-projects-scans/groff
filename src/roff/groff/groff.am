@@ -137,6 +137,7 @@ EXTRA_DIST += $(groff_TESTS)
 EXTRA_DIST += \
   src/roff/groff/tests/artifacts/HONEYPOT \
   src/roff/groff/tests/artifacts/devascii/README \
+  src/roff/groff/tests/artifacts/small-gnu-head.png \
   src/roff/groff/tests/artifacts/throughput-file
 
 groff_XFAIL_TESTS = \

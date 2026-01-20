@@ -31,7 +31,7 @@ dist_chemtmac_DATA = $(CHEMTMACFILES)
 CHEM_EXAMPLES =  \
   contrib/chem/examples/README \
   contrib/chem/examples/atp.chem \
-  contrib/chem/examples/cholesterin.chem \
+  contrib/chem/examples/cholesterol.chem \
   contrib/chem/examples/ethamivan.chem \
   contrib/chem/examples/lsd.chem \
   contrib/chem/examples/morphine.chem \
@@ -55,6 +55,10 @@ EXTRA_DIST += \
   contrib/chem/chem.pl \
   contrib/chem/examples/cstr-122/README \
   contrib/chem/examples/README
+
+chem_TESTS = contrib/chem/tests/smoke-test.sh
+TESTS += $(chem_TESTS)
+EXTRA_DIST += $(chem_TESTS)
 
 man1_MANS += contrib/chem/chem.1
 

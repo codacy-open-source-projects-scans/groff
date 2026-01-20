@@ -159,22 +159,22 @@ void do_divert(bool appending, bool boxing)
   skip_line();
 }
 
-static void divert()
+static void divert() // .di
 {
   do_divert(false /* appending */, false /* boxing */);
 }
 
-static void divert_append()
+static void divert_append() // .da
 {
   do_divert(true /* appending */, false /* boxing */);
 }
 
-static void box()
+static void box() // .box
 {
   do_divert(false /* appending */, true /* boxing */);
 }
 
-static void box_append()
+static void box_append() // .boxa
 {
   do_divert(true /* appending */, true /* boxing */);
 }
@@ -749,7 +749,7 @@ void configure_page_offset_request()
   skip_line();
 }
 
-static void configure_page_length_request()
+static void configure_page_length_request() // .pl
 {
   vunits temp;
   if (has_arg() && read_vunits(&temp, 'v', topdiv->get_page_length())) {
@@ -766,7 +766,7 @@ static void configure_page_length_request()
   skip_line();
 }
 
-static void when_request()
+static void when_request() // .wh
 {
   vunits n;
   if (read_vunits(&n, 'v')) {
@@ -779,7 +779,7 @@ static void when_request()
   skip_line();
 }
 
-static void begin_page()
+static void begin_page() // .bp
 {
   bool got_arg = false;
   int n = 0;
@@ -833,13 +833,13 @@ static void begin_page()
   tok.next();
 }
 
-static void no_space()
+static void no_space() // .ns
 {
   curdiv->is_in_no_space_mode = true;
   skip_line();
 }
 
-static void restore_spacing()
+static void restore_spacing() // .re
 {
   curdiv->is_in_no_space_mode = false;
   skip_line();
@@ -856,7 +856,7 @@ outputting of the line forced out by the break till after we have read
 the argument to the request.  If the break did cause a trap to be
 sprung, then we don't actually do the space. */
 
-static void space_request()
+static void space_request() // .sp
 {
   postpone_traps();
   if (was_invoked_with_regular_control_character)
@@ -887,7 +887,7 @@ void blank_line()
 /* need_space might spring a trap and so we must be careful that the
 BEGIN_TRAP token is not skipped over. */
 
-static void need_space()
+static void need_space() // .ne
 {
   vunits n;
   if (!has_arg() || !read_vunits(&n, 'v'))
@@ -898,7 +898,7 @@ static void need_space()
   tok.next();
 }
 
-static void page_number()
+static void page_number() // .pn
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "page number assignment request expects an"
@@ -920,7 +920,7 @@ static void page_number()
 
 vunits saved_space;
 
-static void save_vertical_space()
+static void save_vertical_space() // .sv
 {
   vunits x;
   if (!has_arg() || !read_vunits(&x, 'v'))
@@ -932,7 +932,7 @@ static void save_vertical_space()
   skip_line();
 }
 
-static void output_saved_vertical_space()
+static void output_saved_vertical_space() // .os
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -942,7 +942,7 @@ static void output_saved_vertical_space()
   tok.next();
 }
 
-static void flush_request()
+static void flush_request() // .fl
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -974,7 +974,7 @@ void top_level_diversion::clear_diversion_trap()
   error("cannot clear diversion trap when not diverting output");
 }
 
-static void diversion_trap()
+static void diversion_trap() // .dt
 {
   vunits n;
   if (has_arg() && read_vunits(&n, 'v')) {
@@ -989,7 +989,7 @@ static void diversion_trap()
   skip_line();
 }
 
-static void change_trap()
+static void change_trap() // .ch
 {
   symbol s = read_identifier(true /* required */);
   if (!s.is_null()) {
@@ -1002,13 +1002,13 @@ static void change_trap()
   skip_line();
 }
 
-static void print_traps()
+static void print_traps() // .pwh
 {
   topdiv->print_traps();
   skip_line();
 }
 
-static void mark()
+static void mark() // .mk
 {
   symbol s = read_identifier();
   if (s.is_null())
@@ -1022,7 +1022,7 @@ static void mark()
 
 // This is truly bizarre.  It is documented in the SQ manual.
 
-static void return_request()
+static void return_request() // .rt
 {
   vunits dist = curdiv->marked_place - curdiv->get_vertical_position();
   if (has_arg()) {
@@ -1043,7 +1043,7 @@ static void return_request()
   skip_line();
 }
 
-static void vertical_position_traps()
+static void vertical_position_traps() // .vpt
 {
   int n = 0;
   if (has_arg() && read_integer(&n))
@@ -1280,7 +1280,7 @@ void init_div_requests()
   init_request("pl", configure_page_length_request);
   init_request("pn", page_number);
   init_request("po", configure_page_offset_request);
-  init_request("ptr", print_traps);
+  init_request("pwh", print_traps);
   init_request("rs", restore_spacing);
   init_request("rt", return_request);
   init_request("sp", space_request);

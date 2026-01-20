@@ -262,7 +262,7 @@ int main(int argc, char **argv)
       want_version_info = true;
       printf("GNU groff version %s\n", Version_string);
       puts(
-"Copyright 1989-2025 Free Software Foundation, Inc. and others\n"
+"Copyright 1989-2026 Free Software Foundation, Inc. and others\n"
 "\n"
 "This is free software, distributed under the terms of the GNU General"
 " Public\n"

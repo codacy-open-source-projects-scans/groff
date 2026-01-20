@@ -718,9 +718,14 @@ with '-A' option
 .      \}
 .   el \{\
 .      ds PDFHREF.DESC Unknown
-.      pdf:lookup \\*[pdf:href-D]
-.      if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[pdf:lookup-value]
+.      ie '\\*[pdf*href.class]'W' \{\
+.         if !'\\*[pdf:href-D]'' .ds PDFHREF.DESC \\*[pdf:href-D]
 .      \}
+.      el \{\
+.         pdf:lookup \\*[pdf:href-D]
+.         if !'\\*[pdf:lookup-result]'' .ds PDFHREF.DESC \\*[pdf:lookup-value]
+.      \}
+.   \}
 .   \" Apply border and colour specifications to the PDFMARK string
 .   \" definition, as required.
 .   \"

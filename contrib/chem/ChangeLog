@@ -1,3 +1,129 @@
+2026-01-13  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/lsd.chem: Improve visual representation.  Reorganize
+	representation of the structure.
+	- For aesthetic appeal, the structure was a rotated little bit.
+	  Its orientation is the one of ergoline, the parent hydride
+	  {in chemists' terms, the senior or reference structure motive}
+	  lsd and other ergot alkaloids derive from as displayed in
+	  appendix 3 of [1a], and publications (e.g., [2-4]).  The
+	  edit retains the pragmatic definition of the pyrrole moiety
+	  based on keyword flatring.
+	- The backbone labels the rings A, B, C, and D.  This is both
+	  for backward compatibility in nomenclature (rule P-101.2.4
+	  in [1b]) still used in peer reviewed publications today {e.g.,
+	  [2-4]} as well as showcase of chem's flexibilty of definitions
+	  coined by the user.
+	- Some cleaning according e.g., to rules GR-4.1.1, 4.1.2,
+	  6.5.[5]
+
+	[1a] Nomenclature of Organic Chemistry: IUPAC Recommendations
+	     and Preferred Names 2013; Favre, H. A., Powell, W. H.,
+	     International Union of Pure and Applied Chemistry, Eds.;
+	     Royal Society of Chemistry: Cambridge, 2014. Authorized
+	     online excerpt:
+	     https://iupac.qmul.ac.uk/BlueBook/Papp3.html
+	[1b] Same as [1a], authorized online excerpt:
+	     https://iupac.qmul.ac.uk/BlueBook/P10.html#1010204
+	[2]  Barker, S. A. Simple Analogs of the LSD D-Ring: A
+	     Consideration of Structure–Activity Relationships and Their
+	     Potential as Therapeutics. ACS Chem. Neurosci. 2025, 16
+	     (22), 4309–4314.
+	     https://doi.org/10.1021/acschemneuro.5c00695.
+	[3]  Pazur, E. J.; Kalatanova, A.; Tasker, N. R.; Vainionpää,
+	     K.; Leinonen, H.; Wipf, P. Synthesis and Biological
+	     Analysis of Iso-Dimethyltryptamines in a Model of
+	     Light-Induced Retinal Degeneration. ACS Med. Chem. Lett.
+	     2024, 15 (7), 1049–1056.
+	     https://doi.org/10.1021/acsmedchemlett.4c00130.
+	[4]  Rathnayake, U.; Garner, P. Asymmetric Synthesis of Lysergic
+	     Acid via an Intramolecular (3+2) Dipolar Cycloaddition/
+	     Ring-Expansion Sequence. Org. Lett. 2021, 23 (17),
+	     6756–6759.
+	     https://doi.org/10.1021/acs.orglett.1c02337.
+	[5]  Brecher, J. Graphical Representation Standards for Chemical
+	     Structure Diagrams (IUPAC Recommendations 2008). Pure Appl.
+	     Chem. 2008, 80 (2), 277–410.
+	     https://doi.org/10.1351/pac200880020277.
+
+	Fixes <https://savannah.gnu.org/bugs/?67921>.
+
+2026-01-01  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/penicillin.chem: Reorganize file.
+	- Improve use of the ring templates.
+	- Prevent partial overwrite of N in lactam moiety and alkyl
+	  amide.
+	- Explicitly designate stereochemistry.  If available, future
+	  versions of chem should replace `backbond` by a wegde shaped
+	  variant of this bond.
+
+	...for better visual representation similar to the one currently
+	used on Wikipedia.[1]
+
+	Fixes <https://savannah.gnu.org/bugs/?67877>.
+
+	[1] https://en.wikipedia.org/wiki/Benzylpenicillin
+
+2026-01-01  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/ethamivan.chem: Improve visual representation.
+	Reorganize representation of the structure.
+	- Contract the hydroxyl group, both simplifying the definition
+	  of the substituent and correcting the unusual dihedral angle
+	  of 180 degrees about C-O-H previously used.
+	- Adjust orientations of the drawing overall and substituents
+	  (e.g., rules GR-3.1.2, GR-3.1.3; 3.2.1 in [1]), especially
+	  alkyl chains around N (GR-4.1.1, ibid.).
+
+	...as one would "clean" the structure drawing in a GUI-based
+	editor, and indeed with a result very similar to the current
+	depiction on Wikipedia.[2]
+
+	Fixes <https://savannah.gnu.org/bugs/?67876>.
+
+	[1] Brecher, J. Graphical Representation Standards for Chemical
+	Structure Diagrams (IUPAC Recommendations 2008). Pure Appl.
+	Chem.  2008, 80 (2), 277-410.
+	https://doi.org/10.1351/pac200880020277.
+	[2] https://en.wikipedia.org/wiki/Etamivan
+
+2025-12-31  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/cholesterol.chem: Add stereochemistry.
+	- The previous depiction was incomplete and did not explicitly
+	  described the stereogenic centres as such.  This information
+	  was added with `front bond` and `back bond` as available with
+	  groff 1.23.0.  If possible, future versions should use a wedge
+	  shaped version of `back bond`.
+	- Particular about steroids: among chemists, it is more common
+	  to name the four rings by A, B, C, and D.  To use these labels
+	  instead of R1, R2, etc. equally displays chem's flexibility
+	  here.
+	- The orientation of cycles allowed simplifying the definition
+	  of their mutual attachment.
+
+	Fixes <https://savannah.gnu.org/bugs/?67873>.
+
+2025-12-31  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/cholesterin.chem: Rename this...
+	* examples/cholesterol.chem: ...to this.
+	* chem.am (EXTRA_DIST): Reflect rename.
+
+2026-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* chem.pl (version): Restore here-document marker that I
+	thoughtlessly discarded in commit 5d777599d5, 29 December.
+
+2026-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/smoke-test.sh: Add (directory and) test script.
+	* chem.am: Add script to new `chem_TESTS` macro and append that
+	macro to `TESTS` macro, so that "make check" runs the test.
+	Append `chem_TESTS` to `EXTRA_DIST`, so that the test script
+	ships in distribution archives.
+
 2025-12-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* chem.am (EXTRA_DIST): Ship "COPYRIGHT" file in distribution

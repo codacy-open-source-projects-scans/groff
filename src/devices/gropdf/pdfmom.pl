@@ -1,21 +1,20 @@
 #!@PERL@
 #
-#	pdfmom		: Frontend to run groff to produce PDFs
-#	Deri James	: Friday 16 Mar 2012
+# pdfmom: front end to run groff to produce PDFs
 #
-
-# Copyright (C) 2012-2024 Free Software Foundation, Inc.
-#      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
+# Copyright 2012-2024 Free Software Foundation, Inc.
+#
+# Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
-# Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
 #
-# groff is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #

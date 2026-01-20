@@ -1,3 +1,119 @@
+2026-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Initialize register `Le` to `1`, not `0`.  This makes
+	its default consistent with the `Lf`, `Lt`, and `Lx` registers
+	of similar purpose, but inconsistently with DWB 3.3 mm.
+	Explicitly assigning the `Le` register in a document's preamble
+	continues to work as it always has.
+
+	* groff_mm.7.man (Description): Document it.
+
+	* tests/toc-captions-ident-correctly.sh: Update test input to
+	omit explicit `Le` assignment, and thereby regression-test this
+	change.
+
+	Fixes <https://savannah.gnu.org/bugs/?67907>.
+
+2026-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (AST, ISODATE, GETHN, GETPN, GETR, IND, INDP, FC, AV)
+	(AVL): Fix botched diagnostic argument dumping, which caused
+	spurious output to the standard error stream with any use of
+	these macros.
+	(IE, WE): Same, but also sequence the argument dump _after_
+	these macro's `ec` invokations so we can accurately dump them.
+	See "Punning Names" in our Texinfo manual or in groff(7).
+
+2026-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (lix@print-ds): Simplify fix for Savannah #67903; as I
+	see it, once `TC` begins operating, it takes over the page
+	layout, so we can unconditionally set the indentation to zero
+	safely.  In any case, use of the `in` request by a document is
+	not licensed by the DWB 3.3 mm manual (see §3.8).
+
+2026-01-10  Alexis Hildebrandt <afh@surryhill.net>
+
+	* m.tmac (lix@print-ds): If indentation is greater than zero at
+	the time we start setting the table of contents, reset it.
+
+	Fixes <https://savannah.gnu.org/bugs/?67903>.  [Problem
+	reproducible as far back as groff 1.22.3 and appears to be an
+	oversight dating back to the introduction of groff mm in 1991.
+	--GBR]
+
+2026-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test for Savannah #67903.  Indentation of the caption
+	strings produced by the `TC` macro is erratic.
+
+	* tests/toc-captions-ident-correctly.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2026-01-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: (LT): Define `@cover` string as `\\$0`, not "LT"
+	literally.  Conceivably, a document could rename or alias the
+	`LT` macro; in a diagnostic prompted by an invalid attempt to
+	combine multiple cover page schemes, we want to report the name
+	that had actual effect.
+
+	Fixes <https://savannah.gnu.org/bugs/?67889>.  Thanks to Alexis
+	Hildebrandt for the report.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: (PGFORM, pg@enable-trap): Invoke page location trap
+	dumping request under its new name, `pwh`, not `ptr`.
+
+2026-01-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Regression-test (the defect reported in) Savannah #67830.  The
+	package's `Captc` string was not getting translated.
+
+	* tests/Captc-translates.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2026-01-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (SP, SA, TAB, MOVE, SM, HC, VERBOFF, PIC, EPIC, HM)
+	(PGNH, BS, BE, VM, 1C, 2C, MC, NCOL, SK, MULB, MULN, MULE, OP)
+	(FD, DE, DF, DS, TS, TH, TE, T&, PS, PY, EQ, EN, TC, FG, TB, EC)
+	(EX, B, I, R, IB, BI, IR, RI, RB, BR, B1, B2, RF, APP, APPSK)
+	(AU, AST, ISODATE, MT, COVER, GETST, GETHN, GETPN, GETR, IND)
+	(INDP, FC, AV, AVL, IE, WE): Enable diagnostic argument dumping
+	at appropriately high debugging levels (`-rD5` or greater).
+
+2026-01-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (H): Throw error diagnostic if not given mandatory
+	argument, or the first argument ("level") is not an arithmetic
+	expression.
+
+2025-12-23  Alexis Hildebrandt <afh@surryhill.net>
+
+	[mm]: Fix Savannah #67857.
+
+	Reading through mse.tmac and LT.se as a preparation to take on
+	bug #65861 I noticed that the layout does not seem right (see
+	attachment LT.se-before.pdf).  The main issues I notice are as
+	follows.
+	-  The main body text is offset very far to the right and
+	   overflows the right paper edge.
+	-  The lines of the main body text are not filled, i.e., line
+	   breaks in the source are present in the rendered output.
+	-  Once the first item is fixed, the `SVH` letter type main body
+	   line length also overflows the right paper edge.
+
+	* mse.tmac (let@init_SVH): Drop spurious `in` and `ll` requests.
+	(let@print_SV): Set indentation to zero and enable filling.
+	* examples/LT.se: Make both the `SVH` and `SVH` letter types
+	demonstrable by adding a `lT` string to select between them
+	{much the way "memorandum.mm" works}.  Update introductory
+	comments.
+
+	Fixes <https://savannah.gnu.org/bugs/?67857>.
+
 2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Add tests of footnote area layout and vertical margins.
@@ -3277,7 +3393,7 @@ Sun Jan 1 00:00:00 1991 Joergen Haegg (jh at efd.lth.se)
 ________________________________________________________________________
 
 Copyright 1991-2021 Free Software Foundation, Inc.
-Copyright 2021-2025 G. Branden Robinson
+Copyright 2021-2026 G. Branden Robinson
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -579,7 +579,11 @@ is also specified.
 .B \-o
 Suppress overstriking
 (other than for bold and/or underlined characters when the legacy output
-format is in use).
+format is in use;
+see options
+.B \-b
+and
+.BR \-u ).
 .
 .
 .TP
@@ -739,7 +743,8 @@ is intended only for simple documents.
 .
 .
 .IP \[bu] 3n
-There is no support for fractional horizontal or vertical motions.
+There is no support for horizontal or vertical motions
+smaller than a character cell.
 .
 .
 .IP \[bu]
@@ -752,7 +757,9 @@ are not supported.
 Color handling differs from other output drivers.
 .
 The
-.I groff
+GNU
+.I troff \" troff
+output commands produced by
 requests and escape sequences that set the stroke and fill colors
 instead set the foreground and background character cell colors,
 respectively.

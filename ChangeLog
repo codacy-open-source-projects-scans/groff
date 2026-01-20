@@ -1,9 +1,172 @@
+2026-01-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[gropdf]: Regression-test Savannah #67927.
+
+	* tmac/tests/pdf_pdfhref-W-without-link-text-works.sh: New file.
+	* src/devices/gropdf/gropdf.am (gropdf_TESTS): Run test.
+
+2026-01-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/lj4-device-smoke-test.sh: Pass `-P
+	-pletter` arguments to groff, to compel output driver to use
+	U.S. letter paper format.  Fixes test failure in environments
+	where this paper format is not the default.
+
+	Fixes <https://savannah.gnu.org/bugs/?67927>.  Thanks to Bjarni
+	Ingi Gislason for the report and Deri James for the analysis and
+	solution.
+
+2026-01-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in:
+	- Stop attempting to manually recapitulate the topology of the
+	  Info node tree with arguments after the first to `@node`
+	  commands; doing so is no longer required by recent versions of
+	  Texinfo--thanks to Alexis Hildebrandt for bringing this to my
+	  attention and providing a proof-of-concept patch--but the
+	  normative topology of the directed tree is radically
+	  unintuitive to me, leading me to make many errors.  It _seems_
+	  like Info's idea of the node traversal strategy preferred by
+	  humans is breadth-first in one direction ("Next") and
+	  _depth_-first in the other ("Prev").
+	- Fix erroneous menu entries.  This finishes cleaning up
+	  warnings about the document's node topology from recent
+	  Texinfo.
+
+	Fixes Savannah #67838.
+
+2026-01-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Crib gnulib's coverage generation from its "maint.mk" file.
+	This way developers can run "make coverage" to produce a code
+	coverage report.  Requires "lcov" package.
+
+	* Makefile.am: Define macros `COVERAGE_CCOPTS` and
+	`COVERAGE_OUT`.
+	(init-coverage, build-coverage, gen-coverage, coverage): Define
+	new (phony) target rules.
+
+2026-01-18  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.pl (.pdf*href): For external
+	hotspot links (.pdfhref W  [-D URI] [-P prefix-text] \
+	[-A affixed-text] [--] [hotlink text]), if no 'hotlink text'
+	is specified but an URI is given, use it as the text
+	rather than 'Unknown'.
+
+	Fixes <https://savannah.gnu.org/bugs/?67916>. Thanks to
+	Branden Robinson for the suggested improvement.
+
+2026-01-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/gropdf/gropdf.1.man (Macros) <pdfbookmark>
+	<pdfnote, pdhref>: Document macros.
+
+	Fixes <https://savannah.gnu.org/bugs/?66453>.  Thanks to Deri
+	James for supplying an overview of features in Savannah #67665.
+
+2026-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/gropdf/gropdf.1.man (Usage): Drop references to
+	Keith Marshall's "pdfmark" macro package; it is now maintained
+	separately from groff, and some of the claims had become stale.
+
+	Fixes <https://savannah.gnu.org/bugs/?67911>.  Thanks to Bjarni
+	Ingi Gislason for the report.
+
+2026-01-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pic]: Improve fix for Savannah #67899.
+
+	* src/preproc/pic/lex.cpp (interpolate_macro_with_args): Shift
+	more logic inside the `!ignore` conditional; this way we
+	correctly handle the case of a non-empty 33rd macro argument.
+	We were no longer smashing the stack with a list of pointers of
+	user-controlled length, but we were permitting the stack memory
+	at a location one past the end of the `argv` array to be
+	written to.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?67899>.
+
+2026-01-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp (main): Bump ending year of copyright
+	notice to 2026 to reflect (presumably) copyrightable changes in
+	the source tree as a whole since December 31.  See "Updating
+	Copyright Notices" in our "HACKING" file.
+
+2026-01-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Rename `ptr` request to `pwh`.
+
+	* src/roff/troff/div.cpp (init_div_requests): Do it.
+	* tmac/troffrc (ptr): Define macro advising user to migrate.
+	Invoke `pwh`.
+
+	* doc/groff.texi.in (Page Location Traps, The Implicit Page
+	Trap, Debugging):
+	* man/groff.7.man (Request short reference, Page location traps,
+	Debugging):
+	* man/groff_diff.7.man (New requests, Debugging): Update
+	documentation.
+
+	Fixes <https://savannah.gnu.org/bugs/?67880>.
+
+2026-01-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pic]: Fix Savannah #67899.
+
+	* src/preproc/pic/lex.cpp (interpolate_macro_with_args): Shift
+	test of argument count so that it is performed for empty
+	arguments as well as populated ones.  The misplacement of the
+	test made it possible to defeat that test by supplying an empty
+	32nd argument to a macro, consequently overrunning stack storage
+	allocated for this function's local `argv` array.
+
+	Fixes <https://savannah.gnu.org/bugs/?67899>.  Thanks to John de
+	Armas for the report and a reproducer, based on the
+	"jumperblock" example from our "doc/pic.ms" file.  Problem
+	appears to date back to groff's birth.
+
+2026-01-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[pic]: Regression-test Savannah #67899.
+
+	* src/preproc/pic/tests/\
+	do-not-crash-when-reading-macro-arguments.sh: New file.
+	* src/preproc/pic/pic.am (pic_TESTS): Run test.
+
+2025-12-21  Alexis Hildebrandt <afh@surryhill.net>
+
+	* tmac/trans.tmac [PH]: Expose mm package's `Captc` string to
+	translation.
+	* tmac/cs.tmac:
+	* tmac/de.tmac:
+	* tmac/es.tmac:
+	* tmac/fr.tmac:
+	* tmac/it.tmac:
+	* tmac/ru.tmac:
+	* tmac/sv.tmac: Update string name and lexicographic sort.
+
+	Begins fixing Savannah #67830.
+
+2026-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.am (EXTRA_DIST): Ship
+	"small-gnu-head.png" test artifact in distribution archive.
+
+2026-01-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/using-diversion-as-character-works.sh:
+	Fail hard (with status 99) if our test artifact isn't present.
+	Continues commit 3f783091f0, 19 December 2024.
+
 2026-01-02  Helmut Grohne <helmut@subdivi.de>
 
 	* src/libs/libgroff/libgroff.am (install_charset_data): Don't
 	ship a "charset.alias" file if it's empty or contains nothing
 	but comments.  Such files, a common product of certain gnulib
-	internals, aggrieve a Debian's packaging assistance tool.
+	internals, aggrieve a Debian packaging assistance tool.
 
 	Fixes <https://savannah.gnu.org/bugs/?67886>.
 
@@ -104,12 +267,6 @@
 	* src/roff/troff/div.cpp (top_level_diversion::begin_page):
 	* src/roff/troff/input.cpp (exit_troff, abort_request, do_error)
 	(fatal_with_file_and_line): Migrate call sites.
-
-2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* src/roff/troff/input.cpp: Refactor.
-	(abort_request): Replace open-coded logic duplicating an
-	existing function with a call of `terminal_write()`.
 
 2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -24097,7 +24254,7 @@ ________________________________________________________________________
 ##### License
 
 Copyright 2023-2025 Free Software Foundation, Inc.
-          2023-2025 G. Branden Robinson
+          2023-2026 G. Branden Robinson
                2025 Ingo Schwarze
 
 Copying and distribution of this file, with or without modification,

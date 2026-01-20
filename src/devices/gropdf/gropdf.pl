@@ -1,9 +1,10 @@
 #!@PERL@
 #
-#       gropdf          : PDF post processor for groff
+# gropdf: PDF post processor for groff
 #
-# Copyright (C) 2011-2025 Free Software Foundation, Inc.
-#      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
+# Copyright 2011-2025 Free Software Foundation, Inc.
+#
+# Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #

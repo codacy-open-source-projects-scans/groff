@@ -408,15 +408,15 @@ void interpolate_macro_with_args(const char *body)
 	break;
       }
       if (state == NORMAL && level == 0 && (c == ',' || c == ')')) {
-	if (token_buffer.length() > 0) {
-	  token_buffer +=  '\0';
-	  if (!ignore) {
-	    if (argc == MAX_ARG) {
-	      lex_warning("only %1 macro arguments supported", MAX_ARG);
-	      ignore = 1;
-	    }
-	    else
-	      argv[argc] = strsave(token_buffer.contents());
+	if (!ignore) {
+	  if (argc == MAX_ARG) {
+	    lex_warning("pic supports at most %1 macro arguments",
+		MAX_ARG);
+	    ignore = 1;
+	  }
+	  else if (token_buffer.length() > 0) {
+	    token_buffer += '\0';
+	    argv[argc] = strsave(token_buffer.contents());
 	  }
 	}
 	// for 'foo()', argc = 0

@@ -3647,7 +3647,7 @@ and
 SunOS\~4.0 (1988) added
 .BR SB .
 .
-Unix System\~V (1988) incorporated BSD's
+Unix System\~V (1988) incorporated the
 .B lq
 and
 .B rq
@@ -3686,11 +3686,18 @@ Plan\~9 from User Space's
 .I troff \" plan9port
 introduced
 .B MR
-in 2020.
+in 2020,
 .\" https://github.com/9fans/plan9port/commit/\
 .\"  977b25a76ae8263e53fb4eb1abfc395769f23e3d
 .\"  d32deab17bfffa5bffc5fab3e6577558e40888c5
 .\"  36cd4c58c1346375b98f517fb8568be5bb47618d
+and incorporated the
+.B lq
+and
+.B rq
+strings in 2025.
+.\" https://github.com/9fans/plan9port/commit/\
+.\"  e5b5757e640371974d2e70144c8e59c6a5b613f6
 .
 .
 .br
@@ -4898,7 +4905,7 @@ and a revised implementation of the
 .BR SY / YS
 macros for
 .I groff
-1.24 (2025).
+1.24 (2026).
 .
 .
 .P

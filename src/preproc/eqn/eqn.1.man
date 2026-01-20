@@ -1175,7 +1175,7 @@ primitive emboldens an equation by overprinting two copies of the
 equation horizontally offset by this amount
 .RB ( 4 ).
 .
-In MathML mode,
+When producing MathML output,
 components to which
 .B \%fat_offset
 applies instead use the following.
@@ -1937,7 +1937,7 @@ input is accepted.
 .
 .
 .\" ====================================================================
-.SH "MathML mode limitations"
+.SH "MathML output limitations"
 .\" ====================================================================
 .
 MathML's design assumes that it cannot know the exact physical
@@ -1980,17 +1980,17 @@ as centering on the math axis is the MathML default.
 Characters that
 .I @g@eqn
 sets extra large in
-.I troff \" mode
-mode\[em]notably the integral sign\[em]may appear too small and need to
-have their \[lq]<mstyle>\[rq] wrappers adjusted by hand.
+.I troff \" output format
+output\[em]notably the integral sign\[em]may appear too small
+and need to have their \[lq]<mstyle>\[rq] wrappers adjusted by hand.
 .
 .
 .P
-As in its
-.I troff \" mode
-mode,
+As when producing
+.I troff \" output format
+output,
 .I @g@eqn
-in MathML mode leaves the
+generates MathML that leaves the
 .B .EQ
 and
 .B .EN
@@ -2082,14 +2082,14 @@ But there's no changing it now.
 .
 .
 .P
-In
-.I nroff \" mode
-mode,
-lowercase Greek letters are rendered in roman instead of italic style.
+When producing terminal output,
+GNU
+.I eqn \" GNU
+renders lowercase Greek letters in roman instead of italic style.
 .
 .
 .P
-In MathML mode,
+When producing MathML output,
 the
 .B mark
 and
@@ -2102,7 +2102,7 @@ be implemented with \%\[lq]<maligngroup>\[rq] elements.
 .
 .
 .P
-In MathML mode,
+When producing MathML output,
 each digit of a numeric literal gets a separate \[lq]<mn>\:</mn>\[rq]
 pair,
 and decimal points are tagged with \[lq]<mo>\:</mo>\[rq].

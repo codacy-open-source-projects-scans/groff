@@ -877,6 +877,36 @@ $(top_srcdir)/.version:
 dist-hook:
 	echo $(VERSION) > $(distdir)/.tarball-version
 
+# maintainer-mode targets
+
+init-coverage:
+	$(MAKE) $(AM_MAKEFLAGS) clean
+	lcov --directory . --zerocounters
+
+COVERAGE_CCOPTS ?= "-g --coverage"
+COVERAGE_OUT ?= doc/coverage
+
+build-coverage:
+	$(MAKE) $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) \
+	  CXXFLAGS=$(COVERAGE_CCOPTS)
+	$(MAKE) $(AM_MAKEFLAGS) CFLAGS=$(COVERAGE_CCOPTS) \
+	  CXXFLAGS=$(COVERAGE_CCOPTS) check
+	$(MKDIR_P) $(COVERAGE_OUT)
+	lcov --directory . --output-file \
+	  $(COVERAGE_OUT)/$(PACKAGE).info --capture
+
+gen-coverage:
+	genhtml --output-directory $(COVERAGE_OUT) \
+	  $(COVERAGE_OUT)/$(PACKAGE).info \
+	  --frames --legend \
+	  --title "$(PACKAGE_NAME)"
+
+coverage:
+	$(MAKE) init-coverage
+	$(MAKE) build-coverage
+	$(MAKE) gen-coverage
+
+
 # Local Variables:
 # fill-column: 72
 # mode: makefile-automake

@@ -1,11 +1,12 @@
-.\"    -*- nroff -*-
 .\"    Copyright 1989-2014 Free Software Foundation, Inc.
 .\"
-.\"    Copying and distribution of this file, with or without modification,
-.\"    are permitted in any medium without royalty provided the copyright
-.\"    notice and this notice are preserved.
+.\"    Copying and distribution of this file, with or without
+.\"    modification, are permitted in any medium without royalty
+.\"    provided the copyright notice and this notice are preserved.
 .
-.\" groff -mmse LT.se
+.\" groff -mmse -dlT=SVV LT.se
+.\" vänster eller högerställt brev
+.\" groff -mmse -dlT=SVH LT.se
 .ND 1994-10-26
 .WA "Sven Olsson" title
 Return address
@@ -29,9 +30,8 @@ Text xxxxxxxxxxxxxxxxxx
 .LO BET ärendebeteckning
 .LO MBET "Mottagarens b"
 .LO SIDOR 22
-.\" vänster eller högerställt brev
-.\" .LT SVH
-.LT SVV
+.if !dlT .ds lT SVV
+.LT \*(lT
 hepp
 granary
 grand
@@ -1067,3 +1067,8 @@ holystone
 .NS
 holt
 .NE
+.\" Local Variables:
+.\" mode: nroff
+.\" fill-column: 72
+.\" End:
+.\" vim: set filetype=groff textwidth=72:

@@ -2,26 +2,26 @@ lsd.chem:
 .cstart
 
 # Example file for chem:
-#   LSD or Lysergic acid dethylamide or C20_H25_N3O or
-#   9,10-Didehydro-N,N-diethyl-6-methyl-ergoline-8-beta-carboxamide
+#   LSD or Lysergic acid diethylamide or C20_H25_N3_O (CAS-RN: 50-37-3)
 #
-# Prepared by Bernd Warken <groff-bernd.warken-72@web.de>.
+# Prepared by Bernd Warken <groff-bernd.warken-72@web.de>,
+# reorganized by Norwid Behrnd <nbehrnd@yahoo.com>.
 
-F:	flatring5 pointing left put N at 5 double 3,4
-	H below F.N
-B:	benzene pointing right with .V1 at F.V2
-R1:	ring pointing right with .V4 at B.V6
-	front bond right from R1.V6 ; H
-R2:	ring pointing right with .V2 at R1.V6 put N at 1 double 3,4
-	bond right from R2.N
-	back bond -60 from R2.V5 ; H
-	bond up from R2.V5
-B1:	double bond up ; O
-        bond right from B1.start ; N
-        bond 45
-	bond right
-        bond 135 from N
-	bond right
+A:	ring6 double 1,2 3,4 5,6
+B:	flatring5 pointing up with .V4 at A.V3 put N at 3 double 1,2
+C:	ring6 with .V3 at B.V1
+D:	ring6 with .V3 at C.V1 put N at 2 double 4,5
+
+	H right of B.N
+	bond 60 from D.V2
+	frontbond 60 from D.V3 ; H
+BP:	frontbond -60 from D.V6
+	doublebond up ; O
+	bond -120 from BP.end ; N
+	bond  -60 from N
+	bond -120
+	bond down from N
+	bond -120
 
 # Local Variables:
 # fill-column: 72

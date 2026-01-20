@@ -314,7 +314,7 @@ language,
 for which many
 similar implementations exist.
 .
-When say \[lq]the formatter\[rq] when speaking of behavior
+We say \[lq]the formatter\[rq] when speaking of behavior
 that is generally true of
 .I troff \" generic
 and
@@ -1959,6 +1959,10 @@ only characters that are not meaningful as operators
 in that context
 can be used as output comparison delimiters.
 .
+The following inputs are therefore invalid as delimiters in
+GNU
+.IR troff . \" GNU
+.
 .
 .RS
 .IP \[bu] 3n
@@ -2005,7 +2009,7 @@ GNU
 keeps track of the nesting depth of escape sequence interpolations,
 so the only characters you need to avoid using as delimiters are those
 that appear in the arguments you input,
-not any that result from interpolation.
+not those that result from interpolation.
 .
 Typically,
 .B \[aq]
@@ -2443,16 +2447,18 @@ to avoid formatting them;
 this causes them to be compared character by character,
 as with string comparisons in other programming languages.
 .
-Since comparands protected with
+Since
+GNU
+.I troff \" GNU
+reads comparands protected with
 .B \[rs]?\&
-are read in copy mode,
-they need not even be valid
-.I groff
-syntax.
+in copy mode,
+they need not be syntactically valid.
 .
 The escape character is still lexically recognized,
 however,
 and consumes the next character.
+.\" but see Savannah #67329
 .
 .
 .P
@@ -2765,12 +2771,12 @@ for features new to GNU
 .
 .TPx
 .REQ .ab
-Abort processing;
+Abort the formatter;
 exit with failure status.
 .
 .TPx
 .REQ .ab terminal-message
-Abort processing;
+Abort the formatter;
 write
 .I terminal-message
 to the standard error stream and exit with failure status.
@@ -3598,7 +3604,7 @@ to the current one.
 .
 .TPx
 .REQ .ex
-Exit with successful status.
+Exit the formatter.
 .
 .TPx
 .REQ .fam
@@ -4114,9 +4120,7 @@ expression
 .TPx
 .REQ .lf input-line-number
 Set the input line number
-GNU
-.I troff \" GNU
-uses when reporting diagnostics.
+the formatter uses when reporting diagnostics.
 The argument becomes the input line number of the
 .I next
 line the formatter reads.
@@ -4710,7 +4714,7 @@ and its mode
 (writing or appending).
 .
 .TPx
-.REQ .ptr
+.REQ .pwh
 Report names and positions of all page location traps to the standard
 error stream.
 .
@@ -5507,9 +5511,11 @@ which must previously have been the subject of an
 .BR opena )
 request.
 .
-The contents of
+GNU
+.I troff \" GNU
+reads the contents of
 .I name
-are read in copy mode.
+in copy mode.
 .
 .LE
 .
@@ -6957,8 +6963,7 @@ some of these are read-only.
 You can also define your own.
 .
 See section \[lq]Identifiers\[rq] above
-for information on constructing
-a valid name for a register.
+regarding the construction of valid names for registers.
 .
 .
 .P
@@ -8224,24 +8229,33 @@ space
 .SH Localization
 .\" ====================================================================
 .
-The set of hyphenation patterns is associated with the hyphenation
-language set by the
-.B .hla
+GNU
+.I troff \" GNU
+ties the set of hyphenation patterns
+to the hyphenation language code
+selected by the
+.B hla
 request.
 .
 The
-.B .hpf
+.B hpf
 request is usually invoked by a localization file loaded by the
 .I troffrc
 file.
 .
 .I groff
 provides localization files for several languages;
-see
+See subsection \[lq]Localization packages\[rq] of
 .MR groff_tmac @MAN5EXT@ .
 .
-These also set the default automatic hyphenation mode with
-.BR \%.hydefault .
+For Western languages,
+the localization file
+sets the default hyphenation mode
+and loads hyphenation patterns and exceptions.
+.
+By default,
+.I troffrc
+loads the localization file for English.
 .
 .
 .\" ====================================================================
@@ -8736,7 +8750,7 @@ page length;
 the formatter does not convert it to an absolute vertical position.
 .
 We can use the
-.B ptr
+.B pwh
 request to dump page location traps to the standard error stream;
 see section \[lq]Debugging\[rq] below.
 .
@@ -9034,10 +9048,10 @@ Environments store most of the parameters that control text processing.
 .
 A default environment named
 .RB \[lq] 0 \[rq]
+(zero)
 exists when
-.I @g@troff
-starts up;
-it is modified by formatting-related requests and escape sequences.
+exists when the formatter starts up;
+formatting-related requests and escape sequences modify its properties.
 .
 .
 .P
@@ -9055,8 +9069,8 @@ The same environment name can be pushed onto the stack multiple times,
 possibly interleaved with others.
 .
 Popping the environment stack does not destroy the current environment;
-it remains accessible by name and can be made current again by pushing
-it at any time.
+it remains accessible by name and can be made current again
+by pushing it at any time.
 .
 Environments cannot be renamed or deleted,
 and can only be modified when current.
@@ -9542,7 +9556,7 @@ open streams
 .RB ( pstream );
 and
 page location traps
-.RB ( ptr ).
+.RB ( pwh ).
 .
 Requests can also disclose
 to the standard error stream

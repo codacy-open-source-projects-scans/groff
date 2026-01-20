@@ -1493,6 +1493,8 @@ and a standalone package and command
 is also available.
 .
 .
+.br
+.ne 2v
 .P
 For raster image formats,
 use
@@ -1503,7 +1505,16 @@ file can be then converted to virtually any image format using the
 .I netpbm
 tools.
 .
-.\" XXX: We should talk about SVG.
+.
+.P
+GNU
+.I plotutils
+offers a
+.MR pic2plot 1
+utility for converting
+.I pic
+input to a wide variety of other image formats,
+including SVG.
 .
 .
 .\" ====================================================================

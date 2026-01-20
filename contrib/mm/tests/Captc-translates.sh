@@ -19,16 +19,22 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Expected output:
-#0000060   0   V esc   *   p   9   0   0   x   2   0   0   Y   H   e   l
-#0000100   l   o esc   *   p   -   9   X   , esc   *   p   +   4   9   X
-#0000120   w esc   *   p   -   9   X   o   r   l   d   !  ff esc   E
+# Regression-test (part of ) Savannah #67830.
 
-output=$(echo "Hello, world!" | "$groff" -T lj4 -P -pletter | od -t a)
-echo "$output" | grep '^0000060'
-echo "$output" | grep '^00001[02]0'
-echo "$output" | grep -Eq '^0000060.*H +e +l'            || exit 1
-echo "$output" | grep -Eq '^0000100.*l +o.* +,'          || exit 1
-echo "$output" | grep -Eq '^0000120.*w.* +o +r +l +d +!' || exit 1
+input='.
+.P
+This is an
+.I mm
+document.
+.APP
+This is an appendix.
+.TC
+.'
+
+output=$(echo "$input" | "$groff" -m m -m fr -T ascii -P -cbou \
+    | sed '/^$/d')
+echo "$output"
+
+echo "$output" | grep -q 'SOMMAIRE'
 
 # vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

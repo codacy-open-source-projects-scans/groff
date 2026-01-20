@@ -1215,6 +1215,7 @@ EOF
 sub version {
   print <<EOF;
 $prog (groff $groff_version) $chem_version
+EOF
 }
 
 1;
