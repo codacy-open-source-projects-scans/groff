@@ -1,3 +1,14 @@
+2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.1.man: Update copyright.
+	Remove references to .pdfmarkstart/end (they don't exist).
+	If no link-text in internal link (pdfhref L) use text
+	associated with the tag-name when it was created.
+	When manually closing hotlink text (after using -S)
+	previous text colour (\*[pdf:curcol]) should be restored.
+	Add section describing parameters used in pdf.tmac.
+	Remove stale information about importing graphics.
+
 2026-01-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[gropdf]: Regression-test Savannah #67927.

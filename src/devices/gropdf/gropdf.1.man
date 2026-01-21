@@ -9,7 +9,7 @@ output driver for Portable Document Format
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 2011-2025 Free Software Foundation, Inc.
+.\" Copyright 2011-2026 Free Software Foundation, Inc.
 .\"                2026 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
@@ -1184,21 +1184,26 @@ see
 .
 .
 .br
-.ne 5v
+.ne 3v
 .TP
-.BI ".pdfmarkstart " /ANN-definition
-.TQ
-.B .pdfmarkend
-.TQ
 .BI "\[rs]X\[aq]pdf: markstart " /ANN-definition \[aq]
 .TQ
 .B \[rs]X\[aq]pdf: markend\[aq]
-Macros that support PDF bookmarks use these calls internally to
-start and stop (respectively) the placement of the bookmark's
-.I hotspot;
-the user will have called
-.RB \[lq] .pdfhref\~L \[rq]
-with the text of the hotspot.
+Macros that support PDF features use these calls internally to
+start and stop (respectively) the placement of the
+.I hotspot
+text; the user will have used a PDF macro which supports clickable
+text. The
+.I /ANN-definition
+is supplied internally, so user documents should use the appropriate
+.B \%.pdfhref
+call and never
+.B \[rs]X\[aq]pdf: markstart\[aq].
+The only time to mark the end of a hotspot is if you have called
+.B \%.pdfhref
+with the -S flag, then use it to signal the end of the hotspot text
+using
+.B \[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]]
 .
 .
 .TP
@@ -1693,6 +1698,8 @@ making the page location eligible as a target named by
 .RI [ link-text ]
 Create a hotspot link to
 .I dest,
+(the
+.IR tag-name )
 which a
 .RB \[lq] .pdfbookmark \~.\|.\|.\&\[rq]
 or
@@ -1706,9 +1713,9 @@ see
 .
 If
 .I link-text
-is omitted,
-.I dest
-is formatted as the link text.
+is omitted the text associated with
+.IR dest ,
+when it was created, is formatted as the link text.
 .
 The
 .B \-P
@@ -1728,9 +1735,7 @@ requiring the document
 (or macro package wrapping
 .BR pdfhref )
 to do so itself with
-.B \%pdfmarkend
-or
-.RB \[lq] "\[rs]X\[aq]pdf: markend\[aq]" \[rq].
+.RB \[lq] "\[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]]" \[rq].
 .
 .
 .TP
@@ -1739,7 +1744,7 @@ or
 .RB [ \-N \~\c
 .IR tag-name ]\~\c
 .I dest
-Mark the nearest page location as a destionation named
+Mark the nearest page location as a destination named
 (the first word of)
 .I dest,
 which should be unique within a document.
@@ -1800,9 +1805,7 @@ requiring the document
 (or macro package wrapping
 .BR pdfhref )
 to do so itself with
-.B \%pdfmarkend
-or
-.RB \[lq] "\[rs]X\[aq]pdf: markend\[aq]" \[rq].
+.RB \[lq] "\[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]]" \[rq].
 .
 .
 .TP
@@ -1831,39 +1834,54 @@ Create an annotation in the document.
 .
 Reader support for this feature varies.
 .
-Some place an icon in the margin;
+Some place an icon at the current position on the page;
 hovering over the icon reveals any
 .IR title ,
 while clicking on the icon
 pops up a window containing
 .IR text .
 .
-.
+.fl
+.ne 12v
 .\" ====================================================================
-.SS "Importing graphics"
+.SS "Parameters"
 .\" ====================================================================
 .
-.I gropdf
-supports only the inclusion of other PDF files for inline images.
-.
-Such a PDF file may,
-however,
-contain any of the graphic formats supported by
-the PDF standard,
-such as JPEG/JFIF,
-PNG,
-and GIF.
-.
-Any application that outputs PDF can thus be used to prepare files for
-embedding in documents processed by
-.I groff
-and
+There are various parameters which affect the operation of
 .IR gropdf .
+.\" Parameter, affects, default
+.TS
+box;
+Cb Cb Cb
+Cb S S
+Lf(CR)p-1 Lx L.
+Parameter	Purpose	Default
+_
+
+\&.nr PDFNOTE.WIDTH	Set width of annotation icon.	1c
+\&.nr PDFNOTE.HEIGHT	Set height of annotation icon.	1c
+\&.ds PDFNOTE.COLO[U]R	Colour of annotation icon (RGB)	1.00 1.00 0.00
+\&.ds PDFNOTE.OPACITY	Opacity of annotation icon (0\[->]1)	0.6
+\&.nr PDFOUTLINE.FOLDLEVEL	T{
+Control which bookmark hierarchy will be visible
+T}	10000 (all)
+\&.nr PDFHREF.VIEW.LEADING	T{
+Position adjustment when clicking bookmark or internal hotspot
+T}	5p
+\&.nr PDFHREF.LEADING	Increases the clickable area around a hotspot	2.0p
+\&.ds PDFHREF.BORDER	T{
+"0\00" followed by width (points) of border around hotspot
+T}	0 0 0
+\&.ds PDFHREF.COLO[U]R	Colour of hotlink text (RGB)	0.00 0.35 0.60
+
+.TE
 .
+.\" ====================================================================
+.SS "Importing PDF graphics"
+.\" ====================================================================
 .
-.P
-The PDF file you wish to insert must be a single page and the drawing
-must just fit inside the media size of the PDF file.
+If you are importing an image as a PDF file, it must be a single page
+and the drawing must just fit inside the media size of the PDF file.
 .
 In
 .MR inkscape 1
