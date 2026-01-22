@@ -21,7 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 doc_srcdir = $(abs_top_srcdir)/doc
-doc_builddir = $(abs_top_builddir)/doc
+doc_builddir = doc
 
 # Some document sources are parameterized in configuration options like
 # the groff version number and the command prefix.  Use this in rules to

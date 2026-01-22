@@ -1847,34 +1847,77 @@ pops up a window containing
 .SS "Parameters"
 .\" ====================================================================
 .
-There are various parameters which affect the operation of
+The following parameters,
+shown as
+.I roff
+control lines,
+affect the operation of
 .IR gropdf .
-.\" Parameter, affects, default
+.
+.
+.P
 .TS
 box;
-Cb Cb Cb
-Cb S S
-Lf(CR)p-1 Lx L.
+Cb        Cb Cb
+Lf(CR)p-1 Lx L .
 Parameter	Purpose	Default
 _
-
-\&.nr PDFNOTE.WIDTH	Set width of annotation icon.	1c
-\&.nr PDFNOTE.HEIGHT	Set height of annotation icon.	1c
-\&.ds PDFNOTE.COLO[U]R	Colour of annotation icon (RGB)	1.00 1.00 0.00
-\&.ds PDFNOTE.OPACITY	Opacity of annotation icon (0\[->]1)	0.6
+\&.nr PDFNOTE.WIDTH	T{
+.na
+Set width of annotation icon.
+T}	1c
+\&.nr PDFNOTE.HEIGHT	T{
+.na
+Set height of annotation icon.
+T}	1c
+\&.ds PDFNOTE.COLOR	T{
+.na
+Set RGB color of annotation icon (RGB)
+T}	1.00 1.00 0.00
+\&.ds PDFNOTE.OPACITY	T{
+.na
+Set opacity of annotation icon
+(decimal value in [0, 1]).
+T}	0.6
+.\" XXX: Why not use \n[.R] for the next item's default?  --GBR
 \&.nr PDFOUTLINE.FOLDLEVEL	T{
-Control which bookmark hierarchy will be visible
-T}	10000 (all)
+.na
+Set depth of visible bookmark hierarchy.
+T}	10000
 \&.nr PDFHREF.VIEW.LEADING	T{
-Position adjustment when clicking bookmark or internal hotspot
+.na
+Set position adjustment when clicking bookmark or internal hotspot.
 T}	5p
-\&.nr PDFHREF.LEADING	Increases the clickable area around a hotspot	2.0p
+\&.nr PDFHREF.LEADING	T{
+.na
+Configure size of increased clickable area around a hotspot.
+T}	2.0p
+.\" XXX: Why require the user to specify two leading space-separated
+.\" zeroes?  What do they mean?  Why are we exposing this via the macro
+.\" package's API?  Why not have a register named PDFHREF.BORDERWIDTH
+.\" that accepts a width value, and default it to use points?  --GBR
+.\"
+.\" I add that if we're going to start improving this API, we could get
+.\" a good start by disposing of all these screaming capitals.  --GBR
 \&.ds PDFHREF.BORDER	T{
-"0\00" followed by width (points) of border around hotspot
+.na
+Configure the border width around a hotspot
+by specifying two zeroes followed
+by the desired width in points.
+.
+Do not use a scaling unit.
 T}	0 0 0
-\&.ds PDFHREF.COLO[U]R	Colour of hotlink text (RGB)	0.00 0.35 0.60
-
+\&.ds PDFHREF.COLOR	T{
+.na
+Set RGB color of link text.
+T}	0.00 0.35 0.60
 .TE
+.
+.
+.P
+In the foregoing,
+you can also spell \[lq]COLOR\[rq] in string names as \[lq]COLOUR\[rq].
+.
 .
 .\" ====================================================================
 .SS "Importing PDF graphics"

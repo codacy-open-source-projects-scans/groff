@@ -19,7 +19,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 mm_srcdir = $(top_srcdir)/contrib/mm
-mm_builddir = $(top_builddir)/contrib/mm
 
 bin_SCRIPTS += mmroff
 

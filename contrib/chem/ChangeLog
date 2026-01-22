@@ -1,3 +1,78 @@
+2026-01-18  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/reserpine.chem: Edit the visual representation of the
+	structure for aesthetic reasons.
+	- Contract substituents' labels where suitable;
+	- adjust bond angles; and
+	- complete the description of information about stereogenic
+	centres
+
+	... in line with rules compiled by Brecher,[1]  allowing a
+	simpler and shorter definition than the earlier one.  Retain the
+	orientation of the overall molecule previously set because this
+	matches the orientation of yohimban one can refer as parental
+	hydride depicted in appendix 3 of IUPAC's Blue Book.[2,3]
+
+	[1] Brecher, J. Graphical Representation Standards for Chemical
+	    Structure Diagrams (IUPAC Recommendations 2008). Pure Appl.
+	    Chem. 2008, 80 (2), 277–410.
+	    https://doi.org/10.1351/pac200880020277.
+	[2] Nomenclature of Organic Chemistry: IUPAC Recommendations and
+	    Preferred Names 2013; Favre, H. A., Powell, W. H.,
+	    International Union of Pure and Applied Chemistry, Eds.;
+	    Royal Society of Chemistry: Cambridge, 2014.
+	[3] https://iupac.qmul.ac.uk/BlueBook/
+
+2026-01-18  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/morphine.chem: Resurrect, rewritting as a more
+	advanced example of how to use chem.  Make the visualization
+	follow the rules compiled by Brecher[1] in the orientation of
+	morphine (as illustration of rule P-13.8.1.1) and parental
+	hydride morphinane (in appendix 3) of IUAPC's Blue Book.[2,3]
+
+	[1] Brecher, J. Graphical Representation Standards for Chemical
+	    Structure Diagrams (IUPAC Recommendations 2008). Pure Appl.
+	    Chem. 2008, 80 (2), 277–410.
+	    https://doi.org/10.1351/pac200880020277.
+	[2] Nomenclature of Organic Chemistry: IUPAC Recommendations and
+	    Preferred Names 2013; Favre, H. A., Powell, W. H.,
+	    International Union of Pure and Applied Chemistry, Eds.;
+	    Royal Society of Chemistry: Cambridge, 2014.
+	[3] https://iupac.qmul.ac.uk/BlueBook/
+
+	Fixes <https://savannah.gnu.org/bugs/?67922>.
+
+2026-01-18  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/mepacrine.chem: Update to describe mepacrine.  Now
+	the visual representation of the structure matches the
+	expectations set by the file name.  The visuals obtained by a
+	compilation meet the rules compiled by Brecher.[1]
+
+	[1] Brecher, J. Graphical Representation Standards for Chemical
+	    Structure Diagrams (IUPAC Recommendations 2008). Pure Appl.
+	    Chem 2008, 80 (2), 277–410.
+	    https://doi.org/10.1351/pac200880020277.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?67922>.
+
+2026-01-18  Norwid Behrnd <nbehrnd@yahoo.com>
+
+	* examples/morphine.chem: Rename this...
+	* examples/mepacrine.chem: ...to this.
+	* chem.am (CHEM_EXAMPLES): Reflect rename.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?67922>.
+
+2026-01-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/smoke-test.sh: Skip test if Perl's Math::Trig module is
+	not available.
+
+	Thanks to Bruno Haible for the report.  See <https://lists.gnu\
+	.org/archive/html/groff/2026-01/msg00075.html>.
+
 2026-01-13  Norwid Behrnd <nbehrnd@yahoo.com>
 
 	* examples/lsd.chem: Improve visual representation.  Reorganize

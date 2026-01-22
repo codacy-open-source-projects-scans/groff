@@ -1,3 +1,15 @@
+2026-01-20  Bruno Haible <bruno@clisp.org>
+
+	* sboxes.am: Fix portability problem involving BSD Make.  Define
+	`sboxes_builddir` macro without interpolating `top_builddir`.
+	groff does not use recursive make; all file specifications are
+	resolved relative to the top of the build tree, so the
+	interpolation is unnecessary, and with BSD Make it causes
+	spurious failures because that implementation uses strings, not
+	file identities, as the nodes of its dependency graph.  So if
+	you ask for "foo" to be built but have only a rule for a target
+	named "./foo", BSD Make fails, whereas GNU Make does not.
+
 2025-12-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* sboxes.am (EXTRA_DIST): Ship "COPYRIGHT" file in distribution

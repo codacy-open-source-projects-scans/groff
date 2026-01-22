@@ -44,6 +44,14 @@ A document explaining the basics of GNU Automake and its usage in groff
 is available in 'doc/automake.mom'; peruse a PDF rendering in
 'doc/automake.pdf' in your build tree.
 
+Tips:
+* Don't define macros, including those ending in `_srcdir` or
+  `_builddir`, unless you need to interpolate them elsewhere in the *.am
+  file.
+* If you need to define a `_builddir` macro, give it a plain literal
+  value; do _not_ lead it with an interpolation of `top_builddir` or
+  anything else.  Failure to heed this advice leads to out-of-tree build
+  failures with BSD Make.
 
 Testing
 -------
@@ -55,6 +63,19 @@ mailing list <groff@gnu.org> or Savannah issue tracker.
 
 If you find a defect in a test script, that can be reported via Savannah
 like any other bug.
+
+When you run 'make distcheck', you may occasionally encounter a
+surprising problem where the build fails due to missing test scripts.
+This is more likely when using a modified (formerly: "dirty") checkout,
+because "git describe" appends "-modifier" to the git version
+information, and that in turn goes into the name of the distribution
+archive and the directory into which it unpacks.  Long file names can
+then exceed the 99-character limit to which GNU tar still defaults for
+archive members (preserving compatibility with the tar format used by
+Seventh Edition Unix).  Scroll back in your build to the "second build",
+where the distribution archive is unpacked in a squirreled-away
+directory selected by Automake.  If this is the case, you will see error
+messages from "tar" (GNU tar, at any rate), warning of the problem.
 
 
 Documenting changes

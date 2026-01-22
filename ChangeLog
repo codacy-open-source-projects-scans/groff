@@ -1,3 +1,63 @@
+2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am: Add "filename-length-max=99" to
+	`AUTOMAKE_OPTIONS` macro so that a "dist" build fails if the
+	file names get too long for a V7 tar archive.  Consequently, the
+	build should now fail earlier if "distcheck" would fail because
+	test scripts are missing because their file names were too long
+	to be archived.  See the GNU Automake 1.16.3 manual, §17.2 "List
+	of Automake options".
+
+2026-01-20  Bruno Haible <bruno@clisp.org>
+
+	* src/libs/libgroff/libgroff.am: Drop `libgroff_a_LIBADD` macro
+	definition.  It was used incorrectly to add "lib/libgnu.a" to
+	"libgroff.a", but that's invalid.  Archives used for static
+	linking cannot nest.
+
+2026-01-20  Bruno Haible <bruno@clisp.org>
+
+	* doc/doc.am:
+	* font/devpdf/devpdf.am:
+	* tmac/tmac.am: Fix portability problem involving BSD Make.
+	Define `*_builddir` macros without interpolating `top_builddir`.
+	groff does not use recursive make; all file specifications are
+	resolved relative to the top of the build tree, so the
+	interpolation is unnecessary, and with BSD Make it causes
+	spurious failures because that implementation uses strings, not
+	file identities, as the nodes of its dependency graph.  So if
+	you ask for "foo" to be built but have only a rule for a target
+	named "./foo", BSD Make fails, whereas GNU Make does not.
+
+2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devps/devps.am: Drop unused macro `devps_builddir`.
+	Automake itself doesn't require it, and we never interpolate it.
+
+2026-01-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* bootstrap: Resync with upstream.
+
+2026-01-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gnulib: Update to stable/2026-01.
+
+2021-08-11  Douglas McIlroy <douglas.mcilroy@dartmouth.edu>
+
+	* src/prepic/pic/pic.1.man (Caveats): Explain dotted/dashed line
+	space scaling, since this document is not yet a full _pic_
+	reference.
+
+	Fixes <https://savannah.gnu.org/bugs/?44530>.
+
+2026-01-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am: Stop adding ".version" file to the `EXTRA_DIST`
+	and `BUILT_SOURCES` macros.
+
+	Fixes <https://savannah.gnu.org/bugs/?67933>.  Thanks to Colin
+	Watson for the report.
+
 2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	* src/devices/gropdf/gropdf.1.man: Update copyright.

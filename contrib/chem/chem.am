@@ -34,6 +34,7 @@ CHEM_EXAMPLES =  \
   contrib/chem/examples/cholesterol.chem \
   contrib/chem/examples/ethamivan.chem \
   contrib/chem/examples/lsd.chem \
+  contrib/chem/examples/mepacrine.chem \
   contrib/chem/examples/morphine.chem \
   contrib/chem/examples/penicillin.chem \
   contrib/chem/examples/reserpine.chem

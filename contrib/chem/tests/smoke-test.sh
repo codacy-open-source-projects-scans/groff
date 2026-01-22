@@ -20,6 +20,11 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
+if ! perl -e 'use Math::Trig;' 2> /dev/null
+then
+    exit 77 # skip
+fi
+
 input='.
 .cstart
 .cend

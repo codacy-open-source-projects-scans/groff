@@ -544,7 +544,7 @@ REVISION      = `echo $(VERSION) | cut -d . -f 3`
 # Initialize Automake variables we haven't already handled; see section
 # "3.8 Modifying the build rules of a Gnulib import directory" in the
 # Gnulib manual.
-AUTOMAKE_OPTIONS =
+AUTOMAKE_OPTIONS = filename-length-max=99
 SUBDIRS =
 noinst_HEADERS =
 noinst_LTLIBRARIES =
@@ -870,8 +870,8 @@ SUFFIXES += .man
 	     >$@
 
 # Version files - see script "build-aux/git-version-gen".
-EXTRA_DIST += $(top_srcdir)/.version
-BUILT_SOURCES += $(top_srcdir)/.version
+#EXTRA_DIST += $(top_srcdir)/.version
+#BUILT_SOURCES += $(top_srcdir)/.version
 $(top_srcdir)/.version:
 	echo $(VERSION) > $@-t && mv $@-t $@
 dist-hook:

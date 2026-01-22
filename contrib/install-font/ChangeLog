@@ -1,3 +1,9 @@
+2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* install-font.am: Drop unused macros `installfont_srcdir` and
+	`installfont_builddir`.  Automake itself doesn't require them,
+	and we never interpolate them.
+
 2025-11-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* install-font.bash: Import Peter Schaffter's "install-font.sh"

@@ -235,6 +235,17 @@ for the activation of
 .BR "| groff \-p\~" .\|.\|.
 .
 .
+.P
+.I @g@chem
+requires the
+.I \%Math::\:Trig
+Perl module,
+available via
+.UR \%https://\:www\:.cpan\:.org/
+CPAN
+.UE .
+.
+.
 .\" ====================================================================
 .SH Language
 .\" ====================================================================

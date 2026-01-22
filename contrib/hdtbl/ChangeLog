@@ -1,3 +1,8 @@
+2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* hdtbl.tmac: Actually skip loading the package if the formatter
+	is in compatibility mode, instead of just threatening to.
+
 2025-10-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* examples/fonts_n.in:

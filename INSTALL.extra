@@ -121,12 +121,20 @@ variable-length arrays) are not used.
 Several programs distributed with GNU roff are written in the Perl
 language.  Perl 5.8.0 (18 July 2002) or later is required.
 
+You need an 'm4' program.  Any m4 that implements the features
+documented in the Seventh Edition Unix m4(1) man page (1979), and the
+`-D` option, which has been standard since POSIX.1-2017 and widely
+available well before that, should suffice.  This is a build-time-only
+dependency; an installed groff does not require m4.
+
 The 'uchardet' library is an optional dependency of the 'preconv'
 program: if this library is found by 'configure', it will be
 automatically used by 'preconv'.  Discovery of the 'uchardet' library
 requires the 'pkg-config' program to be installed on your system, as
 well as the library's C header files--on a package-based host system,
 this can mean installing uchardet's '-dev' or '-devel' package.
+
+The contributed program 'chem' requires the Perl module 'Math::Trig'.
 
 The contributed program 'glilypond' requires the Perl module
 'File::HomeDir'.

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2022 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -18,37 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+glilypond="${abs_top_builddir:-.}/glilypond"
 groff="${abs_top_builddir:-.}/test-groff"
 
-fail=
+if ! perl -e 'use File::HomeDir;' 2> /dev/null
+then
+    exit 77 # skip
+fi
 
-wail () {
-    echo "...FAILED" >&2
-    fail=YES
-}
+input='.
+.lilypond start
+.lilypond end
+.'
 
-input='.Dd 2022-12-11
-.Dt foo 1
-.Os "groff test suite"
-.Sh Name
-.Nm foo
-.Nd frobnicate a bar
-.bp
-.Sh Description
-It took a while to get here.'
+printf '%s\n' "$input" | "$glilipond" | "$groff" -z
 
-output=$(printf "%s\n" "$input" | "$groff" -rcR=0 -rP13 -mdoc -Tascii \
-    -P-cbou)
-echo "$output"
-
-echo "checking first page footer" >&2
-echo "$output" | grep -En "^groff test suite +2022-12-11 +13$" \
-    | grep '^63:' || wail
-
-echo "checking second page footer" >&2
-echo "$output" | grep -En "^groff test suite +2022-12-11 +14$" \
-    | grep '^129:' || wail
-
-test -z "$fail"
-
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

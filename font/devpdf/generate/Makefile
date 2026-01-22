@@ -1,4 +1,4 @@
-# Copyright (C) 2025 G. Branden Robinson
+# Copyright 2025 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #

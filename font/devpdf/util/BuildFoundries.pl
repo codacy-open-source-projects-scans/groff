@@ -3,7 +3,7 @@
 # BuildFoundries: Given a Foundry file, generate groff font description
 # files and a "download" file so gropdf can embed fonts in PDF output.
 #
-# Copyright (C) 2011-2025 Free Software Foundation, Inc.
+# Copyright 2011-2025 Free Software Foundation, Inc.
 #      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff, the GNU roff typesetting system.

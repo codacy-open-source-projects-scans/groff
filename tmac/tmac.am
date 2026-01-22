@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 tmac_srcdir = $(top_srcdir)/tmac
-tmac_builddir = $(top_builddir)/tmac
+tmac_builddir = tmac
 
 man7_MANS += \
   tmac/groff_ms.7 \

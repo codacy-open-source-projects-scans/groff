@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2025 Free Software Foundation, Inc.
+# Copyright 2014-2025 Free Software Foundation, Inc.
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 devps_srcdir = $(top_srcdir)/font/devps
-devps_builddir = $(top_builddir)/font/devps
+
 DEVPSFONTFILES = \
   font/devps/S \
   font/devps/SS \

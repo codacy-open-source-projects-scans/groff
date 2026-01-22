@@ -141,7 +141,7 @@ echo "$output" | grep -Fqx "foo--bar" && wail
 # compatibility mode.  See Savannah #67842.
 echo "checking invalidity of \C as escape sequence delimiter" \
     "to delimited escape sequence" >&2
-output=$(printf 'foo\\h\\C"em"2m\\C"em"bar\n.pl \\(nlu' \
+output=$(printf 'foo\\h\\C"em"2m\\C"em"bar\n.pl \\n(nlu' \
     | "$groff" -T ascii)
 echo "$output" | grep -Fqx "foo  bar" && wail # 2 spaces
 

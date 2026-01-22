@@ -1554,6 +1554,35 @@ or using one that doesn't supply its own definitions for them.
 .
 .
 .\" ====================================================================
+.SH Caveats
+.\" ====================================================================
+.
+The spacing of dots and dashes in broken lines
+scales with other graphics,
+and is configurable.
+.
+For example,
+.
+.
+.RS
+.P
+.EX
+line from 0,0 to 100,0 dotted 5
+.EE
+.RE
+.
+.
+.P
+spaces the dots in a dotted line 5 units apart.
+.
+The spacing of dashes can be set the same way.
+.
+The
+.B \%dashwid
+variable sets the length of dashes.
+.
+.
+.\" ====================================================================
 .SH Bugs
 .\" ====================================================================
 .

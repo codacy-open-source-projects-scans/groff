@@ -24,7 +24,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 sboxes_srcdir = $(top_srcdir)/contrib/sboxes
-sboxes_builddir = $(top_builddir)/contrib/sboxes
+sboxes_builddir = contrib/sboxes
 sboxesnotquine = $(sboxes_srcdir)/notquine.sed
 
 sboxestmacdir = $(tmacdir)

@@ -75,8 +75,6 @@ libgroff_a_SOURCES += \
 endif
 nodist_libgroff_a_SOURCES = src/libs/libgroff/version.cpp
 
-libgroff_a_LIBADD = lib/libgnu.a
-
 # TODO: these .c files could be removed (use gnulib instead).
 EXTRA_DIST += \
   src/libs/libgroff/mkstemp.cpp \

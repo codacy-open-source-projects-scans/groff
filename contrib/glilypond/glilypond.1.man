@@ -156,7 +156,7 @@ even if their names start with a dash.
 .P
 .I \%glilypond
 requires the
-.I \%File::HomeDir
+.I \%File::\:HomeDir
 Perl module,
 available via
 .UR \%https://\:www\:.cpan\:.org/

@@ -4764,6 +4764,16 @@ in copy mode.
 .SS "Altered registers"
 .\" ====================================================================
 .
+GNU
+.I troff \" GNU
+alters the semantics of two
+AT&T
+.I troff \" AT&T
+registers
+and imparts semantics to two others
+that CSTR\~#54 documented as \[lq]reserved\[rq].
+.
+.
 .TP
 .B \[rs]n[.R]
 Because GNU
@@ -4787,6 +4797,36 @@ the
 register is string-valued;
 it interpolates the type size in typographical points,
 which can be represented as a decimal fraction.
+.
+.
+.TP
+.B \[rs]n[.x]
+Interpolate major version number of the running
+.I @g@troff
+formatter.
+.
+For example,
+if the version number is 1.23.0,
+then
+.B \[rs]n[.x]
+contains\~1.
+.
+.
+.TP
+.B \[rs]n[.y]
+Interpolate minor version number of the running
+.I @g@troff
+formatter.
+.
+For example,
+if the version number is 1.23.0,
+then
+.B \[rs]n[.y]
+contains\~23.
+.
+Also see
+.B \[rs]n[.Y]
+below.
 .
 .
 .\" ====================================================================
@@ -5229,32 +5269,6 @@ See section \[lq]Warnings\[rq] of
 .
 .
 .TP
-.B \[rs]n[.x]
-Interpolate major version number of the running
-.I @g@troff
-formatter.
-.
-For example,
-if the version number is 1.23.0,
-then
-.B \[rs]n[.x]
-contains\~1.
-.
-.
-.TP
-.B \[rs]n[.y]
-Interpolate minor version number of the running
-.I @g@troff
-formatter.
-.
-For example,
-if the version number is 1.23.0,
-then
-.B \[rs]n[.y]
-contains\~23.
-.
-.
-.TP
 .B \[rs]n[.Y]
 Interpolate revision number of the running
 .I @g@troff
@@ -5265,6 +5279,12 @@ if the version number is 1.23.0,
 then
 .B \[rs]n[.Y]
 contains\~0.
+.
+Also see
+.B \[rs]n[.x]
+and
+.B \[rs]n[.y]
+above.
 .
 .
 .TP

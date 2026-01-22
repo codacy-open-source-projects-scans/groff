@@ -41,6 +41,10 @@ EXTRA_DIST += \
   contrib/glilypond/glilypond.1.man \
   contrib/glilypond/glilypond.pl
 
+glilypond_TESTS = contrib/glilypond/tests/smoke-test.sh
+TESTS += $(glilypond_TESTS)
+EXTRA_DIST += $(glilypond_TESTS)
+
 # create perl executable 'glilypond', being stored into 'bindir'
 glilypond: $(glilypond_srcdir)/glilypond.pl $(SH_DEPS_SED_SCRIPT)
 	$(AM_V_GEN)$(RM) $@ \

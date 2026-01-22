@@ -1,8 +1,13 @@
+2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mm.am: Drop unused macro `mm_builddir`.  Automake itself
+	doesn't require it, and we never interpolate it.
+
 2026-01-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac: Initialize register `Le` to `1`, not `0`.  This makes
 	its default consistent with the `Lf`, `Lt`, and `Lx` registers
-	of similar purpose, but inconsistently with DWB 3.3 mm.
+	of similar purpose, but inconsistent with DWB 3.3 mm.
 	Explicitly assigning the `Le` register in a document's preamble
 	continues to work as it always has.
 
