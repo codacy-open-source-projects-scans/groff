@@ -869,6 +869,13 @@ Utilities
    command substitution feature of your shell; see section "Examples" of
    groff(1).
 
+*  groff now offers install-font.bash, a shell script that interactively
+   assists the configuration of fonts for use with the GNU troff
+   formatter and the gropdf and grops output drivers.  For now, it is
+   provided as an example, as it lacks a man page.  You can change to
+   its directory and run "bash install-font.bash -H" for a man page-like
+   description of its features and operation.
+
 Miscellaneous
 -------------
 

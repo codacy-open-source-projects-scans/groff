@@ -451,7 +451,12 @@ to inset a region within a (sub)section.
 .RI [ footer-middle \~\c
 .RI [ footer-inside \~\c
 .RI [ header-middle ]]]
-Populate the page header and footer.
+Break the page,
+reset the page number to\~1
+(unless the
+.B \-rC1
+option is given),
+and use the arguments to populate the page header and footer.
 _ifstyle()dnl
 .
 .I roff
@@ -537,21 +542,13 @@ ellipses
 .RB ( .\|.\|.\& ).
 _endif()dnl
 .
-In HTML output,
-headers and footers are suppressed.
+.I "groff man"
+suppresses headers and footers in HTML output.
 .
-.
-.IP
-Additionally,
-this macro breaks the page,
-resetting the number to\~1
-(unless the
-.B \-rC1
-option is given).
-.
-This feature is intended only for formatting multiple
-.I man
-documents in sequence.
+.\" Does anyone try to do anything different?  GBR hasn't seen it.
+.\" This feature is intended only for formatting multiple
+.\" .I man
+.\" documents in sequence.
 .
 .
 .IP
@@ -564,12 +561,11 @@ early in the file,
 prior to any other macro calls.
 _ifstyle()dnl
 .
-.
-.IP
 By convention,
 .I footer-middle
-is the date of the most recent modification to the man page source
-document,
+is the date of the most recent modification to the source document,
+in ISO\~8601 format
+.RI ( YYYY - MM - DD ),
 and
 .I footer-inside
 is the name and version or release of the project providing it.

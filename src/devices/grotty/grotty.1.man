@@ -173,14 +173,18 @@ option below.
 .
 .
 .P
-OSC\~8 hyperlinks are produced for these devices.
+By default,
+.I grotty
+produces
+OSC\~8 hyperlinks on devices employing SGR escape sequences.
 .
 .
 .P
-In keeping with long-standing practice and the rarity of terminals
-(and emulators)
-that support slanted
-(oblique or italic) faces,
+In accord with long-standing practice and terminals
+(emulators)
+that lack support for slanted
+(oblique or italic)
+faces,
 .I grotty
 marks italicized character cells with underlines instead
 by default\[em]but see
@@ -292,8 +296,10 @@ implementations,
 .I grotty
 never outputs reverse line feeds.
 .
-There is therefore no need to filter its output through
-.MR col 1 .
+You need not filter its output
+through
+.MR col 1
+to remove them.
 .
 .
 .\" ====================================================================
@@ -411,8 +417,7 @@ attempts to set or change the font family or type size are ignored.
 .
 .P
 .I grotty
-furthermore supports a naming scheme for East Asian typefaces
-shared with
+shares a naming scheme for East Asian typefaces with
 .MR grohtml @MAN1EXT@ ,
 .MR gropdf @MAN1EXT@ ,
 and

@@ -1456,6 +1456,23 @@ option.
 .SH "Font installation"
 .\" ====================================================================
 .
+For your convenience,
+.I groff
+offers
+.IR install\-font.bash ,
+a shell script that interactively assists
+the configuration of fonts for use with the
+GNU
+.I troff \" GNU
+formatter
+and the
+.I grops
+output driver.
+.
+See section \[lq]Files\[rq] below.
+.
+.
+.P
 The following is a step-by-step font installation guide for
 .I grops.
 .
@@ -1862,6 +1879,30 @@ using it,
 .I groff
 can produce glyphs like eth (\[Sd]) and thorn (\[Tp]) that older
 PostScript printers do not natively support.
+.
+.
+.TP
+.I @DOCDIR@/\:\%examples/\:install\-font\:.bash
+This script,
+contributed by
+.I mom
+macro package author Peter Schaffter
+and long available at his web site,
+assists with making
+TrueType
+.RI ( .ttf ),
+OpenType
+.RI ( .otf ),
+and PostScript Type\~1
+.RI ( .pfa ,
+.IR .pfb )
+fonts available to
+.IR groff .
+.
+.IP
+Change to its directory and run
+.RB \[lq] "bash install\-font.bash \-H" \[rq]
+for a man page-like description of its features and operation.
 .
 .
 .P

@@ -948,7 +948,8 @@ the four-digit year.
 This localism is not enforced,
 however.
 .
-You may prefer ISO 8601 format,
+.Xr groff
+recommends ISO\~8601 format,
 .Em YYYY-MM-DD.
 .
 A

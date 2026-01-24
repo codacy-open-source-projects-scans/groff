@@ -1042,6 +1042,47 @@ and
 option.
 .
 .
+.TP
+.BI "\[rs]X\[aq]pdf: markstart " /ANN-definition \[aq]
+.TQ
+.B \[rs]X\[aq]pdf: markend\[aq]
+Macros that support PDF features use these extension commands internally
+to bracket
+.I hotspot
+text
+(a hyperlink).
+.
+User documents should call the
+.B \%.pdfhref
+macro instead.
+.
+Their application is found in other macro packages
+(like
+.MR groff_man @MAN7EXT@
+or
+.MR groff_mdoc @MAN7EXT@ )
+that call
+.B \%.pdfhref
+with a
+.B \-S
+argument,
+then indicate the end of hotspot text with
+.BR \[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]] .
+.
+.
+.TP
+.B \[rs]X\[aq]pdf: xrev\[aq]
+Toggle the reversal of glyph direction.
+.
+This feature works by reversing all following text.
+Each separate letter is also mirrored.
+.
+One application is the reversal of glyphs in the Zapf Dingbats font.
+.
+To restore the normal glyph orientation,
+repeat the command.
+.
+.
 .LP
 .I gropdf
 supports several more device extensions using the
@@ -1184,28 +1225,7 @@ see
 .
 .
 .br
-.ne 3v
-.TP
-.BI "\[rs]X\[aq]pdf: markstart " /ANN-definition \[aq]
-.TQ
-.B \[rs]X\[aq]pdf: markend\[aq]
-Macros that support PDF features use these calls internally to
-start and stop (respectively) the placement of the
-.I hotspot
-text; the user will have used a PDF macro which supports clickable
-text. The
-.I /ANN-definition
-is supplied internally, so user documents should use the appropriate
-.B \%.pdfhref
-call and never
-.B \[rs]X\[aq]pdf: markstart\[aq].
-The only time to mark the end of a hotspot is if you have called
-.B \%.pdfhref
-with the -S flag, then use it to signal the end of the hotspot text
-using
-.B \[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]]
-.
-.
+.ne 6v
 .TP
 .B .pdfmarksuspend
 .TQ
@@ -1423,6 +1443,8 @@ document,
 but more esoteric uses are possible.
 .
 .
+.br
+.ne 5v
 .TP
 .BI ".pdftransition " "scope mode duration dimension motion direction\
  scale bool"
@@ -1532,12 +1554,10 @@ specified by
 .B Fade
 - (PDF 1.5) The new page gradually becomes visible through the
 old one.
-.LP
 .RE
 .IP
 .I duration
 is the length of the transition in seconds (default 1).
-.LP
 .IP
 .I dimension
 (Optional;
@@ -1548,7 +1568,6 @@ specified transition effect shall occur:
 Horizontal, or
 .B V
 Vertical.
-.LP
 .IP
 .I motion
 (Optional;
@@ -1560,7 +1579,6 @@ the specified transition effect:
 Inward from the edges of the page, or
 .B O
 Outward from the center of the page.
-.LP
 .IP
 .I direction
 (Optional;
@@ -1591,7 +1609,6 @@ which is relevant only for the
 transition when the value of
 .I scale
 is not 1.0.
-.LP
 .IP
 .I scale
 (Optional; PDF 1.5;
@@ -1611,7 +1628,6 @@ specifies an outward transition, the scale of the changes drawn
 shall progress from 1.0 to
 .I scale
 over the course of the transition
-.LP
 .IP
 .I bool
 (Optional; PDF 1.5;
@@ -1620,30 +1636,13 @@ transition style only) If
 .BR true ,
 the area that shall be flown
 in is rectangular and opaque.
-.LP
 .IP
 Any of the parameters may be
 replaced with a "." which signifies the parameter retains its
 previous value, also any trailing missing parameters are ignored.
-.LP
 .IP
 .B Note:
 not all PDF Readers support any or all these transitions.
-.LP
-.
-.
-.TP
-.\" XXX: No convenience macro for this one?  --GBR
-.B \[rs]X\[aq]pdf: xrev\[aq]
-Toggle the reversal of glyph direction.
-.
-This feature works by reversing all following text.
-Each separate letter is also mirrored.
-.
-One application is the reversal of glyphs in the Zapf Dingbats font.
-.
-To restore the normal glyph orientation,
-repeat the command.
 .
 .
 .\" ====================================================================
@@ -1841,7 +1840,8 @@ while clicking on the icon
 pops up a window containing
 .IR text .
 .
-.fl
+.
+.br
 .ne 12v
 .\" ====================================================================
 .SS "Parameters"
@@ -1973,6 +1973,23 @@ does not yet support any font formats besides Adobe Type 1
 .SH "Font installation"
 .\" ====================================================================
 .
+For your convenience,
+.I groff
+offers
+.IR install\-font.bash ,
+a shell script that interactively assists
+the configuration of fonts for use with the
+GNU
+.I troff \" GNU
+formatter
+and the
+.I gropdf
+output driver.
+.
+See section \[lq]Files\[rq] below.
+.
+.
+.P
 The following is a step-by-step font installation guide for
 .I gropdf.
 .
@@ -2355,6 +2372,30 @@ see
 .
 It is automatically loaded by
 .I troffrc.
+.
+.
+.TP
+.I @DOCDIR@/\:\%examples/\:install\-font\:.bash
+This script,
+contributed by
+.I mom
+macro package author Peter Schaffter
+and long available at his web site,
+assists with making
+TrueType
+.RI ( .ttf ),
+OpenType
+.RI ( .otf ),
+and PostScript Type\~1
+.RI ( .pfa ,
+.IR .pfb )
+fonts available to
+.IR groff .
+.
+.IP
+Change to its directory and run
+.RB \[lq] "bash install\-font.bash \-H" \[rq]
+for a man page-like description of its features and operation.
 .\"
 .\"
 .\" .TP

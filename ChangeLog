@@ -1,3 +1,12 @@
+2026-01-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/groff_man.7.man.in (Document structure macros):
+	* tmac/groff_mdoc.7.man (Title macros): Explicitly recommend ISO
+	8601 date format.
+
+	Fixes <https://savannah.gnu.org/bugs/?66903>.  Thanks to Alex
+	Colomar for the suggestion.
+
 2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* Makefile.am: Add "filename-length-max=99" to
