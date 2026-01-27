@@ -458,10 +458,11 @@ identifier.
 .
 .TP
 .B \-R
-Don't load
+Prevent loading of
 .I troffrc
 and
-.IR troffrc\-end .
+.IR troffrc\-end ;
+this option can be useful for troubleshooting.
 .
 .
 .TP

@@ -9,7 +9,7 @@ PostScript and PDF output
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2025 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -463,7 +463,7 @@ to improve spacing with
 .TP
 .B \-n
 Don't output a
-.B ligatures
+.RB \[lq] ligatures \[rq]
 command for this font;
 use with monospaced (constant-width) fonts.
 .
@@ -477,7 +477,7 @@ see section \[lq]Diagnostics\[rq] below.
 .TP
 .B \-s
 Add the
-.B special
+.RB \[lq] special \[rq]
 directive to the font description file.
 .
 .

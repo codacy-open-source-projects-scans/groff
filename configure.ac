@@ -140,7 +140,8 @@ GROFF_TRADITIONAL_CPP
 # checks for operating system services
 GROFF_WCOREFLAG
 
-# URW fonts extra dir
+# URW fonts support and location
+GROFF_URW_FONTS_SUPPORT
 GROFF_URW_FONTS_PATH
 
 # use groff's own malloc-based allocator for C++ new/delete operators

@@ -11,7 +11,7 @@ language reference
 .\" ====================================================================
 .\"
 .\" Copyright 2000-2024 Free Software Foundation, Inc.
-.\"           2017-2025 G. Branden Robinson
+.\"           2017-2026 G. Branden Robinson
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"
@@ -8020,6 +8020,267 @@ magnifies or reduces the typeface corresponding to a resolved one.
 and
 .B fp
 associate abstract styles and font names with mounting positions.
+.
+.
+.
+.
+.\" ====================================================================
+.SS "Characters and glyphs"
+.\" ====================================================================
+.
+A glyph is a graphical representation of a character.
+Whereas a
+.I character
+is an abstraction of semantic information,
+a
+.I glyph
+is an intelligble mark visible on screen or paper.
+.
+A character has many possible representation forms;
+for example,
+the character \[lq]A\[rq]
+can be written in an upright or slanted typeface,
+producing distinct glyphs.
+.
+Sometimes,
+a sequence of characters map to a single glyph:@:
+this is a
+.IR ligature \[em]\c
+the most common is `fi'.
+.
+.
+.P
+Space characters never become glyphs in
+GNU
+.IR troff . \" GNU
+.
+If not discarded
+(as when trailing text lines),
+horizontal motions represent them in the output.
+.
+.
+.P
+The formatter supports three kinds of character.
+An ordinary character
+(see section \[lq]Identifiers\[rq] above)
+is the most commonly used,
+has no special syntax,
+and typically represents itself.
+.
+(Depending on the breadth
+of the output device's glyph repertoire,
+the characters
+.BR \[aq] ,
+.BR \- ,
+.BR \[ha] ,
+.BR \[ga] ,
+and
+.B \[ti]
+can be exceptions to this rule.
+.
+.B \[dq]
+and
+.B \[rs]
+are not exceptions,
+but because they are syntactically meaningful to the formatter,
+access to their glyphs
+may require use of special characters
+(or changing or disabling the escape character).
+.
+See
+.MR groff_char @MAN7EXT@ .
+.
+Interpolate a
+.I "special character"
+with the
+.RB \[lq] \[rs][\c
+.IB xxx ]
+or
+.RB \[lq] \[rs]C\[aq]\c
+.IB xxx \[aq]\c
+\[rq]
+escape sequence syntax,
+where
+.I xxx
+is an identifer.
+.
+An
+.I "indexed character"
+bypasses most character-to-glyph resolution logic,
+uses the
+.RB \[lq] \[rs]N\[aq]\c
+.IB i \[aq]\c
+syntax,
+and selects a glyph from the currently selected font
+by its integer-valued position
+.I i
+in the output device's representation of that font.
+.
+(A device's fonts
+do not necessarily arrange their glyphs
+according to a standard character encoding.)
+.
+.
+.P
+.I "User-defined characters"
+are similar to string definitions
+(see section \[lq]Strings\[rq] above)
+and permit extension of or substitution within the character repertoire.
+.
+Any ordinary,
+special,
+or indexed character can be user-defined.
+.
+The
+.BR char ,
+.BR fchar ,
+.BR schar ,
+and
+.B fschar
+requests create user-defined characters
+employed at various stages of the character-to-glyph resolution process.
+.
+.
+.P
+.\" A
+.\" @c TODO: XXX: Kill off this "symbol" terminology.
+.\" @dfn{symbol}
+.\" is simply a named glyph.
+In a
+.I troff \" system
+system,
+a font description file
+.\" (recall @ref{Font Directories})
+lists all of the glyphs a particular font provides.
+.
+If the user requests a glyph
+not available in the currently selected font,
+the formatter looks it up an ordered list of
+.I "special fonts."
+.
+By default,
+the
+.RB \[lq] ps \[rq]
+(PostScript)
+and
+.RB \[lq] pdf \[rq]
+output devices support the two special fonts
+.RB \[lq] SS \[rq]
+(slanted symbol)
+and
+.RB \[lq] S \[rq]
+(symbol);
+and these devices'
+.I DESC
+files arrange them such that the formatter searches
+the former before the latter.
+.
+Other output devices use different names for special fonts.
+Fonts mounted with the
+.B fonts
+keyword in the
+.I DESC
+file are globally available.
+.
+GNU
+.IR troff 's \" GNU
+.B \%special
+and
+.B \%fspecial
+requests alter the list of fonts treated as special on a general basis,
+or only when a certain font is currently selected,
+respectively.
+.
+.
+.P
+GNU
+.I troff \" GNU
+employs the following procedure to resolve an input character
+into a glyph.
+User-defined characters make this resolution process recursive.
+The first step that succeeds ends the resolution procedure
+for the character being formatted,
+which may not be the last in the sequence interpolated
+by a user-defined character.
+.
+.
+.IP \[bu]
+Interpolate the definition of any character
+defined by the
+.B char
+request
+and apply this procedure to each character in its definition.
+.
+.
+.IP \[bu]
+Check the current font for a glyph corresponding to the character.
+.
+.
+.IP \[bu]
+Interpolate the definition of any user-defined character matching
+defined by the
+.B fchar
+request
+and apply this procedure to each character in its definition.
+.
+.
+.IP \[bu]
+Check whether the current font has a font-specific list of special
+fonts;
+if so,
+check the each font therein,
+in the order determined by the last applicable
+.B \%fspecial
+request,
+for a glyph corresponding to the character.
+.
+.
+.IP \[bu]
+Interpolate the definition of any character
+defined by the
+.B fschar
+request for the currently selected font,
+and apply this procedure to each character in its definition.
+.
+.
+.IP \[bu]
+Check each font in the list configured by the most recently issued
+.B \%special
+request for a glyph corresponding to the character.
+.
+.
+.IP \[bu]
+Interpolate the definition of any character
+defined by the
+.B sschar
+request
+and apply this procedure to each character in its definition.
+.
+.
+.IP \[bu]
+Finally,
+iterate through the list of mounted fonts by position.
+.\" recall @xref{Font Positions}.
+.
+For each mounted font,
+if that font bears the
+.B \%special
+directive
+(see
+.MR groff_font @MAN5EXT@ ),
+check it for a glyph corresponding to the character.
+.
+This stage of the resolution process
+can sometimes lead to surprising
+results since the
+.B fonts
+directive in the
+.I DESC
+file often contains empty positions that are filled
+by a macro file or document employing the
+.B fp
+request
+after the formatter initializes.
 .
 .
 .\" ====================================================================

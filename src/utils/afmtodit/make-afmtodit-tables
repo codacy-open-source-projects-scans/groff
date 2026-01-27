@@ -2,8 +2,9 @@
 #
 # Create afmtodit(1)'s 'unicode_decomposed' and 'AGL_to_unicode' tables.
 #
-# Copyright (C) 2005-2024 Free Software Foundation, Inc.
-#      Written by Werner Lemberg <wl@gnu.org>
+# Copyright 2005-2024 Free Software Foundation, Inc.
+#
+# Written by Werner Lemberg <wl@gnu.org>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #

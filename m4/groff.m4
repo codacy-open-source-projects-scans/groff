@@ -1,5 +1,7 @@
-# Autoconf macros for groff.
-# Copyright (C) 1989-2025 Free Software Foundation, Inc.
+# Autoconf macros for groff
+#
+# Copyright 1989-2017 Free Software Foundation, Inc.
+#           2021-2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -121,10 +123,10 @@ AC_DEFUN([GROFF_PERL], [
   AC_PATH_PROG([PERL], [perl], [no])
   if test "$PERL" = no
   then
-    AC_MSG_ERROR([perl binary not found], 1)
+    AC_MSG_ERROR([perl executable not found], 1)
   fi
   AX_PROG_PERL_VERSION([$PERLVERSION], true,
-    AC_MSG_ERROR([perl version is too old], 1))
+    AC_MSG_ERROR([perl version is too old (need $PERLVERSION)], 1))
 ])
 
 # We need m4 to generate some man pages.
@@ -316,7 +318,16 @@ AC_DEFUN([GROFF_GROPDF_PROGRAM_NOTICE], [
   fi
 ])
 
-# Make URW font directory configurable.
+# Make URW font support configurable.
+
+AC_DEFUN([GROFF_URW_FONTS_SUPPORT], [
+  AC_ARG_WITH([urw-fonts],
+    [AS_HELP_STRING([--without-urw-fonts],
+      [disable support for URW fonts])],
+    [urwfontsupport="$withval"])
+])
+
+# Make URW font directory location configurable.
 
 AC_DEFUN([GROFF_URW_FONTS_PATH], [
   AC_ARG_WITH([urw-fonts-dir],
@@ -334,52 +345,57 @@ AC_DEFUN([GROFF_URW_FONTS_PATH], [
 # font/devpdf (along with groff's EURO font).
 
 AC_DEFUN([GROFF_URW_FONTS_CHECK], [
+  AC_REQUIRE([GROFF_URW_FONTS_SUPPORT])
   AC_REQUIRE([GROFF_URW_FONTS_PATH])
   AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
   groff_have_urw_fonts=no
-  AC_MSG_CHECKING([for URW fonts in Type 1/PFB format])
+  urwfontsdir=
+  if test "$urwfontsupport" != no
+  then
+    AC_MSG_CHECKING([for URW fonts in Type 1/PFB format])
 
 dnl Keep this list in sync with font/devpdf/Foundry.in.
-  _list_paths="\
-    /usr/share/fonts/type1/gsfonts/ \
-    /usr/share/fonts/default/Type1/ \
-    /usr/share/fonts/default/Type1/adobestd35/ \
-    /usr/share/fonts/type1/urw-base35/ \
-    /usr/share/fonts/urw-base35 \
-    /usr/share/ghostscript/Resource/Font \
-    /opt/local/share/fonts/urw-fonts/ \
-    /usr/local/share/fonts/ghostscript/"
+    _list_paths="\
+      /usr/share/fonts/type1/gsfonts/ \
+      /usr/share/fonts/default/Type1/ \
+      /usr/share/fonts/default/Type1/adobestd35/ \
+      /usr/share/fonts/type1/urw-base35/ \
+      /usr/share/fonts/urw-base35 \
+      /usr/share/ghostscript/Resource/Font \
+      /opt/local/share/fonts/urw-fonts/ \
+      /usr/local/share/fonts/ghostscript/"
 
-  if test -n "$urwfontsdir"
-  then
-    _list_paths="$urwfontsdir"
-  fi
+    if test -n "$urwfontsdir"
+    then
+      _list_paths="$urwfontsdir"
+    fi
 
 dnl Keep this list of font file names in sync with the corresponding
 dnl entry in font/devpdf/util/BuildFoundries.pl.
-  for k in $_list_paths
-  do
-    for _font_file in \
-      URWGothic-Book \
-      URWGothic-Book.t1 \
-      URWGothic-Book.pfb \
-      URWGothicL-Book.pfb \
-      a010013l.pfb
+    for k in $_list_paths
     do
-      if test -f $k/$_font_file
-      then
-        AC_MSG_RESULT([found in $k])
-        groff_have_urw_fonts=yes
-        urwfontsdir=$k
-        break 2
-      fi
+      for _font_file in \
+        URWGothic-Book \
+        URWGothic-Book.t1 \
+        URWGothic-Book.pfb \
+        URWGothicL-Book.pfb \
+        a010013l.pfb
+      do
+        if test -f $k/$_font_file
+        then
+          AC_MSG_RESULT([found in $k])
+          groff_have_urw_fonts=yes
+          urwfontsdir=$k
+          break 2
+        fi
+      done
     done
-  done
 
-  if test $groff_have_urw_fonts = no
-  then
-    AC_MSG_RESULT([none found])
-    urwfontsdir=
+    if test $groff_have_urw_fonts = no
+    then
+      AC_MSG_RESULT([none found])
+      urwfontsdir=
+    fi
   fi
 
   AC_SUBST([groff_have_urw_fonts])
@@ -387,7 +403,7 @@ dnl entry in font/devpdf/util/BuildFoundries.pl.
 ])
 
 AC_DEFUN([GROFF_URW_FONTS_NOTICE], [
-  if test "$groff_have_urw_fonts" = no
+  if test "$urwfontsupport" = yes && test "$groff_have_urw_fonts" = no
   then
     gs_verbiage=
     if test "$GHOSTSCRIPT" != missing

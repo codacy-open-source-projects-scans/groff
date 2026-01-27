@@ -1,3 +1,94 @@
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/devpdf.am ($(devpdffont_descriptions_from_devps)
+	($(devpdffontencdata), font/devpdf/SS)
+	($(devpdf_builddir)/symbolsl.afm)
+	($(devpdf_builddir)/symbolsl.pfb, $(devpdffontmapdata)): Copy
+	files with `cp -fp`, not just `cp -f`, preventing spurious
+	rebuilds of these targets.
+
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/devpdf.am (all): Drop unnecessary phony target.
+
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/devpdf.am [HAVE_URW_FONTS]: Shift conditional so
+	that we define a target rule for
+	`$(devpdffont_descriptions_for_urw)` only if the
+	`HAVE_URW_FONTS` Automake variable is defined.
+
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/devpdf.am ($(devpdffont_descriptions_for_urw)):
+	Drop interpolations of no-longer-used `DEFAULT_BASE35_FONTS` and
+	`URW_BASE35_FONTS` macros.
+
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am: Abstract "-P-e" option to gropdf into new macro,
+	`groffmanpagesoption`.  We can't use it if the build is
+	configured without URW fonts to embed, so define the macro only
+	if `HAVE_URW_FONTS` _and_ `USE_GROPDF`.
+	(doc/groff-man-pages.pdf): Interpolate macro instead of
+	hard-coding "-P-e".
+
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/tests/check-default-foundry.sh.in: Die with "hard
+	error" if test script cannot locate the "Foundry" file.  Skip
+	remainder of test (for fonts not in the PostScript Level 1/PDF
+	"base 14") if the "URW" section of the "Foundry" file is absent.
+
+2026-01-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_PERL): Update error messages.  Refer to
+	Perl "executable", not "binary"; whether an executable is an
+	object file is not our concern.  When failing because the
+	available version of Perl is too old, report the minimum version
+	we require.
+
+2026-01-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am: Abstract `-P-W` option to "gropdf" into a new
+	macro, `pdfmomoption`, populating it only if, at configuration
+	time, both `HAVE_URW_FONTS` and `USE_GROPDF` were enabled.
+
+2026-01-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/util/BuildFoundries.pl (Warn): Don't set the exit
+	status to a nonzero value on warnings.  This script issues quite
+	a few warnings at gropdf's "Basic service" level.
+
+2026-01-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_URW_FONTS_SUPPORT): New Autoconf macro
+	creates a "with" configuration option, permitting the host
+	environment to easily switch off the search for URW fonts and
+	defeat all of the consequent features without the "configure"
+	script issuing a lengthy warning about failure to find the
+	aforementioned fonts.  New shell variable `urwfontsupport`
+	indicates the configuration's desired status (which still
+	defaults on).
+	(GROFF_URW_FONTS_CHECK): Add dependency on the foregoing macro.
+	Initialize `urwfontsdir` shell variable to empty
+	unconditionally, permitting it to be updated later if the URW
+	font feature isn't disabled.  Nest most of the work of this
+	macro inside a conditional on `urwfontsupprt`.  Continue to
+	unconditionally populate and `AC_SUBST`-itute
+	`groff_have_urw_fonts` and `urwfontsdir`, because
+	"configure.ac", "test-mom.sh.in", "mom.am",
+	"font/devpdf/Foundry.in", "devpdf.am", and
+	"check-urw-foundry.sh.in" variously rely on them to behave
+	appropriately for the configuration.
+
+2026-01-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am: Update `DOC_SED` macro to also perform substituion
+	of "@PAGE@" with the contents of the `PAGE` (Auto)make macro.
+	We can thus refer directly to this configuration parameter in
+	our Texinfo manual without directing the reader to a man page.
+
 2026-01-22  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/groff_man.7.man.in (Document structure macros):
@@ -58,14 +149,6 @@
 	reference.
 
 	Fixes <https://savannah.gnu.org/bugs/?44530>.
-
-2026-01-19  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* Makefile.am: Stop adding ".version" file to the `EXTRA_DIST`
-	and `BUILT_SOURCES` macros.
-
-	Fixes <https://savannah.gnu.org/bugs/?67933>.  Thanks to Colin
-	Watson for the report.
 
 2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
 

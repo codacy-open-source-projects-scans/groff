@@ -23,8 +23,12 @@ eqn="${abs_top_builddir:-.}/eqn"
 # Regression-test Savannah #67285.  eqn should not strip "invalid"
 # characters from parts of a document it does not interpret.
 
+LC_ALL=C
+export LC_ALL
+
 output=$(printf '.\\" degree sign: \313\232\n' | "$eqn" -R)
 printf "%s\n" "$output"
+printf "%s\n" "$output" | od -c
 printf "%s\n" "$output" | od -c | grep -q ' 232'
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

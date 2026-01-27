@@ -552,7 +552,7 @@ options use the metrics of X11 fonts.
 Disable postprocessing.
 .
 .I @g@troff
-output will appear on the standard output stream
+output appears on the standard output stream
 (unless suppressed with
 .BR \-z );
 see
@@ -882,8 +882,7 @@ It is even.
 .\" ====================================================================
 .
 .\" BEGIN Keep parallel with groff.texi node "Paper Format".
-.I @g@troff
-reads the device description file
+The formatter reads the device description file
 .I DESC
 for the selected output device when it starts;
 page dimensions declared there are used if present.
@@ -900,8 +899,10 @@ This installation defaults to
 If the
 .I DESC
 file lacks this information,
-the formatter and output driver use a page length of 11i (inches) for
-compatibility with AT&T
+the formatter and output driver use a page length of
+.BR \[lq] 11i \[rq]
+(eleven inches)
+for compatibility with AT&T
 .IR troff . \" AT&T
 .
 See

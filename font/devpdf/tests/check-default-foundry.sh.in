@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2022-2023 Free Software Foundation, Inc.
+# Copyright 2022-2023 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -90,6 +90,21 @@ then
     exit 77 # skip
 fi
 
+foundry="$devpdf_fontbuilddir"/Foundry
+
+if ! test -f "$foundry"
+then
+    echo "cannot locate Foundry file at $foundry" >&2
+    exit 99 # hard error
+fi
+
+if ! grep "BEGIN URW" "$foundry"
+then
+    echo "URW fonts not available; skipping check for any further" \
+         "fonts in the default foundry" >&2
+    exit 77 # skip
+fi
+
 for f in $supplementary_fonts
 do
     printf "checking for font description %s...\n" "$f" >&2
@@ -98,4 +113,4 @@ done
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

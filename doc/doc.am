@@ -27,6 +27,7 @@ doc_builddir = doc
 # the groff version number and the command prefix.  Use this in rules to
 # prepare formattable versions of them from .in files.
 DOC_SED = $(SED) \
+  -e "s;[@]PAGE[@];$(PAGE);" \
   -e "s;[@]VERSION[@];$(VERSION);" \
   -e "s;[@]g[@];$(g);g;"
 
@@ -40,11 +41,25 @@ DOC_GROFF = \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
   $(GROFFBIN) $(MFLAG) $(FFLAG) -ww -b
 
+# There's no point crashing the build due to fonts being unavailable for
+# embedding (or selection, even, when their metrics are missing) if we
+# knew at configuration time that the venture wouldn't come off.
+#
+# We embed all fonts (-P-e) (if we can) to (1) honor the current PDF
+# standard, (2) ensure consistent rendering of the document, and (3)
+# exercise this feature of gropdf.
+if HAVE_URW_FONTS
+if USE_GROPDF
+pdfmomoption = -P-W
+groffmanpagesoption = -P-e
+endif
+endif
+
 DOC_PDFMOM = \
   GROFF_COMMAND=test-groff \
   GROFF_COMMAND_PREFIX= \
   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-  $(PDFMOMBIN) $(MFLAG) $(FFLAG) -ww -b -P-W --roff
+  $(PDFMOMBIN) $(MFLAG) $(FFLAG) -ww -b $(pdfmomoption) --roff
 
 # This image file is used by several documents in the groff source tree.
 DOC_GNU_EPS = doc/gnu.eps
@@ -274,16 +289,13 @@ $(DOC_GMP_COVER_PAGE): $(doc_srcdir)/groff-man-pages-cover.groff.in
 
 # Many pages use tbl, a few use eqn, and soelim(1) uses pic.  We also
 # need groff's FreeEuro font so we can embed it.
-#
-# We embed the fonts (-P-e) to (1) honor the current PDF standard, (2)
-# ensure consistent rendering of the document, and (3) exercise this
-# feature of gropdf.
+
 doc/groff-man-pages.pdf: $(GROFF_MAN_PAGES_ALL) \
   $(DOC_GMP_COVER_PAGE) \
   eqn pic tbl pdfmom \
   $(TMAC_PACKAGE_MAN) $(TMAC_PACKAGE_MDOC) font/devps/freeeuro.pfa
 	$(GROFF_V)$(DOC_PDFMOM) -K utf-8 -pet -mandoc -dHF=HB -rC1 \
-	  -rCHECKSTYLE=3 -Tpdf -P-e \
+	  -rCHECKSTYLE=3 -Tpdf $(groffmanpagesoption) \
 	  $(DOC_GMP_COVER_PAGE) \
 	  $(GROFF_MAN_PAGES1) \
 	  $(tmac_srcdir)/sv.tmac $(GROFF_MAN_PAGES2) \

@@ -844,6 +844,120 @@ Mincho style
 .
 .
 .\" ====================================================================
+. SS "URW font support"
+.\" ====================================================================
+.
+The traditional PostScript Type\~1 fonts
+are limited in their glyph repertoire,
+and the original versions from the Adobe foundry
+are not free software.
+.
+Historically,
+because their presence was mandated by the PostScript standard,
+one could expect to find support for them in any conforming device
+or software PostScript renderer.
+.
+PostScript
+(\[lq]Level 1\[rq])
+initially standardized 14 typefaces:
+Times,
+Helvetica,
+and
+Courier
+each in four styles
+(which
+.I groff
+groups into \[lq]families\[rq]);
+a symbol font;
+and a dingbats font.
+.
+PostScript Level 2 increased the number to 35,
+adding the families
+Avant Garde,
+Bookman,
+Helvetica Narrow,
+New Century Schoolbook,
+and
+Palatino;
+and a text font in one style,
+Zapf Chancery medium italic.
+.
+A document could be small
+because it did not need to embed font resources
+unless it had unusual
+(for the time)
+glyph or typeface requirements.
+.
+This situation carried over into the early years
+of PostScript's successor page description language,
+PDF.
+.
+Nowadays,
+it is common
+to embed fonts in PDFs,
+and authorities widely recommend this practice,
+which increases the reliability of document rendering,
+and many free software fonts are available
+with much greater glyph coverage
+than Adobe's Type\~1 fonts for PostScript.
+.
+.
+.P
+.I \%gropdf
+attempts to work in variety of scenarios,
+and delivers better results
+when configured with supporting digital font files
+(for embedding)
+and font metrics files describing those fonts to the formatter.
+.
+.
+.IP \[bu] 3n
+.I "Full service"
+is available
+when
+.I \%gropdf
+can locate all 35 fonts of the PostScript Level 2 standard
+on the file system
+along with their corresponding font metrics (AFM) files.
+.
+The Adobe-compatible unnamed foundry
+supports up to 256 glyphs in each typeface.
+.
+Fonts from the URW foundry
+(\[lq]U\[rq])
+are compatible extensions of the Adobe fonts
+with extended glyph coverage,
+including support for Cyrillic script.
+.
+.
+.IP \[bu]
+.I "Intermediate service"
+is available
+when
+.I \%gropdf
+can locate all 35 fonts of the PostScript Level 2 standard
+but not their corresponding font metrics (AFM) files.
+.
+Glyph coverage is reduced to 256 glyphs maximum from each face,
+and the \[lq]U\[rq] foundry is unavailable.
+.
+.
+.IP \[bu]
+.I "Basic service"
+results when
+.I \%gropdf
+cannot locate all 35 fonts of the PostScript Level 2 standard.
+.
+Only the base 14 fonts of the PDF standard are available,
+and only in the sense that the formatter can use their metrics.
+.
+Use of the
+.B \-e
+option
+to embed fonts in the generated PDF results in an error.
+.
+.
+.\" ====================================================================
 . SS "Device extension commands"
 .\" ====================================================================
 .
@@ -1067,7 +1181,7 @@ with a
 .B \-S
 argument,
 then indicate the end of hotspot text with
-.BR \[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]] .
+.BR "\[rs]X\[aq]pdf: markend\[aq]\[rs]m[\[rs]*[pdf:curcol]]" .
 .
 .
 .TP

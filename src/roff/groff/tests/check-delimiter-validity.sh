@@ -44,7 +44,7 @@ do
     echo "checking validity of control character $octal (octal)" \
         "as escape sequence delimiter when not in compatibility mode" \
         >&2
-    output=$(printf '\\l\'$octal'1n+2n\&_\'$octal'\n' \
+    output=$(printf '\\l\'$octal'1n+2n\\&_\'$octal'\n' \
       | "$groff" -w delim -T ascii | sed '/^$/d')
     echo "$output" | grep -Fqx ___ || wail
 done

@@ -475,7 +475,6 @@ sub Notice {
 sub Warn {
     my $msg=shift;
     Msg("warning: line $lct: $msg");
-    $xitcd=2;
 }
 
 sub Die {
