@@ -98,7 +98,7 @@ then
     exit 99 # hard error
 fi
 
-if ! grep "BEGIN URW" "$foundry"
+if ! grep -q "BEGIN URW" "$foundry"
 then
     echo "URW fonts not available; skipping check for any further" \
          "fonts in the default foundry" >&2

@@ -1,3 +1,20 @@
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/Captc-translates.sh: Rename this...
+	* tests/Captc-string-translates.sh: ...to this, for better
+	consistency with test script naming scheme, which parallels the
+	interface description practice in groff_mm(7).
+
+2026-01-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/Np-register-works.sh:
+	* tests/date-localization-works.sh:
+	* tests/nP-works.sh: Avoid use of "cat -s" in test scripts.
+	It's not portable.  Omit entirely or replace with (not
+	equivalent but close enough for our purposes) "sed '/^$/d'".
+	Fixes spurious test failure on Alpine Linux.  Thanks to Bruno
+	Haible for the report.
+
 2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mm.am: Drop unused macro `mm_builddir`.  Automake itself

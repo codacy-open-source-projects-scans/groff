@@ -325,6 +325,7 @@ AC_DEFUN([GROFF_URW_FONTS_SUPPORT], [
     [AS_HELP_STRING([--without-urw-fonts],
       [disable support for URW fonts])],
     [urwfontsupport="$withval"])
+  AC_SUBST(urwfontsupport)
 ])
 
 # Make URW font directory location configurable.
@@ -394,7 +395,6 @@ dnl entry in font/devpdf/util/BuildFoundries.pl.
     if test $groff_have_urw_fonts = no
     then
       AC_MSG_RESULT([none found])
-      urwfontsdir=
     fi
   fi
 

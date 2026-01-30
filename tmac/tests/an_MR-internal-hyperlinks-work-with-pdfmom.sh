@@ -68,7 +68,7 @@ echo "$output" \
 
 echo "checking that external links are not rewritten" >&2
 echo "$output" \
-  | grep -Eq '^ *301[[:space:]]+x X pdf: markstart .*/URI \(man:baz\(1\))' \
+  | grep -Eq '^ *301[[:space:]]+x X pdf: markstart .*/URI \(man:baz\(1\)\)' \
   || wail
 
 test -z "$fail"

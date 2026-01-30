@@ -299,6 +299,7 @@ relies on the
 .B \-D
 option of GNU
 .I diff
+.\" The hair space `\^` is a kludge--see Savannah #67544.
 to make a merged \[lq]#ifdef\^\[rq] output format.
 .
 Busybox

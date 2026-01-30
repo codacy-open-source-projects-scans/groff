@@ -994,6 +994,16 @@ Miscellaneous
 *  The groff_diff(7) man page no longer contains examples.  They remain
    in groff's Texinfo manual.
 
+*  groff's Texinfo manual now adapts its content to the groff command
+   prefix configured at build time.  If the build is configured without
+   a leading "g"--omitting it has been groff's default for many years,
+   possibly forever--then our Texinfo manual now omits that prefix when
+   mentioning the affected commands (all replacements for AT&T troff
+   commands).  This way, if you select a command prefix, say "limbo",
+   and rebuild the Texinfo manual, the manual reflects the prefix used
+   by your build configuration, and talks about "limboeqn",
+   "limbotroff", "limborefer", and so on.
+
 
 VERSION 1.23.0
 ==============

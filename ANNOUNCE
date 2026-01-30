@@ -42,8 +42,8 @@ consuming minimal system resources.
 Changes
 =======
 
-Since groff 1.23.0 was released on 5 July 2023, MM people have made a
-total of over NNN commits.
+Since groff 1.23.0 was released on 5 July 2023, MM people have authored
+a total of over NNN commits.
 
 [[ Changes since the most recent release candidate, 1.yy.0.rcZ ... ]]
 
@@ -55,7 +55,7 @@ total of over NNN commits.
 For more on these and other feature changes, see "News" below.
 
 [[ As of this writing, per the GNU Savannah bug tracker, the groff
-project has resolved NNN problems as fixed for the 1.yy.0 release. ]]
+project has resolved NNN issues as fixed for the 1.yy.0 release. ]]
 
 Classifying these issues by type and the component of the project to
 which they apply, we find the following.
@@ -118,7 +118,9 @@ sha256sum < groff-1.yy.0.tar.gz | cut -f1 -d\  | xxd -r -p | base64
 
 [*] Use a .sig file to verify that the corresponding file (without the
     .sig suffix) is intact.  First, be sure to download both the .sig
-    file and the corresponding archive.  Then, verify the archive.
+    file and the corresponding archive.  Then, verify the archive.  (If
+    your shell lacks brace expansion, specify each file as an argument
+    with the '.sig' one first.)
 
       gpg --verify groff-1.yy.0.tar.gz{.sig,}
 
@@ -129,7 +131,7 @@ sha256sum < groff-1.yy.0.tar.gz | cut -f1 -d\  | xxd -r -p | base64
         'https://savannah.gnu.org/people/viewgpg.php?user_id=96214'
       gpg --import 96214.asc
 
-    Re-run the 'gpg --verify' command subsequently.
+    Re-run the 'gpg --verify' command above again subsequently.
 
 Caveats
 =======

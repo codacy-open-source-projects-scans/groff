@@ -52,11 +52,17 @@ echo "$output"
 output=$(echo "$output" | sed -n '11p' | od -t x1)
 echo "$output"
 
+# Expected output:
+# 0000000 e2 94 9c e2 94 80 e2 94 80 e2 94 80 e2 94 80 e2
+# 0000020 94 80 e2 94 80 e2 94 80 e2 94 80 e2 94 80 e2 94
+# 0000040 80 e2 94 80 e2 94 a4 0a
+# 0000050
+
 echo "checking that left edge of table after heading looks like |-" >&2
 echo "$output" | grep -q '0000000  *e2  *94  *9c' || wail
 
 echo "checking that right edge of table after heading looks like -|" >&2
-echo "$output" | grep -q '0000040 .* e2  *94  *a4  *0.$' || wail
+echo "$output" | grep -q '0000040 .*  *e2  *94  *a4  *0.$' || wail
 
 test -z "$fail"
 

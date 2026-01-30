@@ -51,6 +51,7 @@ output driver for HP LaserJet 4 and compatible printers
 .\" repertoire for the devices where it has any effect at all, and so
 .\" should be retained.
 .de FT
+.  if \\n[.$] .if !F \\$1 .ftr \\$1 R
 .  if '\\*(.T'lj4' .ft \\$1
 ..
 .

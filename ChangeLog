@@ -1,3 +1,103 @@
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grodvi/grodvi.1.man (FT):
+	* src/devices/grolj4/grolj4.1.man (FT):
+	* src/devices/gropdf/gropdf.1.man (FT):
+	* src/devices/grops/grops.1.man (FT): Suppress screeching ("-w
+	font") from formatter if a font used for illustrating the
+	typeface repertoire is unavailable.  Using a text typeface to
+	depict its own name is typographical gravy.
+
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/util/BuildFoundries.pl (LoadFoundry): Tweak
+	wording of warning diagnostic; favor "cannot" over "unable to"
+	or "can't".
+	(RunAfmtodit): Clarify warning diagnostic: this script _could_
+	pass unrecognized options to afmtodit(1); it _chooses_ not to.
+	Also use the word "option" instead of "flag"--not all of
+	afmtodit's command-line options are Boolean-valued.
+
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Propagate "configure" shell variable `urwfontsupport` into
+	"BuildFoundries" script, quieting build-time warnings when URW
+	font support is explicitly deconfigured.
+
+	* m4/groff.m4 (GROFF_URW_FONTS_SUPPORT): `AC_SUBST`
+	`urwfontsupport` so that it is defined in Makefiles.
+	* font/devpdf/devpdf.am (BuildFoundries): Add `urwfontsupport`
+	to set of sed(1) substitutions performed when generating target.
+	* font/devpdf/util/BuildFoundries.pl: Add `urwfontsupport`
+	scalar, taking value of corresponding sed substituion.
+	(LoadFoundry): Suppress warning about unavailable font if
+	`urwfontsupport` matches "no".
+
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_URW_FONTS_CHECK): Stop emptying shell
+	variable `urwfontsdir` if the URW fonts aren't found.  This
+	variable _had_ been used both to store the directory where they
+	were found _and_ as an indicator of whether URW font support was
+	expected by the configuring user.  We now have `urwfontsupport`
+	for the latter purpose, and blanking out `urwfontsdir` had the
+	undesirable side effect of suppressing the message that the
+	`GROFF_URW_FONTS_NOTICE` macro emits, preventing notification of
+	the user that their intention to configure URW font support was
+	foiled.
+
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* configure.ac: Identify the report at the end of the
+	configuration process as the "configuration summary"; I've been
+	using this term for years when collecting information from users
+	reporting bugs.
+
+2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gnulib: Refresh stable/2026-01 branch to obtain commit
+	dc9ad4ec31, which should fix a build error in C++ code on
+	FreeBSD 15.  Thanks to Bruno Haible.
+
+2026-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/groff.texi.in: Adapt manual content to the configured
+	groff command prefix.  If the build is configured without a
+	leading "g"--omitting it has been groff's default for many
+	years, possibly forever--then our Texinfo manual now omits that
+	prefix when mentioning the affected commands (all replacements
+	for AT&T troff commands).  This way, if you select a command
+	prefix, say "limbo", and rebuild the Texinfo manual, the
+	manual reflects the prefix used by your build configuration, and
+	talks about "limboeqn", "limbotroff", "limborefer", and so on.
+
+	Fixes <https://savannah.gnu.org/bugs/?66031>.
+
+2026-01-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/tests/an_MR-internal-hyperlinks-work-with-pdfmom.sh:
+	* tmac/tests/andoc_internal-hyperlinks-work-with-pdfmom.sh: Fix
+	regex to correctly quote a closing parenthesis _not_ used as an
+	ERE grouping operator.  Fixes spurious test failures on NetBSD.
+	Sadly, neither GNU grep 3.6 nor 3.12.14 warned me of my mistake.
+	Thanks to Bruno Haible for the report.
+
+2026-01-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/tests/boxed-TH-tables-work-on-utf8-device.sh:
+	Fix excessively strict regex, which caused test failure with
+	OpenBSD od(1) (and NetBSD's), because that implementation spaces
+	the columns of its output more widely than GNU coreutils's
+	od(1).  Thanks to Bruno Haible for the report.
+
+2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* arch/mingw/grap2graph.cmd: Revise version info.
+	- Drop "GNU" from reported version string; this is a contributed
+	  program--its shell script equivalent is in contrib/
+	  grap2graph--not a GNU program.
+	- Bump reported version to 1.24.0.
+
 2026-01-26  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* font/devpdf/devpdf.am ($(devpdffont_descriptions_from_devps)
@@ -74,7 +174,7 @@
 	Initialize `urwfontsdir` shell variable to empty
 	unconditionally, permitting it to be updated later if the URW
 	font feature isn't disabled.  Nest most of the work of this
-	macro inside a conditional on `urwfontsupprt`.  Continue to
+	macro inside a conditional on `urwfontsupport`.  Continue to
 	unconditionally populate and `AC_SUBST`-itute
 	`groff_have_urw_fonts` and `urwfontsdir`, because
 	"configure.ac", "test-mom.sh.in", "mom.am",
@@ -7217,7 +7317,7 @@
 2025-06-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Extend `font_info` class.  I need this so I can
-	implement a font mounting position dumper.
+	implement a font mounting position list dumper.
 
 	* src/roff/troff/node.cpp (class font_info): Declare new
 	`get_font()` member function, returning pointer to contained

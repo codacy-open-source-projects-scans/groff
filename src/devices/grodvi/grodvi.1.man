@@ -55,6 +55,7 @@ output driver for TeX DVI format
 .\" repertoire for the devices where it has any effect at all, and so
 .\" should be retained.
 .de FT
+.  if \\n[.$] .if !F \\$1 .ftr \\$1 R
 .  if '\\*(.T'dvi' .ft \\$1
 ..
 .

@@ -4,7 +4,8 @@
 # files and a "download" file so gropdf can embed fonts in PDF output.
 #
 # Copyright 2011-2025 Free Software Foundation, Inc.
-#      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
+#
+# Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -26,6 +27,7 @@ use Getopt::Long;
 use warnings;
 
 my $pathsep='@PATH_SEPARATOR@';
+my $urwfontsupport='@urwfontsupport@';
 
 my $check=0;
 my $dirURW='';
@@ -135,9 +137,12 @@ sub LoadFoundry
 			{
 			    $gotf=0;
 			    my $fns=join(', ',split('!',$r[5]));
-			    Warn("groff font '$gfont' will not be"
-				 . " available for PDF output; unable"
-				 . " to locate font file(s): $fns");
+			    if ($urwfontsupport ne 'no')
+			    {
+			      Warn("groff font '$gfont' will not be"
+				   . " available for PDF output; unable"
+				   . " to locate font file(s): $fns");
+			    }
 			    $notFoundFont=1;
 			    unlink $gfont;
 			}
@@ -147,7 +152,8 @@ sub LoadFoundry
 		}
 		else
 		{
-		    Warn("Can't read grops font '$r[0]' for Foundry '$foundry'");
+		    Warn("cannot read grops font '$r[0]' for Foundry"
+			 . " '$foundry'");
 		}
 	    }
 	    else
@@ -202,7 +208,8 @@ sub RunAfmtodit
     {
 	if (!exists($flg{$f}))
 	{
-	    Warn("Can't use undefined flag '$f' in calling afmtodit for groff font '$gfont'");
+	    Warn("refusing to pass unrecognized option '$f' to afmtodit"
+		 . " for groff font '$gfont'");
 	    return('');
 	}
 

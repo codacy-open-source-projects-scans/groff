@@ -52,6 +52,7 @@ output driver for Portable Document Format
 .\" repertoire for the devices where it has any effect at all, and so
 .\" should be retained.
 .de FT
+.  if \\n[.$] .if !F \\$1 .ftr \\$1 R
 .  if '\\*(.T'ps' .ft \\$1
 .  if '\\*(.T'pdf' .ft \\$1
 ..

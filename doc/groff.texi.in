@@ -723,20 +723,19 @@ use.
 
 @code{groff}
 provides preprocessors for laying out tables
-(@command{gtbl}),
+(@command{@g@tbl}),
 typesetting equations
-(@command{geqn}),
+(@command{@g@eqn}),
 drawing diagrams
-(@command{gpic}
+(@command{@g@pic}
 and
-@command{ggrn}),
+@command{@g@grn}),
 inserting bibliographic references
-(@command{grefer}),
+(@command{@g@refer}),
 and drawing chemical structures
-(@command{gchem}).
+(@command{@g@chem}).
 An associated program that is useful when dealing with preprocessors is
-@command{gsoelim}.@footnote{The @samp{g} prefix is
-not used on all systems; see @ref{Invoking groff}.}
+@command{@g@soelim}.
 
 @code{groff}
 also supports
@@ -821,13 +820,31 @@ programs.
 @c END Keep parallel with groff(7), portion of "Description"
 @c (introduction).
 
-A tradition has arisen that GNU programs' names bear a prefix @samp{g}
-where necessary to distinguish them from other implementations on the
-host system (@pxref{Environment}).  Thus, for example, @code{geqn} is
-GNU @code{eqn}.  On operating systems that lack a @code{troff} of
-different provenance, this prefix is omitted; GNU @command{troff} is the
-only @code{troff} available.  Exceptionally, @samp{groff} always retains
-its leading @samp{g}.
+A tradition has arisen that
+GNU
+programs' names bear a prefix
+@samp{g}
+where necessary to distinguish them from other implementations
+on the host system
+(@pxref{Environment}).
+Thus,
+for example,
+@samp{geqn} is @c Don't "@g@" this.
+GNU
+@command{eqn}.
+On operating systems that lack a
+@code{troff} @c generic; system
+of different provenance,
+this prefix is omitted;
+GNU
+@code{troff} @c GNU; system
+is the only
+@code{troff} @c generic; system
+available.
+Exceptionally,
+@samp{groff}
+always retains its leading
+@samp{g}.
 
 We call
 non-GNU
@@ -840,11 +857,6 @@ implementations@footnote{Besides @code{groff},
 @code{neatroff}
 is an exception.}
 (with more or less compatible changes).
-Similarly,
-we say
-@samp{gpic},
-@samp{geqn},
-and so on.
 
 @cindex @key{RET} (keycap notation)
 @cindex @key{SPC} (keycap notation)
@@ -1004,20 +1016,42 @@ the GNU @command{troff} formatter program, and a postprocessor.
 @command{groff} runs the GNU @command{troff} program and, normally, a
 postprocessor appropriate to the selected device.  The default device is
 @samp{ps}, unless changed at @code{groff}'s build-time configuration.
-@command{groff} can preprocess input with any of @code{gpic},
-@code{geqn}, @code{gtbl}, @code{ggrn}, @code{grap}, @code{gchem},
-@code{grefer}, @code{gsoelim}, or @code{preconv}.
+@command{groff}
+can preprocess input with any of
+@code{@g@pic},
+@code{@g@eqn},
+@code{@g@tbl},
+@code{@g@grn},
+@code{grap},
+@code{@g@chem},
+@code{@g@refer},
+@code{@g@soelim},
+or
+@code{preconv}.
 
 @anchor{Output Devices} @c 1.22.4
 This section documents only options to the @command{groff} front end.
 Since it passes many of its arguments to GNU @command{troff}, we
-describe many of the latter's options here.  Arguments to preprocessors
-and output drivers can be found in the man pages @cite{gpic@r{(1)}},
-@cite{geqn@r{(1)}}, @cite{gtbl@r{(1)}}, @cite{ggrn@r{(1)}},
-@cite{grefer@r{(1)}}, @cite{gchem@r{(1)}}, @cite{gsoelim@r{(1)}},
-@cite{preconv@r{(1)}}, @cite{grotty@r{(1)}}, @cite{grops@r{(1)}},
-@cite{gropdf@r{(1)}}, @cite{grohtml@r{(1)}}, @cite{grodvi@r{(1)}},
-@cite{grolj4@r{(1)}}, @cite{grolbp@r{(1)}}, and @cite{gxditview@r{(1)}}.
+describe many of the latter's options here.
+Arguments to preprocessors and output drivers
+can be found in the man pages
+@cite{@g@pic@r{(1)}},
+@cite{@g@eqn@r{(1)}},
+@cite{@g@tbl@r{(1)}},
+@cite{@g@grn@r{(1)}},
+@cite{@g@refer@r{(1)}},
+@cite{@g@chem@r{(1)}},
+@cite{@g@soelim@r{(1)}},
+@cite{preconv@r{(1)}},
+@cite{grotty@r{(1)}},
+@cite{grops@r{(1)}},
+@cite{gropdf@r{(1)}},
+@cite{grohtml@r{(1)}},
+@cite{grodvi@r{(1)}},
+@cite{grolj4@r{(1)}},
+@cite{grolbp@r{(1)}},
+and
+@cite{gxditview@r{(1)}}.
 
 A summary of @command{groff}'s usage follows.
 
@@ -1143,7 +1177,9 @@ Set fallback input encoding used by @command{preconv} to @var{enc};
 implies @option{-k}.
 
 @item -e
-Run @command{geqn} preprocessor.
+Run
+@command{@g@eqn}
+preprocessor.
 
 @item -E
 Inhibit
@@ -1165,7 +1201,9 @@ directory of device and font description files.  @xref{Font
 Directories}.
 
 @item -g
-Run @command{ggrn} preprocessor.
+Run
+@command{@g@grn}
+preprocessor.
 
 @item -G
 Run @command{grap} preprocessor; implies @option{-p}.
@@ -1183,8 +1221,10 @@ implies @option{-g} and @option{-s}.
 
 @itemize
 @item
-@command{gsoelim} replaces @code{so} requests with the contents of their
-file name arguments.
+@command{@g@soelim}
+replaces lines matching
+@samp{.so @var{file-name}}
+with the contents of @var{file-name}.
 
 @item
 @command{@g@troff}
@@ -1216,12 +1256,13 @@ compilers.
 passes
 @option{-I}
 options and their arguments to
-@command{gsoelim},
+@command{@g@soelim},
 @command{@g@troff},
 and output drivers;
 with the option letter changed to
 @option{-M},
-it passes the same arguments to @command{ggrn}.
+it passes the same arguments to
+@command{@g@grn}.
 
 @item -j
 Run @command{gchem} preprocessor.  Implies @option{-p}.
@@ -1259,21 +1300,39 @@ spooler.
 @item -m @var{mac}
 Search for the macro package @file{@var{mac}.tmac} and read it prior to
 any input.  If not found, @file{tmac.@var{mac}} is attempted.
-@xref{Macro Directories}.  @command{groff} passes @option{-m} options
-and their arguments to @command{geqn}, @command{grap}, and
-@command{ggrn}.
+@xref{Macro Directories}.
+@command{groff}
+passes
+@option{-m}
+options and their arguments to
+@command{@g@eqn},
+@command{grap},
+and
+@command{@g@grn}.
 
 @item -M @var{dir}
 Search directory @file{@var{dir}} for macro files.  @xref{Macro
-Directories}.  @command{groff} passes @option{-M} options and their
-arguments to @command{geqn}, @command{grap}, and @command{ggrn}.
+Directories}.
+@command{groff}
+passes
+@option{-M}
+options and their arguments to
+@command{@g@eqn},
+@command{grap},
+and
+@command{@g@grn}.
 
 @item -n @var{num}
 Begin numbering pages at @var{num}.  The default is @samp{1}.
 
 @item -N
-Prohibit newlines between @code{eqn} delimiters:@: pass @option{-N} to
-@command{geqn}.
+Prohibit newlines between
+@code{eqn} @c language
+delimiters:@:
+pass
+@option{-N}
+to
+@command{@g@eqn}.
 
 @item -o @var{list}
 @cindex print current page register (@code{.P})
@@ -1287,7 +1346,9 @@ stops processing and exits after formatting the last page enumerated in
 @var{list}.
 
 @item -p
-Run @command{gpic} preprocessor.
+Run
+@command{@g@pic}
+preprocessor.
 
 @item -P @var{arg}
 Pass @var{arg} to the postprocessor.  If multiple @var{arg}s are
@@ -1307,9 +1368,15 @@ an equals sign, even though that is a valid character in a @code{roff}
 identifier.  @xref{Registers}.
 
 @item -R
-Run @command{grefer} preprocessor.  No mechanism is provided for passing
-arguments to it; most @command{grefer} options have equivalent language
-elements that can be specified within the document.
+Run
+@command{@g@refer}
+preprocessor.
+No mechanism is provided for passing
+arguments to it;
+most
+@command{@g@refer}
+options have equivalent language elements
+that can be specified within the document.
 
 @pindex troffrc
 @pindex troffrc-end
@@ -1326,7 +1393,9 @@ and
 @file{troffrc-end} files.
 
 @item -s
-Run @command{gsoelim} preprocessor.
+Run
+@command{@g@soelim}
+preprocessor.
 
 @item -S
 @cindex @code{open} request, and safer mode
@@ -1350,7 +1419,9 @@ to ignore any subsequent
 option.
 
 @item -t
-Run @command{gtbl} preprocessor.
+Run
+@command{@g@tbl}
+preprocessor.
 
 @item -T @var{dev}
 Prepare output for device
@@ -1486,7 +1557,7 @@ option above.
 passes
 @option{-U}
 to
-@command{gpic}
+@command{@g@pic}
 and GNU
 @command{troff}.
 
@@ -1619,8 +1690,13 @@ is, the latter is used instead.  On Windows systems, if neither of the
 foregoing are set, the environment variables @env{TMP} and @env{TEMP}
 (in that order) are checked also.  Otherwise, temporary files are
 created in a system-dependent default directory (on Unix and GNU/Linux
-systems, usually @file{/tmp}).  The @command{grefer}, @command{grohtml},
-and @command{grops} commands use temporary files.
+systems, usually @file{/tmp}).
+The
+@command{@g@refer},
+@command{grohtml},
+and
+@command{grops}
+commands use temporary files.
 
 @item GROFF_TYPESETTER
 @tindex GROFF_TYPESETTER@r{, environment variable}
@@ -1881,10 +1957,20 @@ interpret terminal escape sequences @command{groff} emits for boldface,
 underlining, italics, or hyperlinking; see the @cite{grotty@r{(1)}} man
 page for a discussion.
 
-To process a @code{roff} input file using the preprocessors
-@command{gtbl} and @command{gpic} and the @file{me} macro package in the
-way to which @acronym{AT&T} @code{troff} users were accustomed, one
-would type (or script) a pipeline.
+To process a
+@code{roff}
+input file using the preprocessors
+@command{@g@tbl}
+and
+@command{@g@pic}
+and the
+@file{me}
+macro package in the way to which @acronym{AT&T}
+@code{troff} @c AT&T; system
+users were accustomed,
+one would type
+(or script)
+a pipeline.
 
 @Example
 $ @g@pic foo.me | @g@tbl | @g@troff -m e -T utf8 | grotty
@@ -2448,10 +2534,27 @@ the date, or to perform operations like super- and subscripting.
 
 All macro packages provide support for various preprocessors and may
 extend their functionality by defining macros to caption their output
-and/or set it in a display.  Examples include @code{TS} and @code{TE}
-for @command{gtbl}, @code{EQ} and @code{EN} for @command{geqn}, and
-@code{PS} and @code{PE} for @command{gpic}.  Another preprocessor,
-@command{grefer}, facilitates the inclusion of bibliographic citations
+and/or set it in a display.
+Examples include
+@code{TS}
+and
+@code{TE}
+for
+@command{@g@tbl},
+@code{EQ}
+and
+@code{EN}
+for
+@command{@g@eqn},
+and
+@code{PS}
+and
+@code{PE}
+for
+@command{@g@pic}.
+Another preprocessor,
+@command{@g@refer},
+facilitates the inclusion of bibliographic citations
 in a consistent format.
 
 @c ---------------------------------------------------------------------
@@ -4501,12 +4604,26 @@ use.
 @DefmacList {PS, @var{h} @var{v}, ms}
 @DefmacItemx {PE, , ms}
 @DefmacListEndx {PF, , ms}
-@code{PS} begins a picture to be processed by the @command{gpic}
-preprocessor; either of @code{PE} or @code{PF} ends it, the latter with
-``flyback'' to the vertical position at its top.  Create @code{pic}
-input manually or with a program such as @code{xfig}.  @var{h} and
-@var{v} are the horizontal and vertical dimensions of the picture;
-@command{gpic} supplies them automatically.
+@code{PS}
+begins a picture to be processed by the
+@command{@g@pic}
+preprocessor;
+either of
+@code{PE}
+or
+@code{PF}
+ends it,
+the latter with ``flyback'' to the vertical position at its top.
+Create
+@code{pic}
+input manually or with a program such as
+@code{xfig}.
+@var{h}
+and
+@var{v}
+are the horizontal and vertical dimensions of the picture;
+@command{@g@pic}
+supplies them automatically.
 @endDefmac
 
 @DefmacList {EQ, [@Var{align} [@Var{label}]], ms}
@@ -4520,9 +4637,13 @@ specified, @var{label} is set right-aligned.
 
 @DefmacList {[, , ms}
 @DefmacListEndx {], , ms}
-Demarcate a bibliographic citation to be processed by the @code{refer}
-preprocessor.  @cite{grefer@r{(1)}} provides a comprehensive reference
-to the preprocessor and the format of its bibliographic database.
+Demarcate a bibliographic citation to be processed by the
+@code{refer}
+preprocessor.
+@cite{@g@refer@r{(1)}}
+provides a comprehensive reference
+to the preprocessor
+and the format of its bibliographic database.
 @endDefmac
 
 When @code{refer} emits collected references (as might be done on a
@@ -4569,7 +4690,8 @@ string to base the equation label on the current heading number, giving
 us more flexibility to reorganize the document.
 
 @need 200
-Create diagrams with @command{gpic}.
+Create diagrams with
+@command{@g@pic}.
 
 @Example
 .PS
@@ -4581,9 +4703,20 @@ circle "output";
 .PE
 @endExample
 
-@command{groff} options run preprocessors on the input:@: @option{-e}
-for @command{geqn}, @option{-p} for @command{gpic}, @option{-R} for
-@command{grefer}, and @option{-t} for @command{gtbl}.
+@command{groff} options run preprocessors on the input:@:
+@option{-e}
+for
+@command{@g@eqn},
+@option{-p}
+for
+@command{@g@pic},
+@option{-R}
+for
+@command{@g@refer},
+and
+@option{-t}
+for
+@command{@g@tbl}.
 
 @c ---------------------------------------------------------------------
 
@@ -5965,7 +6098,7 @@ We also employ the
 option to suppress normal output.
 
 @Example
-$ perl -e 'print "#" x 80, "\n";' | gnroff -z
+$ perl -e 'print "#" x 80, "\n";' | @g@nroff -z
     @error{} cannot adjust line; overset by 15n
 @endExample
 
@@ -7652,7 +7785,7 @@ or diversion name with the character
 or
 @samp{]}
 forecloses use of the
-@code{grefer}
+@command{@g@refer}
 preprocessor,
 which recognizes input lines starting with
 @samp{.[}
@@ -11138,19 +11271,44 @@ instead of @code{tr} it prints @samp{a}.
 @cindex @code{nroff} mode
 @cindex mode, @code{nroff}
 
-Historically, @code{nroff} and @code{troff} were two separate programs;
-the former for terminal output, the latter for typesetters.  GNU
-@code{troff} merges both functions into one executable@footnote{A
-GNU @command{nroff} program is available for convenience; it calls GNU
-@code{troff} to perform the formatting; see @cite{gnroff@r{(1)}}.} that
-sends its output to a device driver (@code{grotty} for terminal devices,
-@code{grops} for PostScript, and so on) that interprets its output.
-When discussing @acronym{AT&T} @code{troff}, it makes sense to talk
-about @dfn{@code{nroff} mode} and @dfn{@code{troff} mode} since the
-differences are hard-coded.  GNU @code{troff} takes information from
-device and font description files without handling requests specially if
-a terminal output device is used, so such a strong distinction is
-unnecessary.
+Historically,
+@command{nroff}
+and
+@command{troff}
+were two separate programs;
+the former for terminal output,
+the latter for typesetters.
+GNU
+@command{troff} @c GNU
+merges both functions into one executable@footnote{A
+GNU
+@command{nroff} @c GNU
+program is available for convenience;
+it runs
+GNU
+@command{troff}
+to perform formatting;
+see
+@cite{@g@nroff@r{(1)}}.}
+that sends its output to a device driver
+(@command{grotty}
+for terminal devices,
+@command{grops}
+for PostScript,
+and so on)
+that interprets its output.
+When discussing @acronym{AT&T}
+@code{troff},
+it makes sense to talk about
+@dfn{@code{nroff} mode}
+and
+@dfn{@code{troff} mode}
+since the differences are hard-coded.
+GNU
+@command{troff}
+takes information from device and font description files
+without handling requests specially if a terminal output device is used,
+so such a strong distinction is unnecessary.
 
 Usually, a macro package can be used with all output devices.
 Nevertheless, it is sometimes necessary to make a distinction between
@@ -17308,9 +17466,14 @@ program.}
 
 A few of the formatter's escape sequences draw lines and other geometric
 objects.  Combined with each other and with page motion commands
-(@pxref{Page Motions}), a wide variety of figures is possible.  For
-complex drawings, these operations can be cumbersome; the preprocessors
-@code{gpic} or @code{ggrn} are typically used instead.
+(@pxref{Page Motions}), a wide variety of figures is possible.
+For complex drawings,
+these operations can be cumbersome:@:
+the preprocessors
+@command{@g@pic}
+or
+@command{@g@grn}
+are typically used instead.
 
 The @code{\l} and @code{\L} escape sequences draw horizontal and
 vertical sequences of glyphs, respectively.  Even the simplest of output
@@ -17595,7 +17758,10 @@ glyph in the pile.
 @cindex limitations of @code{\b} escape sequence
 This rather inflexible positioning algorithm doesn't work with the
 @code{dvi} output device since its bracket pieces vary in height.
-Instead, use the @code{geqn} preprocessor.
+Instead,
+use the
+@command{@g@eqn}
+preprocessor.
 
 @ref{Manipulating Spacing} describes how to adjust the vertical spacing
 of the output line with the @code{\x} escape sequence.
@@ -19401,15 +19567,33 @@ horizontal and vertical device motion quanta, and input file name.
 Numeric values are in basic units.
 
 @item \O3
-Begin a nested suppression level.  @command{grohtml} uses this mechanism
-to create images of output preprocessed with @command{gpic},
-@command{geqn}, and @command{gtbl}.  At startup, GNU @code{troff} is at
-the outermost suppression level.  @command{pre-grohtml} generates these
-sequences when processing the document, using GNU @command{troff} with
-the @code{ps} output device, Ghostscript, and the PNM tools to produce
-images in PNG format.  They start a new page if the device is not
-@code{html} or @code{xhtml}, to reduce the number of images crossing a
-page boundary.
+Begin a nested suppression level.
+@command{grohtml}
+uses this mechanism to create images of output preprocessed
+with
+@command{@g@pic},
+@command{@g@eqn},
+and
+@command{@g@tbl}.
+At startup,
+GNU
+@command{troff}
+is at the outermost suppression level.
+@command{pre-grohtml}
+generates these sequences when processing the document,
+using
+GNU
+@command{troff}
+with the
+@code{ps}
+output device,
+Ghostscript,
+and the PNM tools to produce images in PNG format.
+They start a new page if the device is not
+@code{html}
+or
+@code{xhtml},
+to reduce the number of images crossing a page boundary.
 
 @item \O4
 End a nested suppression level.
@@ -19644,7 +19828,7 @@ files interpolated with
 are not preprocessed;
 to overcome this limitation,
 see
-@cite{gsoelim@r{(1)}}.
+@cite{@g@soelim@r{(1)}}.
 
 @strong{Caution:@:}
 Since the formatter replaces the entire control line
@@ -23182,7 +23366,7 @@ these constraints were no longer as tight.
 @menu
 * Language Concepts::
 * Command Reference::
-* Intermediate Output Examples::
+* GNU @command{troff} Output Examples::
 * Output Language Compatibility::
 @end menu
 
@@ -23973,8 +24157,9 @@ produce more readable output.
 
 @c ---------------------------------------------------------------------
 
-@node Intermediate Output Examples
-@subsection Intermediate Output Examples
+@anchor{Intermediate Output Examples} @c 1.23.0
+@node GNU @command{troff} Output Examples
+@subsection GNU @command{troff} Output Examples
 
 This section presents the output
 GNU

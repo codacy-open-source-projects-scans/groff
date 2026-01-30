@@ -64,19 +64,6 @@ mailing list <groff@gnu.org> or Savannah issue tracker.
 If you find a defect in a test script, that can be reported via Savannah
 like any other bug.
 
-When you run 'make distcheck', you may occasionally encounter a
-surprising problem where the build fails due to missing test scripts.
-This is more likely when using a modified (formerly: "dirty") checkout,
-because "git describe" appends "-modifier" to the git version
-information, and that in turn goes into the name of the distribution
-archive and the directory into which it unpacks.  Long file names can
-then exceed the 99-character limit to which GNU tar still defaults for
-archive members (preserving compatibility with the tar format used by
-Seventh Edition Unix).  Scroll back in your build to the "second build",
-where the distribution archive is unpacked in a squirreled-away
-directory selected by Automake.  If this is the case, you will see error
-messages from "tar" (GNU tar, at any rate), warning of the problem.
-
 
 Documenting changes
 -------------------
@@ -87,8 +74,8 @@ their impact.
 
 1.  Changes should of course be documented in the Git commit message.
     If a change alters only comments or formatting of source code, or
-    makes editorial changes to documentation, and does not resolve a
-    Savannah ticket, you can stop at that.
+    makes editorial changes to documentation or a test script, and does
+    not resolve a Savannah ticket, you can stop at that.
 
 2.  The 'ChangeLog' file follows the format and practices documented in
     the GNU Coding Standards.
@@ -198,8 +185,9 @@ Here are some portability notes on writing automated tests.
   might need to be weakened to the following to work on macOS.
     grep -Eqx '0000000 +A +\\b +B +\\b +C       D +\\n *'
 
-* The "od" command on macOS puts extra space characters between the
-  hexadecimal values when using the "-t x1" format; GNU od does not.
+* The "od" command on macOS, NetBSD, and OpenBSD puts extra space
+  characters between the hexadecimal values when using the "-t x1"
+  format; GNU od does not.
 
   So a regex like this that works with GNU od:
     grep -q '81 30 55 81 30 56 81 6c e2'

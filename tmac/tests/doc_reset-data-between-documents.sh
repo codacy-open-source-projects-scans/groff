@@ -51,8 +51,8 @@ is a program.
 .Nm
 is also a program.'
 
-# Expected (with -rLL=70n argument added and repeated blank lines elided
-# with "cat -s"):
+# Expected (with -rLL=70n argument added and consecutive blank lines
+# condensed):
 #
 # foo(1)                  General Commands Manual                 foo(1)
 #
@@ -89,4 +89,4 @@ echo "$output" | grep -q 'bar is also a program\.' || wail
 
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

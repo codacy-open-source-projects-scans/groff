@@ -199,7 +199,7 @@ AC_CONFIG_FILES([test-groff], [chmod +x test-groff])
 AC_OUTPUT
 
 echo "
-$PACKAGE_NAME version $PACKAGE_VERSION
+$PACKAGE_NAME version $PACKAGE_VERSION configuration summary
 ----------------------------------------------------------------------
  installation directory prefix    : $prefix"
 if test -n "$g"

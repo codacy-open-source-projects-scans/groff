@@ -188,6 +188,7 @@ font/devpdf/util/BuildFoundries: \
 	         -e "s|/usr/bin/perl|$(PERL)|" \
 	         -e "s|[@]GHOSTSCRIPT[@]|$(GHOSTSCRIPT)|" \
 	         -e "s|[@]PATH_SEPARATOR[@]|$(PATH_SEPARATOR)|" \
+	         -e "s|[@]urwfontsupport[@]|$(urwfontsupport)|" \
 	         -e "s|[@]VERSION[@]|$(VERSION)|" \
 	         -e "s|[@]GROFF_FONT_DIR[@]|$(fontdir)|" \
 	         $(devpdf_srcdir)/util/BuildFoundries.pl \

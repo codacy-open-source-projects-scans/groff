@@ -46,10 +46,9 @@ This file describes how to prepare 'groff' for a new release.
 
 * Update the release version number where it is hard-coded or
   represented as "next".
-  + NEWS
-  + BUG-REPORT
+  + NEWS (append "release candidate" as applicable)
   + arch/mingw/grap2graph.cmd
-  + doc/webpage.ms
+  + doc/webpage.ms (only for final release)
 
 * If the major or minor version number is being incremented, split off
   a historical ChangeLog file and add it to `EXTRA_DIST` in Makefile.am.
@@ -60,21 +59,31 @@ This file describes how to prepare 'groff' for a new release.
   current calendar year, use the most recent year in which they have;
   see the 'HACKING' file.)
 
-* Increment the version number by tagging the release, beta, or release
-  candidate.  groff requires an explicit three-part version,
-  major.minor.revision, due to the .Y register.
-
-    $ git tag 1.23.0.rc1
-
 * Run the "set-man-page-time-stamps" Makefile target from your build
   directory to fix up the stamps on the man pages.
 
 * Build (and test!) a distribution archive with "make distcheck".  It's
-  important to do this especially after tagging a first release
+  not a good idea for any tests to be failing, but if they are, note the
+  fact prominently in the release notes.
+
+* Increment the version number by tagging the release, beta, or release
+  candidate.  Sign the tag.  groff requires an explicit three-part
+  version, major.minor.revision, due to the .Y register.  Push this
+  signed tag to the repository.
+
+    $ git tag -s -m 'release candidate 1.24.0.rc2' 1.24.0.rc2
+    $ git push origin tag 1.24.0.rc2
+
+* Build and test a distribution archive again with "make distcheck".
+  It's important to do this especially after tagging a first release
   candidate, because this increments the version number visible in
   installed file names (such as "/usr/share/groff/1.24.0") and in the
   archive file, so that it unpacks to an appropriately named source
   directory.
 
-* groff 1.24.0: Edit the groff home page.  Revise the sentence "Most
-  commands installed by groff recognize this option." to say "All".
+* For final releases, update the groff home page.
+
+* Make an announcement per the "ANNOUNCE" file.
+
+* groff 1.24.0: Revise the sentence "Most commands installed by groff
+  recognize this option." to say "All".

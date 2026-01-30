@@ -23,14 +23,14 @@ groff
 .gcolor
 .sp 18p
 .ps 16
-.ft BMB
+.if F BMB .ft BMB
 Collected Reference Pages
-.ft
+.if F BMB .ft
 .sp 12p
 .ps 10
-.ft BMI
+.if F BMI .ft BMI
 documenting version @VERSION@
-.ft
+.if F BMI .ft
 .ps \n[GMP*saved-type-size]u
 .sp .1i
 .Hl
