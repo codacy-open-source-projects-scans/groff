@@ -300,13 +300,10 @@ Example 3:
 .ALD .25v
 .UNDERSCORE 3.5p "A \*[BU2]recipe for enumerated lists using indents"
 .SP .5v         \" Add an extra half line space
-.ie '\*[.T]'ps' \
-.FAM      N     \" New Century Schoolbook family
-.el .if '\*[.T]'pdf' \
-.FAM      U-N
+.ie F NR .FAM N \" Load New Century Schoolbook family if available,
+.el .FAM T      \" otherwise, use Times New Roman
 .FT       R
 .PT_SIZE 11
-.LS      13
 .HY            \" Turn hyphenation back on
 .JUSTIFY       \" Justify text
 This example demonstrates the use of left and hanging indents for
@@ -395,10 +392,8 @@ Example 4:
 .ALD .25v
 .UNDERSCORE 3.5p "A \*[BU 2]recipe for nested lists using string tabs"
 .SP .5v
-.ie '\*[.T]'ps' \
-.FAM N
-.el .if '\*[.T]'pdf' \
-.FAM U-N
+.ie F NR .FAM N
+.el .FAM T
 .FT  R
 .PT_SIZE 11
 .LS  13
@@ -432,9 +427,8 @@ indented.
 2.\c
 .TN
 This is the second item in the list.  N\*[BU 2]otice that when
-setting "lists" with tabs, there's no need to use the \*[BU 8]\\0
-escape sequence after the number/period combination in the input
-text.
+setting "lists" with tabs, there's no need to input the \*[BU 8]\\0
+escape sequence after the number/period combination.
 \#
 .COMMENT
 Now, set up the indented bullet-point sublist.  The PAD line
@@ -454,8 +448,8 @@ length of remainder of the line.
 \*[DOWN 1p]\[bu]\*[UP 1p]\c
 .TN
 This is the first line of a sublist with bullets.  N\*[BU2]otice
-how the bullets and the text line up exactly the same as in Example
-3.
+how the bullets and the text line up exactly the same as in
+Example 3.
 .ALD 6p
 .TB  3
 \*[DOWN 1p]\[bu]\*[UP 1p]\c
@@ -476,7 +470,7 @@ en-dashed sub-sublist.
 \*[UP .75p]\[en]\*[DOWN .75p]\c
 .TN
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
-nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+nonumy tempor invidunt ut labore et dolore magna aliquyam
 erat, sed diam voluptua.
 .ALD 6p
 .TB  5
@@ -512,10 +506,8 @@ Example 5:
 .ALD .25v
 .UNDERSCORE 3.5p "Word spacing"
 .ALD 8p
-.ie '\*[.T]'ps' \
-.FAM P          \" Palatino family
-.el .if '\*[.T]'pdf' \
-.FAM U-P
+.ie F PR .FAM P \" Load Palatino family if available,
+.el .FAM T      \" otherwise use Times New Roman
 .PT_SIZE 11
 .LS  14
 \#
@@ -558,10 +550,8 @@ Example 6:
 .ALD .25v
 .UNDERSCORE 3.5p "Line kerning"
 .ALD 8p
-.ie '\*[.T]'ps' \
-.FAM P          \" Palatino family
-.el .if '\*[.T]'pdf' \
-.FAM     U-P
+.ie F PR .FAM P
+.el .FAM T
 .FT      R
 .PT_SIZE 11
 .LS      15
