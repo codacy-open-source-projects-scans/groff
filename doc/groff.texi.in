@@ -2050,9 +2050,10 @@ formatter, peruse @ref{GNU @command{troff} Reference} instead.
 @cindex basics of macro package usage
 @cindex macro package usage, basics of
 
-@c Texinfo's @cite command conceives only of citations of long-form
-@c works, like books, and forces italics.  Article citations are
-@c typically placed in quotation marks instead.
+@c XXX: Texinfo's @cite command conceives only of citations of long-form
+@c works, like books, and forces italics.  APA, MLA, and Chicago styles
+@c all agree that article citations are set in roman.  MLA and Chicago
+@c furthermore place them within quotation marks.
 Let us first survey some basic concepts necessary to use a macro package
 fruitfully.@footnote{The remainder of this chapter is based on
 ``Writing Papers with NROFF using -me'' by Eric@tie{}P.@: Allman,
@@ -5236,9 +5237,6 @@ and adds several of its own.
 
 @itemize @bullet
 @item
-@c Texinfo's @cite command conceives only of citations of long-form
-@c works, like books, and forces italics.  Article citations are
-@c typically placed in quotation marks instead.
 The internals of
 @code{groff}
 @file{ms}
@@ -5252,6 +5250,10 @@ may not format properly with
 Such details include macros whose function was not documented in the
 @acronym{AT&T}
 @file{ms}
+@c XXX: Texinfo's @cite command conceives only of citations of long-form
+@c works, like books, and forces italics.  APA, MLA, and Chicago styles
+@c all agree that article citations are set in roman.  MLA and Chicago
+@c furthermore place them within quotation marks.
 manual.@footnote{``Typing Documents on the UNIX System: Using the
 -ms Macros with Troff and Nroff'', M.@tie{}E.@: Lesk, Bell Laboratories,
 1978}
@@ -24113,7 +24115,7 @@ Line continuation is a GNU extension.
 @subsubsection Legacy Compressed Encoding
 @acronym{AT&T}
 @command{troff}
-output primarily emitted glyphs by writing two digits
+primarily emitted glyphs by writing two digits
 (a motion)
 followed by a single character corresponding to a glyph.
 This syntax is less a command itself than a compressed encoding of the
@@ -24312,7 +24314,11 @@ output almost incomprehenible.
 The page description language of @acronym{AT&T}
 @command{troff} @c AT&T
 was first documented in
-@cite{A Typesetter-independent TROFF},
+@c XXX: Texinfo's @cite command conceives only of citations of long-form
+@c works, like books, and forces italics.  APA, MLA, and Chicago styles
+@c all agree that article citations are set in roman.  MLA and Chicago
+@c furthermore place them within quotation marks.
+``A Typesetter-independent TROFF'',
 by Brian Kernighan,
 and by 1992 the @acronym{AT&T}
 @code{troff} @c AT&T; system

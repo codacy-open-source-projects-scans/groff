@@ -3103,6 +3103,19 @@ const char *token::description()
     return "an escaped ':'";
   case TOKEN_EOF:
     return "end of input";
+  // troff generates the following token types internally; the input
+  // can't (directly), so seeing them described likely suggests a bug in
+  // the formatter.  We consequently don't attempt to make their
+  // descriptions intelligible to the novice.
+  case TOKEN_BEGIN_TRAP:
+    return "a \"begin trap\" token";
+  case TOKEN_END_TRAP:
+    return "an \"end trap\" token";
+  // TOKEN_NODE is handled above
+  case TOKEN_PAGE_EJECTOR:
+    return "a \"page ejector\" token";
+  case TOKEN_REQUEST:
+    return "a \"request\" token";
   default:
     assert(0 == "unhandled case of `type` (token)");
     return "an undescribed token";

@@ -26,8 +26,6 @@ wail () {
     fail=yes
 }
 
-# Ensure that characters are mapped to glyphs normatively.
-
 input='#
 x T ascii
 x res 240 24 40

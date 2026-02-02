@@ -423,7 +423,6 @@ The body contains the document's visible content.
 .
 Once an output driver interprets
 .RB \[lq] "x init" \[rq],
-@w{@samp{x init}},
 it prepares to handle commands in general.
 .
 Processing terminates when a
@@ -1450,9 +1449,9 @@ Line continuation is a GNU extension.
 .SS "Legacy compressed encoding"
 .\" ====================================================================
 .
-AT&T}
+AT&T
 .I troff \" AT&T
-output primarily emitted glyphs by writing two digits
+primarily emitted glyphs by writing two digits
 (a motion)
 followed by a single character corresponding to a glyph.
 .
@@ -1515,37 +1514,6 @@ the commands
 .B t
 .RB and\~ u
 provide greater functionality and superior troubleshooting capacity.
-.
-.
-.\" ====================================================================
-.SH Postprocessing
-.\" ====================================================================
-.
-The
-.I roff
-postprocessors are programs that have the task to translate the
-.I intermediate output
-into actions that are sent to a device.
-.
-A device can be some piece of hardware such as a printer, or a software
-file format suitable for graphical or text processing.
-.
-The
-.I groff
-system provides powerful means that make the programming of such
-postprocessors an easy task.
-.P
-There is a library function that parses the
-.I intermediate output
-and sends the information obtained to the device via methods of a
-class with a common interface for each device.
-.
-So a
-.I groff
-postprocessor must only redefine the methods of this class.
-.
-For details,
-see the reference in section \[lq]Files\[rq] below.
 .
 .
 .\" ====================================================================

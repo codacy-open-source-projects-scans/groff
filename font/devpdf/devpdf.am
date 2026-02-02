@@ -57,15 +57,7 @@ devpdffont_descriptions_from_devps = \
   font/devpdf/TBI \
   font/devpdf/TI \
   font/devpdf/TR \
-  font/devpdf/EURO \
-  font/devpdf/CSH \
-  font/devpdf/CSS \
-  font/devpdf/CTH \
-  font/devpdf/CTS \
-  font/devpdf/JPG \
-  font/devpdf/JPM \
-  font/devpdf/KOG \
-  font/devpdf/KOM
+  font/devpdf/EURO
 
 if HAVE_URW_FONTS
 devpdffont_descriptions_for_urw = \

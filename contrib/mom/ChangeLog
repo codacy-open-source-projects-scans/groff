@@ -1,3 +1,9 @@
+2026-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am: Add "typesetting.pdf" target to
+	`MOMPROCESSEDEXAMPLEFILES` even if Automake variable
+	`HAVE_URW_FONTS` is false.
+
 2026-01-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* om.tmac (PAD, TO_TOC, PDF_LINK): Simplify `pdfhref` calls.

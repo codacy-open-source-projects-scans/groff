@@ -1,3 +1,15 @@
+2026-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Fix assertion
+	failures (potential and actual) by supplying descriptions even
+	of internally generated token types.  While a user _should_
+	never be exposed to these in a diagnostic message, the event is
+	not impossible (and said descriptions could be helpful to groff
+	developers in tracking down the "impossible" situation).
+
+	Fixes <https://savannah.gnu.org/bugs/?67990>.  Thanks to Deri
+	James for the report.
+
 2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/devices/grodvi/grodvi.1.man (FT):
@@ -6692,31 +6704,6 @@
 	* tmac/pdf.tmac (pdf:SS): Delete now-unused macro.
 
 	Fixes <https://savannah.gnu.org/bugs/?67207>.
-
-2025-06-26  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* font/devpdf/devpdf.am: Ships font description file names for
-	the "pdf" output device corresponding to the 8 new font
-	description files for CJK script support recently added for the
-	"{x,}html", "ps", and "utf8" devices.
-
-	These are intended as abstractions of faces to permit consistent
-	naming while permitting customization, just as with the 12 text
-	typefaces supported across output devices for Latin scripts in
-	groff (three families of four styles each).  These CJK font
-	descriptions are not organized into groff font families, but are
-	similar.  They are not mounted by default.
-
-		CSH: Simplified Chinese, Hei style
-		CSS: Simplified Chinese, Song style
-		CTH: Traditional Chinese, Hei style
-		CTS: Traditional Chinese, Song style
-		JPG: Japanese, Gothic style
-		JPM: Japanese, Mincho style
-		KOG: Korean, Gothic style
-		KOM: Korean, Mincho style
-
-	* font/devpdf/devpdf.am (DEVPDFFONTFILES_FROM_DEVPS): Add them.
 
 2025-06-26  G. Branden Robinson <g.branden.robinson@gmail.com>
 

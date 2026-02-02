@@ -791,59 +791,6 @@ so that they can be used with other software
 and embedded in PDF output.
 .
 .
-.P
-.I gropdf
-furthermore supports a naming scheme for East Asian typefaces
-shared with
-.MR grohtml @MAN1EXT@ ,
-.MR grops @MAN1EXT@ ,
-and
-.MR grotty @MAN1EXT@ .
-.
-.
-.RS
-.TP
-.B CSH
-Simplified Chinese,
-Hei style
-.
-.TQ
-.B CSS
-Simplified Chinese,
-Song style
-.
-.TQ
-.B CTH
-Traditional Chinese,
-Hei style
-.
-.TQ
-.B CTS
-Traditional Chinese,
-Song style
-.
-.TQ
-.B JPG
-Japanese,
-Gothic style
-.
-.TQ
-.B JPM
-Japanese,
-Mincho style
-.
-.TQ
-.B KOG
-Korean,
-Gothic style
-.
-.TQ
-.B KOM
-Korean,
-Mincho style
-.RE
-.
-.
 .\" ====================================================================
 . SS "URW font support"
 .\" ====================================================================
