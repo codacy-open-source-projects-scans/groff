@@ -2405,10 +2405,13 @@ In PRINTSTYLE <kbd>TYPEWRITE</kbd>, mom, by default, underlines
 anything that looks like italics.  This includes the
 <a href="typesetting.html#slant-inline"><kbd><span class="nobr">\*[SLANT]</span></kbd></a>
 <a href="definitions.html#inlines">inline escape</a>
-for pseudo-italics.  (See
-<a href="goodies.html#underline">UNDERLINE</a>
-for a note on how to process TYPEWRITE files that underline
-italics.)
+for pseudo-italics.  TYPEWRITE files that require underlined italics
+must be processed with
+<br/>
+<span class="pre-in-pp">
+  pdfmom -Tps filename.mom &gt; filename.pdf
+</span>
+since groff&#8217;s pdf driver does not recognize UNDERLINE.
 </p>
 
 <p id="printstyle-italics">
