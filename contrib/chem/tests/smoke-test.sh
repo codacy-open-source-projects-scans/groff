@@ -16,12 +16,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-if ! perl -e 'use Math::Trig;' 2> /dev/null
+module=Math::Trig
+
+if ! perl -e "use $module;" 2> /dev/null
 then
+    echo "Perl module $module not available; skipping" >&2
     exit 77 # skip
 fi
 

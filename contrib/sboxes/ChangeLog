@@ -1,3 +1,15 @@
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* sboxes.am: Populate `sboxespdfdocdir` and
+	`nodist_sboxesotherdoc_DATA` unconditionally.  We now build the
+	"msboxes.pdf" document regardless of gropdf(1)'s service level
+	{see its man page}.
+	(uninstall_sboxes): De-parameterize uninstallation of the
+	document as well (attempting to remove the installation's
+	"examples" directory, which becomes empty if the document was
+	the last file to be removed from it in make's nondeterminstic
+	ordering).
+
 2026-01-20  Bruno Haible <bruno@clisp.org>
 
 	* sboxes.am: Fix portability problem involving BSD Make.  Define

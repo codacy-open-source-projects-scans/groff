@@ -16,13 +16,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 glilypond="${abs_top_builddir:-.}/glilypond"
 groff="${abs_top_builddir:-.}/test-groff"
 
-if ! perl -e 'use File::HomeDir;' 2> /dev/null
+module=File::HomeDir
+
+if ! perl -e "use $module;" 2> /dev/null
 then
+    echo "Perl module $module not available; skipping" >&2
     exit 77 # skip
 fi
 

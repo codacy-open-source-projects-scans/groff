@@ -56,10 +56,7 @@ EOF
   esac
 done
 
-# Note: The construction '${1+"@$"}' preserves the absence of arguments
-# in old shells; see "Shell Substitutions" in the GNU Autoconf manual.
-# We don't want 'neqn' to become 'neqn ... ""' if $# equals zero.
-exec @g@eqn -T ascii ${1+"$@"}
+exec @g@eqn -T ascii "$@"
 
 # Local Variables:
 # fill-column: 72

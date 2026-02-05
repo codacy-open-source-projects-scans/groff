@@ -467,7 +467,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle January 2026
+@subtitle February 2026
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -626,7 +626,7 @@ its heart.
 The front end programs available in the
 GNU
 @code{roff}
-system easier to use than traditional
+system make it easier to use than traditional
 @code{roff}s
 that required the construction of pipelines
 or use of temporary files to carry a source document
@@ -4869,9 +4869,9 @@ without operator precedence
 @code{groff} @file{ms} provides several strings that you can customize
 for your own purposes, or redefine to adapt the macro package to
 languages other than English.  It is already localized for
-@c cs, de, es, fr, it, ru, sv
-Czech, German, Spanish, French, Italian, Russian, and Swedish.  Load the
-desired localization macro package after @file{ms}; see
+@c cs, de, es, fr, it, pl, ru, sv
+Czech, German, Spanish, French, Italian, Polish, Russian, and Swedish.
+Load the desired localization macro package after @file{ms}; see
 @cite{groff_tmac@r{(5)}}.
 
 @Example
@@ -6647,7 +6647,9 @@ document or supply @samp{-m latin2} as a command-line argument to
 @code{groff}.
 The
 @file{cs.tmac}
-localization file loads
+and
+@file{pl.tmac}
+localization files load
 @file{latin2.tmac}
 automatically.
 
@@ -10215,6 +10217,7 @@ non-zero even mode.
 @pindex hyphen.es
 @pindex hyphen.fr
 @pindex hyphen.it
+@pindex hyphen.pl
 @pindex hyphen.ru
 @pindex hyphen.sv
 @pindex hyphenex.cs
@@ -10277,6 +10280,7 @@ subsection ``Localization packages'' of
 @item        German traditional @tab det          @tab 2        @tab 2
 @item        German reformed    @tab den          @tab 2        @tab 2
 @item        Italian            @tab it           @tab 2        @tab 2
+@item        Polish             @tab pl           @tab 2        @tab 2
 @item        Russian            @tab ru           @tab 2        @tab 2
 @item        Spanish            @tab es           @tab 2        @tab 2
 @item        Swedish            @tab sv           @tab 1        @tab 2
@@ -10370,6 +10374,7 @@ The @code{hpfa} request appends a file of patterns to the current list.
 @pindex fr.tmac
 @pindex it.tmac
 @pindex ja.tmac
+@pindex pl.tmac
 @pindex ru.tmac
 @pindex sv.tmac
 @pindex zh.tmac

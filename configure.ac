@@ -184,7 +184,6 @@ AM_CONDITIONAL([MAKE_DEFINES_RM], [test "$groff_make_defines_rm" = yes])
 AM_CONDITIONAL([USEPROGRAMPREFIX], [test "$g" = g])
 
 AM_CONDITIONAL([USE_GROHTML], [test "$use_grohtml" = yes])
-AM_CONDITIONAL([USE_GROPDF], [test "$use_gropdf" = yes])
 AM_CONDITIONAL([USE_GROFF_ALLOCATOR],
                [test "$groff_use_own_allocator" = yes])
 AM_CONDITIONAL([HAVE_GHOSTSCRIPT], [test "$GHOSTSCRIPT" != no \
@@ -216,7 +215,15 @@ echo "\
  C++ compiler and options         : $CXX $CXXFLAGS $CPPFLAGS
  use libgroff's memory allocator  : $groff_use_own_allocator
  C compiler and options           : $CC $CFLAGS $CPPFLAGS
- Perl interpreter version         : $perl_version"
+ Perl interpreter version         : $perl_version
+ Ghostscript command              : $GHOSTSCRIPT"
+if test "$groff_have_urw_fonts" = yes
+then
+ echo "\
+ URW fonts directory              : $urwfontsdir"
+fi
+ echo "\
+ gropdf service level             : $gropdf_service_level"
 if test "$groff_no_x" = yes
 then
   echo "\
@@ -227,26 +234,16 @@ else
  X11 app defaults directory       : $appdefdir"
 fi
 echo "\
- default paper format             : $PAGE"
-echo "\
+ default paper format             : $PAGE
  'groff -l' uses print spooler    : $groff_have_spooler
- use URW fonts for PDF output     : $groff_have_urw_fonts"
-if test "$groff_have_urw_fonts" = yes
-then
- echo "\
- URW fonts directory              : $urwfontsdir"
-fi
-echo "\
  preconv can use uchardet library : $groff_have_uchardet
  can build groff.{info,html,txt}  : $groff_have_makeinfo
  can build groff.{dvi,pdf}        : $groff_use_tex
 ----------------------------------------------------------------------"
 
 GROFF_APPDEFDIR_NOTICE
-GROFF_GHOSTSCRIPT_AVAILABILITY_NOTICE
 GROFF_GHOSTSCRIPT_VERSION_NOTICE
 GROFF_URW_FONTS_NOTICE
 GROFF_UCHARDET_NOTICE
 GROFF_GROHTML_PROGRAM_NOTICE
 GROFF_MAKEINFO_PROGRAM_NOTICE
-GROFF_GROPDF_PROGRAM_NOTICE

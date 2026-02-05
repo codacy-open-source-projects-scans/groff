@@ -1,3 +1,10 @@
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* mom.am: Populate `MOMPROCESSEDEXAMPLEFILES` unconditionally.
+	We now build all of her examples regardless of gropdf(1)'s
+	service level (see its man page).
+	(install_mom): De-parameterize installation of examples as well.
+
 2026-01-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mom.am: Add "typesetting.pdf" target to

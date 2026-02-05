@@ -53,6 +53,10 @@ output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mit 2>&1)
 echo 'checking raw troff with -mit' >&2
 echo "$output" | grep -Fqx '.hy=1' || wail
 
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mpl 2>&1)
+echo 'checking raw troff with -mpl' >&2
+echo "$output" | grep -Fqx '.hy=1' || wail
+
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mru 2>&1)
 echo 'checking raw troff with -mru' >&2
 echo "$output" | grep -Fqx '.hy=1' || wail
@@ -85,6 +89,10 @@ output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -me -mit 2>&1)
 echo 'checking -me with -mit' >&2
 echo "$output" | grep -Fqx '.hy=2' || wail
 
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -me -mpl 2>&1)
+echo 'checking -me with -mpl' >&2
+echo "$output" | grep -Fqx '.hy=2' || wail
+
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -me -mru 2>&1)
 echo 'checking -me with -mru' >&2
 echo "$output" | grep -Fqx '.hy=2' || wail
@@ -115,6 +123,10 @@ echo "$output" | grep -Fqx '.hy=6' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -ms -mit 2>&1)
 echo 'checking -ms with -mit' >&2
+echo "$output" | grep -Fqx '.hy=2' || wail
+
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -ms -mpl 2>&1)
+echo 'checking -ms with -mpl' >&2
 echo "$output" | grep -Fqx '.hy=2' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -ms -mru 2>&1)
@@ -150,6 +162,10 @@ echo "$output" | grep -Fqx '.hy=6' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -mit 2>&1)
 echo 'checking -man with -mit' >&2
+echo "$output" | grep -Fqx '.hy=2' || wail
+
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -mpl 2>&1)
+echo 'checking -man with -mpl' >&2
 echo "$output" | grep -Fqx '.hy=2' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -man -mru 2>&1)
@@ -225,6 +241,10 @@ echo "$output" | grep -Fqx '.hy=6' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mdoc -mit 2>&1)
 echo 'checking -mdoc with -mit' >&2
+echo "$output" | grep -Fqx '.hy=2' || wail
+
+output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mdoc -mpl 2>&1)
+echo 'checking -mdoc with -mpl' >&2
 echo "$output" | grep -Fqx '.hy=2' || wail
 
 output=$(printf "%s\n" "$input" | "$groff" -Tascii -P-cbou -mdoc -mru 2>&1)

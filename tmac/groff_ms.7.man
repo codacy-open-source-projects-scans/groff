@@ -1832,11 +1832,14 @@ provides several strings that you can customize for your own purposes,
 or redefine to adapt the macro package to languages other than English.
 .
 It is already localized for
-.\" cs, de, fr, it, sv
+.\" cs, de, es, fr, it, pl, ru, sv
 Czech,
 German,
+Spanish,
 French,
 Italian,
+Polish,
+Russian,
 and
 Swedish.
 .

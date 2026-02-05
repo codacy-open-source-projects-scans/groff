@@ -1,10 +1,10 @@
 # Copyright 2021 Free Software Foundation, Inc.
 #           2021 G. Branden Robinson
 #
-#      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
+# Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
-#      adapted from groff *.am files by
-#          Bertrand Garrigues <bertrand.garrigues@laposte.net>
+# adapted from groff *.am files by
+#     Bertrand Garrigues <bertrand.garrigues@laposte.net>
 #
 # This file is part of sboxes.
 #
@@ -41,10 +41,8 @@ SBOXES_EXAMPLEFILES = $(sboxes_srcdir)/msboxes.ms.in
 sboxesotherdocdir = $(docdir)
 nodist_sboxesotherdoc_DATA = $(sboxes_builddir)/msboxes.ms
 
-if USE_GROPDF
 sboxespdfdocdir = $(pdfdocdir)
 nodist_sboxespdfdoc_DATA = $(sboxes_builddir)/msboxes.pdf
-endif
 
 MOSTLYCLEANFILES += msboxes.ms \
 	$(nodist_sboxesotherdoc_DATA) \
@@ -72,9 +70,8 @@ uninstall_sboxes:
 	if test -d $(DESTDIR)$(exampledir)/sboxes; then \
 	  rmdir $(DESTDIR)$(exampledir)/sboxes; \
 	fi
-if USE_GROPDF
 	-rmdir $(DESTDIR)$(sboxespdfdocdir)
-endif
+
 
 # Local Variables:
 # fill-column: 72

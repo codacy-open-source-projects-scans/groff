@@ -43,7 +43,7 @@ fi
 
 for compat in "" " -C"
 do
-  for locale in cs de en es fr it ja ru sv zh
+  for locale in cs de en es fr it ja pl ru sv zh
   do
     echo testing \"-m $locale$compat\" >&2
     output=$("$groff" -ww -m $locale$compat -a -Tutf8 </dev/null \

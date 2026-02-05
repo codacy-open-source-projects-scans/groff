@@ -956,6 +956,11 @@ Miscellaneous
    users with all formats appropriate to the platform (GNU Info, HTML,
    plain text, TeX DVI, and PDF).  Thanks to onf.
 
+*  Polish language input documents are now supported, including
+   hyphenation patterns from the CTAN project and localized strings
+   for the man, ms, me, mm, and mom packages.  Thanks to Dariusz
+   Chilimoniuk.
+
 *  Russian language input documents using the KOI8-R encoding are now
    supported, including hyphenation patterns from the ruhyphen project
    and localized strings for the man, ms, me, mm, and mom packages.

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 1989-2020 Free Software Foundation, Inc.
+# Copyright 1993 Free Software Foundation, Inc.
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -9,14 +9,14 @@
 # Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# groff is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# groff is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+
 # This script runs groff without requiring that it be installed.
 
 SEP='@PATH_SEPARATOR@'
@@ -49,6 +49,7 @@ $SEP$builddir/contrib/rfc1345\
 $SEP$srcdir/contrib/sboxes\
 $SEP$builddir/contrib/sboxes\
 
-export GROFF_BIN_PATH GROFF_COMMAND_PREFIX GROFF_FONT_PATH GROFF_TMAC_PATH
+export GROFF_COMMAND_PREFIX
+export GROFF_BIN_PATH GROFF_FONT_PATH GROFF_TMAC_PATH
 
-exec $builddir/groff ${1+"$@"}
+exec $builddir/groff "$@"

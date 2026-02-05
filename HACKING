@@ -1,4 +1,4 @@
-    Copyright 2022-2024 G. Branden Robinson
+    Copyright 2022-2026 G. Branden Robinson
 
     Copying and distribution of this file, with or without
     modification, are permitted in any medium without royalty provided
@@ -106,12 +106,51 @@ their impact.
     horizontally compresses tables as well, _would_ be 'NEWS'-worthy.
 
 
-Updating Copyright Notices
+Updating copyright notices
 --------------------------
 
-* The overall copyright notice for groff as a work of software is
-  updated at release time.  See the 'FOR-RELEASE' file in the Git
-  repository.
+* A lay person's views and opinion follow; they are not legal advice.
+  If you require legal advice, consult a licensed attorney competent in
+  copyright law in your jurisdiction.  The following discussion attempts
+  to establish a coherent basis from which to make consistent decisions
+  about the inclusion and maintenance of copyright notices in groff.
+
+* The purpose of a copyright notice is to record legal facts about a
+  work.  It is not to express acknowledgement of, gratitude about, or
+  appreciation for the efforts of contributors, past or present, which
+  is better done in documentation--and with explicit expression!
+
+* Copyright protection extends to those portions of the work fixed in a
+  tangible medium in the years declared in the copyright notice, except
+  for those portions whose copyright durations have elapsed.  But these
+  are so lengthy that, in the United States as of 2025, no work of
+  computer software or documentation has ever yet even _partially_ aged
+  into the public domain.  (Some has been placed into the public domain
+  deliberately, and some never enjoyed copyright protection at all.)
+
+  Historically--decades ago, and before digital computing was commonly
+  undertaken in the home or even in small- to medium-scale
+  business--a copyright notice also asserted a legal claim.  (It remains
+  useful to establish a basis for recovery of damages in U.S. civil
+  copyright infringement cases.)  But copyright notices have not
+  constituted "assertions" of copyright for factual or criminal
+  infringement purposes (in the United States) for around 50 years as of
+  2026.  Removing a party's name from a copyright notice (as might
+  happen consequent to code deletion or wholesale rewriting of
+  documentation) is not a challenge or insult to that person or
+  organization, and does not deprive them of legitimate legal rights,
+  when and where doing so _makes the copyright notice more accurate_.
+
+  Software developers relying upon copyright protection are responsible
+  for maintaining accurate copyright notices.  In the U.S., making a
+  claim of copyright fraudulently can be a criminal offense (17 USC
+  §506(c)).  Making an overbroad claim of copyright, by naming parties
+  who don't legitimately have copyright in a work or by deliberately
+  overstating the recency of their efforts is, in the lay opinion of the
+  maintainer as of this writing, neglectful of responsibility.
+
+* Update the overall copyright notice for groff as a work of software
+  at release time.  See the 'FOR-RELEASE' file in the Git repository.
 
 * Update a _file_'s copyright notice in a year when committing a change
   to it that is "original expression" and would thus merit copyright
@@ -120,8 +159,40 @@ Updating Copyright Notices
   "bumping" the copyright notice when _no_ change has been made, or when
   the alterations are trivial by another standard (code style changes
   that don't require regression testing; editorial changes to text that
-  are _invisible_ to the lay reader without technological
-  assistance--like trailing tab/space removal) abuses the principle.
+  are _invisible_ to the lay reader without technological assistance--
+  like trailing tab/space removal) abuses the principle, as noted above.
+
+  The GNU Maintainers' Guide's threshold for a "legally significant"
+  change is 15 lines.
+
+  "A change of just a few lines (less than 15 or so) is not legally
+  significant for copyright."
+
+  https://www.gnu.org/prep/maintain/html_node/Legally-Significant.html
+
+  Conversely, >= 15 lines would be.  This guidance is vague, as it makes
+  no claim of an expected, typical, or mean line length, and different
+  file formats and stylistic practices in code and documentation
+  production exhibit different typical line lengths.  Bearing in mind
+  that the 15 lines must constitute "original expression", and lacking
+  further guidance from that manual, in groff we ignore the issue of
+  line length and interpret "15 lines" as requiring a _net increase_ in
+  a file's line count of at least that magnitude, as calculated by
+  taking the output of "git diff --stat" on the file and subtracting
+  lines removed from lines added, a procedure that can result in a
+  nonpositive number.  This rule has the advantage that it tends to
+  exclude voluminous but robotic changes, as one might make with "sed
+  -i", which seldom constitute "original expression".
+
+  Where a change produces a net increase of 15 lines or more but _still_
+  seems robotic or unoriginal, consider (1) applying the annotation
+  "Copyright-paperwork-exempt: yes" to the Git commit log message, and
+  (2) recording, in the corresponding commit log message, the robotic
+  procedure that produced the change.
+
+  Regarding "original expression", see section 308 of
+  <https://www.copyright.gov/comp3/chap300/
+  ch300-copyrightable-authorship.pdf>.
 
 * If you forget the foregoing step, or contributions to a file seem to
   accrete original status over time or a series of commits, it's fine to
@@ -131,24 +202,34 @@ Updating Copyright Notices
   them in the commit message so that other people understand the basis
   of your claim.
 
+* Similarly, it is also virtuous to correct existing copyright notices
+  that apply overbroad principles of update as described above.  Doing
+  so demands careful study of a file's history, and one must be mindful
+  of file renames and relocations of content, neither of which have any
+  impact on copyright.  When revising a copyright notice thus, document
+  your research procedure (for example, by recording in the commit log
+  the exact Git commands you used) so that anyone can reproduce it.
+
 * It's okay to simply report a range of years in the copyright notice
-  instead of a comma-separated list.  As far as GBR knows there is no
-  hard rule that such ranges are interpreted exhaustively, and unless
-  someone has a chronological record of changes to the file, a broken
+  instead of a comma-separated list.  As far as the current maintainer
+  knows, there is no hard rule that such ranges are interpreted
+  exhaustively, and unless someone has a chronological record of changes
+  to the file--which is present in groff's Git commit repository going
+  back to about 2014, but absent from distribution archives--a broken
   sequence of copyright coverage years makes little difference.
-  Copyright protection extends to those portions of the work fixed in a
-  tangible medium in the years declared in the copyright notice, except
-  for those portions whose copyright durations have elapsed.  But these
-  are so lengthy that, in the United States as of 2025, no work of
-  computer software or documentation has ever yet even _partially_ aged
-  into the public domain.  (Some has been placed in the public domain
-  deliberately, and some never enjoyed copyright protection at all.)
+
+  Prior to 2014, groff's Git history is coarser, being reconstructed
+  from CVS, and prior to February 2000, each commit is a snapshot of a
+  distribution archive.
+
+  https://lists.gnu.org/archive/html/groff/2013-12/msg00033.html
+  https://lists.gnu.org/archive/html/groff/2013-12/msg00005.html
 
 
-Writing Tests
+Writing tests
 -------------
 
-Here are some portability notes on writing automated tests.
+Here is some advice on writing portable automated test scripts.
 
 * Write to the POSIX standard for the shell and utilities where
   possible.  Issue 4 from 1994 is old enough that no contemporary system
@@ -294,6 +375,7 @@ Here are some portability notes on writing automated tests.
       echo "unable to clear environment; skipping" >&2
       exit 77
   fi
+
 
 Updating gnulib
 ---------------

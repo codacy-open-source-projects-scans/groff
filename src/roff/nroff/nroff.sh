@@ -251,16 +251,11 @@ groff=${GROFF_TEST_GROFF-groff}
 #
 # If POSIX adopts Bash's ${var@Q} or an equivalent, this issue can be
 # revisited.
-#
-# Note 2: The construction '${1+"$@"}' preserves the absence of
-# arguments in old shells; see "Shell Substitutions" in the GNU Autoconf
-# manual.  We don't want 'nroff' to become 'groff ... ""' if $# equals
-# zero.
 if [ -n "$dry_run" ]
 then
-  echo PATH="$GROFF_RUNTIME$PATH" $groff $T $opts ${1+"$@"}
+  echo PATH="$GROFF_RUNTIME$PATH" $groff $T $opts "$@"
 else
-  PATH="$GROFF_RUNTIME$PATH" $groff $T $opts ${1+"$@"}
+  PATH="$GROFF_RUNTIME$PATH" $groff $T $opts "$@"
 fi
 
 # Local Variables:

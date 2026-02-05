@@ -91,7 +91,6 @@ MOMEXAMPLEFILES=\
 momexampledir = $(exampledir)/mom
 dist_momexample_DATA = $(MOMEXAMPLEFILES)
 
-if USE_GROPDF
 MOMPROCESSEDEXAMPLEFILES = \
   contrib/mom/examples/letter.pdf \
   contrib/mom/examples/mom-pdf.pdf \
@@ -103,7 +102,6 @@ MOMPROCESSEDEXAMPLEFILES = \
   contrib/mom/examples/typesetting.pdf
 momprocessedexampledir = $(exampledir)/mom
 nodist_momprocessedexample_DATA = $(MOMPROCESSEDEXAMPLEFILES)
-endif
 
 mom_test_template = contrib/mom/examples/test-mom.sh.in
 
@@ -156,12 +154,10 @@ penguin.pdf:
 
 install-data-hook: install_mom
 install_mom:
-if USE_GROPDF
 	for f in $(PDFDOCFILE); do \
 	  $(RM) $(DESTDIR)$(pdfdocdir)/$$f; \
 	  $(LN_S) $(exampledir)/mom/$$f $(DESTDIR)$(pdfdocdir)/$$f; \
 	done
-endif
 
 uninstall_groffdirs: uninstall_mom
 uninstall_mom:

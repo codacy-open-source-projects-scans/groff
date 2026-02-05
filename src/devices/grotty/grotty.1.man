@@ -900,8 +900,8 @@ $ \c
 .SH "See also"
 .\" ====================================================================
 .
-.UR http://\:www\:.ecma\-international\:.org/\:publications/\:files/\:\
-ECMA\-ST/\:\%Ecma\-048\:.pdf
+.UR https://\:ecma\-international\:.org/\:wp\-content/\:uploads/\:\
+ECMA\-48_5th_edition_june_1991\:.pdf
 \[lq]Control Functions for Coded Character Sets\[rq]
 (ECMA-48)
 5th\~edition,

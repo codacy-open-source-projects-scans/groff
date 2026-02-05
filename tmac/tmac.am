@@ -72,6 +72,8 @@ TMACNORMALFILES = \
   tmac/hyphen.fr \
   tmac/it.tmac \
   tmac/hyphen.it \
+  tmac/pl.tmac \
+  tmac/hyphen.pl \
   tmac/ru.tmac \
   tmac/hyphen.ru \
   tmac/sv.tmac \

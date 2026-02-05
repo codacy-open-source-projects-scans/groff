@@ -230,7 +230,7 @@ Set an ellipsis on the math axis with the GNU extension macro
 GNU
 .IR eqn 's\" GNU
 .B delim
-command does not treat an
+primitive does not treat an
 .RB \[lq] on \[rq]
 argument as a pair of equation delimiters.
 .
@@ -1035,7 +1035,8 @@ introducing one deliberate incompatibility.
 .
 .TP
 .B "delim on"
-.I @g@eqn
+GNU
+.I eqn \" GNU
 recognizes an
 .RB \[lq] on \[rq]
 argument to the

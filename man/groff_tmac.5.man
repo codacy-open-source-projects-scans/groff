@@ -417,6 +417,21 @@ Japanese.
 .
 .
 .TP
+.I pl
+Polish;
+localizes
+.IR man ,
+.IR me ,
+.IR mm ,
+.IR mom ,
+and
+.IR ms .
+.
+Sets the input encoding to Latin-2 by loading
+.IR latin2.tmac .
+.
+.
+.TP
 .I ru
 Russian;
 localizes

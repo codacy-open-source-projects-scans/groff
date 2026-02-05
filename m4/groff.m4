@@ -271,16 +271,17 @@ AC_DEFUN([GROFF_GROPDF_DEPENDENCIES_CHECK], [
   AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
   AC_REQUIRE([GROFF_URW_FONTS_CHECK])
 
-  use_gropdf=no
-  gropdf_missing_deps=
+  gropdf_service_level=full
 
-  if test "$GHOSTSCRIPT" != missing \
-    || test "$groff_have_urw_fonts" = yes
+  if test "$groff_have_urw_fonts" != yes
   then
-    use_gropdf=yes
+    gropdf_service_level=intermediate
   fi
 
-  AC_SUBST([use_gropdf])
+  if test "$GHOSTSCRIPT" = missing
+  then
+    gropdf_service_level=basic
+  fi
 ])
 
 AC_DEFUN([GROFF_MAKEINFO_PROGRAM_NOTICE], [
@@ -299,24 +300,6 @@ AC_DEFUN([GROFF_MAKEINFO_PROGRAM_NOTICE], [
   fi
 ])
 
-
-AC_DEFUN([GROFF_GROPDF_PROGRAM_NOTICE], [
-  AC_REQUIRE([GROFF_GROPDF_DEPENDENCIES_CHECK])
-
-  if test "$use_gropdf" = no
-  then
-    AC_MSG_NOTICE(['gropdf' will have reduced function.
-
-  Neither Ghostscript nor URW fonts are available; groff documentation
-  thus will not be available in PDF.
-
-  'gropdf' will be able to handle only documents using the standard PDF
-  base 14 fonts, plus the 'EURO' font groff supplies, and font embedding
-  with its '-e' option (accessed via the 'groff' command with the option
-  '-P -e') will not be possible.
-])
-  fi
-])
 
 # Make URW font support configurable.
 
@@ -350,7 +333,6 @@ AC_DEFUN([GROFF_URW_FONTS_CHECK], [
   AC_REQUIRE([GROFF_URW_FONTS_PATH])
   AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
   groff_have_urw_fonts=no
-  urwfontsdir=
   if test "$urwfontsupport" != no
   then
     AC_MSG_CHECKING([for URW fonts in Type 1/PFB format])
@@ -525,29 +507,6 @@ AC_DEFUN([GROFF_GHOSTSCRIPT_PREFS],
     [ALT_GHOSTSCRIPT_PROGS="$withval"],
     [ALT_GHOSTSCRIPT_PROGS="gs gswin32c gsos2"])
    AC_SUBST([ALT_GHOSTSCRIPT_PROGS])])
-
-AC_DEFUN([GROFF_GHOSTSCRIPT_AVAILABILITY_NOTICE], [
-  AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
-
-  gs_names=gs
-  if test -n "$ALT_GHOSTSCRIPT_PROGS"
-  then
-    gs_names="$ALT_GHOSTSCRIPT_PROGS"
-  fi
-
-  if test "$GHOSTSCRIPT" = missing
-  then
-    AC_MSG_NOTICE([No Ghostscript program was found in \$PATH.
-
-  It was sought under the name(s) "$gs_names".
-
-  groff documentation will not be available in HTML.
-
-  'grohtml' will have reduced function, being unable to produce
-  documents using the 'tbl' preprocessor.
-    ])
-  fi
-])
 
 # Ghostscript version check.  Versions 9.00 <= x < 9.54 suffer from a
 # rendering glitch that affects the AT&T troff (and groff) special

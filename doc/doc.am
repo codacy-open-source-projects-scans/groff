@@ -49,10 +49,8 @@ DOC_GROFF = \
 # standard, (2) ensure consistent rendering of the document, and (3)
 # exercise this feature of gropdf.
 if HAVE_URW_FONTS
-if USE_GROPDF
 pdfmomoption = -P-W
 groffmanpagesoption = -P-e
-endif
 endif
 
 DOC_PDFMOM = \
@@ -87,11 +85,9 @@ if USE_GROHTML
 PROCESSEDDOCFILES_HTML = \
   doc/pic.html
 endif
-if USE_GROPDF
 PROCESSEDDOCFILES_PDF = \
   doc/automake.pdf \
   doc/groff-man-pages.pdf
-endif
 PROCESSEDDOCFILES_PS = \
   doc/meref.ps \
   doc/meintro.ps \
@@ -126,9 +122,7 @@ if USE_GROHTML
 $(PROCESSEDDOCFILES_HTML): $(PROCESSEDFILES_DEPS_HTML)
 endif
 $(PROCESSEDDOCFILES_PS): $(PROCESSEDFILES_DEPS_PS)
-if USE_GROPDF
 $(PROCESSEDDOCFILES_PDF): $(PROCESSEDFILES_DEPS_PDF)
-endif
 $(PROCESSEDDOCFILES_TXT): $(PROCESSEDFILES_DEPS_TXT)
 
 otherdocdir = $(docdir)
@@ -141,10 +135,8 @@ MOSTLYCLEANFILES += \
 EXTRA_DIST += $(DOCFILES_NOINST)
 
 EXTRA_DIST += doc/automake.mom
-if USE_GROPDF
 docpdfdocdir = $(pdfdocdir)
 nodist_docpdfdoc_DATA = $(PROCESSEDDOCFILES_PDF)
-endif
 doc/automake.pdf: doc/automake.mom pdfmom $(TMAC_PACKAGE_MOM)
 
 # GNU PIC html documentation, installed in $(htmldocdir)
@@ -469,9 +461,7 @@ if USE_GROHTML
 	  rmdir  $(doc_builddir)/img || :; \
 	fi
 endif
-if USE_GROPDF
 	$(RM) $(PROCESSEDDOCFILES_PDF)
-endif
 
 install-data-hook: install_doc_htmldoc
 install_doc_htmldoc:

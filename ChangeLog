@@ -1,3 +1,167 @@
+2026-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Stop using `${1+"$@"}` to kludge around old broken shells.
+
+	The (forthcoming) Autoconf 2.73 manual explains.
+
+	---snip---
+	You may see usages like ‘${1+"$@"}’ in older shell scripts
+	designed to work around a portability problem in ancient shells.
+	Unfortunately this runs afoul of bugs in more-recent shells, and
+	nowadays it is better to use plain ‘"$@"’ instead.
+
+	The portability problem with ancient shells was significant.
+	When there are no positional arguments ‘"$@"’ should be
+	discarded, but the original Unix version 7 Bourne shell
+	mistakenly treated it as equivalent to ‘""’ instead, and many
+	ancient shells followed its lead.
+
+	For many years shell scripts worked around this portability
+	problem by using ‘${1+"$@"}’ instead of ‘"$@"’, and you may see
+	this usage in older scripts.  Unfortunately, ‘${1+"$@"}’ does
+	not work with ‘ksh93’ M 93t+ (2009) as shipped in AIX 7.2
+	{2015}, as this shell drops a trailing empty argument:
+
+	  $ set a b c ""
+	  $ set ${1+"$@"}
+	  $ echo $#
+	  3
+
+	Also, ‘${1+"$@"}’ does not work with Zsh 4.2.6 (2005) and
+	earlier, as shipped in Mac OS X releases before 10.5, as this
+	old Zsh incorrectly word splits the result:
+
+	  zsh $ emulate sh
+	  zsh $ for i in "$@"; do echo $i; done
+	  Hello World
+	  !
+	  zsh $ for i in ${1+"$@"}; do echo $i; done
+	  Hello
+	  World
+	  !
+	---end snip---
+
+	In light of all this winning by elite shell developers,
+	use plain, idiomatic `"$@"` instead, relying on downstream
+	distributors to patch the handful of occurrences in groff should
+	their deployments be boxed in by a buggy /bin/sh.
+
+	* src/preproc/eqn/neqn.sh:
+	* src/roff/nroff/nroff.sh:
+	* test-groff.in: Do it.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_URW_FONTS_CHECK): Stop blanking
+	`urwfontsdir` shell variable unconditionally.
+
+	Fixes problem with groff 1.24.0.rc2 reported by Alexis
+	Hildebrant in <https://lists.gnu.org/archive/html/groff/\
+	2026-02/msg00000.html>.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/util/BuildFoundries.pl (LoadFoundry): Clarify
+	diagnostic messages.  A digital font, like
+	"URWGothic-DemiOblique.t1", is not the same thing as font
+	description file for groff, like "ABI".  We do our users no
+	favors by conflating these two concepts.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/util/BuildFoundries.pl (LoadFoundry): Tweak
+	warning diagnostic to describe the decision being taken and the
+	reason for it.  Set `notFoundFont` scalar to 1 only if this
+	diagnostic was unexpected because the `urwfontsupport` scalar
+	didn't match "no".  This way we don't spray the (usually
+	enormous) "path(s) used for searching" diagnostic for no
+	apparent reason.
+
+2026-02-03  Dariusz Chilimoniuk <darek@stack.pl>
+
+	* tmac/hyphen.pl: New file adds Polish hyphenation patterns and
+	exceptions.
+	* tmac/pl.tmac: New file adds groff locale for Polish.
+	* tmac/tmac.am: Add the foregoing files to the `TMACNORMALFILES`
+	macro.
+	* LICENSES: Add copyright and license notices from CTAN Polish
+	hyphenation patterns.
+
+	* src/roff/groff/test/initialization-is-quiet.sh: Verify lack of
+	warnings when Polish l10n macro file is loaded (`-m pl`).
+	* tmac/tests/e_ld-works.sh: Test Polish translation.
+	* tmac/tests/localization-works.sh: Test Polish localization.
+
+	* doc/groff.texi.in (ms language and localization)
+	(Input Encodings, Manipulating Hyphenation):
+	* doc/ms.ms.in (Language and localization):
+	* man/groff_tmac.5.man (Localization packages):
+	* tmac/groff_ms.7.man (Language and localization): Note
+	availability of Polish localization.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[build]: Kill off `GROFF_GHOSTSCRIPT_AVAILABILITY_NOTICE`.
+
+	* m4/groff.m4 (GROFF_GHOSTSCRIPT_AVAILABILITY_NOTICE): Delete.
+	* configure.ac: Stop interpolating same.
+
+	Completes (the revised) "action item D" from <https://\
+	lists.gnu.org/archive/html/groff/2026-02/msg00004.html>.  I've
+	abandoned "action item B".
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[build]: Report gropdf service level in configuration summary.
+
+	* m4/groff.m4 (GROFF_GROPDF_DEPENDENCIES_CHECK): Drop unused
+	shell variables `use_gropdf` and `gropdf_missing_deps`.  Add new
+	shell variable `gropdf_service_level`, to be used (only) for
+	reporting an intelligible meaning to a human in the
+	configuration summary.  Default value to "full".  If URW fonts
+	are unavailable, demote value to "intermediate".  If Ghostscript
+	is unavailable, demote value to "basic".
+	* configure.ac: Rearrange summary and disclose gropdf service
+	level in it.  Report URW font directory (if applicable) after
+	Ghostscript command name and before the gropdf service level,
+	since the first two determine the last.
+
+	Completes "action item C" from <https://lists.gnu.org/archive/\
+	html/groff/2026-02/msg00004.html>.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[build]: Kill off `GROFF_GROPDF_PROGRAM_NOTICE`.
+
+	* m4/groff.m4 (GROFF_GROHTML_PROGRAM_NOTICE): Delete.
+	* configure.ac: Stop interpolating same.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* configure.ac: Delete `AM_CONDITIONAL` for no-longer-used
+	`USE_GROPDF` configuration parameter.
+
+2026-02-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am: De-parameterize production and installation of PDF
+	documents created by groff.  We now build all such files
+	regardless of gropdf(1)'s service level (see its man page).
+	Update population of `pdfmomoption`, `groffmanpagesoption`,
+	`PROCESSEDDOCFILES_PDF`, `docpdfdocdir`, and
+	`nodist_docpdfdoc_DATA` accordingly.
+	($(PROCESSEDDOCFILES_PDF)): Target now exists unconditionally.
+	(mostlyclean_doc): Unconditionally delete these built files.
+
+	Completes "action item E" from <https://lists.gnu.org/archive/\
+	html/groff/2026-02/msg00004.html>.
+
+2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* configure.ac: Disclose identity of Ghostscript command
+	discovered by Autoconf in configuration summary.  Completes
+	"action item A" from <https://lists.gnu.org/archive/html/groff/\
+	2026-02/msg00004.html>.
+
 2026-01-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (token::description): Fix assertion
@@ -29,6 +193,8 @@
 	pass unrecognized options to afmtodit(1); it _chooses_ not to.
 	Also use the word "option" instead of "flag"--not all of
 	afmtodit's command-line options are Boolean-valued.
+
+	Continues the long process of fixing Savannah #66519.
 
 2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 

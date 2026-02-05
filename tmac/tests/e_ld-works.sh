@@ -50,6 +50,7 @@ output_es=$(printf "%s\n" "$input" \
     | "$groff" -Tutf8 -P-cbou -me -mes -a)
 output_fr=$(printf "%s\n" "$input" | "$groff" -Tutf8 -P-cbou -me -mfr)
 output_it=$(printf "%s\n" "$input" | "$groff" -Tutf8 -P-cbou -me -mit)
+output_pl=$(printf "%s\n" "$input" | "$groff" -Tutf8 -P-cbou -me -mpl)
 output_ru=$(printf "%s\n" "$input" \
     | "$groff" -Tutf8 -P-cbou -me -mru -a)
 output_sv=$(printf "%s\n" "$input" | "$groff" -Tutf8 -P-cbou -me -msv)
@@ -128,6 +129,19 @@ echo "$output_it" | grep -Eqx ' +Capitolo 1' || wail
 
 echo 'checking for correct Italian "Appendix" string' >&2
 echo "$output_it" | grep -Eqx ' +Appendice A' || wail
+
+# Polish localization
+echo 'checking that `td` string updated correctly for Polish (1)' >&2
+echo "$output_pl" | grep -q 'The day was poniedziałek' || wail
+
+echo 'checking that `td` string updated correctly for Polish (2)' >&2
+echo "$output_pl" | grep -q ', 15 grudnia 2008\.$' || wail
+
+echo 'checking for correct Polish "Chapter" string' >&2
+echo "$output_pl" | grep -Eqx ' +Rozdział 1' || wail
+
+echo 'checking for correct Polish "Appendix" string' >&2
+echo "$output_pl" | grep -Eqx ' +Dodatek A' || wail
 
 # Russian localization
 echo 'checking that `td` string updated correctly for Russian' >&2

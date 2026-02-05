@@ -1645,7 +1645,8 @@ for more information.
 .
 .
 .IP
-displays as \[lq]Contact Fred Foonly \[la]fred\:.foonly@\:fubar\:.net\[ra]
+formats as
+\[lq]Contact Fred Foonly \[la]fred\:.foonly@\:fubar\:.net\[ra]
 for more information.\[rq].
 _endif()dnl
 .
@@ -1706,7 +1707,7 @@ home page
 .
 .
 .IP
-displays as \[lq]The GNU Project of the Free Software Foundation hosts
+formats as \[lq]The GNU Project of the Free Software Foundation hosts
 the
 .I groff
 home page
@@ -4905,14 +4906,17 @@ macros for
 .
 .
 .P
-This document was originally written for the Debian GNU/Linux system by
 .MT sgk@\:debian\:.org
 Susan G.\& Kleinmann
-.ME .
+.ME
+wrote the initial version of this document
+for the Debian GNU/Linux system.
 .
-It was corrected and updated by Lemberg and Robinson.
+Lemberg imported it to
+.I groff.
+He and Robinson revised and updated it.
 .
-The extension macros were documented by Raymond and Robinson.
+Raymond and Robinson documented the extension macros.
 _ifstyle()dnl
 Raymond also originated the portability section,
 to which
