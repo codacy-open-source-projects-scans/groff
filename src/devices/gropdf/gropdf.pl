@@ -2,7 +2,7 @@
 #
 # gropdf: PDF post processor for groff
 #
-# Copyright 2011-2025 Free Software Foundation, Inc.
+# Copyright 2011-2026 Free Software Foundation, Inc.
 #
 # Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
@@ -28,6 +28,7 @@ use Getopt::Long qw(:config bundling);
 use Encode qw(encode);
 use POSIX qw(mktime);
 use File::Spec;
+use File::Path;
 
 use constant
 {
@@ -245,12 +246,15 @@ else
     . " this PDF");
 }
 
-mkdir $ENV{HOME}.'/_Inline' if !-e $ENV{HOME}.'/_Inline' and !exists($ENV{PERL_INLINE_DIRECTORY}) and exists($ENV{HOME});
-
 $rc = eval
 {
     require Inline;
-    Inline->import (C => Config => DIRECTORY => $ENV{HOME}.'/_Inline') if !exists($ENV{PERL_INLINE_DIRECTORY}) and exists($ENV{HOME});
+    my $inline;
+    $inline=$ENV{XDG_CACHE_HOME} if exists($ENV{XDG_CACHE_HOME});
+    $inline=$ENV{HOME}."/.cache/gropdf" if !$inline and exists($ENV{HOME});
+    $inline=$ENV{PERL_INLINE_DIRECTORY} if exists($ENV{PERL_INLINE_DIRECTORY});
+    mkpath($inline) if $inline;
+    Inline->import (C => Config => DIRECTORY => $inline) if $inline;
     Inline->import (C =><<'EOC');
 
     static const uint32_t MAGIC1 = 52845;

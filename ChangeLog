@@ -1,3 +1,20 @@
+2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Change location of the Inline::C build directory
+
+	* src/devices/gropdf/gropdf.pl: Update copyright.
+	Include module File::Path (part of perl since before
+	version 5.8).
+	Adjust location of Inline::C's cache directory according
+	to XDG standards, rather than $HOME/_Inline.
+
+	Thanks to Bruno Haible for the information in:-
+
+	<https://lists.gnu.org/archive/html/groff/2026-01/\
+	msg00140.html>
+
+	Fixes <https://savannah.gnu.org/bugs/?67997>
+
 2026-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Stop using `${1+"$@"}` to kludge around old broken shells.
