@@ -676,6 +676,7 @@ endif # HAVE_TEXI2DVI
 install-doc: install-dvi install-html install-pdf
 
 maintainer-clean-local:
+	$(RM) $(doc_builddir)/gnu.eps
 	$(RM) $(doc_builddir)/groff.info*
 	$(RM) $(doc_builddir)/groff.pdf
 	$(RM) $(doc_builddir)/groff.dvi

@@ -1,4 +1,5 @@
 # Copyright 1989-2024 Free Software Foundation, Inc.
+#
 # Original Makefile.in written by James Clark (jjc@jclark.com)
 # Migrated to Automake by Bertrand Garrigues
 #
@@ -16,9 +17,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Makefile.am
-#
 
 # Variables listed in the following comments, but not set, will be
 # automatically set by Automake in the generated Makefile.in file.
@@ -775,7 +773,7 @@ EXTRA_DIST += \
   makevarescape.sed \
   mdate.pl
 
-MOSTLYCLEANFILES += $(prefixexecbin_SCRIPTS) $(bin_SCRIPTS) \
+MOSTLYCLEANFILES += .version $(prefixexecbin_SCRIPTS) $(bin_SCRIPTS) \
   $(man1_MANS) $(man5_MANS) $(man7_MANS) \
   $(PREFIXMAN1)
 

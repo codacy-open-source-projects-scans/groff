@@ -1,16 +1,19 @@
-# artifacts expected in a clean tree
-/.version
+# The following artifacts are produced by "bootstrap", remain in a
+# "distclean"-ed tree, and are included in a distribution archive.
+/INSTALL
 /Makefile.in
 /aclocal.m4
-/autom4te.cache/
 /build-aux/
 /configure
-# Neither "clean" nor "distclean" scrub this.
-/configure~
 /gnulib_m4/
+# Neither "clean" nor "distclean" scrub the following.
+/autom4te.cache/
+/configure~
 /lib/
+# The following artifact remains in a "distclean"-ed tree, and is
+# included in a distribution archive.
+/.version
 # build artifacts
-/INSTALL
 /Makefile
 /addftinfo
 /afmtodit

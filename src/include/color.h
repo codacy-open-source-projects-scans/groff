@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2016 Free Software Foundation, Inc.
+/* Copyright 2001-2016 Free Software Foundation, Inc.
      Written by Gaius Mulley <gaius@glam.ac.uk>
 
 This file is part of groff, the GNU roff typesetting system.

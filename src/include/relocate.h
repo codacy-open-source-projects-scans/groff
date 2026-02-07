@@ -1,6 +1,4 @@
-/* Provide relocation for macro and font files.
-
-Copyright 2005-2020 Free Software Foundation, Inc.
+/* Copyright 2005-2020 Free Software Foundation, Inc.
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -16,6 +14,8 @@ General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+/* Provide relocation for macro and font files. */
 
 #ifdef __cplusplus
 extern char *curr_prefix;

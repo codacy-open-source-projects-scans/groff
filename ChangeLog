@@ -1,3 +1,24 @@
+2026-02-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am (maintainer-clean-local): Clean "gnu.eps" file in
+	"maintainer mode".
+
+2026-02-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am: Add ".version" file to `MOSTLYCLEANFILES` macro.
+
+2026-02-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Reintroduce warning
+	in category "tab" when a tab character starts a numeric
+	expression.  Lacking it caused the formatter to throw a huge
+	number of error diagnostics (with no harmful effect on
+	formatting, thus unproductively alarming the user) when
+	springing traps in Matt Bishop's vintage "mn" macro package.
+
+	Fixes <https://savannah.gnu.org/bugs/?68017>.  Partially reverts
+	commit 64711b3a875, 14 November.
+
 2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Change location of the Inline::C build directory

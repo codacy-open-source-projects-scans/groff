@@ -380,6 +380,11 @@ static bool is_valid_term(units *u, int scaling_unit,
       tok.next();
       is_negative = !is_negative;
     }
+    else if (tok.is_tab()) {
+      warning(WARN_TAB, "ignoring numeric expression starting with %1",
+             tok.description());
+      return false;
+    }
     else
       break;
   int c = tok.ch(); // safely compares to char literals; TODO: grochar
