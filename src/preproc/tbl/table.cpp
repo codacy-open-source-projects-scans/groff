@@ -2304,8 +2304,10 @@ void table::compute_overall_width()
 	   ".EN\n"
 	   ".  .\n");
     entry_list->set_location();
-    prints(".  tmc \\n[.F]:\\n[.c]: warning:\n"
-	   ".  tm1 \" table wider than line length minus indentation"
+    prints(".  tmc \\n[.F]:\\n[.c]: warning:\n");
+    if (flags & CENTER)
+      prints(".  tmc \" centered\n");
+    prints(".  tm1 \" table wider than line length minus indentation"
 	   "\n");
     prints(".  ig\n"
 	   ".EQ\n"

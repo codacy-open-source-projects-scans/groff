@@ -275,8 +275,10 @@ as a synonym.
 .
 .TP
 .B center
-Center the table region with respect to the current indentation and line
-length;
+Center the table region with respect to the line length,
+reducing the indentation if necessary
+(with a warning at formatting time)
+to make the table region fit;
 the default is to left-align it.
 .
 GNU
@@ -399,7 +401,9 @@ This is a GNU extension.
 .TP
 .B nowarn
 Suppress diagnostic messages produced at document formatting time when
-the line or page lengths are inadequate to contain a table row.
+the line length and indentation
+or page length
+is inadequate to contain a table row.
 .
 This is a GNU extension.
 .

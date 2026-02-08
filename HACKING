@@ -45,13 +45,16 @@ is available in 'doc/automake.mom'; peruse a PDF rendering in
 'doc/automake.pdf' in your build tree.
 
 Tips:
+
 * Don't define macros, including those ending in `_srcdir` or
   `_builddir`, unless you need to interpolate them elsewhere in the *.am
   file.
+
 * If you need to define a `_builddir` macro, give it a plain literal
   value; do _not_ lead it with an interpolation of `top_builddir` or
   anything else.  Failure to heed this advice leads to out-of-tree build
   failures with BSD Make.
+
 
 Testing
 -------
@@ -109,6 +112,9 @@ their impact.
 Updating copyright notices
 --------------------------
 
+Background
+..........
+
 * A lay person's views and opinion follow; they are not legal advice.
   If you require legal advice, consult a licensed attorney competent in
   copyright law in your jurisdiction.  The following discussion attempts
@@ -120,15 +126,27 @@ Updating copyright notices
   appreciation for the efforts of contributors, past or present, which
   is better done in documentation--and with explicit expression!
 
-* Copyright protection extends to portions of a work that constitute
-  "original expression" (see below) and that are "fixed in a tangible
-  medium" (such as paper or a non-volatile memory device) in the years
-  declared in the copyright notice, except for those portions whose
-  copyright durations have elapsed.  But these durations are so lengthy
-  that, in the United States as of 2025, no work of computer software or
-  documentation has ever yet even _partially_ aged into the public
-  domain.  (Some has been placed into the public domain deliberately,
-  and some never enjoyed copyright protection at all.)
+* Copyright protection is a legal monopoly of limited duration and an
+  economic policy scheme for the purpose of promoting, as the U.S.
+  Constitution puts it, "science and the useful arts".  Over decades,
+  the scope of copyright (the nature of the works to which it can be
+  applied), the ease of its attachment, and the measure of its limited
+  duration, have all increased dramatically.  (An economist might
+  observe that this is a progression characteristic of rentierism.)
+
+* In U.S. statutory law, copyright protection extends to portions of a
+  work that constitute "original expression" (see below) and that are
+  "fixed in a tangible medium" (such as paper or a non-volatile memory
+  device) at some point in time.  That point in time is recorded as a
+  Gregorian calendar year in the copyright notice.  A notice should
+  declare a list of one or more such years reflecting the initial
+  "fixation" and further alterations to the work constituting original
+  expression in later years.  An exception can be made for portions of
+  the work whose copyright durations have elapsed.  But these durations
+  are so lengthy that, in the United States as of 2025, no work of
+  computer software or documentation has ever yet even _partially_ aged
+  into the public domain.  (Some has been placed into the public domain
+  deliberately, and some never enjoyed copyright protection at all.)
 
   Historically--decades ago, and before digital computing was commonly
   undertaken in the home or even in small- to medium-scale
@@ -150,6 +168,9 @@ Updating copyright notices
   who don't legitimately have copyright in a work or by deliberately
   overstating the recency of their efforts is, in the lay opinion of the
   maintainer as of this writing, neglectful of responsibility.
+
+What To Do
+..........
 
 * Update the overall copyright notice for groff as a work of software
   at release time.  See the 'FOR-RELEASE' file in the Git repository.

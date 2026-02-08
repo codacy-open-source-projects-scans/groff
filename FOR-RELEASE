@@ -75,11 +75,11 @@ This file describes how to prepare 'groff' for a new release.
     $ git push origin tag 1.24.0.rc2
 
 * Build and test a distribution archive again with "make distcheck".
-  It's important to do this especially after tagging a first release
-  candidate, because this increments the version number visible in
-  installed file names (such as "/usr/share/groff/1.24.0") and in the
-  archive file, so that it unpacks to an appropriately named source
-  directory.
+  It's important to do this so that the archive unpacks to an
+  appropriately named source directory.  It's even more important after
+  tagging a first release candidate, because doing so increments the
+  version number visible in installed file names (such as
+  "/usr/share/groff/1.24.0").
 
 * For final releases, update the groff home page.
 

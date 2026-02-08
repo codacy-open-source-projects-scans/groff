@@ -1,3 +1,33 @@
+2026-02-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/tbl/table.cpp (table::compute_overall_width):
+	Distinguish formatting-time diagnostics emitted when a table
+	oversets; when the table is centered, note the fact because it
+	might not overrun the line length but instead has reduced the
+	indentation, which can be ugly in a different way.
+
+	* src/preproc/tbl/tbl.1.man (Region options) <center>: Advise of
+	circumstance in which formatting-time diagnostic is issued.
+
+2026-02-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Revert refactoring from commit
+	8b165f90ef, 29 December, which caused spurious "spurious end
+	trap token detected!" error diagnostics when breaking pages with
+	Matt Bishop's "mn" macro package (used by the NetHack
+	Guidebook).  Because a variable was renamed later the same day,
+	this reversion was done by hand.  Still to be understood: why
+	the `br` request handler needs to use `token::next()` instead of
+	`skip_line()` as most request handlers do.
+
+	Fixes <https://savannah.gnu.org/bugs/?68026>.
+
+2026-02-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* update-copyright.sh: Drop (unshipped) script.  I implement a
+	different approach to the problem it solves; see the "HACKING"
+	file.
+
 2026-02-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* doc/doc.am (maintainer-clean-local): Clean "gnu.eps" file in
@@ -21,20 +51,16 @@
 
 2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
-	Change location of the Inline::C build directory
+	Change location of the Inline::C build directory.
 
-	* src/devices/gropdf/gropdf.pl: Update copyright.
-	Include module File::Path (part of perl since before
-	version 5.8).
-	Adjust location of Inline::C's cache directory according
-	to XDG standards, rather than $HOME/_Inline.
+	* src/devices/gropdf/gropdf.pl: Update copyright.  Include
+	module File::Path (part of perl since before version 5.8).
+	Adjust location of Inline::C's cache directory according to XDG
+	standards, rather than $HOME/_Inline.
 
-	Thanks to Bruno Haible for the information in:-
-
-	<https://lists.gnu.org/archive/html/groff/2026-01/\
-	msg00140.html>
-
-	Fixes <https://savannah.gnu.org/bugs/?67997>
+	Fixes <https://savannah.gnu.org/bugs/?67997>.  Thanks to Bruno
+	Haible for the information in <https://lists.gnu.org/archive/\
+	html/groff/2026-01/msg00140.html>.
 
 2026-02-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -848,21 +874,6 @@
 	* src/roff/troff/input.cpp: Update definition.
 	* src/roff/troff/div.cpp: Include local "input.h" header file to
 	get at the symbol's relocated declaration.
-
-2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
-
-	* src/roff/troff/env.cpp: Refactor.  Further separate input
-	processing logic from engine logic.
-	(environment::do_break): Rename argument from `want_adjustment`
-	to `want_forced_adjustment` for clarity.
-	(break_output_line): Stop checking value of `want_break` global
-	here, as that's determined by the input control character used
-	to invoke the request, a front-end rather than an engine concern
-	{albeit brearing an engine-oriented name}.  However, removing
-	that conditional leaves this function as a one-liner with two
-	call sites differing only by a Boolean literal argument, so drop
-	the function altogether, instead open-coding it...
-	(break_without_adjustment, break_without_adjustment): ...here.
 
 2025-12-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 

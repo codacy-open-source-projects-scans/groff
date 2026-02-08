@@ -2645,18 +2645,23 @@ bool environment::is_empty()
 	  && pending_lines == 0 /* nullptr */;
 }
 
+void do_break_request(bool want_adjustment)
+{
+  while (!tok.is_newline() && !tok.is_eof())
+    tok.next();
+  if (was_invoked_with_regular_control_character)
+    curenv->do_break(want_adjustment);
+  tok.next();
+}
+
 static void break_without_forced_adjustment_request()
 {
-  if (was_invoked_with_regular_control_character)
-    curenv->do_break(false /* want forced adjustment */);
-  skip_line();
+  do_break_request(false);
 }
 
 static void break_with_forced_adjustment_request()
 {
-  if (was_invoked_with_regular_control_character)
-    curenv->do_break(true /* want forced adjustment */);
-  skip_line();
+  do_break_request(true);
 }
 
 void title()

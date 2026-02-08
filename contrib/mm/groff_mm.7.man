@@ -73,15 +73,12 @@ groff_mm \- memorandum macros for GNU
 .SH Description
 .\" ====================================================================
 .
-The GNU implementation of the
-.I mm
-macro package is part of the
-.I groff
-document formatting system.
-.
 The
 .I mm
-package is suitable for the composition of
+macro package distributed with the
+.I groff
+document formatting system
+is suitable for the composition of
 letters,
 memoranda,
 reports,
@@ -652,7 +649,7 @@ calls them to enable customization of its behavior.
 .
 .
 .P
-Macro names longer than two characters are GNU extensions;
+Macro names longer than two characters are extensions;
 some shorter names were not part of DWB's
 published interface but are documented aspects of
 .I groff mm.
@@ -824,7 +821,7 @@ Appendices appear in any table of contents
 .BR TC ).
 .
 The string
-.B Apptxt
+.B \%Apptxt
 is set to
 .I title
 if the latter is present,
@@ -1061,7 +1058,9 @@ and the line length reduced by
 See
 .BR DS .
 .
-This is a GNU extension.
+This is a
+.I groff mm
+extension.
 .
 .
 .TP
@@ -1071,7 +1070,9 @@ End boxed static display.
 See
 .BR B1 .
 .
-This is a GNU extension.
+This is a
+.I groff mm
+extension.
 .
 .
 .TP
@@ -1470,7 +1471,9 @@ stores the equation number as if by
 .I ref-name
 .BR \[rs]n[Ec] \[rq].
 .
-Recognition of this argument is a GNU extension.
+Recognition of this argument is a
+.I groff mm
+extension.
 .
 .
 .IP
@@ -2220,7 +2223,9 @@ An explicitly empty argument also indicates the default.
 Set an unnumbered section heading with
 .I title
 and,
-as a GNU extension,
+as a
+.I groff mm
+extension,
 an optional
 .I suffix.
 .
@@ -2529,7 +2534,9 @@ causes
 to break the line after the mark
 even if it fits within
 .I text-indent;
-this is a GNU extension.
+this is a
+.I groff mm
+extension.
 .
 .
 .IP
@@ -2617,7 +2624,9 @@ The presence of a second argument prefixes
 to the
 .BR LB -configured
 mark and,
-as a GNU extension,
+as a
+.I groff mm
+extension,
 conditionally puts an unbreakable space
 between the prefix and mark per the argument's Boolean value.
 .
@@ -2804,7 +2813,9 @@ and
 returns to single-column layout.
 .
 .B MC
-is a GNU extension,
+is a
+.I groff mm
+extension,
 generalizing
 .BR 2C .
 .
@@ -3135,10 +3146,11 @@ determines the amount of vertical space between paragraphs.
 To set a paragraph with a hanging indent,
 use
 .B VL
-with the desired indentation as the argument
-and
+with the desired indentation as the argument,
 .B LI
-(with no argument).
+(with no argument),
+and
+.BR LE .
 .
 .
 .TP
@@ -3313,7 +3325,9 @@ As
 but with \[lq]flyback\[rq],
 returning the drawing position to where it was prior to the picture.
 .
-This is a GNU extension.
+This is a
+.I groff mm
+extension.
 .
 .
 .TP
@@ -5308,7 +5322,9 @@ and registers
 and
 .BR Sectp .
 .
-Value 5 is a GNU extension
+Value 5 is a
+.I groff mm
+extension
 .RB ( 0 ).
 .
 .
@@ -5382,6 +5398,8 @@ see
 .BR 0 ).
 .
 .
+.br
+.ne 7v
 .\" XXX: This really should just be a string, shouldn't it?
 .TP
 .B Of
@@ -5683,7 +5701,9 @@ is typical.
 .
 The default vertical spacing is 120% of the type size.
 .
-This register is a GNU extension.
+This register is a
+.I groff mm
+extension.
 .
 .
 .TP
@@ -5917,9 +5937,10 @@ for literary purposes.
 J\[:o]rgen H\[:a]gg
 .ME
 of Lund, Sweden,
-wrote the GNU version of the
+wrote the version of the
 .I mm
-macro package
+macro package distributed with
+.I groff
 based on an early version of
 .I "groff ms"
 by
@@ -5947,7 +5968,9 @@ revised and updated it.
 the DWB\~3.3
 .I mm
 manual,
-introduces the package but does not document GNU extensions.
+introduces the package but does not document
+.I groff mm
+extensions.
 .
 .
 .P
