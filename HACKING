@@ -149,17 +149,17 @@ Background
   deliberately, and some never enjoyed copyright protection at all.)
 
   Historically--decades ago, and before digital computing was commonly
-  undertaken in the home or even in small- to medium-scale
-  business--a copyright notice also asserted a legal claim.  (It remains
-  useful to establish a basis for recovery of damages in U.S. civil
-  copyright infringement cases.)  But copyright notices have not
-  constituted "assertions" of copyright for factual or criminal
-  infringement purposes (in the United States) for around 50 years as of
-  2026.  Removing a party's name from a copyright notice (as might
-  happen consequent to code deletion or wholesale rewriting of
-  documentation) is not a challenge or insult to that person or
-  organization, and does not deprive them of legitimate legal rights,
-  when and where doing so _makes the copyright notice more accurate_.
+  undertaken in the home or even in small- to medium-scale business--a
+  copyright notice also asserted a legal claim.  (It remains useful to
+  establish a basis for recovery of damages in U.S. civil copyright
+  infringement cases.)  But copyright notices have not constituted
+  "assertions" of copyright for factual or criminal infringement
+  purposes (in the United States) for around 50 years as of 2026.
+  Removing a party's name from a copyright notice (as might happen
+  consequent to code deletion or wholesale rewriting of documentation)
+  is not a challenge or insult to that person or organization, and does
+  not deprive them of legitimate legal rights, when and where doing so
+  _makes the copyright notice more accurate_.
 
   Software developers relying upon copyright protection are responsible
   for maintaining accurate copyright notices.  In the U.S., making a
@@ -168,6 +168,10 @@ Background
   who don't legitimately have copyright in a work or by deliberately
   overstating the recency of their efforts is, in the lay opinion of the
   maintainer as of this writing, neglectful of responsibility.
+
+* For a deeper treatment of the subject from a domain expert, please see
+  Jessica D. Litman's monograph, _Digital Copyright_, freely available
+  on the Web at <https://repository.law.umich.edu/books/1/>.
 
 What To Do
 ..........

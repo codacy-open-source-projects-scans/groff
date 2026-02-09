@@ -20519,6 +20519,14 @@ and their presence confuses drivers
 that do not know about it.@footnote{@xref{Device Control Commands}.}
 @endDefesc
 
+Use of device extension commands early in a document
+(before the first text is formatted)
+can interfere with processing of page location traps.
+If you experience problems when placing them early,
+precede the first with a dummy character escape sequence
+@samp{\&};
+recall @ref{Dummy Characters}.
+
 @DefreqList {tag, name}
 @DefreqListEndx {taga, name}
 Reserved for internal use.

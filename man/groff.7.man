@@ -9512,6 +9512,16 @@ and their presence confuses drivers that do not know about it
 .
 .
 .P
+Use of device extension commands early in a document
+(before the first text is formatted)
+can interfere with processing of page location traps.
+If you experience problems when placing them early,
+precede the first with a dummy character escape sequence
+.RB \[lq] \[rs]& \[rq];
+recall section \[lq]Dummy Characters\[rq] above.
+.
+.
+.P
 The
 .B tag
 and

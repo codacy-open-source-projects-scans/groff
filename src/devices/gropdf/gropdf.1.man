@@ -180,6 +180,68 @@ fonts (even the 14 base PDF fonts).
 .
 .
 .TP
+.BI \-\-format\-options\~ bit-vector
+.TQ
+.BI \-f\~ bit-vector
+Specify advanced options for
+.I gropdf.
+.
+Familiarity with the
+.UR https://\:www\:.pdfa\-inc\:.org/\:product/\
+\:iso\-32000\-2\-pdf\-2\-0\-bundle\-sponsored\-access/
+ISO\~32000 PDF standard
+.UE
+is helpful.
+.
+The
+.I bit-vector
+argument is an integer
+that configures characteristics of the generated PDF.
+.
+Add the following values to combine them.
+.
+.
+.IP
+.RS \" One inset to align with the indentation of `TP`...
+.RS \" ...and one more to get "inboard" of it.
+.TS
+L  L
+Lb Lx.
+Value	Meaning
+_
+1	Subset included Type 1 fonts.
+2	T{
+Use more compact format for text by including space as a character.
+Fonts that do not include space as a glyph
+may conflict with this feature.
+.\" GBR: How?  Will there be an error message?
+T}
+4	T{
+Compress all data streams.
+T}
+8	T{
+Don't embed font files.
+.
+(A font required by the document is not embedded;
+usually not useful.)
+T}
+.TE
+.RE
+.RE
+.
+.
+.IP
+The default feature combination is 7.
+.
+To mimic what
+.I gropdf
+from
+.I groff
+1.23 produced,
+specify \[lq]6\[rq] to turn off subsetting.
+.
+.
+.TP
 .BI \-F " dir"
 Prepend directory
 .IR dir /dev name
@@ -187,6 +249,7 @@ to the search path for font, and device description files;
 .I name
 is the name of the device, usually
 .BR pdf .
+.
 .
 .TP
 .BI \-I\~ dir
@@ -212,54 +275,6 @@ it is otherwise searched last.
 .TP
 .B \-l
 Orient the document in landscape format.
-.
-.TP
-.BI \-\-opt\~ option-bits
-Specify advanced options for
-.I gropdf.
-.I option-bits
-is a bit vector that selects active features.
-.
-Add the following values to combine them.
-.
-.
-.LP
-.RS \" One inset to align with the indentation of `TP`...
-.RS \" ...and one more to get "inboard" of it.
-.TS
-L  L
-Lb Lx.
-Value	Meaning
-_
-1	Subset included Type 1 fonts.
-2	T{
-Use more compact format for text by including space as a character.
-Fonts that do not include space as a glyph
-may conflict with this feature.
-T}
-4	T{
-Compress all streams.
-T}
-8	T{
-.\" Why don't we flip the sense of this bit and the default can be
-.\" 15--all bits on?  See Savannah #66342.  --GBR
-Don't embed font files.
-.
-(A font required by the document is not embedded;
-usually not useful.)
-T}
-.TE
-.RE
-.LP
-The default feature combination is 7.
-.
-To mimic what
-.I gropdf
-from
-.I groff
-1.23 produced,
-specify \[lq]6\[rq] to turn off subsetting.
-.RE
 .
 .
 .TP

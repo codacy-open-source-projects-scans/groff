@@ -405,10 +405,8 @@ doc/pic.html: eqn pic tbl
 doc/pic.html: tmac/www.tmac
 doc/pic.html: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) $(doc_builddir) \
-	&& cd $(doc_builddir) \
-	&& $(DOC_GROFF) -pet -P-Ipic -P-Dimg -P-jpic -Thtml -ms \
-	  $(doc_srcdir)/pic.ms > pic.html.tmp
-	$(AM_V_at)test -f $(doc_builddir)/img/pic-1.png \
+	&& $(DOC_GROFF) -pet -P-Ipic -P-Ddoc/img -P-jdoc/pic -Thtml \
+	  -ms $(doc_srcdir)/pic.ms > $@.tmp \
 	  && mv $@.tmp $@
 
 # groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
@@ -418,11 +416,9 @@ doc/webpage.html: $(DOC_GNU_EPS) tmac/www.tmac tbl
 doc/webpage.html: $(doc_srcdir)/groff.css
 doc/webpage.html: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) $(doc_builddir) \
-	&& cd $(doc_builddir) \
-	&& $(DOC_GROFF) -t -I $(doc_srcdir) -P-jwebpage -P-nrb \
-	  -P-Iwebpage -P-Dimg -Thtml -ms $(doc_srcdir)/webpage.ms \
-	  > webpage.html.tmp
-	$(AM_V_at)test -f $(doc_builddir)/img/webpage-1.png \
+	&& $(DOC_GROFF) -t -I $(doc_srcdir) -P-jdoc/webpage -P-nrb \
+	  -P-Iwebpage -P-Ddoc/img -Thtml -ms $(doc_srcdir)/webpage.ms \
+	  > $@.tmp \
 	  && mv $@.tmp $@
 
 # We remove groff.css only from an out-of-source build tree.

@@ -98,7 +98,7 @@ src/libs/libgroff/libgroff_a-fontfile.$(OBJEXT): defs.h
 src/libs/libgroff/libgroff_a-macropath.$(OBJEXT): defs.h
 src/libs/libgroff/libgroff_a-relocate.$(OBJEXT): defs.h
 
-src/libs/libgroff/version.cpp: $(top_srcdir)/.version
+src/libs/libgroff/version.cpp: .version
 	$(AM_V_at)printf 'const char *version_string = "%s.%s";\n' \
 	  $(MAJOR_VERSION) $(MINOR_VERSION) > $@.tmp
 	$(AM_V_at)printf 'const char *revision_string = "%s";\n' \

@@ -10,10 +10,8 @@
 /autom4te.cache/
 /configure~
 /lib/
-# The following artifact remains in a "distclean"-ed tree, and is
-# included in a distribution archive.
-/.version
 # build artifacts
+/.version
 /Makefile
 /addftinfo
 /afmtodit

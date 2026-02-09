@@ -1,3 +1,45 @@
+2026-02-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/gropdf/gropdf.pl: Rename new `--opt` command-line
+	option to `--format-options`, with short `-f` synonym.
+	* src/devices/gropdf/gropdf.1.man (Options): Update.
+
+	Fixes <https://savannah.gnu.org/bugs/?68022>.
+
+2026-02-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Simplify handling of ".version" file.
+
+	* Makefile.am (.version): Spell target name without a leading
+	`$(top_srcdir)/` interpolation, which caused a build failure
+	using Debian's package of BSD make when performing a "make dist"
+	in an in-tree build.
+	* src/devices/xditview/xditview.am
+	($(GXDITVIEW_GROFF_VERSION_H):
+	* src/libs/libgroff/libgroff.am (src/libs/libgroff/version.cpp):
+	* src/roff/troff/troff.am (src/roff/troff/majorminor.cpp):
+	Update dependencies on ".version" accordingly.
+	* Makefile.am: Stop appending ".version" to the `EXTRA_DIST` and
+	`BUILT_SOURCES` macros--it's unnecessary.  The file is now an
+	ordinary build artifact.
+
+	Tested with "make check" and "make distcheck" in four
+	configurations: the Cartesian product of {BSD, GNU} make with
+	{in-, out-of-}tree builds.
+
+2026-02-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* doc/doc.am: Simplify generation of HTML documents with groff.
+	(doc/pic.html, doc/webpage.html): Stop changing directories as
+	part of the target receipe; instead, alter the argument to
+	grohtml's `-j` option to include the name of the desired
+	subdirectory.  Drop test for existence of separate image files
+	afterward.  Since the fix for Savannah #67133 last May, we
+	should be able to rely on groff to exit with a nonzero status if
+	grohtml fails.  Tested with "make check" and "make distcheck" in
+	four configurations: the Cartesian product of {BSD, GNU} make
+	with {in-, out-of-}tree builds.
+
 2026-02-07  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/tbl/table.cpp (table::compute_overall_width):
@@ -162,6 +204,8 @@
 	* man/groff_tmac.5.man (Localization packages):
 	* tmac/groff_ms.7.man (Language and localization): Note
 	availability of Polish localization.
+
+	Fixes <https://savannah.gnu.org/bugs/?68004>.
 
 2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
 

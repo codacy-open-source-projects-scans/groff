@@ -37,7 +37,7 @@ GXDITVIEWSOURCES = \
 
 GXDITVIEW_GROFF_VERSION_H=src/devices/xditview/groff_version.h
 
-$(GXDITVIEW_GROFF_VERSION_H): $(top_srcdir)/.version
+$(GXDITVIEW_GROFF_VERSION_H): .version
 	$(AM_V_at)$(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)printf \
 	  'const char *Version_string = "%s";\n' '@VERSION@' > $@

@@ -456,8 +456,10 @@ sub usage
     my $had_error = shift;
     $stream = *STDERR if $had_error;
     print $stream
-"usage: $prog [-delsW] [-F font-directory] [-I inclusion-directory]" .
-" [--opt option-bits] [-p paper-format] [--pdfver {1.4|1.7}] [-u [cmap-file]] [-y foundry] [file ...]\n" .
+"usage: $prog [-delsW] [-f bit-vector] [-F font-directory]" .
+" [--format-options bit-vector] [-I inclusion-directory]" .
+" [-p paper-format] [--pdfver {1.4|1.7}] [-u [cmap-file]]" .
+" [-y foundry] [file ...]\n" .
 "usage: $prog {-v | --version}\n" .
 "usage: $prog --help\n";
     if (!$had_error)
@@ -499,7 +501,8 @@ my $parclntyp=qr/(?:[\d\w]|\([+-]?[\S]{2}|$parcln)/;
 
 if (!GetOptions('F=s' => \@fdlist, 'I=s' => \@idirs, 'l' => \$frot,
     'p=s' => \$fpsz, 'd!' => \$debug, 'help' => \$want_help, 'pdfver=f' => \$PDFver,
-    'v' => \$version, 'version' => \$version, 'opt=s' => \$options,
+    'v' => \$version, 'version' => \$version,
+    'f=s' => \$options, 'format-options=s' => \$options,
     'e' => \$embedall, 'y=s' => \$Foundry, 's' => \$stats, 'W' => \$warnexit,
     'u:s' => \$unicodemap))
 {

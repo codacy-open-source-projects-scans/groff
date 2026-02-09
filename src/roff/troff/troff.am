@@ -49,7 +49,7 @@ nodist_troff_SOURCES = src/roff/troff/majorminor.cpp
 src/roff/troff/input.$(OBJEXT): defs.h
 CLEANFILES += src/roff/troff/majorminor.cpp
 
-src/roff/troff/majorminor.cpp: $(top_srcdir)/.version
+src/roff/troff/majorminor.cpp: .version
 	$(AM_V_at)printf 'const char *major_version = "%s";\n' \
 	  $(MAJOR_VERSION) > $@.tmp
 	$(AM_V_at)printf 'const char *minor_version = "%s";\n' \
