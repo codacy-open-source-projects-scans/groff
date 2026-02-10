@@ -1,3 +1,13 @@
+2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.pl: Allow whitespace after grout
+	'w' command.
+
+	Fixes <https://savannah.gnu.org/bugs/?64360>.
+
+	Thanks to G. Branden Robinson for report and patch and Dave
+	(for guidance).
+
 2026-02-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/devices/gropdf/gropdf.pl: Rename new `--opt` command-line

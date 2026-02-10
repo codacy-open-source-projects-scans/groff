@@ -640,19 +640,20 @@ while (<>)
 	    $_=shift(@ahead);
 	}
 
-
+	s/^w+\s*/w/;
 	my $cmd=substr($_,0,1);
 	next if $cmd eq '#';    # just a comment
 	my $lin=substr($_,1);
 
-	while ($cmd eq 'w')
+	if ($cmd eq 'w')
 	{
 	    $cmd=substr($lin,0,1);
-	    $lin=substr($lin,1);
+	    $lin=substr($lin,1) if $lin;
 	    $w_flg=1 if $gotT;
 	}
 
 	$lin=~s/^\s+//;
+	next if !$lin;
 #	$lin=~s/\s#.*?$//;	# remove comment
 	$stream.="\% $_\n" if $debug;
 
