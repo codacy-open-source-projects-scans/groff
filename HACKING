@@ -205,11 +205,12 @@ What To Do
   further guidance from that manual, in groff we ignore the issue of
   line length and interpret "15 lines" as requiring a _net increase_ in
   a file's line count of at least that magnitude, as calculated by
-  taking the output of "git diff --stat" on the file and subtracting
-  lines removed from lines added, a procedure that can result in a
-  nonpositive number.  This rule has the advantage that it tends to
-  exclude voluminous but robotic changes, as one might make with "sed
-  -i", which seldom constitute "original expression".
+  taking the output of "git diff --stat" on the file (or "git log
+  --stat" on a relevant commit to it) and subtracting lines removed from
+  lines added, a procedure that can result in a nonpositive number.
+  This rule has the advantage that it tends to exclude voluminous but
+  robotic changes, as one might make with "sed -i", which seldom
+  constitute "original expression".
 
   Where a change produces a net increase of 15 lines or more but _still_
   seems robotic or unoriginal, consider (1) applying the annotation
@@ -299,7 +300,7 @@ Here is some advice on writing portable automated test scripts.
 
   So a regex like this that works with GNU od:
     grep -q '81 30 55 81 30 56 81 6c e2'
-  might need to be weakened to the following to work on macOS.
+  might need to be weakened to the following to work on macOS/[NO]*BSD.
     grep -q '81  *30  *55  *81  *30  *56  *81  *6c  *e2'
 
 * The "od" command on macOS does not respect the environment variable

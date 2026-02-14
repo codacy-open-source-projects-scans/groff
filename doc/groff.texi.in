@@ -21576,9 +21576,9 @@ issues at most one warning for each.
 @itemx 2048
 @cindex @code{\t}, and warnings
 A tab character appeared
-in a parameterized escape sequence
-or
-in an unquoted macro argument.
+in a parameterized escape sequence,
+in an unquoted macro argument,
+or where a request expected a numeric expression argument.
 
 @c @item right-brace
 @c @itemx 4096

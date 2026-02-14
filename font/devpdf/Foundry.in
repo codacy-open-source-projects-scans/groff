@@ -1,7 +1,8 @@
-# Foundry file
-
-# Copyright 2011-2020 Free Software Foundation, Inc.
-#      Written by Deri James <deri@chuzzlewit.myzen.co.uk>
+# Define "foundries" (alternative font vendors) for use with gropdf(1)
+#
+# Copyright 2011 Free Software Foundation, Inc.
+#
+# Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -20,7 +21,7 @@
 
 #=======================================================================
 #Foundry|Name|Search path
-foundry||@urwfontsdir@:(gs):/usr/share/fonts/type1/gsfonts:/usr/share/fonts/default/Type1:/usr/share/fonts/default/Type1/adobestd35:/usr/share/fonts/type1/urw-base35:/usr/share/fonts/urw-base35:/usr/share/ghostscript/Resource/Font:/opt/local/share/fonts/urw-fonts:/usr/local/share/fonts/ghostscript
+foundry||@urwfontsdir@:(gs):/usr/share/fonts/type1/urw-base35/:/usr/share/fonts/urw-base35:/opt/local/share/fonts/urw-fonts/:/usr/local/share/fonts/ghostscript/:/usr/share/fonts/type1/gsfonts/:/usr/share/fonts/type1/:/usr/share/fonts/default/Type1/adobestd35/:/usr/share/fonts/default/Type1/:/usr/share/ghostscript/Resource/Font
 
 # Enable the font description files for grops (generated from Adobe
 # foundry font files) to be used with gropdf.  afmtodit must not be

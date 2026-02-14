@@ -123,8 +123,8 @@ character escape sequences '\(mi' or '\[mi]'.
 
 ----------------------------------------------------------------------
 
-* Displaying a man page on a terminal with/without my favorite pager
-  shows garbage.
+* Displaying an nroff document, including man page, on a terminal with/
+  without my favorite pager shows garbage.
 
 groff's terminal output driver, grotty, by default uses ISO 6429/ECMA-48
 escape sequences understood by video terminals and their emulators,
@@ -851,6 +851,21 @@ Compilation Problems
 ====================
 
 
+
+[groff 1.24.0]
+
+* I want to build using the URW fonts but can't find them in my
+  distribution.
+
+As of this writing (February 2026), we're aware of the following
+relevant packages.  Installing them should enable the groff build to
+find them.  See the "INSTALL.extra" file in groff's distribution archive
+(or Git repository) for more information.
+
+  Arch Linux: gsfonts-type1
+  Debian GNU/Linux: gsfonts, fonts-urw-base35
+
+----------------------------------------------------------------------
 
 [groff 1.23.0]
 

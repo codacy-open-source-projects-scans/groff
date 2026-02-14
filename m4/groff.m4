@@ -321,12 +321,8 @@ AC_DEFUN([GROFF_URW_FONTS_PATH], [
 ])
 
 # Check for availability of URW fonts in the directory specified by the
-# user (see GROFF_URW_FONTS_PATH above).  We do NOT search the path of
-# directories built into Ghostscript because those fonts lack the
-# corresponding AFM files we need to generate groff font description
-# files; see afmtodit(1).  Ghostscript's own fonts are treated as the
-# "default foundry" and we already provide descriptions of them in
-# font/devpdf (along with groff's EURO font).
+# user (see GROFF_URW_FONTS_PATH above), if any.  Otherwise search a set
+# of directories commonly (but variously) used to store them.
 
 AC_DEFUN([GROFF_URW_FONTS_CHECK], [
   AC_REQUIRE([GROFF_URW_FONTS_SUPPORT])
@@ -339,14 +335,15 @@ AC_DEFUN([GROFF_URW_FONTS_CHECK], [
 
 dnl Keep this list in sync with font/devpdf/Foundry.in.
     _list_paths="\
-      /usr/share/fonts/type1/gsfonts/ \
-      /usr/share/fonts/default/Type1/ \
-      /usr/share/fonts/default/Type1/adobestd35/ \
       /usr/share/fonts/type1/urw-base35/ \
       /usr/share/fonts/urw-base35 \
-      /usr/share/ghostscript/Resource/Font \
       /opt/local/share/fonts/urw-fonts/ \
-      /usr/local/share/fonts/ghostscript/"
+      /usr/local/share/fonts/ghostscript/ \
+      /usr/share/fonts/type1/gsfonts/ \
+      /usr/share/fonts/type1/ \
+      /usr/share/fonts/default/Type1/adobestd35/ \
+      /usr/share/fonts/default/Type1/ \
+      /usr/share/ghostscript/Resource/Font"
 
     if test -n "$urwfontsdir"
     then

@@ -456,9 +456,13 @@ sub usage
     my $had_error = shift;
     $stream = *STDERR if $had_error;
     print $stream
-"usage: $prog [-delsW] [-f bit-vector] [-F font-directory]" .
-" [--format-options bit-vector] [-I inclusion-directory]" .
-" [-p paper-format] [--pdfver {1.4|1.7}] [-u [cmap-file]]" .
+"usage: $prog [-delsW]" .
+" [{-f|--format-options} bit-vector]" .
+" [-F font-directory]" .
+" [-I inclusion-directory]" .
+" [-p paper-format]" .
+" [--pdfver {1.4|1.7}]" .
+" [-u [cmap-file]]" .
 " [-y foundry] [file ...]\n" .
 "usage: $prog {-v | --version}\n" .
 "usage: $prog --help\n";

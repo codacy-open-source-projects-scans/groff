@@ -163,6 +163,11 @@ script where to find them.  If you never use groff to generate
 PostScript or PDF documents, you can ignore any output from the
 'configure' script about URW fonts.
 
+If you know that you have no need for the URW fonts, because you don't
+require the higher gropdf feature service levels that they enable, and
+you wish to avoid warnings from the build process, give the 'configure'
+script the "--without-urw-fonts" option.
+
 
 Evaluation
 ==========
