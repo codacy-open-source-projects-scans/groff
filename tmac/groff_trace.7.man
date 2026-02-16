@@ -9,7 +9,7 @@ documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2002-2022 Free Software Foundation, Inc.
+.\" Copyright 2002-2022 Free Software Foundation, Inc.
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"

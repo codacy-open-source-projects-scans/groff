@@ -47,8 +47,8 @@ is available in 'doc/automake.mom'; peruse a PDF rendering in
 Tips:
 
 * Don't define macros, including those ending in `_srcdir` or
-  `_builddir`, unless you need to interpolate them elsewhere in the *.am
-  file.
+  `_builddir`, unless Automake itself demands them or you need to
+  interpolate them elsewhere in the *.am file.
 
 * If you need to define a `_builddir` macro, give it a plain literal
   value; do _not_ lead it with an interpolation of `top_builddir` or

@@ -1,7 +1,8 @@
-.\" 62bit.tmac
+.\" Support 62-bit arithmetic in GNU troff(1).
+.
+.\" Copyright 2006 Free Software Foundation, Inc.
 .\"
-.\" Copyright (C) 2003-2020 Free Software Foundation, Inc.
-.\"      Written by Werner Lemberg (wl@gnu.org)
+.\" Written by Werner Lemberg (wl@gnu.org)
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"
@@ -18,8 +19,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see
 .\" <http://www.gnu.org/licenses/>.
-.\"
-.\"
+.
 .\" This file provides macros for addition, multiplication, and division
 .\" of 62-bit signed integers.  Its main application is to 'scale'
 .\" 31-bit values--namely, to perform the operation 'a * b / c'
@@ -28,7 +28,6 @@
 .\" Note that it is the duty of the user to check whether the input
 .\" values fit within 31 bits (this is the range
 .\" [-1073741824,1073741823]).
-.\"
 .
 .do nr *groff_62bit_tmac_C \n[.cp]
 .cp 0

@@ -1,13 +1,10 @@
-.\" -*- nroff -*-
-.\"
-.\" psold.tmac
-.\"
 .\" In newer PostScript printers, text fonts contain all ISO Latin-1
 .\" characters.  The font description files that comes with groff match
-.\" these fonts.  The text fonts in older PostScript printers are missing
-.\" some of these characters.  This file prevents those characters from
-.\" being used.  This will allow the PostScript output to be printed on
-.\" such old printers.
+.\" these fonts.  The text fonts in older PostScript printers are
+.\" missing some of these characters.  This file prevents those
+.\" characters from being used, allowing grops(1)'s output to be printed
+.\" on such old printers.  See section "Old fonts" of grops(1).
+.
 .do nr *groff_psold_tmac_C \n[.cp]
 .cp 0
 .\" Define an accented character.
