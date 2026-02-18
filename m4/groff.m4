@@ -271,16 +271,16 @@ AC_DEFUN([GROFF_GROPDF_DEPENDENCIES_CHECK], [
   AC_REQUIRE([GROFF_GHOSTSCRIPT_PATH])
   AC_REQUIRE([GROFF_URW_FONTS_CHECK])
 
-  gropdf_service_level=full
+  gropdf_service_level=basic
 
-  if test "$groff_have_urw_fonts" != yes
+  if test "$GHOSTSCRIPT" != missing
   then
     gropdf_service_level=intermediate
   fi
 
-  if test "$GHOSTSCRIPT" = missing
+  if test "$groff_have_urw_fonts" = yes
   then
-    gropdf_service_level=basic
+    gropdf_service_level=full
   fi
 ])
 

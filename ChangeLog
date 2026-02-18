@@ -1,3 +1,24 @@
+2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Install groff fonts according to gropdf mode.
+
+	Full         : All 35 Postscript 2 fonts + 35 URW fonts
+	Intermediate : All 35 Postscript 2 fonts
+	Basic        : Just 14 PDF standard fonts
+
+	(Reinstates groff 1.23.0 behaviour).
+
+	* configure.ac: Add automake conditional GROPDF_INTER. Set if
+	not in basic mode.
+
+	* font/devpdf/devpdf.am: Split groff fonts list into 3 so that
+	the 3 modes above can be accommodated, based on the two automake
+	conditionals GROPDF_INTER and HAVE_URW_FONTS.
+
+	* m4/groff.m4: Fix logic error setting 'gropdf_service_level'.
+
+	Fixes <https://savannah.gnu.org/bugs/index.php?68060>
+
 2026-02-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	Add another URW font directory search path.

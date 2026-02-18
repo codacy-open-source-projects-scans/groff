@@ -1,3 +1,42 @@
+2026-02-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (li@pop): When popping a nested list level, restore
+	attribute saved in `li*mark-list!n` array to module-local string
+	`li*mf`, not `li*mark`; the distinction matters when lists of
+	type "zero" are nested, in practice that value describes only
+	marked item (`ML`) lists.
+
+	Fixes <https://savannah.gnu.org/bugs/?68052>.  Problem
+	introduced by me in commit d9209295a3, 9 October 2024.  Thanks
+	to Alexis Hildebrandt for the report.  The commit characterized
+	itself as a "trivial refactoring": "Rename internal string
+	`li*mark` to `li*mf`, since it can be _either_ an arbitrary
+	string _or_ an argument to the `af` request."  I'd characterize
+	the root cause of this problem as follows.  The `LB` macro's
+	optional fifth argument is the *roff equivalent of an untagged
+	union per the foregoing.  (But we're stuck with it because it's
+	a DWB 3.3 [or earlier] mm feature.)  When a list nesting level
+	is popped, we don't recover all of the information that the `LB`
+	macro's internals computed; instead we rely on stashing some.
+	When renaming `li*mf` to `li*mark`, I did not realize that this
+	stashing logic needed to save the pre-interpretation form of the
+	"mark-or-list" argument, not a post-interpretation,
+	unambiguously typed string to use as the item mark.  A better
+	implementation of `LB` would stash as many distinctly, and
+	unambiguously typed, data as warranted to recover necessary
+	state when a "pop" occurs.  I predict that doing so would, in
+	turn, make the `LI` macro's job simpler and easier, leaving less
+	room for bugs.
+
+2026-02-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Add regression test for Savannah #68052.  Nested marked lists
+	{`ML`} were using incorrect item marks after popping a nesting
+	level with `LE`.
+
+	* tests/marks-in-nested-ML-lists-are-correct.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
 2026-01-29  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tests/Captc-translates.sh: Rename this...

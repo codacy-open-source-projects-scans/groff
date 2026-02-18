@@ -86,6 +86,7 @@ mm_TESTS = \
   contrib/mm/tests/letter-with-bottom-block-works.sh \
   contrib/mm/tests/letters-format-correctly.sh \
   contrib/mm/tests/lists-indent-correctly.sh \
+  contrib/mm/tests/marks-in-nested-ML-lists-are-correct.sh \
   contrib/mm/tests/memoranda-format-correctly.sh \
   contrib/mm/tests/ms-cover-sheet-robust-to-missing-AF.sh \
   contrib/mm/tests/mse_has-sufficient-footnote-space.sh \

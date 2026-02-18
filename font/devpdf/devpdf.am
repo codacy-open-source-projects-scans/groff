@@ -24,15 +24,6 @@ devpdf_builddir = font/devpdf
 devpdffont_descriptions_from_devps = \
   font/devpdf/S \
   font/devpdf/ZD \
-  font/devpdf/ZCMI \
-  font/devpdf/AB \
-  font/devpdf/ABI \
-  font/devpdf/AI \
-  font/devpdf/AR \
-  font/devpdf/BMB \
-  font/devpdf/BMBI \
-  font/devpdf/BMI \
-  font/devpdf/BMR \
   font/devpdf/CB \
   font/devpdf/CBI \
   font/devpdf/CI \
@@ -41,6 +32,22 @@ devpdffont_descriptions_from_devps = \
   font/devpdf/HBI \
   font/devpdf/HI \
   font/devpdf/HR \
+  font/devpdf/TB \
+  font/devpdf/TBI \
+  font/devpdf/TI \
+  font/devpdf/TR \
+  font/devpdf/EURO
+
+if GROPDF_INTER
+devpdffont_descriptions_from_devps += \
+  font/devpdf/AB \
+  font/devpdf/ABI \
+  font/devpdf/AI \
+  font/devpdf/AR \
+  font/devpdf/BMB \
+  font/devpdf/BMBI \
+  font/devpdf/BMI \
+  font/devpdf/BMR \
   font/devpdf/HNB \
   font/devpdf/HNBI \
   font/devpdf/HNI \
@@ -53,11 +60,8 @@ devpdffont_descriptions_from_devps = \
   font/devpdf/PBI \
   font/devpdf/PI \
   font/devpdf/PR \
-  font/devpdf/TB \
-  font/devpdf/TBI \
-  font/devpdf/TI \
-  font/devpdf/TR \
-  font/devpdf/EURO
+  font/devpdf/ZCMI
+endif
 
 if HAVE_URW_FONTS
 devpdffont_descriptions_for_urw = \

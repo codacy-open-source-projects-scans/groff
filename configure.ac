@@ -192,6 +192,7 @@ AM_CONDITIONAL([HAVE_URW_FONTS], [test "$groff_have_urw_fonts" = yes ])
 AM_CONDITIONAL([HAVE_MAKEINFO], [test "$groff_have_makeinfo" = yes ])
 AM_CONDITIONAL([HAVE_TEXI2DVI], [test "$groff_have_texi2dvi" = yes ])
 AM_CONDITIONAL([USE_TEX], [test "$groff_use_tex" = yes ])
+AM_CONDITIONAL([GROPDF_INTER], [test "$gropdf_service_level" != basic ])
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([test-groff], [chmod +x test-groff])
