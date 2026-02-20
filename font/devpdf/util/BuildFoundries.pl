@@ -154,8 +154,16 @@ sub LoadFoundry
 		}
 		else
 		{
+		    my $foundry_string;
+		    if (!$foundry) {
+			$foundry_string = "default foundry";
+		    }
+		    else
+		    {
+			$foundry_string = "foundry '$foundry'";
+		    }
 		    Warn("cannot read grops font description '$r[0]'"
-			 . " for Foundry '$foundry'");
+			 . " for $foundry_string");
 		}
 	    }
 	    else

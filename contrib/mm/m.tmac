@@ -1,3 +1,6 @@
+.\" groff implementation of mm(7) package
+.\"
+.\" See groff_mm(7).
 .ig
 
 Copyright 1991-2018 Free Software Foundation, Inc.
@@ -1946,7 +1949,8 @@ breaking page
 .if \\n[pg*cols-per-page]<2 .@error \\$0: not in multi-column mode
 .if \\n[pg*mul-x]>=\\n[pg*mul-max-col] \{\
 .	ds pg*msg .@abort undefined column width \"
-.	as (pg*mul-x=\\n[pg*mul-x] >= pg*mul-max-col=\\n[pg*mul-max])\"
+.	as pg*msg (pg*mul-x=\\n[pg*mul-x] >= \
+pg*mul-max-col=\\n[pg*mul-max])\"
 .	@abort \\*[pg*msg]
 .\}
 .br
@@ -2550,7 +2554,7 @@ h=\\n[df*height!\\n[df*o-fnr]]
 .nr li*tind (n;0\\$1)\"			text-indent
 .nr li*mind (n;0\\$2)\"			mark-indent
 .nr li*pad (n;0\\$3)\"			pad
-.nr li*type 0\\$4\"			type
+.nr li*type 0\\$4\"			type (in range -1..6)
 .ds li*mf \\$5\"			mark-or-format
 .ie !'\\$6'' .nr li*li-spc \\$6\"	LI-space
 .el          .nr li*li-spc 1
@@ -2558,27 +2562,30 @@ h=\\n[df*height!\\n[df*o-fnr]]
 .el          .nr li*lb-spc 0
 .\" init listcounter
 .nr li*cnt!\\n[li*lvl] 0 1
-.\" assign format
-.af li*cnt!\\n[li*lvl] 1
+.nr li*mf-is-mark 1
 .if \\n[li*type] \{\
-.	ie '\?\\*[li*mf]\?'\?\&\?' .af li*cnt!\\n[li*lvl] 0
-.	el \{\
-.		nr li*is-format-valid 0
-.		if '\?\\*[li*mf]\?'\?a\?'       .nr li*is-format-valid 1
-.		if '\?\\*[li*mf]\?'\?A\?'       .nr li*is-format-valid 1
-.		if '\?\\*[li*mf]\?'\?i\?'       .nr li*is-format-valid 1
-.		if '\?\\*[li*mf]\?'\?I\?'       .nr li*is-format-valid 1
-.		if \B'\\*[li*mf]' \
-.			if \\*[li*mf]>-1        .nr li*is-format-valid 1
-.		if !\\n[li*is-format-valid] \{\
-.			@warning \\$0: type argument is \\n[li*type] \
-but mark argument '\\*[li*mf]' is not a valid register format; \
-assuming '0'
-.			ds li*mf 0\"
+.	nr li*mf-is-mark 0
+.	if '\\*[li*mf]'' .ds li*mf 0\"
+.	nr li*is-format-valid 0
+.	if '\?\\*[li*mf]\?'\?a\?'           .nr li*is-format-valid 1
+.	if '\?\\*[li*mf]\?'\?A\?'           .nr li*is-format-valid 1
+.	if '\?\\*[li*mf]\?'\?i\?'           .nr li*is-format-valid 1
+.	if '\?\\*[li*mf]\?'\?I\?'           .nr li*is-format-valid 1
+.	if \B'\\*[li*mf]' .if \\*[li*mf]>-1 .nr li*is-format-valid 1
+.	if !\\n[li*is-format-valid] \{\
+.		ds li*msg \\$0: type argument is \\n[li*type]\"
+.		as li*msg " but mark argument '\\*[li*mf]'\"
+.		as li*msg " is not a valid register format;\"
+.		as li*msg " assuming '0'\"
+.		@warning \\*[li*msg]
+.		rm li*msg
+.		ds li*mf 0\"
 .		\}
-.		af li*cnt!\\n[li*lvl] \\*[li*mf]
 .	\}
 .\}
+.ie \\n[li*mf-is-mark] .af li*cnt!\\n[li*lvl] 0
+.el                    .af li*cnt!\\n[li*lvl] \\*[li*mf]
+.rr li*mf-is-mark
 .\"
 .if \\n[li*lb-spc] .SP (u;\\n[li*lb-spc]*\\n[Lsp])
 .in +\\n[li*tind]u
@@ -2709,6 +2716,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .\"-------------
 .\" List types `AL` and `RL` combine enumerators with punctuation, and
 .\" use register `Li` to determine text indentation.
+.\" TODO: Refactor like `ML` to call `LB` in only one place.
 .de AL
 \\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
@@ -2721,6 +2729,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	\}
 .\}
 ..
+.\" TODO: Refactor like `ML` to call `LB` in only one place.
 .de RL
 \\*[debug@dump-args]\\
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
@@ -2733,6 +2742,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\" List types `VL` and `BVL` set a user-specified tag (idiomatically a
 .\" word or phrase) and use register `Pi` to determine text indentation.
+.\" TODO: Refactor like `ML` to call `LB` in only one place.
 .de VL
 \\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
@@ -2743,6 +2753,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .rr li*text-indent
 ..
 .\" `BVL` always breaks after the tag, so the mark cannot overset.
+.\" TODO: Refactor like `ML` to call `LB` in only one place.
 .de BVL
 \\*[debug@dump-args]\\
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
@@ -2754,6 +2765,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 ..
 .\" List types `BL` and `DL` use bullets and em dashes, respectively, as
 .\" the item marks, and use register `Pi` to determine text indentation.
+.\" TODO: Refactor like `ML` to call `LB` in only one place.
 .de BL
 \\*[debug@dump-args]\\
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
@@ -2764,6 +2776,7 @@ exceeds depth of nested lists (\\n[li*lvl])
 .	el         .LB 0\\$1   0 1 0 \\*[BU] 0 1
 .\}
 ..
+.\" TODO: Refactor like `ML` to call `LB` in only one place.
 .de DL
 \\*[debug@dump-args]\\
 .if \\n[.$]>2 .@warning \\$0: ignoring excess arguments
@@ -2782,18 +2795,24 @@ exceeds depth of nested lists (\\n[li*lvl])
 .if \\n[.$]>3 .@warning \\$0: ignoring excess arguments
 .if \\n[.$]<1 .@error \\$0: expected 1 to 3 arguments, got \\n[.$]
 .nr li*text-indent \w@\\$1@u+1n
-.ie \\n[.$]<2 .LB        \\n[li*text-indent]u 0 0 0 "\\$1"
-.el \{\
-.	if !\B'\\$2' \{\
+.nr li*pad-amount 0
+.if \\n[.$]>1 \{\
+.	if !'\\$2'' .ie !\B'\\$2' \{\
 .		ds li*msg \\$0: text-indent argument is not numeric:\"
-.		as " '\\$2'\"
+.		as li*msg " '\\$2'\"
 .		@error \\*[li*msg]
 .	\}
-.	ie \\n[.$]=2 .LB \\$2                 0 1 0 "\\$1"
-.	el           .LB \\n[li*text-indent]u 0 0 0 "\\$1"
+.	el \{\
+.		nr li*text-indent (n;\\$2)
+.		nr li*pad-amount 1
 .	\}
 .\}
+.ds li*more-args 0 1\"
+.if \\n[.$]<3 .ds li*more-args \" empty
+.LB \\n[li*text-indent]u 0 \\n[li*pad-amount] 0 "\\$1" \\*[li*more-args]
 .rr li*text-indent
+.rr li*pad-amount
+.rm li*extra-args
 ..
 .\" ####### module tbl #######################################
 .\" This module is copied from groff_ms and modified for mm.

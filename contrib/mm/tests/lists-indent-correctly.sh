@@ -224,7 +224,8 @@ o21 o22 o23 o24 o25 o26 o27 o28 o29 o30
 #       *[1] o1 o2 o3 o4 o5 o6 o7 o8 o9 o10 o11 o12 o13 o14 o15 o16
 #            o17 o18 o19 o20 o21 o22 o23 o24 o25 o26 o27 o28 o29 o30
 
-output=$(printf "%s\n" "$input" | "$groff" -mm -Tascii -P-cbou)
+output=$(printf "%s\n" "$input" \
+    | "$groff" -mm -Tascii -P-cbou 2> /dev/null)
 echo "$output"
 
 echo "checking indentation of AL list, first line" >&2
@@ -317,6 +318,12 @@ echo "$output" | grep -Eq "^ {7}\*\[1] o1" || wail
 echo "checking indentation of padless prefixed RL list, second line" >&2
 echo "$output" | grep -Eq "^ {12}o17" || wail
 
+error=$(printf "%s\n" "$input" | "$groff" -z -mm -Tascii -P-cbou 2>&1)
+echo "$error"
+
+echo "checking that input produced only 1 diagnostic message" >&2
+test $(echo "$error" | wc -l) -eq 1 || wail
+
 test -z "$fail"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

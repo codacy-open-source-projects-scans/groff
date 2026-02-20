@@ -1,3 +1,28 @@
+2026-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* font/devpdf/util/BuildFoundries.pl (LoadFoundry): Clarify
+	warning diagnostic message when a font description file is
+	unavailable; "foundry ''" can look like a logic error.  Refer to
+	"default foundry" instead in that scenario.
+
+2026-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Eliminate new but superfluous Automake variable.
+
+	* configure.ac: Drop `AM_CONDITIONAL()` defining `GROPDF_INTER`,
+	which is confusingly named (it meant "not the basic service
+	level", not the "inter[mediate]" one specifically), not directly
+	coupled to the availability of a feature of the build host (but
+	instead based on the value of a shell variable that _was_ being
+	used just for reporting, and with this commit is again limited
+	to that purpose), and duplicates the semantics of an existing
+	Automake variable, `HAVE_GHOSTSCRIPT`.  See the definition of
+	`GROFF_GROPDF_DEPENDENCIES_CHECK` in "m4/groff.m4".
+	* font/devpdf/devpdf.am: Append to macro
+	`devpdffont_descriptions_from_devps` contingently on Automake
+	variable `HAVE_GHOSTSCRIPT` rather than the disappearing
+	`GROPDF_INTER`.
+
 2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Install groff fonts according to gropdf mode.

@@ -72,6 +72,8 @@ mm_TESTS = \
   contrib/mm/tests/LT-SP-AU-without-AT-works.sh \
   contrib/mm/tests/LT-SP-multi-word-LO-SJ-works.sh \
   contrib/mm/tests/LT-should-space-after-inside-address.sh \
+  contrib/mm/tests/ML-accepts-empty-second-argument.sh \
+  contrib/mm/tests/ML-honors-third-argument.sh \
   contrib/mm/tests/ML-marks-work.sh \
   contrib/mm/tests/MT-1-reports-all-TM-numbers.sh \
   contrib/mm/tests/MT-5-includes-AT-in-SG.sh \

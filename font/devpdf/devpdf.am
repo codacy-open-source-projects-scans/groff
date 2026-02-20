@@ -38,7 +38,7 @@ devpdffont_descriptions_from_devps = \
   font/devpdf/TR \
   font/devpdf/EURO
 
-if GROPDF_INTER
+if HAVE_GHOSTSCRIPT
 devpdffont_descriptions_from_devps += \
   font/devpdf/AB \
   font/devpdf/ABI \

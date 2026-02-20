@@ -1,3 +1,92 @@
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Honor third argument again.
+
+	Fixes <https://savannah.gnu.org/bugs/?68059>.  Problem
+	introduced by me in commit 512b749f4e, 2 July 2024.  Thanks to
+	Alexis Hildebrandt for the report.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Add regression test for Savannah #68059.  Marked list (`ML`)
+	macro calls were not paying any attention to an (optional) third
+	argument, the presence of which suppresses pre-item vertical
+	space.
+
+	* tests/ML-honors-third-argument.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Handle explicitly empty second argument.
+
+	Fixes <https://savannah.gnu.org/bugs/?68065>.  Problem
+	introduced by me in commit 512b749f4e, 2 July 2024.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Add regression test for Savannah #68065.  Marked list (`ML`)
+	macro calls were not treating an explicitly empty second
+	argument (text indentation amount) as implying the computed
+	default.  This matters when a third argument, the presence of
+	which suppresses vertical spacing before each list item, is
+	desired.
+
+	* tests/ML-accepts-empty-second-argument.sh: Do it.
+	* mm.am (mm_TESTS): Run test.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Refactor to ease further bug fixing.  Call the
+	`LB` macro that this macro wraps in one place, not three.
+	Introduce new temporary `li*pad-amount` register to manage the
+	third argument we pass to `LB`, which varies depending on
+	whether `ML` itself is given a (numeric expression as a) second
+	argument or not.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (LB): Fix spurious warnings.  Refactor to clarify
+	logic, since I proved inadequate to the task of penetrating its
+	dialect before.  Document expected range of fourth macro
+	argument.  Assign register format to registers used as list item
+	enumerators in one place instead of three.  Introduce new
+	temporary register `li*mf-is-mark` to elucidate the peculiar
+	status of macro's fifth argument as an untagged union type.
+	{Why is it that _bad_ ideas are adopted so much more
+	aggressively than _good_ ones?}  Rearrange logic that parses
+	this fifth argument (tracked as `li*mf`) for validity as a
+	register format.  Replace highly specific check for `\&` as an
+	argument using GNU troff's "string comparison" extension with a
+	simple test for nonempty formatted output.  It's more
+	{traditionally} idiomatic and captures any other synonymous ways
+	that the fifth macro argument might be "nothing".  Assemble
+	lengthy diagnostic message into a temporary string, simplifying
+	its emission.
+
+	Fixes <https://savannah.gnu.org/bugs/?68066>.  Problem
+	introduced by me in commit ae66055171, 3 August 2025.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/lists-indent-correctly.sh: Add test for quantity of
+	diagnostic message lines produced by input.  We expect exactly
+	one.  Also wrangle the standard error stream so as to dump all
+	such diagnostics _after_ the (voluminous) formatted output,
+	where they're harder to miss.
+
+2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac: Fix truncated diagnostic messages caused by macro
+	programmer forgetting to name the string to which the `as`
+	request is meant to append.
+	(MULN): Fix truncated fatal error diagnostic arising from
+	disordered internal state when an undefined column width is
+	encountered when using groff mm's extended multi-column layout
+	feature.
+	(ML): Fix truncated error diagnostic when 2nd argument to macro
+	is not numeric.
+
 2026-02-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (li@pop): When popping a nested list level, restore
@@ -22,7 +111,7 @@
 	stashing logic needed to save the pre-interpretation form of the
 	"mark-or-list" argument, not a post-interpretation,
 	unambiguously typed string to use as the item mark.  A better
-	implementation of `LB` would stash as many distinctly, and
+	implementation of `LB` would stash as many distinct, and
 	unambiguously typed, data as warranted to recover necessary
 	state when a "pop" occurs.  I predict that doing so would, in
 	turn, make the `LI` macro's job simpler and easier, leaving less

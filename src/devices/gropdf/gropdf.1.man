@@ -898,10 +898,8 @@ including support for Cyrillic script.
 is available
 when
 .I \%gropdf
-can locate font metrics for all 35 fonts
-of the PostScript Level 2 standard
-on the file system
-but not those from the URW foundry.
+can locate all 35 fonts of the PostScript Level 2 standard
+but not their corresponding font metrics (AFM) files.
 .
 Glyph coverage is reduced to 256 glyphs maximum from each face,
 and the \[lq]U\[rq] foundry is unavailable.
@@ -911,9 +909,7 @@ and the \[lq]U\[rq] foundry is unavailable.
 .I "Basic service"
 results when
 .I \%gropdf
-cannot locate font metrics for all 35 fonts
-of the PostScript Level 2 standard
-on the file system.
+cannot locate all 35 fonts of the PostScript Level 2 standard.
 .
 Only the base 14 fonts of the PDF standard are available,
 and only in the sense that the formatter can use their metrics.
