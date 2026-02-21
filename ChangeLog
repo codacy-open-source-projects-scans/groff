@@ -1,3 +1,32 @@
+2026-02-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	* src/devices/gropdf/gropdf.pl: Test for null string rather
+	than 'false' (which includes "0").
+
+	Fixes <https://savannah.gnu.org/bugs/?68077>. Thanks to
+	G. Branden Robinson for report.
+
+2026-02-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Support a build scenario where Ghostscript is unavailable but
+	the URW fonts are.  In that case, gropdf can operate at its full
+	feature service level; configure it to do so.
+
+	* configure.ac: Define new Automake conditional variable,
+	`HAVE_URW_FONTS_OR_HAVE_GHOSTSCRIPT`, that records the fact
+	written on the tin.
+	* font/devpdf/devpdf.am: Revise Automake control flow to use
+	this new variable instead of simply `HAVE_GHOSTSCRIPT`.
+
+	Continues fixing <https://savannah.gnu.org/bugs/?68060>.
+
+2026-02-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* gnulib: Refresh stable/2026-01 branch to obtain commits
+	b527e616ee, 87979f8c12, d731598147, f1f8e13ce8, and 61561de9e2,
+	which should fix a build error in C++ code on FreeBSD 14.
+	Thanks to Bruno Haible.
+
 2026-02-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* font/devpdf/util/BuildFoundries.pl (LoadFoundry): Clarify
@@ -23,6 +52,8 @@
 	variable `HAVE_GHOSTSCRIPT` rather than the disappearing
 	`GROPDF_INTER`.
 
+	Fixes <https://savannah.gnu.org/bugs/?68060>.
+
 2026-01-20  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
 	Install groff fonts according to gropdf mode.
@@ -31,18 +62,19 @@
 	Intermediate : All 35 Postscript 2 fonts
 	Basic        : Just 14 PDF standard fonts
 
-	(Reinstates groff 1.23.0 behaviour).
+	{Reinstates groff 1.23.0 behaviour.}
 
-	* configure.ac: Add automake conditional GROPDF_INTER. Set if
-	not in basic mode.
+	* configure.ac: Add Automake variable `GROPDF_INTER`. Set if not
+	in basic mode.
 
 	* font/devpdf/devpdf.am: Split groff fonts list into 3 so that
-	the 3 modes above can be accommodated, based on the two automake
-	conditionals GROPDF_INTER and HAVE_URW_FONTS.
+	the 3 modes above can be accommodated, based on the two Automake
+	variables `GROPDF_INTER` and `HAVE_URW_FONTS`.
 
-	* m4/groff.m4: Fix logic error setting 'gropdf_service_level'.
+	* m4/groff.m4 (GROFF_GROPDF_DEPENDENCIES_CHECK): Fix logic error
+	setting `gropdf_service_level` shell variable.
 
-	Fixes <https://savannah.gnu.org/bugs/index.php?68060>
+	Begins fixing <https://savannah.gnu.org/bugs/?68060>.
 
 2026-02-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -70,7 +102,7 @@
 	itself.  This procedure cannot be perfectly reliable using _any_
 	ordering because host systems can update their Ghostscript and
 	URW font packages (if any) on separate and arbitrary schedules,
-	and these matters are outside of groff's contol.  If groff finds
+	and these matters are outside of groff's control.  If groff finds
 	the "wrong" URW fonts (or can't find them at all), use the
 	"--with-urw-fonts-dir=" option to groff's "configure" script to
 	point it at the correct ones.
@@ -402,7 +434,7 @@
 	* font/devpdf/devpdf.am (BuildFoundries): Add `urwfontsupport`
 	to set of sed(1) substitutions performed when generating target.
 	* font/devpdf/util/BuildFoundries.pl: Add `urwfontsupport`
-	scalar, taking value of corresponding sed substituion.
+	scalar, taking value of corresponding sed substitution.
 	(LoadFoundry): Suppress warning about unavailable font if
 	`urwfontsupport` matches "no".
 
@@ -1489,7 +1521,7 @@
 	`read_long_identifier()`, because it's used for more than just
 	reading "names" (request, macro, string, or diversion
 	identifiers), but also identifiers of environments, colors,
-	registers, typefaces (fonts, famililies, and styles), and file
+	registers, typefaces (fonts, families, and styles), and file
 	names.  (The last occurs only in `ps_bbox_request()` and might
 	be inapposite; GNU troff now handles file names with spaces in
 	them, and that might not work because the `psbb` request is not
@@ -2013,14 +2045,14 @@
 	(read_rgb, read_cmy, read_cmyk, read_gray, do_get_long_name):
 	Update definitions.
 	(get_long_name): Update `do_get_long_name()` call site to use
-	literal of `unsigned char` rathern than `char` type.
+	literal of `unsigned char` rather than `char` type.
 	(do_get_long_name): Change type of local variable `buf` from
 	`char` to `unsigned char`, since it is directly populated by
 	reads of bytes from the input stream.  This function converts
 	said input into an object of the groff class `symbol` and
 	returns it, but `symbol` has no constructor accepting a pointer
 	to `const unsigned char`.  Consequently, once we have
-	successfuly populated `buf`, create a new buffer `chbuf`, a
+	successfully populated `buf`, create a new buffer `chbuf`, a
 	heap-allocated array of `char` type.  Free this array after
 	constructing a `symbol` on the stack.  (If all this seems like
 	rigmarole, consider that it's going to be necessary anyway when
@@ -2187,7 +2219,7 @@
 
 	* src/roff/troff/input.cpp (define_class_request): Add assertion
 	and, if preprocessor `NDEBUG` symbol is defined, guard against
-	null pointer derefrence.
+	null pointer dereference.
 
 2025-12-05  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -2302,7 +2334,7 @@
 
 	* src/roff/troff/input.cpp (token::description): Hedge against
 	programmer carelessness.  If someone creates a node type without
-	a human-readable descripion, pre-populate the buffer describing
+	a human-readable description, pre-populate the buffer describing
 	it with a revealing description that is less frustrating than
 	nothing at all.
 
@@ -2408,8 +2440,8 @@
 	of presenting the user with an empty pair of quotation marks.
 
 	Fixes <https://savannah.gnu.org/bugs/?67747>.  Problem dates
-	back to intoduction of `warnscale` request in commit 9993a881c1,
-	5 May 2002.
+	back to introduction of `warnscale` request in commit
+	9993a881c1, 5 May 2002.
 
 2025-11-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -2419,8 +2451,8 @@
 	inches.
 
 	Fixes <https://savannah.gnu.org/bugs/?67748>.  Problem dates
-	back to intoduction of `warnscale` request in commit 9993a881c1,
-	5 May 2002.
+	back to introduction of `warnscale` request in commit
+	9993a881c1, 5 May 2002.
 
 2025-11-30  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -3478,7 +3510,7 @@
 	U+007E to predefined special character escape sequences (see
 	groff_char(7)).  For all other Unicode code points, write out an
 	escape sequence of the form `\[uYXXXX]`.  Finally, if none of
-	the foreging mappings exist, throw an error diagnostic and dump
+	the foregoing mappings exist, throw an error diagnostic and dump
 	the glyph's "charinfo", as if `pchar` were invoked on a
 	corresponding GNU troff character.
 
@@ -5135,8 +5167,8 @@
 2025-09-02  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* doc/doc.am (DOC_GROFF): Move `-M` option that is present only
-	for the sake of building "grnexampl.ps" from this macro...
-	(doc/grnexampl.ps): ...to this target rule.
+	for the sake of building "grnexmpl.ps" from this macro...
+	(doc/grnexmpl.ps): ...to this target rule.
 
 2025-09-02  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -6237,7 +6269,7 @@
 
 2025-07-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* tmac/eqnrc: Drop unneccessary setup.  Since commit 4b3e5417d5,
+	* tmac/eqnrc: Drop unnecessary setup.  Since commit 4b3e5417d5,
 	18 February 2017, GNU eqn self-serves by synthesizing
 	conditional empty fallback definitions of `EQ` and `EN` in its
 	output.
@@ -7256,13 +7288,13 @@
 	* tmac/tmac.am (tmac/groff_man.7.man)
 	(tmac/groff_man_style.7.man): Make m4(1) write to a temporary
 	file, then process the temporary file with `mdate.pl` to replace
-	the aforementioned subtitutum.  As a side effect, there is no
+	the aforementioned substitutum.  As a side effect, there is no
 	longer an `@MDATE@` in the file for the ".man" suffix rule in
 	"Makefile.am" to affect.
 
 2025-06-21  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
-	Remove unneccessary call to pdf parser.
+	Remove unnecessary call to pdf parser.
 
 	* src/devices/gropdf/gropdf.pl (do_X) </OUT>: Parse Title/Level
 	manually.
@@ -7455,7 +7487,7 @@
 2025-06-06  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an-ext.tmac (SY): The single-argument form of `SY` need
-	not set an ubreakable space and output line continuation escape
+	not set an unbreakable space and output line continuation escape
 	sequence after formatting the argument.  That distinction is in
 	fact the whole point of accepting a second argument (a new
 	post-1.23 feature), which is set in bold like the first.  (It is
@@ -8199,11 +8231,11 @@
 	"infinite".
 	(Dd): Call `doc-break-page-with-new-number` only if _not_
 	continuously rendering.
-	(doc-end-macro): If continously rendering, stop incrementing the
-	page length prior to writing the footer and document separation
-	rule, and upon encountering the end of the last document (the
-	input file name register `.F` becomes empty), set the page
-	length to the vertical drawing position.
+	(doc-end-macro): If continuously rendering, stop incrementing
+	the page length prior to writing the footer and document
+	separation rule, and upon encountering the end of the last
+	document (the input file name register `.F` becomes empty), set
+	the page length to the vertical drawing position.
 
 	Fixes <https://savannah.gnu.org/bugs/?65190> (2/2).
 
@@ -8418,7 +8450,7 @@
 
 2025-05-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Continue fixing Savanah #64104 after two years.
+	[troff]: Continue fixing Savannah #64104 after two years.
 
 	* src/roff/troff/input.cpp (assign_control_character): Fix bug
 	when `cc` request given no arguments; don't try to make the
@@ -8576,7 +8608,7 @@
 
 	* src/roff/troff/env.h: Drop global constant unsigned `int`s
 	`MARGIN_CHARACTER_ON` and `MARGIN_CHARACTER_NEXT` in favor of...
-	(class enviromment): ...a public anonymous enum type with
+	(class environment): ...a public anonymous enum type with
 	constant values `MC_ON` and `MC_NEXT`.
 	* src/roff/troff/env.cpp (environment::environment): Use
 	unsigned integer literal when initializing
@@ -8789,7 +8821,7 @@
 
 	* tmac/doc.tmac (Bd): Fix code style nit.  Perform "strict"
 	string comparison when using formatted output comparison
-	operator to peform matching on macro argument.  See
+	operator to perform matching on macro argument.  See
 	subsection/node "Operators in Conditionals" in groff's Texinfo
 	manual.
 
@@ -9107,7 +9139,7 @@
 
 2025-04-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	[troff]: Slighty refactor (boolify, rename).
+	[troff]: Slightly refactor (boolify, rename).
 
 	* src/roff/troff/node.cpp (class font_info)
 	(class tfont): Demote return type of `get_bold()` member
@@ -9379,7 +9411,7 @@
 
 	* src/roff/troff/input.cpp: Refactor `grostream` class for
 	memory safety.
-	(struct grosteam): Convert from this...
+	(struct grostream): Convert from this...
 	(class grostream): ...to this, inheriting from class `object` so
 	that it casts less dangerously thence and thither when stashing
 	`grostream`s into and retrieving them from `object_dictionary`
@@ -9693,7 +9725,7 @@
 	invocation of "nroff" command through a shell variable to ensure
 	that we test the one that has been built, not one in the $PATH.
 	Most other groff automated tests already work this way.  Also
-	check for POSIX-non-comforming shell, and skip test if a
+	check for POSIX-non-conforming shell, and skip test if a
 	conforming one doesn't seem to be present.
 
 2025-03-30  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -10471,7 +10503,7 @@
 
 	* src/roff/troff/node.h (struct node): Add new virtual member
 	function, `dump_properties()`, to support modular composition of
-	node dumping.  All nodes have properties, but some dervived
+	node dumping.  All nodes have properties, but some derived
 	classes of `node` have _additional_ properties.  Also, we want
 	to be able to distinguish property reporting from contained-node
 	reporting, which is where recursion comes in.
@@ -11129,7 +11161,7 @@
 2025-01-27  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/env.cpp (environment::choose_breakpoint):
-	Reparenthensize (very) complex expression, restoring documented
+	Reparenthesize (very) complex expression, restoring documented
 	behavior of hyphenation space feature.
 
 	Fixes <https://savannah.gnu.org/bugs/?66723>.  Thanks to Dave
@@ -13125,8 +13157,8 @@
 	didn't).
 
 	* man/groff.7.man (Request short reference) <pso>:
-	* man/groff_diff.7.man (New requests) <pso>: Recast, strengthing
-	parallel with `so` request.
+	* man/groff_diff.7.man (New requests) <pso>: Recast,
+	strengthening parallel with `so` request.
 
 	* NEWS: Document `pso` request's new handling of a leading
 	neutral double quote.
@@ -13306,7 +13338,7 @@
 2024-11-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[soelim]: Read argument to `so` request in a more GNU troff-ish
-	fashion (and a more AT&T troff-ish fasion, if one considers the
+	fashion (and a more AT&T troff-ish fashion, if one considers the
 	`ds` and `as` requests).  Accept but discard a leading double
 	quote to permit embedding of leading spaces in the file name,
 	and accept unescaped literal spaces in argument.
@@ -13789,7 +13821,7 @@
 	`init_size_table()` and `dump_size_table()` to
 	`init_size_list()` and `dump_size_list()`.
 	* src/roff/troff/env.cpp: Update definition, call, and
-	derefernce sites in the global scope and...
+	dereference sites in the global scope and...
 	(font_size::init_size_list, font_size::dump_size_list):
 	(font_size::font_size, override_sizes, environment::print_env):
 	...here.
@@ -14358,7 +14390,7 @@
 
 	* src/preproc/tbl/table.cpp: Add C preprocessor macro storing
 	the name of a groff register for saving the state of line
-	numering enablement.
+	numbering enablement.
 	(table::init_output): Save the value of the `.nm` register to
 	this groff register.
 	(table::do_bottom): Test the value of that register (instead of
@@ -16231,7 +16263,8 @@
 2024-08-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* font/devascii/R.proto: Map `ad` (dieresis accent) special
-	charcter as yet another alias of `"` on the ASCII output device.
+	character as yet another alias of `"` on the ASCII output
+	device.
 
 2024-08-23  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -17633,7 +17666,7 @@
 
 	* src/roff/troff/number.cpp (vunits::vunits, hunits::hunits):
 	Move common subexpression to a temporary variable to prepare for
-	reuse in C23 checked artihmetic macros.
+	reuse in C23 checked arithmetic macros.
 
 2024-07-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -17782,7 +17815,7 @@
 2024-07-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/number.cpp (is_valid_term): Trivially refactor;
-	simplify tautologus Boolean expression.
+	simplify tautologous Boolean expression.
 
 2024-07-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -19005,8 +19038,8 @@
 	`int` to `bool`.
 
 	* src/roff/troff/env.h: Do it.
-	* src/roff/troff/env.cpp (do_underline): Do it.  Rename paramter
-	from `underline_spaces` to `want_spaces_underlined`.
+	* src/roff/troff/env.cpp (do_underline): Do it.  Rename
+	parameter from `underline_spaces` to `want_spaces_underlined`.
 
 	* src/roff/troff/env.h (class environment): Update friend
 	access.
@@ -19545,7 +19578,7 @@
 	* font/devps/TBI:
 	* font/devps/TI:
 	* font/devps/TR:
-	* font/devps/ZCMI: Regenerate with updated aftmtodit.pl.
+	* font/devps/ZCMI: Regenerate with updated afmtodit.pl.
 
 	* man/groff_font.5.man: Document use of comment field to hold
 	UTF-16 code.
@@ -19780,7 +19813,8 @@
 	macro instead of hand-crafting diagnostic message with `tm`
 	request.
 
-	* tmac/doc.tmac (Bl): Drop unneccessary argumentless `tm` request.
+	* tmac/doc.tmac (Bl): Drop unnecessary argumentless `tm`
+	request.
 	(doc-Bl-usage): Use three single-line `doc-report-usage`
 	requests instead of writing a six-line diagnostic.  Both are
 	regrettable--`Bl` is just crazily complex.
@@ -20281,7 +20315,7 @@
 
 	* src/roff/troff/env.cpp: Add support for read-only numeric
 	registers backed by unsigned integer values.  Define new type
-	alias `UNSIGNED_FUNCP`.  Define new C++ prepreprocessor macro
+	alias `UNSIGNED_FUNCP`.  Define new C++ preprocessor macro
 	`init_unsigned_env_reg`, paralleling `init_int_env_reg`.
 	(class unsigned_env_reg): Add new class; just like `int_env_reg`
 	except it's for use with "unsigned int" member variables.
@@ -22223,7 +22257,7 @@
 	`missing`.
 
 	(mount_font_at_position, associate_style_with_font_position):
-	Report invalid font mounting position in error diagostic.
+	Report invalid font mounting position in error diagnostic.
 
 	(associate_style_with_font_position): Throw warning in category
 	`missing` if given only one argument.
@@ -22272,7 +22306,7 @@
 	(init_input_requests): Update call site.
 
 	(set_character_flags): Declare as `static`; this function
-	doesn't need external visibility.  Throw warning diagnositc when
+	doesn't need external visibility.  Throw warning diagnostic when
 	no character arguments are present.
 
 2023-11-27  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -22888,7 +22922,7 @@
 	strings.
 
 	* src/libs/libgroff/color.cpp: Construct `default_color` with
-	empty string instead of leaving uninitalized.  Problem appears
+	empty string instead of leaving uninitialized.  Problem appears
 	to date back to commit ea5a42d080, 2002-01-24.
 
 	Fixes <https://savannah.gnu.org/bugs/?64421>.  Thanks to Günther
@@ -23648,7 +23682,7 @@
 	GNU Bison.  Drop mention of "COPYING" file, which is not
 	installed by groff's "install" make(1) target and not sufficient
 	information to aid users of groff packages prepared by
-	distributors (which neverless are legally bound to provide
+	distributors (which nevertheless are legally bound to provide
 	licensing information via some means, and do so with high
 	reliability).  After almost 35 years, we can have some hope that
 	people have heard of the GNU GPL and can locate a copy of it
@@ -24766,7 +24800,7 @@
 
 	* configure.ac: Correct characterization of the list of macro
 	packages reported.  It is not the list of macro packages
-	receiving a "g" prefix, but the list of macro packages reciving
+	receiving a "g" prefix, but the list of macro packages receiving
 	a wrapper macro file in groff's macro directory, each of which
 	sources the corresponding system (likely AT&T-descended troff)
 	macro package.  Fixes wording I introduced in commit 4d30dd7424,

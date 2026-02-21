@@ -883,7 +883,7 @@ can locate all 35 fonts of the PostScript Level 2 standard
 on the file system
 along with their corresponding font metrics (AFM) files.
 .
-The Adobe-compatible unnamed foundry
+The Adobe-compatible unnamed (default) foundry
 supports up to 256 glyphs in each typeface.
 .
 Fonts from the URW foundry
@@ -891,6 +891,13 @@ Fonts from the URW foundry
 are compatible extensions of the Adobe fonts
 with extended glyph coverage,
 including support for Cyrillic script.
+.
+.IR groff 's
+build process uses
+.MR afmtodit @MAN1EXT@
+to generate font description files
+from the URW foundry's AFM files;
+see section \[lq]Files\[rq] below.
 .
 .
 .IP \[bu]
@@ -901,7 +908,14 @@ when
 can locate all 35 fonts of the PostScript Level 2 standard
 but not their corresponding font metrics (AFM) files.
 .
-Glyph coverage is reduced to 256 glyphs maximum from each face,
+.IR groff 's
+build process copies the font description files
+from those for the
+.MR grops @MAN1EXT@
+driver,
+reusing them for
+.IR \%gropdf ;
+this reduces glyph coverage to 256 glyphs maximum from each face,
 and the \[lq]U\[rq] foundry is unavailable.
 .
 .
@@ -912,7 +926,11 @@ results when
 cannot locate all 35 fonts of the PostScript Level 2 standard.
 .
 Only the base 14 fonts of the PDF standard are available,
-and only in the sense that the formatter can use their metrics.
+and only in the sense that the formatter can use their metrics
+(copied from
+.MR grops
+font descriptions
+as described above).
 .
 Use of the
 .B \-e

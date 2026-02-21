@@ -657,7 +657,7 @@ while (<>)
 	}
 
 	$lin=~s/^\s+//;
-	next if !$lin;
+	next if $lin eq '';
 #	$lin=~s/\s#.*?$//;	# remove comment
 	$stream.="\% $_\n" if $debug;
 

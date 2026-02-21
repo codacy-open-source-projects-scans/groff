@@ -26,7 +26,7 @@ wail () {
     fail=YES
 }
 
-# Unit-test LB macro mark-format argument.
+# Unit-test LB macro mark-or-format argument.
 
 input='.
 .P

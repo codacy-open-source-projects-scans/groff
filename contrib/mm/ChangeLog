@@ -1,3 +1,17 @@
+2026-02-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tests/LB-mark-format-works.sh: Rename this...
+	* tests/LB-mark-or-format-argument-works.sh: ...to this, for
+	clarity.  The `LB` macro's optional fifth argument does not
+	configure the format _of_ a mark, but rather is ambiguously
+	typed; it can be a mark string _or_ an argument to the `af`
+	request.
+	* mm.am (mm_TESTS): Track rename.
+
+2026-02-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (ML): Remove temporary string under its correct name.
+
 2026-02-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (ML): Honor third argument again.

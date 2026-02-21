@@ -67,7 +67,7 @@ EXTRA_DIST += \
 
 mm_TESTS = \
   contrib/mm/tests/Captc-string-translates.sh \
-  contrib/mm/tests/LB-mark-format-works.sh \
+  contrib/mm/tests/LB-mark-or-format-argument-works.sh \
   contrib/mm/tests/LT-BL-spaces-before-date.sh \
   contrib/mm/tests/LT-SP-AU-without-AT-works.sh \
   contrib/mm/tests/LT-SP-multi-word-LO-SJ-works.sh \

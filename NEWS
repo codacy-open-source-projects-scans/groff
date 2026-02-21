@@ -938,7 +938,8 @@ Miscellaneous
    also silences the lengthy warning the script issues when these fonts
    and their metric files are not found.  Configuring without URW font
    support reduces the gropdf(1) output driver's functionality; see
-   subsection "URW font support" of that man page for details.
+   subsection "Feature service levels and URW font support" of that man
+   page for details.
 
 *  You can now specify any paper format you like--including the file
    specification "/etc/papersize" for systems using "libpaper"--as the

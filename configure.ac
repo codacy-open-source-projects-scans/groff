@@ -189,6 +189,9 @@ AM_CONDITIONAL([USE_GROFF_ALLOCATOR],
 AM_CONDITIONAL([HAVE_GHOSTSCRIPT], [test "$GHOSTSCRIPT" != no \
                 && test "$GHOSTSCRIPT" != missing])
 AM_CONDITIONAL([HAVE_URW_FONTS], [test "$groff_have_urw_fonts" = yes ])
+AM_CONDITIONAL([HAVE_URW_FONTS_OR_HAVE_GHOSTSCRIPT], [test "$groff_have_urw_fonts" = yes \
+                || (test "$GHOSTSCRIPT" != no \
+                && test "$GHOSTSCRIPT" != missing)])
 AM_CONDITIONAL([HAVE_MAKEINFO], [test "$groff_have_makeinfo" = yes ])
 AM_CONDITIONAL([HAVE_TEXI2DVI], [test "$groff_have_texi2dvi" = yes ])
 AM_CONDITIONAL([USE_TEX], [test "$groff_use_tex" = yes ])
