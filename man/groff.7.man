@@ -1541,12 +1541,14 @@ see section \[lq]Control structures\[rq] below.
 .
 .P
 A few requests cause a break implicitly;
-use the no-break control character to prevent the break.
+invoke them with the no-break control character
+to prevent the break.
 .
 Break suppression is its sole behavioral distinction.
 .
-Employing the no-break control character to invoke requests that don't
-cause breaks is harmless but poor style.
+Employing the no-break control character
+to invoke requests that don't cause breaks
+is harmless but poor style.
 .
 .
 .P
@@ -2134,7 +2136,7 @@ to spring that trap even if the page has already started
 .
 .
 .\" TODO: Add sections here about characters (including custom
-.\" defintions with the `char` request family) and fonts (including
+.\" definitions with the `char` request family) and fonts (including
 .\" special fonts and the character resolution process).
 .\" ====================================================================
 .SH "Control structures"
@@ -3913,7 +3915,7 @@ special,
 or indexed characters)
 as a
 .I "hyphenation exception word"
-such that each occurence of a hyphen-minus
+such that each occurrence of a hyphen-minus
 .RB \[lq] \- \[rq]
 in
 .I word
@@ -8034,7 +8036,7 @@ Whereas a
 is an abstraction of semantic information,
 a
 .I glyph
-is an intelligble mark visible on screen or paper.
+is an intelligible mark visible on screen or paper.
 .
 A character has many possible representation forms;
 for example,
@@ -8102,7 +8104,7 @@ or
 escape sequence syntax,
 where
 .I xxx
-is an identifer.
+is an identifier.
 .
 An
 .I "indexed character"
@@ -8716,7 +8718,7 @@ The escape character
 by default)
 when used before itself
 .I quotes
-an escape character for later interpreation
+an escape character for later interpretation
 in an enclosing context.
 .
 Escape character quotation enables you to control
@@ -8802,7 +8804,7 @@ Macro definitions can be nested to arbitrary depth.
 Given the input character sequence
 .RB \[lq] \|\[rs]\[rs] \[rq]
 in a macro or string definition,
-the formatter interpets each escape character in multiple contexts;
+the formatter interprets each escape character in multiple contexts;
 once,
 when populating the macro or string,
 where the first

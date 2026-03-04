@@ -9,8 +9,8 @@
 This file describes recent user-visible changes in groff.  Bug fixes are
 not described.  There are more details in the man and info pages.
 
-VERSION 1.24.0 release candidate
-================================
+VERSION 1.24.0
+==============
 
 Noteworthy incompatible changes
 -------------------------------
@@ -150,6 +150,10 @@ troff
    `hpf`, `hpfa`, `lf`, `mso`, `msoquiet`, `nx`, `so`, `soquiet`, and
    `trf` requests, and the second argument to the `open` and `opena`
    requests.  See "soelim" below.
+
+*  The foregoing two changes make the syntax of the listed requests
+   consistent with that of `ds`, `as`, and others that take arguments
+   that the formatter reads to the next newline.
 
 *  The "number" warning category has been withdrawn.  The diagnostic
    that formerly used it has been promoted to an error.
@@ -921,7 +925,7 @@ Miscellaneous
 *  Support for terminal devices using the CCSID 1047 (EBCDIC) encoding
    has been withdrawn.  This change partially clears the way for GNU
    troff to interpret UTF-8 input directly (without preconv(1)
-   preprocessor usage) in the future.  Use iconv(1) to covert a code
+   preprocessor usage) in the future.  Use iconv(1) to convert a code
    page 1047 document to US-ASCII or ISO Latin-1 prior to its input to
    GNU troff.  preconv(1), and therefore groff(1)'s `-k` and `-K`
    options, can do this as well if preconv is built with iconv support.

@@ -43,7 +43,7 @@ usage: mmroff [-x] [groff-argument ...]
 usage: mmroff --version
 usage: mmroff --help
 
-$progname is a simple wrapper for groff(1), used to expand cross
+$progname is a simple wrapper for groff(1), used to expand internal
 references in mm documents; see groff_mm(7).  It also handles the
 inclusion of PostScript images.  Documents that do not use these
 features of groff mm (the INITI, IND, INDP, INITR, SETR, GETHN, GETPN,

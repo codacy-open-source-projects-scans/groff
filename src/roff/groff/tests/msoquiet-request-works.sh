@@ -28,7 +28,7 @@ set -e
 if ! unset GROFF_ENCODING
 then
     echo "unable to clear environment; skipping" >&2
-    exit 77
+    exit 77 # skip
 fi
 
 DOC='.msoquiet nonexistent'

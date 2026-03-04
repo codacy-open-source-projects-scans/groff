@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2021-2025 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -16,25 +16,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+neqn="${abs_top_builddir:-.}/neqn"
+
+# Unit-test basic neqn execution.  Regression-test Savannah #68115.
+
+input='.
+.EQ
+P V mark = n R T
+.EN
+.sp
+.EQ
+E lineup = m c sup 2
+.EN
+.'
+
+output=$(echo "$input" | "$neqn")
+printf "%s\n" "$output"
+# At the time of this writing, GNU eqn initializes the `MK` register
+# even if a mark isn't used.  Our input ensures that it is.
 #
+# There is a space and a tab between the brackets.
+printf "%s\n" "$output" | grep -q '^\.[ 	]*nr MK'
 
-groff="${abs_top_builddir:-.}/test-groff"
-
-set -e
-
-# Keep preconv from being run.
-#
-# The "unset" in Solaris /usr/xpg4/bin/sh can actually fail.
-if ! unset GROFF_ENCODING
-then
-    echo "$0: unable to clear environment; skipping" >&2
-    exit 77 # skip
-fi
-
-DOC='.soquiet nonexistent'
-
-OUTPUT=$(echo "$DOC" | "$groff" -Tascii 2>&1)
-echo "$OUTPUT"
-
-echo "testing that .soquiet of nonexistent file produces no error" >&2
-test -z "$OUTPUT"
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

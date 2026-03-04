@@ -3388,7 +3388,7 @@ an extension whose name originated in DWB
 .IR troff ,\" DWB
 is deprecated;
 .IR groff 's
-implementation differs.
+interface differs.
 .
 Neither can easily be used to annotate options
 that take optional arguments

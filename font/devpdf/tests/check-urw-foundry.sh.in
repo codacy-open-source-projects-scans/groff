@@ -27,7 +27,7 @@ urwfontsdir=@urwfontsdir@
 
 if [ -z "$urwfontsdir" ]
 then
-    echo "URW fonts not found at configuration time; skipping" >&2
+    echo "$0: URW fonts not found at configuration time; skipping" >&2
     exit 77 # skip
 fi
 

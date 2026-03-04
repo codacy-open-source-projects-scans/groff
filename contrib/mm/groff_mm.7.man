@@ -779,7 +779,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B AL
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and
@@ -1119,7 +1122,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B BL
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and
@@ -1183,7 +1189,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B BVL
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and
@@ -1306,7 +1315,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B DL
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and
@@ -1773,7 +1785,7 @@ captions this list.
 Start footnote.
 .
 .I mm
-collects input into a footnote until the document calls,
+collects input into a footnote until the document calls
 .BR FE ,
 outputting it when the vertical drawing position nears the page bottom.
 .
@@ -1832,6 +1844,10 @@ if
 is specified,
 store it there.
 .
+In neither case does
+.B GETHN
+suffix the interpolation with space.
+.
 See
 .BR INITR .
 .
@@ -1847,6 +1863,10 @@ if
 .I string
 is specified,
 store it there.
+.
+In neither case does
+.B GETPN
+suffix the interpolation with space.
 .
 See
 .BR INITR .
@@ -1884,6 +1904,10 @@ if
 .I string
 is specified,
 store it there.
+.
+In neither case does
+.B GETST
+suffix the interpolation with space.
 .
 See
 .BR INITR .
@@ -2851,7 +2875,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B ML
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and
@@ -3426,7 +3453,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B RL
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and
@@ -4109,7 +4139,10 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-Use
+.B RL
+calls
+.BR LB ;
+use
 .B LI
 to declare list items,
 and

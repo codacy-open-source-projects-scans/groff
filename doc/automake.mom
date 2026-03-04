@@ -500,7 +500,7 @@ Makefile.am.
 .PP
 This approach has the disadvantage of making dependencies harder
 to resolve: each Makefile does not know the targets of the other
-Makfiles.  It also makes the build slower.
+Makefiles.  It also makes the build slower.
 .
 .HEADING 2 "Non-recursive make used by the Groff project"
 .
@@ -716,7 +716,7 @@ There is 1 uninstall local rule: `uninstall-local'.
 There are no guarantees on the order of execution of these local
 rules.  An example of local rule is the installation of GXditview.ad
 and GXditview-color.ad files in src/devices/xditview/xditview.am: if
-theses files are already installed, the old files are first saved.
+these files are already installed, the old files are first saved.
 Also, the final file that is installed is stripped from its \&.ad
 suffix.  Thus the usage of a custom rule rather than the definition
 of a \*[CODE]xxx_DATA\*[CODE OFF] variable:

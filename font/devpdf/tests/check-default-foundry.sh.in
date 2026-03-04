@@ -85,8 +85,8 @@ test -z "$fail" || exit
 
 if [ "$ghostscript" = no ] || [ "$ghostscript" = missing ]
 then
-    echo "Ghostscript not available; skipping check for any further" \
-         "fonts in the default foundry" >&2
+    echo "$0: Ghostscript not available; skipping check for any" \
+        "further fonts in the default foundry" >&2
     exit 77 # skip
 fi
 
@@ -94,13 +94,13 @@ foundry="$devpdf_fontbuilddir"/Foundry
 
 if ! test -f "$foundry"
 then
-    echo "cannot locate Foundry file at $foundry" >&2
+    echo "$0: cannot locate Foundry file at '$foundry'" >&2
     exit 99 # hard error
 fi
 
 if ! grep -q "BEGIN URW" "$foundry"
 then
-    echo "URW fonts not available; skipping check for any further" \
+    echo "$0: URW fonts not available; skipping check for any further" \
          "fonts in the default foundry" >&2
     exit 77 # skip
 fi

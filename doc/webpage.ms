@@ -55,6 +55,15 @@ Home of Groff (GNU Troff).
 .
 .HR
 .
+.LP
+This document is an
+.B example
+of HTML document composition using
+.I groff ;
+some information and URL hyperlinks may be out of date.
+.
+.HR
+.
 .LNS
 .
 .DC T HIS mydarkred
@@ -86,7 +95,7 @@ and its mirrors;
 the current development version is available from a
 .URL "https://\:savannah.gnu.org/\:git/\:?group=groff" "git repository" .
 .
-The current version is 1.23.0 (March 2023).
+The current version is 1.24.0 (February 2026).
 
 To view the git repository in your browser, use
 .URL "http://\:git.savannah.gnu.org/\:cgit/\:groff.git" \

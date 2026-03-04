@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# A very simple function test for gdiffmk.sh.
-#
 # Copyright 2004-2023 Free Software Foundation, Inc.
 #
 # Written by Mike Bianchi <MBianchi@Foveal.com>
@@ -23,7 +21,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# This file is part of GNU gdiffmk.
+
+# A very simple function test for gdiffmk.sh.
 
 # abs_top_out_dir is set by AM_TESTS_ENVIRONMENT (defined in
 # Makefile.am) when running "make check".
@@ -32,7 +31,7 @@ gdiffmk=${abs_top_out_dir:-.}/gdiffmk
 
 if ! diff -Dx /dev/null /dev/null >/dev/null 2>&1
 then
-    echo "$0: diff command does not support -D option" >&2
+    echo "$0: diff command does not support -D option; skipping" >&2
     exit 77 # skip
 fi
 
@@ -58,7 +57,7 @@ done
 # If we can't find it, we can't test.
 if [ -z "$in_dir" ]
 then
-    echo "$0: cannot locate test artifact input directory" >&2
+    echo "$0: cannot locate test artifact input directory; skipping" >&2
     exit 77 # skip
 fi
 
@@ -78,7 +77,7 @@ done
 # If we can't find it, we can't test.
 if [ -z "$out_dir" ]
 then
-    echo "$0: cannot locate test artifact output directory" >&2
+    echo "$0: cannot locate test artifact output directory; skipping" >&2
     exit 77 # skip
 fi
 
@@ -193,4 +192,4 @@ CleanUp
 
 exit ${exit_code}
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

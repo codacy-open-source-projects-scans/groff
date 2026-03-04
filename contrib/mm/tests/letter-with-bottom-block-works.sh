@@ -44,7 +44,11 @@ do
 done
 
 # If we can't find it, we can't test.
-test -z "$artifacts_dir" && exit 77 # skip
+if [ -z "$artifacts_dir" ]
+then
+    echo "$0: cannot locate test artifact directory; skipping" >&2
+    exit 77 # skip
+fi
 
 input='.
 .BS

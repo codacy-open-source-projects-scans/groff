@@ -1,6 +1,6 @@
 .TH mmroff @MAN1EXT@ "@MDATE@" "groff @VERSION@"
 .SH Name
-mmroff \- cross-referencing front end for GNU
+mmroff \- reference- and PostScript inclusion-handling front end for GNU
 .I roff mm
 macro package
 .
@@ -82,7 +82,7 @@ macro package
 .I mmroff
 is a simple wrapper for
 .IR groff ,
-used to expand cross references in
+used to expand internal references in
 .I m@TMAC_M_PREFIX@m
 documents;
 see
@@ -97,8 +97,7 @@ first with
 .B \-z
 and
 .B \-rRef=1
-to populate cross-reference and index files with their corresponding
-entries,
+to populate reference and index files with their corresponding entries,
 and then without to produce the document.
 .
 It also handles the inclusion of PostScript images with the
@@ -139,7 +138,7 @@ both exit afterward.
 .
 .TP
 .B \-x
-Create or update the cross-reference file and exit.
+Create or update the reference list file and exit.
 .
 .
 .\" ====================================================================
@@ -189,7 +188,7 @@ options were specified,
 or if
 .B \-x
 was specified and the program successfully
-created or updated the cross-reference file.
+created or updated the reference list file.
 .
 It exits with status
 .B 1

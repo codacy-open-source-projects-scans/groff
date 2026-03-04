@@ -49,6 +49,7 @@ This file summarizes the structure of the groff source distribution.
   gpinyin       Use Hanyu Pinyin input to compose groff documents.
   grap2graph    Convert grap(1) diagrams into graphical images.
   hdtbl         A sophisticated table macro package.
+  install-font  Make more fonts available to gropdf(1) and grops(1).
   mm            The groff memorandum macro package.
   mom           Peter Schaffter's "mom", a friendly groff macro package.
   pic2graph     Convert pic(1) diagrams into graphical images.

@@ -467,7 +467,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle February 2026
+@subtitle March 2026
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -7962,10 +7962,13 @@ only at the beginning of an input line,
 or at the beginning of a branch of a control structure request;
 see @ref{Conditionals and Loops}.
 
-A few requests cause a break implicitly; use the no-break control
-character to prevent the break.  Break suppression is its sole
-behavioral distinction.  Employing the no-break control character to
-invoke requests that don't cause breaks is harmless but poor style.
+A few requests cause a break implicitly;
+invoke them with the no-break control character
+to prevent the break.
+Break suppression is its sole behavioral distinction.
+Employing the no-break control character
+to invoke requests that don't cause breaks
+is harmless but poor style.
 @xref{Manipulating Filling and Adjustment}.
 
 @cindex control character, changing (@code{cc})
@@ -8868,9 +8871,18 @@ the @code{\R} escape sequence.
 
 @DefreqList {nr, ident value}
 @DefescListEndx {\\R, @code{'}, ident value, @code{'}}
-Set register @var{ident} to @var{value}.  If @var{ident} doesn't exist,
-GNU @code{troff} creates it.  In the @code{\R} escape sequence, the
-delimiter need not be a neutral apostrophe; see @ref{Delimiters}.
+Set register
+@var{ident}
+to
+@var{value}.
+If
+@var{ident} doesn't exist,
+the formatter creates it.
+In the
+@code{\R}
+escape sequence,
+the delimiter need not be a neutral apostrophe;
+see @ref{Delimiters}.
 
 @Example
 .nr a (((17 + (3 * 4))) % 4)
@@ -9965,7 +9977,7 @@ special,
 or indexed characters)
 as a
 @dfn{hyphenation exception word}
-such that each occurence of a hyphen-minus
+such that each occurrence of a hyphen-minus
 `-'
 in
 @var{word}
@@ -12567,7 +12579,7 @@ Whereas a
 is an abstraction of semantic information,
 a
 @dfn{glyph}
-is an intelligble mark visible on screen or paper.
+is an intelligible mark visible on screen or paper.
 A character has many possible representation forms;
 for example,
 the character `A'
@@ -12669,7 +12681,7 @@ or
 escape sequence syntax,
 where
 @var{xxx}
-is an identifer.
+is an identifier.
 An
 @dfn{indexed character}
 bypasses most character-to-glyph resolution logic,
@@ -14544,7 +14556,7 @@ interpolates the post-vertical spacing.
 When configuring the type size,
 AT&T
 @command{troff} @c AT&T
-ignored scaling units and intepreted all measurements in points.
+ignored scaling units and interpreted all measurements in points.
 Combined with integer arithmetic,
 this design choice made it impossible to support,
 for instance,
@@ -16560,7 +16572,7 @@ The escape character
 by default)
 when used before itself
 @dfn{quotes}
-an escape character for later interpreation
+an escape character for later interpretation
 in an enclosing context.
 Escape character quotation enables you to control
 whether the formatter interprets a given
@@ -16691,7 +16703,7 @@ This understeer is getting
 @endExample
 
 As seen above,
-the formatter interpets each escape character in multiple contexts;
+the formatter interprets each escape character in multiple contexts;
 once,
 when populating the macro or string,
 where the first
@@ -16978,7 +16990,7 @@ regarding the trailing
 An input backspace becomes a negative horizontal motion
 of one word space;
 recall @ref{Manipulating Filling and Adjustment}.
-This feature persists for backward compatibiity
+This feature persists for backward compatibility
 with early formatters that predate
 @command{nroff} @c generic
 and even Unix itself,
@@ -21931,7 +21943,7 @@ The escape sequences
 @code{\s},
 and
 @code{\S}
-are transparent to control charcter recognition
+are transparent to control character recognition
 at the beginning of a line,
 or after the conditional expression of an
 @code{if}
@@ -22431,7 +22443,7 @@ and an argument reduces the report to a sum of the above in the same
 units.
 GNU
 @command{troff} @c GNU
-reports ther lengths in characters or nodes if given no arguments,
+reports their lengths in characters or nodes if given no arguments,
 and otherwise dumps
 the @acronym{JSON}-encoded name,
 contents,
@@ -22868,7 +22880,7 @@ directive.
 
 @item unitwidth @var{n}
 @kindex unitwidth
-Arbitary basis with respect to which font metrics are proportionally
+Arbitrary basis with respect to which font metrics are proportionally
 scaled when rendering glyphs at a type size of one point.
 
 @item unscaled_charwidths

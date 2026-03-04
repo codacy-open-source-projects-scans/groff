@@ -1871,7 +1871,7 @@ as text in the document as well.
 Create a hotspot link to
 .I uri,
 a World Wide Web
-Universal Resource Identifer (URI).
+Universal Resource Identifier (URI).
 .
 .\" XXX: Nope--pdf.tmac formats "Unknown" as the link text instead.  See
 .\" Savannah #67916.

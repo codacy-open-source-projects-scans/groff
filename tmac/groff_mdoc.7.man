@@ -541,7 +541,7 @@ and
 .Sq \[ti] .
 .
 .Xr groff_char @MAN7EXT@
-presents the formatter's special character identifers,
+presents the formatter's special character identifiers,
 annotating those that are portable to legacy systems.
 .
 Section

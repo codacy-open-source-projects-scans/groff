@@ -41,7 +41,11 @@ do
 done
 
 # If we can't find it, we can't test.
-test -z "$examples_dir" && exit 77 # skip
+if [ -z "$examples_dir" ]
+then
+    echo "$0: cannot locate examples directory; skipping" >&2
+    exit 77 # skip
+fi
 
 # Locate directory containing our test artifacts.
 artifacts_dir=
@@ -57,7 +61,11 @@ do
 done
 
 # If we can't find it, we can't test.
-test -z "$artifacts_dir" && exit 77 # skip
+if [ -z "$examples_dir" ]
+then
+    echo "$0: cannot locate test artifacts directory; skipping" >&2
+    exit 77 # skip
+fi
 
 input="$examples_dir"/letter.mm
 

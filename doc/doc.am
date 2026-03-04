@@ -401,25 +401,34 @@ doc/webpage.ps: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 #	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 #	&& $(DOC_GROFF) -Tps -ms $< >$@
 
+# XXX: We have to change directories into `doc_builddir` because
+# pre-grohtml assumes that the argument to post-grohtml's `-D` option is
+# a file specification resolvable relative to HTML "<img src=...>"
+# elements, which is inflexible, and prevents us from writing to
+# "$@.tmp".
 doc/pic.html: eqn pic tbl
 doc/pic.html: tmac/www.tmac
 doc/pic.html: $(doc_srcdir)/pic.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) $(doc_builddir) \
-	&& $(DOC_GROFF) -pet -P-Ipic -P-Ddoc/img -P-jdoc/pic -Thtml \
-	  -ms $(doc_srcdir)/pic.ms > $@.tmp \
-	  && mv $@.tmp $@
+	&& cd $(doc_builddir) \
+	&& $(DOC_GROFF) -pet -P-Ipic -P-Dimg -P-jpic -Thtml -ms \
+	  $(doc_srcdir)/pic.ms > pic.html.tmp
+	$(AM_V_at)mv $@.tmp $@
 
 # groff(1)'s `-I` implies `-g` and `-s`, so we must depend on grn and
 # soelim even though the document doesn't require them.
+#
+# XXX: See XXX comment before "pic.html" target above.
 doc/webpage.html: grn soelim
 doc/webpage.html: $(DOC_GNU_EPS) tmac/www.tmac tbl
 doc/webpage.html: $(doc_srcdir)/groff.css
 doc/webpage.html: $(doc_srcdir)/webpage.ms $(TMAC_PACKAGE_MS)
 	$(GROFF_V)$(MKDIR_P) $(doc_builddir) \
-	&& $(DOC_GROFF) -t -I $(doc_srcdir) -P-jdoc/webpage -P-nrb \
-	  -P-Iwebpage -P-Ddoc/img -Thtml -ms $(doc_srcdir)/webpage.ms \
-	  > $@.tmp \
-	  && mv $@.tmp $@
+	&& cd $(doc_builddir) \
+	&& $(DOC_GROFF) -t -I $(doc_srcdir) -I $(doc_builddir) \
+	  -P-jwebpage -P-nrb -P-Iwebpage -P-Dimg -Thtml -ms \
+	  $(doc_srcdir)/webpage.ms > webpage.html.tmp
+	$(AM_V_at)mv $@.tmp $@
 
 # We remove groff.css only from an out-of-source build tree.
 mostlyclean-local: mostlyclean_doc

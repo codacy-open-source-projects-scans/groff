@@ -1954,7 +1954,7 @@ does.
 GNU
 .IR eqn 's\" GNU
 rendering parameters
-(see section \[lq]Customziation\[rq] above)
+(see section \[lq]Customization\[rq] above)
 have no effect on generated MathML.
 .
 .

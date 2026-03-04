@@ -62,7 +62,7 @@
 
 	* m.tmac (LB): Fix spurious warnings.  Refactor to clarify
 	logic, since I proved inadequate to the task of penetrating its
-	dialect before.  Document expected range of fourth macro
+	dialect before.  Annotate expected range of fourth macro
 	argument.  Assign register format to registers used as list item
 	enumerators in one place instead of three.  Introduce new
 	temporary register `li*mf-is-mark` to elucidate the peculiar

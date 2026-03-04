@@ -98,7 +98,7 @@ It copies each
 contents to the standard output stream,
 transforming each
 .I "table region"
-between lines sarting with
+between lines starting with
 .B .TS
 and
 .B .TE

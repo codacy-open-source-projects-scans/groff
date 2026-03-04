@@ -30,8 +30,7 @@ wail () {
 # Unit-test synchronization between the formatter's "current language"
 # (global) and the hyphenation language code in the current environment.
 #
-# See comment prior to `environment_copy()` definition in
-# "src/roff/troff/env.cpp".
+# See Savannah #66387 and #66392.
 
 input='.
 .tm 1 en=\n[.hla]

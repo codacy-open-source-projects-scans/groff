@@ -72,7 +72,7 @@ Creation of PDF and (X)HTML output requires Ghostscript.  Production of
 
 Production of PDF output using the "gropdf" output driver requires Perl.
 (You can alternatively produce PostScript with "grops" and convert that
-to PDF using Ghostscipt.)  The "chem", "gperl", and "gpinyin"
+to PDF using Ghostscript.)  The "chem", "gperl", and "gpinyin"
 preprocessors, and several utilities, such as "grog", are also written
 in Perl.
 

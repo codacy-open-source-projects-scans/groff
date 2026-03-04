@@ -31,7 +31,7 @@ ret=0
 if [ "$gs_program" = "missing" ]
 then
    echo "Ghostscript program missing; skipping" >&2
-   exit 77
+   exit 77 # skip
 fi
 
 # $1 file, $2 expected number of pages

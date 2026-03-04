@@ -111,7 +111,7 @@ test -z "$fail" || exit
 
 if ! command -v pdftotext >/dev/null
 then
-    echo "cannot locate 'pdftotext' command" >&2
+    echo "$0: cannot locate 'pdftotext' command; skipping" >&2
     exit 77 # skip
 fi
 

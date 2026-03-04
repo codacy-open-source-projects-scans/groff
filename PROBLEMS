@@ -55,7 +55,7 @@ following line at each place where you expect the break to occur.
 
 ----------------------------------------------------------------------
 
-* I sometimes get errors from PNM utilties when using grohtml.
+* I sometimes get errors from PNM utilities when using grohtml.
     pnmcrop: The image is entirely background; there is nothing to crop.
 
 This appears to be a spurious warning, and given the same input to the
@@ -123,8 +123,8 @@ character escape sequences '\(mi' or '\[mi]'.
 
 ----------------------------------------------------------------------
 
-* Displaying an nroff document, including man page, on a terminal with/
-  without my favorite pager shows garbage.
+* Displaying an nroff document, including a man page, on a terminal
+  with/without my favorite pager shows garbage.
 
 groff's terminal output driver, grotty, by default uses ISO 6429/ECMA-48
 escape sequences understood by video terminals and their emulators,

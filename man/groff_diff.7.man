@@ -364,7 +364,7 @@ but produces no hyphen if the word breaks at that location.
 When configuring the type size,
 AT&T
 .I troff \" AT&T
-ignored scaling units and intepreted all measurements in points.
+ignored scaling units and interpreted all measurements in points.
 Combined with integer arithmetic,
 this design choice made it impossible to support,
 for instance,
