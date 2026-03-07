@@ -602,11 +602,11 @@ The default font family is
 .RB \[lq] T \[rq]
 (Times).
 .
-Select a different one
-by invoking
+To select a different one,
+invoke
 .IR groff 's
 .B fam
-request or using its
+request or use its
 .B \-f
 command-line option.
 .

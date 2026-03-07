@@ -9,7 +9,8 @@ font metrics
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2004-2024 Free Software Foundation, Inc.
+.\" Copyright 2004      Free Software Foundation, Inc.
+.\"           2021-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -139,7 +140,7 @@ creates a
 .I groff
 font description file in the current working directory
 (or that specified by the
-.B -d
+.B \-d
 option)
 named for each
 .I groff

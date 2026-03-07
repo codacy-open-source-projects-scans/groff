@@ -10,7 +10,8 @@ or MathML
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2014 Free Software Foundation, Inc.
+.\"           2020-2026 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -1765,6 +1766,45 @@ AT&T compatibility.
 .BI grfont\~ f
 .RI Select\~ f
 as the roman font.
+.
+.
+.\" ====================================================================
+.SS \f[I]roff\f[] interface
+.\" ====================================================================
+.
+The string
+.B 10
+stores the most recently formatted equation.
+.
+The register
+.B MK
+stores the horizontal drawing position of the most recently assigned
+mark.
+.
+Avoid using these names for any other purpose.
+.
+.
+.P
+GNU
+.I eqn \" GNU
+internally employs register,
+string,
+macro,
+and diversion names beginning with the
+.RB numeral\~ 0 .
+.
+(AT&T
+.I eqn \" AT&T
+used identifiers starting with the
+.RB numeral\~ 1 .)
+.\" TODO: Change GNU eqn to do the same, if we don't do the geqn* thing
+.\" below?
+.
+A document to be preprocessed with GNU
+.I eqn \" GNU
+should not use any such identifiers.
+.\" XXX: Why are they not named starting with "geqn*" or something?  GNU
+.\" eqn turns AT&T troff compatibility mode off anyway.
 .
 .
 .br

@@ -12426,11 +12426,24 @@ We can assign a font family to a margin character as follows
 @cindex @code{tkf} request, and font styles
 @cindex @code{uf} request, and font styles
 @cindex @code{fspecial} request, and font styles
-Associate an abstract style @var{style} with mounting
-position@tie{}@var{pos}, which must be a non-negative integer.  If the
-requests @code{cs}, @code{bd}, @code{tkf}, @code{uf}, or @code{fspecial}
-are applied to an abstract style, they are instead applied to the member
-of the default family corresponding to that style.
+Associate an abstract style
+@var{style}
+with mounting
+position@tie{}@var{pos},
+which must be a non-negative integer.
+@c BEGIN Keep parallel with subsection "Font families, abstract styles,
+@c and translation" of groff_diff(7).
+Applying the requests
+@code{cs},
+@code{bd},
+@code{tkf},
+@code{uf},
+or
+@code{fspecial}
+to an abstract style affects the member of the default family
+corresponding to that style.
+@c END Keep parallel with subsection "Font families, abstract styles,
+@c and translation" of groff_diff(7).
 
 @pindex DESC
 @kindex styles

@@ -187,6 +187,7 @@ request.
 .
 .
 .P
+.\" BEGIN Keep parallel with node "Font Families" in our Texinfo manual.
 Applying the requests
 .BR cs ,
 .BR bd ,
@@ -196,6 +197,7 @@ or
 .B \%fspecial
 to an abstract style affects the member of the default family
 corresponding to that style.
+.\" END Keep parallel with node "Font Families" in our Texinfo manual.
 .
 The default family can be set with the
 .B fam

@@ -2634,6 +2634,13 @@ causing a document's contents
 to be presented incomprehensibly
 or omitted entirely.
 .
+If your document uses formatter requests,
+or escape sequences not shown below,
+it accepts responsibility for restoring
+formatter state to what the
+.I man
+macro package expects.
+.
 .
 .P
 Do not put blank (empty) lines in a man page source document.
