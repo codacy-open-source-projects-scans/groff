@@ -2,7 +2,8 @@
 #
 # Copyright 2024 G. Branden Robinson
 #
-# This file is part of groff, the GNU roff typesetting system.
+# This file is part of mm, a reimplementation of the Documenter's
+# Workbench (DWB) troff memorandum macro package for use with GNU troff.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free

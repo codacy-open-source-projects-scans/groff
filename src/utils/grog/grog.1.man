@@ -198,8 +198,8 @@ or
 ISO\~Latin-1 (8859-1),
 we advise specifying a
 .I groff
-option to run the
-.MR preconv @MAN1EXT@;
+option to run
+.MR preconv @MAN1EXT@ ;
 see the
 .BR \-D ,
 .BR \-k ,

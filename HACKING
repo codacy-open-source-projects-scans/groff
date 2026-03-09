@@ -321,13 +321,17 @@ updates in multiple places.
 
 * Update the "NEWS" file.
 
-Adding a component in the "contrib" directory demands a further change.
+Adding a component in the "contrib" directory demands further change.
 
 * Add a "COPYRIGHT" file in its directory.  If that file makes reference
   to a separate license text that is _not_ the GPLv3 under which all
   files in groff are distributed (sometimes in conjuction with other
   licenses), such as GPLv2, also include a copy of that license in the
   same directory.
+
+* Add the aforementioned "COPYRIGHT" file and any separate license
+  text files it mentions to the `EXTRA_DIST` macro in the component's
+  "*.am" file.
 
 
 Writing tests

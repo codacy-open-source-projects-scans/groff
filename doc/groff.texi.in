@@ -21398,7 +21398,7 @@ or more for each inter-word space in a line.
 @DefreqList {warn, [@Var{n}]}
 @DefregListEndx {.warn}
 @cindex warning level (@code{warn})
-Select the categories, or ``types'', of reported warnings.
+Select categories of warnings to be reported.
 @var{n}@tie{}is the sum of the numeric codes associated with each
 warning category that is to be enabled; all other categories are
 disabled.  The categories and their associated codes are listed in

@@ -5566,7 +5566,7 @@ and does not contribute (directly) to output.
 The others alter the environment
 (see section \[lq]Environments\[rq] below).
 .
-See the \[lq]Gtroff Internals\[rq] section of the
+See the \[lq]GNU troff Internals\[rq] section of the
 .I groff
 Texinfo manual.
 .
@@ -6430,7 +6430,7 @@ escape sequences that produce horizontal or vertical motions,
 hyphenation breaks,
 or that are dummy characters may appear in strings
 or be converted to nodes,
-particularly in diversions. \" (@pxref{Gtroff Internals})
+particularly in diversions. \" (@pxref{GNU troff Internals})
 .
 These are not representable when interpolated directly into
 device-independent output,

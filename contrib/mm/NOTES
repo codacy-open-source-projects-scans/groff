@@ -6,6 +6,9 @@
 
 ######################################################################
 
+This file is part of mm, a reimplementation of the Documenter's
+Workbench (DWB) troff memorandum macro package for use with GNU troff.
+
 Beware!
 This may be old information. Trust only the source. :-)
 

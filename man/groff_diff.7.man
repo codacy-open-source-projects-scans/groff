@@ -87,7 +87,8 @@ implementation of AT&T
 .I troff \" AT&T
 features.
 .
-See
+The following discussion assumes familiarity with those features;
+see
 .MR roff @MAN7EXT@
 for background.
 .
@@ -109,7 +110,7 @@ features identifiers of arbitrary length;
 supports color output,
 non-integral type sizes,
 user-defined characters,
-and automatic hyphenation of languages other than English;
+and automatic hyphenation in languages other than English;
 adds more conditional expression operators;
 recognizes additional scaling units and arithmetic operators;
 enables general file I/O
@@ -1266,7 +1267,7 @@ escape sequences that produce horizontal or vertical motions,
 hyphenation breaks,
 or that are dummy characters may appear in strings
 or be converted to nodes,
-particularly in diversions. \" (@pxref{Gtroff Internals})
+particularly in diversions. \" (@pxref{GNU troff Internals})
 .
 When they occur in a device extension command,
 they produce warnings in category
@@ -2517,7 +2518,7 @@ processes
 .I contents
 in a temporary environment and encapsulates the result
 in a node
-(see section \[lq]Gtroff Internals\[rq] in
+(see section \[lq]GNU troff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
@@ -2610,7 +2611,7 @@ is to be interpolated as a string.
 .
 This request can be used repeatedly on the same
 .IR name ;
-see section \[lq]Gtroff Internals\[rq] in
+see section \[lq]GNU troff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
@@ -4575,9 +4576,7 @@ Vertical position trap enablement is global.
 .TP
 .BR .warn\~ [\c
 .IR n ]
-Select the categories,
-or \[lq]types\[rq],
-of reported warnings.
+Select categories of warnings to be reported.
 .
 .IR n \~is
 the sum of the numeric codes associated with each warning category that
@@ -6849,8 +6848,8 @@ inter-sentence space each to the nearest multiple of\~12.
 .
 .
 .\" TODO: A lot of this discussion should move to "Using Symbols" and
-.\" "Gtroff Internals" (or whatever those sections get named once ported
-.\" to this man page).
+.\" "GNU troff Internals" (or whatever those sections get named once
+.\" ported to this man page).
 .P
 GNU
 .I troff \" GNU
@@ -6978,7 +6977,7 @@ the new
 escape sequence.
 .
 See subsection \[lq]Escape sequences\[rq] above and sections
-\[lq]Diversions\[rq] and \[lq]Gtroff Internals\[rq] in
+\[lq]Diversions\[rq] and \[lq]GNU troff Internals\[rq] in
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff

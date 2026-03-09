@@ -1413,7 +1413,10 @@ plotters.
 Ossanna had passed away unexpectedly in 1977,
 and after the release of Version 7,
 with the C/A/T typesetter becoming supplanted by alternative devices
-such as the Mergenthaler Linotron 202,
+such as the
+Autologic APS-5
+and the
+Mergenthaler Linotron 202,
 Kernighan undertook a revision and rewrite of
 .I troff
 to generalize its design.
@@ -1484,14 +1487,15 @@ systems to that point.
 .I groff
 rapidly attracted contributors,
 and has served as a replacement for almost all applications of AT&T
-.I troff
-(exceptions include
+.I troff.
+.
+(Exceptions include
 .IR mv ,
 a macro package for preparation of viewgraphs and slides,
 and the
 .I ideal
 preprocessor,
-which produces diagrams from mathematical constraints).
+which produces diagrams from mathematical constraints.)
 .
 Beyond that,
 it has added numerous features;
@@ -1613,7 +1617,7 @@ arguments should be used to process it.
 .
 A typical
 .I roff
-document is prepared by running one or more processors in series,
+document is prepared by running one or more preprocessors in series,
 followed by a a formatter program and then an output driver
 (or \[lq]device postprocessor\[rq]).
 .

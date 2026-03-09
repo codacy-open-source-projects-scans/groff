@@ -1,6 +1,10 @@
     -*- text -*-
     Copyright 1989-2020 Free Software Foundation, Inc.
 
+    This file is part of mm, a reimplementation of the Documenter's
+    Workbench (DWB) troff memorandum macro package for use with GNU
+    troff.
+
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved.
