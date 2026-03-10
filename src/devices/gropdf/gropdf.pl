@@ -223,6 +223,12 @@ my %StdEnc=(
 
 unshift(@ARGV,split(' ',$ENV{GROPDF_OPTIONS})) if exists($ENV{GROPDF_OPTIONS});
 
+# Initialize random seed for reproducible builds.
+if (defined($ENV{SOURCE_DATE_EPOCH}))
+{
+    srand($ENV{SOURCE_DATE_EPOCH});
+}
+
 my $gotzlib=0;
 my $gotinline=0;
 my $gotexif=0;

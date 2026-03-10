@@ -1,3 +1,15 @@
+2026-03-08  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Seed random number if SOURCE_DATE_EPOCH is set.
+
+	* src/devices/gropdf/gropdf.pl (initial): call
+	srand($ENV{SOURCE_DATE_EPOCH}) if given. To support reproducible
+	builds.
+
+	Thanks to Peng Zhang for report and suggested fix.
+
+	Fixes <https://savannah.gnu.org/bugs/?68136>
+
 2026-03-03  Rocket Ma <marocketbd@gmail.com>
 
 	* src/preproc/eqn/eqn.am (neqn): `-f $(SH_DEPS_SED_SCRIPT)`
