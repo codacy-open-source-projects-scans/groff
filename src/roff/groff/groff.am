@@ -64,6 +64,7 @@ groff_TESTS = \
   src/roff/groff/tests/device-request-passes-most-escape-sequences.sh \
   src/roff/groff/tests/device-request-works.sh \
   src/roff/groff/tests/devicem-request-works.sh \
+  src/roff/groff/tests/do-not-abort-applying-tr-request-to-non-char.sh \
   src/roff/groff/tests/do-not-crash-on-mismatched-diversion-request.sh \
   src/roff/groff/tests/do-not-free-file-name-pointers-early.sh \
   src/roff/groff/tests/do-not-loop-infinitely-when-breaking-cjk.sh \

@@ -313,13 +313,6 @@ is an extended dialect of the
 language,
 for which many
 similar implementations exist.
-.
-We say \[lq]the formatter\[rq] when speaking of behavior
-that is generally true of
-.I troff \" generic
-and
-.I nroff \" generic
-programs.
 .\" END Keep parallel with groff.texi node "Conventions Used in This
 .\" Manual", first paragraph.
 .
@@ -346,6 +339,13 @@ PDF,
 HTML,
 DVI,
 or terminal output.
+.
+We speak of \[lq]the formatter\[rq] when describing behavior
+that is generally true of
+.I troff \" generic
+and
+.I nroff \" generic
+programs.
 .
 .
 .\" ====================================================================
@@ -1380,9 +1380,9 @@ using the current vertical spacing.
 .
 .
 .P
-The
+The delimited escape sequence
 .B \[rs]B
-escape sequence tests its argument for validity as a numeric expression.
+tests its argument for validity as a numeric expression.
 .
 .
 .br
@@ -1464,7 +1464,7 @@ as bibliographic reference delimiters.
 .
 .
 .P
-The escape sequence
+The delimited escape sequence
 .B \[rs]A
 tests its argument for validity as an identifier.
 .
@@ -7431,6 +7431,17 @@ see
 .request ps
 and
 .esc s .
+.
+.TP
+.REG .S
+Reserved.
+.
+Plan\~9
+.I troff \" Plan 9
+uses this name for roughly the same purpose as
+GNU
+.IR troff 's \" GNU
+.REG .tabs .
 .
 .TP
 .REG .slant

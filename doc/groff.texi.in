@@ -811,14 +811,14 @@ is an extended dialect of the
 language,
 for which many
 similar implementations exist.
+@c END Keep parallel with groff(7), portion of "Description"
+@c (introduction).
 We say ``the formatter'' when speaking of behavior
 that is generally true of
 @command{troff} @c generic
 and
 @command{nroff} @c generic
 programs.
-@c END Keep parallel with groff(7), portion of "Description"
-@c (introduction).
 
 A tradition has arisen that
 GNU
@@ -6132,8 +6132,11 @@ A line that begins with one or more spaces causes a break.  The spaces
 are output at the beginning of the next line without being
 @emph{adjusted} (see below); however, this behavior can be modified
 (@pxref{Leading Space Traps}).  Again, macro packages may provide other
-methods of producing indented paragraphs.  Trailing spaces on text lines
-are discarded.@footnote{@xref{text lines}.}
+methods of producing indented paragraphs.
+Trailing spaces on text lines are discarded.@footnote{@xref{text lines}.
+AT&T
+@command{troff} @c AT&T
+also cancels end-of-sentence detection.}
 
 What if the file ends before enough words have been collected
 to fill an output line?
@@ -9476,7 +9479,7 @@ do nothing.
 This line is normally filled and adjusted.
 .br
 A line's alignment is decided
-'ce \" Center the next input line (no break).
+'ce \" Center the next input line (with no initial break).
 when it is output.
 This line returns to normal filling and adjustment.
     @result{} This line is normally filled and adjusted.
@@ -9524,10 +9527,8 @@ quantity and its units.
 Insert an adjustable,
 unbreakable space.
 As with ordinary spaces,
-GNU
-@command{troff} @c GNU
-discards any sequence of these at the end of an output line
-if a break occurs.
+the formatter discards any sequence of these
+at the end of an output line if a break occurs.
 
 @Example
 Set the output speed to\~1.
@@ -9536,9 +9537,14 @@ J.\~F.\~Ossanna wrote the original CSTR\~#54.
 @endExample
 @endDefesc
 
-By default, GNU @code{troff} fills text and adjusts it to reach the
-output line length.  The @code{nf} request disables filling; the
-@code{fi} request reënables it.
+By default,
+the formatter fills text and adjusts it to reach the output line length.
+The
+@code{nf}
+request disables filling;
+the
+@code{fi}
+request reënables it.
 
 @DefreqList {fi, }
 @DefregListEndx {.u}
@@ -21799,8 +21805,10 @@ the incompatibilities they cause do not arise.
 The read-only register @code{.C} interpolates@tie{}1 if compatibility
 mode is enabled, 0@tie{}otherwise.
 
-Compatibility mode is also enabled by the @option{-C} command-line
-option.
+GNU
+@command{troff}'s @c GNU
+@option{-C}
+command-line option causes it to start up in compatibility mode.
 @endDefreq
 
 @DefreqList {do, name [@Var{argument} @r{@dots{}}]}

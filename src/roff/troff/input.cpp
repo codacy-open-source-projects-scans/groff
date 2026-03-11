@@ -8594,10 +8594,19 @@ static void do_translate(bool transparently, bool as_input)
       tok.next();
       continue;
     }
+    // The semantics of character translation operations on non-
+    // characters (space escape sequences) are ill-defined and vary
+    // among troffs; see Savannah #68133.
+    //
+    // TODO: However, documents such as Ritchie's "C Reference Manual"
+    // distributed with Sixth Edition Unix did things like `.tr ^\|`, so
+    // some support should be added, only for those idioms, and only in
+    // compatibility mode.
     charinfo *ci1 = tok.get_charinfo(true /* required */);
     if (0 /* nullptr */ == ci1) {
-      assert(0 == "attempted to use token without charinfo in character"
-	     " translation request");
+      if (!want_att_compat)
+	error("cannot perform character translation from %1",
+	      tok.description());
       break;
     }
     tok.next();
@@ -8621,8 +8630,9 @@ static void do_translate(bool transparently, bool as_input)
     else {
       charinfo *ci2 = tok.get_charinfo(true /* required */);
       if (0 /* nullptr */ == ci2) {
-	assert(0 == "attempted to use token without charinfo in"
-	       " character translation request");
+	if (!want_att_compat)
+	  error("cannot perform character translation to %1",
+		tok.description());
 	break;
       }
       if (ci1 == ci2)

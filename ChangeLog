@@ -1,14 +1,45 @@
+2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_translate): Stop throwing
+	assertions if one of the participants (source or destination) in
+	a character translation is a non-character.  Historical
+	documents like Ritchie's "C Reference Manual" from Sixth Edition
+	Unix (1975) did things like `.tr ~\|`.  This is no longer a
+	worthwhile idiom--if indeed it ever was, since strings were
+	available even then, but especially not since 1990 or so with
+	GNU troff's `char` and related requests--but we should not abort
+	the formatter on encountering them.  Actually _supporting_ such
+	translations, in compatibility mode only, is under consideration
+	for groff 1.25.  Throw error when encountering `tr` requests
+	that attempt to operate on non-characters outside of
+	compatibility mode.
+
+	Fixes <https://savannah.gnu.org/bugs/?68132>.  Thanks to Clem
+	Cole for the report.  Problem introduced by me in 52025b06f5, 21
+	November, in the course of adding many assertions to GNU troff
+	to try to smoke out transitions into invalid formatter state and
+	code that should be unreachable but isn't.  This instance fooled
+	me because we did nothing useful (nor consistent with AT&T troff
+	behavior) with the non-character translation participant; see
+	above regarding future plans.
+
+2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Regression-test Savannah #68132.
+
+	* src/roff/groff/tests/\
+	do-not-abort-applying-tr-request-to-non-char.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
 2026-03-08  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
-	Seed random number if SOURCE_DATE_EPOCH is set.
-
-	* src/devices/gropdf/gropdf.pl (initial): call
-	srand($ENV{SOURCE_DATE_EPOCH}) if given. To support reproducible
-	builds.
+	* src/devices/gropdf/gropdf.pl: Seed random number generator if
+	`SOURCE_DATE_EPOCH` environment variable is set.  Supports
+	reproducible builds.
 
 	Thanks to Peng Zhang for report and suggested fix.
 
-	Fixes <https://savannah.gnu.org/bugs/?68136>
+	Fixes <https://savannah.gnu.org/bugs/?68136>.
 
 2026-03-03  Rocket Ma <marocketbd@gmail.com>
 
