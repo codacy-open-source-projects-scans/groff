@@ -869,9 +869,9 @@ SUFFIXES += .man
 
 # Version files - see script "build-aux/git-version-gen".
 .version:
-	echo $(VERSION) > $@-t && mv $@-t $@
+	$(AM_V_GEN)echo $(VERSION) > $@-t && mv $@-t $@
 dist-hook:
-	echo $(VERSION) > $(distdir)/.tarball-version
+	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
 
 # maintainer-mode targets
 

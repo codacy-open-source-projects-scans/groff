@@ -109,6 +109,30 @@ their impact.
     horizontally compresses tables as well, _would_ be 'NEWS'-worthy.
 
 
+Incorporating changes by others
+-------------------------------
+
+When committing a change largely authored by someone else, and that
+person has not elected to remain anonymous, we want to credit their work
+appropriately.
+
+1.  Report their name and email address in the ChangeLog entry alongside
+    the date they submitted the change.
+
+2.  Use the `--author` and `--date` command-line options to `git commit`
+    to record the same information.
+
+3.  If the contributor also proposed a ChangeLog entry or commit
+    message, editorially revise it if necessary to fit our conventions.
+    If you feel that substanial additional commentary is warranted, add
+    it between square brackets and mark it with your initials.  For
+    example, "[I added a parallel change to foobar().  -- JRH]".
+
+4.  In a separate (and likely immediately subsequent) commit,
+    acknowledge the contributor in the "ANNOUNCE" file if they're not
+    already listed there.
+
+
 Updating copyright notices
 --------------------------
 
@@ -282,9 +306,9 @@ What To Do
   is "legally significant" per the 15-line threshold.  But even a new
   file of legally significant size does not merit a copyright notice if
   it does not constitute original, non-robotic expression as discussed
-  above.  Include "Copyright-paperwork-exempt: yes" in the Git commit
-  log message.  To summarize, the same rules apply to new files as to
-  changes to existing ones.
+  above.  In that case, include "Copyright-paperwork-exempt: yes" in the
+  Git commit log message.  To summarize, the same rules apply to new
+  files as to changes to existing ones.
 
 * In UTF-8-encoded files, it is fine to use a true copyright sign
   (Unicode U+00A9).  Place it in the notice between the word "Copyright"
@@ -303,7 +327,7 @@ What To Do
   unavailable.  Nowadays, its advice is that "c" (note lowercase) is an
   "acceptable variant", that _may_ retain the efficacy of the copyright
   notice.  The word "copyright", spelled out in full, also suffices per
-  that resource, and is already present in this notice.
+  that resource.
 
   See <https://www.copyright.gov/circs/circ03.pdf>.
 

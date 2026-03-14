@@ -1,7 +1,7 @@
 /* Copyright 1989-2024 Free Software Foundation, Inc.
              2021-2025 G. Branden Robinson
 
-     Written by James Clark (jjc@jclark.com)
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -70,9 +70,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #define FINAL_STARTUP_FILE   "troffrc-end"
 #define DEFAULT_INPUT_STACK_LIMIT 1000
 
-#ifndef DEFAULT_WARNING_MASK
+#ifndef DEFAULT_WARNING_CATEGORY_SET
 // warnings that are enabled by default
-#define DEFAULT_WARNING_MASK \
+#define DEFAULT_WARNING_CATEGORY_SET \
      (WARN_CHAR|WARN_BREAK|WARN_SPACE|WARN_FONT|WARN_FILE)
 #endif
 
@@ -106,7 +106,7 @@ char *pipe_command = 0 /* nullptr */;
 charinfo *charset_table[256];
 unsigned char hpf_code_table[256];
 
-static unsigned int warning_mask = DEFAULT_WARNING_MASK;
+static unsigned int desired_warnings = DEFAULT_WARNING_CATEGORY_SET;
 static bool want_errors_inhibited = false;
 static bool want_input_ignored = false;
 
@@ -358,7 +358,7 @@ protected:
   const unsigned char *endptr;
   input_iterator *next;
 private:
-  virtual int fill(node **);
+  virtual int fill(node **); // returns an unsigned char or `EOF`
   virtual int peek();
   virtual bool has_args() { return false; }
   virtual int nargs() { return 0; }
@@ -429,7 +429,7 @@ class file_iterator : public input_iterator {
 public:
   file_iterator(FILE *, const char *, bool = false);
   ~file_iterator();
-  int fill(node **);
+  int fill(node **); // returns an unsigned char or `EOF`
   int peek();
   bool get_location(bool /* allow_macro */, const char ** /* filep */,
 		    int * /* linep */);
@@ -479,6 +479,7 @@ bool file_iterator::next_file(FILE *f, const char *s)
   return true;
 }
 
+// Returns an unsigned char or `EOF`.
 int file_iterator::fill(node **)
 {
   if (seen_newline)
@@ -1847,15 +1848,15 @@ static const char *do_expr_test() // \B
   int start_level = input_stack::get_level();
   tok.next();
   // disable all warning and error messages temporarily
-  unsigned int saved_warning_mask = warning_mask;
+  unsigned int saved_desired_warnings = desired_warnings;
   bool saved_want_errors_inhibited = want_errors_inhibited;
-  warning_mask = 0;
+  desired_warnings = 0U;
   want_errors_inhibited = true;
   int dummy;
   // TODO: grochar
   bool result = read_measurement(&dummy, (unsigned char)('u'),
 				 true /* is_mandatory */);
-  warning_mask = saved_warning_mask;
+  desired_warnings = saved_desired_warnings;
   want_errors_inhibited = saved_want_errors_inhibited;
   // read_measurement() has left `token` pointing at the input character
   // after the end of the expression.
@@ -4273,7 +4274,7 @@ protected:
 public:
   string_iterator(const macro &, const char * = 0 /* nullptr */,
 		  symbol = NULL_SYMBOL);
-  int fill(node **);
+  int fill(node **); // returns an unsigned char or `EOF`
   int peek();
   bool get_location(bool /* allow_macro */, const char ** /* filep */,
 		    int * /* linep */);
@@ -4320,6 +4321,7 @@ bool string_iterator::is_diversion()
   return mac.is_diversion();
 }
 
+// Returns an unsigned char or `EOF`.
 int string_iterator::fill(node **np)
 {
   if (seen_newline)
@@ -4343,7 +4345,7 @@ int string_iterator::fill(node **np)
     nd = nd->next;
     endptr = ptr = p + 1;
     count--;
-    return 0;
+    return 0U;
   }
   const unsigned char *e = bp->s + char_block::SIZE;
   if (e - p > count)
@@ -6797,6 +6799,17 @@ static node *do_device_extension() // \X
       c = tok.ch();
     encode_character_for_device_output(&mac, c);
   }
+  // TODO: In the future we might not need the current font to be valid
+  // to format a device extension node, but for now we do because it
+  // "dirties", and therefore has to subsequently restore, several bits
+  // of font-related state.  We might be able to make this unnecessary
+  // with a parameterized extension to the `fl` request.  See Savannah
+  // #66187.
+  if (!is_valid_font(resolve_current_font_to_mounting_position(curenv)))
+  {
+    error("cannot write device extension command: no current font");
+    return 0 /* nullptr */;
+  }
   return new device_extension_node(mac);
 }
 
@@ -7579,7 +7592,7 @@ class psbb_locator
     inline const char *bounding_box_args(void);
     int parse_bounding_box(const char *);
     inline void assign_registers(void);
-    inline int skip_to_trailer(void);
+    inline bool skip_to_trailer(void);
 };
 
 // psbb_locator class constructor.
@@ -7629,7 +7642,7 @@ filename(fname), llx(0), lly(0), urx(0), ury(0), lastc(EOF)
 	    // ...in which case we must locate the trailer, and search
 	    // for the appropriate specification within it.
 	    //
-	    if (skip_to_trailer() > 0) {
+	    if (skip_to_trailer()) {
 	      while ((context = bounding_box_args()) == 0 /* nullptr */
 		     && get_line(DSC_LINE_MAX_ENFORCE) > 0)
 		;
@@ -7900,11 +7913,11 @@ inline bool psbb_locator::get_header_comment(void)
 // psbb_locator::skip_to_trailer()
 //
 // Reposition the PostScript input stream, such that the next get_line()
-// will retrieve the first line, if any, following a "%%Trailer" comment;
-// returns a positive integer value if the "%%Trailer" comment is found,
-// or zero if it is not.
+// will retrieve the first line, if any, following a "%%Trailer"
+// comment; returns `true` the "%%Trailer" comment is found and `false`
+// otherwise.
 //
-inline int psbb_locator::skip_to_trailer(void)
+inline bool psbb_locator::skip_to_trailer(void)
 {
   // Begin by considering a chunk of the input file starting 512 bytes
   // before its end, and search it for a "%%Trailer" comment; if none is
@@ -7940,12 +7953,12 @@ inline int psbb_locator::skip_to_trailer(void)
 	// We found the "%%Trailer" comment, so we may immediately
 	// return, with the stream positioned appropriately...
 	//
-	return status;
+	return true;
     }
   }
   // ...otherwise, we report that no "%%Trailer" comment was found.
   //
-  return 0;
+  return false;
 }
 
 void ps_bbox_request() // .psbb
@@ -10130,19 +10143,19 @@ int main(int argc, char **argv)
   return 0;			// not reached
 }
 
-void set_warning_mask_request()
+void configure_desired_warnings_request()
 {
   int n;
   if (has_arg() && read_integer(&n)) {
     if (n & ~WARN_MAX) {
-      warning(WARN_RANGE, "warning mask must be in range 0..%1, got %2",
+      warning(WARN_RANGE, "warning set must be in range 0..%1, got %2",
 	      WARN_MAX, n);
       n &= WARN_MAX;
     }
-    warning_mask = n;
+    desired_warnings = n;
   }
   else
-    warning_mask = WARN_MAX;
+    desired_warnings = WARN_MAX;
   skip_line();
 }
 
@@ -10291,7 +10304,7 @@ void init_input_requests()
 #ifdef COLUMN
   init_request("vj", vjustify);
 #endif /* COLUMN */
-  init_request("warn", set_warning_mask_request);
+  init_request("warn", configure_desired_warnings_request);
   init_request("warnscale", warnscale_request);
   init_request("while", while_request);
   init_request("write", stream_write_request);
@@ -10310,7 +10323,7 @@ void init_input_requests()
   register_dictionary.define(".R", new readonly_text_register(INT_MAX));
   register_dictionary.define(".U", new readonly_boolean_register(&want_unsafe_requests));
   register_dictionary.define(".V", new readonly_register(&vresolution));
-  register_dictionary.define(".warn", new readonly_mask_register(&warning_mask));
+  register_dictionary.define(".warn", new readonly_mask_register(&desired_warnings));
   extern const char *major_version;
   register_dictionary.define(".x", new readonly_text_register(major_version));
   extern const char *revision;
@@ -10591,7 +10604,7 @@ static void read_drawing_command_color_arguments(token &start)
 
 static struct warning_category {
   const char *name;
-  unsigned int mask;
+  unsigned int set;
 } warning_table[] = {
   { "char", WARN_CHAR },
   { "range", WARN_RANGE },
@@ -10613,31 +10626,31 @@ static struct warning_category {
   { "file", WARN_FILE },
   { "all", WARN_MAX & ~(WARN_DI | WARN_MAC | WARN_REG) },
   { "w", WARN_MAX },
-  { "default", DEFAULT_WARNING_MASK },
+  { "default", DEFAULT_WARNING_CATEGORY_SET },
 };
 
 static unsigned int lookup_warning(const char *name)
 {
   for (unsigned int i = 0U; i < countof(warning_table); i++)
     if (strcmp(name, warning_table[i].name) == 0)
-      return warning_table[i].mask;
+      return warning_table[i].set;
   return 0U;
 }
 
 static void enable_warning(const char *name)
 {
-  unsigned int mask = lookup_warning(name);
-  if (mask != 0U)
-    warning_mask |= mask;
+  unsigned int category = lookup_warning(name);
+  if (category != 0U)
+    desired_warnings |= category;
   else
     error("unrecognized warning category '%1'", name);
 }
 
 static void disable_warning(const char *name)
 {
-  unsigned int mask = lookup_warning(name);
-  if (mask != 0U)
-    warning_mask &= ~mask;
+  unsigned int category = lookup_warning(name);
+  if (category != 0U)
+    desired_warnings &= ~category;
   else
     error("unrecognized warning category '%1'", name);
 }
@@ -10745,32 +10758,24 @@ void debug(const char *format,
   do_error(DEBUG, format, arg1, arg2, arg3);
 }
 
-int warning(warning_type t,
-	    const char *format,
-	    const errarg &arg1,
-	    const errarg &arg2,
-	    const errarg &arg3)
+void warning(warning_type t,
+	     const char *format,
+	     const errarg &arg1,
+	     const errarg &arg2,
+	     const errarg &arg3)
 {
-  if ((t & warning_mask) != 0U) {
+  if ((t & desired_warnings) != 0U)
     do_error(WARNING, format, arg1, arg2, arg3);
-    return 1;
-  }
-  else
-    return 0;
 }
 
-int output_warning(warning_type t,
-		   const char *format,
-		   const errarg &arg1,
-		   const errarg &arg2,
-		   const errarg &arg3)
+void output_warning(warning_type t,
+		    const char *format,
+		    const errarg &arg1,
+		    const errarg &arg2,
+		    const errarg &arg3)
 {
-  if ((t & warning_mask) != 0U) {
+  if ((t & desired_warnings) != 0U)
     do_error(OUTPUT_WARNING, format, arg1, arg2, arg3);
-    return 1;
-  }
-  else
-    return 0;
 }
 
 void error(const char *format,

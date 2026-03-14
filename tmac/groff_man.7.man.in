@@ -849,8 +849,10 @@ see subsection \[lq]Horizontal and vertical spacing\[rq] below.
 Except for
 .BR TQ ,
 these macros
-reset the type size and font style to defaults,
-and restore the configured hyphenation mode.
+reset the type size,
+hyphenation,
+and adjustment to (configured) defaults,
+and the font style to roman.
 .\" slack wording for managing stranded lines in PS/PDF output
 .\" [end previous text line with semicolon, not period]
 .\"see subsections \[lq]Font style macros\[rq] and \[lq]Options\[rq]

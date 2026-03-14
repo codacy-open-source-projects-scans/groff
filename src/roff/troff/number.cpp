@@ -1,7 +1,7 @@
 /* Copyright 1989-2020 Free Software Foundation, Inc.
              2021-2025 G. Branden Robinson
 
-     Written by James Clark (jjc@jclark.com)
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -495,7 +495,7 @@ static bool is_valid_term(units *u, int scaling_unit,
     *u = 0;
     return !is_mandatory;
   default:
-    error("ignoring invalid numeric expression starting with %1",
+    error("ignoring invalid numeric expression containing %1",
 	  tok.description());
     return false;
   }

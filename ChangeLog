@@ -1,3 +1,186 @@
+2026-03-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_device_extension): Emit error
+	diagnostic instead of accessing invalid memory if an attempt is
+	made to output a device extension command while the currently
+	selected font is invalid.  In the future we might not need the
+	current font to be valid to format a device extension node, but
+	for now we do because it "dirties", and therefore has to
+	subsequently restore, several bits of font-related state.  We
+	might be able to make this unnecessary with a parameterized
+	extension to the `fl` request.  See Savannah #66187.
+
+	Fixes <https://savannah.gnu.org/bugs/?67978>.
+
+2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/\
+	do-not-crash-on-mismatched-diversion-request.sh: Revise and
+	expand test.  Stop checking for core dump file, as this is not
+	necessarily reliable.  Instead seed test input with formattable
+	words that we expect to be present or not, depending on whether
+	and where the formatter exits abnormally.  Check that closing a
+	`box` diversion with `di` is not a fatal error, and that closing
+	a `di` diversion with `box` _is_ fatal.
+
+	Thanks to Bob Friesenhahn and Zack Weinberg for the suggestion
+	to not rely on core dump files as failure oracles.
+
+2026-03-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Regression-test Savannah #67978.
+
+	* src/roff/groff/tests/\
+	do-not-crash-on-backslash-X-if-font-invalid.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-03-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Add internal mechanism for distinguishing validity of
+	font mounting positions as _values_ from their usability to
+	format output.  A font mounting position is an integer with a
+	limited range.  The font information associated with that
+	{otherwise valid} position can nevertheless not be usable for
+	formatting output.  While the formatter attempts to prevent
+	input documents from contorting themselves into this situation,
+	it also affords a means of egress from valid state.  See the
+	`sty` (counter-)example in groff's Texinfo manual <https://\
+	www.gnu.org/software/groff/manual/groff.html.node/
+	Font-Families.html>.
+
+	Add new function taking an integer mounting position and
+	returning a Boolean.
+
+	* src/roff/troff/node.h: Declare it.
+	* src/roff/troff/node.cpp (is_valid_font): Define it.
+
+2026-03-05  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor resolution of currently selected font (which
+	can be an abstract style, or even invalid) to a font mounting
+	position.
+	* src/roff/troff/node.h: Declare function
+	`resolve_current_font_to_mounting_position()`; we'll need access
+	to it from "input.cpp" in a forthcoming change.
+	* src/roff/troff/node.cpp (env_resolve_font): Drop `static`
+	storage class and `inline`.  "[T]he ... otherwise perfectly
+	logical combination of external linkage and inlining is banned
+	to make life simpler for compiler writers[.]" (_The C++
+	Programming Language, Special Edition_, Stroustrup, 1997, p.
+	199)  And rename this...
+	(resolve_current_font_to_mounting_position): ...to this.
+	Annotate purpose.
+	(device_extension_node::device_extension_node)
+	(make_composite_node)
+	(make_glyph_node)
+	(env_space_width)
+	(env_sentence_space_width)
+	(env_half_narrow_space_width)
+	(env_narrow_space_width): Update call sites.
+
+2026-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Boolify
+	`psbb_locator::skip_to_trailer()`.  Its lone call site tests
+	only for a positive return value and discards it.
+	(class psbb_locator): Demote return type from `int` to `bool` in
+	declaration.
+	(psbb_locator::psbb_locator): Simplify test of return value.
+	(psbb_locator::skip_to_trailer): Demote return type from `int`
+	to `bool` in definition.  Return Boolean rather than integer
+	literals or the otherwise unused `status` local value.
+
+2026-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Make warning diagnostic functions return `void`.
+	Change return type of `warning()` and `output_warning()`
+	functions from `int` to `void`.  I would have boolified them,
+	but nothing ever checks their return values.
+
+	* src/roff/troff/troff.h: Update delcarations.
+	* src/roff/troff/input.cpp (warning, output_warning): Update
+	definitions.  Simplify function bodies.
+
+2026-03-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Rename several warning-relatd data
+	for clarity.  Rename preprocessor macro `DEFAULT_WARNING_MASK`
+	to `DEFAULT_WARNING_CATEGORY_SET`.  Rename file-scoped variable
+	`warning_mask` to `desired_warnings` (it's a _set_ type, not a
+	"mask", which is more specific).
+	(enable_warning):
+	(disable_warning):
+	(warning):
+	(output_warning): Update site of dereference.
+	(init_input_requests) <.warn>: Update wire-uppery.
+
+	(do_expr_test): Rename local variable `saved_warning_mask` to
+	`saved_desired_warnings`.
+	(enable_warning, disable_warning): Rename local variable `mask`
+	to `category`.
+
+	(set_warning_mask_request): Rename this...
+	(configure_desired_warnings_request): ...to this.
+	(init_input_requests) <warn>: Update wire-uppery.
+
+	(struct warning_category): Rename `mask` member to `set`.
+	(lookup_warning): Track rename of structure member.
+
+2026-03-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_expr_test)
+	(string_iterator::fill): Fix code style nit: assign to variable
+	of unsigned integral type with explicitly unsigned integer
+	literal.
+
+2026-03-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Fix typoed variable name; rename
+	`is_output_supressed` to `is_output_suppressed`.
+	(glyph_node::asciify):
+	(kern_pair_node::asciify):
+	(dbreak_node::asciify):
+	(ligrature_node::asciify):
+	(break_char_node::asciify):
+	(italic_corrected_node::asciify):
+	(left_italic_corrected_node::asciify):
+	(space_char_hmotion_node::asciify):
+	(word_space_node::asciify):
+	(unbreakable_space_node::asciify):
+	(suppress_node::asciify):
+	(zero_width_node::asciify):
+	(composite_node::asciify): Update sites of dereference.
+
+	Fixes <https://savannah.gnu.org/bugs/?68071>.
+
+2026-03-07  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* Makefile.am (.version, dist-hook): Use `AM_V_GEN` macro in
+	production of targets, to make them less garish in builds
+	without `V=1` specified as a make(1) argument.
+
+2026-03-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/troffrc (ptr): Disclose correct groff version number when
+	reporting rename of `ptr` request.
+
+2026-03-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Improve error
+	diagnostic when encountering an invalid character in a numeric
+	expression; say "containing", not "starting with".
+
+2026-03-13  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	Use sequential tag names to avoid possible random duplicates.
+
+	* src/devices/gropdf/gropdf.pl: Revert commit cdb97b959,
+	switch to using serial tag names.
+
+	Fixes <https://savannah.gnu.org/bugs/?68136>.
+
+	Thanks to Dave Kemper for the code suggestion.
+
 2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (do_translate): Stop throwing
@@ -15,13 +198,13 @@
 	compatibility mode.
 
 	Fixes <https://savannah.gnu.org/bugs/?68132>.  Thanks to Clem
-	Cole for the report.  Problem introduced by me in 52025b06f5, 21
-	November, in the course of adding many assertions to GNU troff
-	to try to smoke out transitions into invalid formatter state and
-	code that should be unreachable but isn't.  This instance fooled
-	me because we did nothing useful (nor consistent with AT&T troff
-	behavior) with the non-character translation participant; see
-	above regarding future plans.
+	Cole for the report.  Problem introduced by me in commit
+	52025b06f5, 21 November, in the course of adding many assertions
+	to GNU troff to try to smoke out transitions into invalid
+	formatter state and code that should be unreachable but isn't.
+	This instance fooled me because we did nothing useful (nor
+	consistent with AT&T troff behavior) with the non-character
+	translation participant; see above regarding future plans.
 
 2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 

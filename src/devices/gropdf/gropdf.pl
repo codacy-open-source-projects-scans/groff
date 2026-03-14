@@ -223,12 +223,6 @@ my %StdEnc=(
 
 unshift(@ARGV,split(' ',$ENV{GROPDF_OPTIONS})) if exists($ENV{GROPDF_OPTIONS});
 
-# Initialize random seed for reproducible builds.
-if (defined($ENV{SOURCE_DATE_EPOCH}))
-{
-    srand($ENV{SOURCE_DATE_EPOCH});
-}
-
 my $gotzlib=0;
 my $gotinline=0;
 my $gotexif=0;
@@ -481,6 +475,7 @@ sub usage
     exit($had_error ? 2 : 0);
 }
 
+my $subtag_counter = 0xAAAAAA;
 my $fd;
 my @fdlist;
 my $frot;
@@ -5293,10 +5288,7 @@ sub SubTag
 {
     my $res;
 
-    foreach (1..6)
-    {
-	$res.=chr(int((rand(26)))+65);
-    }
+    ($res = sprintf ("%06X", $subtag_counter++)) =~ tr/0-9/Q-Z/;
 
     return($res.'+');
 }

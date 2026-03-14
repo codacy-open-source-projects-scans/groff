@@ -1,7 +1,7 @@
-/* Copyright 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-2010 Free Software Foundation, Inc.
              2021-2025 G. Branden Robinson
 
-     Written by James Clark (jjc@jclark.com)
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -65,7 +65,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stack>
 
-static bool is_output_supressed = false;
+static bool is_output_suppressed = false;
 
 // declarations to avoid friend name injections
 class tfont;
@@ -237,7 +237,10 @@ public:
   friend tfont *make_tfont(tfont_spec &);
 };
 
-static inline int env_resolve_font(environment *env)
+// This operation isn't a member function of `class environment`; we
+// need it only when translating nodes into troff output, so that we
+// know if we must emit an `f` trout/grout command.
+int resolve_current_font_to_mounting_position(environment *env)
 {
   return env->get_family()->resolve(env->get_font());
 }
@@ -3902,7 +3905,7 @@ void zero_width_node::ascii_print(ascii_output_file *out)
 
 void glyph_node::asciify(macro *m)
 {
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     unsigned char c = ci->get_asciify_code();
     if (c != 0U)
       m->append(c);
@@ -3970,7 +3973,7 @@ void glyph_node::asciify(macro *m)
 
 void kern_pair_node::asciify(macro *m)
 {
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     if (n1 != 0 /* nullptr */)
       n1->asciify(m);
     if (n2 != 0 /* nullptr */)
@@ -3981,7 +3984,7 @@ void kern_pair_node::asciify(macro *m)
 void dbreak_node::asciify(macro *m)
 {
   assert(m != 0 /* nullptr */);
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     if (m != 0 /* nullptr */)
       none->asciify(m);
     none = 0 /* nullptr */;
@@ -3992,7 +3995,7 @@ void ligature_node::asciify(macro *m)
 {
   assert(n1 != 0 /* nullptr */);
   assert(n2 != 0 /* nullptr */);
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     if (n1 != 0 /* nullptr */)
       n1->asciify(m);
     if (n2 != 0 /* nullptr */)
@@ -4003,7 +4006,7 @@ void ligature_node::asciify(macro *m)
 void break_char_node::asciify(macro *m)
 {
   assert(nodes != 0 /* nullptr */);
-  if (!is_output_supressed && (nodes != 0 /* nullptr */))
+  if (!is_output_suppressed && (nodes != 0 /* nullptr */))
     nodes->asciify(m);
   nodes = 0 /* nullptr */;
 }
@@ -4011,7 +4014,7 @@ void break_char_node::asciify(macro *m)
 void italic_corrected_node::asciify(macro *m)
 {
   assert(nodes != 0 /* nullptr */);
-  if (!is_output_supressed && (nodes != 0 /* nullptr */))
+  if (!is_output_suppressed && (nodes != 0 /* nullptr */))
     nodes->asciify(m);
   nodes = 0 /* nullptr */;
 }
@@ -4019,7 +4022,7 @@ void italic_corrected_node::asciify(macro *m)
 void left_italic_corrected_node::asciify(macro *m)
 {
   assert(nodes != 0 /* nullptr */);
-  if (!is_output_supressed && (nodes != 0 /* nullptr */))
+  if (!is_output_suppressed && (nodes != 0 /* nullptr */))
     nodes->asciify(m);
   nodes = 0 /* nullptr */;
 }
@@ -4044,7 +4047,7 @@ space_char_hmotion_node::space_char_hmotion_node(hunits i, color *c,
 
 void space_char_hmotion_node::asciify(macro *m)
 {
-  if (!is_output_supressed)
+  if (!is_output_suppressed)
     m->append(' ');
 }
 
@@ -4054,7 +4057,7 @@ void space_node::asciify(macro *)
 
 void word_space_node::asciify(macro *m)
 {
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     for (width_list *w = orig_width; w != 0 /* nullptr */; w = w->next)
       m->append(' ');
   }
@@ -4062,7 +4065,7 @@ void word_space_node::asciify(macro *m)
 
 void unbreakable_space_node::asciify(macro *m)
 {
-  if (!is_output_supressed)
+  if (!is_output_suppressed)
     m->append(' ');
 }
 
@@ -4128,7 +4131,7 @@ void overstrike_node::asciify(macro *)
 
 void suppress_node::asciify(macro *)
 {
-  is_output_supressed = (is_on == 0); // it's a three-valued Boolean :-/
+  is_output_suppressed = (is_on == 0); // it's a three-valued Boolean :-/
 }
 
 void vline_node::asciify(macro *)
@@ -4141,7 +4144,7 @@ void vline_node::asciify(macro *)
 void zero_width_node::asciify(macro *m)
 {
   assert(nodes != 0 /* nullptr */);
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     node *n = nodes;
     while (n != 0 /* nullptr */) {
       n->asciify(m);
@@ -4365,7 +4368,7 @@ device_extension_node::device_extension_node(const macro &m, bool b)
   font_size fs = curenv->get_font_size();
   int char_height = curenv->get_char_height();
   int char_slant = curenv->get_char_slant();
-  int fontno = env_resolve_font(curenv);
+  int fontno = resolve_current_font_to_mounting_position(curenv);
   tf = font_table[fontno]->get_tfont(fs, char_height, char_slant,
 				     fontno);
   if (curenv->is_composite())
@@ -4886,7 +4889,7 @@ hyphenation_type composite_node::get_hyphenation_type()
 
 void composite_node::asciify(macro *m)
 {
-  if (!is_output_supressed) {
+  if (!is_output_suppressed) {
     unsigned char c = ci->get_asciify_code();
     if (0U == c)
       c = ci->get_ascii_code();
@@ -5549,7 +5552,7 @@ void composite_node::dump_node()
 
 static node *make_composite_node(charinfo *s, environment *env)
 {
-  int fontno = env_resolve_font(env);
+  int fontno = resolve_current_font_to_mounting_position(env);
   if (fontno < 0) {
     error("cannot format composite glyph: no current font");
     return 0 /* nullptr */;
@@ -5570,7 +5573,7 @@ static node *make_composite_node(charinfo *s, environment *env)
 static node *make_glyph_node(charinfo *s, environment *env,
 			     bool want_warnings = true)
 {
-  int fontno = env_resolve_font(env);
+  int fontno = resolve_current_font_to_mounting_position(env);
   if (fontno < 0) {
     error("cannot format glyph: no current font");
     return 0 /* nullptr */;
@@ -6967,6 +6970,12 @@ bool is_valid_font_mounting_position(int n)
 	  && (font_table[n] != 0 /* nullptr */));
 }
 
+bool is_valid_font(int n)
+{
+  return (is_valid_font_mounting_position(n)
+	  && !(font_table[n]->is_style()));
+}
+
 // Read the next token and look it up as a font name or position number.
 // Return lookup success.  Store, in the supplied struct argument, the
 // requested name or position, and the position actually resolved.
@@ -7237,7 +7246,7 @@ hunits env_digit_width(environment *env)
 
 hunits env_space_width(environment *env)
 {
-  int fn = env_resolve_font(env);
+  int fn = resolve_current_font_to_mounting_position(env);
   font_size fs = env->get_font_size();
   if (!is_valid_font_mounting_position(fn))
     return scale(fs.to_units() / 3, env->get_space_size(), 12);
@@ -7247,7 +7256,7 @@ hunits env_space_width(environment *env)
 
 hunits env_sentence_space_width(environment *env)
 {
-  int fn = env_resolve_font(env);
+  int fn = resolve_current_font_to_mounting_position(env);
   font_size fs = env->get_font_size();
   units sss = env->get_sentence_space_size();
   if (!is_valid_font_mounting_position(fn))
@@ -7258,7 +7267,7 @@ hunits env_sentence_space_width(environment *env)
 
 hunits env_half_narrow_space_width(environment *env)
 {
-  int fn = env_resolve_font(env);
+  int fn = resolve_current_font_to_mounting_position(env);
   font_size fs = env->get_font_size();
   if (!is_valid_font_mounting_position(fn))
     return H0;
@@ -7268,7 +7277,7 @@ hunits env_half_narrow_space_width(environment *env)
 
 hunits env_narrow_space_width(environment *env)
 {
-  int fn = env_resolve_font(env);
+  int fn = resolve_current_font_to_mounting_position(env);
   font_size fs = env->get_font_size();
   if (!is_valid_font_mounting_position(fn))
     return H0;

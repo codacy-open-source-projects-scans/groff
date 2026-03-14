@@ -9,7 +9,7 @@ font metrics
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 2004      Free Software Foundation, Inc.
+.\" Copyright      2004 Free Software Foundation, Inc.
 .\"           2021-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this

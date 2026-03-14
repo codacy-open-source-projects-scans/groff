@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2025-2026 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -19,42 +19,33 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-fail=
+# troff should not perform invalid memory access when writing a device
+# extension command with `\X` when the current font is invalid.
+# Savannah #67978.
 
-wail () {
-  echo "...FAILED" >&2
-  fail=yes
-}
-
-# troff should not perform invalid memory access when using `box` to
-# close a regular diversion.  Savannah #67139.
-
-input1='.
-.box d1
-.di
-.box
+# We disable filling only to make the crash happen "early", before
+# exiting the formatter because the last input line has been read.
+input='.
+.nr BarPos \n[.fp]
+.sty \n[.fp] Bar
+.fam Foo
+.ft \n[BarPos]
+.tm .f=\n[.f]
+.nf
+\X@baz@
+.ft R
 HAPAX
 .'
 
-output1=$(printf '%s\n' "$input1" | "$groff" -a)
-echo "$output1"
+output=$(printf '%s\n' "$input" | "$groff" -a)
 
-echo "checking that closing box diversion with 'di' is not fatal" >&2
-echo "$output1" | grep -q 'HAPAX' || wail
+if [ -e core ]
+then
+    echo "$0: removing \"core\" file" >&2
+    rm -f core
+fi
 
-input2='.
-.br
-.di d2
-.box
-LEGOMENON
-.'
-
-output=$(printf '%s\n' "$input2" | "$groff" -a)
-echo "$output2"
-
-echo "checking that closing non-box diversion with 'box' is fatal" >&2
-! echo "$output2" | grep -q 'LEGOMENON' || wail
-
-test -z "$fail"
+echo "$output"
+echo "$output" | grep -q HAPAX
 
 # vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

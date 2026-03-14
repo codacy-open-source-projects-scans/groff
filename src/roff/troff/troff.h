@@ -1,5 +1,6 @@
-/* Copyright 1989-2024 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-1990 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -73,14 +74,14 @@ enum warning_type {
 
 const int WARN_MAX = 07777777;
 
-int warning(warning_type, const char *,
-	    const errarg & = empty_errarg,
-	    const errarg & = empty_errarg,
-	    const errarg & = empty_errarg);
-int output_warning(warning_type, const char *,
-		   const errarg & = empty_errarg,
-		   const errarg & = empty_errarg,
-		   const errarg & = empty_errarg);
+void warning(warning_type, const char *,
+	     const errarg & = empty_errarg,
+	     const errarg & = empty_errarg,
+	     const errarg & = empty_errarg);
+void output_warning(warning_type, const char *,
+		    const errarg & = empty_errarg,
+		    const errarg & = empty_errarg,
+		    const errarg & = empty_errarg);
 
 // Local Variables:
 // fill-column: 72

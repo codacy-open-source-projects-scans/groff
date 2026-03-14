@@ -1,5 +1,6 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -707,6 +708,7 @@ extern bool is_font_name(symbol, symbol);
 extern bool is_abstract_style(symbol);
 extern bool mount_style(int, symbol);
 extern bool is_valid_font_mounting_position(int);
+extern bool is_valid_font(int);
 extern int symbol_fontno(symbol);
 extern int next_available_font_position();
 extern void init_size_list(int *);
@@ -753,6 +755,7 @@ public:
   static void invalidate_fontno(int);
 };
 
+extern int resolve_current_font_to_mounting_position(environment *);
 font_family *lookup_family(symbol);
 symbol get_font_name(int, environment *);
 symbol get_style_name(int);

@@ -9331,7 +9331,7 @@ elsewhere in this manual;
 they have to do with invariant properties of
 GNU
 @command{troff}, @c GNU
-or obtain information about the formatter's command-line options
+or obtain information about its command-line options
 or processing progress.
 
 @table @code
@@ -9518,8 +9518,8 @@ qux
 @endExample
 @endDefreq
 
-Sometimes you want to prevent a break within a phrase or between a
-quantity and its units.
+You can prevent a break between words,
+as with a quantity and its units.
 
 @Defesc {\\~, , , }
 @cindex unbreakable space (@code{\~})
