@@ -27,6 +27,7 @@ typedef int units;
 
 extern units scale(units n, units x, units y); // scale n by x/y
 
+extern bool want_att_compat;
 extern bool want_abstract_output;
 extern bool want_output_suppressed;
 extern bool want_color_output;

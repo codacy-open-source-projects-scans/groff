@@ -9,6 +9,24 @@
 This file describes recent user-visible changes in groff.  Bug fixes are
 not described.  There are more details in the man and info pages.
 
+VERSION next
+============
+
+troff
+-----
+
+*  GNU troff, the formatter, now issues warnings in the "delim",
+   "syntax", and "escape" categories by default.
+
+
+VERSION 1.24.1
+==============
+
+This release corrects bugs in the groff 1.24.0 release, adds automated
+test scripts, revises a misleading diagnostic message, and improves
+documentation.  There are no new features.
+
+
 VERSION 1.24.0
 ==============
 

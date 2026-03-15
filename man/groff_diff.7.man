@@ -6836,6 +6836,31 @@ and other properties of each named argument.
 .
 .
 .P
+The
+.B sp
+request differs from AT&T
+.IR troff : \" AT&T
+invoking
+.B sp
+with the no-break control character
+while \[lq]not on a page\[rq]\[em]that is,
+when writing output to the top-level diversion
+while the vertical drawing position reported by register
+.B nl
+is negative\[em]provokes an error diagnostic
+and does not move the drawing position.
+AT&T
+.I troff \" AT&T
+sets the vertical drawing position
+to two basic units fewer than the specified argument
+(or one vee minus one basic unit if no argument is present).
+.\" Yes, really.  Try:
+.\" printf '.tm \\n(nl\n.c2 $\n$sp\n.tm \\n(nl\n'
+.\" printf '.tm \\n(nl\n.c2 $\n.nr nl -1\n$sp\n.tm \\n(nl\n'
+.\" ...with DWB, Plan 9, and Heirloom Doctools troffs. --GBR
+.
+.
+.P
 AT&T
 .I troff \" AT&T
 ignores the

@@ -249,8 +249,14 @@ static bool is_valid_expression(units *u, int scaling_unit,
   int result = is_valid_term(u, scaling_unit, is_parenthesized,
 			     is_mandatory);
   while (result) {
-    if (is_parenthesized)
-      tok.skip_spaces();
+    if (is_parenthesized) {
+      if (want_att_compat && tok.is_space())
+	warning(WARN_SYNTAX, "%1 within a numeric expression"
+		" is not portable to AT&T troff", tok.description());
+      // See `token::skip_spaces()` in "input.cpp".
+      while (tok.is_space())
+	tok.next();
+    }
     int op = tok.ch();// safely compares to char literals; TODO: grochar
     switch (op) {
     case int('+'): // TODO: grochar

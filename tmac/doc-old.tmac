@@ -1706,7 +1706,8 @@
 .	in 0
 .\}
 .pL
-'sp
+.ie \n(.g .br
+.el 'sp \" erroneous in GNU troff when the page hasn't started
 .ns
 .ta .5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i
 .if !\\n(cR .ne 3

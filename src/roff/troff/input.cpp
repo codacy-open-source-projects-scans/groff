@@ -73,7 +73,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #ifndef DEFAULT_WARNING_CATEGORY_SET
 // warnings that are enabled by default
 #define DEFAULT_WARNING_CATEGORY_SET \
-     (WARN_CHAR|WARN_BREAK|WARN_SPACE|WARN_FONT|WARN_FILE)
+     (WARN_CHAR|WARN_BREAK|WARN_DELIM|WARN_SYNTAX|WARN_ESCAPE\
+      |WARN_SPACE|WARN_FONT|WARN_FILE)
 #endif
 
 extern "C" const char *program_name;
@@ -116,7 +117,7 @@ static void disable_warning(const char *);
 static symbol end_of_input_macro_name;
 static symbol blank_line_macro_name;
 static symbol leading_spaces_macro_name;
-static bool want_att_compat = false;
+bool want_att_compat = false;
 bool want_abstract_output = false;
 bool want_nodes_dumped = false;
 bool want_output_suppressed = false;
@@ -3012,7 +3013,7 @@ const char *token::description()
       (void) snprintf(buf, bufsz, "character \"%c\"", c);
       return buf;
     }
-    else if (c < 128) {
+    else if ((c > 31) && (c < 127)) {
       (void) snprintf(buf, bufsz, "character '%c'", c);
       return buf;
     }

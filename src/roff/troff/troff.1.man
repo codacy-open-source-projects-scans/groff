@@ -644,6 +644,8 @@ because it is also meaningful when beginning a numeric expression,
 or
 the closing delimiter in an escape sequence was missing or mismatched.
 .
+This category is enabled by default.
+.
 .
 .sp \n[PD]u
 A future
@@ -680,6 +682,8 @@ T}
 .sp \n[PD]u
 escape	32768	T{
 An unsupported escape sequence was encountered.
+.
+This category is enabled by default.
 T}
 .
 .
@@ -831,6 +835,8 @@ or a
 extension escape sequence
 or conditional expression operator
 was used while in compatibility mode.
+.
+This category is enabled by default.
 T}
 .
 .

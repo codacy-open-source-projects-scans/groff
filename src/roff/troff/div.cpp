@@ -861,6 +861,13 @@ static void space_request() // .sp
   postpone_traps();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
+  else if ((curdiv == topdiv)
+           && (topdiv->before_first_page_status > 0)) {
+    error("cannot vertically space with the no-break control character"
+	  " when not on a page");
+    skip_line();
+    return;
+  }
   vunits n;
   if (!has_arg() || !read_vunits(&n, 'v'))
     n = curenv->get_vertical_spacing();

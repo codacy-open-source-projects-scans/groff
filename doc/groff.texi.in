@@ -10716,6 +10716,17 @@ moves to a position relative to the page top for positive
 and the bottom if
 @var{N}
 is negative.
+
+@cindex invoking @code{sp} request with no-break control character while not on a page
+@cindex no-break control character, invoking @code{sp} request with, while not on a page
+@cindex control character, no-break, invoking @code{sp} request with, while not on a page
+Invoking
+@code{sp}
+with the no-break control character
+while ``not on a page''
+(in the top-level diversion at a negative vertical drawing position)
+is an error.@footnote{See @ref{Page Control} and @ref{Other
+Differences}.}
 @endDefreq
 
 @DefreqList {ls, [@Var{count}]}
@@ -21506,6 +21517,7 @@ The selected delimiter character was ambiguous
 because it is also meaningful when beginning a numeric expression,
 or
 the closing delimiter in an escape sequence was missing or mismatched.
+This category is enabled by default.
 
 A future
 @code{groff}
@@ -21547,6 +21559,7 @@ or a
 extension escape sequence
 or conditional expression operator
 was used while in compatibility mode.
+This category is enabled by default.
 
 @item di
 @itemx 256
@@ -21628,6 +21641,7 @@ An invalid character occurred on the input stream.
 @item escape
 @itemx 32768
 An unsupported escape sequence was encountered.
+This category is enabled by default.
 
 @item space
 @itemx 65536
@@ -22469,6 +22483,30 @@ and otherwise dumps
 the @acronym{JSON}-encoded name,
 contents,
 and other properties of each named argument.
+
+@cindex @code{sp} request, incompatibilities with @acronym{AT&T} @code{troff}
+The
+@code{sp}
+request differs from @acronym{AT&T}
+@command{troff}:@: @c AT&T
+invoking
+@code{sp}
+with the no-break control character
+while ``not on a page''---that is,
+when writing output to the top-level diversion
+while the vertical drawing position reported by register
+@code{nl}
+is negative---provokes an error diagnostic
+and does not move the drawing position.
+@acronym{AT&T}
+@command{troff} @c AT&T
+sets the vertical drawing position
+to two basic units fewer than the specified argument
+(or one vee minus one basic unit if no argument is present).
+@c Yes, really.  Try:
+@c printf '.tm \\n(nl\n.c2 $\n$sp\n.tm \\n(nl\n'
+@c printf '.tm \\n(nl\n.c2 $\n.nr nl -1\n$sp\n.tm \\n(nl\n'
+@c ...with DWB, Plan 9, and Heirloom Doctools troffs. --GBR
 
 @cindex @code{ss} request, incompatibilities with @acronym{AT&T} @code{troff}
 AT&T

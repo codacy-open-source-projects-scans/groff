@@ -73,8 +73,6 @@ A#[dq]#[e aa]#[u00E1]#[u0106]o#[Fl]#[Z]
 .ec $
 .box DIV2
 $%antimatter15@$b"hup"16@$c
-.$" Use the no-break control character because the ordinary one still
-.$" results in a newline in asciified diversion.  Bug?
 .c2 !
 !sp
 .c2

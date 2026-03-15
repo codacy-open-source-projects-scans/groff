@@ -1,5 +1,101 @@
 2026-03-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
+	[troff]: Fix Savannah #68137.
+
+	* src/roff/troff/number.cpp (is_valid_expression): When
+	interpreting a parenthesized sub-expression within a numeric
+	expression while in AT&T compatibility mode, throw a warning in
+	category "syntax" if encountering a space in the input, advising
+	of non-portability to that family of formatters.  GNU troff
+	continues to interpret the expression as it always has.
+
+	Fixes <https://savannah.gnu.org/bugs/?68137>.
+
+2026-03-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Make `want_att_compat` global.  This is a prerequisite
+	to fixing Savannah #68137.
+	
+	* src/roff/troff/input.cpp: Drop its `static` storage class.
+	* src/roff/troff/token.h: Declare it with `extern` storage
+	class.
+
+2026-01-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (token::description): Refer to C0
+	control characters (that are valid as GNU troff input) and Basic
+	Latin DEL (all unprintable) by their decimal code points, not by
+	writing them out literally.
+
+	Noted while working on Savannah #67978.
+
+2026-01-02  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix Savannah #64300.
+
+	* src/roff/troff/div.cpp (space_request): If the `sp` request is
+	invoked with the no-break control character (that is, "'sp")
+	when the drawing position is off the page (as when the formatter
+	starts up), ignore the request and throw an error diagnostic.
+	This is inconsistent with AT&T troffs (including Heirloom
+	Doctools) and neatroff, but precisely consistent with all other
+	requests that have different semantics when invoked with the
+	no-break control character.  When invoked thus, none of `br`,
+	`brp`, `ce`, `cf`, `fi`, `fl`, `in`, `nf`, or `rj` move the
+	drawing position onto the page.
+
+	* tmac/doc-old.tmac (Sh): If the formatter claims groff
+	compatibility, simply emit a `br` request to start the (next)
+	document instead of invoking `sp` with the no-break control
+	character.
+
+	* doc/groff.texi (Manipulating Spacing): Document that invoking
+	`'sp` in the top-level diversion when the vertical drawing
+	position is negative is an error.
+
+	* doc/groff.texi (Other Differences):
+	* man/groff_diff.7.man: (Other differences): Document difference
+	between AT&T and GNU troffs.  (AT&T troff's behavior looks buggy
+	to me...)
+
+	Fixes <https://savannah.gnu.org/bugs/?64300>.  Thanks to Dave
+	Kemper for the discussion.
+
+2026-03-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Add `WARN_ESCAPE` to default warning
+	"mask".  (It's not a mask, just a vector--or a set.)
+
+	* doc/groff.texi (Warnings):
+	* src/roff/troff/troff.1.man (Warnings):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?67783>.
+
+2026-03-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Add `WARN_SYNTAX` to default warning
+	"mask".  (It's not a mask, just a vector--or a set.)
+
+	* doc/groff.texi (Warnings):
+	* src/roff/troff/troff.1.man (Warnings):
+	* NEWS: Document it.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?67783>.
+
+2026-03-06  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Add `WARN_DELIM` to default warning
+	"mask".  (It's not a mask, just a vector--or a set.)
+
+	* doc/groff.texi (Warnings):
+	* src/roff/troff/troff.1.man (Warnings):
+	* NEWS: Document it.
+
+	Continues the long process of fixing Savannah #66009.
+
+2026-03-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
 	* src/roff/troff/input.cpp (do_device_extension): Emit error
 	diagnostic instead of accessing invalid memory if an attempt is
 	made to output a device extension command while the currently
@@ -10,7 +106,8 @@
 	might be able to make this unnecessary with a parameterized
 	extension to the `fl` request.  See Savannah #66187.
 
-	Fixes <https://savannah.gnu.org/bugs/?67978>.
+	Fixes <https://savannah.gnu.org/bugs/?67978>.  Thanks to Bruno
+	Haible for the report.
 
 2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -159,6 +256,9 @@
 	production of targets, to make them less garish in builds
 	without `V=1` specified as a make(1) argument.
 
+Version 1.24.1 released 2026-03-14
+==================================
+
 2026-03-11  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/troffrc (ptr): Disclose correct groff version number when
@@ -172,14 +272,12 @@
 
 2026-03-13  Deri James  <deri@chuzzlewit.myzen.co.uk>
 
-	Use sequential tag names to avoid possible random duplicates.
+	* src/devices/gropdf/gropdf.pl: Use sequential tag names to
+	avoid possible random duplicates.
 
-	* src/devices/gropdf/gropdf.pl: Revert commit cdb97b959,
-	switch to using serial tag names.
-
-	Fixes <https://savannah.gnu.org/bugs/?68136>.
-
-	Thanks to Dave Kemper for the code suggestion.
+	Fixes <https://savannah.gnu.org/bugs/?68136>.  Reverts commit
+	cdb97b9590, 9 March.  Thanks to Dave Kemper for the code
+	suggestion.
 
 2026-03-09  G. Branden Robinson <g.branden.robinson@gmail.com>
 
