@@ -757,7 +757,7 @@ set with another new drawing command.
 .
 .
 .\" ====================================================================
-.SS "Notational conventions"
+.SS "Notation and terminology"
 .\" ====================================================================
 .
 In the request and escape sequence descriptions below,
@@ -803,6 +803,63 @@ GNU
 .I troff \" GNU
 fully interprets,
 in contrast to copy mode.
+.
+.
+.P
+GNU
+.I troff \" GNU
+documentation refers to \[lq]productive input lines\[rq],
+a distinction recognized by the
+AT&T
+.I troff \" AT&T
+formatter but which had no name.
+.
+A
+.I "productive input line"
+directly produces formatted output.
+.
+Text lines produce output,
+as do control lines containing requests such as
+.B tl
+or an escape sequence like
+.B \[rs]l
+(when not itself nested inside a
+.B \[rs]w
+escape sequence).
+.
+Register,
+string,
+and macro definitions are not productive;
+neither are
+empty requests,
+nor requests and escape sequences that alter the formatting environment
+(as with changes to the size,
+face,
+height,
+slant,
+or color of the type).
+.
+Macro calls are not themselves productive,
+but their interpolations can be.
+.
+In
+GNU
+.I troff, \" GNU
+if an input line by itself formats an output document,
+it is productive;
+otherwise not.
+.
+(This test does not work with
+AT&T
+.I troff, \" AT&T
+which generates device-independent output
+even when it does not need to.)
+.
+You can also use the
+.B pline
+request before and after an input line
+to see whether it produced any (additional) output nodes;
+see section \[lq]Debugging\[rq] below.
 .
 .
 .\" ====================================================================
@@ -4876,8 +4933,8 @@ It is positive if the glyph extends below the baseline.
 .
 .TP
 .B \[rs]n[.ce]
-Interpolate count of input lines remaining to be centered
-in the environment.
+Interpolate count of productive input lines
+remaining to be centered in the environment.
 .
 .
 .TP
@@ -5020,8 +5077,8 @@ was \[lq]interrupted\[rq] or continued with
 .
 .TP
 .B \[rs]n[.it]
-Interpolate count of input lines remaining
-in the environment's pending input trap.
+Interpolate count of productive input lines remaining
+before the environment's pending input trap springs.
 .
 .
 .TP
@@ -5163,8 +5220,8 @@ Interpolate the environment's post-vertical line spacing amount.
 .
 .TP
 .B \[rs]n[.rj]
-Interpolate count of input lines remaining to be right-aligned
-in the environment.
+Interpolate count of productive input lines
+remaining to be right-aligned in the environment.
 .
 .
 .TP
@@ -5252,6 +5309,13 @@ See
 .B \-U
 command-line option to
 .MR @g@troff @MAN1EXT@ .
+.
+.
+.TP
+.B \[rs]n[.ul]
+Interpolate count of input lines remaining to be underlined
+(continuously or not)
+in the environment.
 .
 .
 .TP
@@ -6693,6 +6757,26 @@ but requires more care with trailing comments,
 and doubling of an initial neutral double quote
 .RB \[lq] \[dq] \[rq]
 if the file name has one.
+.
+.
+.P
+GNU
+.I troff \" GNU
+accepts multiple leading complementation operators
+.RB \[lq] ! \[rq]\&
+in a conditional expression,
+inverting its truth value with each occurrence.
+.
+AT&T
+.I troff \" AT&T
+regards the conditional expression in
+.RB \[lq] ".ie !!0 .tm true" \[rq]
+as malformed
+(but issues no diagnostic message)
+and takes neither the true branch
+nor any alternative one subsequently established by an
+.B el
+request.
 .
 .
 .P

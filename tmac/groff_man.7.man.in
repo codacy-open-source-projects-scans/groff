@@ -2524,8 +2524,8 @@ then
   sed \[aq]/@DEFINE_MR@/d\[aq] myprog.man.in > myprog.man
 else
   sed \[aq]s/@DEFINE_MR@/.de MR\e
-\&.  ie \e\e\e\en(.$=1 .I \e\e\e\e$1\e
-\&.  el .IR \e\e\e\e$1 (\e\e\e\e$2)\e\e\e\e$3\e
+\&.\&  ie \e\e\e\en(.$=1 .I \e\e\e\e$1\e
+\&.\&  el .IR \e\e\e\e$1 (\e\e\e\e$2)\e\e\e\e$3\e
 \&../\[aq] myprog.man.in > myprog.man
 fi
 .EE
@@ -4746,12 +4746,12 @@ call as follows.
 .RS
 .EX
 \&.ie \[rs]n(.g \[rs]{\[rs]
-\&.  ds oq \[rs][oq]\[rs]"
-\&.  ds cq \[rs][cq]\[rs]"
+\&.\&  ds oq \[rs][oq]\[rs]"
+\&.\&  ds cq \[rs][cq]\[rs]"
 \&.\[rs]}
 \&.el \[rs]{\[rs]
-\&.  ds oq \[ga]\[rs]"
-\&.  ds cq \[aq]\[rs]"
+\&.\&  ds oq \[ga]\[rs]"
+\&.\&  ds cq \[aq]\[rs]"
 \&.\[rs]}
 .EE
 .RE
@@ -4829,7 +4829,7 @@ _endif()dnl
 .
 James Clark wrote the initial GNU implementation of the
 .I man
-macro package.  \" by 1.01
+macro package. \" by 1.01
 .
 Later,
 .MT wl@\:gnu\:.org

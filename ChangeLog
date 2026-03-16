@@ -1,3 +1,154 @@
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (rename_register_request): Fix typo in
+	warning diagnostic message.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (is_conditional_expression_true):
+	Keep track of how many leading `!` complementation operators
+	appear in a conditional expression.  If multiple occur and the
+	formatter is in AT&T compatibility mode, warn in category
+	"syntax" that the construction is not portable to AT&T troffs.
+
+	* doc/groff.texi.in (Other Differences):
+	* man/groff_diff.7.man (Other differences): Document this
+	syntactical difference.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/html/pushback.cpp (pushBackBuffer::readInt):
+	Eliminate initialized-and-written-to-but-never-read local
+	variable `c`.
+
+	Thanks to Bjarni Ingi Gislason for the report in <https://\
+	lists.gnu.org/archive/html/groff/2026-03/msg00072.html>.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Throw warning in category "style" if
+	{a} centering or right-alignment is configured while a temporary
+	indentation is in effect; or {b} a temporary indentation request
+	is issued while centering or right-alignment are in effect.
+	(cancel_temporary_indentation): New function--which I suspect
+	should be a member function of class `environment`, but which
+	would be confusingly inconsistent with existing practice--sets
+	the temporary indentation amount to zero and sets the property
+	of having a temporary indent off.  (Those are not the same
+	thing.  Temporary indentation _overrides_ ordinary indentation,
+	so a temporary indent of zero is often sensible.)  Also tell the
+	mysterious MTSM machine that temporary indentation is off.
+	(center): Throw the aforementioned warning from this `ce`
+	request handler.
+	(right_justify): Throw the aforementioned warning from this `rj`
+	request handler.
+	(temporary_indent): Throw the aforementioned warning from this
+	`ti` request handler.
+	* src/roff/troff/env.h (class environment): Declare new non-OO
+	`cancel_temporary_indentation()` function as a friend.
+	{Eighties-style.  <finger guns>}
+
+	* doc/groff.texi.in (Warnings):
+	* src/roff/troff/troff.1.man (Warnings): Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64275>.  See
+	<https://lists.gnu.org/archive/html/groff/2023-05/msg00079.html>
+	for illustration of the ill-defined composition of these
+	features and (brief) discussion.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::space): Throw warning in
+	category "style" if the end of a sentence is detected before the
+	end of a text line.
+
+	* doc/groff.texi.in (Warnings):
+	* src/roff/troff/troff.1.man (Warnings): Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?68151>.  Thanks to Alex
+	Colomar for the original feature request.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (struct warning_category): Add new
+	warning category, "style" (with symbol `WARN_STYLE`).  Suppress
+	its enablement from the `-wall` command-line option shorthand,
+	as categories "di", "mac", and "reg" are.  I expect much noise
+	from historical documents in forthcoming applications of this
+	category, and AT&T troff syntax is too loosely specified to
+	support some of the ideas I have in mind.
+
+	* doc/groff.texi.in (Warnings):
+	* src/roff/troff/troff.1.man (Warnings):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?62776>.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_request): Boolify and rename
+	some local variables.  `reading_from_terminal` becomes
+	`is_reading_from_terminal`.  `nl` becomes `saw_newline`.  Assign
+	to `is_reading_from_terminal`, `had_prompt`, and `saw_newline`
+	with Boolean, not integer, literals.  Use idiomatic test
+	expressions.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (word_space_node::need_reread)
+	(hmotion_node::need_reread): Assign to `bool`-typed `unformat`
+	member variable with Boolean, not integer, literals.  Continues
+	commit 8ab4aa8bec, 2024-08-14.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Boolify and rename `global_diverted_space`.
+
+	* src/roff/troff/input.cpp: Demote global variable
+	`global_diverted_space` from `int` to `bool` and rename it to
+	`have_global_diverted_space`.  Annotate it as used only by the
+	MTSM feature, which I hope some day to either better understand,
+	or to remove.
+	* src/roff/troff/env.cpp: Update an `extern` declaration.
+	* src/roff/troff/input.cpp (diverted_space_node::need_reread):
+	* src/roff/troff/env.cpp (environment::do_break): Update sites
+	of use.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/utils/pfbtops/pfbtops.am (nodist_EXTRA_pfbtops_SOURCES):
+	Drop "trick" macro definition 'to force the use of C++
+	compiler[.]  See the Automake manual, "Libtool Convenience
+	Libraries"'.  However, groff doesn't use Libtool.  The
+	nonexistent dummy file declared here impedes the use of
+	Automake's "tags" target.  After this change, "pfbtops"'s
+	linkage is unchanged per ldd(1), the smoke test still passes,
+	and the program appears to still operate fine on the file
+	"build/font/devpdf/symbolsl.pfb"...on amd64 GNU/Linux with a GNU
+	toolchain.
+
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Implement `.ul` register for orthogonal completeness
+	with respect to the `.ce`, `.rj`, and `.itc` registers.
+
+	* src/roff/troff/env.h (class environment): Declare new accessor
+	member function `get_underlined_line_count()`.
+	* src/roff/troff/env.cpp
+	(environment::get_underlined_line_count): Define it.
+	(init_env_requests): Wire up `.ul` register name to
+	`get_underlined_line_count()`.
+
+	* src/roff/groff/tests/dot-ul-register-works.sh: Test it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	* doc/groff.texi.in (Artificial Fonts):
+	* man/groff.7.man (Read-only registers):
+	* man/groff_diff.7.man (New registers):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?68130>.
+
 2026-03-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Fix Savannah #68137.

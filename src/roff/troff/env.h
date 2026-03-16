@@ -104,6 +104,11 @@ class font_family;
 class pending_output_line;
 
 // declarations to avoid friend name injection problems
+// XXX: Why are all of these global functions and not object methods?
+// Can't we make most/all of these ordinary member functions of class
+// `environment`?  And have request handlers read and validate request
+// arguments and then, if everything is kosher, call curenv->[one of the
+// below]?  --GBR, 2026
 void title_length();
 void space_size();
 void fill();
@@ -328,6 +333,7 @@ public:
   int get_hyphen_line_count();
   hunits get_hyphenation_space();
   hunits get_hyphenation_margin();
+  int get_underlined_line_count();
   int get_centered_line_count();
   int get_input_trap_line_count();
   int get_input_trap_respects_continuation();
@@ -402,6 +408,7 @@ public:
   friend void temporary_indent();
   friend void configure_underlining(bool);
   friend void do_input_trap(bool);
+  friend void cancel_temporary_indentation();
   friend void set_tabs();
   friend void margin_character();
   friend void no_number();

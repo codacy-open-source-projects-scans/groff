@@ -2500,6 +2500,62 @@ escape sequences do.
 .
 .
 .\" ====================================================================
+.SH "Productive input lines"
+.\" ====================================================================
+.
+To clearly describe some requests,
+.I groff
+requires the concept of \[lq]productive input lines\[rq].
+.
+A
+.I "productive input line"
+directly produces formatted output.
+.
+Text lines produce output,
+as do control lines containing requests such as
+.B tl
+or an escape sequence like
+.B \[rs]l
+(when not itself nested inside a
+.B \[rs]w
+escape sequence).
+.
+Register,
+string,
+and macro definitions are not productive;
+neither are
+empty requests,
+nor requests and escape sequences that alter the formatting environment
+(as with changes to the size,
+face,
+height,
+slant,
+or color of the type).
+.
+Macro calls are not themselves productive,
+but their interpolations can be.
+.
+In
+GNU
+.I troff, \" GNU
+if an input line by itself formats an output document,
+it is productive;
+otherwise not.
+.
+(This test does not work with
+AT&T
+.I troff, \" AT&T
+which generates device-independent output
+even when it does not need to.)
+.
+You can also use the
+.B pline
+request before and after an input line
+to see whether it produced any (additional) output nodes;
+see section \[lq]Debugging\[rq] below.
+.
+.
+.\" ====================================================================
 .SH "Syntax reference conventions"
 .\" ====================================================================
 .
@@ -2684,8 +2740,15 @@ those that directly produce formatted output.
 Text lines produce output,
 as do control lines containing requests like
 .RB \[lq] ".tl //\^Page %//\^" \[rq]
-or escape sequences like
-.RB \[lq] \[rs]\^l\[aq]1i\[aq] \[rq].
+or an escape sequence like
+.RB \[lq] \[rs]\^l\[aq]1i\[aq] \[rq]
+(when not itself nested within a
+.B \[rs]w
+escape sequence).
+.
+Register,
+string,
+and macro definitions are not productive.
 .
 Macro calls are not themselves productive,
 but their interpolations can be.
@@ -5359,7 +5422,11 @@ to
 .TPx
 .REQ .ul
 Underline
-(italicize in
+(in
+.I nroff
+mode)
+or italicize
+(in
 .I troff
 mode)
 the output of the next productive input line.
@@ -5367,7 +5434,11 @@ the output of the next productive input line.
 .TPx
 .REQ .ul npl
 Underline
-(italicize in
+(in
+.I nroff
+mode)
+or italicize
+(in
 .I troff
 mode)
 the output of the next
@@ -7118,8 +7189,8 @@ positive if glyph extends below the baseline.
 .
 .TP
 .REG .ce
-Count of input lines remaining to be centered
-in the environment.
+Count of productive input lines
+remaining to be centered in the environment.
 .
 .TP
 .REG .cht
@@ -7254,8 +7325,8 @@ was \[lq]interrupted\[rq] or continued with
 .
 .TP
 .REG .it
-Count of input lines remaining
-in the environment's pending input trap.
+Count of productive input lines remaining
+before the environment's pending input trap springs.
 .
 .TP
 .REG .itc
@@ -7420,8 +7491,8 @@ Maximum representable integer in GNU
 .
 .TP
 .REG .rj
-Count of input lines remaining to be right-aligned
-in the environment.
+Count of productive input lines
+remaining to be right-aligned in the environment.
 .
 .TP
 .REG .s
@@ -7550,6 +7621,16 @@ see
 .I @g@troff
 .B \-U
 option.
+.
+.TP
+.REG .ul
+Count of input lines remaining to be underlined
+in the environment.
+.
+See
+.request cu
+and
+.request ul .
 .
 .TP
 .REG .v

@@ -449,7 +449,7 @@ void html_text::do_tt (void)
 }
 
 /*
- *  do_pre - changes to preformated text.
+ *  do_pre - changes to preformatted text.
  */
 
 void html_text::do_pre (void)

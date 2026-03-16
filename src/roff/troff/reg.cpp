@@ -527,7 +527,7 @@ static void rename_register_request()
   }
   symbol s1 = read_identifier();
   if (!has_arg())
-    warning(WARN_MISSING, "register renaming request exepects new"
+    warning(WARN_MISSING, "register renaming request expects new"
 	    " identifier as second argument");
   else if (!s1.is_null()) {
     symbol s2 = read_identifier();

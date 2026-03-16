@@ -5462,7 +5462,7 @@ tab(@);
 Lb Lb
 L Lx.
 Value@Effect
-0@\[dq].  \[dq]
+0@\[dq].\&  \[dq]
 1@\[dq] \[em] \[dq]
 .TE
 .

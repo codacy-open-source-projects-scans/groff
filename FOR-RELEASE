@@ -17,6 +17,10 @@ Before Release
 
   https://www.gnu.org/prep/maintain/maintain.html#Automated-Upload-Registration
 
+* When deciding to increment the major or minor version number, split
+  off a historical "ChangeLog" file and add it to `EXTRA_DIST` in
+  "Makefile.am".
+
 * Update "grog.pl" to include the names of new GNU troff requests and
   macro names unique to specific packages (and sufficiently heavily used
   in typical documents).
@@ -120,6 +124,77 @@ After Release
 * If warranted, update the "ANNOUNCE" file to make it a template for the
   next release.
 
-* If the major or minor version number has incremented, split off
-  a historical "ChangeLog" file and add it to `EXTRA_DIST` in
-  "Makefile.am".
+* Update the groff home page, which is kept under CVS revision control.
+
+  $ cvs -z3 -d:ext:$USER@cvs.savannah.gnu.org:/web/groff co groff
+
+  Update the home page proper to report the version number and date of
+  the new release.  Also update the date stamp at the bottom of the
+  page.  This part's easy.
+
+  $ editor groff.html
+  $ cvs ci
+
+  Update the "manual" subdirectory, which is like getting seltzer spray
+  directly to the face...when the bottle is filled with aqua regia.
+  First you must do a groff build from the tag of the release, _without_
+  any "configure" options that would perturb the contents of the
+  generated documentation from their defaults.  (Among other things,
+  this means that "/usr/local" will appear frequently in the "Files"
+  sections of groff's man pages.)  Review the "INSTALL.REPO" file for
+  build instructions.
+
+  $ cd /your/git/working/copy/of/groff
+  $ git checkout 1.24.1 # or the tag just created
+  $ ./bootstrap && ./configure && make # or equivalent
+
+  Use a PDF viewer to review the "doc/groff.pdf" and
+  "doc/groff-man-pages.pdf" files in the build directory.  Ensure that
+  they reflect the correct groff version number (visible on the cover
+  page of each document) and the default installation directory
+  ("/usr/local" as noted above).  Count how many pages are in each
+  document and how many man pages are collected.
+
+  If the manuals' contents are correct, navigate to the "manual"
+  subdirectory of the "groff-www" CVS checkout.
+
+  $ cd /your/cvs/working/copy/of/groff-www/groff/manual
+
+  The next step takes FOREVER, because "cvs rm" doesn't work on multiple
+  file arguments.  (This step is present because changes to node names
+  in our Texinfo manual can reconfigure the directory entries, and we
+  don't want stale ones to hang around.)  Prepare and enjoy a beverage.
+
+  $ for f in groff.html.node/*; do rm -f "$f"; cvs rm "$f"; done
+  $ cvs ci
+  $ make clean
+  $ editor index.html.in # update date and counts from above
+  $ make SRCDIR=/your/git/working/copy/of/groff
+
+  You will need to specify `BUILDDIR` to make(1) as well if you don't
+  arrange your groff builds the way GBR does.
+
+  $ cvs add groff.html.node
+  $ cvs add groff.html.node/*.html
+  $ cvs ci
+
+  Web-browse to <https://www.gnu.org/software/groff/manual/> and confirm
+  that things look correct.  With each "cvs ci" in the foregoing
+  procedure, a regeneration of the GNU-hosted web pages will start.
+  This is not an instantaneous process.  Give it several minutes to
+  complete.  If a document looks stale, instruct your browser to
+  force-reload the page, as it might have cached an old copy: for some
+  reason the site's web server doesn't seem to always update the
+  metadata that assist the browser to recognize a stale cache entry.
+
+* Update groff's entry at the FSF's Free Software Directory.
+
+  https://directory.fsf.org/wiki/Groff
+
+
+##### Editor settings
+Local Variables:
+fill-column: 72
+mode: text
+End:
+# vim: set autoindent textwidth=72:

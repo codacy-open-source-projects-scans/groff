@@ -1281,7 +1281,6 @@ move right 1 from last [] .e;
 critical(spline right 1 then up right then left then left 1);
 .PE
 .CE "2: Special points on open objects"
-.PP
 .
 .NH 4
 Locations Relative to Polygons
@@ -2375,7 +2374,6 @@ spacing to\~0 (using \fB.vs\fP) before starting the picture.
 .NH 1
 Interface to TeX
 .PP
-.PP
 \*[tx] mode is enabled by the
 .B \-t
 option.
@@ -2824,8 +2822,8 @@ options.
 An end-of-line backslash is interpreted as a request to continue the
 line; the backslash and following newline are ignored.
 .PP
-.RS
 Here are the grammar terminals:
+.RS
 .IP \s[-1]INT\s[0]
 A positive integer.
 .IP \s[-1]NUMBER\s[0]
@@ -3027,7 +3025,7 @@ empty string is considered as `false' for `&&' and `|\||'.
   arrow                 \fR# open object \[em] line with arrowhead\fP
   spline                \fR# open object \[em] spline curve\fP
   move
-  TEXT TEXT ...         \fR# text within invisible box\fP
+  TEXT TEXT ...\&         \fR# text within invisible box\fP
   plot <expr> TEXT      \fR# formatted text\fP
   '[' <command> ... ']'
 .R
@@ -3078,7 +3076,7 @@ direction on the block's bounding box.
   ljust | rjust         \fR# adjust text horizontally\fP
   above | below         \fR# adjust text vertically\fP
   aligned               \fR# align parallel to object\fP
-  TEXT TEXT ...         \fR# text within object\fP
+  TEXT TEXT ...\&         \fR# text within object\fP
   <expr>                \fR# motion in the current direction\fR
 .R
 .DE

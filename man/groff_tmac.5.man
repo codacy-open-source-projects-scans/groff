@@ -10,6 +10,7 @@ typesetting system
 .\" ====================================================================
 .\"
 .\" Copyright 2000-2024 Free Software Foundation, Inc.
+.\"           2021-2024 G. Branden Robinson
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"
@@ -1416,9 +1417,9 @@ request makes use of text lines unnecessary.
 .IP
 .EX
 \&.de Text
-\&.  if (\[rs]\[rs]n[.$] == 0) \[rs]
-\&.    return
-\&.  nop \[rs]&\[rs]\[rs]$*\[rs]&
+\&.\&  if (\[rs]\[rs]n[.$] == 0) \[rs]
+\&.\&    return
+\&.\&  nop \[rs]&\[rs]\[rs]$*\[rs]&
 \&..
 .EE
 .RE

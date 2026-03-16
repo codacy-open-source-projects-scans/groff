@@ -207,6 +207,7 @@ of this release.
    instance with "grep -i -A1 thanks ChangeLog".  A manual merge of
    similar from the contrib/ change log files may also be necessary. ]]
 
+Alex Colomar
 Bob Friesenhahn
 Bruno Haible
 Zack Weinberg

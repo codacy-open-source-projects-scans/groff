@@ -1,3 +1,10 @@
+2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* notquine.sed: Suppress end-of-sentence detection in GPL notice
+	text and examples of *roff input (macro definitions using spaces
+	for indentation after the control character) when inlining
+	document source into itself.
+
 2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* sboxes.am: Populate `sboxespdfdocdir` and

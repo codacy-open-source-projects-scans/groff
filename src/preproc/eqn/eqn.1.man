@@ -887,7 +887,7 @@ drawing a diagonal line through it.
 .IP
 .EX
 \&.de Ca
-\&.  ds 0s \[rs]
+\&.\&  ds 0s \[rs]
 \[rs]Z\[aq]\[rs]\[rs]*(0s\[aq]\[rs]
 \[rs]v\[aq]\[rs]\[rs]n(0du\[aq]\[rs]
 \[rs]D\[aq]l \[rs]\[rs]n(0wu \-\[rs]\[rs]n(0hu\-\[rs]\

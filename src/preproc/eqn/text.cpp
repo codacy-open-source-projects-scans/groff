@@ -350,7 +350,7 @@ struct map entity_table[] = {
   {"c+", "&oplus;"},	// ISOamsb: plus sign in a circle
   // Old troff \(di goes here
   {"tdi", "&divide;"},	// ISOnum
-  {"f/", "&horbar;"},	// ISOnum: horizintal bar for fractions
+  {"f/", "&horbar;"},	// ISOnum: horizontal bar for fractions
   // Old troff \(** goes here
   {"<=", "&le;"},	// ISOtech
   {">=", "&ge;"},	// ISOtech

@@ -54,6 +54,7 @@ enum warning_type {
   WARN_BREAK = 04,
   WARN_DELIM = 010,
   //WARN_EL = 020, // withdrawn in groff 1.24
+  WARN_STYLE = 020, // introduced in groff 1.25
   WARN_SCALE = 040,
   WARN_RANGE = 0100,
   WARN_SYNTAX = 0200,

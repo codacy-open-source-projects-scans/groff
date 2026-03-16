@@ -239,7 +239,6 @@ static int isHexDigit (char ch)
 
 int pushBackBuffer::readInt (void)
 {
-  int  c =0;
   int  i =0;
   int  s =1;
   char ch=getPB();
@@ -259,7 +258,6 @@ int pushBackBuffer::readInt (void)
       i += (int)(ch-'0');
     }
     ch = getPB();
-    c++;
   }
   if (ch != putPB(ch)) {
     ERROR("assert failed");

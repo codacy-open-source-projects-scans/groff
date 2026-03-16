@@ -576,7 +576,7 @@ _
 1@2@\fIunused\fP@11@2048@tab
 2@4@break@12@4096@\fIunused\fP
 3@8@delim@13@8192@missing
-4@16@\fIunused\fP@14@16384@input
+4@16@style@14@16384@input
 5@32@scale@15@32768@escape
 6@64@range@16@65536@space
 7@128@syntax@17@131072@font
@@ -668,15 +668,6 @@ or
 request was invoked without an argument when there was no current
 diversion.
 T}
-.
-.
-.\" .TP
-.\" .BR el "\t16"
-.\" The
-.\" .B el
-.\" request was encountered with no prior corresponding
-.\" .B ie
-.\" request.
 .
 .
 .sp \n[PD]u
@@ -814,6 +805,18 @@ and an empty macro is not defined.
 This category is enabled by default.
 .
 It never occurs in compatibility mode.
+T}
+.
+.
+.sp \n[PD]u
+style	16	T{
+Input was non-idiomatic or likely to produce an unexpected result
+(or none at all),
+but is not invalid:
+the end of a sentence was detected prior to the end of a text line;
+or
+an attempt was made to combine temporary indentation
+with centering or right-adjustment.
 T}
 .
 .

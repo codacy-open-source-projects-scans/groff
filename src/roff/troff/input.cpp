@@ -3320,7 +3320,7 @@ void exit_troff()
     topdiv->space(topdiv->get_page_length(), true /* forcing */);
     tok.next();
     process_input_stack();
-    // TODO: Resolve the follwing case and enable the assertion.
+    // TODO: Resolve the following case and enable the assertion.
     // $ printf '.DS\n.DE\n' | ./build/test-groff -ms
     // troff: ../src/roff/troff/input.cpp:2937: void exit_troff():
     //   Assertion `seen_last_page_ejector' failed.
@@ -3453,16 +3453,17 @@ bool node::need_reread(bool *)
   return false;
 }
 
-int global_diverted_space = 0;
+// XXX: used only by MTSM code
+bool have_global_diverted_space = false;
 
 bool diverted_space_node::need_reread(bool *bolp)
 {
-  global_diverted_space = 1;
+  have_global_diverted_space = true;
   if (curenv->get_fill())
     trapping_blank_line();
   else
     curdiv->space(n);
-  global_diverted_space = 0;
+  have_global_diverted_space = false;
   *bolp = true;
   return true;
 }
@@ -3479,7 +3480,7 @@ bool word_space_node::need_reread(bool *)
   if (unformat) {
     for (width_list *w = orig_width; w != 0 /* nullptr */; w = w->next)
       curenv->space(w->width, w->sentence_width);
-    unformat = 0;
+    unformat = false;
     return true;
   }
   return false;
@@ -3494,7 +3495,7 @@ bool hmotion_node::need_reread(bool *)
 {
   if (unformat && was_tab) {
     curenv->advance_to_tab_stop();
-    unformat = 0;
+    unformat = false;
     return true;
   }
   return false;
@@ -4960,17 +4961,17 @@ bool unpostpone_traps()
 void read_request()
 {
   macro_iterator *mi = new macro_iterator;
-  int reading_from_terminal = isatty(fileno(stdin));
-  int had_prompt = 0;
+  bool is_reading_from_terminal = bool(isatty(fileno(stdin)));
+  bool had_prompt = false;
   if (has_arg(true /* peek */)) {
     int c = read_char_in_copy_mode(0 /* nullptr */);
     while (c == ' ')
       c = read_char_in_copy_mode(0 /* nullptr */);
     while (c != EOF && c != '\n' && c != ' ') {
       if (!is_invalid_input_char(c)) {
-	if (reading_from_terminal)
+	if (is_reading_from_terminal)
 	  fputc(c, stderr);
-	had_prompt = 1;
+	had_prompt = true;
       }
       c = read_char_in_copy_mode(0 /* nullptr */);
     }
@@ -4979,30 +4980,30 @@ void read_request()
       decode_macro_call_arguments(mi);
     }
   }
-  if (reading_from_terminal) {
+  if (is_reading_from_terminal) {
     fputc(had_prompt ? ':' : '\a', stderr);
     fflush(stderr);
   }
   input_stack::push(mi);
   macro mac;
-  int nl = 0;
+  bool saw_newline = false;
   int c;
   while ((c = getchar()) != EOF) {
     if (is_invalid_input_char(c))
       warning(WARN_INPUT, "invalid input character code %1", int(c));
     else {
       if (c == '\n') {
-	if (nl != 0 /* nullptr */)
+	if (!saw_newline)
 	  break;
 	else
-	  nl = 1;
+	  saw_newline = true;
       }
       else
-	nl = 0;
+	saw_newline = false;
       mac.append(c);
     }
   }
-  if (reading_from_terminal)
+  if (is_reading_from_terminal)
     clearerr(stdin);
   input_stack::push(new string_iterator(mac));
   tok.next();
@@ -6104,7 +6105,7 @@ static bool read_delimited_measurement(units *n, unsigned char si)
 // \l, \L
 //
 // Here's some syntax unique to these escape sequences: a horizontal
-// measurment followed immediately by a character.
+// measurement followed immediately by a character.
 static bool read_line_rule_expression(units *n, unsigned char si,
 				      charinfo **cip)
 {
@@ -7190,9 +7191,18 @@ static bool is_conditional_expression_true()
   bool perform_output_comparison = false;
   bool want_test_sense_inverted = false;
   tok.skip_spaces();
+  int nbangs = 0;
+  bool warned_about_bangs = false;
   while (tok.ch() == int('!')) { // TODO: grochar
+    nbangs++;
     tok.next();
     want_test_sense_inverted = !want_test_sense_inverted;
+    if (want_att_compat && (nbangs > 1) && !warned_about_bangs) {
+      warning(WARN_SYNTAX, "use of multiple complementation operators"
+	      " '!' in a conditional expression is not portable to AT&T"
+	      " troff");
+      warned_about_bangs = true;
+    }
   }
   bool result;
   int c = tok.ch(); // safely compares to char literals; TODO: grochar
@@ -10611,6 +10621,7 @@ static struct warning_category {
   { "range", WARN_RANGE },
   { "break", WARN_BREAK },
   { "delim", WARN_DELIM },
+  { "style", WARN_STYLE },
   { "scale", WARN_SCALE },
   { "syntax", WARN_SYNTAX },
   { "tab", WARN_TAB },
@@ -10625,7 +10636,7 @@ static struct warning_category {
   { "ig", WARN_IG },
   { "color", WARN_COLOR },
   { "file", WARN_FILE },
-  { "all", WARN_MAX & ~(WARN_DI | WARN_MAC | WARN_REG) },
+  { "all", WARN_MAX & ~(WARN_STYLE | WARN_DI | WARN_MAC | WARN_REG) },
   { "w", WARN_MAX },
   { "default", DEFAULT_WARNING_CATEGORY_SET },
 };

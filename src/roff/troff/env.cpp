@@ -475,6 +475,11 @@ int environment::get_hyphen_line_count()
   return hyphen_line_count;
 }
 
+int environment::get_underlined_line_count()
+{
+  return underlined_line_count;
+}
+
 int environment::get_centered_line_count()
 {
   return centered_line_count;
@@ -561,6 +566,8 @@ void environment::space(hunits space_width, hunits sentence_space_width)
       && node_list_ends_sentence(p->next) == 1) {
     hunits xx = translate_space_to_dummy ? H0 : sentence_space_width;
     if (p->did_space_merge(xx, space_width, sentence_space_width)) {
+      warning(WARN_STYLE, "end of sentence detected before end of text"
+	      " line");
       *tp += xx;
       return;
     }
@@ -1456,6 +1463,13 @@ void no_fill()
   tok.next();
 }
 
+void cancel_temporary_indentation()
+{
+  curenv->temporary_indent = 0;
+  curenv->have_temporary_indent = false;
+  curdiv->modified_tag.excl(MTSM_TI);
+}
+
 void center()
 {
   int n;
@@ -1467,6 +1481,10 @@ void center()
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
+  if (curenv->have_temporary_indent)
+    warning(WARN_STYLE, "ignoring temporary indentation while"
+	    " centering request in effect");
+  cancel_temporary_indentation();
   curenv->right_aligned_line_count = 0;
   curenv->centered_line_count = n;
   curdiv->modified_tag.incl(MTSM_CE);
@@ -1484,6 +1502,10 @@ void right_justify()
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
+  if (curenv->have_temporary_indent)
+    warning(WARN_STYLE, "ignoring temporary indentation while"
+	    " right-alignment request in effect");
+  cancel_temporary_indentation();
   curenv->centered_line_count = 0;
   curenv->right_aligned_line_count = n;
   curdiv->modified_tag.incl(MTSM_RJ);
@@ -1612,8 +1634,19 @@ void temporary_indent()
     // character this request still breaks the line.
   }
   else {
+    if (curenv->centered_line_count > 0) {
+      is_valid = false;
+      warning(WARN_STYLE, "ignoring temporary indentation request while"
+	    " centering text");
+    }
+    if (curenv->right_aligned_line_count > 0) {
+      is_valid = false;
+      warning(WARN_STYLE, "ignoring temporary indentation request while"
+	      " right-aligning text");
+    }
     if (!read_hunits(&temp, 'm', curenv->get_indent()))
       is_valid = false;
+    // XXX: Why not `skip_line()`?
     while (!tok.is_newline() && !tok.is_eof())
       tok.next();
   }
@@ -1629,7 +1662,7 @@ void temporary_indent()
     curenv->have_temporary_indent = true;
     curdiv->modified_tag.incl(MTSM_TI);
   }
-  tok.next();
+  tok.next(); // XXX: Why not `skip_line()`?
 }
 
 void configure_underlining(bool want_spaces_underlined)
@@ -2576,7 +2609,8 @@ void environment::construct_new_line_state(node *nd)
   }
 }
 
-extern int global_diverted_space;
+// XXX: used only by MTSM code
+extern bool have_global_diverted_space;
 
 // "Forced adjustment" refers to spreading of adjustable spaces (and
 // perhaps only that, even if in the future we implement "squeezing"),
@@ -2633,7 +2667,7 @@ void environment::do_break(bool want_forced_adjustment)
   mark_last_line();
   output_pending_lines();
 #endif /* WIDOW_CONTROL */
-  if (!global_diverted_space) {
+  if (!have_global_diverted_space) {
     curdiv->modified_tag.incl(MTSM_BR);
     seen_break = true;
   }
@@ -4434,6 +4468,7 @@ void init_env_requests()
   init_string_env_reg(".sty", get_style_name_string);
   init_string_env_reg(".tabs", get_tabs);
   init_int_env_reg(".u", get_fill);
+  init_int_env_reg(".ul", get_underlined_line_count);
   init_vunits_env_reg(".v", get_vertical_spacing);
   init_hunits_env_reg(".w", get_prev_char_width);
   init_int_env_reg(".zoom", get_zoom);

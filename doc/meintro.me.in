@@ -570,7 +570,7 @@ the input:
 .(b
 \&.in 1i
 \&.ti 0
-Ware, James R.  The Best of Confucius,
+Ware, James R.\&  The Best of Confucius,
 Halcyon House, 1950.
 An excellent book containing translations of
 most of Confucius\(aq most delightful sayings.
@@ -580,7 +580,7 @@ foundations of Chinese philosophy.
 produces:
 .in 1i+\n($iu
 .ti \n($iu
-Ware, James R.  The Best of Confucius,
+Ware, James R.\&  The Best of Confucius,
 Halcyon House, 1950.
 An excellent book containing translations of
 most of Confucius' most delightful sayings.
@@ -771,12 +771,12 @@ see figure 1.
 Text of keep to be floated.
 \&.sp
 \&.ce
-Figure 1.  Example of a Floating Keep.
+Figure 1.\&  Example of a Floating Keep.
 \&.hl
 \&.)z
 .sp
 .ce
-Figure 1.  Example of a Floating Keep.
+Figure 1.\&  Example of a Floating Keep.
 .hl
 .)z
 The
@@ -1462,12 +1462,12 @@ the input:
 produces as output the result:
 .(b
 .b
-1.  The Preprocessor
-1.1.  Basic Concepts
-1.2.  Control Inputs
+1.\&  The Preprocessor
+1.1.\&  Basic Concepts
+1.2.\&  Control Inputs
 1.2.1.
 1.2.2.
-2.  Code Generation
+2.\&  Code Generation
 2.1.1.
 .)b
 .pp
@@ -1718,7 +1718,7 @@ text of preface
 .sp 2
 .in 0
 .ce
-Figure 2.  Outline of a Sample Paper
+Figure 2.\&  Outline of a Sample Paper
 .hl
 .)z
 .sh 2 "Equations and Tables"

@@ -8,6 +8,7 @@ s/-/\\&/g
 s/'/\\[aq]/g
 s/~/\\[ti]/g
 s/^\./\\\&&/
+s/\.  /.\\\&  /
 /@FOOTNOTE@/a\
 .FS\
 This is a long footnote occupying multiple output lines.\

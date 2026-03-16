@@ -9739,28 +9739,54 @@ This is an uninteresting sentence.
 @cindex productive input line
 @cindex input line, productive
 @cindex line, productive input
-To clearly present the next couple of requests, we must introduce the
-concept of ``productive'' input lines.  A @dfn{productive input line} is
-one that directly produces formatted output.
+To clearly present the next couple of requests,
+we must introduce the concept of ``productive'' input lines.
+A
+@dfn{productive input line}
+directly produces formatted output.
 Text lines produce output,@footnote{though not necessarily to the output
 device;
 see
 @ref{Diversions}}
 as do control lines containing requests like
 @samp{.tl //Page %//}
-or escape sequences like
-@samp{\l'1i'}.
+or an escape sequence like
+@samp{\l'1i'}
+(when not itself nested inside a
+@code{\w}
+escape sequence).
+Register,
+string,
+and macro definitions are not productive;
+neither are
+empty requests,
+nor requests and escape sequences that alter the formatting environment
+(as with changes to the size,
+face,
+height,
+slant,
+or color of the type).
 Macro calls are not themselves productive,
 but their interpolations can be.
-Empty requests, and requests and escape sequences that define
-registers or strings or alter the formatting environment (as with
-changes to the size, face, height, slant, or color of the type) are not
-productive.@footnote{If you're not sure whether an input line has been
-productive, you can use the @code{pline} request before and after it to
-see whether it produced any output nodes.  @xref{Debugging}.}  We will
-also preview the output line continuation escape sequence, @code{\c},
-which ``connects'' two input lines that would otherwise be counted
-separately.  @footnote{@xref{Line Continuation}.}
+In
+GNU
+@command{troff}, @c GNU
+if an input line by itself formats an output document,
+it is productive;
+otherwise not.@footnote{This test does not work with AT&T
+@command{troff}, @c AT&T
+which generates device-independent output
+even when it does not need to.}
+You can also use the
+@code{pline}
+request before and after an input line
+to see whether it produced any (additional) output
+nodes.@footnote{@xref{Debugging}.}
+
+We also preview the output line continuation escape sequence,
+@code{\c},
+which ``connects'' two input lines
+that would otherwise be counted separately.@footnote{@xref{Line Continuation}.}
 
 @Example
 @c .ll 56n
@@ -9784,15 +9810,26 @@ Went the day well?
 @cindex centered text (unfilled)
 @cindex centering lines (@code{ce})
 @cindex lines, centering (@code{ce})
-Break (unless the no-break control character is used), center the output
-of the next @var{n} productive input lines with respect to the line
-length and indentation without filling, then break again regardless of
-the invoking control character.
+Break
+(unless the no-break control character is used),
+center the output of the next
+@var{n}
+productive input lines
+with respect to the line length and indentation,
+without filling,
+then break again regardless of the invoking control character.
 @c Temporary indentation is ignored.
-If the argument is not positive, centering is disabled.  Omitting the
-argument implies an @var{n} of @samp{1}.  The count of input lines
-remaining to be centered is stored in the read-only register @code{.ce}
-and is associated with the environment (@pxref{Environments}).
+A nonpositive argument cancels any pending centering.
+Omitting the argument implies an
+@var{n}
+of
+@samp{1}.
+The read-only register
+@code{.ce}
+stores the count of productive input lines
+remaining to be centered,
+which is associated with the environment
+(@pxref{Environments}).
 
 @cindex @code{ce} request, difference from @w{@samp{.ad c}}
 While the @w{@samp{.ad c}} request also centers text, it fills the text
@@ -9842,14 +9879,24 @@ for requests that take a count of input lines as an argument.
 @DefregListEndx {.rj}
 @cindex right-aligning text (@code{rj})
 @cindex text, right-aligning (@code{rj})
-Break (unless the no-break control character is used), align the output
-of the next @var{n} productive input lines to the right margin without
-filling, then break again regardless of the control character.
+Break
+(unless the no-break control character is used),
+align the output of the next
+@var{n}
+productive input lines to the right margin,
+without filling,
+then break again regardless of the control character.
 @c Temporary indentation is ignored.
-If the argument is not positive, right-alignment is disabled.  Omitting
-the argument implies an @var{n} of @samp{1}.  The count of input lines
-remaining to be right-aligned is stored in the read-only registeinput r
-@code{.rj} and is associated with the environment
+A nonpositive argument cancels any pending right-alignment.
+Omitting the argument implies an
+@var{n}
+of
+@samp{1}.
+The read-only register
+@code{.rj}
+stores the count of productive input lines
+remaining to be right-aligned,
+which is associated with the environment
 (@pxref{Environments}).
 
 @Example
@@ -13892,7 +13939,7 @@ as follows.
 @endExample
 
 @cindex CSTR@tie{}#54 errata
-@cindex CSTR@tie{}#54 erratum, @code{\S} escape
+@cindex CSTR@tie{}#54 erratum, @code{\S} escape sequence
 This escape sequence is incorrectly documented in the
 @acronym{AT&T}
 @code{troff} @c AT&T
@@ -13901,26 +13948,43 @@ the slant is only assigned,
 never incremented or decremented.
 @endDefesc
 
-@Defreq {ul, [@Var{lines}]}
+@DefreqList {ul, [@Var{n}]}
+@DefregListEndx {.ul}
 @cindex underlining (@code{ul})
-The @code{ul} request normally underlines subsequent lines if a TTY
-output device is used.  Otherwise, the lines are printed in italics
-(only the term `underlined' is used in the following).  The single
-argument is the quantity of input lines to be underlined; with no
-argument, the next line is underlined.  If @var{lines} is zero or
-negative, stop the effects of @code{ul} (if it was active).  Requests
-and empty lines do not count for computing the number of underlined
-input lines, even if they produce some output like @code{tl}.  Lines
-inserted by macros (e.g., invoked by a trap) do count.
+Underline
+(in
+@code{nroff}
+mode)
+or italicize
+(in
+@code{troff}
+mode)@footnote{Recall
+@ref{@code{troff} and @code{nroff} Modes}.}
+the next
+@var{n}
+productive input lines.
+A nonpositive argument cancels any pending underlining.
+Omitting the argument implies an
+@var{n}
+of
+@samp{1}.
+The read-only register
+@code{.ul}
+stores the count of productive input lines
+remaining to be underlined,
+which is associated with the environment
+(@pxref{Environments}).
 
-At the beginning of @code{ul}, the current font is stored and the
-underline font is activated.  Within the span of a @code{ul} request, it
-is possible to change fonts, but after the last line affected by
-@code{ul} the saved font is restored.
-
-This number of lines still to be underlined is associated with the
-environment (@pxref{Environments}).  The underline font can be changed
-with the @code{uf} request.
+When
+@code{ul}
+commences underlining,
+the formatter stores the currently selected font
+(strictly,
+its mounting position),
+and restores that font when underlining ceases.
+Use the
+@code{uf}
+request to select an alternative underline font.
 
 @c XXX @xref should be changed to grotty
 
@@ -13928,7 +13992,7 @@ with the @code{uf} request.
 @c underlining is implemented for terminal output devices, and what
 @c problems can arise.
 
-The @code{ul} request does not underline spaces.
+The @code{ul} request does not cause spaces to be underlined.
 @endDefreq
 
 @Defreq {cu, [@Var{lines}]}
@@ -18456,11 +18520,21 @@ the trap is sprung.
 ..
 @endExample
 
-The @code{.it}, @code{.itc}, and @code{.itm} registers report the number
-of input lines remaining in a pending input trap, a Boolean indication
-of whether that pending input trap honors output line continuation, and
-the name of the macro associated with the pending input trap,
-respectively.  All are read-only; @code{.itm} is string-valued as well.
+The
+@code{.it},
+@code{.itc},
+and
+@code{.itm}
+registers respectively report
+the number of remaining productive input lines
+to be formatted before a pending input trap springs,
+a Boolean indication of whether
+that pending input trap honors output line continuation,
+and
+the name of the macro associated with the pending input trap.
+All are read-only;
+@code{.itm}
+is string-valued as well.
 
 @need 500
 Let us consider in more detail the sorts of input lines that are or are
@@ -21525,12 +21599,15 @@ release may reject ambiguous delimiters.
 In compatibility mode,
 ambiguous delimiters are accepted without warning.
 
-@c @item el
-@c @itemx 16
-@c @cindex @code{ie} request, and warnings
-@c @cindex @code{el} request, and warnings
-@c The @code{el} request was encountered with no prior corresponding
-@c @code{ie} request.  @xref{if-else}.
+@item style
+@itemx 16
+Input was non-idiomatic or likely to produce an unexpected result
+(or none at all),
+but is not invalid:
+the end of a sentence was detected prior to the end of a text line;
+or
+an attempt was made to combine temporary indentation
+with centering or right-adjustment.
 
 @item scale
 @itemx 32
@@ -22352,6 +22429,31 @@ but requires more care with trailing comments,
 and doubling of an initial neutral double quote
 @samp{"}
 if the file name has one.
+
+@cindex multiple logical complementation operators @code{!} in conditional expressions, incompatibility with @acronym{AT&T} @code{troff}
+@cindex complementation operators @code{!}, multiple logical, in conditional expressions, incompatibility with @acronym{AT&T} @code{troff}
+@cindex @code{!} complementation operator, multiple logical, in conditional expressions, incompatibility with @acronym{AT&T} @code{troff}
+@cindex operator, complementation (@code{!}), multiple logical, in conditional expressions, incompatibility with @acronym{AT&T} @code{troff}
+GNU
+@command{troff} @c GNU
+accepts multiple leading complementation operators
+@code{!}@:
+in a conditional expression,
+inverting its truth value with each occurrence.
+
+@Example
+.ie !!0 .tm true
+.el     .tm false
+    @error{} false
+@endExample
+
+AT&T
+@command{troff} @c AT&T
+regards the foregoing conditional expression as malformed
+(but issues no diagnostic message)
+and takes
+@emph{neither}
+branch.
 
 @cindex output device name string (@code{.T}), in other implementations
 The existence of the

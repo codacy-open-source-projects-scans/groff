@@ -603,7 +603,7 @@ if [ ! -w "$loc_or_sysdir" ] ; then
   scriptname=`basename $0`
   printf \
 "You don't have write access to ${loc_or_sysdir}
-Superuser priviledges required.\nRerun as \
+Superuser privileges required.\nRerun as \
 '\033[33msudo ${scriptname} \033[4margs\033[0m' \
 or \
 '\033[33msu root -c \"${scriptname} \033[4margs\033[0m\033[33m\"\033[0m'\n"
