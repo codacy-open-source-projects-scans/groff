@@ -41,7 +41,7 @@ struct tm *current_time()
     t;
   char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
 
-  if (source_date_epoch) {
+  if (source_date_epoch != 0 /* nullptr */) {
     errno = 0;
     char *endptr;
     long epoch = strtol(source_date_epoch, &endptr, 10);

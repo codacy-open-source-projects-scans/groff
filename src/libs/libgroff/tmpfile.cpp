@@ -74,15 +74,15 @@ temp_init::temp_init()
   const char *tem;
   // using the first match for any of the environment specs in listed order.
   if (
-      (tem = getenv(GROFF_TMPDIR_ENVVAR)) == 0
-      && (tem = getenv(TMPDIR_ENVVAR)) == 0
+      (tem = getenv(GROFF_TMPDIR_ENVVAR)) == 0 /* nullptr */
+      && (tem = getenv(TMPDIR_ENVVAR)) == 0 /* nullptr */
 #if defined(__MSDOS__) || defined(_WIN32)
       // If we didn't find a match for either of the above
       // (which are preferred, regardless of the host operating system),
       // and we are hosted on either MS-Windows or MS-DOS,
       // then try the Microsoft conventions.
-      && (tem = getenv(WIN32_TMPDIR_ENVVAR)) == 0
-      && (tem = getenv(MSDOS_TMPDIR_ENVVAR)) == 0
+      && (tem = getenv(WIN32_TMPDIR_ENVVAR)) == 0 /* nullptr */
+      && (tem = getenv(MSDOS_TMPDIR_ENVVAR)) == 0 /* nullptr */
 #endif
      )
     // If we didn't find an environment spec fall back to this default.

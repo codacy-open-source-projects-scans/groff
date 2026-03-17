@@ -1,5 +1,7 @@
-/* Copyright 1989-2024 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-1992 Free Software Foundation, Inc.
+                  2024 G. Branden Robinson
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -31,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "device.h"
 #include "defs.h"
 
+// See groff(1), section "Environment".
 const char *const FONT_ENV_VAR = "GROFF_FONT_PATH";
 
 static search_path font_path(FONT_ENV_VAR, FONTPATH, 0, 0);

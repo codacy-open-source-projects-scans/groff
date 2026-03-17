@@ -180,7 +180,7 @@ void set_current_prefix()
 # endif /* DEBUG */
   if (!curr_prefix && !strchr(program_name, '.')) {	// try with extensions
     pathextstr = strsave(getenv("PATHEXT"));
-    if (!pathextstr)
+    if (0 /* nullptr */ == pathextstr)
       pathextstr = strsave(PATH_EXT);
     curr_prefix = searchpathext(program_name, pathextstr, getenv("PATH"));
     delete[] pathextstr;

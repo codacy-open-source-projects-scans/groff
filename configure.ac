@@ -216,7 +216,6 @@ then
 fi
 echo "\
  C++ compiler and options         : $CXX $CXXFLAGS $CPPFLAGS
- use libgroff's memory allocator  : $groff_use_own_allocator
  C compiler and options           : $CC $CFLAGS $CPPFLAGS
  Perl interpreter version         : $perl_version
  Ghostscript command              : $GHOSTSCRIPT"
@@ -250,3 +249,4 @@ GROFF_URW_FONTS_NOTICE
 GROFF_UCHARDET_NOTICE
 GROFF_GROHTML_PROGRAM_NOTICE
 GROFF_MAKEINFO_PROGRAM_NOTICE
+GROFF_ALLOCATOR_NOTICE

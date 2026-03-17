@@ -1,5 +1,155 @@
 2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
+	* bootstrap.conf (gnulib_modules): Drop `putenv`.
+
+	Fixes <https://savannah.gnu.org/bugs/?68024>.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp: Refactor: migrate from putenv(3) to
+	setenv(3) (4/4).
+	(xputenv): Drop no-longer-used function.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp: Refactor: migrate from putenv(3) to
+	setenv(3) (3/4).  Drop global pointer variable `groff_bin_path`.
+	(main): Stop initially populating `newpath` local variable with
+	"PATH=" in favor of straightforward call to `xsetenv()` with
+	`PATH` string literal and contents of `newpath` groff string as
+	arguments.  Because, unlike putenv(3), setenv(3) makes its own
+	copies of its C string operands, we no longer need to reserve
+	statically allocated storage for them to keep them from going
+	out of scope.
+	(xexit): Stop free(3)ing abandoned variable `groff_bin_path`.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp: Refactor: migrate from putenv(3) to
+	setenv(3) (2/4).  Drop global pointer variable `saved_path`.
+	(main): Drop local string `g` containing shell-like
+	environment variable assignment in favor of straightforward call
+	to `xsetenv()` with `GROFF_PATH__` string literal and existing
+	`path` (populated by `getenv("PATH")`) as arguments.  Because,
+	unlike putenv(3), setenv(3) makes its own copies of its C string
+	operands, we no longer need to reserve statically allocated
+	storage for them to keep them from going out of scope.
+	(xexit): Stop free(3)ing abandoned variable `saved_path`.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp: Refactor: migrate from putenv(3) to
+	setenv(3) (1/4).  Drop global pointer variable
+	`groff_font_path`.
+	(xsetenv): New function wraps setenv(3) as `xputenv()` does
+	putenv(3).
+	(main): Replace local string `e` containing shell-like
+	environment variable assignment with string `value` containing
+	only the value to be assigned.  Call `xsetenv()` with
+	`GROFF_FONT_PATH` string literal and `value` as arguments.
+	Because, unlike putenv(3), setenv(3) makes its own copies of its
+	C string operands, we no longer need to reserve statically
+	allocated storage for them to keep them from going out of scope.
+	(xexit): Stop free(3)ing abandoned variable `groff_font_path`.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Refactor: migrate from putenv(3) to setenv(3).
+
+	* src/devices/grops/ps.cpp (main):
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog):
+	* src/roff/troff/input.cpp (main): Do it.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?68024>.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp (main): Slightly refactor.  Rename
+	local variable `f` to `newpath` to make its purpose clearer.
+	Reduce number of string operations.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/xditview/device.c (find_file): Initialize local
+	pointer variables with explicit null pointer constant.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Trivially refactor.  Compare C/C++ objects of `char` type to
+	character literals instead of punning them down to Booleans.
+
+	* src/devices/xditview/device.c (find_file):
+	* src/libs/libgroff/device.cpp (device_init):
+	* src/libs/libgroff/searchpath.cpp (search_path::search_path):
+	* src/roff/groff/groff.cpp (main):
+	* src/roff/troff/input.cpp (interpolate_environment_variable):
+	Do it.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Trivially refactor.  Compare return value of getenv(3) to
+	explicit null pointer constants appropriate for C or C++ instead
+	punning that return value down to a Boolean.
+
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog):
+	* src/devices/grotty/tty.cpp (main):
+	* src/devices/xditview/device.c (find_file):
+	* src/libs/libgroff/curtime.cpp (current_time):
+	* src/libs/libgroff/device.cpp (device_init):
+	* src/libs/libgroff/relocate.cpp (set_current_prefix):
+	* src/libs/libgroff/searchpath.cpp (search_path::search_path):
+	* src/preproc/html/pre-html.cpp (scanArguments):
+	* src/preproc/refer/refer.cpp (possibly_load_default_database):
+	* src/roff/groff/groff.cpp (main):
+	* src/utils/lkbib/lkbib.cpp (main): Do it.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/psrm.cpp (resource_manager::output_prolog):
+	Handle getenv(3) failure.  Having just written successfully to
+	the process environment (else we `fatal()`ed out), assert(3)
+	that reading back the same environment variable with getenv(3)
+	returned a non-null pointer.  If it didn't and `NDEBUG` is
+	defined, `fatal()` out in this case too.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/xditview/device.c: Slightly refactor.  Convert
+	C/C++ preprocessor macro `FONTPATH_ENV_VAR` to global `const`
+	object named `FONT_ENV_VAR`, for consistency with identical
+	usage in "src/libs/libgroff/fontfile.cpp".
+	(find_file): Update getenv(3) call to use the new symbol name.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m4/groff.m4 (GROFF_USE_GROFF_ALLOCATOR): Update help string to
+	mark `--enable-groff-allocator` configuration option as
+	deprecated.
+	(GROFF_ALLOCATOR_NOTICE): New macro warns user of option's
+	planned withdrawal if they have selected it.
+	* configure.ac: Interpolate `GROFF_ALLOCATOR_NOTICE` macro.
+
+	* NEWS: Document this.
+
+	Fixes <https://savannah.gnu.org/bugs/?67936>.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* configure.ac: Stop reporting use of libgroff's custom memory
+	allocator in configuration summary.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?67936>.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/xditview/xditview.c (main): Avoid invalid memory
+	access by checking that `argc` is greater than 1 before trying
+	to access `argv[1]`.
+
+	Fixes <https://savannah.gnu.org/bugs/?68152>.
+
+2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
 	* src/roff/troff/reg.cpp (rename_register_request): Fix typo in
 	warning diagnostic message.
 
@@ -107,7 +257,7 @@
 	* src/roff/troff/input.cpp: Demote global variable
 	`global_diverted_space` from `int` to `bool` and rename it to
 	`have_global_diverted_space`.  Annotate it as used only by the
-	MTSM feature, which I hope some day to either better understand,
+	MTSM feature, which I hope some day either to better understand,
 	or to remove.
 	* src/roff/troff/env.cpp: Update an `extern` declaration.
 	* src/roff/troff/input.cpp (diverted_space_node::need_reread):
@@ -130,7 +280,7 @@
 2026-03-14  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Implement `.ul` register for orthogonal completeness
-	with respect to the `.ce`, `.rj`, and `.itc` registers.
+	with respect to the `.ce`, `.rj`, and `.it` registers.
 
 	* src/roff/troff/env.h (class environment): Declare new accessor
 	member function `get_underlined_line_count()`.

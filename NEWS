@@ -26,6 +26,16 @@ troff
    input that is non-idiomatic or likely to produce an unexpected result
    (or none at all), but is not invalid.
 
+Miscellaneous
+-------------
+
+*  The 'configure' options '--{en,dis}able-groff-allocator' introduced
+   in groff 1.23.0 are now deprecated.  `--disable-groff-allocator` has
+   been implicit since that release, and we've received no reports of a
+   C++ runtime unable to handle groff's demands on its heap/"free store"
+   allocator.  We expect to withdraw these configuration options
+   completely in groff 1.26.
+
 
 VERSION 1.24.1
 ==============

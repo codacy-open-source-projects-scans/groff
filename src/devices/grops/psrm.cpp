@@ -1,5 +1,6 @@
 /* Copyright 1989-2003 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -23,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h>
 #include <stdcountof.h>
 #include <stdio.h> // EOF, FILE, fclose(), fgets(), getc(), ungetc()
-#include <stdlib.h> // getenv(), putenv(), strtoul()
+#include <stdlib.h> // getenv(), setenv(), strtoul()
 #include <string.h> // strerror(), strtok()
 
 #include "cset.h"
@@ -289,15 +290,15 @@ void resource_manager::output_prolog(ps_output &out)
   FILE *outfp = out.get_file();
   out.end_line();
   char *path;
-  if (!getenv("GROPS_PROLOGUE")) {
-    string e = "GROPS_PROLOGUE";
-    e += '=';
-    e += GROPS_PROLOGUE;
-    e += '\0';
-    if (putenv(strsave(e.contents())) != 0)
+  if (getenv("GROPS_PROLOGUE") == 0 /* nullptr */) {
+    if (setenv("GROPS_PROLOGUE", GROPS_PROLOGUE, 1 /* overwrite */)
+	!= 0)
       fatal("cannot update process environment: %1", strerror(errno));
   }
   char *prologue = getenv("GROPS_PROLOGUE");
+  assert(prologue != 0 /* nullptr */);
+  if (0 /* nullptr */ == prologue)
+    fatal("cannot access process environment: %1", strerror(errno));
   FILE *fp = font::open_resource_file(prologue, &path);
   if (0 /* nullptr */ == fp)
     fatal("cannot open PostScript prologue file '%1': %2", prologue,

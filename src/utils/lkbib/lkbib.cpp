@@ -130,7 +130,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
   char *filename = getenv("REFER");
-  if (filename)
+  if (filename != 0 /* nullptr */)
     list.add_file(filename);
   else if (search_default)
     list.add_file(DEFAULT_INDEX, 1);

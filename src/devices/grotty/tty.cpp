@@ -1,6 +1,8 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
-     OSC 8 support by G. Branden Robinson
+             2021-2022 G. Branden Robinson
+
+Written by James Clark (jjc@jclark.com)
+OSC 8 support by G. Branden Robinson
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -978,7 +980,7 @@ int main(int argc, char **argv)
 {
   program_name = argv[0];
   static char stderr_buf[BUFSIZ];
-  if (getenv("GROFF_NO_SGR"))
+  if (getenv("GROFF_NO_SGR") != 0 /* nullptr */)
     use_overstriking_drawing_scheme = true;
   setbuf(stderr, stderr_buf);
   setlocale(LC_CTYPE, "");

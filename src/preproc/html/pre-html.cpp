@@ -1602,7 +1602,7 @@ static void usage(FILE *stream)
 static int scanArguments(int argc, char **argv)
 {
   const char *cmdprefix = getenv("GROFF_COMMAND_PREFIX");
-  if (!cmdprefix)
+  if (0 /* nullptr */ == cmdprefix)
     cmdprefix = PROG_PREFIX;
   size_t pfxlen = strlen(cmdprefix);
   char *troff_name = new char[pfxlen + strlen("troff") + 1];

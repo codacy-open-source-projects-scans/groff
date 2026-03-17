@@ -437,7 +437,7 @@ static void possibly_load_default_database()
 {
   if (search_default && !default_database_loaded) {
     char *filename = getenv("REFER");
-    if (filename)
+    if (filename != 0 /* nullptr */)
       database_list.add_file(filename);
     else
       database_list.add_file(DEFAULT_INDEX, 1);

@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 		   // sprintf(), setbuf(), stderr, stdin, stdout,
 		   // ungetc()
 #include <stdlib.h> // atoi(), exit(), EXIT_FAILURE, EXIT_SUCCESS,
-		    // free(), getenv(), putenv(), strtol(), system()
+		    // free(), getenv(), setenv(), strtol(), system()
 #include <string.h> // strcpy(), strdup(), strerror()
 
 #include <getopt.h> // getopt_long()
@@ -6008,7 +6008,7 @@ void unformat_macro()
 static void interpolate_environment_variable(symbol nm)
 {
   const char *s = getenv(nm.contents());
-  if ((s != 0 /* nullptr */) && (*s != 0 /* nullptr */))
+  if ((s != 0 /* nullptr */) && (*s != '\0'))
     input_stack::push(make_temp_iterator(s));
 }
 
@@ -9912,12 +9912,7 @@ int main(int argc, char **argv)
   // restore $PATH if called from groff
   char* groff_path = getenv("GROFF_PATH__");
   if (groff_path != 0 /* nullptr */) {
-    string e = "PATH";
-    e += '=';
-    if (*groff_path)
-      e += groff_path;
-    e += '\0';
-    if (putenv(strsave(e.contents())) != 0)
+    if (setenv("PATH", groff_path, 1 /* overwrite */) != 0)
       fatal("cannot update process environment: %1", strerror(errno));
   }
   setlocale(LC_CTYPE, "");

@@ -1,5 +1,6 @@
 /* Copyright 1989-2024 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -25,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h> // EOF, FILE, fflush(), setbuf(), stderr, stdout
-#include <stdlib.h> // exit(), EXIT_SUCCESS, free(), getenv(), putenv()
+#include <stdlib.h> // exit(), EXIT_SUCCESS, free(), getenv(), setenv()
 #include <string.h> // strerror(), strsignal()
 
 #include <getopt.h> // getopt_long()
@@ -107,9 +108,6 @@ char *spooler = 0 /* nullptr */;
 char *postdriver = 0 /* nullptr */;
 char *predriver = 0 /* nullptr */;
 bool need_postdriver = true;
-char *saved_path = 0 /* nullptr */;
-char *groff_bin_path = 0 /* nullptr */;
-char *groff_font_path = 0 /* nullptr */;
 
 possible_command commands[NCOMMANDS];
 
@@ -131,8 +129,9 @@ static char *xstrdup(const char *s) {
   return str;
 }
 
-static void xputenv(const char *s) {
-  if (putenv(const_cast<char *>(s)) != 0)
+static void xsetenv(const char *name, const char *value, int overwrite)
+{
+  if (setenv(name, value, overwrite) != 0)
     fatal("cannot update process environment: %1", strerror(errno));
   return;
 }
@@ -141,9 +140,6 @@ static void xexit(int status) {
   free(spooler);
   free(predriver);
   free(postdriver);
-  free(saved_path);
-  free(groff_bin_path);
-  free(groff_font_path);
   exit(status);
 }
 
@@ -169,7 +165,7 @@ int main(int argc, char **argv)
   int opt;
   const char *command_prefix = getenv("GROFF_COMMAND_PREFIX");
   const char *encoding = getenv("GROFF_ENCODING");
-  if (!command_prefix)
+  if (0 /* nullptr */ == command_prefix)
     command_prefix = PROG_PREFIX;
   commands[TROFF_INDEX].set_name(command_prefix, "troff");
   static const struct option long_options[] = {
@@ -399,7 +395,7 @@ int main(int argc, char **argv)
   }
   if (need_pic)
     commands[PIC_INDEX].set_name(command_prefix, "pic");
-  if (encoding) {
+  if (encoding != 0 /* nullptr */) {
     commands[PRECONV_INDEX].set_name("preconv");
     if (!Kflag && *encoding)
       commands[PRECONV_INDEX].append_arg("-e", encoding);
@@ -520,45 +516,33 @@ int main(int argc, char **argv)
       commands[first_index].append_arg("-");
   }
   if (Fargs.length() > 0) {
-    string e = "GROFF_FONT_PATH";
-    e += '=';
-    e += Fargs;
+    string value = Fargs;
     char *fontpath = getenv("GROFF_FONT_PATH");
-    if (fontpath && *fontpath) {
-      e += PATH_SEP_CHAR;
-      e += fontpath;
+    if ((fontpath != 0 /* nullptr */) && (*fontpath != '\0')) {
+      value += PATH_SEP_CHAR;
+      value += fontpath;
     }
-    e += '\0';
-    groff_font_path = xstrdup(e.contents());
-    xputenv(groff_font_path);
+    value += '\0';
+    xsetenv("GROFF_FONT_PATH", value.contents(), 1 /* overwrite */);
   }
   {
     // we save the original path in GROFF_PATH__ and put it into the
     // environment -- troff will pick it up later.
     char *path = getenv("PATH");
-    string g = "GROFF_PATH__";
-    g += '=';
-    if (path && *path)
-      g += path;
-    g += '\0';
-    saved_path = xstrdup(g.contents());
-    xputenv(saved_path);
+    xsetenv("GROFF_PATH__", path, 1 /* overwrite */);
     char *binpath = getenv("GROFF_BIN_PATH");
-    string f = "PATH";
-    f += '=';
-    if (binpath && *binpath)
-      f += binpath;
+    string newpath;
+    if ((binpath != 0 /* nullptr */ && (*binpath != '\0')))
+      newpath += binpath;
     else {
-      binpath = relocatep(BINPATH);
-      f += binpath;
+      newpath += relocatep(BINPATH);
     }
-    if (path && *path) {
-      f += PATH_SEP_CHAR;
-      f += path;
+    if ((path != 0 /* nullptr */ && (*path != '\0'))) {
+      newpath += PATH_SEP_CHAR;
+      newpath += path;
     }
-    f += '\0';
-    groff_bin_path = xstrdup(f.contents());
-    xputenv(groff_bin_path);
+    newpath += '\0';
+    xsetenv("PATH", newpath.contents(), 1 /* overwrite */);
   }
   if (Vflag)
     print_commands(Vflag == 1 ? stdout : stderr);

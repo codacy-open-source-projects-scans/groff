@@ -1834,11 +1834,26 @@ AC_DEFUN([GROFF_UCHARDET_NOTICE], [
   fi
 ])
 
+dnl TODO: Drop this macro in groff 1.26.
+AC_DEFUN([GROFF_ALLOCATOR_NOTICE], [
+  if test "$groff_use_own_allocator" = yes
+  then
+    AC_MSG_NOTICE([Use of groff's memory allocator is deprecated.
 
+  We expect to drop support for groff's replacement allocator for C++'s
+  'new' and 'delete' operators completely in groff 1.26.  Please contact
+  the groff at gnu dot org mailing list if your C++ language runtime
+  does not reliably allocate or free memory from the heap or free store.
+  ])
+  fi
+])
+
+
+dnl TODO: Drop this macro in groff 1.26.
 AC_DEFUN([GROFF_USE_GROFF_ALLOCATOR], [
   AC_ARG_ENABLE([groff-allocator],
     [AS_HELP_STRING([--enable-groff-allocator], [enable libgroff's \
-allocator for C++ new/delete])],
+allocator for C++ new/delete (DEPRECATED)])],
     [test "$enableval" = yes && groff_use_own_allocator=yes],
     [groff_use_own_allocator=no])
 ])

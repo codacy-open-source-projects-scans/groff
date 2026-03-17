@@ -1,5 +1,7 @@
-/* Copyright 1989-2023 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-2003 Free Software Foundation, Inc.
+                  2023 TANAKA Takuji
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -34,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <stdint.h> // uint16_t
 #include <stdio.h> // EOF, FILE, fclose(), fgets(), fileno(), fseek(),
 		   // getc(), SEEK_SET, setbuf(), stderr, stdout
-#include <stdlib.h> // exit(), EXIT_SUCCESS, putenv(), strtol()
+#include <stdlib.h> // exit(), EXIT_SUCCESS, setenv(), strtol()
 #include <string.h> // strchr(), strcmp(), strcpy(), strerror(),
 		    // strlen(), strncmp(), strstr(), strtok()
 #include <time.h> // asctime()
@@ -1909,11 +1911,7 @@ int main(int argc, char **argv)
 	error("ignoring invalid custom paper format '%1'", optarg);
       break;
     case 'P':
-      env = "GROPS_PROLOGUE";
-      env += '=';
-      env += optarg;
-      env += '\0';
-      if (putenv(strsave(env.contents())) != 0)
+      if (setenv("GROPS_PROLOGUE", optarg, 1 /* overwrite */) != 0)
 	fatal("cannot update process environment: %1", strerror(errno));
       break;
     case 'v':

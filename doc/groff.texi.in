@@ -22549,15 +22549,20 @@ and
 are portable.
 
 @cindex @code{ab} request, incompatibilities with @acronym{AT&T} @code{troff}
-The @code{ab} request differs from @acronym{AT&T} @code{troff}: GNU
-@code{troff} writes no message to the standard error stream if no
-arguments are given, and it exits with a failure status instead of a
-successful one.
+The
+@code{ab}
+request differs from that of @acronym{AT&T}
+@command{troff}:@: @c AT&T
+GNU
+@command{troff} @c GNU
+writes no message to the standard error stream
+if no arguments are given,
+and it exits with a failure status instead of a successful one.
 
 @cindex @code{bp} request, incompatibilities with @acronym{AT&T} @code{troff}
 The
 @code{bp}
-request differs from @acronym{AT&T}
+request differs from that of @acronym{AT&T}
 @command{troff}:@: @c AT&T
 GNU
 @command{troff} @c GNU
@@ -22589,7 +22594,7 @@ and other properties of each named argument.
 @cindex @code{sp} request, incompatibilities with @acronym{AT&T} @code{troff}
 The
 @code{sp}
-request differs from @acronym{AT&T}
+request differs from that of @acronym{AT&T}
 @command{troff}:@: @c AT&T
 invoking
 @code{sp}

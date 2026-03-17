@@ -1,4 +1,21 @@
-/* device.c */
+/* Copyright 1991 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
+
+This file is part of groff, the GNU roff typesetting system.
+
+groff is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+groff is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -19,9 +36,8 @@
 #define isascii(c) (1)
 #endif
 
-/* Name of environment variable containing path to be used for
-searching for device and font description files. */
-#define FONTPATH_ENV_VAR  "GROFF_FONT_PATH"
+// See "src/libs/libgroff/fontfile.cpp".
+const char *const FONT_ENV_VAR = "GROFF_FONT_PATH";
 
 #define WS " \t\r\n"
 
@@ -456,12 +472,13 @@ FILE *find_file(const char *file, char **result)
   char *buf = NULL;
   int bufsiz = 0;
   int flen;
-  FILE *fp;
-  char *path;
-  char *env;
+  FILE *fp = NULL;
+  char *path = NULL;
+  char *env = NULL;
 
-  env = getenv(FONTPATH_ENV_VAR);
-  path = XtMalloc(((env && *env) ? strlen(env) + 1 : 0)
+  env = getenv(FONT_ENV_VAR);
+  path = XtMalloc((((env != NULL) && (*env != '\0'))
+		   ? strlen(env) + 1 : 0)
 		  + strlen(FONTPATH) + 1);
   *path = '\0';
   if (env && *env) {

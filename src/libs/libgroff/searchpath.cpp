@@ -62,11 +62,12 @@ search_path::search_path(const char *envvar, const char *standard,
     e = getenv(envvar);
   dirs = new char[((e && *e) ? strlen(e) + 1 : 0)
 		  + (add_current ? 1 + 1 : 0)
-		  + ((home && *home) ? strlen(home) + 1 : 0)
+		  + (((home != 0 /* nullptr */) && (*home != '\0'))
+		     ? strlen(home) + 1 : 0)
 		  + ((standard && *standard) ? strlen(standard) : 0)
 		  + 1];
   *dirs = '\0';
-  if (e && *e) {
+  if ((e != 0 /* nullptr */) && (*e != '\0')) {
     strcat(dirs, e);
     strcat(dirs, PATH_SEP);
   }

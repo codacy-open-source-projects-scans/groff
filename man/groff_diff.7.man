@@ -6875,7 +6875,7 @@ are portable.
 .P
 The
 .B ab
-request differs from AT&T
+request differs from that of AT&T
 .IR troff : \" AT&T
 GNU
 .I troff \" GNU
@@ -6887,7 +6887,7 @@ and it exits with a failure status instead of a successful one.
 .P
 The
 .B bp
-request differs from AT&T
+request differs from that of AT&T
 .IR troff : \" AT&T
 GNU
 .I troff \" GNU
@@ -6922,7 +6922,7 @@ and other properties of each named argument.
 .P
 The
 .B sp
-request differs from AT&T
+request differs from that of AT&T
 .IR troff : \" AT&T
 invoking
 .B sp
