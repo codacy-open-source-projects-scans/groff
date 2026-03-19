@@ -193,9 +193,10 @@ which defines
 .B PF
 as a page footer management macro.
 .
-Use
-.B PF
-preferentially unless a similar problem faces your document.
+If not using
+.I mm,
+prefer
+.BR PF .
 .
 .
 .\" ====================================================================

@@ -17,29 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+eqn="${abs_top_builddir:-.}/eqn"
 neqn="${abs_top_builddir:-.}/neqn"
 
-# Unit-test basic neqn execution.  Regression-test Savannah #68115.
+# Test our test harness; the `neqn` script should find an `eqn`
+# executable of the same version.
 
 GROFF_BIN_PATH="$abs_top_builddir"
 export GROFF_BIN_PATH
 
-input='.
-.EQ
-P V mark = n R T
-.EN
-.sp
-.EQ
-E lineup = m c sup 2
-.EN
-.'
+eqn_version=$("$eqn" --version | head -n 1)
+neqn_version=$("$neqn" --version | head -n 1)
 
-output=$(echo "$input" | "$neqn")
-printf "%s\n" "$output"
-# At the time of this writing, GNU eqn initializes the `MK` register
-# even if a mark isn't used.  Our input ensures that it is.
-#
-# There is a space and a tab between the brackets.
-printf "%s\n" "$output" | grep -q '^\.[ 	]*nr MK'
+echo "$neqn_version"
+echo "$eqn_version"
+
+test "$neqn_version" = "$eqn_version"
 
 # vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

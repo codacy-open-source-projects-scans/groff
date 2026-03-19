@@ -1,3 +1,145 @@
+2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/tests/neqn-smoke-test.sh: Configure
+	`GROFF_BIN_PATH` so that the build tree's "neqn" is more likely
+	to locate the "eqn" that is also in the build tree.
+
+2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[eqn]: Add test of neqn's wrapping of eqn; their versions should
+	match.
+
+	* src/preproc/eqn/tests/neqn-finds-matching-eqn.sh: Add test.
+	* src/preproc/eqn/eqn.am (eqn_TESTS): Run test.
+
+2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: When issuing warning diagnostic messages, report the
+	warning category governing its emission.  Idea ripped off from
+	GCC, which has been doing similarly for many years.
+
+	* src/roff/troff/troff.h (enum warning_category): Add a
+	`WARN_INVALID` enumeration constant with value zero, since we're
+	extending the signatures of diagnostic functions to pass the
+	warning category as a parameter.  Doing so has no meaning for
+	non-warning diagnostics, but `do_error()` handles _all_
+	diagnostic messages, and so it must be prepared for this extra
+	data.  This being C++98, we also don't have option types.
+
+	* src/roff/troff/input.cpp (lookup_warning_by_bitset): New
+	function looks up a bitset in the `warning_map` array and
+	returns a pointer to a constant string naming the corresponding
+	warning category.
+	(do_error): Expect new parameter of type `warning_category`.
+	If the diagnostic is of type `WARNING`, look up the new
+	parameter with `lookup_warning_by_bitset` and report it in the
+	message to the user.
+	(debug, warning, output_warning, error, fatal): Update to pass
+	`do_error()` either the given warning category, or
+	`WARN_INVALID` if the diagnostic is not a warning.
+
+	* NEWS: Document this.
+
+2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/troff.h (enum warning_type): Rename this...
+	(enum warning_category): ...to this, for consistency with groff
+	documentation and because the enumeration constants aren't
+	distinct "types" in the C++ sense.
+	* src/roff/troff/input.cpp (warning, output_warning): Update
+	users of the enumeration type.  Any given diagnostic warning
+	corresponds to only one warning category.
+
+2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(struct warning_category): Rename this...
+	(struct warning_selection): ...to this.  This data structure
+	creates a mapping between C strings and a bit vector.  The
+	strings "all" and "w" aren't warning categories, but convenient
+	shorthands for selection of multiple warning categories.
+
+2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename global
+	array `warning_table` to `warning_map`, for greater precision.
+	(lookup_warning): Update dereference site.  Also rename this...
+	(lookup_warning_by_name): ...to this.
+	(enable_warning, disable_warning): Update call sites of
+	foregoing.
+	(struct warning_category): Rename member variable `set` to
+	`bitset`, for clarity.
+
+2026-03-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grotty]: Revise dynamic memory allocation strategy.  The
+	`tty_printer` class maintains a member variables `lines` which
+	is a pointer to a pointer to type `tty_glyph`, implementing a
+	{de facto} rectangular array of character cells.  The strategy
+	that grotty has used to date proved to perform badly with the
+	new approach to continuous rendering used by groff's man(7) and
+	mdoc(7) packages in version 1.24.0.  If the initial allocation
+	of 66 lines (rows) of character cells was insufficient because
+	the input extended the page length, it grew the allocation (and
+	performed a memcpy(3)) only as much as required to house the
+	vertical drawing position, plus one line).  For a famously
+	lengthy man page like bash(1), this meant many repeated trips
+	through new/memcpy()/delete operations, giving the language
+	runtime allocator a lot of work to do.  In an extreme case
+	{formatting 64 copies of bash(1) in sequence}, this led to long
+	runtimes with two-thirds of program time spent in the kernel.
+
+	The new approach is to double the allocation every time it is
+	exceeded, but also to free that allocation at the end of every
+	page.  When continuously rendering, there will only ever be one
+	page anyway, but this tactic is more considerate for the
+	{admittedly niche} case of paginated documents that vary the
+	page length frequently--which is the approach that groff 1.23.0
+	and earlier took to continuous rendering, and that other macro
+	packages or documents might still (but beware of the sort of
+	problem observed in Savannah #65189).
+
+	* src/devices/grotty/tty.cpp: Define new global constant
+	integer, `default_lines_per_page`, obviating a local literal in
+	the `tty_printer` constructor.
+	(class tty_printer): Drop empty body from `begin_page()`
+	declaration.
+	(tty_printer::tty_printer): Replace open-coded initial
+	allocation storage backing `lines` member variable with call to
+	`begin_page()`.
+	(tty_printer::~tty_printer): Stop freeing the storage backing
+	`lines` here.  Instead...
+	(tty_printer::end_page): ...do it here, if its size grew past
+	beyond default initial allocation.
+	(tty_printer::add_char): Apply the new reallocation strategy.
+	Use memset(3) to zero out the new storage before memcpy(3)-ing
+	the previous contents into (part of) it, eliminating a `for`
+	loop that manually zeroed out the pointers after the copied
+	storage.  While arguably wasteful to write some memory twice,
+	the runtime can easily optimize `memset()`, as, for instance,
+	glibc does.[1]  Measurement shows that any reduced efficiency
+	here is lost in the noise of the vast improvement arising from
+	the allocation size-doubling approach.
+	(tty_printer::begin_page): Implement.  Initially allocate
+	`default_lines_per_page` rows of `tty_glyph` pointers.  Use
+	`memset(3)` here, too, to zero them out.
+
+	[1] https://sourceware.org/git/?p=glibc.git;a=commit;\
+	h=46b5e98ef6f1
+
+	Fixes <https://savannah.gnu.org/bugs/?68145>.  Thanks to Dmytro
+	Bagrii for the report, to Morten Bo Johansen for help
+	reproducing the problem, and to Deri James for a shrewd pointer
+	in the right direction.
+
+2026-03-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (struct warning_category): Add
+	{further} `const` qualification to type and its members.  This
+	structure is immutable for the lifetime of the program.
+
 2026-03-15  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* bootstrap.conf (gnulib_modules): Drop `putenv`.

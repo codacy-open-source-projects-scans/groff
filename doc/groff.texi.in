@@ -21759,7 +21759,12 @@ Two warning names group other warning categories for convenience.
 
 @table @samp
 @item all
-All warning categories except @samp{di}, @samp{mac} and @samp{reg}.
+All warning categories except
+@samp{di},
+@samp{mac},
+@samp{reg},
+and
+@samp{style}.
 This shorthand is intended to produce all warnings that are useful with
 macro packages written for @acronym{AT&T} @code{troff} and its
 descendants, which have less fastidious diagnostics than GNU

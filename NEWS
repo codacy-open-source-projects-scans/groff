@@ -26,6 +26,10 @@ troff
    input that is non-idiomatic or likely to produce an unexpected result
    (or none at all), but is not invalid.
 
+*  When issuing warning diagnostic messages, GNU troff now reports the
+   warning category governing its emission.  This change is to make it
+   easier for users to select warnings of interest.
+
 Miscellaneous
 -------------
 

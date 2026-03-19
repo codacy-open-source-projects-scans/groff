@@ -10608,10 +10608,10 @@ static void read_drawing_command_color_arguments(token &start)
   have_formattable_input = true;
 }
 
-static struct warning_category {
-  const char *name;
-  unsigned int set;
-} warning_table[] = {
+static const struct warning_selection {
+  const char * const name;
+  const unsigned int bitset;
+} warning_map[] = {
   { "char", WARN_CHAR },
   { "range", WARN_RANGE },
   { "break", WARN_BREAK },
@@ -10636,17 +10636,25 @@ static struct warning_category {
   { "default", DEFAULT_WARNING_CATEGORY_SET },
 };
 
-static unsigned int lookup_warning(const char *name)
+static const char *lookup_warning_by_bitset(unsigned int bitset)
 {
-  for (unsigned int i = 0U; i < countof(warning_table); i++)
-    if (strcmp(name, warning_table[i].name) == 0)
-      return warning_table[i].set;
+  for (unsigned int i = 0U; i < countof(warning_map); i++)
+    if (warning_map[i].bitset == bitset)
+      return warning_map[i].name;
+  return 0 /* nullptr */;
+}
+
+static unsigned int lookup_warning_by_name(const char *name)
+{
+  for (unsigned int i = 0U; i < countof(warning_map); i++)
+    if (strcmp(name, warning_map[i].name) == 0)
+      return warning_map[i].bitset;
   return 0U;
 }
 
 static void enable_warning(const char *name)
 {
-  unsigned int category = lookup_warning(name);
+  unsigned int category = lookup_warning_by_name(name);
   if (category != 0U)
     desired_warnings |= category;
   else
@@ -10655,7 +10663,7 @@ static void enable_warning(const char *name)
 
 static void disable_warning(const char *name)
 {
-  unsigned int category = lookup_warning(name);
+  unsigned int category = lookup_warning_by_name(name);
   if (category != 0U)
     desired_warnings &= ~category;
   else
@@ -10686,6 +10694,7 @@ static void copy_mode_error(const char *format,
 enum error_type { DEBUG, WARNING, OUTPUT_WARNING, ERROR, FATAL };
 
 static void do_error(error_type type,
+		     warning_category wc,
 		     const char *format,
 		     const errarg &arg1,
 		     const errarg &arg2,
@@ -10750,6 +10759,12 @@ static void do_error(error_type type,
     break;
   }
   errprint(format, arg1, arg2, arg3);
+  if (type == WARNING) {
+      const char *category_name = lookup_warning_by_bitset(wc);
+      assert(category_name != 0 /* nullptr */);
+      if (category_name != 0 /* nullptr */)
+	fprintf(stderr, " [-w %s]", category_name);
+  }
   fputc('\n', stderr);
   fflush(stderr);
   if (type == FATAL)
@@ -10762,27 +10777,27 @@ void debug(const char *format,
 	   const errarg &arg2,
 	   const errarg &arg3)
 {
-  do_error(DEBUG, format, arg1, arg2, arg3);
+  do_error(DEBUG, WARN_INVALID, format, arg1, arg2, arg3);
 }
 
-void warning(warning_type t,
+void warning(warning_category wc,
 	     const char *format,
 	     const errarg &arg1,
 	     const errarg &arg2,
 	     const errarg &arg3)
 {
-  if ((t & desired_warnings) != 0U)
-    do_error(WARNING, format, arg1, arg2, arg3);
+  if ((wc & desired_warnings) != 0U)
+    do_error(WARNING, wc, format, arg1, arg2, arg3);
 }
 
-void output_warning(warning_type t,
+void output_warning(warning_category wc,
 		    const char *format,
 		    const errarg &arg1,
 		    const errarg &arg2,
 		    const errarg &arg3)
 {
-  if ((t & desired_warnings) != 0U)
-    do_error(OUTPUT_WARNING, format, arg1, arg2, arg3);
+  if ((wc & desired_warnings) != 0U)
+    do_error(OUTPUT_WARNING, wc, format, arg1, arg2, arg3);
 }
 
 void error(const char *format,
@@ -10790,7 +10805,7 @@ void error(const char *format,
 	   const errarg &arg2,
 	   const errarg &arg3)
 {
-  do_error(ERROR, format, arg1, arg2, arg3);
+  do_error(ERROR, WARN_INVALID, format, arg1, arg2, arg3);
 }
 
 void fatal(const char *format,
@@ -10798,7 +10813,7 @@ void fatal(const char *format,
 	   const errarg &arg2,
 	   const errarg &arg3)
 {
-  do_error(FATAL, format, arg1, arg2, arg3);
+  do_error(FATAL, WARN_INVALID, format, arg1, arg2, arg3);
 }
 
 void fatal_with_file_and_line(const char *filename, int lineno,

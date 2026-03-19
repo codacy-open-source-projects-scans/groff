@@ -75,6 +75,38 @@ although it may work adequately for very simple input.
 .
 .
 .\" ====================================================================
+.SH Environment
+.\" ====================================================================
+.
+Normally,
+the path separator in environment variables ending with
+.I PATH
+is the colon;
+this may vary depending on the operating system.
+.
+For example,
+Windows uses a semicolon instead.
+.
+.
+.TP
+.I GROFF_BIN_PATH
+Locate
+.I groff \" system
+commands
+in these directories,
+followed by those in
+.IR PATH .
+.
+If not set,
+the installation directory of GNU
+.I roff
+executables,
+.IR @BINDIR@ ,
+is searched before
+.IR PATH .
+.
+.
+.\" ====================================================================
 .SH "See also"
 .\" ====================================================================
 .

@@ -193,7 +193,7 @@ Adjacent horizontal motions are not combined.
 .
 Supplemental inter-sentence space
 (configured by the second argument to the
-.B .ss
+.B ss
 request)
 is not represented.
 .
@@ -862,8 +862,9 @@ Two warning names group other warning categories for convenience.
 All warning categories except
 .BR di ,
 .BR mac ,
+.BR reg ,
 and
-.BR reg .
+.BR style .
 .
 This shorthand is intended to produce all warnings that are useful with
 macro packages and documents written for AT&T

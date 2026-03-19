@@ -73,6 +73,7 @@ neqn: $(top_srcdir)/src/preproc/eqn/neqn.sh $(SH_DEPS_SED_SCRIPT)
 
 eqn_TESTS = \
   src/preproc/eqn/tests/diagnostics-report-correct-line-numbers.sh \
+  src/preproc/eqn/tests/neqn-finds-matching-eqn.sh \
   src/preproc/eqn/tests/neqn-smoke-test.sh \
   src/preproc/eqn/tests/parameters-can-be-set-and-reset.sh \
   src/preproc/eqn/tests/passes-through-input-with-eighth-bit-set.sh
