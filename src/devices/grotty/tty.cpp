@@ -954,8 +954,7 @@ void tty_printer::end_page(int page_length)
     for (; last_line < lines_per_page; last_line++)
       putchar('\n');
   }
-  if (nlines > default_lines_per_page)
-    delete[] lines;
+  delete[] lines;
 }
 
 font *tty_printer::make_font(const char *nm)

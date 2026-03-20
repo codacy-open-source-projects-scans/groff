@@ -1,3 +1,20 @@
+2026-03-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp (tty_printer::end_page): Further
+	simplify new dynamic memory management strategy to avoid memory
+	leaks.  Always `delete[]` (free) the `lines` array at the end of
+	a page, regardless of the value of `nlines`.  Comparing the
+	latter's value to `default_lines_per_page` was a naïve
+	technique.  First, reducing the page length _below_ the default
+	would also cause a reallocation, so it needs to be freed.
+	Second, if the input document resized the page multiple times,
+	with the final value being equal to `default_lines_per_page`, we
+	would similarly wrongly skip the `delete[]`.  Since
+	`begin_page()` _always_ allocates storage with `new` and
+	`add_char()` _always_ reallocates it with `new` (and deletes the
+	old one) in the event of a resize, we can (and should) _always_
+	delete the storage allocated to `lines` at the end of a page.
+
 2026-03-18  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/eqn/tests/neqn-smoke-test.sh: Configure
@@ -75,31 +92,34 @@
 2026-03-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[grotty]: Revise dynamic memory allocation strategy.  The
-	`tty_printer` class maintains a member variables `lines` which
-	is a pointer to a pointer to type `tty_glyph`, implementing a
-	{de facto} rectangular array of character cells.  The strategy
-	that grotty has used to date proved to perform badly with the
-	new approach to continuous rendering used by groff's man(7) and
-	mdoc(7) packages in version 1.24.0.  If the initial allocation
-	of 66 lines (rows) of character cells was insufficient because
-	the input extended the page length, it grew the allocation (and
-	performed a memcpy(3)) only as much as required to house the
-	vertical drawing position, plus one line).  For a famously
+	`tty_printer` class maintains a member variable `lines`, a
+	pointer to a pointer to type `tty_glyph`, which it uses as a
+	reference to a dynamically allocated rectangular array of
+	character cells.  The size of this array is not fixed; `pl`
+	requests in an input document can grow or shrink the page
+	length.  The resizing strategy that grotty has used to date
+	proved to perform badly with the new approach to continuous
+	rendering used by groff's man(7) and mdoc(7) packages in version
+	1.24.0.  If the initial allocation of 66 lines (rows) of
+	character cells was insufficient because the input extended the
+	page length, it grew the allocation (and performed a memcpy(3)
+	of its existing contents) by only as much as required to house
+	the vertical drawing position, plus one line.  For a famously
 	lengthy man page like bash(1), this meant many repeated trips
-	through new/memcpy()/delete operations, giving the language
+	through new/memcpy()/delete sequences, giving the language
 	runtime allocator a lot of work to do.  In an extreme case
 	{formatting 64 copies of bash(1) in sequence}, this led to long
 	runtimes with two-thirds of program time spent in the kernel.
 
-	The new approach is to double the allocation every time it is
-	exceeded, but also to free that allocation at the end of every
-	page.  When continuously rendering, there will only ever be one
-	page anyway, but this tactic is more considerate for the
-	{admittedly niche} case of paginated documents that vary the
+	The new strategy is to double the allocation size every time it
+	is exceeded, but also to free any resized allocation at the end
+	of every page.  When continuously rendering, there will only
+	ever be one page anyway, but this tactic is more considerate for
+	the {admittedly niche} case of paginated documents that vary the
 	page length frequently--which is the approach that groff 1.23.0
 	and earlier took to continuous rendering, and that other macro
-	packages or documents might still (but beware of the sort of
-	problem observed in Savannah #65189).
+	packages or documents might still.  (tbl(1) users should beware
+	of the sort of problem observed in Savannah #65189.)
 
 	* src/devices/grotty/tty.cpp: Define new global constant
 	integer, `default_lines_per_page`, obviating a local literal in
@@ -107,12 +127,12 @@
 	(class tty_printer): Drop empty body from `begin_page()`
 	declaration.
 	(tty_printer::tty_printer): Replace open-coded initial
-	allocation storage backing `lines` member variable with call to
+	storage allocation backing `lines` member variable with call to
 	`begin_page()`.
 	(tty_printer::~tty_printer): Stop freeing the storage backing
 	`lines` here.  Instead...
-	(tty_printer::end_page): ...do it here, if its size grew past
-	beyond default initial allocation.
+	(tty_printer::end_page): ...do it here, if its size grew beyond
+	the default initial allocation.
 	(tty_printer::add_char): Apply the new reallocation strategy.
 	Use memset(3) to zero out the new storage before memcpy(3)-ing
 	the previous contents into (part of) it, eliminating a `for`
