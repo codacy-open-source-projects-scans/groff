@@ -23,7 +23,13 @@ groff="${abs_top_builddir:-.}/test-groff"
 # Regression-test Savannah #58962.
 
 # Keep preconv from being run.
-unset GROFF_ENCODING
+#
+# The "unset" in Solaris /usr/xpg4/bin/sh can actually fail.
+if ! unset GROFF_ENCODING
+then
+    echo "unable to clear environment; skipping" >&2
+    exit 77 # skip
+fi
 
 input='.if " "\~" .tm input no-break space matches \\~
 .if "­"\%" .tm input soft hyphen matches \\%'

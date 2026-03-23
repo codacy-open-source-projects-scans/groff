@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"	**		without arg: glyphs and codes of active font.	**
 .\"	******************************************************************
 .
-.ds fonts_n fonts_n.roff\"		name for diagnostic messages
+.ds fonts_x fonts_x.roff\"		name for diagnostic messages
 .
 .if !d sopath \
 .  ds sopath
@@ -89,12 +89,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .
 .    ie (\\n[.y] > 18) \
 .      if !F \\*[*$1] \{\
-.        tm \\*[fonts_n]: \\n[.F]:\\n[.c]: Font \\*[*$1] not found.
+.        tm \\*[fonts_x]: \\n[.F]:\\n[.c]: Font \\*[*$1] not found.
 .        continue
 .      \}
 .    el \{\
 .      if !\\n[t*index] \{\
-.        tm \\*[fonts_n]: \\n[.F]:\\n[.c]: Font \\*[*$1] not found.
+.        tm \\*[fonts_x]: \\n[.F]:\\n[.c]: Font \\*[*$1] not found.
 .        continue
 .      \}
 .
@@ -110,7 +110,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .    if \\n[t*cptn] \
 .      bp
 .
-.    tm \\*[fonts_n]: listing font '\\*[*$1]'...
+.    tm \\*[fonts_x]: listing glyphs in font '\\*[*$1]' with hdtbl...
 .
 .    TBL border=.1n bc=red cpd=0 csp=.1n bgc=
 .      CPTN groff font name \\*[*$1]; \
@@ -120,41 +120,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             Grid is blank if font is not installed.
 .      TR
 .        TD
-.          TBL cols=12 border=.1n bc=red csp=.1n cpd=.2n fgc=red4 bgc=beige \
-               hal=c fsz='1.2 1.2' fst=\\*[*$1]
+.          TBL cols=18 border=.1n bc=red csp=.1n cpd=.2n fgc=red4 bgc=beige \
+               hal=c fsz='1.2 1.7' fst=\\*[*$1]
 .            nr c# 0-1 1
-.            nr y# 0-1 1
+.            nr y# 0 1
 .            TR fst=HB fgc=blue
 .              TD
-.                nr x# 0-1 1
-.                \" following 4 'PN's instead of 4 while-loops as in
-.                \" font_x.roff; short and easy to write, but a little
-.                \" bit slower.
-.              PN 10 .TD \
-                 \&..\\\\n+[x#]
+.              nr x# 0-1 1
+.              while (\\n+[x#] < 16) \{\
+.                d2x \\n[x#]
+.                  TD
+.                    nop \&.\\*[hex#]
+.              \}
 .              TD
 .
-.            PN 27 .TR \
-               ".TD fgc=blue fst=HB" \
-                 \\\\n+[y#]. \
-               ".PN 10 .TD \
-                 "".if c \N'\En+[c#]' \
-                   \N'\En[c#]'""" \
-               ".TD fgc=blue fst=HB" \
-                 \\\\n[y#].
+.            nr y# -1
+.            while (\\n+[y#] < 17) \{\
+.              TR
+.                TD fgc=blue fst=HB
+.                d2x \\n[y#]
+.                  nop \\*[hex#].
+.                nr x# 0-1 1
+.                while (\\n+[x#] < 16) \{\
+.                  TD
+.                    if c \N'\\n+[c#]' \
+.                      nop \N'\\n[c#]'
+.                \}
+.                TD fgc=blue fst=HB
+.                d2x \\n[y#]
+.                  nop \\*[hex#].
+.            \}
 .
 .            TR fst=HB fgc=blue
 .              TD
-.                nr x# 0-1 1
-.              PN 10 .TD \
-                 \&..\\\\n+[x#]
+.              nr x# 0-1 1
+.              while (\\n+[x#] < 16) \{\
+.                d2x \\n[x#]
+.                TD
+.                  nop \&..\\*[hex#]
+.              \}
 .              TD
 .          ETB
 .    ETB
 .  \}
 ..
 .
-.tm \*[fonts_n]: listing fonts in \*[fontpath]/dev\*[.T]
+.tm \*[fonts_x]: listing fonts in \*[fontpath]/dev\*[.T]
 .fontdump all
 .
 .\" Local Variables:

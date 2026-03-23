@@ -20,15 +20,21 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Keep preconv from being run.
-unset GROFF_ENCODING
-
 fail=
 
 wail () {
     echo ...FAILED >&2
     fail=yes
 }
+
+# Keep preconv from being run.
+#
+# The "unset" in Solaris /usr/xpg4/bin/sh can actually fail.
+if ! unset GROFF_ENCODING
+then
+    echo "unable to clear environment; skipping" >&2
+    exit 77 # skip
+fi
 
 input='.TH foo 1 2021-10-06 "groff test suite"
 .SH Name

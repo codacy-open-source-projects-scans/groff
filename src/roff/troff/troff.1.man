@@ -708,7 +708,9 @@ T}
 .
 .sp \n[PD]u
 input	16384	T{
-An invalid character occurred on the input stream.
+An invalid character occurred on the input stream,
+or was present in the contents of a file processed
+as transparent throughput.
 T}
 .
 .

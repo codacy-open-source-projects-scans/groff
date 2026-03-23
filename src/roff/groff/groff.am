@@ -124,6 +124,7 @@ groff_TESTS = \
   src/roff/groff/tests/stringdown-and-stringup-requests-work.sh \
   src/roff/groff/tests/stringdown-request-rejects-request-names.sh \
   src/roff/groff/tests/stringup-request-transforms-non-basic-latin.sh \
+  src/roff/groff/tests/substring-request-on-invalid-range-is-no-op.sh \
   src/roff/groff/tests/substring-request-works.sh \
   src/roff/groff/tests/sy-request-works.sh \
   src/roff/groff/tests/trf-request-works.sh \

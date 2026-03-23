@@ -5192,6 +5192,8 @@ and
 .IR end ,
 inclusive.
 .
+The first element of the string has index\~0.
+.
 Negative indices count backward from the end of the string.
 .
 .TPx
@@ -5377,17 +5379,23 @@ output
 (see
 .MR groff_out @MAN5EXT@ ).
 .
-Unlike
-.request cf ,
-characters invalid as input to GNU
-.I troff \" GNU
-are discarded.
-.
 If
 .IR file 's
 contents do not end with a newline,
 .B trf
 appends one.
+.
+Unlike
+.request cf ,
+.B trf
+discards input characters that are invalid in
+GNU
+.IR troff 's \" GNU
+output format,
+meaning all 8-bit character codes less than decimal 32
+(except 10,
+the line feed)
+and greater than decimal 127.
 .
 .TPx
 .REQ .trin abcd\fR\&.\|.\|.\&\fP

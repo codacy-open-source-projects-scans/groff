@@ -1,3 +1,267 @@
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (char_list::set, char_list::get):
+	Fix code style nit.  Parenthesize formally complex expressions.
+
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (class char_list): Rename member
+	variable `len` to `length`.
+	(char_list::char_list, char_list::get_length, char_list::append)
+	(char_list::set, char_list::get): Update dereference sites.
+
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/request.h (class macro): Rename member variable
+	`len` to `length`.
+	* src/roff/troff/input.cpp (macro::macro, macro::operator=)
+	(macro::append, macro::get_length, macro::chop)
+	(macro::print_size, macro::json_dump)
+	(string_iterator::string_iterator)
+	(operator==): Update dereference sites.
+
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Rename some member functions.
+
+	* src/roff/troff/request.h (class macro):
+	* src/roff/troff/input.cpp (class char_list, class node_list):
+	Rename `length()` member function to `get_length()`, like other
+	accessors in GNU troff.
+	(char_list::length)
+	(node_list::length)
+	(macro::length): Rename these...
+	(char_list::get_length)
+	(node_list::get_length)
+	(macro::get_length): ...to these.
+	(macro:append, macro_header::json_dump_macro)
+	(do_string_case_transform, substring_request): Update call
+	sites.
+	(do_string_case_transform): Drop unnecessary name space
+	qualification.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Ignore request
+	if both the "start" and "end" indices are out of range.
+	* src/roff/troff/request.h (class macro): Drop declaration of
+	`friend` function `substring_request()`.
+
+	* doc/groff.texi.in (Strings) <substring>:
+	* man/groff_diff.7.man (New requests) <substring>: Document it.
+
+	* src/roff/groff/tests/\
+	substring-request-on-invalid-range-is-no-op.sh: Test new
+	behavior.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Slightly
+	refactor.  Use `macro` object's public member function
+	`length()` to obtain its length rather than its private member
+	variable `len`.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Slightly
+	refactor.  Introduce new local variable `len` to store value of
+	`len` `macro` object being operated on, it case the compiler
+	isn't smart enough to cache a repeated member variable access
+	itself.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Slightly
+	refactor.  When iterating through a `macro` object's contents,
+	use its stored length to decide when to stop instead of relying
+	on the `string_iterator` accessing each element to return an
+	`EOF` character.  This change prepares for a future where GNU
+	troff's internal character type does not encode `EOF`.  This
+	change also weakens the resemblance of file and string
+	iterators, but that seems acceptable to me, because string and
+	macro contents have already undergone input processing.  In the
+	future, this will mean decoding of UTF-8 sequences and possible
+	NFD decomposition to one or more `char32_t` (or similar)
+	objects.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Recast warning
+	diagnostics when request argument(s) out of range.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Trivially
+	refactor.  Rename local variable `real_length` to
+	`operable_length`.  Annotate its meaning.
+
+2026-03-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Drop dead code.
+	(class node_list): Undeclare `extract()` member function.
+	(node_list::extract): Drop unused  member function definition.
+
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test no-op behavior of `substring` request when
+	one of its index arguments is both negative and out-of-range.
+
+	* src/roff/groff/tests/\
+	substring-request-on-invalid-range-is-no-op.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (substring_request): Revise wording
+	of error diagnostic.  The use of the term "extract" could be
+	taken to mean that the original string was left intact, which is
+	not the case; if the operation proceeds, it edits the string/
+	macro/diversion's contents in place.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (abort_request): Slightly refactor.
+	Avail ourselves of the `has_arg()` function; don't mess with any
+	of the input character processing rigmarole if there is no such
+	input to process.  Also flush the standard error stream only if
+	we have written to it.  If someone feels that this should
+	happen anyway "just in case" some other part of GNU troff
+	neglects to do so, then an even better place for that insurance
+	policy is `write_any_trailer_and_exit()`--it lies on _all_
+	controlled paths out of the program.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/ab-request-works.sh: Conform better to
+	modern groff test conventions.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Skip more tests on buggy Solaris.
+
+	* src/roff/groff/tests/ab-request-works.sh:
+	* src/roff/groff/tests/handle-special-input-code-points.sh:
+	* tmac/tests/an-ext_MR-works.sh:
+	* tmac/tests/an_MR-works.sh:
+	* tmac/tests/an_font-remapping-does-not-affect-titles.sh: Skip
+	test if the shell in "/usr/xpg4/bin" mis-implements the `unset`
+	shell built-in command.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (abort_request): Trivially refactor;
+	for clarity, apply DeMorgan's Law so that the `if` statement
+	guarding entry to a `for` loop matches the expression tested
+	within it.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Improve type discipline with respect
+	to groff's internal character representation.
+	(macro::append): Append to macro contents using explicitly
+	unsigned character (integer) literal rather than a signed one,
+	for conceptual clarity.  "groff characters" are, for now,
+	unsigned bytes.
+	(macro_header::copy, string_iterator::fill, substring_request):
+	Compare character read from an groff string iterator to unsigned
+	character {integer} literal.
+
+	Continues the long process of fixing Savannah #67735.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (composite_glyph_name)
+	(do_define_string): Explicitly compare values of pointer type to
+	null pointer literals instead of letting them pun down to
+	Booleans.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (string_iterator::fill)
+	(decode_macro_call_arguments, decode_escape_sequence_arguments)
+	(do_define_string, do_define_macro, do_string_case_transform)
+	(substring_request, do_non_interpreted, abort_request):
+	Parenthesize formally complex expressions.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (read_char_in_copy_mode)
+	(token::next, process_input_stack, macro_header::copy)
+	(string_iterator::fill, decode_macro_call_arguments)
+	(decode_escape_sequence_arguments, do_define_string)
+	(interpolate_positional_parameter, do_define_macro)
+	(do_string_case_transform, substring_request, asciify_request)
+	(unformat_macro, non_interpreted_node::interpret)
+	(do_non_interpreted, skip_branch, while_request)
+	(stream_write_macro_request, abort_request,
+	transparent_throughput_file_request, do_error): Arrange equality
+	comparisons to avoid inadvertent lvalue assignment.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Make the "guts" of the `chop_macro()`
+	function a member function of class `macro`.
+
+	* src/roff/troff/request.h (class macro): Declare member
+	function `chop()`, taking and returning `void`.  Drop
+	declaration of `friend` function `chop_macro()`.
+	* src/roff/troff/input.cpp: Drop forward declaration of
+	`chop_macro()`.
+	(macro::chop): Member function takes responsibility for updating
+	a `macro` object, reducing internally stored length of its
+	contents if possible.  (Exception: token values used internally
+	to manage the state of compatibility mode do not contribute to
+	the length count.)
+	(chop_macro): Rename this...
+	(chop_request): ...to this, following a developing convention of
+	naming request handlers to end with "_request".  Declare it
+	`static`.  Replace lengthy `else` branch with a call of the
+	resolved macro's `chop()` member function.
+	(init_input_requests): Update wire-uppery of "chop" request
+	name.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (chop_macro): Arrange equality
+	comparisons to avoid inadvertent lvalue assignment.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (chop_macro): Drop error diagnostic
+	that was thrown only in the event of an internal logic error.
+	An assert(3)ion now handles that, and in an `NDEBUG` build the
+	formatter can safely proceed.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (chop_macro): Add assert(3)ion to
+	verify an invariant in the logic.  Instrumenting this test
+	during a full groff build reveals that it's reached 670 times.
+
+2026-03-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (chop_macro): Boolify and rename
+	local variable.  `have_restore` becomes `contains_mode_tokens`.
+	Assign to it with Boolean, not integer, literals.
+
+2026-03-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp
+	(transparent_throughput_file_request): Disallow all
+	grout-invalid characters in "safer" transparent file throughput
+	{implemented by the `trf` request}, including all C0 control
+	code points except the line feed (Unix newline), and all C1
+	controls and Latin-1 extension code points.  Revise warning
+	diagnostic message.
+
+	* doc/groff.texi.in (Host System Service Access, Warnings):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* src/roff/troff/troff.1.man (Warnings):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?66547>.
+
 2026-03-19  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/devices/grotty/tty.cpp (tty_printer::end_page): Further
@@ -144,7 +408,7 @@
 	the allocation size-doubling approach.
 	(tty_printer::begin_page): Implement.  Initially allocate
 	`default_lines_per_page` rows of `tty_glyph` pointers.  Use
-	`memset(3)` here, too, to zero them out.
+	memset(3) here, too, to zero them out.
 
 	[1] https://sourceware.org/git/?p=glibc.git;a=commit;\
 	h=46b5e98ef6f1
@@ -343,7 +607,7 @@
 	indentation is in effect; or {b} a temporary indentation request
 	is issued while centering or right-alignment are in effect.
 	(cancel_temporary_indentation): New function--which I suspect
-	should be a member function of class `environment`, but which
+	should be a member function of class `environment`, but that
 	would be confusingly inconsistent with existing practice--sets
 	the temporary indentation amount to zero and sets the property
 	of having a temporary indent off.  (Those are not the same

@@ -52,8 +52,8 @@ HDTBLGENFILES = \
   contrib/hdtbl/examples/fonts_n.roff \
   contrib/hdtbl/examples/fonts_x.roff
 EXTRA_DIST += \
-  contrib/hdtbl/examples/fonts_n.in \
-  contrib/hdtbl/examples/fonts_x.in \
+  contrib/hdtbl/examples/fonts_n.roff.in \
+  contrib/hdtbl/examples/fonts_x.roff.in \
   $(hdtbl_test_template)
 
 $(HDTBLPROCESSEDEXAMPLEFILES): $(DEVPSFONTFILES)
@@ -113,13 +113,13 @@ contrib/hdtbl/examples/test-hdtbl.sh: \
 MOSTLYCLEANFILES += $(hdtbl_TESTS)
 
 # Rule to generate ps and roff files
-SUFFIXES += .roff .in .ps
+SUFFIXES += .roff.in .ps
 
 .roff.ps:
 	$(GROFF_V)$(MKDIR_P) `dirname $@` \
 	&& $(HDTBLGROFF) -Tps $< >$@
 
-.in.roff:
+.roff.in.roff:
 	$(AM_V_GEN)$(MKDIR_P) `dirname $@` \
 	&& sed -e "s|[@]fontdir[@]|$(fontdir)|" \
 	       -e "s|[@]EGREP[@]|$(EGREP)|" $< >$@

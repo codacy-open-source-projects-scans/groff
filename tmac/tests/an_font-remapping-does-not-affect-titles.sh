@@ -28,7 +28,13 @@ groff="${abs_top_builddir:-.}/test-groff"
 # page footers and headers.
 
 # Keep preconv from being run.
-unset GROFF_ENCODING
+#
+# The "unset" in Solaris /usr/xpg4/bin/sh can actually fail.
+if ! unset GROFF_ENCODING
+then
+    echo "unable to clear environment; skipping" >&2
+    exit 77 # skip
+fi
 
 input='.TH \\fIfoo\\fP 1 2021-10-04 "groff test suite"
 .SH Name

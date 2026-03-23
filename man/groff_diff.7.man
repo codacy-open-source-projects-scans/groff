@@ -12,7 +12,7 @@ and AT&T
 .\" ====================================================================
 .\"
 .\" Copyright 1989-2024 Free Software Foundation, Inc.
-.\"           2019-2025 G. Branden Robinson
+.\"           2019-2026 G. Branden Robinson
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"
@@ -4462,18 +4462,42 @@ and
 .IR end ,
 inclusively.
 .
-The first character in the string has index\~0.
+The first element of the string has index\~0.
+.
+An absent
+.I end
+argument implies the largest valid value
+(the string length minus one).
 .
 Negative indices count backward from the end of the string:
-the last character has index\~\-1,
-the character before the last has index\~\-2,
+the last element has index\~\-1,
+the element before the last has index\~\-2,
 and so on.
 .
-If
+If both
+.I start
+and
 .I end
-is omitted,
-.B \-1
-is implied.
+lie outside the string,
+GNU
+.I troff \" GNU
+ignores the request.
+.
+.
+.IP
+Compatibility save and restore tokens do
+.I not
+count for the purpose of index computation,
+even though they appear in string contents reported by the
+.B pm
+request and figure in the value computed by the
+.RB \[lq] length \[rq]
+request.
+.\" XXX: You can actually do the following, inadvisedly.
+.\" Consequently,
+.\" .B \%substring
+.\" cannot be used to alter the compatibility mode associations
+.\" of its elements.
 .
 .
 .TP
@@ -4526,12 +4550,10 @@ but does not append a newline.
 .BI .trf\~ file
 Break and copy
 .I file
-as \[lq]throughput\[rq] to GNU
+as \[lq]throughput\[rq] to
+GNU
 .I troff \" GNU
-output,
-discarding characters that are invalid as input;
-contrast with
-.BR cf .
+output.
 .
 Each line of
 .I file
@@ -4548,6 +4570,26 @@ appends one.
 Invoking the request
 with the no-break control character
 suppresses the break.
+.
+If a diversion is in use,
+GNU
+.I troff \" GNU
+performs the copy only when the diversion is emitted.
+.
+.
+.IP
+.B trf
+discards input characters that are invalid in
+GNU
+.IR troff 's \" GNU
+output format,
+meaning all 8-bit character codes less than decimal 32
+(except 10,
+the line feed)
+and greater than decimal 127.
+.
+See
+.MR groff_out @MAN5EXT@ .
 .
 .
 .TP

@@ -1076,7 +1076,7 @@ shares much of this interface;
 @command{groff}
 passes relevant options and operands to it.
 
-@c We don't know the width of what @g@ interpolates, so indentation
+@c We don't know the width of what at-g-at interpolates, so indentation
 @c might be hinky.  Format for the common case of a null prefix.
 @Example
 troff [-abcCEiRSUz] [-f @var{font-family}] [-F @var{font-directory}]
@@ -15378,13 +15378,33 @@ for details on nodes inserted additionally by GNU @code{troff}.
 
 @Defreq {substring, str start [@Var{end}]}
 @cindex substring (@code{substring})
-Replace the string named @var{str} with its substring bounded by the
-indices @var{start} and @var{end}, inclusively.  The first character in
-the string has index@tie{}0.  If @var{end} is omitted, it is implicitly
-set to the largest valid value (the string length minus one).  Negative
-indices count backward from the end of the string:@: the last character
-has index@tie{}@minus{}1, the character before the last has
-index@tie{}@minus{}2, and so on.
+Replace the string named
+@var{str}
+with its substring bounded by the indices
+@var{start}
+and
+@var{end},
+inclusively.
+The first element of the string has index@tie{}0.
+An absent
+@var{end}
+argument implies the largest valid value
+(the string length minus one).
+Negative indices count backward from the end of the string:@:
+the last element has index@tie{}@minus{}1,
+the element before the last has index@tie{}@minus{}2,
+and so on.
+If both
+@var{start}
+and
+@var{end}
+lie outside the string,
+GNU
+@command{troff} @c GNU
+ignores the request.@footnote{It also
+emits a warning in category
+@samp{range}.
+@xref{Warnings}.}
 
 @Example
 .ds xxx abcdefgh
@@ -15396,6 +15416,20 @@ index@tie{}@minus{}2, and so on.
     @result{} de
 @endExample
 @endDefreq
+
+Compatibility save and restore tokens do
+@emph{not}
+count for the purpose of index computation,
+even though they appear in string contents reported by the
+@code{pm}
+request and figure in the value computed by the
+@code{length}
+request.
+@c XXX: You can actually do the following, inadvisedly.
+@c Consequently,
+@c @code{substring}
+@c cannot be used to alter the compatibility mode associations
+@c of its elements.
 
 @DefreqList {stringdown, str}
 @DefreqListEndx {stringup, str}
@@ -20036,7 +20070,8 @@ in
 @cindex mode, copy, and @code{trf} request
 Break and copy the contents of
 @var{file}
-as ``throughput'' to GNU
+as ``throughput'' to
+GNU
 @command{troff}'s
 output.
 Each line of
@@ -20057,20 +20092,29 @@ GNU
 @command{troff} @c GNU
 performs the copy only when the diversion is emitted.
 
-@cindex @code{trf} request, and invalid characters
-@cindex characters, invalid for @code{trf} request
-@cindex invalid characters for @code{trf} request
 @code{cf} copies the contents of @var{file} completely unprocessed;
 it is therefore an error to use this request in safer mode,
 which is the default.
-Invoke GNU
+Invoke
+GNU
 @command{troff} @c GNU
 or a front end with the
 @option{-U}
 option to enable unsafe mode.
 
-@code{trf} discards invalid input characters;
-recall @ref{Input Format}.
+@cindex @code{trf} request, and invalid characters
+@cindex characters, invalid for @code{trf} request
+@cindex invalid characters for @code{trf} request
+@code{trf}
+discards input characters that are invalid in
+GNU
+@command{troff}'s @c GNU
+output format,
+meaning all 8-bit character codes less than decimal 32
+(except 10,
+the line feed)
+and greater than decimal 127.@footnote{@xref{GNU
+@command{troff} Output}.}
 
 For @code{cf}, within a diversion, ``completely unprocessed'' means that
 each line of a file to be inserted is handled as if it were preceded by
@@ -21713,7 +21757,9 @@ A request was invoked with a mandatory argument absent.
 
 @item input
 @itemx 16384
-An invalid character occurred on the input stream.
+An invalid character occurred on the input stream,
+or was present in the contents of a file processed
+as transparent throughput.
 
 @item escape
 @itemx 32768

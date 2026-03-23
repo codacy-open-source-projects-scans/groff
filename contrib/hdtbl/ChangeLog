@@ -1,3 +1,27 @@
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* examples/fonts_n.in:
+	* examples/fonts_x.in: Revise messages written to terminal to
+	better describe operation in progress.
+
+2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Revise approach to generating fonts*.roff files, employing a
+	technique that is not endorsed by the POSIX Issue 8 (2024)
+	standard for make(1), but which GNU and *BSD make programs
+	handle as desired, and consistently with each other.  See
+	<https://cgit.git.savannah.gnu.org/cgit/groff.git/tree/doc/\
+	doc.am?h=1.24.1#n310> for background.
+
+	* examples/fonts_n.in:
+	* examples/fonts_x.in: Rename these...
+	* examples/fonts_n.roff.in:
+	* examples/fonts_x.roff.in: ...to these.
+	* hdtbl.am (EXTRA_DIST): Ship files as renamed.
+	(SUFFIXES): Replace `.roff` and `.in` with `.roff.in`.
+	(.in.roff): Rename target from this...
+	(.roff.in.roff): ...to this.
+
 2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* hdtbl.tmac: Actually skip loading the package if the formatter

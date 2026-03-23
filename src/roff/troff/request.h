@@ -45,7 +45,7 @@ struct node;
 class macro : public request_or_macro {
   const char *filename;		// where was it defined?
   int lineno;
-  int len;
+  int length;
   bool is_empty_macro;
   bool is_a_diversion;
   bool is_a_string;		// if it contains no newline
@@ -62,8 +62,9 @@ public:
   void append_int(int);
   void append_str(const char *);
   void set(unsigned char, int);
+  void chop();
   unsigned char get(int);
-  int length();
+  int get_length();
   void invoke(symbol, bool);
   macro *to_macro();
   void print_size();
@@ -74,8 +75,6 @@ public:
   void dump();
   void json_dump();
   friend class string_iterator;
-  friend void chop_macro();
-  friend void substring_request();
   friend bool operator==(const macro &, const macro &);
 };
 
