@@ -1,5 +1,6 @@
 /* Copyright 2014-2025 Free Software Foundation, Inc.
-     Written by Werner Lemberg (wl@gnu.org)
+
+Written by Werner Lemberg (wl@gnu.org)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -18,6 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stringclass.h"
 
+// libgroff/change_lf.cpp
+void change_filename(const char *);
+void change_lineno(int);
+
+// libgroff/lf.cpp
 bool interpret_lf_request_arguments(const char *p);
 void normalize_file_name_for_lf_request(string &fn);
 

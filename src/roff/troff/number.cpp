@@ -23,13 +23,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <stdckdint.h>
+#include <stdio.h> // prerequisite of mtsm.h, searchpath.h
 
-#include "troff.h" // units
-#include "hvunits.h" // hunits, vunits
-#include "mtsm.h" // state_set
-#include "env.h" // curenv
-#include "token.h" // tok
+#include <stack> // prerequisite of mtsm.h
+
+// libgroff
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "searchpath.h" // prerequisite of troff.h
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of env.h
+#include "cset.h" // csdigit()
+#include "stringclass.h" // prerequisite of mtsm.h
+
+// troff
+#include "troff.h" // prerequisite of hvunits.h, token.h; units
+#include "hvunits.h" // prerequisite of div.h; hunits, vunits
+#include "dictionary.h" // prerequisite of request.h
+#include "env.h" // prerequisite of node.h; curenv
+#include "mtsm.h" // prerequisite of node.h
+#include "request.h" // prerequisite of node.h
+#include "node.h" // prerequisite of div.h
 #include "div.h" // curdiv
+#include "token.h" // tok
 
 const vunits V0; // zero in vertical units
 const hunits H0; // zero in horizontal units

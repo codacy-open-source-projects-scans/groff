@@ -24,25 +24,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <errno.h> // errno
 #include <math.h> // ceil(), fabs()
+#include <stdio.h> // prerequisite of mtsm.h, searchpath.h
 
+#include <stack> // prerequisite of mtsm.h
 #include <vector>
 #include <algorithm> // find()
 
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "font.h"
+#include "symbol.h" // prerequisite of dictionary.h and color.h
+#include "color.h" // prerequisite of env.h
+#include "cset.h" // csdigit(), csspace()
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "lib.h" // UINT_DIGITS, i_to_a(), if_to_a(),
+		 // is_invalid_input_char()
+#include "searchpath.h" // prerequisite of troff.h
+
+// troff
+#include "troff.h" // prerequisite of hvunits.h, token.h; units
+#include "font.h" // prerequisite of charinfo.h
+#include "token.h" // prerequisite of charinfo.h
 #include "charinfo.h"
-#include "macropath.h"
-#include "input.h"
+#include "dictionary.h" // object
+#include "hvunits.h" // prerequisite of div.h; hunits, vunits
+#include "stringclass.h" // prerequisite of mtsm.h
+#include "mtsm.h" // prerequisite of div.h; statem
+#include "div.h" // curdiv
+#include "env.h" // environment, font_size
+#include "input.h" // do_fill_color(), do_stroke_color(), suppress_push,
+		   // was_invoked_with_regular_control_character
+#include "request.h" // prerequisite of node.h; macro
+#include "node.h"
+#include "reg.h"
 
 symbol default_family("T");
 
@@ -612,7 +624,7 @@ static void warn_if_font_name_deprecated(symbol nm)
 bool environment::set_font(symbol nm)
 {
   if (was_line_interrupted)
-    return true; // "no operation" is successful
+    return false;
   // TODO: Kill this off in groff 1.24.0 release + 2 years.
   if (is_device_ps_or_pdf)
     warn_if_font_name_deprecated(nm);

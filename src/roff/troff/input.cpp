@@ -26,7 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h> // ENOENT, errno
 #include <locale.h> // setlocale()
 #include <stdcountof.h>
-#include <stdio.h> // EOF, FILE, clearerr(), fclose(), fflush(),
+#include <stdio.h> // prerequisite of searchpath.h
+		   // EOF, FILE, clearerr(), fclose(), fflush(),
 		   // fileno(), fopen(), fprintf(), fseek(), getc(),
 		   // pclose(), popen(), printf(), SEEK_SET, snprintf(),
 		   // sprintf(), setbuf(), stderr, stdin, stdout,
@@ -35,34 +36,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 		    // free(), getenv(), setenv(), strtol(), system()
 #include <string.h> // strcpy(), strdup(), strerror()
 
+// GNU extensions to C standard library
 #include <getopt.h> // getopt_long()
 
 #include <stack>
 
-#include "json-encode.h" // json_encode_char()
-
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "font.h"
-#include "charinfo.h"
-#include "macropath.h"
-#include "input.h"
-#include "defs.h"
-#include "unicode.h"
-#include "curtime.h"
-
+// operating system services
 // needed for getpid() and isatty()
 #include "posix.h"
 #include "nonposix.h"
+
+// build configuration
+#include "defs.h"
+
+// libgroff
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "searchpath.h" // prerequisite of troff.h
+#include "symbol.h" // prerequisite of dictionary.h and color.h
+#include "color.h" // prerequisite of env.h
+#include "cmap.h" // cmlower(), cmupper()
+#include "cset.h" // cset, csalpha(), csdigit(), csgraph(), cslower(),
+		  // csprint(), cspunct(), csupper()
+#include "device.h"
+#include "font.h" // prerequisite of charinfo.h
+#include "json-encode.h" // json_encode_char()
+#include "lib.h" // i_to_a(), is_invalid_input_char(), ui_to_a()
+#include "stringclass.h" // prerequisite of mtsm.h
+#include "unicode.h"
+
+// troff
+#include "troff.h" // prerequisite of hvunits.h, token.h; units
+#include "token.h" // prerequisite of charinfo.h; tok
+#include "charinfo.h"
+#include "curtime.h" // current_time()
+#include "dictionary.h" // object
+#include "hvunits.h" // prerequisite of div.h; hunits, vunits
+#include "mtsm.h" // prerequisite of div.h; statem
+#include "div.h" // curdiv
+#include "env.h" // environment, font_size
+#include "input.h" // do_fill_color(), do_stroke_color(), suppress_push,
+		   // was_invoked_with_regular_control_character
+#include "macropath.h" // config_macro_path, macro_path,
+		       // safer_macro_path
+#include "request.h" // prerequisite of node.h; macro
+#include "node.h"
+#include "reg.h"
 
 #define MACRO_PREFIX "tmac."
 #define MACRO_POSTFIX ".tmac"
@@ -6076,6 +6095,11 @@ static bool read_delimited_measurement(units *n,
 
 // TODO: Merge into other `read_delimited_measurement()`, using default
 // argument of 0 for `prev_value`.
+// XXX: Careful, though.  Doing this in the most obvious way fails no
+// test cases but results in drawing position miscomputations affecting
+// the configuration parameter tables in the text rendering of
+// doc/ms.ms.  Root-cause that and write an `assert()` and/or regression
+// test for it.
 static bool read_delimited_measurement(units *n, unsigned char si)
 {
   token start_token;
@@ -9611,7 +9635,7 @@ page_range *output_page_list = 0 /* nullptr */;
 
 bool in_output_page_list(int n)
 {
-  if (!output_page_list)
+  if (0 /* nullptr */ == output_page_list)
     return true;
   for (page_range *p = output_page_list;
        p != 0 /* nullptr */;
@@ -9658,7 +9682,8 @@ static void parse_output_page_list(const char *p)
     ++p;
   }
   if (*p != '\0') {
-    error("ignoring invalid output page list argument '%1'", pstart);
+    error("malformed argument to command-line option '-o';"
+	  " page list '%1' is invalid", pstart);
     output_page_list = 0 /* nullptr */;
   }
 }
@@ -10001,26 +10026,28 @@ int main(int argc, char **argv)
       if (sscanf(optarg, "%d", &next_page_number) == 1)
 	have_explicit_first_page_number = true;
       else
-	error("bad page number");
+	error("malformed argument to command-line option '-n';"
+	      "page number '%1' is invalid", optarg);
       break;
     case 'o':
       parse_output_page_list(optarg);
       break;
     case 'd':
       if (*optarg == '\0')
-	error("'-d' requires non-empty argument");
+	error("command-line option '-d' requires non-empty argument");
       else if (*optarg == '=')
-	error("malformed argument to '-d'; string name cannot be empty"
-	      " or contain an equals sign");
+	error("malformed argument to command-line option '-d';"
+	      "string name cannot be empty or contain an equals sign");
       else
 	add_string(optarg, &string_assignments);
       break;
     case 'r':
       if (*optarg == '\0')
-	error("'-r' requires non-empty argument");
+	error("command-line option '-r' requires non-empty argument");
       else if (*optarg == '=')
-	error("malformed argument to '-r'; register name cannot be"
-	      " empty or contain an equals sign");
+	error("malformed argument to command-line option '-r';"
+	      "register name cannot be empty or contain an equals"
+	      "sign");
       else
 	add_string(optarg, &register_assignments);
       break;
@@ -10094,7 +10121,7 @@ int main(int argc, char **argv)
   font_size::init_size_list(font::sizes);
   int i;
   int j = 1;
-  if (font::style_table)
+  if (font::style_table != 0 /* nullptr */)
     for (i = 0; font::style_table[i] != 0 /* nullptr */; i++)
       // Mounting a style can't actually fail due to a bad style name;
       // that's not determined until the full font name is resolved.
@@ -10785,7 +10812,7 @@ void debug(const char *format,
 	   const errarg &arg2,
 	   const errarg &arg3)
 {
-  do_error(DEBUG, WARN_INVALID, format, arg1, arg2, arg3);
+  do_error(DEBUG, WARN_DUMMY, format, arg1, arg2, arg3);
 }
 
 void warning(warning_category wc,
@@ -10813,7 +10840,7 @@ void error(const char *format,
 	   const errarg &arg2,
 	   const errarg &arg3)
 {
-  do_error(ERROR, WARN_INVALID, format, arg1, arg2, arg3);
+  do_error(ERROR, WARN_DUMMY, format, arg1, arg2, arg3);
 }
 
 void fatal(const char *format,
@@ -10821,7 +10848,7 @@ void fatal(const char *format,
 	   const errarg &arg2,
 	   const errarg &arg3)
 {
-  do_error(FATAL, WARN_INVALID, format, arg1, arg2, arg3);
+  do_error(FATAL, WARN_DUMMY, format, arg1, arg2, arg3);
 }
 
 void fatal_with_file_and_line(const char *filename, int lineno,
@@ -11223,7 +11250,10 @@ void charinfo::dump()
     // Also see node.cpp::glyph_node::asciify().
     int mapping = get_unicode_mapping();
     if (mapping >= 0) {
-      const size_t buflen = 6; // enough for five hex digits + '\0'
+      // All we need is `sizeof "10FFFF"` but GCC's
+      // "-Wformat-truncation" warning doesn't know that Unicode code
+      // points are limited in range.
+      const size_t buflen = sizeof "FFFFFFFF";
       char hexbuf[buflen];
       (void) memset(hexbuf, '\0', buflen);
       (void) snprintf(hexbuf, buflen, "%.4X", mapping);

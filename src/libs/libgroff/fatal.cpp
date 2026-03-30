@@ -1,5 +1,6 @@
-/* Copyright 1989-2020 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-1991 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -21,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <stdlib.h>
+
+#include "errarg.h"
+#include "error.h"
 
 #define FATAL_ERROR_EXIT_CODE 3
 

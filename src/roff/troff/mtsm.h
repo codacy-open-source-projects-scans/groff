@@ -24,12 +24,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <stdio.h> // FILE
-
-#include <stack>
-
-#include "stringclass.h" // string
-
 // groff doesn't yet use include guards, so until it does, any source
 // file needing symbols from this one must #include "hvunits.h" first.
 //

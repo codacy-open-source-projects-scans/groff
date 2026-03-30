@@ -722,7 +722,7 @@ or
 .
 .
 .TP
-.BI \[rs][ "base-char composite-1 composite-2"\~\c
+.BI \[rs][ "base-character composite-1 composite-2"\~\c
 \&.\|.\|.\~\c
 .IB composite-n ]
 is a composite glyph.
@@ -836,7 +836,7 @@ on ISO\~Latin-1 systems.)
 .
 .
 .TP
-.BI \[rs][u base-char\c
+.BI \[rs][u base-character\c
 [\c
 .BI _ combining-component\c
 ].\|.\|.]

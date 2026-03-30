@@ -6226,13 +6226,22 @@ see
 @cindex no-break control character (@code{'})
 @cindex character, no-break control (@code{'})
 @cindex control character, no-break (@code{'})
-A @dfn{request} is an instruction to the formatter that occurs after a
-@dfn{control character}, which is recognized at the beginning of an
-input line.  The regular control character is a dot (@code{.}).  Its
-counterpart, the @dfn{no-break control character}, a neutral apostrophe
-(@code{'}), suppresses the break that is implied by some requests.
-These characters were chosen because it is uncommon for lines of text in
-natural languages to begin with them.
+A
+@dfn{request}
+is an instruction to the formatter that occurs after a
+@dfn{control character},
+which is recognized at the beginning of an input line.
+The regular control character is a dot
+(@code{.}).
+Its counterpart,
+the
+@dfn{no-break control character},
+a neutral apostrophe
+(@code{'}),
+suppresses the break that some requests imply.
+These characters were chosen
+because it is uncommon for lines of text in natural languages
+to begin with them.
 @cindex dummy character (@code{\&}), as control character suppressor
 @cindex character, dummy (@code{\&}), as control character suppressor
 If you require a formatted period or apostrophe
@@ -6260,15 +6269,13 @@ Requests often take
 words
 (separated from the request name and each other by spaces)
 that specify details of the action you expect the formatter to perform.
-If a request is meaningless without arguments,
-it is typically ignored.
 
 Requests and escape sequences comprise the control language
 of the formatter.
 Of key importance are the requests that define macros.
 Macros are invoked like requests,
-enabling the request repertoire
-to be extended or overridden.@footnote{Argument handling in macros
+permitting extension or override
+of the request repertoire.@footnote{Argument handling in macros
 is more flexible but also more complex.
 @xref{Calling Macros}.}
 
@@ -6276,9 +6283,9 @@ is more flexible but also more complex.
 @cindex macro
 @cindex calling macros (introduction)
 @cindex interpolation
-A
+Think of a
 @dfn{macro}
-can be thought of as an abbreviation you can define
+as an abbreviation you can define
 for a collection of control and text lines.
 When a document
 @dfn{calls}
@@ -6288,9 +6295,9 @@ the formatter replaces the control line with the macro's definition.
 The process of textual replacement is known as
 @dfn{interpolation}.@footnote{Some escape sequences undergo
 interpolation as well.}
-Interpolations are handled as soon as they are recognized,
+The formatter performs an interpolation upon recognition,
 and once performed,
-the formatter scans the replacement for further requests,
+it scans the replacement for further requests,
 macro calls,
 and escape sequences.
 
@@ -6385,16 +6392,34 @@ Insert tedious liability disclaimer paragraph here.
     @result{} Approved: 2020-10-05 by D. Kruger, J. Peterman
 @endExample
 
+@cindex body, of a macro
+@cindex macro body
 @noindent
-The above document started with a series of control lines.  Three macros
-were defined, with a @code{de} request declaring each macro's name, and
-the ``body'' of the macro starting on the next line and continuing until
-a line with two dots @samp{@code{..}} marked its end.  The text proper
-began only after the macros were defined; this is a common pattern.
-Only the @code{NOTICE} macro was called ``directly'' by the document;
-@code{DATE} and @code{BOSS} were called only by @code{NOTICE} itself.
-Escape sequences were used in @code{BOSS}, two levels of macro
-interpolation deep.
+The above document started with a series of control lines.
+Three macros were defined,
+with a
+@code{de}
+request declaring each macro's name,
+and the
+@dfn{body}
+of the macro starting on the next line
+and continuing until a line with two dots
+@samp{@code{..}}
+marked its end.
+The text proper began only after the macros were defined;
+this is a common pattern.
+Only the
+@code{NOTICE}
+macro was called ``directly'' by the document;
+@code{DATE}
+and
+@code{BOSS}
+were called only by
+@code{NOTICE}
+itself.
+Escape sequences were used in
+@code{BOSS},
+two levels of macro interpolation deep.
 
 The advantage in typing and maintenance economy may not be obvious from
 such a short example, but imagine a much longer document with dozens of
@@ -6473,14 +6498,17 @@ A document encoded in
 (US-@acronym{ASCII}),
 or,
 equivalently,
-uses only code points from the
-``C0 Controls'' and ``Basic Latin'' parts of the Unicode character set
+that uses only code points from the
+``C0 Controls'' and ``Basic Latin'' parts
+of the Unicode character set
 is also a valid ISO @w{Latin-1} document;
 the standards are interchangeable
 in their first 128 code points.@footnote{The
-@emph{semantics} of certain punctuation code points have gotten stricter
-with the successive standards, a cause of some frustration among man
-page writers; see @cite{groff_char@r{(7)}}.}
+@emph{semantics}
+of certain punctuation code points have gotten stricter
+with the successive standards,
+a cause of some frustration among man page writers;
+see @cite{groff_char@r{(7)}}.}
 
 @cindex invalid input characters
 @cindex input characters, invalid
@@ -7132,7 +7160,7 @@ En;
 on typesetters,
 an en is one-half em,
 but on terminals an en equals an em,
-because they align all text to a grid of character cells.
+because such devices align all text to a grid of character cells.
 
 @item v
 @cindex vertical space unit (@code{v})
@@ -8058,12 +8086,19 @@ non-destructively replaced.  @xref{Strings}.
 There is no inherent limit on argument length or quantity.
 Most requests take one or more arguments,
 and ignore any they do not expect.
-A request may be separated from its arguments by tabs or spaces,
-but only spaces can separate an argument from its successor.
-Only one between arguments is necessary;
-any excess is ignored.@footnote{In compatibility mode,
+A request that is not supplied a mandatory argument does
+nothing.@footnote{GNU
+@command{troff} @c GNU
+emits a warning in category
+@samp{missing}.
+@xref{Warnings}.}
+Spaces or tabs separate a request's name from its first argument,
+but only spaces can separate an argument
+from its successor.@footnote{In compatibility mode,
 a space is not necessary
 after a request or macro name of two characters' length.}
+Only one space between arguments is necessary;
+the formatter ignores any excess.
 GNU
 @command{troff} @c GNU
 does not interpret tabs as argument separators.@footnote{Plan@tie{}9
@@ -9250,12 +9285,30 @@ doesn't exist, it is created with a zero value.
 @cindex extreme values representable with Roman numerals
 @cindex maximum value representable with Roman numerals
 @cindex minimum value representable with Roman numerals
-The representable extrema in the @samp{i} and @samp{I} formats
-correspond to Arabic ±39,999.  GNU @code{troff} uses @samp{w} and
-@samp{z} to represent 5,000 and 10,000 in Roman numerals, respectively,
-following the convention of @acronym{AT&T} @code{troff}---currently, the
-correct glyphs for Roman numerals five thousand (@code{U+2181}) and ten
-thousand (@code{U+2182}) are not used.
+The representable extrema in the
+@samp{i}
+and
+@samp{I}
+formats correspond to Arabic ±3,999.@footnote{In compatibility mode,
+GNU
+@command{troff}
+uses
+@samp{w}
+and
+@samp{z}
+to represent 5,000 and 10,000 in Roman numerals,
+respectively,
+following the convention of
+@acronym{AT&T}
+@command{troff},
+and increasing the representable range of register values
+to Arabic ±39,999.
+Following Unicode's recommendation,
+@c TODO: Find a source for that.
+GNU
+@command{troff} outputs Roman numerals
+using only alphabetic characters,
+not Roman numeral characters from Unicode's Number Forms block.}
 
 @cindex read-only register, changing format
 @cindex changing format, and read-only registers
@@ -9313,11 +9366,11 @@ Predefined registers whose identifiers start with a dot are read-only.
 Many are Boolean-valued, interpolating a true or false value testable
 with the @code{if}, @code{ie}, or @code{while} requests.
 
-@cindex removing a built-in register
-@cindex register, built-in, removing
-@cindex built-in register, removing
+@cindex removing a read-only register
+@cindex register, read-only, removing
+@cindex read-only register, removing
 @strong{Caution:@:}
-Built-in registers are subject to removal like others;
+Read-only registers are subject to removal like others;
 once removed,
 they can be recreated only as normal writable registers
 and will not otherwise reflect the configuration of the formatter.
@@ -12431,12 +12484,22 @@ line.
 @DefescListEnd {\\F, [, family, ]}
 @cindex changing font family (@code{fam}, @code{\F})
 @cindex font family, changing (@code{fam}, @code{\F})
-Set the default font family, used in combination with abstract styles to
-construct a resolved font name, to @var{family} (one-character
-name@tie{}@var{f}, two-character name @var{fm}).  If no argument is
-given, GNU @code{troff} selects the previous font family; if there are
-none, it falls back to the device's default@footnote{@xref{DESC File
-Format}.} or its own (@samp{T}).
+Set the default font family,
+used in combination with abstract styles
+to construct a resolved font name,
+to
+@var{family}
+(one-character name@tie{}@var{f},
+two-character name @var{fm}).
+Without an argument,
+GNU
+@command{troff}
+selects the previous font family;
+if there is none,
+it falls back to the device's default@footnote{@xref{DESC File
+Format}.}
+or its own
+(@samp{T}).
 
 The @code{\F} escape sequence works similarly.  In disanalogy to
 @code{\f}, @samp{\FP} makes @samp{P} the default family.  Use
@@ -12626,14 +12689,34 @@ use.
 @endExample
 
 @cindex next free font position register (@code{.fp})
-The index of the next (non-zero) free font position is available in the
-read-only register @samp{.fp}.
+The index of the next (non-zero) free font position
+is available in the read-only register
+@samp{.fp}.
 @cindex @file{DESC} file, and font mounting
-Fonts not listed in the @file{DESC} file are automatically mounted at
-position @samp{\n[.fp]} when selected with the @code{ft} request or
-@code{\f} escape sequence.  When mounting a font at a position
-explicitly with the @code{fp} request, this same practice should be
-followed, although GNU @code{troff} does not enforce this strictly.
+When using the
+@code{ft}
+request or
+@code{\f}
+escape sequence
+to select a font by name that is not listed in the device's
+@file{DESC}
+file,
+GNU
+@command{troff} @c GNU
+automatically mounts it
+at position
+@samp{\n[.fp]}.
+If you mount a font at a position explicitly
+with the
+@code{fp}
+request,
+you should follow the same practice,
+though the program
+does not strictly enforce adherence.@footnote{GNU
+@command{troff} @c GNU
+looks up fonts by name with a search that is
+O(@var{n})
+in the length of the dynamically sized mounting position list.}
 @endDefreq
 
 @c ---------------------------------------------------------------------
@@ -14798,14 +14881,19 @@ and
 @code{.ps}
 registers represent the type size selected by the formatter
 as it understands a device's capability.
-The last
-@emph{requested}
-type size is interpolated in scaled points
-by the read-only register
+The read-only registers
 @code{.psr}
-and in points as a decimal fraction
-by the read-only string-valued register
-@code{.sr}.
+and
+(string-valued)
+@code{.sr}
+interpolate the last
+@emph{requested}
+type size
+in scaled points
+and in points as a decimal fraction,
+respectively.
+Like the selected current and previous type size,
+the requested ones are properties of an environment.
 
 For example,
 if a document requests a type size of 10.95@tie{}points,
@@ -17332,12 +17420,11 @@ their left edges, in contrast to @code{\o}'s centering.
 Save the drawing position,
 format
 @var{input},
-then restore it.
+then restore the saved position.
 GNU
 @command{troff} @c GNU
-ignores tabs and leaders in
-@var{input}
-with an error diagnostic.
+disallows tabs and leaders in
+@var{input}.
 
 We might implement a strike-through macro thus.
 
@@ -18632,11 +18719,19 @@ of qualifying lines enumerated in that environment.
 
 @Defreq {blm, [@Var{name}]}
 @cindex blank line macro (@code{blm})
-Set a blank line trap, calling the macro @var{name} when GNU
-@code{troff} encounters a blank line in input, instead of the usual
-behavior (@pxref{Breaking}).  A line consisting only of spaces is also
-treated as blank and subject to this trap.  If no argument is supplied,
-the default blank line behavior is (re-)established.
+Set a blank line trap,
+calling the macro
+@var{name}
+when
+GNU
+@command{troff}
+encounters a blank line in input,
+instead of the usual behavior
+(@pxref{Breaking}).
+A line consisting only of spaces
+is also treated as blank and subject to this trap.
+Omitting the argument
+reëstablishes the default blank line behavior.
 @endDefreq
 
 @c ---------------------------------------------------------------------
@@ -18669,10 +18764,12 @@ irrespective of whether a leading space trap is set.
 When it is, GNU @command{troff} removes the leading spaces from
 the input line and produces no motion before calling @var{name}.
 
-If no argument is supplied, GNU @command{troff} reëstablishes the
-default handling of leading spaces on text lines (breaking the line when
-filling, and formatting a horizontal motion of @samp{\n[lsn]} word
-spaces).
+Omitting the argument reëstablishes the default handling
+of leading spaces on text lines
+(breaking the line when filling,
+and formatting a horizontal motion of
+@samp{\n[lsn]}
+word spaces).
 
 @c XXX The following discussion does not seem to be correct; leading
 @c space traps don't "see" _any_ tokens.  Nothing on the line is
@@ -18705,9 +18802,13 @@ spaces).
 @cindex trap, end-of-input, setting (@code{em})
 @cindex end-of-input macro (@code{em})
 @cindex macro, end-of-input (@code{em})
-Set a trap at the end of input, calling macro @var{name} after the last
-line of the last input file has been processed.  If no argument is
-given, any existing end-of-input trap is removed.
+Set a trap at the end of input;
+the formatter
+calls macro
+@var{name}
+after processing the last line of the last input file.
+Without an argument,
+the formatter removes any existing end-of-input trap.
 
 For example, if the document had to have a section at the bottom of the
 last page for someone to approve it, the @code{em} request could be
@@ -20110,7 +20211,7 @@ discards input characters that are invalid in
 GNU
 @command{troff}'s @c GNU
 output format,
-meaning all 8-bit character codes less than decimal 32
+meaning all character codes less than decimal 32
 (except 10,
 the line feed)
 and greater than decimal 127.@footnote{@xref{GNU
@@ -21067,7 +21168,7 @@ environments,
 occupied font mounting positions,
 font translations,
 automatic hyphenation codes
-and exceptions,
+and exception words,
 registers,
 open streams,
 and page location traps.
@@ -21539,7 +21640,7 @@ warning category that is to be enabled; all other categories are
 disabled.  The categories and their associated codes are listed in
 @ref{Warnings}.  For example, @samp{.warn 0} disables all warnings, and
 @samp{.warn 1} disables all warnings except those about missing glyphs.
-If no argument is given, all warning categories are enabled.
+Omitting the argument enables all warning categories.
 
 The read-only register @code{.warn} contains the sum of the numeric
 codes of enabled warning categories.
@@ -22256,7 +22357,15 @@ to behave in ways difficult to predict.
 @node Other Differences
 @subsection Other Differences
 
-@c BEGIN Keep in sync with groff_diff(7).
+@c BEGIN Keep in sync with "Other differences" section of groff_diff(7).
+In
+GNU
+@command{troff}, @c GNU
+read-only registers are subject to removal like others;
+once removed,
+they can be recreated only as normal writable registers
+and will not otherwise reflect the configuration of the formatter.
+
 GNU
 @command{troff} @c GNU
 does not emit output if it has nothing to format.
@@ -22546,18 +22655,6 @@ GNU
 honors such requests.
 Recall @ref{Built-in Registers}.
 
-@cindex @code{lf} request, incompatibilities with @acronym{AT&T} @code{troff}
-The
-@code{lf}
-request sets the number of the
-@emph{current}
-input line in AT&T
-@command{troff} @c AT&T
-and the
-@emph{next}
-in GNU
-@command{troff}. @c GNU
-
 @cindex environment availability and naming, incompatibilities with
 @acronym{AT&T}
 @command{troff} @c AT&T
@@ -22621,6 +22718,18 @@ does not accept a scaling unit on the argument,
 a page number;
 the former does (uselessly).
 
+@cindex @code{lf} request, incompatibilities with @acronym{AT&T} @code{troff}
+The
+@code{lf}
+request sets the number of the
+@emph{current}
+input line in AT&T
+@command{troff} @c AT&T
+and the
+@emph{next}
+in GNU
+@command{troff}. @c GNU
+
 @cindex @code{pm} request, incompatibilities with @acronym{AT&T} @code{troff}
 In @acronym{AT&T}
 @command{troff}, @c AT&T
@@ -22659,8 +22768,8 @@ and does not move the drawing position.
 @acronym{AT&T}
 @command{troff} @c AT&T
 sets the vertical drawing position
-to two basic units fewer than the specified argument
-(or one vee minus one basic unit if no argument is present).
+to two basic units fewer than the specified argument,
+and to one vee minus one basic unit if no argument is present.
 @c Yes, really.  Try:
 @c printf '.tm \\n(nl\n.c2 $\n$sp\n.tm \\n(nl\n'
 @c printf '.tm \\n(nl\n.c2 $\n.nr nl -1\n$sp\n.tm \\n(nl\n'
@@ -22701,6 +22810,9 @@ Glyphs represent graphemes
 (supplied by the output device)
 and populate diversions
 (recall @ref{Diversions}).
+There is no such thing as a space character in
+GNU
+@command{troff}. @c GNU
 Formatting converts characters into
 (sequences of)
 glyphs.
@@ -22832,9 +22944,9 @@ always flushes this buffer when processing a break;
 @acronym{AT&T}
 @command{troff} @c AT&T
 does so according to no obvious schedule.
-(Perhaps,
+Perhaps,
 if the buffer is of fixed size,
-the formatter performs the flush when the buffer runs out of room.)
+the formatter performs the flush when the buffer runs out of room.
 
 In the somewhat pathological case where a diversion exists
 containing a partially collected line
@@ -22850,7 +22962,7 @@ at the end of input;
 GNU
 @command{troff} @c GNU
 does not.
-@c END Keep in sync with groff_diff(7).
+@c END Keep in sync with "Other differences" section of groff_diff(7).
 
 
 

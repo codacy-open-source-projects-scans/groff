@@ -1,20 +1,21 @@
-/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
-   Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-2005 Free Software Foundation, Inc.
 
-   This file is part of groff, the GNU roff typesetting system.
+Written by James Clark (jjc@jclark.com)
 
-   groff is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+This file is part of groff, the GNU roff text processing system.
 
-   groff is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+groff is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your
+option) any later version.
 
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+groff is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifdef HAVE_CONFIG_H
@@ -26,7 +27,13 @@
 #include <stdio.h> // clearerr(), ferror(), fflush(), stdout
 #include <string.h> // strcmp()
 
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of printer.h
+
+// libdriver
 #include "driver.h"
+#include "printer.h" // environment, font_pointer_list, printer
 
 /* If we are sending output to an onscreen pager (as is the normal case
    when reading man pages), then we may get an error state on the output

@@ -4139,7 +4139,7 @@ precedes the list itself,
 but does not accumulate with pre-item space
 when this list is nested in another.
 .
-.B RL
+.B VL
 calls
 .BR LB ;
 use
@@ -5868,17 +5868,17 @@ and takes the formal closing as its argument.
 implements letter options.
 .
 It requires that a string named
-.BI Let type
+.BI Let option
 be defined,
 where
-.I type
-is the letter type.
+.I option
+is the letter option.
 .
 .B LO
 then assigns its second argument
 .RI ( value )
 to the string
-.BI let*lo\- type\c
+.BI let*lo\- option\c
 \&.
 .
 .

@@ -500,9 +500,6 @@ words
 (separated from the request name and each other by spaces)
 that specify details of the action you expect the formatter to perform.
 .
-If a request is meaningless without arguments,
-it is typically ignored.
-.
 .\" TODO: We haven't introduced escape sequences yet.
 Requests and escape sequences comprise the control language
 of the formatter.
@@ -510,31 +507,31 @@ of the formatter.
 Of key importance are the requests that define macros.
 .
 Macros are invoked like requests,
-enabling the request repertoire to be extended or overridden.
+permitting extension or override
+of the request repertoire.
 .
 (Argument handling in macros is more flexible but also more complex.)
 .\" @xref{Calling Macros}.
 .
 .
 .P
-A
+Think of a
 .I macro
-can be thought of as an abbreviation you can define for a
-collection of control and text lines.
+as an abbreviation you can define
+for a collection of control and text lines.
 .
-When the macro is
-.I called
-by giving its name after a control character,
-it is replaced with what it stands for.
+When a document
+.I calls
+a macro
+by placing its name after a control character,
+the formatter replaces the control line with the macro's definition.
 .
 The process of textual replacement is known as
 .I interpolation.
 .\" @footnote{Some escape sequences undergo interpolation as well.}
-Interpolations are handled as soon as they are recognized,
+The formatter performs an interpolation upon recognition,
 and once performed,
-a
-.I roff
-formatter scans the replacement for further requests,
+it scans the replacement for further requests,
 macro calls,
 and escape sequences.
 .

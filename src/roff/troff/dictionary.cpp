@@ -21,7 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include "troff.h"
+#include <stdio.h> // prerequisite of searchpath.h
+
+// libgroff
+#include "symbol.h" // prerequisite of dictionary.h
 #include "dictionary.h"
 
 // is 'p' a good size for a hash table

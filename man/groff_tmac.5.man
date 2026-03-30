@@ -584,8 +584,8 @@ allows the generation of tables using a syntax similar to the HTML table
 model.
 .
 This Heidelberger table macro package is not a preprocessor,
-which can be useful if the contents of table entries are determined by
-macro calls or string interpolations.
+which can be useful if the table's row and column arrangement
+must be determined dynamically.
 .
 Compare to
 .MR @g@tbl @MAN1EXT@ .
@@ -744,10 +744,12 @@ They are not needed for the types listed in the table above.
 .
 .
 .IP
-If the required programs are not available,
+If required programs are absent,
+.B \%PDFPIC
+treats
 .I file
-is treated as a PDF;
-failure is likely if it is not one.
+as a PDF;
+failure is likely if it isn't one.
 .
 .
 .TP

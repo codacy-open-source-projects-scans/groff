@@ -1,5 +1,6 @@
 /* Copyright 2000-2020 Free Software Foundation, Inc.
-     Written by Gaius Mulley <gaius@glam.ac.uk>
+
+Written by Gaius Mulley <gaius@glam.ac.uk>
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -25,12 +26,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
  *                        Only called for inline images (such as eqn).
  *
  */
-extern void html_begin_suppress();
+void html_begin_suppress();
 
 /*
  *  html_end_suppress - end the suppression of output.
  */
-extern void html_end_suppress();
+void html_end_suppress();
 
 #endif
 

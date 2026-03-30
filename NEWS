@@ -15,13 +15,16 @@ VERSION next
 troff
 -----
 
-*  GNU troff, the formatter, now issues warnings in the "delim",
-   "syntax", and "escape" categories by default.
+*  GNU troff, the formatter, now employs the unusual Roman numerals "W"
+   and "Z" of AT&T troff only in compatibility mode.
+
+*  The "delim", "syntax", and "escape" categories are enabled by
+   default.
 
 *  The `trf` (transparent file throughput) request now discards input
    characters that are invalid in GNU troff's output format, meaning all
-   8-bit character codes less than decimal 32 (except 10, the line feed)
-   and greater than decimal 127.
+   character codes less than decimal 32 (except 10, the line feed) and
+   greater than decimal 127.
 
 *  A new read-only register `.ul` reports the count of productive input
    lines remaining to be be underlined in the environment (as configured
@@ -34,6 +37,11 @@ troff
 *  When issuing warning diagnostic messages, GNU troff now reports the
    warning category governing its emission.  This change is to make it
    easier for users to select warnings of interest.
+
+*  When the `substring` request is given two index arguments that both
+   lie outside the string, macro, or diversion's length, it now ignores
+   the request (and issues a warning in category "range"), leaving the
+   operand (first request argument) unchanged instead of emptying it.
 
 Miscellaneous
 -------------

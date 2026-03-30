@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2025 Free Software Foundation, Inc.
+/* Copyright 2000-2025 Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote post-html.cpp
  *  but it owes a huge amount of ideas and raw code from
@@ -36,16 +36,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <getopt.h> // getopt_long()
 
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h"
 #include "cset.h" // csspace()
 #include "curtime.h"
-#include "driver.h"
 #include "lib.h" // strsave(), xtmpfile()
 #include "stringclass.h"
 #include "unicode.h"
 
+// libdriver
+#include "driver.h" // interpret_troff_output_file()
+#include "printer.h" // environment, printer
+
+// grohtml
 #include "html.h"
-#include "html-text.h"
 #include "html-table.h"
+#include "html-text.h"
 
 extern "C" const char *Version_string;
 
@@ -122,7 +129,7 @@ static int charset_encoding = CHARSET_MIXED;/* The character set may be plain AS
  *  start with a few favorites
  */
 
-void stop () {}
+static void stop () {}
 
 static int min (int a, int b)
 {
@@ -1997,7 +2004,7 @@ void assert_state::close (const char *c)
 	    program_name, c);
 }
 
-const char *replace_negate_str (const char *before, char *after)
+static const char *replace_negate_str (const char *before, char *after)
 {
   if (before != 0 /* nullptr */)
     delete[] before;
@@ -2020,7 +2027,7 @@ const char *replace_negate_str (const char *before, char *after)
   return after;
 }
 
-const char *replace_str (const char *before, const char *after)
+static const char *replace_str (const char *before, const char *after)
 {
   if (before != 0 /* nullptr */)
     delete[] before;
@@ -5605,7 +5612,7 @@ static char *get_str (const char *s, char **n)
  *  make_val - creates a string from `v` if `s` is a null pointer.
  */
 
-char *make_val (char *s, int v, char *id, char *f, char *l)
+static char *make_val (char *s, int v, char *id, char *f, char *l)
 {
   assert(id != 0 /* nullptr */);
   assert(f != 0 /* nullptr */);
@@ -5989,10 +5996,10 @@ int main(int argc, char **argv)
       assert(0 == "unhandled getopt_long return value");
     }
   if (optind >= argc) {
-    do_file("-");
+    interpret_troff_output_file("-");
   } else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      interpret_troff_output_file(argv[i]);
   }
   return 0;
 }

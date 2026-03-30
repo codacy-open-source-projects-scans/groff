@@ -1,3 +1,259 @@
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (parse_output_page_list, main):
+	Revise and parallelize wording of error diagnostics relating to
+	invalid command-line option arguments.
+
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (in_output_page_list, main):
+	Explicitly compare values of pointer type to null pointer
+	literals instead of letting them pun down to Booleans.
+
+2022-02-05  Dave Kemper <saint.snit@gmail.com>
+
+	* doc/groff.texi.in (Assigning Register Formats): Clarify
+	guidance from Unicode regarding Roman numerals.
+
+	Fixes <https://savannah.gnu.org/bugs/?61998>.
+
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Withdraw support for AT&T's exotic Roman numerals
+	except in compatibility mode.
+
+	* src/roff/troff/reg.cpp (number_value_to_ascii): When not in
+	compatibility mode, reduce acceptable range of register values
+	when attempting to format them with Roman numerals to that
+	expressible only with the numerals "MDCLXVI".  (In compatibility
+	mode, retain support for AT&T troff's novelty of Roman numerals
+	"W" for 5,000 and "Z" for 10,000.)  Recast error diagnostic when
+	register value is outside of the representable range.
+
+	* doc/groff.texi.in (Assigning Register Formats):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?61999>.  Thanks to Dave
+	Kemper for the report.
+
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (number_value_to_ascii): Trivially
+	refactor.  Rename cryptic local `s` to `roman_numerals`.  Also
+	parenthesize formally complex expression.
+
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::set_font): Invert
+	returned Boolean value when this function is activated on a
+	font-change operation that lies on the unformatted portion of an
+	input line interrupted/continued with `\c`.  Returning "true"
+	was inconsistent with other environment mutator functions in
+	this file, including the signature of this member function
+	taking an integer (rather than a `symbol`) argument.
+	Eventually, we should make these functions unreachable in such
+	circumstances.  See Savannah #67812.
+
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Rename `WARN_INVALID` enumeration constant to
+	`WARN_DUMMY`.  The latter is more descriptive of its purpose.
+
+	* src/roff/troff/troff.h (enum warning_category):
+	* src/roff/troff/input.cpp (debug, error, fatal): Do it.
+
+2026-03-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libdriver]: Rename `do_file()` to
+	`interpret_troff_output_file()`.  There are several `do_file()`
+	functions in the groff code base; each does something different.
+
+	* src/include/driver.h: Update declaration.
+	* src/libs/libdriver/input.cpp (do_file): Rename this...
+	(interpret_troff_output_file): ...to this.
+	* src/devices/grodvi/dvi.cpp (main):
+	* src/devices/grohtml/post-html.cpp (main):
+	* src/devices/grolbp/lbp.cpp (main):
+	* src/devices/grolj4/lj4.cpp (main):
+	* src/devices/grops/ps.cpp (main):
+	* src/devices/grotty/tty.cpp (main): Update call sites.
+
+2026-03-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Rationalize header file inclusions.  To illuminate inter-module
+	dependencies, get header files out of the business of
+	`#include`-ing other header files, in favor of putting
+	preprocessor inclusions only in translation units (C/C++ source
+	files).  Annotate dependencies.
+
+	* src/devices/grodvi/dvi.cpp:
+	* src/devices/grodvi/dvi.cpp:
+	* src/devices/grohtml/html-table.cpp:
+	* src/devices/grohtml/html-text.cpp:
+	* src/devices/grohtml/html-text.h:
+	* src/devices/grohtml/post-html.cpp:
+	* src/devices/grolbp/lbp.cpp:
+	* src/devices/grolj4/lj4.cpp:
+	* src/devices/grops/ps.cpp:
+	* src/devices/grotty/tty.cpp:
+	* src/include/color.h:
+	* src/include/driver.h:
+	* src/include/printer.h:
+	* src/libs/libdriver/input.cpp:
+	* src/libs/libdriver/printer.cpp:
+	* src/libs/libgroff/color.cpp:
+	* src/roff/troff/dictionary.cpp:
+	* src/roff/troff/div.cpp:
+	* src/roff/troff/env.cpp:
+	* src/roff/troff/input.cpp:
+	* src/roff/troff/mtsm.cpp:
+	* src/roff/troff/mtsm.h:
+	* src/roff/troff/node.cpp:
+	* src/roff/troff/number.cpp:
+	* src/roff/troff/reg.cpp:
+	* src/roff/troff/troff.h: Do it.
+
+2026-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grohtml/html-table.cpp: Arrange inclusions of
+	libgroff header files before application-specific ones.
+
+2026-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grohtml/html-table.cpp: Improve header file
+	inclusion discipline.  Drop unnecessary preprocessor
+	inclusions of standard <stdio.h> and local (but nonexistent)
+	"ctype.h" header files.
+
+2026-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grodvi,grolbp,grops]: Improve header file inclusion discipline.
+
+	* src/devices/grodvi/dvi.cpp:
+	* src/devices/grolbp/lbp.cpp:
+	* src/devices/grops/ps.cpp: Drop unnecessary preprocessor
+	inclusions of "paper.h" header file.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/driver.h: Drop preprocessor inclusion of
+	"geometry.h" from here, and add it where it's needed...
+	* src/devices/grodvi/dvi.cpp:
+	* src/devices/grolj4/lj4.cpp:
+	* src/devices/grops/ps.cpp:
+	* src/libs/libgroff/geometry.cpp: ...here.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/error.cpp: Drop `extern` declaration of
+	`fatal_error_exit()`, now delcared properly in "lib.h".
+	* src/libs/libgroff/fatal.cpp: Use preprocessor to include
+	"errarg.h" and "error.h" header files.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/change_lf.cpp (change_filename):
+	Parenthesize formally complex expressions.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/htmlhint.h: Drop redundant keyword `extern` from
+	`html_begin_suppress()` and `html_end_suppress()` function
+	declarations.
+	* src/libs/libgroff/htmlhint.cpp: Use preprocessor to include
+	"htmlhint.h" header file.
+
+	Fixes `-Wmissing-declarations` warning.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/lf.h: Declare `change_filename()` and
+	`change_lineno()` properly here...
+	* src/libs/libgroff/lf.cpp: ...instead of here, with `extern`.
+	* src/libs/libgroff/change_lf.cpp: Use preprocessor to include
+	"lib.h" header file, also obviating the need for an `extern`
+	declaration of `strsave()`, declared by the same header file.
+
+	Fixes `-Wmissing-declarations` warning.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Boolify and rename static class member variable.
+
+	* src/include/cmap.h (class cmap_init): `initialised` of type
+	`int` becomes `is_initialised` of type `bool`.
+	* src/libs/libgroff/cmap.cpp: Assign to it with Boolean, not
+	integer, literals.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/error.h: Declare `fatal_error_exit()` here...
+	* src/libs/libgroff/error.cpp: ...instead of here.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/ps.cpp (is_ascii): Fix code style nit.
+	Produce return value with value construction syntax instead of a
+	C-style type cast.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/ps.cpp (is_ascii): Boolify.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grops/ps.cpp (radians): Fix code style nit.
+	Parenthesize formally complex expression.
+
+2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[grodvi,post-grohtml,grops]: Improve declarations.
+
+	* src/devices/grodvi/dvi.cpp (scale):
+	* src/devices/grohtml/post-html.cpp (stop, replace_negate_str)
+	(replace_str):
+	* src/devices/grops/ps.cpp (degrees, radians, is_ascii):
+	* src/devices/grops/psrm.cpp (read_one_of)
+	(skip_possible_newline): Declare functions as `static` since
+	they do not require external linkage.
+
+2026-03-26  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grolbp/lbp.cpp: Rearrange and annotate header file
+	inclusions, placing module-specific header files last, after
+	those of libraries.
+
+2026-03-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Fix `-Wformat-truncation` warnings.
+
+	* src/roff/troff/input.cpp (charinfo::dump):
+	* src/roff/troff/node.cpp (glyph_node::asciify): When preparing
+	to format the hexadecimal representation of a Unicode code
+	point with `get_unicode_code()`, prepare a buffer of sufficient
+	size to store a 32-bit unsigned integer, as that's what
+	snprintf(3)'s `%X` conversion produces.  It doesn't know that
+	Unicode is only a 20.1-bit code.  Even if it did, our use of
+	`int` to store the value fails to communicate that constraint to
+	snprintf(3).
+
+	Even the use of `int` a bit slippery of us, since it's a signed
+	type with a 31-bit significand.  But libgroff's
+	`glyph_to_unicode()`, which `get_unicode_code()` calls, uses
+	"-1" to signal an error in-band.
+
+2026-03-23  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* configure.ac: Stop interpolating `GROFF_CXX_CHECK` macro.
+	* m4/groff.m4 (GROFF_CXX_CHECK): Delete macro definition. It
+	dates back at least to groff 1.10 (1995).  ISO standardized C++
+	in 1998; it no longer seems necessary in 2026 to check that a
+	purported C++ compiler validly compiles a `main()` that simply
+	returns `0`, nor that it correctly arranges for constructors and
+	destructors of statically allocated objects to run.  A C++
+	compiler failing to meet these criteria is not fit for purpose;
+	working alternatives are universally available.
+
 2026-03-22  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (char_list::set, char_list::get):
@@ -65,7 +321,7 @@
 
 	* src/roff/troff/input.cpp (substring_request): Slightly
 	refactor.  Introduce new local variable `len` to store value of
-	`len` `macro` object being operated on, it case the compiler
+	`len` `macro` object being operated on, in case the compiler
 	isn't smart enough to cache a repeated member variable access
 	itself.
 
@@ -203,8 +459,8 @@
 	function a member function of class `macro`.
 
 	* src/roff/troff/request.h (class macro): Declare member
-	function `chop()`, taking and returning `void`.  Drop
-	declaration of `friend` function `chop_macro()`.
+	function `chop()`, taking no argument and returning `void`.
+	Drop declaration of `friend` function `chop_macro()`.
 	* src/roff/troff/input.cpp: Drop forward declaration of
 	`chop_macro()`.
 	(macro::chop): Member function takes responsibility for updating
@@ -361,19 +617,20 @@
 	reference to a dynamically allocated rectangular array of
 	character cells.  The size of this array is not fixed; `pl`
 	requests in an input document can grow or shrink the page
-	length.  The resizing strategy that grotty has used to date
-	proved to perform badly with the new approach to continuous
-	rendering used by groff's man(7) and mdoc(7) packages in version
-	1.24.0.  If the initial allocation of 66 lines (rows) of
-	character cells was insufficient because the input extended the
-	page length, it grew the allocation (and performed a memcpy(3)
-	of its existing contents) by only as much as required to house
-	the vertical drawing position, plus one line.  For a famously
-	lengthy man page like bash(1), this meant many repeated trips
-	through new/memcpy()/delete sequences, giving the language
-	runtime allocator a lot of work to do.  In an extreme case
-	{formatting 64 copies of bash(1) in sequence}, this led to long
-	runtimes with two-thirds of program time spent in the kernel.
+	length.  The strategy it has used to date to handle a
+	non-default page length proved to perform badly with the new
+	approach to continuous rendering used by groff's man(7) and
+	mdoc(7) packages in version 1.24.0.  If the initial allocation
+	of 66 lines (rows) of character cells was insufficient because
+	the input extended the page length, it grew the allocation (and
+	performed a memcpy(3) of its existing contents) by only as much
+	as required to accommodate the current vertical drawing
+	position, plus one line.  For a famously lengthy man page like
+	bash(1), this meant many repeated trips through
+	new/memcpy()/delete sequences, giving the language runtime
+	allocator a lot of work to do.  In an extreme case {formatting
+	64 copies of bash(1) in sequence}, this led to long runtimes
+	with two-thirds of program time spent in the kernel.
 
 	The new strategy is to double the allocation size every time it
 	is exceeded, but also to free any resized allocation at the end
@@ -391,8 +648,8 @@
 	(class tty_printer): Drop empty body from `begin_page()`
 	declaration.
 	(tty_printer::tty_printer): Replace open-coded initial
-	storage allocation backing `lines` member variable with call to
-	`begin_page()`.
+	allocation of storage backing `lines` member variable with call
+	to `begin_page()`.
 	(tty_printer::~tty_printer): Stop freeing the storage backing
 	`lines` here.  Instead...
 	(tty_printer::end_page): ...do it here, if its size grew beyond

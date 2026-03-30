@@ -9,7 +9,8 @@ output driver for HP LaserJet 4 and compatible printers
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1994-2024 Free Software Foundation, Inc.
+.\" Copyright 1994-2006 Free Software Foundation, Inc.
+.\"           2018-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are

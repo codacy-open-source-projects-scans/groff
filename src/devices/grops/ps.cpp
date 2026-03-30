@@ -41,20 +41,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 		    // strlen(), strncmp(), strstr(), strtok()
 #include <time.h> // asctime()
 
+// GNU extensions to C standard library
 #include <getopt.h> // getopt_long()
 
+// operating system services
 // needed for SET_BINARY()
 #include "posix.h"
 #include "nonposix.h"
 
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h"
+#include "cset.h" // csalpha(), csprint(), csspace()
+#include "curtime.h" // current_time()
+#include "geometry.h" // adjust_arc_center()
 #include "lib.h" // PI
-
-#include "cset.h"
-#include "curtime.h"
-#include "driver.h"
-#include "paper.h"
 #include "stringclass.h"
 
+// libdriver
+#include "driver.h" // interpret_troff_output_file()
+#include "printer.h" // environment, printer
+
+// grops
 #include "ps.h"
 
 extern "C" const char *Version_string;
@@ -87,12 +95,12 @@ const char *const dict_name = "grops";
 const char *const defs_dict_name = "DEFS";
 const int DEFS_DICT_SPARE = 50;
 
-double degrees(double r)
+static double degrees(double r)
 {
-  return r*180.0/PI;
+  return (r * 180.0) / PI;
 }
 
-double radians(double d)
+static double radians(double d)
 {
   return (d * PI) / 180.0;
 }
@@ -101,9 +109,9 @@ double radians(double d)
 // PostScript file using \nnn, so we really want the character to be
 // less than 0200.
 
-inline int is_ascii(char c)
+static inline bool is_ascii(char c)
 {
-  return (unsigned char)c < 0200;
+  return (unsigned char)(c) < 0200;
 }
 
 ps_output::ps_output(FILE *f, int n)
@@ -1949,10 +1957,10 @@ int main(int argc, char **argv)
   font::set_unknown_desc_command_handler(handle_unknown_desc_command);
   SET_BINARY(fileno(stdout));
   if (optind >= argc)
-    do_file("-");
+    interpret_troff_output_file("-");
   else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      interpret_troff_output_file(argv[i]);
   }
   return 0;
 }

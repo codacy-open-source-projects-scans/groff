@@ -497,18 +497,19 @@ and
 registers represent the type size selected by the formatter
 as it understands a device's capability.
 .
-the read-only registers
+The read-only registers
 .B .psr
 and
 (string-valued)
 .B .sr
 interpolate the last
 .I requested
+type size
 in scaled points
 and in points as a decimal fraction,
 respectively.
 .
-Like the actual current and previous type size,
+Like the selected current and previous type size,
 the requested ones are properties of an environment.
 .
 .
@@ -1429,7 +1430,7 @@ further,
 .I mac
 can be a macro and thus contain newlines,
 unlike the argument to
-.B \[rs]X .
+.BR \[rs]X .
 .
 This inclusion of newlines requires an extension to the AT&T
 .I troff \" AT&T
@@ -1444,13 +1445,12 @@ and their presence confuses drivers that do not know about it
 Save the drawing position,
 format
 .IR input ,
-then restore it.
+then restore the saved position.
 .
 GNU
 .I troff \" GNU
-ignores tabs and leaders in
-.I input
-with an error diagnostic.
+disallows tabs and leaders in
+.IR input .
 .
 .
 .TP
@@ -1698,10 +1698,10 @@ See
 .
 .
 .TP
-.BI \[rs][ "base-char combining-component\~"\c
+.BI \[rs][ "base-character combining-component\~"\c
 .RB .\|.\|. ]
 Typeset a composite glyph consisting of
-.I base-char
+.I base-character
 overlaid with one or more
 .IR combining-component s.
 .
@@ -1710,7 +1710,7 @@ For example,
 is a capital letter \[lq]A\[rq] with a \[lq]hook accent\[rq] (ogonek).
 .
 See the
-.B \%composite
+.RB \%\[lq] composite \[rq]
 request below;
 .IR "Groff: The GNU Implementation of troff" ,
 the
@@ -1803,7 +1803,7 @@ the contents of
 .I file
 are immediately copied to the output regardless of whether a diversion
 is being written to;
-this behavior is so anomalous that it must be considered a bug.
+this behavior is so anomalous that we consider it a bug.
 .
 .
 .IP
@@ -1883,7 +1883,7 @@ request is selected.
 .RB [[ \[dq] ]\c
 .IR file-identifier ]
 In GNU
-.I troff \" GNU
+.IR troff , \" GNU
 the first argument becomes the input line number of the
 .I next
 line the formatter reads.
@@ -2076,10 +2076,6 @@ GNU
 produces a warning in category
 .RB \[lq] reg \[rq].
 .
-See section \[lq]Warnings\[rq] of
-.MR @g@troff 1
-regarding the enablement and suppression of warnings.
-.
 To remove a register alias,
 invoke
 .B rr
@@ -2114,10 +2110,6 @@ If
 .I new-name
 already exists,
 its contents are lost unless already aliased.
-.
-See section \[lq]Warnings\[rq] of
-.MR @g@troff 1
-regarding the enablement and suppression of warnings.
 .
 To remove an alias,
 invoke
@@ -2306,8 +2298,8 @@ instead of the usual behavior.
 A line consisting only of spaces is also treated as blank and subject to
 this trap.
 .
-If no argument is supplied,
-the default blank line behavior is (re-)established.
+Omitting the argument
+re\[e ad]stablishes the default blank line behavior.
 .
 .
 .br
@@ -2579,7 +2571,7 @@ in a node
 .IR "Groff: The GNU Implementation of troff" ,
 the
 .I groff
-Texinfo manual);
+Texinfo manual),
 disabling compatibility mode
 and setting the escape character to
 .RB to\~ \[rs]
@@ -2760,7 +2752,9 @@ Close the named
 .IR stream ,
 invalidating it as an argument to the
 .RB \[lq] write \[rq]
-request.
+and
+.B writem
+requests.
 .
 See
 .RB \[lq] open \[rq].
@@ -2939,7 +2933,7 @@ into
 GNU
 .I troff \" GNU
 output as parameters to an
-.RB \[lq]x X\[rq]
+.RB \[lq] "x X" \[rq]
 device extension command;
 see
 .MR groff_out @MAN5EXT@ .
@@ -3748,10 +3742,8 @@ and produces no motion before calling
 .
 .
 .IP
-If no argument is supplied,
-GNU
-.I troff \" GNU
-re\[e ad]stablishes the default handling of leading spaces on text lines
+Omitting the argument re\[e ad]stablishes the default handling
+of leading spaces on text lines
 (breaking the line when filling,
 and formatting a horizontal motion of
 .B \[rs]n[lsn]
@@ -4583,7 +4575,7 @@ discards input characters that are invalid in
 GNU
 .IR troff 's \" GNU
 output format,
-meaning all 8-bit character codes less than decimal 32
+meaning all character codes less than decimal 32
 (except 10,
 the line feed)
 and greater than decimal 127.
@@ -4694,8 +4686,7 @@ and
 .RB \[lq] ".warn 1" \[rq]
 disables all warnings except those about missing glyphs.
 .
-If no argument is given,
-all warning categories are enabled.
+Omitting the argument enables all warning categories.
 .
 .
 .TP
@@ -5473,11 +5464,11 @@ to place the center of an accent from a roman font over that glyph.
 .
 .
 .P
-Other writable registers are as follows.
+Other writeable registers are as follows.
 .
-Those relating to date and time are initialized using
-.MR localtime 3
-at formatter startup.
+When the formatter starts up,
+it initializes those relating to date and time using
+.MR localtime 3 .
 .
 .
 .\" The `c.` register was documented in the January 1981 "Addendum to
@@ -5617,20 +5608,37 @@ to behave in ways difficult to predict.
 .SS Miscellaneous
 .\" ====================================================================
 .
-A font not listed in the output device's
-.I DESC
-file's
-.B fonts
-directive is automatically mounted at the next available font position
-when it is selected.
+The index of the next (non-zero) free font position
+is available in the read-only register
+.BR .fp .
 .
-If you mount a font explicitly with the
+When using the
+.B ft
+request or
+.B \[rs]f
+escape sequence
+to select a font by name that is not listed in the device's
+.I DESC
+file,
+GNU
+.I troff \" GNU
+automatically mounts it
+at position
+.RB \[lq] \[rs]n[.fp] \[rq].
+.
+If you mount a font at a position explicitly
+with the
 .B fp
 request,
-you should do so on the first unused position,
-which can be found in the
-.B .fp
-register.
+you should follow the same practice,
+though the program
+does not strictly enforce adherence.
+.
+(GNU
+.I troff \" GNU
+looks up fonts by name with a search that is
+.RI O( n )
+in the length of the dynamically sized mounting position list.)
 .
 .
 .P
@@ -5774,8 +5782,8 @@ character will subsequently be disabled.
 .P
 GNU
 .I troff \" GNU
-permits tabs and spaces after the first dot on a control line that ends
-a macro definition.
+permits tabs and spaces after the first control character
+on a control line that ends a macro definition.
 .
 .
 .\" ====================================================================
@@ -6310,7 +6318,7 @@ font translations
 .RB ( pftr ),
 automatic hyphenation codes
 .RB ( pchar )
-and exceptions
+and exception words
 .RB ( phw ),
 registers
 .RB ( pnr ),
@@ -6395,7 +6403,7 @@ at the distal end).
 In compatibility mode,
 GNU
 .I troff \" GNU
-interprets names in the traditional way,
+interprets names in the traditional way;
 they thus can be two characters long at most.
 .
 See the
@@ -6565,6 +6573,15 @@ McIlroy referred to it as a \[lq]living fossil\[rq].]
 .\" ====================================================================
 .
 .\" BEGIN Keep in sync with groff.texi node "Other Differences".
+In
+GNU
+.IR troff , \" GNU
+read-only registers are subject to removal like others;
+once removed,
+they can be recreated only as normal writable registers
+and will not otherwise reflect the configuration of the formatter.
+.
+.P
 GNU
 .I troff \" GNU
 does not emit output if it has nothing to format.
@@ -6861,19 +6878,6 @@ GNU
 honors such requests.
 .
 .
-.P
-The
-.B lf
-request sets the number of the
-.I current
-input line in AT&T
-.IR troff ,\" AT&T
-and the
-.I next
-in GNU
-.IR troff .\" GNU
-.
-.
 .br
 .ne 2v
 .P
@@ -6939,6 +6943,19 @@ the former does (uselessly).
 .
 .
 .P
+The
+.B lf
+request sets the number of the
+.I current
+input line in AT&T
+.IR troff ,\" AT&T
+and the
+.I next
+in GNU
+.IR troff .\" GNU
+.
+.
+.P
 In AT&T
 .I troff \" AT&T
 the
@@ -6978,8 +6995,8 @@ and does not move the drawing position.
 AT&T
 .I troff \" AT&T
 sets the vertical drawing position
-to two basic units fewer than the specified argument
-(or one vee minus one basic unit if no argument is present).
+to two basic units fewer than the specified argument,
+and to one vee minus one basic unit if no argument is present.
 .\" Yes, really.  Try:
 .\" printf '.tm \\n(nl\n.c2 $\n$sp\n.tm \\n(nl\n'
 .\" printf '.tm \\n(nl\n.c2 $\n.nr nl -1\n$sp\n.tm \\n(nl\n'
@@ -7019,6 +7036,10 @@ Glyphs represent graphemes
 (supplied by the output device)
 and populate diversions.
 .\" (recall @ref{Diversions}).
+.
+There is no such thing as a space character in
+GNU
+.IR troff .\" GNU
 .
 Formatting converts characters into
 (sequences of)
@@ -7096,7 +7117,7 @@ for \[lq]reverse solidus\[rq],
 from its name in the ECMA-6 and ISO\~10646 standards.
 .
 [AT&T
-.I troff 's \" AT&T
+.IR troff 's \" AT&T
 font description files
 did not define the
 .B rs
@@ -7149,9 +7170,10 @@ always flushes this buffer when processing a break;
 AT&T
 .I troff \" AT&T
 does so according to no obvious schedule
-(perhaps,
+.
+Perhaps,
 if the buffer is of fixed size,
-the formatter performs the flush when the buffer runs out of room).
+the formatter performs the flush when the buffer runs out of room.
 .
 .
 .P

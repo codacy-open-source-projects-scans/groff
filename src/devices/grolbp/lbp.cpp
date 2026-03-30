@@ -1,6 +1,8 @@
-/* Copyright (C) 1994-2025 Free Software Foundation, Inc.
-     Written by Francisco Andrés Verdú <pandres@dragonet.es> with many
-     ideas taken from the other groff drivers.
+/* Copyright 1994-2002 Free Software Foundation, Inc.
+                  2022 G. Branden Robinson
+
+Written by Francisco Andrés Verdú <pandres@dragonet.es> with many ideas
+taken from the other groff drivers.
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -36,15 +38,24 @@ TODO
 #include <string.h> // strcmp(), strcpy(), strlen(), strncpy()
 #include <strings.h> // strcasecmp()
 
+// GNU extensions to C standard library
 #include <getopt.h> // getopt_long()
 
+// operating system services
 #include "nonposix.h"
 
-#include "charset.h"
-#include "driver.h"
-#include "lbp.h"
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of printer.h
 #include "lib.h" // strsave()
-#include "paper.h"
+
+// libdriver
+#include "driver.h" // interpret_troff_output_file()
+#include "printer.h" // environment, printer
+
+// grolbp
+#include "charset.h"
+#include "lbp.h"
 
 extern "C" const char *Version_string;
 
@@ -754,9 +765,9 @@ int main(int argc, char **argv)
       assert(0 == "unhandled getopt_long return value");
     }
   if (optind >= argc)
-    do_file("-");
+    interpret_troff_output_file("-");
   while (optind < argc)
-    do_file(argv[optind++]);
+    interpret_troff_output_file(argv[optind++]);
   if (lbpoutput)
     lbpputs("\033c\033<");
   return 0;

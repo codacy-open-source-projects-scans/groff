@@ -9,7 +9,7 @@ output driver for HTML
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1999-2024 Free Software Foundation, Inc.
+.\" Copyright 1999-2024 Free Software Foundation, Inc.
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are

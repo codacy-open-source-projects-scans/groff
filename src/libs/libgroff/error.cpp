@@ -1,5 +1,6 @@
-/* Copyright 1989-2020 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-1991 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -23,10 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "errarg.h"
 #include "error.h"
-
-extern void fatal_error_exit();
 
 enum error_type { DEBUG, WARNING, ERROR, FATAL };
 

@@ -17,12 +17,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "lib.h"
-
-#include "color.h"
-#include "device.h"
-#include "searchpath.h"
-
 typedef int units;
 
 extern units scale(units n, units x, units y); // scale n by x/y
@@ -43,15 +37,10 @@ extern int sizescale;
 
 extern search_path *mac_path;
 
-#include "cset.h"
-#include "cmap.h"
-#include "errarg.h"
-#include "error.h"
-
 enum warning_category {
   // This first item is so that diagnostic functions in "input.cpp" can
   // have a consistent parameter list.  It feels a little clunky...
-  WARN_INVALID = 0,
+  WARN_DUMMY = 0,
   WARN_CHAR = 01,
   //WARN_NUMBER = 02, // withdrawn in groff 1.24
   WARN_BREAK = 04,

@@ -1,5 +1,6 @@
 /* Copyright 2000-2024 Free Software Foundation, Inc.
-     Written by Gaius Mulley (gaius@glam.ac.uk)
+
+Written by Gaius Mulley (gaius@glam.ac.uk)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -23,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "htmlhint.h"
 #include "lib.h"
 
 #include "nonposix.h"

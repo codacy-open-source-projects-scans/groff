@@ -23,17 +23,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-extern bool want_html_debugging;
+#include <stdio.h> // prerequisite of mtsm.h, searchpath.h
 
-#include "troff.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
+#include <stack> // prerequisite of mtsm.h
+
+// libgroff
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "searchpath.h" // prerequisite of troff.h
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of env.h
+#include "cset.h" // cset, csalpha(), csdigit(), csgraph(), cslower(),
+		  // csprint(), cspunct(), csupper()
+#include "lib.h" // i_to_a()
+#include "stringclass.h" // prerequisite of mtsm.h
+
+// troff
+#include "troff.h" // prerequisite of env.h, hvunits.h; units
+#include "hvunits.h" // prerequisite of env.h, hunits
 #include "env.h"
+#include "mtsm.h"
 
 #if defined(DEBUGGING)
 static int no_of_statems = 0;
 #endif
+
+extern bool want_html_debugging;
 
 int_value::int_value()
 : value(0), is_known(0)

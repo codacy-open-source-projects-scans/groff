@@ -23,12 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <assert.h>
 #include <stdio.h> // sprintf()
 
-#include "lib.h"
-
+// libgroff
+#include "symbol.h" // prerequisite of color.h
 #include "color.h"
-#include "cset.h"
-#include "errarg.h"
-#include "error.h"
+#include "cset.h" // csdigit(), csupper(), csxdigit()
 
 static inline unsigned int
 min(const unsigned int a, const unsigned int b)

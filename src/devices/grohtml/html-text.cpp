@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2024 Free Software Foundation, Inc.
+/* Copyright 2000-2024 Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote html-text.cpp
  *
@@ -28,9 +28,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include "driver.h"
-#include "stringclass.h"
+#include <stddef.h> // size_t: prerequisite of color.h
+
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of html-text.h
 #include "cset.h"
+#include "errarg.h" // prerequisite of error.h
+#include "error.h"
+#include "stringclass.h"
+
+// grohtml
+#include "html-table.h" // prerequisite of html-text.h
+#include "html-text.h"
 
 #if !defined(TRUE)
 #   define TRUE  (1==1)
@@ -38,9 +48,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #if !defined(FALSE)
 #   define FALSE (1==0)
 #endif
-
-
-#include "html-text.h"
 
 html_text::html_text (simple_output *op, html_dialect d) :
   stackptr(NULL), lastptr(NULL), out(op), dialect(d),

@@ -1,6 +1,6 @@
-// -*- C++ -*-
-/* Copyright (C) 2000-2020 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 2000-2020 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -95,3 +95,9 @@ inline FILE *simple_output::get_file()
 }
 
 #endif
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

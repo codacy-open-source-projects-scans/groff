@@ -22,14 +22,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <string.h>
 
-extern char *strsave(const char *);
+#include "lf.h"
+#include "lib.h" // strsave()
 
 extern const char *current_filename;
 extern int current_lineno;
 
 void change_filename(const char *f)
 {
-  if (current_filename != 0 && strcmp(current_filename, f) == 0)
+  if ((current_filename != 0 /* nullptr */)
+      && (strcmp(current_filename, f) == 0))
     return;
   current_filename = strsave(f);
 }

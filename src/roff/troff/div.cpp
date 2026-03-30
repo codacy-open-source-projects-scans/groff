@@ -24,22 +24,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
+#include <stdio.h> // prerequisite of searchpath.h
 #include <stdlib.h> // exit(), EXIT_SUCCESS
 
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "input.h" // was_invoked_with_regular_control_character
+#include <stack> // prerequisite of mtsm.h
 
+// operating system services
 #include "nonposix.h"
+
+// libgroff
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "searchpath.h" // prerequisite of troff.h
+#include "symbol.h" // prerequisite of dictionary.h and color.h
+#include "color.h" // prerequisite of env.h
+#include "lib.h" // i_to_a()
+#include "stringclass.h" // prerequisite of mtsm.h
+
+// troff
+#include "troff.h" // prerequisite of hvunits.h, token.h; units
+#include "dictionary.h" // object
+#include "hvunits.h" // prerequisite of div.h; hunits, vunits
+#include "token.h" // prerequisite of div.h
+#include "mtsm.h" // prerequisite of div.h; statem
+#include "div.h" // diversion
+#include "env.h" // environment, font_size
+#include "input.h" // was_invoked_with_regular_control_character
+#include "request.h" // prerequisite of node.h; macro
+#include "node.h"
+#include "reg.h"
 
 bool is_exit_underway = false;
 bool is_eoi_macro_finished = false;

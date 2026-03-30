@@ -48,7 +48,7 @@ extern cmap cmlower;
 extern cmap cmupper;
 
 static class cmap_init {
-  static int initialised;
+  static bool is_initialised;
 public:
   cmap_init();
 } _cmap_init;

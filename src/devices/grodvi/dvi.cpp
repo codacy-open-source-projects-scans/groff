@@ -1,5 +1,6 @@
-/* Copyright (C) 1989-2025 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-2003 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -29,11 +30,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <stdlib.h> // exit(), EXIT_SUCCESS, strtol()
 #include <string.h> // strcmp(), strlen()
 
+// GNU extensions to C standard library
 #include <getopt.h> // getopt_long()
 
-#include "driver.h"
+// operating system services
 #include "nonposix.h"
-#include "paper.h"
+
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of printer.h
+#include "geometry.h" // adjust_arc_center()
+
+// libdriver
+#include "driver.h" // interpret_troff_output_file()
+#include "printer.h" // environment, printer
 
 extern "C" const char *Version_string;
 
@@ -307,7 +317,7 @@ void dvi_printer::possibly_begin_line()
   }
 }
 
-int scale(int x, int z)
+static int scale(int x, int z)
 {
   int sw;
   int a, b, c, d;
@@ -1002,10 +1012,10 @@ int main(int argc, char **argv)
     }
   SET_BINARY(fileno(stdout));
   if (optind >= argc)
-    do_file("-");
+    interpret_troff_output_file("-");
   else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      interpret_troff_output_file(argv[i]);
   }
   return 0;
 }

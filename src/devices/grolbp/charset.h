@@ -1,24 +1,8 @@
-// -*- C++ -*-
-/* Copyright (C) 2000-2020 Free Software Foundation, Inc.
-     Written by Francisco Andrés Verdú <pandres@dragonet.es> with many ideas
-     taken from the other groff drivers.
-
-This file is part of groff, the GNU roff typesetting system.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
 // Definition of the WP54 character set
+//
+// Prepared by Francisco Andrés Verdú <pandres@dragonet.es>
+//
+// This file is part of groff, the GNU roff typesetting system.
 
 unsigned char symset[] = {
 0x57,0x50,0x35,0x34,0x00,0x41,0x76,0x61,0x6e,0x74,0x47,0x61,
@@ -87,3 +71,9 @@ unsigned char symset[] = {
 0x00,0xEC,0x00,0xF2,0x00,0xF3,0x00,0x15,0x00,0x16,0x00,
 0x86
 };
+
+// Local Variables:
+// fill-column: 72
+// mode: C++
+// End:
+// vim: set cindent noexpandtab shiftwidth=2 textwidth=72:

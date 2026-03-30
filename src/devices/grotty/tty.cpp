@@ -29,11 +29,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 		   // putchar(), setbuf(), stderr, stdout
 #include <stdlib.h> // exit(), EXIT_SUCCESS, getenv(), strtol()
 
+// GNU extensions to C standard library
 #include <getopt.h> // getopt_long()
 
-#include "device.h"
-#include "driver.h"
+// libgroff
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of printer.h
 #include "ptable.h"
+
+// libdriver
+#include "driver.h" // interpret_troff_output_file()
+#include "printer.h" // environment, printer
 
 typedef signed char schar;
 
@@ -1084,10 +1090,10 @@ int main(int argc, char **argv)
     }
   update_options();
   if (optind >= argc)
-    do_file("-");
+    interpret_troff_output_file("-");
   else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      interpret_troff_output_file(argv[i]);
   }
   return 0;
 }

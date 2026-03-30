@@ -25,8 +25,8 @@ groff="${abs_top_builddir:-.}/test-groff"
 # Ensure that .TC succeeds in assigning the 'i' format to the page
 # number register when '%' is used in a custom header or footer.
 
-EXAMPLE=\
-'.OH ##%##
+input='.
+.OH ##%##
 .NH 1
 Foo
 .XS
@@ -35,18 +35,19 @@ Foo
 .LP
 Bar.
 .TC
-'
+.'
 
-OUTPUT=$(echo "$EXAMPLE" | "$groff" -Tascii -P-cbou -ms)
+output=$(echo "$input" | "$groff" -Tascii -P-cbou -ms)
 # Strip blank lines from the output first; all we care about for this
 # test is the presence, adjacency, and ordering of non-blank lines.
-FILTERED_OUTPUT=$(echo "$OUTPUT" \
+output=$(echo "$output" \
     | sed '/^$/d' \
     | sed -n '/i/{
 N;/Table of Contents/{
 N;/Foo[. ][. ]*1/p;
 };
 }')
-test -n "$FILTERED_OUTPUT"
+echo "$output"
+test -n "$output"
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

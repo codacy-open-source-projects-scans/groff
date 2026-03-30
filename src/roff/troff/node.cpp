@@ -23,26 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <errno.h>
+#include <stdio.h> // prerequisite of searchpath.h
 #include <stdlib.h> // free(), malloc()
 #include <string.h> // strerror()
 
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "font.h"
-#include "charinfo.h"
-#include "input.h"
-#include "geometry.h"
-#include "json-encode.h" // json_encode_char()
+#include <stack>
 
+// operating system services
 #include "posix.h"
 #include "nonposix.h"
 
@@ -63,7 +50,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #endif /* not _POSIX_VERSION */
 
-#include <stack>
+// libgroff
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "searchpath.h" // prerequisite of troff.h
+#include "symbol.h" // prerequisite of dictionary.h and color.h
+#include "color.h" // prerequisite of env.h
+#include "cset.h" // csdigit(), csgraph()
+#include "device.h"
+#include "font.h" // prerequisite of charinfo.h
+#include "lib.h" // i_to_a(), ui_to_a()
+#include "geometry.h" // adjust_arc_center()
+#include "json-encode.h" // json_encode_char()
+#include "stringclass.h"
+
+// troff
+#include "troff.h" // prerequisite of env.h, hvunits.h; units
+#include "token.h" // prerequisite of charinfo.h
+#include "charinfo.h"
+#include "dictionary.h"
+#include "hvunits.h" // prerequisite of env.h; hunits, vunits
+#include "mtsm.h" // prerequisite of div.h; statem
+#include "div.h" // topdiv
+#include "env.h" // environment, font_size
+#include "request.h" // prerequisite of node.h; macro
+#include "node.h"
+#include "reg.h"
 
 static bool is_output_suppressed = false;
 
@@ -71,7 +83,6 @@ static bool is_output_suppressed = false;
 class tfont;
 class tfont_spec;
 tfont *make_tfont(tfont_spec &);
-
 
 /*
  *  how many boundaries of images have been written? Useful for
@@ -3946,7 +3957,10 @@ void glyph_node::asciify(macro *m)
 	    break;
 	  default:
 	    m->append_str("\\[u");
-	    const size_t buflen = sizeof "10FFFF";
+	    // All we need is `sizeof "10FFFF"` but GCC's
+	    // "-Wformat-truncation" warning doesn't know that Unicode
+	    // code points are limited in range.
+	    const size_t buflen = sizeof "FFFFFFFF";
 	    char hexbuf[buflen];
 	    (void) memset(hexbuf, '\0', buflen);
 	    (void) snprintf(hexbuf, buflen, "%.4X", unicode_mapping);

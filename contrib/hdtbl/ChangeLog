@@ -19,7 +19,7 @@
 	* examples/fonts_x.roff.in: ...to these.
 	* hdtbl.am (EXTRA_DIST): Ship files as renamed.
 	(SUFFIXES): Replace `.roff` and `.in` with `.roff.in`.
-	(.in.roff): Rename target from this...
+	(.in.roff): Rewrite suffix rule from this...
 	(.roff.in.roff): ...to this.
 
 2026-01-21  G. Branden Robinson <g.branden.robinson@gmail.com>

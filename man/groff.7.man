@@ -361,9 +361,22 @@ into lines separated by the Unix newline character
 using the character encoding it recognizes:
 ISO\~Latin-1 (8859-1).
 .
-We recommend use of ISO\~646:1991\~IRV (US-ASCII)
-or (equivalently) the Basic Latin subset
-of ISO\~10646 (Unicode);
+A document encoded in
+ISO\~646:1991\~IRV
+(US-ASCII)
+or,
+equivalently,
+that uses only code points from the
+\[lq]C0 Controls\[rq] and \[lq]Basic Latin\[rq] parts
+of the Unicode character set
+is also a valid ISO \%Latin-1 document;
+the standards are interchangeable
+in their first 128 code points.
+(The
+.I semantics
+of certain punctuation code points have gotten stricter
+with the successive standards,
+a cause of some frustration among man page writers;
 see
 .MR groff_char @MAN7EXT@ .
 .
@@ -968,7 +981,8 @@ an em is equal to the current type size in points.
 En;
 on typesetters,
 an en is one-half em,
-but on terminals an en equals an em.
+but on terminals an en equals an em,
+because such devices align all text to a grid of character cells.
 .
 .TP
 .B v
@@ -1606,16 +1620,20 @@ There is no inherent limit on argument length or quantity.
 Most requests take one or more arguments,
 and ignore any they do not expect.
 .
-A request may be separated from its arguments by tabs or spaces,
+A request that is not supplied a mandatory argument does
+nothing.
+.
+Spaces or tabs separate a request's name from its first argument,
 but only spaces can separate an argument from its successor.
 .
-Only one between arguments is necessary;
-any excess is ignored.
+.\" begin slack text for widow/orphan management
+(In compatibility mode,
+a space is not necessary
+after a request or macro name of two characters' length.)
+.\" end slack text
 .
-.\" slack text for widow/orphan management
-.\" (In compatibility mode,
-.\" a space is not necessary
-.\" after a request or macro name of two characters' length.)
+Only one space between arguments is necessary;
+the formatter ignores any excess.
 .
 GNU
 .I troff \" GNU
@@ -5392,7 +5410,7 @@ discards input characters that are invalid in
 GNU
 .IR troff 's \" GNU
 output format,
-meaning all 8-bit character codes less than decimal 32
+meaning all character codes less than decimal 32
 (except 10,
 the line feed)
 and greater than decimal 127.
@@ -5623,7 +5641,9 @@ are interpreted even in copy mode.
 .
 .
 .P
-The escape sequences
+GNU
+.I troff \" GNU
+does not tokenize any of the escape sequences
 .esc f ,
 .esc F ,
 .esc H ,
@@ -5633,10 +5653,7 @@ The escape sequences
 .esc s ,
 and
 .esc S
-are not tokenized when
-GNU
-.I troff \" GNU
-reads its input.
+when reading its input.
 .
 .esc R
 updates only the formatter's register dictionary,
@@ -5906,9 +5923,9 @@ Interpolate glyph of special character with identifier
 .
 .
 .TP
-.ESC[] "" "base-char comp \fR\&.\|.\|."
+.ESC[] "" "base-character comp \fR\&.\|.\|."
 Interpolate composite glyph constructed from
-.I base-char
+.I base-character
 and each component
 .IR comp .
 .
@@ -5929,10 +5946,10 @@ in uppercase hexadecimal.
 .
 .
 .TP
-.ESC[] "" "\f[B]u\f[]base-char\f[R][\f[]\f[B]_\f[]\
+.ESC[] "" "\f[B]u\f[]base-character\f[R][\f[]\f[B]_\f[]\
 combining-component\f[R]].\|.\|."
 Interpolate composite glyph from Unicode character
-.I base-char
+.I base-character
 and
 .IR combining-components .
 .
@@ -6609,13 +6626,12 @@ with zero width\[em]without advancing the drawing position.
 Save the drawing position,
 format
 .IR input ,
-then restore it.
+then restore the saved position.
 .
 GNU
 .I troff \" GNU
-ignores tabs and leaders in
-.I input
-with an error diagnostic.
+disallows tabs and leaders in
+.IR input .
 .LE
 .
 .
@@ -7121,12 +7137,16 @@ Predefined registers whose identifiers start with a dot are read-only.
 Many are Boolean-valued.
 .
 .
+.\" BEGIN Keep (roughly) parallel with beginning of section
+.\" "Other differences" in groff_diff(7).
 .P
 .I Caution:
-Built-in registers are subject to removal like others;
+Read-only registers are subject to removal like others;
 once removed,
 they can be recreated only as normal writable registers
 and will not otherwise reflect the configuration of the formatter.
+.\" END Keep (roughly) parallel with beginning of section
+.\" "Other differences" in groff_diff(7).
 .
 .
 .P
@@ -7494,7 +7514,7 @@ The environment's post-vertical line spacing.
 .
 .TP
 .REG .R
-Maximum representable integer in GNU
+Maximum integer representable in GNU
 .IR troff . \" GNU
 .
 .TP
@@ -7517,10 +7537,10 @@ Reserved.
 .
 Plan\~9
 .I troff \" Plan 9
-uses this name for roughly the same purpose as
+uses this name for a purpose similar to
 GNU
 .IR troff 's \" GNU
-.REG .tabs .
+.register .tabs .
 .
 .TP
 .REG .slant
@@ -7547,6 +7567,9 @@ in twelfths of the space width of the selected font.
 .REG .sss
 Size of the environment's supplemental inter-sentence space
 in twelfths of the space width of the selected font.
+.
+See
+.request ss .
 .
 .TP
 .REG .sty
@@ -8145,7 +8168,7 @@ can be written in an upright or slanted typeface,
 producing distinct glyphs.
 .
 Sometimes,
-a sequence of characters map to a single glyph:@:
+a sequence of characters map to a single glyph:
 this is a
 .IR ligature \[em]\c
 the most common is `fi'.
@@ -8169,7 +8192,7 @@ is the most commonly used,
 has no special syntax,
 and typically represents itself.
 .
-(Depending on the breadth
+Depending on the breadth
 of the output device's glyph repertoire,
 the characters
 .BR \[aq] ,
@@ -8210,16 +8233,17 @@ An
 .I "indexed character"
 bypasses most character-to-glyph resolution logic,
 uses the
-.RB \[lq] \[rs]N\[aq]\c
+.RB \[lq]\| \[rs]N\[aq]\c
 .IB i \[aq]\c
+\|\[rq]
 syntax,
 and selects a glyph from the currently selected font
 by its integer-valued position
 .I i
 in the output device's representation of that font.
 .
-(A device's fonts
-do not necessarily arrange their glyphs
+(A device's font
+might not arrange its glyphs
 according to a standard character encoding.)
 .
 .

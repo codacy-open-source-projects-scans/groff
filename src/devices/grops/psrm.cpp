@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #define GROPS_PROLOGUE "prologue"
 
+// forward declaration
 static void print_ps_string(const string &s, FILE *outfp);
 
 cset white_space("\n\r \t\f");
@@ -726,7 +727,7 @@ int resource_manager::do_begin_preview(const char *, int, FILE *fp,
   return 0;
 }
 
-int read_one_of(const char **ptr, const char **s, int n)
+static int read_one_of(const char **ptr, const char **s, int n)
 {
   while (white_space(**ptr))
     *ptr += 1;
@@ -743,7 +744,7 @@ int read_one_of(const char **ptr, const char **s, int n)
   return -1;
 }
 
-void skip_possible_newline(FILE *fp, FILE *outfp)
+static void skip_possible_newline(FILE *fp, FILE *outfp)
 {
   int c = getc(fp);
   if (c == '\r') {

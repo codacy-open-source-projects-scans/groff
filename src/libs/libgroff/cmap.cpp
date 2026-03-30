@@ -44,17 +44,17 @@ cmap::cmap(cmap_builtin)
   // these are initialised by cmap_init::cmap_init()
 }
 
-int cmap_init::initialised = 0;
+bool cmap_init::is_initialised = false;
 
 cmap_init::cmap_init()
 {
-  if (initialised)
+  if (is_initialised)
     return;
-  initialised = 1;
   for (int i = 0; i <= UCHAR_MAX; i++) {
     cmupper.v[i] = ISASCII(i) && islower(i) ? toupper(i) : i;
     cmlower.v[i] = ISASCII(i) && isupper(i) ? tolower(i) : i;
   }
+  is_initialised = true;
 }
 
 // Local Variables:

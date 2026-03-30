@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2025 Free Software Foundation, Inc.
+/* Copyright 2000-2025 Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote output.cpp
  *  but it owes a huge amount of ideas and raw code from

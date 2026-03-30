@@ -1,5 +1,4 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -19,10 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "errarg.h"
 #include "error.h"
 #include "font.h"
-#include "printer.h"
-#include "geometry.h"
 
-void do_file(const char *);
+void interpret_troff_output_file(const char *);
 
 // Local Variables:
 // fill-column: 72

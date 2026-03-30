@@ -23,13 +23,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <assert.h>
+#include <stdio.h> // prerequisite of searchpath.h
 
-#include "troff.h"
-#include "dictionary.h"
+// libgroff
+#include "errarg.h" // prerequisite of troff.h
+#include "error.h" // prerequisite of troff.h
+#include "searchpath.h" // prerequisite of troff.h
+#include "symbol.h" // prerequisite of color.h
+#include "color.h" // prerequisite of env.h
+#include "cset.h" // csdigit()
 #include "lib.h" // INT_DIGITS
-#include "token.h"
+
+// troff
+#include "dictionary.h"
 #include "request.h"
+#include "troff.h" // prerequisite of reg.h, token.h; units
 #include "reg.h"
+#include "token.h"
 
 object_dictionary register_dictionary(101);
 
@@ -113,14 +123,25 @@ static const char *number_value_to_ascii(int value, char format,
   case 'I':
     {
       char *p = buf;
-      // troff uses z and w to represent 10000 and 5000 in Roman
-      // numerals; I can find no historical basis for this usage
-      const char *s = format == 'i' ? "zwmdclxvi" : "ZWMDCLXVI";
+      bool is_value_out_of_roman_numeral_range = false;
       int n = int(value);
-      if (n >= 40000 || n <= -40000) {
-	error("magnitude of '%1' too big for i or I format", n);
-	return i_to_a(n);
+      // AT&T troff uses z and w to represent 10000 and 5000 in Roman
+      // numerals; jjc could find no historical basis for this usage.
+      if (want_att_compat) {
+	if ((n >= 40000) || (n <= -40000))
+	  is_value_out_of_roman_numeral_range = true;
       }
+      else {
+	if ((n >= 4000) || (n <= -4000))
+	  is_value_out_of_roman_numeral_range = true;
+      }
+      if (is_value_out_of_roman_numeral_range) {
+	  error("register value %1 is outside of range representable in"
+		" 'i' or 'I' formats", n);
+	  return i_to_a(n);
+      }
+      const char *roman_numerals
+        = (format == 'i') ? "zwmdclxvi" : "ZWMDCLXVI";
       if (n == 0) {
 	*p++ = '0';
 	*p = '\0';
@@ -130,48 +151,50 @@ static const char *number_value_to_ascii(int value, char format,
 	*p++ = '-';
 	n = -n;
       }
-      while (n >= 10000) {
-	*p++ = s[0];
-	n -= 10000;
+      if (want_att_compat) {
+	while (n >= 10000) {
+	  *p++ = roman_numerals[0];
+	  n -= 10000;
+	}
       }
-      for (int i = 1000; i > 0; i /= 10, s += 2) {
+      for (int i = 1000; i > 0; i /= 10, roman_numerals += 2) {
 	int m = n/i;
 	n -= m*i;
 	switch (m) {
 	case 3:
-	  *p++ = s[2];
+	  *p++ = roman_numerals[2];
 	  /* falls through */
 	case 2:
-	  *p++ = s[2];
+	  *p++ = roman_numerals[2];
 	  /* falls through */
 	case 1:
-	  *p++ = s[2];
+	  *p++ = roman_numerals[2];
 	  break;
 	case 4:
-	  *p++ = s[2];
-	  *p++ = s[1];
+	  *p++ = roman_numerals[2];
+	  *p++ = roman_numerals[1];
 	  break;
 	case 8:
-	  *p++ = s[1];
-	  *p++ = s[2];
-	  *p++ = s[2];
-	  *p++ = s[2];
+	  *p++ = roman_numerals[1];
+	  *p++ = roman_numerals[2];
+	  *p++ = roman_numerals[2];
+	  *p++ = roman_numerals[2];
 	  break;
 	case 7:
-	  *p++ = s[1];
-	  *p++ = s[2];
-	  *p++ = s[2];
+	  *p++ = roman_numerals[1];
+	  *p++ = roman_numerals[2];
+	  *p++ = roman_numerals[2];
 	  break;
 	case 6:
-	  *p++ = s[1];
-	  *p++ = s[2];
+	  *p++ = roman_numerals[1];
+	  *p++ = roman_numerals[2];
 	  break;
 	case 5:
-	  *p++ = s[1];
+	  *p++ = roman_numerals[1];
 	  break;
 	case 9:
-	  *p++ = s[2];
-	  *p++ = s[0];
+	  *p++ = roman_numerals[2];
+	  *p++ = roman_numerals[0];
 	}
       }
       *p = '\0';
