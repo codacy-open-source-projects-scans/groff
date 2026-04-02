@@ -1,5 +1,6 @@
 /* Copyright 2002-2024 Free Software Foundation, Inc.
-     Written by Werner Lemberg (wl@gnu.org)
+
+Written by Werner Lemberg (wl@gnu.org)
 
 This file is part of groff, the GNU roff typesetting system.
 

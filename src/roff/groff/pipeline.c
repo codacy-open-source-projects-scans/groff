@@ -1,5 +1,6 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/* Copyright 1989-2004 Free Software Foundation, Inc.
+
+Written by James Clark (jjc@jclark.com)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -117,7 +118,14 @@ char *sbasename(const char *path)
   else
     p2 = p1 + strlen(p1);
 
-  base = malloc((size_t)(p2 - p1));
+  char err_str[BUFSIZ];
+  size_t nbytes = (size_t)(p2 - p1);
+  base = malloc(nbytes);
+  if (NULL == base) {
+    sprintf(err_str, "unable to allocate %zd bytes"
+	    " for base name of file", nbytes);
+    sys_fatal(err_str);
+  }
   strncpy(base, p1, p2 - p1);
   *(base + (p2 - p1)) = '\0';
 

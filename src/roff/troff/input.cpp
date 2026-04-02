@@ -10027,7 +10027,7 @@ int main(int argc, char **argv)
 	have_explicit_first_page_number = true;
       else
 	error("malformed argument to command-line option '-n';"
-	      "page number '%1' is invalid", optarg);
+	      " page number '%1' is invalid", optarg);
       break;
     case 'o':
       parse_output_page_list(optarg);
@@ -10037,7 +10037,7 @@ int main(int argc, char **argv)
 	error("command-line option '-d' requires non-empty argument");
       else if (*optarg == '=')
 	error("malformed argument to command-line option '-d';"
-	      "string name cannot be empty or contain an equals sign");
+	      " string name cannot be empty or contain an equals sign");
       else
 	add_string(optarg, &string_assignments);
       break;
@@ -10046,8 +10046,8 @@ int main(int argc, char **argv)
 	error("command-line option '-r' requires non-empty argument");
       else if (*optarg == '=')
 	error("malformed argument to command-line option '-r';"
-	      "register name cannot be empty or contain an equals"
-	      "sign");
+	      " register name cannot be empty or contain an equals"
+	      " sign");
       else
 	add_string(optarg, &register_assignments);
       break;

@@ -11,7 +11,7 @@ typesetter and document formatter
 .\" ====================================================================
 .\"
 .\" Copyright 1989-2024 Free Software Foundation, Inc.
-.\"           2020-2025 G. Branden Robinson
+.\"           2020-2026 G. Branden Robinson
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"
@@ -131,15 +131,51 @@ reads the standard input stream.
 .P
 GNU
 .I troff \" GNU
-is functionally compatible with the AT&T
+is largely compatible with the AT&T
 .I troff \" AT&T
-typesetter and features numerous extensions.
+typesetter and features numerous extensions;
+see
+.MR groff_diff @MAN7EXT@ .
 .
 Many people prefer to use the
 .MR groff @MAN1EXT@
 command,
 a front end which also runs preprocessors and output drivers in the
 appropriate order and with appropriate options.
+.
+.
+.P
+Device-independent
+.I roff
+systems such as
+GNU
+.I troff \" GNU
+require descriptions of output devices
+and the font selections available to them;
+.MR groff_font @MAN5EXT@
+describes these.
+.
+.MR groff_char @MAN7EXT@
+enumerates the many special characters available to
+GNU
+.I troff \" GNU
+documents,
+where the output device's glyph repertoire supports them.
+.
+Authors of
+.I roff
+documents frequently compose them with the aid of macro packages;
+.MR groff_tmac @MAN5EXT@
+surveys those supplied with
+.IR groff .
+.
+.
+.P
+.MR roff @MAN7EXT@
+orients the reader to typesetting with
+GNU
+and other
+.IR roff s.
 .
 .
 .\" ====================================================================

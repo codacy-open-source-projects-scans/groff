@@ -17,12 +17,14 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
 /* This file is heavily based on the file mkstemp.c which is part of the
    fileutils package. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-extern int gen_tempname(char *, int = 0);
+#include "lib.h" // mksdir()
 
 /* Generate a unique temporary directory name from TEMPLATE.
    The last six characters of TEMPLATE must be "XXXXXX";

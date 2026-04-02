@@ -1,6 +1,6 @@
 /* Copyright 2000-2020 Free Software Foundation, Inc.
 
-Written by Gaius Mulley <gaius@glam.ac.uk>
+Written by Gaius Mulley (gaius@glam.ac.uk)
 
 This file is part of groff, the GNU roff typesetting system.
 

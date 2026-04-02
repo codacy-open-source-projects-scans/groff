@@ -8078,11 +8078,6 @@ non-destructively replaced.  @xref{Strings}.
 @cindex request arguments
 @cindex arguments to requests
 @cindex tabs, and macro arguments
-@cindex macro arguments, and tabs
-@cindex arguments to macros, and tabs
-@cindex tabs, and request arguments
-@cindex request arguments, and tabs
-@cindex arguments to requests, and tabs
 There is no inherent limit on argument length or quantity.
 Most requests take one or more arguments,
 and ignore any they do not expect.
@@ -8092,6 +8087,11 @@ nothing.@footnote{GNU
 emits a warning in category
 @samp{missing}.
 @xref{Warnings}.}
+@cindex macro arguments, and tabs
+@cindex arguments to macros, and tabs
+@cindex tabs, and request arguments
+@cindex request arguments, and tabs
+@cindex arguments to requests, and tabs
 Spaces or tabs separate a request's name from its first argument,
 but only spaces can separate an argument
 from its successor.@footnote{In compatibility mode,
@@ -9234,14 +9234,30 @@ Valid number formats are as follows.
 
 @table @code
 @item 0@r{@dots{}}
-Arabic numerals 0, 1, 2, and so on.
-Any decimal digit is equivalent to @samp{0}; the formatter merely counts
-the digits specified.  Multiple Arabic numerals in @var{fmt} cause
-interpolations to be zero-padded on the left if necessary to at least as
-many digits as specified (interpolations never truncate a register
-value).  A register with format @samp{00} interpolates values 1, 2, 3 as
-@samp{01}, @samp{02}, @samp{03}.  The default format for all writable
-registers is @samp{0}.
+Arabic numerals 0,
+1,
+2,
+and so on.
+Any decimal digit is equivalent to
+@samp{0};
+the formatter merely counts the digits specified.
+Multiple Arabic numerals in
+@var{fmt}
+cause interpolations to be zero-padded on the left
+if necessary
+to at least as many digits as specified
+(interpolations never truncate a register value).
+A register with format
+@samp{00}
+interpolates values 1,
+2,
+3 as
+@samp{01},
+@samp{02},
+@samp{03}.
+The default format for all writable registers is
+@samp{0}.
+Specifying an unrecognized format is an error.
 
 @item I
 @cindex Roman numerals
@@ -9257,10 +9273,6 @@ Uppercase letters: 0, A, B, C, @dots{},@tie{}Z, AA, AB,@tie{}@enddots{}
 @item a
 Lowercase letters: 0, a, b, c, @dots{},@tie{}z, aa, ab,@tie{}@enddots{}
 @end table
-
-Omitting @var{fmt} causes a warning in category @samp{missing}.
-@xref{Warnings}, regarding the enablement and suppression of warnings.
-Specifying an unrecognized format is an error.
 
 Zero values are interpolated as @samp{0} in non-Arabic formats.
 Negative quantities are prefixed with @samp{-} irrespective of format.
@@ -10119,13 +10131,6 @@ invoking the
 request in the absence of a hyphenation language is an error.
 Each hyphenation language maintains an independent set
 of hyphenation exception words.
-
-The formatter ignores the request if it lacks arguments.
-@footnote{GNU
-@code{troff} @c GNU
-emits a warning in category
-@samp{missing}.
-@xref{Warnings}.}
 
 Obtain a report of hyphenation exception words
 on the standard error stream
@@ -11630,8 +11635,6 @@ Temporarily indent the next output line by @var{offset}; if @var{offset}
 is signed, adjust the temporary indentation relative to the value set by
 the @code{in} request.  The default scaling unit is @samp{m}.  This
 request causes a break.
-
-Omitting @var{offset} causes a warning in category @samp{missing}.
 
 The effect of @code{ti} is delayed until a partially collected line (if
 it exists) is output.  In other words, it does not change a pending

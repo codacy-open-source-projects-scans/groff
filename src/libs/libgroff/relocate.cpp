@@ -1,6 +1,8 @@
 /* Provide relocation for macro and font files.
 
-Copyright 2005-2024 Free Software Foundation, Inc.
+Copyright 2005 Free Software Foundation, Inc.
+
+Made by Werner Lemberg after relocation code in kpathsea and gettext.
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -16,8 +18,6 @@ License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
-// Made after relocation code in kpathsea and gettext.
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -130,8 +130,10 @@ char *searchpath(const char *name, const char *pathp)
   return 0;
 }
 
+#ifdef _WIN32
 // Search NAME along PATHP with the elements of PATHEXT in turn added.
-char *searchpathext(const char *name, const char *pathext, const char *pathp)
+static char *searchpathext(const char *name, const char *pathext,
+			   const char *pathp)
 {
   char *found = 0;
   char *tmpathext = strsave(pathext);	// strtok modifies this string,
@@ -151,8 +153,11 @@ char *searchpathext(const char *name, const char *pathext, const char *pathp)
   return found;
 }
 
+// XXX: This function is nearly identical to
+// `normalize_file_name_for_lf_request()` in "libgroff/lf.cpp".
+//
 // Convert an MS path to a POSIX path.
-char *msw2posixpath(char *path)
+static char *msw2posixpath(char *path)
 {
   char *s = path;
   while (*s) {
@@ -162,6 +167,7 @@ char *msw2posixpath(char *path)
   }
   return path;
 }
+#endif
 
 // Compute the current prefix.
 void set_current_prefix()
@@ -185,12 +191,12 @@ void set_current_prefix()
     curr_prefix = searchpathext(program_name, pathextstr, getenv("PATH"));
     delete[] pathextstr;
   }
+  msw2posixpath(curr_prefix);
 #else /* !_WIN32 */
   curr_prefix = searchpath(program_name, getenv("PATH"));
   if (!curr_prefix)
     return;
 #endif /* !_WIN32 */
-  msw2posixpath(curr_prefix);
 #if DEBUG
   fprintf(stderr, "curr_prefix: %s\n", curr_prefix);
 #endif

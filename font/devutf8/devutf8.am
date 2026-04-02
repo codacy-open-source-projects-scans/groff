@@ -1,4 +1,6 @@
-# Copyright (C) 2014-2024 Free Software Foundation, Inc.
+# Copyright 2014 Free Software Foundation, Inc.
+#
+# Written by Bertrand Garrigues <bertrand.garrigues@laposte.net>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -65,7 +67,6 @@ font/devutf8/DESC: $(devutf8_srcdir)/DESC.proto
 MOSTLYCLEANFILES += font/devutf8/stamp
 font/devutf8/stamp: font/devutf8/DESC $(DEVUTF8FONTSFILES)
 	$(AM_V_at)>$@
-
 
 # Local Variables:
 # mode: makefile-automake

@@ -1,4 +1,4 @@
-/* Copyright 1989-2020 Free Software Foundation, Inc.
+/* Copyright 1989-1990 Free Software Foundation, Inc.
 
 Written by James Clark (jjc@jclark.com)
 
@@ -17,20 +17,25 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+// TODO: Migrate all callers to `strdup()`.  See Savannah #66518.
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <string.h> // strlen()
+#include <stdlib.h> // malloc()
+
+// libgroff
+#include "lib.h" // strsave()
 
 char *strsave(const char *s)
 {
-  if (s == 0)
-    return 0;
-  char *p = (char*)malloc(strlen(s) + 1);
-  if (p != 0)
-    strcpy(p, s);
+  if (0 == s /* nullptr */)
+    return 0 /* nullptr */;
+  char *p = static_cast<char *>(malloc(strlen(s) + 1 /* '\0' */));
+  if (p != 0 /* nullptr */)
+    (void) strcpy(p, s);
   return p;
 }
 

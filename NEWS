@@ -43,6 +43,29 @@ troff
    the request (and issues a warning in category "range"), leaving the
    operand (first request argument) unchanged instead of emptying it.
 
+Macro packages
+--------------
+
+*  The m (mm) macro package's `IA` and `WA` macros--used only with the
+   "letter" document type configure by calling the `LT` macro--no longer
+   disables the escape character, and their counterparts `IE` and `WE`
+   no longer reënable it.  This change makes groff mm consistent with
+   DWB 3.3 mm.  If you require the previous groff mm behavior, consider
+   writing and using wrapper macros such as the following in your
+   document.
+
+   .de iA
+   .IA
+   .eo
+   ..
+   .de iE
+   .ec
+   .IE
+   ..
+
+   These macro definitions are harmlessly redundant when formatting such
+   a document with an older version of groff mm.
+
 Miscellaneous
 -------------
 

@@ -1,5 +1,6 @@
 /* Copyright 2001-2020 Free Software Foundation, Inc.
-     Written by Werner Lemberg (wl@gnu.org)
+
+Written by Werner Lemberg (wl@gnu.org)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -28,10 +29,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <errno.h>
 #include <time.h>
 
-#include "lib.h"
-
+// operating system services
 #include "posix.h"
 #include "nonposix.h"
+
+#include "lib.h" // gen_tempname()
 
 #ifndef TMP_MAX
 # define TMP_MAX 238328

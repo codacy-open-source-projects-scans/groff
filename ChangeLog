@@ -1,3 +1,119 @@
+2026-03-31  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Ensure that the register
+	`an-remap-I-style-in-headings` is always defined.  Fixes `reg`
+	warning when user employs `HF` string to configure an unusual
+	heading font (one that isn't bold, or isn't a member of a
+	family).
+
+2026-03-30  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/relocate.cpp (set_current_prefix): Move call
+	of `msw2posixpath()` from an all-configurations path through the
+	function to an `#ifdef _WIN32`-only one.
+	(msw2posixpath) [_WIN32]: Since this function is now only called
+	if `_WIN32` is defined, shift an `#endif` to also define it only
+	under that circumstance.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/lf.h: Drop argument names from function
+	declarations, better aligning code style with groff's
+	Stroustrup-ish conventions.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Improve #include discipline.
+
+	To illuminate inter-module dependencies, get header files out of
+	the business of `#include`-ing other header files, in favor of
+	putting preprocessor inclusions only in translation units (C/C++
+	source files).  Annotate dependencies.
+
+	* src/include/lf.h: Move preprocessor inclusion of
+	"stringclass.h" from here...
+	* src/libs/libgroff/change_lf.cpp: ...to here.
+	* src/libs/libgroff/lf.cpp: Drop unnecessary inclusion of
+	"lib.h".
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Improve #include discipline.
+
+	* src/include/lib.h: Declare `gen_tempname()` here...
+	* src/libs/libgroff/mksdir.cpp: ...instead of here (as an
+	`extern`).
+	* src/libs/libgroff/tmpname.cpp: Resequence order of header file
+	inclusions.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/strsave.cpp: Fix code style nits.  Arrange
+	equality comparisons to avoid inadvertent lvalue assignment.
+	Favor C++ `static_cast<>` operator over omnipotent C-style
+	cast, except to explicitly discard unused return value of
+	function.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/strsave.cpp: Improve header file
+	inclusion discipline.  Use preprocessor to include "lib.h"
+	header, which declares the `strsave()` function defined here.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/prime.cpp: Improve header file inclusion
+	discipline.  Use preprocessor to include "lib.h" header, which
+	declares the `ceil_prime()` function defined here.  Also
+	unabbreviate data type of argument and return value; I prefer
+	`unsigned int` to `unsigned`.  (It's surprising that Thompson
+	and Ritchie overcame their inclination to extreme abbreviation
+	here; not only are "signed" and "unsigned" intelligible English
+	words, but it proved to be a bad idea to make their syntax
+	closely resemble what eventually became ANSI C89's type
+	qualifiers `const`--notably an abbreviation again--and
+	`volatile`.  It took ISO C99 to bring us `uintN_t` and `intN_t`
+	types, at which point Ritchie, at least, appears to have given
+	up on staying current with the language, never preparing with
+	Kernighan a third edition of their _The C Programming Language_
+	before his death in 2011.  I find it a fun diversion to consider
+	how many problems of the C language can be sufficiently
+	explained by a tacit but intense resentment of strong typing.)
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/mksdir.cpp: Improve header file
+	inclusion discipline.  Use preprocessor to include "lib.h"
+	header, which declares the `mkdsir()` function defined here.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/relocate.cpp (msw2posixpath): Declare as
+	`static` since it does not require external linkage.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/relocate.cpp (searchpathext): Declare as
+	`static` since it does not require external linkage.  Doing so
+	reveals that the function is not used at all except on Windows
+	systems, so bracket with preprocessor `#ifdef`/`#endif`,
+	avoiding `-Wunused-function` warning from GCC on GNU/Linux.
+
+2026-03-29  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/pipeline.c: Check for memory allocation
+	failure, and emit a fatal error diagnostic if it occurs.
+	Unfortunately I was unable to test this code, as it's only
+	reachable on non-POSIX systems (via `is_system_shell()` and
+	`system_shell_dash_c()`; see "src/include/nonposix.h").
+
+	Continues the long process of fixing Savannah #68192.
+
+2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (main): Fix spaces missing from
+	recently recast error diagnostic messages.
+
 2026-03-28  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (parse_output_page_list, main):
@@ -146,7 +262,7 @@
 2026-03-25  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/libs/libgroff/error.cpp: Drop `extern` declaration of
-	`fatal_error_exit()`, now delcared properly in "lib.h".
+	`fatal_error_exit()`, now declared properly in "error.h".
 	* src/libs/libgroff/fatal.cpp: Use preprocessor to include
 	"errarg.h" and "error.h" header files.
 
@@ -1178,7 +1294,7 @@
 	functions from `int` to `void`.  I would have boolified them,
 	but nothing ever checks their return values.
 
-	* src/roff/troff/troff.h: Update delcarations.
+	* src/roff/troff/troff.h: Update declarations.
 	* src/roff/troff/input.cpp (warning, output_warning): Update
 	definitions.  Simplify function bodies.
 

@@ -1,4 +1,4 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-2000 Free Software Foundation, Inc.
 
 Written by James Clark (jjc@jclark.com)
 
@@ -46,8 +46,12 @@ extern "C" {
 
 #include <stdbool.h>
 
+// libgroff/strsave.cpp
+// TODO: Migrate all callers to `strdup()`.  See Savannah #66518.
 char *strsave(const char *s);
-unsigned ceil_prime(unsigned);
+
+// libgroff/prime.cpp
+unsigned int ceil_prime(unsigned int);
 
 #include <stdio.h>
 #include <string.h>
@@ -72,7 +76,11 @@ extern "C" {
 int mkstemp(char *tmpl);
 #endif /* HAVE_MKSTEMP */
 
+// libgroff/mksdir.cpp
 int mksdir(char *tmpl);
+
+// libgroff/tmpname.cpp
+int gen_tempname(char *, int);
 
 #ifdef __cplusplus
   FILE *xtmpfile(const char **namep = 0 /* nullptr */,

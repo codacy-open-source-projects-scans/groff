@@ -17,15 +17,13 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "stringclass.h"
-
 // libgroff/change_lf.cpp
 void change_filename(const char *);
 void change_lineno(int);
 
 // libgroff/lf.cpp
-bool interpret_lf_request_arguments(const char *p);
-void normalize_file_name_for_lf_request(string &fn);
+bool interpret_lf_request_arguments(const char *);
+void normalize_file_name_for_lf_request(string &);
 
 // Local Variables:
 // fill-column: 72
