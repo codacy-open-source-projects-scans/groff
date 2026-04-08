@@ -56,16 +56,25 @@ Before Release
 * Update the "gnulib" sub-module and "bootstrap" script to the latest
   stable versions.  See the "HACKING" file for instructions.
 
+Subsequent steps tend to be repeated as multiple release candidates are
+prepared, as applicable.
+
+*** Begin loop
+
+* Announce a code freeze to the groff development mailing list.  The
+  maintainer must decide upon the scope, duration, and "hardness" of the
+  freeze.
+
 * Update the release version number where it is hard-coded or
   represented as "next".
   + NEWS (append or remove "release candidate" as applicable)
   + arch/mingw/grap2graph.cmd
 
 * Update in "src/roff/groff/groff.cpp" the 'printf' that displays the
-  copyright to include the current year if it is not present.  (If no
-  copyrightable changes to the project's code have been made in the
-  current calendar year, use the most recent year in which they have;
-  see the "HACKING" file.)
+  copyright notice to include the current year if it is not present.
+  (If no copyrightable changes to the project's code have been made in
+  the current calendar year, use the most recent year in which they
+  have; see the "HACKING" file.)
 
 * Run the "set-man-page-time-stamps" Makefile target from your build
   directory to fix up the stamps on the man pages.
@@ -109,6 +118,7 @@ Before Release
 
   https://www.gnu.org/prep/maintain/maintain.html#Automated-Upload-Procedure
 
+*** End loop
 
 After Release
 =============
@@ -117,14 +127,8 @@ After Release
   and its detached signature file to percolate through GNU's mirror
   network.
 
-* For official releases, update the groff home page.
-
-* Make an email announcement per the "ANNOUNCE" (release notes) file.
-
-* If warranted, update the "ANNOUNCE" file to make it a template for the
-  next release.
-
-* Update the groff home page, which is kept under CVS revision control.
+* For official releases, update the groff home page, which is kept under
+* CVS revision control.
 
   $ cvs -z3 -d:ext:$USER@cvs.savannah.gnu.org:/web/groff co groff
 
@@ -187,7 +191,13 @@ After Release
   reason the site's web server doesn't seem to always update the
   metadata that assist the browser to recognize a stale cache entry.
 
-* Update groff's entry at the FSF's Free Software Directory.
+* Make an email announcement per the "ANNOUNCE" (release notes) file.
+
+* If warranted, update the "ANNOUNCE" file to make it a template for the
+  next release.
+
+* For official releases, update groff's entry at the FSF's Free Software
+  Directory.
 
   https://directory.fsf.org/wiki/Groff
 

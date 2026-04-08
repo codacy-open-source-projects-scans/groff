@@ -136,8 +136,8 @@ static const char *number_value_to_ascii(int value, char format,
 	  is_value_out_of_roman_numeral_range = true;
       }
       if (is_value_out_of_roman_numeral_range) {
-	  error("register value %1 is outside of range representable in"
-		" 'i' or 'I' formats", n);
+	  error("register value %1 is beyond range representable in"
+		" '%2' format", n, format);
 	  return i_to_a(n);
       }
       const char *roman_numerals

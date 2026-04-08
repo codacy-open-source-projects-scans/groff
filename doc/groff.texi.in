@@ -467,7 +467,7 @@ Documentation License''.
 @title groff
 @subtitle The GNU implementation of @code{troff}
 @subtitle version @VERSION@
-@subtitle March 2026
+@subtitle April 2026
 @author Trent@tie{}A.@: Fisher
 @author Werner Lemberg
 @author G.@tie{}Branden Robinson
@@ -7903,7 +7903,6 @@ or
 stream
 generally provokes an error diagnostic.
 
-@need 1000
 @cindex name space, common, of macros, diversions, and strings
 @cindex common name space of macros, diversions, and strings
 @cindex macro name space, shared with strings and diversions
@@ -7913,29 +7912,36 @@ generally provokes an error diagnostic.
 @cindex common name space of special characters and character classes
 @cindex character class name space, shared with special characters
 @cindex special character name space, shared with character classes
-Identifiers for requests, macros, strings, and diversions share one name
-space; special characters and character classes another.  No other
-object types do.
+Identifiers for requests,
+macros,
+strings,
+and diversions share one name space;
+special characters and character classes another.
+No other object types do.
+@c END Keep (roughly) parallel with section "Identifiers" of groff(7).
 
 @Example
-.de xxx
-.  nop foo
+.de xx
+foo
 ..
-@c . slack line for pagination management
-.di xxx
+.
+.di xx
 bar
 .br
 .di
 .
-.xxx
+.xx
     @result{} bar
 @endExample
 
 @noindent
-The foregoing example shows that GNU @code{troff} reuses the identifier
-@samp{xxx}, changing it from a macro to a diversion.  No warning is
-emitted, and the previous contents of @samp{xxx} are lost.
-@c END Keep (roughly) parallel with section "Identifiers" of groff(7).
+The foregoing example shows that the formatter reuses the identifier
+@samp{xx},
+changing it from a macro to a diversion.
+No warning is emitted,
+and the previous contents of
+@samp{xx}
+are lost.
 
 
 @c =====================================================================
@@ -7986,12 +7992,14 @@ available via both requests and escape sequences.
 @cindex configuring control characters
 @cindex changing control characters
 
+@c BEGIN Keep (roughly) parallel with section "Control characters" of
+@c groff(7).
 The mechanism of using @code{roff}'s control characters to invoke
 requests and call macros was introduced in @ref{Requests and Macros}.
 The formatter recognizes a control character
 only at the beginning of an input line,
-or at the beginning of a branch of a control structure request;
-see @ref{Conditionals and Loops}.
+or at the beginning of a branch
+of a control structure request.@footnote{@xref{Conditionals and Loops}.}
 
 A few requests cause a break implicitly;
 invoke them with the no-break control character
@@ -7999,25 +8007,35 @@ to prevent the break.
 Break suppression is its sole behavioral distinction.
 Employing the no-break control character
 to invoke requests that don't cause breaks
-is harmless but poor style.
-@xref{Manipulating Filling and Adjustment}.
+is harmless
+but poor style.@footnote{@xref{Manipulating Filling and Adjustment}.}
 
 @cindex control character, changing (@code{cc})
 @cindex character, control, changing (@code{cc})
 @cindex no-break control character, changing (@code{c2})
 @cindex character, no-break control, changing (@code{c2})
 @cindex control character, no-break, changing (@code{c2})
-The control @samp{.} and no-break control @samp{'} characters can each
-be changed to any ordinary character@footnote{Recall @ref{Identifiers}.}
-with the @code{cc} and @code{c2} requests, respectively.
+The
+@code{cc}
+and
+@code{c2}
+requests respectively change
+the control
+@samp{.}
+and no-break control
+@samp{'}
+characters to any desired ordinary character
+(recall @ref{Identifiers}),
+but must be distinct.
 
 @Defreq {cc, [@Var{o}]}
 Recognize the ordinary character@tie{}@var{o} as the control character.
 If@tie{}@var{o} is absent or invalid, the default control character
 @samp{.} is selected.  If @var{o} (or @samp{.} if @var{o} is invalid) is
 already the escape or no-break control character, an error is diagnosed
-and the request ignored.  The identity of the control character is
-associated with the environment (@pxref{Environments}).
+and the request ignored.
+The identity of the control character
+is associated with the environment.@footnote{@xref{Environments}.}
 @endDefreq
 
 @Defreq {c2, [@Var{o}]}
@@ -8025,26 +8043,36 @@ Recognize the ordinary character@tie{}@var{o} as the no-break control
 character.  If@tie{}@var{o} is absent or invalid, the default no-break
 control character @samp{'} is selected.  If @var{o} (or @samp{'} if
 @var{o} is invalid) is already the escape or control character, an error
-is diagnosed and the request ignored.  The identity of the no-break
-control character is associated with the environment
-(@pxref{Environments}).
+is diagnosed and the request ignored.
+The identity of the no-break control character
+is associated with the environment.@footnote{@xref{Environments}.}
 @endDefreq
 
-When writing a macro, you might wish to know which control character was
-used to call it.
+While a macro definition is interpreted,
+the
+@code{.br}
+register permits discovery of the control character used in the call.
 
 @Defreg {.br}
-This read-only register interpolates@tie{}1 if the currently executing
-macro was called using the normal control character and@tie{}0
-otherwise.  If a macro is interpolated as a string, the @code{.br}
-register's value is inherited from the context of the string
-interpolation.  @xref{Strings}.
+This read-only register interpolates@tie{}1
+if the currently executing macro was called
+using the normal control character
+and@tie{}0 otherwise.
+If a macro is interpolated as a string,
+the
+@code{.br}
+register inherits its value
+from the context of the string interpolation.@footnote{@xref{Strings}.}
+@c END Keep (roughly) parallel with section "Control characters" of
+@c groff(7).
 
 @cindex intercepting requests
 @cindex requests, intercepting
 @cindex modifying requests
 @cindex requests, modifying
-Use this register to reliably intercept requests that imply breaks.
+Use the
+@code{.br}
+register to reliably wrap or intercept requests that imply breaks.
 
 @Example
 .als bp*orig bp
@@ -8054,8 +8082,9 @@ Use this register to reliably intercept requests that imply breaks.
 ..
 @endExample
 
-Testing the @code{.br} register outside of a macro definition makes no
-sense.
+Testing the
+@code{.br}
+register outside of a macro definition makes no sense.
 @endDefreg
 
 @c ---------------------------------------------------------------------
@@ -8073,7 +8102,7 @@ unrecognized request is interpreted as a macro call.  Defining a macro
 with the same name as a request replaces the request.  Deleting a
 request name with the @code{rm} request makes it unavailable.  The
 @code{als} request can alias requests, permitting them to be wrapped or
-non-destructively replaced.  @xref{Strings}.
+non-destructively replaced.@footnote{@xref{Strings}.}
 
 @cindex request arguments
 @cindex arguments to requests
@@ -8105,21 +8134,33 @@ does not interpret tabs as argument separators.@footnote{Plan@tie{}9
 @command{troff} @c Plan 9
 does.}
 
-Generally, a space @emph{within} a request argument is not relevant, not
-meaningful, or is supported by bespoke provisions, as with the @code{tl}
-request's delimiters (@pxref{Page Layout}).  Some requests, like
-@code{ds}, interpret the remainder of the control line as a single
-argument.  @xref{Strings}.
+Generally,
+a space
+@emph{within}
+a request argument is not relevant,
+not meaningful,
+or is supported by bespoke provisions,
+as with the
+@code{tl}
+request's delimiters.@footnote{@xref{Page Layout}.}
+Some requests,
+like
+@code{ds},
+interpret the remainder of the control line
+as a single argument.@footnote{@xref{Strings}.}
 
-@need 1000
 @cindex structuring source code of documents or macro packages
 @cindex documents, structuring the source of
 @cindex macro package, structuring the source of
 @cindex package, package, structuring the source of
 @cindex indentation, of @code{roff} source code
-Spaces and tabs immediately after a control character are ignored.
-Commonly, authors use them to indent the source of documents or macro
-files.
+Commonly,
+authors use spaces and/or tabs after a control character
+to indent the source of documents or macro files.
+The formatter ignores spaces and tabs
+immediately after a control character,
+except that the presence of a tab
+prevents recognition of the end of a macro definition.
 
 @Example
 .de center
@@ -8138,8 +8179,10 @@ files.
 
 @cindex blank line trap (@code{blm})
 @cindex blank line macro (@code{blm})
-If you assign an empty blank line trap, you can separate macro
-definitions (or any input lines) with blank lines.
+If you assign an empty blank line trap,
+you can separate macro definitions
+(or any input lines)
+with blank lines.@footnote{@xref{Blank Line Traps}.}
 
 @Example
 .de do-nothing
@@ -8161,8 +8204,6 @@ definitions (or any input lines) with blank lines.
 
 .blm             \" deactivate blank line trap
 @endExample
-
-@xref{Blank Line Traps}.
 @c END Keep (roughly) parallel with section "Invoking requests" of
 @c groff(7).
 
@@ -8185,14 +8226,19 @@ emits a warning in category
 @xref{Warnings}.}
 Calling an undefined macro
 @emph{does}
-end a macro definition naming it as its end macro
-(@pxref{Writing Macros}).
+end a macro definition naming it
+as its end macro.@footnote{@xref{Writing Macros}.}
 
 @cindex spaces, in a macro argument
-To embed spaces @emph{within} a macro argument, enclose the argument in
-neutral double quotes @code{"}.  Horizontal motion escape sequences are
-sometimes a better choice for arguments to be formatted as text.
+To embed spaces
+@emph{within}
+a macro argument,
+enclose the argument in neutral double quotes
+@code{"}.
+Horizontal motion escape sequences
+are sometimes a better choice for arguments to be formatted as text.
 
+@need 1000
 Consider calls to a hypothetical section heading macro @samp{uh}.
 
 @Example
@@ -8881,13 +8927,22 @@ some of these are read-only.
 You can also define your own.
 Recall @ref{Identifiers},
 regarding the construction of valid names for registers.
+The register name space is separate from that used for requests,
+macros,
+strings,
+and diversions.
 
 @cindex format, register
 @cindex register format
-Each register (except read-only ones) can be assigned a @dfn{format},
-causing its value to interpolate with leading zeroes, in Roman numerals,
-or alphabetically.  Some read-only registers are string-valued, meaning
-that they interpolate text and lack a format.
+Each register
+(except read-only ones)
+can be assigned a
+@dfn{format},
+causing its value to interpolate with leading zeroes,
+in Roman numerals,
+or alphabetically.
+Some read-only registers are string-valued,
+meaning that they interpolate text and lack a format.
 
 @menu
 * Setting Registers::
@@ -9223,14 +9278,22 @@ disable auto-incrementation of the register.
 @cindex number format, assigning to register (@code{af})
 @cindex register, assigning number format to (@code{af})
 
-A writable register's value can be interpolated in several number
-formats.  By default, conventional Arabic numerals are used.
-Other formats see use in sectioning and outlining schemes and
-alternative page numbering arrangements.
+A writable register's value
+can be interpolated in several number formats.
+Conventional Arabic numerals are the default format;
+others see use in sectioning and outlining schemes
+and alternative page numbering arrangements.
 
+@need 1000
 @Defreq {af, reg fmt}
-Use number format @var{fmt} when interpolating register @var{reg}.
-Valid number formats are as follows.
+Apply number format
+@var{fmt}
+when interpolating register
+@var{reg}.
+The default format for all writable registers is
+@samp{0}.
+Specifying an unrecognized format is an error.
+Valid formats are as follows.
 
 @table @code
 @item 0@r{@dots{}}
@@ -9255,29 +9318,55 @@ interpolates values 1,
 @samp{01},
 @samp{02},
 @samp{03}.
-The default format for all writable registers is
-@samp{0}.
-Specifying an unrecognized format is an error.
 
 @item I
 @cindex Roman numerals
 @cindex numerals, Roman
-Uppercase Roman numerals: 0, I, II, III, IV,@tie{}@enddots{}
+Uppercase Roman numerals:@:
+0,
+I,
+II,
+III,
+IV,@tie{}@enddots{}
 
 @item i
-Lowercase Roman numerals: 0, i, ii, iii, iv,@tie{}@enddots{}
+Lowercase Roman numerals:@:
+0,
+i,
+ii,
+iii,
+iv,@tie{}@enddots{}
 
 @item A
-Uppercase letters: 0, A, B, C, @dots{},@tie{}Z, AA, AB,@tie{}@enddots{}
+Uppercase letters:@:
+0,
+A,
+B,
+C,
+@dots{},@tie{}Z,
+AA,
+AB,@tie{}@enddots{}
 
 @item a
-Lowercase letters: 0, a, b, c, @dots{},@tie{}z, aa, ab,@tie{}@enddots{}
+Lowercase letters:@:
+0,
+a,
+b,
+c,
+@dots{},@tie{}z,
+aa,
+ab,@tie{}@enddots{}
 @end table
 
-Zero values are interpolated as @samp{0} in non-Arabic formats.
-Negative quantities are prefixed with @samp{-} irrespective of format.
-In Arabic formats, the sign supplements the field width.  If @var{reg}
-doesn't exist, it is created with a zero value.
+The formatter interpolates zero values as
+@samp{0}
+and prefixes negative quantities with
+@samp{-}
+irrespective of format.
+In Arabic formats,
+the sign supplements the field width.
+Assigning a format to a nonexistent register
+creates it with a zero value.
 
 @Example
 .nr a 10
@@ -9324,11 +9413,14 @@ not Roman numeral characters from Unicode's Number Forms block.}
 
 @cindex read-only register, changing format
 @cindex changing format, and read-only registers
-Assigning the format of a read-only register is an error.  Instead, copy
-the read-only register's value to, and assign the format of, a writable
-register.
+Assigning the format of a read-only register is an error.
+Instead,
+copy the read-only register's value to,
+and assign the format of,
+a writable register.
 @endDefreq
 
+@need 1000
 @DefescList {\\g, , r, }
 @DefescItem {\\g, (, rg, }
 @DefescListEnd {\\g, [, reg, ]}
@@ -9344,10 +9436,14 @@ and nothing is interpolated.
 
 @cindex register format, in expressions
 @cindex expressions, and register format
-GNU @code{troff} interprets only Arabic numerals.  The Roman numeral or
-alphabetic formats cannot be used as operands to arithmetic operators in
-expressions (@pxref{Numeric Expressions}).  For instance, it may be
-desirable to test the page number independently of its format.
+GNU
+@command{troff} @c GNU
+interprets only Arabic numerals.
+The Roman numeral or alphabetic formats
+cannot be used as operands to arithmetic operators in expressions;
+recall @ref{Numeric Expressions}.
+For instance,
+it may be desirable to test the page number independently of its format.
 
 @Example
 .af % i \" front matter
@@ -10086,8 +10182,7 @@ even possible is an unsolved problem in computer science:@:
 unusual words found in technical literature.  We can instruct GNU
 @code{troff} how to hyphenate specific words if the need arises.
 
-@c TODO: Add request `rhw`; see Savannah #64478.
-@cindex hyphenation exception words
+@cindex hyphenation exception words, adding
 @Defreq {hw, word @dots{}}
 Define each argument @var{word}
 (comprising ordinary,
@@ -10146,6 +10241,15 @@ these exceptions override any rules
 that would normally apply to a word
 matching a hyphenation exception word defined with
 @code{hw}.
+
+@cindex hyphenation exception words, removing
+@Defreq {rhw}
+Empty the current hyphenation language's exception word list
+of all entries populated by the input.@footnote{GNU
+@command{troff} @c GNU
+retains those supplied by hyphenation pattern exception files;
+see below.}
+@endDefreq
 
 Situations also arise when only a specific occurrence of a word needs
 its hyphenation altered or suppressed, or when a URL or similar
@@ -10346,8 +10450,10 @@ non-zero even mode.
 @pindex hyphenex.cs
 @pindex hyphenex.en
 @pindex hyphenex.pl
-@cindex hyphenation pattern files
-@cindex pattern files, for hyphenation
+@cindex hyphenation pattern and exception files
+@cindex pattern and exception files, hyphenation
+@cindex exception file, hyphenation pattern
+@cindex file, hyphenation pattern or exception
 The automatic placement of hyphens in words is determined by
 @dfn{pattern files}, which are derived from @TeX{} and available for
 several languages.  These files are named @file{hyphen.@var{xx}} (for
@@ -17919,16 +18025,17 @@ box margin.
 Draw polygon with vertices at the drawing position
 and each point in sequence.
 GNU
-@code{troff} closes the polygon by drawing a line from
-(@var{hn}, @var{vn})
-back to the initial drawing position.
-@c XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
-@c src/libs/libdriver/input.cpp.  It is neither the rightmost point
-@c of the figure nor the initial drawing position that GNU troff
-@c automatically returned to close the figure.
-Afterward,
-the drawing position is left at
-(@var{hn}, @var{vn}).
+@command{troff} @c GNU
+closes the polygon by drawing a line from
+(@var{hn},
+@var{vn})
+back to the initial drawing position
+and leaves the drawing position there.@footnote{DWB
+and Heirloom Doctools
+@command{troff}s
+do neither.}
+@c XXX: That would be the "STUPID_DRAWING_POSITIONING" complained of in
+@c src/libs/libdriver/input.cpp.
 
 @item \D'P @var{dx1} @var{dy1} @var{dx2} @var{dy2} @dots{}'
 @cindex polygon, filled, drawing (@samp{\D'P @dots{}'})
@@ -22402,6 +22509,14 @@ does not.
 GNU
 @command{troff} @c GNU
 rejects C0 controls in identifiers with an error diagnostic.
+
+In
+DWB and Plan@tie{}9 from User Space
+@code{troff}, @c DWB, Plan 9
+spaces or tabs between the ordinary control character and a
+@samp{.}@:
+or macro name that would normally end a macro definition
+prevent it from doing so.
 
 Formatters that don't implement
 GNU

@@ -62,7 +62,7 @@ _endif()dnl
 .\" ====================================================================
 .\"
 .\" Copyright 1999-2017 Free Software Foundation, Inc.
-.\"           2017      Ingo Schwarze
+.\"                2017 Ingo Schwarze
 .\"           2017-2025 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
@@ -552,7 +552,7 @@ suppresses headers and footers in HTML output.
 .
 .
 .IP
-A valid
+A typical
 .I man
 document calls
 .B TH

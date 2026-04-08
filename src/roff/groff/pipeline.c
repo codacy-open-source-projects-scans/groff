@@ -122,14 +122,14 @@ char *sbasename(const char *path)
   size_t nbytes = (size_t)(p2 - p1);
   base = malloc(nbytes);
   if (NULL == base) {
-    sprintf(err_str, "unable to allocate %zd bytes"
+    sprintf(err_str, "cannot allocate %zd bytes"
 	    " for base name of file", nbytes);
     sys_fatal(err_str);
   }
   strncpy(base, p1, p2 - p1);
   *(base + (p2 - p1)) = '\0';
 
-  return(base);
+  return base;
 }
 
 /* Get the name of the system shell */

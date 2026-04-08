@@ -22,7 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <config.h>
 #endif
 
-#include <errno.h> // errno
+#include <assert.h>
+#include <errno.h>
 #include <math.h> // ceil(), fabs()
 #include <stdio.h> // prerequisite of mtsm.h, searchpath.h
 
@@ -1278,7 +1279,7 @@ node *environment::extract_output_line()
   return nd;
 }
 
-static void select_fill_color_request()
+static void select_fill_color_request() // .fcolor
 {
   symbol s = read_identifier();
   if (s.is_null())
@@ -1288,7 +1289,7 @@ static void select_fill_color_request()
   skip_line();
 }
 
-static void select_stroke_color_request()
+static void select_stroke_color_request() // .gcolor
 {
   symbol s = read_identifier();
   if (s.is_null())
@@ -1338,7 +1339,7 @@ void select_font(symbol s)
   }
 }
 
-static void select_font_request()
+static void select_font_request() // .ft
 {
   select_font(read_identifier());
   skip_line();
@@ -1374,7 +1375,7 @@ void point_size()
   skip_line();
 }
 
-static void override_available_type_sizes_request()
+static void override_available_type_sizes_request() // .sizes
 {
   if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "available font sizes override request"
@@ -2700,12 +2701,12 @@ void do_break_request(bool want_adjustment)
   tok.next();
 }
 
-static void break_without_forced_adjustment_request()
+static void break_without_forced_adjustment_request() // .br
 {
   do_break_request(false);
 }
 
-static void break_with_forced_adjustment_request()
+static void break_with_forced_adjustment_request() //. brp
 {
   do_break_request(true);
 }
@@ -3051,7 +3052,7 @@ void tab_stops::operator=(const tab_stops &ts)
   }
 }
 
-static void configure_tab_stops_request()
+static void configure_tab_stops_request() // .ta
 {
   hunits pos;
   hunits prev_pos = 0;
@@ -3113,7 +3114,7 @@ tab_type environment::distance_to_next_tab(hunits *distance, hunits *leftpos)
 }
 
 // XXX: Field characters are global; shouldn't they be environmental?
-static void field_characters_request()
+static void field_characters_request() // .fc
 {
   field_delimiter_char = read_character();
   if (field_delimiter_char)
@@ -3727,7 +3728,10 @@ void environment::dump()
   fflush(stderr);
 }
 
-void print_environment_request()
+// TODO: Revise to report, without arguments, only the environment stack
+// contents from top to bottom; report details of only environments
+// named in arguments.
+static void print_environment_request() // .pev
 {
   errprint("Current Environment:\n");
   curenv->dump();
@@ -3746,7 +3750,7 @@ void print_environment_request()
   skip_line();
 }
 
-static void print_pending_output_line_request()
+static void print_pending_output_line_request() // .pline
 {
   curenv->dump_pending_nodes();
   skip_line();
@@ -3877,7 +3881,7 @@ void environment_switch()
 const int WORD_MAX = 256;	// we use unsigned char for offsets in
 				// hyphenation exceptions
 
-static void add_hyphenation_exception_words_request()
+static void add_hyphenation_exception_words_request() // .hw
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "hyphenation exception word request expects"
@@ -3898,30 +3902,44 @@ static void add_hyphenation_exception_words_request()
       break;
     int i = 0;
     int npos = 0;
+    // Warn at most once per invalid word, not per request invocation.
+    bool is_word_valid = true;
+    bool was_warned = false;
     while ((i < WORD_MAX)
 	   && !tok.is_space()
 	   && !tok.is_newline()
 	   && !tok.is_eof()) {
-      charinfo *ci = tok.get_charinfo(true /* required */);
+      charinfo *ci = tok.get_charinfo(false /* required */);
       if (0 /* nullptr */ == ci) {
-	assert(0 == "attempted to use token without charinfo in"
-	       " hyphenation exception word");
-	skip_line();
-	return;
+	is_word_valid = false;
+	if (!was_warned) {
+	  warning(WARN_CHAR, "skipping hyphenation exception word"
+		  " containing %1", tok.description());
+	  was_warned = true;
+	}
       }
-      tok.next();
-      if (ci->get_ascii_code() == '-') {
-	if (i > 0 && (npos == 0 || pos[npos - 1] != i))
-	  pos[npos++] = i;
+      if (is_word_valid) {
+	tok.next();
+	if (ci->get_ascii_code() == '-') {
+	  if (i > 0 && (npos == 0 || pos[npos - 1] != i))
+	    pos[npos++] = i;
+	}
+	else {
+	  unsigned char c = ci->get_hyphenation_code();
+	  if (0U == c)
+	    break;
+	  buf[i++] = c;
+	}
       }
       else {
-	unsigned char c = ci->get_hyphenation_code();
-	if (0U == c)
-	  break;
-	buf[i++] = c;
+	do
+	  tok.next();
+	while (!tok.is_space()
+	       && !tok.is_newline()
+	       && !tok.is_eof());
       }
     }
-    if (i > 0) {
+    if (is_word_valid && (i > 0)) {
       pos[npos] = 0;
       buf[i] = '\0';
       // C++03: new unsigned char[npos + 1]();
@@ -3937,10 +3955,39 @@ static void add_hyphenation_exception_words_request()
   skip_line();
 }
 
-static void print_hyphenation_exceptions()
+static void remove_hyphenation_exception_words_request() // .rhw
 {
-  if (0 /* nullptr */ == current_language)
+  if (0 /* nullptr */ == current_language) {
+    error("cannot remove hyphenation exception words when no"
+	  " hyphenation language is selected");
+    skip_line();
     return;
+  }
+  dictionary_iterator iter(current_language->exceptions);
+  symbol entry;
+  if (!has_arg()) {
+    while (iter.get(&entry, 0 /* nullptr */)) {
+      assert(!entry.is_null());
+      // The exception word symbol's contents contains a space if it's
+      // _not_ user-defined.  Kind of kludgy, but possibly not worth
+      // fixing without also migrating to an STL unordered_map or
+      // similar, and using a `struct` with a string and a `bool` in it
+      // as the values.
+      if (strchr(entry.contents(), ' ') == 0 /* nullptr */)
+	current_language->exceptions.remove(entry.contents());
+    }
+  }
+  // TODO: Else read each argument as a word, normalize any hyphens
+  // (dashes) out of it, and remove it from the exceptions dictionary.
+  skip_line();
+}
+
+static void print_hyphenation_exceptions_request() // .phw
+{
+  if (0 /* nullptr */ == current_language) {
+    skip_line();
+    return;
+  }
   dictionary_iterator iter(current_language->exceptions);
   symbol entry;
   unsigned char *hypoint;
@@ -3963,6 +4010,9 @@ static void print_hyphenation_exceptions()
 	wordbuf[j++] = '-';
 	hypoint++;
       }
+      // The exception word symbol's contents contains a space if it's
+      // _not_ user-defined.  See
+      // `remove_hyphenation_exception_words_request()` above.
       if (word[i] == ' ') {
 	assert(i == (len - 1));
 	is_mode_dependent = true;
@@ -4643,10 +4693,9 @@ static void read_hyphenation_patterns_from_file(bool append)
       current_language->patterns.read_patterns_file(filename, append,
 	&current_language->exceptions);
   }
-  tok.next();
 }
 
-static void load_hyphenation_patterns_from_file()
+static void load_hyphenation_patterns_from_file_request() // .hpf
 {
   if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "hyphenation pattern load request expects"
@@ -4655,11 +4704,10 @@ static void load_hyphenation_patterns_from_file()
     return;
   }
   read_hyphenation_patterns_from_file(false /* append */);
-  // No `skip_line()` here; the above function calls
-  // `read_rest_of_line_as_argument()` and `tok.next()`.
+  skip_line();
 }
 
-static void append_hyphenation_patterns_from_file()
+static void append_hyphenation_patterns_from_file_request() // .hpfa
 {
   if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "hyphenation pattern appendment request"
@@ -4668,18 +4716,18 @@ static void append_hyphenation_patterns_from_file()
     return;
   }
   read_hyphenation_patterns_from_file(true /* append */);
-  // No `skip_line()` here; the above function calls
-  // `read_rest_of_line_as_argument()` and `tok.next()`.
+  skip_line();
 }
 
 // Most hyphenation functionality is environment-specific; see
 // init_env_requests() above.
 void init_hyphenation_pattern_requests()
 {
-  init_request("hpf", load_hyphenation_patterns_from_file);
-  init_request("hpfa", append_hyphenation_patterns_from_file);
+  init_request("hpf", load_hyphenation_patterns_from_file_request);
+  init_request("hpfa", append_hyphenation_patterns_from_file_request);
   init_request("hw", add_hyphenation_exception_words_request);
-  init_request("phw", print_hyphenation_exceptions);
+  init_request("phw", print_hyphenation_exceptions_request);
+  init_request("rhw", remove_hyphenation_exception_words_request);
 }
 
 // Local Variables:

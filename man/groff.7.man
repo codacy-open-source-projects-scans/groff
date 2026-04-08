@@ -580,6 +580,10 @@ request;
 .request eo
 disables escape sequence recognition.
 .
+For clarity,
+in this document we depict escape sequences
+with the default escape character.
+.
 Use the
 .esc [rs]
 special character escape sequence to format a backslash glyph,
@@ -1403,9 +1407,10 @@ tests its argument for validity as a numeric expression.
 .ne 2v
 .P
 A register interpolated as an operand in a numeric expression must have
-an Arabic format;
+an Arabic format
+(see subsection \[lq]Assigning register formats\[rq] below);
 luckily,
-this is the default.\" @xref{Assigning Register Formats}.
+this is the default.
 .
 .
 .P
@@ -1563,25 +1568,27 @@ Break suppression is its sole behavioral distinction.
 Employing the no-break control character
 to invoke requests that don't cause breaks
 is harmless but poor style.
+.\" @xref{Manipulating Filling and Adjustment}.
 .
 .
 .P
-The control character
-.RB \[lq] .\& \[rq]
-and the no-break control character
-.RB \[lq] \|\[aq]\| \[rq]
-can be changed with the
+The
 .B cc
 and
 .B c2
-requests,
-respectively.
+requests respectively change
+the control
+.RB \[lq] .\& \[rq]
+and no-break control
+.RB \[lq] \|\[aq]\| \[rq]
+characters to any desired ordinary character
+(see section \[lq]Identifiers\[rq] above),
+but must be distinct.
 .
-Within a macro definition,
-.\" you might wish to know
-register
+While a macro definition is interpreted,
+the
 .B .br
-indicates the control character used to call it.
+register permits discovery of the control character used in the call.
 .\" END Keep (roughly) parallel with groff.texi node "Control
 .\" Characters".
 .
@@ -4884,6 +4891,11 @@ See
 .BR fschar .
 .
 .TPx
+.REQ .rhw
+Empty the current hyphenation language's exception word list
+of all entries populated by the input.
+.
+.TPx
 .REQ .rj
 Break,
 right-align the output of the next productive input line without
@@ -6764,15 +6776,15 @@ GNU
 .I troff \" GNU
 closes the polygon by drawing a line from
 .RI ( hn ,\~ vn )
-back to the initial drawing position.
+back to the initial drawing position
+and leaves the drawing position there.
+.\" XXX: That would be the "STUPID_DRAWING_POSITIONING" complained of in
+.\" src/libs/libdriver/input.cpp.
 .
-.\" XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
-.\" src/libs/libdriver/input.cpp.  It is neither the rightmost point
-.\" of the figure nor the initial drawing position that GNU troff
-.\" automatically returned to close the figure.
-Afterward,
-the drawing position is left at
-.RI ( hn ,\~ vn ).
+(DWB
+and Heirloom Doctools
+.IR troff s \" DWB, Heirloom
+do neither.)
 .
 .TP
 .BI \[rs]D\[aq]P\~ "h1 v1"\~\c
@@ -7062,6 +7074,11 @@ You can also define your own.
 See section \[lq]Identifiers\[rq] above
 regarding the construction of valid names for registers.
 .
+The register name space is separate from that used for requests,
+macros,
+strings,
+and diversions.
+.
 .
 .P
 Each register
@@ -7103,29 +7120,123 @@ these features are called
 .
 (A negative auto-increment can be
 considered an \[lq]auto-decrement\[rq].)
+.\" END Keep (roughly) parallel with groff.texi node "Registers".
 .
 .
 .P
 Many predefined registers are available.
 .
-The following presentation uses
-register interpolation syntax
-.BI \[rs]n[ name ]
+A register synopsis in this document uses interpolation syntax
+.BI \[rs]n[ ident ]
 to refer to a register
-.I name
-to clearly distinguish it from a string or request
-.IR name ;
+.I ident
+to distinguish it from a
+macro,
+string,
+diversion,
+or request
+.IR ident ;
 the symbols
-.B \[rs]n[]
+.RB \[lq] \[rs]n[] \[rq]
 are
 .I not
-part of the register name.
+part of the register's identifier.
 .
-The register name space is separate from that used for requests,
-macros,
-strings,
-and diversions.
-.\" END Keep (roughly) parallel with groff.texi node "Registers".
+.
+.\" ====================================================================
+.SS "Assigning register formats"
+.\" ====================================================================
+.
+.\" BEGIN Keep (roughly) parallel with groff.texi node "Assigning
+.\" Register Formats".
+The
+.B af
+request applies a number format to a register.
+.
+The default format for all writable registers is
+.RB \[lq] 0 \[rq].
+.
+Specifying an unrecognized format is an error.
+.
+Valid formats are as follows.
+.
+.
+.TP
+.BR 0 \|.\|.\|.
+Arabic numerals 0,
+1,
+2,
+and so on.
+Any decimal digit is equivalent to
+.RB \[lq] 0 \[rq];
+the formatter merely counts the digits specified.
+.
+Multiple Arabic numerals in
+the format
+cause interpolations to be zero-padded on the left
+if necessary
+to at least as many digits as specified
+(interpolations never truncate a register value).
+.
+.
+.TP
+.B I
+Uppercase Roman numerals:
+0,
+I,
+II,
+III,
+IV,\~.\|.\|.
+.
+.
+.TP
+.B i
+Lowercase Roman numerals:
+0,
+i,
+ii,
+iii,
+iv,\~.\|.\|.
+.
+.
+.TP
+.B A
+Uppercase letters:
+0,
+A,
+B,
+C,
+\&.\|.\|.,\~Z,
+AA,
+AB,\~.\|.\|.
+.
+.
+.TP
+.B a
+Lowercase letters:
+0,
+a,
+b,
+c,
+\&.\|.\|.,\~z,
+aa,
+ab,\~.\|.\|.
+.
+.
+.P
+The formatter interpolates zero values as
+.RB \[lq] 0 \[rq]
+and prefixes negative quantities with
+.RB \[lq] \- \[rq]
+irrespective of format.
+.
+In Arabic formats,
+the sign supplements the field width.
+.
+Assigning a format to a nonexistent register
+creates it with a zero value.
+.\" END Keep (roughly) parallel with groff.texi node "Assigning
+.\" Register Formats".
 .
 .
 .\" ====================================================================

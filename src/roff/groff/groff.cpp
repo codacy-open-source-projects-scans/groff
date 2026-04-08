@@ -125,7 +125,7 @@ static char *xstrdup(const char *s) {
     return const_cast<char *>(s);
   char *str = strdup(s);
   if (0 /* nullptr */ == str)
-    fatal("unable to copy string: %1", strerror(errno));
+    fatal("cannot copy string: %1", strerror(errno));
   return str;
 }
 

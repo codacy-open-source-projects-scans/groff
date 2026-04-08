@@ -18,7 +18,7 @@ troff
 *  GNU troff, the formatter, now employs the unusual Roman numerals "W"
    and "Z" of AT&T troff only in compatibility mode.
 
-*  The "delim", "syntax", and "escape" categories are enabled by
+*  The "delim", "syntax", and "escape" warning categories are enabled by
    default.
 
 *  The `trf` (transparent file throughput) request now discards input
@@ -43,16 +43,20 @@ troff
    the request (and issues a warning in category "range"), leaving the
    operand (first request argument) unchanged instead of emptying it.
 
+*  A new request, `rhw`, clears the current hyphenation language's list
+   of user-defined hyphenation exception words.  Those supplied by files
+   like "tmac/hyphenex.{cs,en,pl}" are retained.
+
 Macro packages
 --------------
 
 *  The m (mm) macro package's `IA` and `WA` macros--used only with the
-   "letter" document type configure by calling the `LT` macro--no longer
-   disables the escape character, and their counterparts `IE` and `WE`
-   no longer reënable it.  This change makes groff mm consistent with
-   DWB 3.3 mm.  If you require the previous groff mm behavior, consider
-   writing and using wrapper macros such as the following in your
-   document.
+   "letter" document type configured by calling the `LT` macro--no
+   longer disable the escape character, and their counterparts `IE` and
+   `WE` no longer reënable it.  This change makes groff mm consistent
+   with DWB 3.3 mm.  If you require the previous groff mm behavior,
+   consider writing and using wrapper macros such as the following in
+   your document.
 
    .de iA
    .IA

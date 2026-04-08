@@ -167,6 +167,7 @@ int get_param(const char *name)
       return *(param_table[i].ptr);
   assert(0 == "attempted to access parameter not in table");
   fatal("internal error: unrecognized parameter name '%1'", name);
+  return 0; // NOTREACHED
 }
 
 void init_param_table()

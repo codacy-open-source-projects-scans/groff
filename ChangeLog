@@ -1,3 +1,325 @@
+2026-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/eqn/box.cpp (get_param): Add strictly unnecessary
+	`return 0` statement with lint-style `NOTREACHED` comment to
+	quieten `-Wreturn-type` warning on GCC 9.5.0, which apparently
+	doesn't do deep enough control-flow analysis to figure that out
+	for itself.
+
+2026-04-03  Johannes Altmanninger <aclopte@gmail.com>
+
+	* src/preproc/eqn/neqn.sh:
+	* src/roff/nroff/nroff.sh: Use a subshell instead of the user's
+	login shell `$SHELL` to evaluate features of the running shell.
+	The login shell need not be a POSIX shell script interpreter; it
+	could be tcsh(1), rc(1), fish(1), or something exotic.
+	* src/roff/nroff/nroff.sh: Update fatal error diagnostic
+	accordingly.
+
+	Fixes <https://savannah.gnu.org/bugs/?68212>.  [Problem
+	introduced by me in commit c34c6cc58c, 2024-12-07. --GBR]
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/groff.cpp (xstrdup):
+	* src/roff/groff/pipeline.c (sbasename): Tweak wording of error
+	diagnostics; favor "cannot" over "unable to".
+
+	Continues the long process of fixing Savannah #66519.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man,mdoc]: Apply new `rhw` request, clearing the user-defined
+	hyphenation exception word list with every new man(7) or mdoc(7)
+	document.
+
+	* tmac/an.tmac (TH):
+	* tmac/doc-old.tmac (Dd):
+	* tmac/mdoc/doc-common (Dd): Do it.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Implement `rhw` request removing
+	user-defined hyphenation exception words.
+	(remove_hyphenation_exception_words_request): New function
+	empties the current language's hyphenation exception word
+	dictionary of all entries populated by the input.  (We retain
+	those supplied by files like "tmac/hyphenex.{cs,en,pl}".)
+	(init_hyphenation_pattern_requests): Wire up `rhw` request name
+	to `remove_hyphenation_exception_words_request()`.
+
+	* src/roff/groff/tests/rhw-request-works.sh: Test it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	* doc/groff.texi.in (Manipulating Hyphenation):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Document it.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?64478>.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/dictionary.cpp (dictionary_iterator::get):
+	Accept a null pointer as second argument, to handle situation
+	where the caller is interested only in the dictionary's keys.
+	Dereference the pointer only if that argument is not null.
+	{There was no check for this previously; were I not making this
+	change, I'd be assert(3)ing that instead.}
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Promote `process_input_stack()`'s
+	local `can_accept_control_character` from local to global.
+	(interpolate_macro_or_invoke_request): Drop early `return` when
+	no invokable request or callable macro exists on control line.
+	Add assert(3)ion at end of function to enforce invariant: once
+	we've processed a control line, either
+	`can_accept_control_character` must be true or the token pending
+	on the input stream must represent the end of input.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(do_define_macro): Rename `reading_beginning_of_input_line`
+	local to `can_terminate_definition_with_dot`.
+	(transparent_throughput_file_request): Rename
+	`reading_beginning_of_input_line` local to
+	`is_at_beginning_of_input_line`.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_define_macro)
+	(transparent_throughput_file_request): Fix code style nits.
+	Arrange equality comparisons to avoid inadvertent lvalue
+	assignment.  Parenthesize formally complex expressions.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (process_input_stack): Slightly
+	refactor.  Align element type of templated STL `stack` container
+	with the local variable representing its top: demote from `int`
+	to `bool`.  Rename the stack object from `trap_bol_stack` to
+	`trap_accepting_control_character_stack` and the (effective) top
+	from `reading_beginning_of_input_line` to
+	`can_accept_control_character`.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.  Resequence
+	prototypes and forward declarations.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Slightly refactor.  Retype
+	`default_buffer_size` from `int` to more idiomatic `size_t`.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(interpolate_macro): Rename this...
+	(interpolate_macro_or_invoke_request): ...to this.
+	(do_request, process_input_stack, do_define_macro): Update call
+	sites.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (decode_escape_sequence_arguments):
+	Revise wording of warning diagnostic.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename global
+	`while_depth` to `while_loop_depth`.
+	(while_request, while_break_flag, while_continue_request):
+	Update dereference sites.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (make_glyph_node): Revise wording of
+	warning diagnostic.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (embolden_font_request): Throw warning
+	in category "style" if request arguments are ambiguous.  This
+	could arguably be made an error since the ambiguity is inherent;
+	it shows up in Kernighan troff (see CSTR #54, 1992 revision).
+	But let's try a style warning first.  See Savannah #62776.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (translate_font)
+	(mount_font_at_position)
+	(associate_style_with_font_position)
+	(select_underline_font)
+	(define_font_specific_character)
+	(remove_font_specific_character)
+	(set_font_specific_special_fonts)
+	(set_special_fonts)
+	(zoom_font)
+	(embolden_font)
+	(configure_track_kerning)
+	(constantly_space_font)
+	(set_ligature_mode)
+	(set_kerning_mode): Rename these...
+	(translate_font_request)
+	(mount_font_at_position_request)
+	(associate_style_with_font_position_request)
+	(select_underline_font_request)
+	(define_font_specific_character_request)
+	(remove_font_specific_character_request)
+	(set_font_specific_special_fonts_request)
+	(set_special_fonts_request)
+	(zoom_font_request)
+	(embolden_font_request)
+	(configure_track_kerning_request)
+	(constantly_space_font_request)
+	(set_ligature_mode_request)
+	(set_kerning_mode_request): ...to these, following a developing
+	convention of naming request handlers to end with "_request".
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp
+	(print_font_mounting_position_request): Declare as `static`
+	since it does not require external linkage.
+
+2026-04-03  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/reg.cpp (number_value_to_ascii): When
+	diagnosing a value beyond representatable Roman numeral range,
+	disclose the specific format demanded.  Also tighten message
+	wording.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Slightly refactor.  Make request
+	handler functions more consistent such that calling
+	`skip_line()` is the last thing they do before returning.  The
+	goal is to build confidence that request handlers reliably leave
+	the input stream in a well-defined state.  Doing so would
+	prevent several bugs I introduced (and resolved, with help from
+	fellow developers) in the groff 1.23.0 development cycle, but
+	also cases like Savannah #68064, which lurked insidiously for
+	about 35 years.
+	(read_hyphenation_patterns_from_file): Stop calling `tok.next()`
+	before returning.
+	(load_hyphenation_patterns_from_file_request)
+	(append_hyphenation_patterns_from_file_request): Call
+	`skip_line()` before returning.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (print_environment_request): Declare as
+	`static` since it does not require external linkage.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Trivially refactor.
+	(print_hyphenation_exceptions)
+	(load_hyphenation_patterns_from_file)
+	(append_hyphenation_patterns_from_file): Rename these...
+	(print_hyphenation_exceptions_request)
+	(load_hyphenation_patterns_from_file_request)
+	(append_hyphenation_patterns_from_file_request): ...to these,
+	following a developing convention of naming request handlers to
+	end with "_request".
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Rationalize header inclusions.  Use
+	preprocessor to include <assert.h> header, which declares the
+	`assert()` macro used in this file.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/dictionary.h (object_dictionary_iterator::get):
+	Use explicit `reinterpret_cast` C++ operator instead of C-style
+	cast.  Annotate why we use this footgun.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (print_hyphenation_exceptions): Skip
+	the remainder of the input line if no hyphenation language is
+	configured.
+
+	Fixes <https://savannah.gnu.org/bugs/?68203>.  Problem
+	introduced by me in commit e05fb6b377, 2024-11-07 (itself a fix
+	for a SEGV under the same circumstance).
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Regression-test Savannah #68203.
+
+	* src/roff/groff/tests/\
+	phw-request-skips-line-if-no-hyph-lang.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Continue interpreting
+	any arguments subsequent to an invalid one.  Doing so is more
+	consistent with AT&T troff (tested: DWB 3.3, Plan 9 from User
+	Space, Heirloom Doctools, Solaris).  Convert diagnostic emitted
+	in this circumstance from an error to a warning in category
+	"char".
+
+	Fixes <https://savannah.gnu.org/bugs/?68202>.  Problem appears
+	to date back to groff's birth.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Regression-test Savannah #68202.
+
+	* src/roff/groff/tests/\
+	hw-request-skips-only-invalid-arguments.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Stop throwing
+	assert(3)ion if an argument contains a non-character.  The
+	assertion is invalidated by plausible user input like:
+	  `.hw baz\%qux`
+	and similar.
+
+	Begins fixing <https://savannah.gnu.org/bugs/?68202>.  Problem
+	introduced by me in commit effd6835dc, 19 November.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Trivially refactor.
+
+	* tmac/an.tmac (TH, AT, UC, PT, BT)
+	(an*abbreviate-page-identifier, an*abbreviate-inner-footer):
+	Rename `an-extra[123]` strings to `an*extra[123]`.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[man]: Trivially refactor.
+
+	* tmac/an.tmac (an-style-warn): Rename this...
+	(an*style-warn): ...to this.
+	(an-deprecation-warn, an-blank-line-trap, an-leading-space-trap)
+	(TH, BI, BR, IB, IR, RB, RI, RE, OP, EX, EE, MR): Update call
+	sites.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (BI, BR, IB, IR, RB, RI): Trivially refactor;
+	rename `an-result` (a temporary string into these macros'
+	arguments are catenated with font style changes and italic
+	corrections as appropriate) to `an*result`.
+
+2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac: Trivially refactor; rename `an-msg` (a temporary
+	string into which a diagnostic message is constructed) to
+	`an*msg`.
+
 2026-03-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an.tmac: Ensure that the register

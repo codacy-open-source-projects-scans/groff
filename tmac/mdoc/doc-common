@@ -312,6 +312,9 @@
 .  rr HY
 .  rm AD
 .
+.  \" ...and clear any hyphenation exception words (groff 1.25).
+.  if d rhw .rhw
+.
 .  doc-reset-titles
 .  doc-reset-hyphenation-mode \n[andoc*HY]
 .  doc-reset-adjustment-mode \*[andoc*AD]

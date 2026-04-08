@@ -1,4 +1,5 @@
 # Copyright 2011-2025 Free Software Foundation, Inc.
+#           2023-2025 G. Branden Robinson
 #
 # Written by Deri James <deri@chuzzlewit.myzen.co.uk>
 # Automake migration by Bertrand Garrigues
@@ -267,7 +268,6 @@ font_devpdf_TESTS = \
 TESTS += $(font_devpdf_TESTS)
 MOSTLYCLEANFILES += $(font_devpdf_TESTS)
 EXTRA_DIST += $(font_devpdf_default_test) $(font_devpdf_urw_test)
-
 
 # Local Variables:
 # mode: makefile-automake

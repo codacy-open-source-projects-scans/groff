@@ -81,22 +81,24 @@ by the
 .I troff \" generic
 formatter.
 .
-We also note here differences arising from
+We also note differences arising from
 .IR groff 's
 implementation of AT&T
 .I troff \" AT&T
-features.
-.
-The following discussion assumes familiarity with those features;
+features,
+and assume
+familiarity with them;
 see
 .MR roff @MAN7EXT@
 for background.
 .
 GNU
 .I troff \" GNU
-can operate in a manner that increases support
-for documents written for AT&T
-.IR troff ; \" AT&T
+can operate in a manner that better supports
+documents expecting only
+AT&T
+.I troff \" AT&T
+as the formatter;
 see section \[lq]Compatibility mode\[rq] below.
 .
 .
@@ -973,17 +975,14 @@ GNU
 closes the polygon by drawing a line from
 .RI ( hn ,\~ vn )
 back to the initial drawing position;
-DWB and Heirloom
-.IR troff s \" DWB, Heirloom
-do not.
+and leaves the drawing position there.
+.\" XXX: That would be the "STUPID_DRAWING_POSITIONING" complained of in
+.\" src/libs/libdriver/input.cpp.
 .
-.\" XXX: This would be the "STUPID_DRAWING_POSITIONING" complained of in
-.\" src/libs/libdriver/input.cpp.  It is neither the rightmost point
-.\" of the figure nor the initial drawing position that GNU troff
-.\" automatically returned to close the figure.
-Afterward,
-the drawing position is left at
-.RI ( hn ,\~ vn ).
+(DWB
+and Heirloom Doctools
+.IR troff s \" DWB, Heirloom
+do neither.)
 .
 .
 .TP
@@ -4193,6 +4192,12 @@ See
 .
 .
 .TP
+.B .rhw
+Empty the current hyphenation language's exception word list
+of all entries populated by the input.
+.
+.
+.TP
 .BR .rj\~ [\c
 .IR n ]
 Break,
@@ -4933,15 +4938,23 @@ Their names often correspond to the requests that affect them.
 .
 .TP 14n \" "\n[.hydefault]" + 2n
 .B \[rs]n[.br]
-Within a macro definition,
-interpolate\~1
-if the macro is called with the \[lq]normal\[rq] control character
-(\[lq].\[rq] by default),
+Interpolate\~1
+if the currently executing macro was called
+using the normal control character
 and\~0 otherwise.
 .
-This facility allows requests to be reliably wrapped by a macro.
+If a macro is interpolated as a string,
+the
+.B .br
+register inherits its value
+from the context of the string interpolation.
+.\" @footnote{@xref{Strings}.}
 .
-Interpolating the
+Use the
+.B .br
+register to reliably wrap or intercept requests that imply breaks.
+.
+Testing the
 .B .br
 register outside of a macro definition makes no sense.
 .
@@ -6620,6 +6633,16 @@ does not.
 GNU
 .I troff \" GNU
 rejects C0 controls in identifiers with an error diagnostic.
+.
+.
+.P
+In
+DWB and Plan\~9 from User Space
+.I troff, \" DWB, Plan 9
+spaces or tabs between the ordinary control character and a
+.RB \[lq] .\& \[rq]
+or macro name that would normally end a macro definition
+prevent it from doing so.
 .
 .
 .P

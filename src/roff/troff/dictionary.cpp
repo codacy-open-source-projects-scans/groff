@@ -134,7 +134,8 @@ bool dictionary_iterator::get(symbol *sp, void **vp)
   for (; i < dict->size; i++)
     if (dict->table[i].v) {
       *sp = dict->table[i].s;
-      *vp = dict->table[i].v;
+      if (vp != 0 /* nullptr */)
+	*vp = dict->table[i].v;
       i++;
       return true;
     }

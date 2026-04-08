@@ -530,55 +530,6 @@ and an error exit status from
 .
 .
 .\" ====================================================================
-.SS "Register format"
-.\" ====================================================================
-.
-A register is interpolated using Arabic numerals if no other format has
-been assigned to it.
-.
-Assign a format to a register with the
-.B af
-request.
-.
-.
-.RS
-.LP
-.BI .af\~ "R c"
-.RE
-.
-.
-.LP
-.IR R \~is
-the name of the register,
-and
-.IR c \~is
-the format.
-.
-If
-.IR c \~is
-a sequence of Arabic numerals,
-their quantity defines a zero-padded minimum width for the interpolated
-register value.
-.
-.
-.RS
-.LP
-.TS
-tab(@);
-lb lb
-l l.
-Form@Sequence
-1@0, 1, 2, 3, .\|.\|., 10, .\|.\|.
-001@000, 001, 002, 003, .\|.\|., 1000, .\|.\|.
-i@0, i, ii, iii, iv, .\|.\|.
-I@0, I, II, III, IV, .\|.\|.
-a@0, a, b, c, .\|.\|., z, aa, ab, .\|.\|.
-A@0, A, B, C, .\|.\|., Z, AA, AB, .\|.\|.
-.TE
-.RE
-.
-.
-.\" ====================================================================
 .SS Fonts
 .\" ====================================================================
 .

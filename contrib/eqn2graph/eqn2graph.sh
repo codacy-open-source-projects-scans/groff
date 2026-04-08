@@ -35,10 +35,7 @@ badshell=yes
 # Solaris 10 /bin/sh is so wretched that it not only doesn't support
 # standard parameter expansion, but it also writes diagnostic messages
 # to the standard output instead of standard error.
-if [ -n "$SHELL" ]
-then
-  "$SHELL" -c 'prog=${0##*/}' >/dev/null 2>&1 && badshell=
-fi
+(prog=${0##*/}) >/dev/null 2>&1 && badshell=
 
 if [ -n "$badshell" ]
 then

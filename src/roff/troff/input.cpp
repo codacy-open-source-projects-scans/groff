@@ -100,10 +100,13 @@ extern "C" const char *program_name;
 extern "C" const char *Version_string;
 
 // initial size for input buffers that need to grow arbitrarily
-static const int default_buffer_size = 16;
+static const size_t default_buffer_size = 16;
 
+// If we ever support this feature, these declarations should move into
+// a new "column.h" file.
 #ifdef COLUMN
 void init_column_requests();
+void vjustify();
 #endif /* COLUMN */
 
 // forward declarations
@@ -111,12 +114,12 @@ static node *read_drawing_command();
 static void read_drawing_command_color_arguments(token &);
 static void push_token(const token &);
 static void unsafe_transparent_throughput_file_request();
-#ifdef COLUMN
-void vjustify();
-#endif /* COLUMN */
 static void transparent_throughput_file_request();
+static void enable_warning(const char *);
+static void disable_warning(const char *);
 
 token tok;
+static bool can_accept_control_character = true;
 bool was_invoked_with_regular_control_character = false;
 bool using_character_classes = false;
 static bool permit_color_output = true;
@@ -130,9 +133,6 @@ static unsigned int desired_warnings = DEFAULT_WARNING_CATEGORY_SET;
 static bool want_errors_inhibited = false;
 static bool want_input_ignored = false;
 
-static void enable_warning(const char *);
-static void disable_warning(const char *);
-
 static symbol end_of_input_macro_name;
 static symbol blank_line_macro_name;
 static symbol leading_spaces_macro_name;
@@ -144,6 +144,7 @@ bool is_writing_html = false;
 static int suppression_level = 0;	// depth of nested \O escapes
 
 bool in_nroff_mode = false;
+// TODO: Kill this off in groff 1.24.0 release + 2 years.  See env.cpp.
 bool is_device_ps_or_pdf = false;
 
 // Keep track of whether \f, \F, \D'F...', \H, \m, \M, \O[345], \R, \s,
@@ -186,7 +187,7 @@ static symbol read_escape_parameter(read_mode = NO_ARGS);
 static symbol read_long_escape_parameters(read_mode = NO_ARGS);
 static void interpolate_string(symbol);
 static void interpolate_string_with_args(symbol);
-static void interpolate_macro(symbol, bool = false);
+static void interpolate_macro_or_invoke_request(symbol, bool = false);
 static void interpolate_number_format(symbol);
 static void interpolate_environment_variable(symbol);
 
@@ -3417,7 +3418,7 @@ void do_request()
   if (nm.is_null())
     skip_line();
   else
-    interpolate_macro(nm, true /* don't want next token */);
+    interpolate_macro_or_invoke_request(nm, true /* don't want next token */);
   assert(!want_att_compat_stack.empty());
   want_att_compat = want_att_compat_stack.top();
   want_att_compat_stack.pop();
@@ -3524,15 +3525,14 @@ static int leading_spaces_space = 0;
 
 void process_input_stack()
 {
-  std::stack<int> trap_bol_stack;
-  bool reading_beginning_of_input_line = true;
+  std::stack<bool> trap_accepting_control_character_stack;
   for (;;) {
     bool ignore_next_token = false;
     switch (tok.type) {
     case token::TOKEN_CHAR:
       {
 	unsigned char ch = tok.c;
-	if (reading_beginning_of_input_line && !have_formattable_input
+	if (can_accept_control_character && !have_formattable_input
 	    && (curenv->get_control_character() == ch
 		|| curenv->get_no_break_control_character() == ch)) {
 	  was_invoked_with_regular_control_character
@@ -3561,7 +3561,7 @@ void process_input_stack()
 	  if (nm.is_null())
 	    skip_line();
 	  else {
-	    interpolate_macro(nm);
+	    interpolate_macro_or_invoke_request(nm);
 #if defined(DEBUGGING)
 	    if (want_html_debugging) {
 	      fprintf(stderr, "finished interpreting [%s] and environment state is\n", nm.contents());
@@ -3593,14 +3593,14 @@ void process_input_stack()
 	      ch = tok.c;
 	    }
 	    ignore_next_token = true;
-	    reading_beginning_of_input_line = false;
+	    can_accept_control_character = false;
 	  }
 	}
 	break;
       }
     case token::TOKEN_TRANSPARENT:
       {
-	if (reading_beginning_of_input_line) {
+	if (can_accept_control_character) {
 	  if (possibly_handle_first_page_transition())
 	    ;
 	  else {
@@ -3623,13 +3623,13 @@ void process_input_stack()
       }
     case token::TOKEN_NEWLINE:
       {
-	if (reading_beginning_of_input_line
+	if (can_accept_control_character
 	    && !have_formattable_input_on_interrupted_line
 	    && !curenv->get_was_previous_line_interrupted())
 	  trapping_blank_line();
 	else {
 	  curenv->newline();
-	  reading_beginning_of_input_line = true;
+	  can_accept_control_character = true;
 	}
 	break;
       }
@@ -3667,7 +3667,7 @@ void process_input_stack()
 		  tok.description());
 	else if (possibly_handle_first_page_transition())
 	  ;
-	else if (reading_beginning_of_input_line
+	else if (can_accept_control_character
 		 && !curenv->get_was_previous_line_interrupted()) {
 	  int nspaces = 0;
 	  // save space_width now so that it isn't changed by \f or \s
@@ -3690,12 +3690,12 @@ void process_input_stack()
 	      curenv->add_node(new hmotion_node(space_width * nspaces,
 						curenv->get_fill_color()));
 	    }
-	    reading_beginning_of_input_line = false;
+	    can_accept_control_character = false;
 	  }
 	}
 	else {
 	  curenv->space();
-	  reading_beginning_of_input_line = false;
+	  can_accept_control_character = false;
 	}
 	break;
       }
@@ -3716,44 +3716,48 @@ void process_input_stack()
       }
       else if (possibly_handle_first_page_transition())
 	;
-      else if (tok.nd->need_reread(&reading_beginning_of_input_line)) {
+      else if (tok.nd->need_reread(&can_accept_control_character)) {
 	delete tok.nd;
 	tok.nd = 0;
       }
       else {
 	curenv->add_node(tok.nd);
 	tok.nd = 0;
-	reading_beginning_of_input_line = false;
+	can_accept_control_character = false;
 	curenv->possibly_break_line(true /* must break here */);
       }
       break;
     case token::TOKEN_PAGE_EJECTOR:
       {
 	continue_page_eject();
-	// I think we just want to preserve bol.
-	// reading_beginning_of_input_line = true;
+	// JJC noted circa 1990 that we probably want to leave control
+	// character acceptance state (`can_accept_control_character`)
+	// as-is for this case.  It might be worth experimenting to
+	// verify that.  --GBR
 	break;
       }
     case token::TOKEN_BEGIN_TRAP:
       {
-	trap_bol_stack.push(reading_beginning_of_input_line);
-	reading_beginning_of_input_line = true;
+	trap_accepting_control_character_stack
+	  .push(can_accept_control_character);
+	can_accept_control_character = true;
 	have_formattable_input = false;
 	break;
       }
     case token::TOKEN_END_TRAP:
       {
-	if (trap_bol_stack.empty())
+	if (trap_accepting_control_character_stack.empty())
 	  error("spurious end trap token detected!");
 	else {
-	  reading_beginning_of_input_line = trap_bol_stack.top();
-	  trap_bol_stack.pop();
+	  can_accept_control_character
+	    = trap_accepting_control_character_stack.top();
+	  trap_accepting_control_character_stack.pop();
 	}
 	have_formattable_input = false;
 
-	/* I'm not totally happy about this.  But I can't think of any other
-	  way to do it.  Doing an output_pending_lines() whenever a
-	  TOKEN_END_TRAP is detected doesn't work: for example,
+	/* I'm not totally happy about this.  But I can't think of any
+	   other way to do it.  Doing an output_pending_lines() whenever
+	   a TOKEN_END_TRAP is detected doesn't work: for example,
 
 	  .wh -1i x
 	  .de x
@@ -3769,9 +3773,9 @@ void process_input_stack()
 	  a\%very\%very\%long\%word
 
 	  will print all but the first lines from the word immediately
-	  after the footer, rather than on the next page. */
+	  after the footer, rather than on the next page.  --JJC */
 
-	if (trap_bol_stack.empty())
+	if (trap_accepting_control_character_stack.empty())
 	  curenv->output_pending_lines();
 	break;
       }
@@ -3783,13 +3787,13 @@ void process_input_stack()
 		" line continuation escape sequence",
 		tok.description());
       else {
-	reading_beginning_of_input_line = false;
+	can_accept_control_character = false;
 	tok.process();
       }
       break;
     default:
       {
-	reading_beginning_of_input_line = false;
+	can_accept_control_character = false;
 	tok.process();
 	break;
       }
@@ -4635,7 +4639,8 @@ bool operator==(const macro &m1, const macro &m2)
   return true;
 }
 
-static void interpolate_macro(symbol nm, bool do_not_want_next_token)
+static void interpolate_macro_or_invoke_request(symbol nm,
+	      bool do_not_want_next_token)
 {
   request_or_macro *p
     = static_cast<request_or_macro *>(request_dictionary.lookup(nm));
@@ -4667,10 +4672,11 @@ static void interpolate_macro(symbol nm, bool do_not_want_next_token)
   }
   if (p != 0 /* nullptr */)
     p->invoke(nm, do_not_want_next_token);
-  else {
+  else
     skip_line();
-    return;
-  }
+  assert(can_accept_control_character || tok.is_eof());
+  if (tok.is_newline())
+    can_accept_control_character = true;
 }
 
 static void decode_macro_call_arguments(macro_iterator *mi)
@@ -4766,8 +4772,8 @@ static void decode_escape_sequence_arguments(macro_iterator *mi)
 	else {
 	  if (c == '\t' && quote_input_level == 0 && !was_warned)
 	  {
-	    warning(WARN_TAB, "tab character in parameterized escape"
-		    " sequence");
+	    warning(WARN_TAB, "a tab character is invalid in a"
+		    " parameterized escape sequence");
 	    was_warned = true;
 	  }
 	  arg.append(c);
@@ -5513,13 +5519,13 @@ static void do_define_macro(define_mode mode, calling_mode calling,
     if (mm != 0 /* nullptr */ && (DEFINE_APPEND == mode))
       mac = *mm;
   }
-  bool reading_beginning_of_input_line = true;
+  bool can_terminate_definition_with_dot = true;
   if (COMP_DISABLE == comp)
     mac.append(PUSH_GROFF_MODE);
   else if (COMP_ENABLE == comp)
     mac.append(PUSH_COMP_MODE);
   for (;;) {
-    if (c == '\n')
+    if ('\n' == c)
       mac.clear_string_flag();
     while (ESCAPE_NEWLINE == c) {
       if ((DEFINE_NORMAL == mode) || (DEFINE_APPEND == mode))
@@ -5527,7 +5533,7 @@ static void do_define_macro(define_mode mode, calling_mode calling,
 	mac.append(static_cast<unsigned char>(c));
       c = read_char_in_copy_mode(&n, true /* is_defining */);
     }
-    if (reading_beginning_of_input_line && (c == '.')) {
+    if (can_terminate_definition_with_dot && ('.' == c)) {
       const char *s = term.contents();
       int d = '\0';
       // see if it matches term
@@ -5562,7 +5568,7 @@ static void do_define_macro(define_mode mode, calling_mode calling,
 	}
 	if (term != dot_symbol) {
 	  want_input_ignored = false;
-	  interpolate_macro(term);
+	  interpolate_macro_or_invoke_request(term);
 	}
 	else
 	  skip_line();
@@ -5605,7 +5611,7 @@ static void do_define_macro(define_mode mode, calling_mode calling,
 	// TODO: grochar; may need NFD decomposition and UTF-8 encoding
 	mac.append(static_cast<unsigned char>(c));
     }
-    reading_beginning_of_input_line = (c == '\n');
+    can_terminate_definition_with_dot = ('\n' == c);
     c = read_char_in_copy_mode(&n, true /* is_defining */);
   }
 }
@@ -7395,7 +7401,7 @@ static void else_request()
   }
 }
 
-static int while_depth = 0;
+static int while_loop_depth = 0;
 static bool want_loop_break = false;
 
 static void while_request()
@@ -7441,7 +7447,7 @@ static void while_request()
   if (level != 0)
     error("unbalanced brace escape sequences");
   else {
-    while_depth++;
+    while_loop_depth++;
     input_stack::add_boundary();
     for (;;) {
       input_stack::push(new string_iterator(mac, "while loop"));
@@ -7458,14 +7464,14 @@ static void while_request()
       }
     }
     input_stack::remove_boundary();
-    while_depth--;
+    while_loop_depth--;
   }
   tok.next();
 }
 
 static void while_break_request()
 {
-  if (!while_depth) {
+  if (!while_loop_depth) {
     error("cannot 'break' when not in a 'while' loop");
     skip_line();
   }
@@ -7479,7 +7485,7 @@ static void while_break_request()
 
 static void while_continue_request()
 {
-  if (!while_depth) {
+  if (!while_loop_depth) {
     error("cannot 'continue' when not in a 'while' loop");
     skip_line();
   }
@@ -9515,6 +9521,7 @@ void system_request()
   else
     system_status = system(command);
   delete[] command;
+  // XXX: Why not `skip_line()`?
   tok.next();
 }
 
@@ -9541,6 +9548,7 @@ static void unsafe_transparent_throughput_file_request()
   if (filename != 0 /* nullptr */)
     curdiv->copy_file(filename);
   // TODO: Add `filename` to file name set.
+  // XXX: Why not `skip_line()`?
   tok.next();
 }
 
@@ -9590,7 +9598,7 @@ static void transparent_throughput_file_request()
       if (curdiv != topdiv)
 	curdiv->copy_file(filename);
       else {
-	bool reading_beginning_of_input_line = true;
+	bool is_at_beginning_of_input_line = true;
 	for (;;) {
 	  int c = getc(fp);
 	  if (EOF == c)
@@ -9600,10 +9608,11 @@ static void transparent_throughput_file_request()
 		    " transparent file throughput; ignoring", int(c));
 	  else {
 	    curdiv->transparent_output(c);
-	    reading_beginning_of_input_line = c == '\n';
+	    is_at_beginning_of_input_line = ('\n' == c);
 	  }
 	}
-	if (!reading_beginning_of_input_line)
+	// Add newline only if throughput file didn't end with one.
+	if (!is_at_beginning_of_input_line)
 	  curdiv->transparent_output('\n');
 	fclose(fp);
       }

@@ -27,10 +27,7 @@ badshell=yes
 # Solaris 10 /bin/sh is so wretched that it not only doesn't support
 # standard parameter expansion, but it also writes diagnostic messages
 # to the standard output instead of standard error.
-if [ -n "$SHELL" ]
-then
-  "$SHELL" -c 'prog=${0##*/}' >/dev/null 2>&1 && badshell=
-fi
+(prog=${0##*/}) >/dev/null 2>&1 && badshell=
 
 if [ -n "$badshell" ]
 then
@@ -73,10 +70,8 @@ do
       -[abCEikpRStUvzZ]*)
         if test -n "$badshell"
         then
-          # POSIX doesn't actually require $SHELL, but fortunately at
-          # least one craptastic non-conforming shell offers it.
           echo "$prog: option cluster '$thisarg' not supported with" \
-            "POSIX-non-conforming shell '$SHELL'" >&2
+            "POSIX-non-conforming shell" >&2
           exit 2
         fi
         remainder=${thisarg#-?}
@@ -231,7 +226,7 @@ export GROFF_BIN_PATH
 # Let our test harness redirect us.  See LC_ALL comment above.
 groff=${GROFF_TEST_GROFF-groff}
 
-# Note 1: It would be nice to apply the DRY ("Don't Repeat Yourself")
+# Note: It would be nice to apply the DRY ("Don't Repeat Yourself")
 # principle here and store the entire command string to be executed into
 # a variable, and then either display it or execute it.  For example:
 #
