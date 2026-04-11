@@ -374,16 +374,18 @@ static void define_register_request()
     skip_line();
     return;
   }
-  // TODO: grochar
-  if (read_measurement(&v, (unsigned char)('u'), prev_value)) {
+  if (read_measurement_crement(&v,
+			       (unsigned char)('u'), // TODO: grochar
+			       prev_value)) {
     if (0 /* nullptr */ == r) {
       r = new number_reg;
       register_dictionary.define(nm, r);
     }
     r->set_value(v);
     if (tok.is_space()) {
-      // TODO: grochar
-      if (has_arg() && read_measurement(&v, (unsigned char)('u')))
+      if (has_arg()
+	  && read_measurement(&v,
+			      (unsigned char)('u'))) // TODO: grochar
 	r->set_increment(v);
     }
     else if (has_arg() && !tok.is_tab())
@@ -402,7 +404,7 @@ void inline_define_register()
   if (!start_token.is_usable_as_delimiter(true /* report error */))
     return;
   tok.next();
-  symbol nm = read_identifier(true /* required */);
+  symbol nm = read_identifier(true /* want_diagnostic */);
   if (nm.is_null())
     return;
   reg *r = static_cast<reg *>(register_dictionary.lookup(nm));
@@ -414,10 +416,13 @@ void inline_define_register()
   units prev_value;
   if ((0 /* nullptr */ == r) || !r->get_value(&prev_value))
     prev_value = 0;
-  if (read_measurement(&v, 'u', prev_value)) {
+  if (read_measurement_crement(&v,
+			       (unsigned char)('u'), // TODO: grochar
+			       prev_value)) {
     r->set_value(v);
     if (start_token != tok) {
-      if (read_measurement(&v, 'u')) {
+      if (read_measurement(&v,
+			   (unsigned char)('u'))) { // TODO: grochar
 	r->set_increment(v);
 	if (start_token != tok) {
 	  // token::description() writes to static, class-wide storage,

@@ -68,6 +68,7 @@ public:
   void set_length(int i);
   const char *contents() const;
   int search(const char) const;
+  bool contains(const char) const;
   int find(const char *) const;
   char *extract() const;
   size_t json_length() const;

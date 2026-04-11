@@ -88,6 +88,7 @@ groff_TESTS = \
   src/roff/groff/tests/driver-C-and-G-options-work.sh \
   src/roff/groff/tests/dvi-device-smoke-test.sh \
   src/roff/groff/tests/evc-request-produces-no-output-if-invalid.sh \
+  src/roff/groff/tests/fi-and-nf-requests-work.sh \
   src/roff/groff/tests/fp-request-does-not-traverse-directories.sh \
   src/roff/groff/tests/handle-special-input-code-points.sh \
   src/roff/groff/tests/hcode-request-copies-spec-char-code.sh \
@@ -101,6 +102,7 @@ groff_TESTS = \
   src/roff/groff/tests/latin1-device-maps-oq-to-0x27.sh \
   src/roff/groff/tests/lbp-device-smoke-test.sh \
   src/roff/groff/tests/lf-request-works.sh \
+  src/roff/groff/tests/linetabs-request-works.sh \
   src/roff/groff/tests/lj4-device-smoke-test.sh \
   src/roff/groff/tests/logical-predicates-work.sh \
   src/roff/groff/tests/localization-works.sh \
@@ -124,6 +126,7 @@ groff_TESTS = \
   src/roff/groff/tests/sizes-request-works.sh \
   src/roff/groff/tests/so-request-accepts-embedded-space-in-arg.sh \
   src/roff/groff/tests/soquiet-request-works.sh \
+  src/roff/groff/tests/ss-request-works.sh \
   src/roff/groff/tests/stringdown-and-stringup-requests-work.sh \
   src/roff/groff/tests/stringdown-request-rejects-request-names.sh \
   src/roff/groff/tests/stringup-request-transforms-non-basic-latin.sh \

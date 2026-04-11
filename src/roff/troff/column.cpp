@@ -554,14 +554,14 @@ static void column_justify()
     error("can't justify column - column not active");
   else if (read_vunits(&height, 'v')) {
     justification_spec js(height);
-    symbol nm = read_long_identifier(true /* required */);
+    symbol nm = read_long_identifier(true /* want_diagnostic */);
     if (!nm.is_null()) {
       vunits v;
       if (read_vunits(&v, 'v')) {
 	js.append(nm, v);
 	int err = 0;
 	while (has_arg()) {
-	  nm = read_long_identifier(true /* required */);
+	  nm = read_long_identifier(true /* want_diagnostic */);
 	  if (nm.is_null()) {
 	    err = 1;
 	    break;

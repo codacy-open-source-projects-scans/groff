@@ -327,7 +327,6 @@ man7dir=$(manroot)/man$(man7ext)
 # HAVE_DECL_GETC_UNLOCKED	if you have getc_unlocked()
 # HAVE_DECL_SYS_SIGLIST		if you have sys_siglist[]
 #
-# HAVE_STRUCT_EXCEPTION		if <math.h> defines struct exception
 # HAVE_SYS_NERR			if you have sysnerr in <errno.h> or <stdio.h>
 # HAVE_SYS_ERRLIST		if you have sys_errlist in <errno.h> or
 #				<stdio.h>

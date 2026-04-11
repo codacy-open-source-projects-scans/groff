@@ -2536,7 +2536,7 @@ A
 .I "productive input line"
 directly produces formatted output.
 .
-Text lines produce output,
+Text lines that populate the top-level diversion produce output,
 as do control lines containing requests such as
 .B tl
 or an escape sequence like
@@ -2756,27 +2756,8 @@ or the name of a request.
 .ne 3v
 .TPx
 .I npl
-is a numeric expression constituting a count of subsequent
-.I productive
-input lines;
-that is,
-those that directly produce formatted output.
-.
-Text lines produce output,
-as do control lines containing requests like
-.RB \[lq] ".tl //\^Page %//\^" \[rq]
-or an escape sequence like
-.RB \[lq] \[rs]\^l\[aq]1i\[aq] \[rq]
-(when not itself nested within a
-.B \[rs]w
-escape sequence).
-.
-Register,
-string,
-and macro definitions are not productive.
-.
-Macro calls are not themselves productive,
-but their interpolations can be.
+is a numeric expression constituting a count
+of subsequent productive input lines.
 .
 .TPx
 .I reg
@@ -10002,17 +9983,19 @@ request to preserve the identities of line numbers and names of input
 files.
 .
 .I groff
-emits a variety of error diagnostics and supports several categories of
-warning;
-the output of these can be selectively suppressed with
+emits a variety of error diagnostics
+and supports several categories of warning;
+each can be independently issued or suppressed
+with the
 .RB \[lq] warn \[rq]
-(and see the
+request.
+Also see the
 .BR \-E ,
 .BR \-w ,
 and
 .B \-W
 options of
-.MR @g@troff @MAN1EXT@ ).
+.MR @g@troff @MAN1EXT@ .
 .
 A trace of the formatter's input processing stack can be emitted when
 errors or warnings occur by means of

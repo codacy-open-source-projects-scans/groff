@@ -802,25 +802,6 @@ struct tm *p = localtime(&t);
 	[Define if localtime() takes a long * not a time_t *.])])
    AC_LANG_POP([C++])])
 
-AC_DEFUN([GROFF_STRUCT_EXCEPTION],
-  [AC_MSG_CHECKING([struct exception])
-   AC_COMPILE_IFELSE([
-       AC_LANG_PROGRAM([[
-
-#include <math.h>
-
-       ]],
-       [[
-
-struct exception e;
-
-       ]])
-     ],
-     [AC_MSG_RESULT([yes])
-      AC_DEFINE([HAVE_STRUCT_EXCEPTION], [1],
-	[Define if <math.h> defines struct exception.])],
-     [AC_MSG_RESULT([no])])])
-
 AC_DEFUN([GROFF_ARRAY_DELETE],
   [AC_LANG_PUSH([C++])
    AC_MSG_CHECKING([whether ISO C++98 array deletion syntax is supported])

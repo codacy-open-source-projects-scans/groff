@@ -47,7 +47,6 @@ libgroff_a_SOURCES = \
   src/libs/libgroff/lineno.cpp \
   src/libs/libgroff/localcharset.c \
   src/libs/libgroff/macropath.cpp \
-  src/libs/libgroff/matherr.c \
   src/libs/libgroff/maxfilename.cpp \
   src/libs/libgroff/maxpathname.cpp \
   src/libs/libgroff/mksdir.cpp \
@@ -164,7 +163,6 @@ uninstall_charset_data:
 	  fi; \
 	  $(RM) $(DESTDIR)$(libdir)/t-charset.alias; \
 	fi
-
 
 # Local Variables:
 # mode: makefile-automake

@@ -1,8 +1,8 @@
 .\" groff -ept -ms
 .\" nroff -t -rLL=$(stty size | cut -f2 -d' ')n -ms
 .\"
-.\" Copyright 2001 Larry Kollar
-.\" Copyright 2020-2025 G. Branden Robinson
+.\" Copyright      2001 Larry Kollar
+.\"           2020-2025 G. Branden Robinson
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"

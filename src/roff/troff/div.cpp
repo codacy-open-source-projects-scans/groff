@@ -796,7 +796,8 @@ static void begin_page() // .bp
 {
   bool got_arg = false;
   int n = 0;
-  if (has_arg() && read_integer(&n, topdiv->get_page_number()))
+  if (has_arg()
+      && read_integer_crement(&n, topdiv->get_page_number()))
     got_arg = true;
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -933,7 +934,8 @@ static void page_number() // .pn
   // register before invoking .pn.
   reg *r = static_cast<reg *>(register_dictionary.lookup("ps4html"));
   if (0 /* nullptr */ == r)
-    if (has_arg() && read_integer(&n, topdiv->get_page_number()))
+    if (has_arg()
+	&& read_integer_crement(&n, topdiv->get_page_number()))
       topdiv->set_next_page_number(n);
   skip_line();
 }
@@ -1011,7 +1013,7 @@ static void diversion_trap() // .dt
 
 static void change_trap() // .ch
 {
-  symbol s = read_identifier(true /* required */);
+  symbol s = read_identifier(true /* want_diagnostic */);
   if (!s.is_null()) {
     vunits x;
     if (has_arg() && read_vunits(&x, 'v'))

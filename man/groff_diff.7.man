@@ -821,7 +821,7 @@ A
 .I "productive input line"
 directly produces formatted output.
 .
-Text lines produce output,
+Text lines that populate the top-level diversion produce output,
 as do control lines containing requests such as
 .B tl
 or an escape sequence like
@@ -1289,8 +1289,11 @@ two-character
 as returned by
 .MR getenv 3 .
 .
+GNU
+.I troff \" GNU
+interprets
 .B \[rs]V
-is interpreted even in copy mode.
+even in copy mode.
 .
 .
 .\" TODO: When we get this giant headache generalized and adapted to the
@@ -1301,7 +1304,7 @@ is interpreted even in copy mode.
 Unlike AT&T
 .IR troff , \" AT&T
 GNU
-.I troff \"
+.I troff \" GNU
 performs some limited processing of the sequence of ordinary characters,
 special characters,
 and spaces in
@@ -1677,14 +1680,17 @@ Use
 .B \[rs]!\&
 if you want to embed newlines in a diversion.
 .
-Unlike
-.BR \[rs]! ,
+GNU
+.I troff \" GNU
+interprets
 .B \[rs]?\&
-is interpreted even in copy mode,
-and a
+even in copy mode,
+unlike
+.BR \[rs]! ,
+and does not send a
 .I character-sequence
 in the top-level diversion
-is not sent to device-independent output.
+to device-independent output.
 .
 .
 .TP
@@ -6890,15 +6896,6 @@ interpolated\~1 only if
 .I nroff \" AT&T
 was the formatter and was run with
 .BR \-T .
-.
-.
-.P
-AT&T
-.I troff \" AT&T
-ignored attempts to remove read-only registers;
-GNU
-.I troff \" GNU
-honors such requests.
 .
 .
 .br

@@ -164,10 +164,11 @@ Background
   In files not encoded in UTF-8, we avoid use of the copyright sign
   (Unicode U+00A9).  See below regarding "ersatz" copyright symbols.
 
-* The purpose of a copyright notice is to record legal facts about a
-  work.  It is not to express acknowledgement of, gratitude about, or
-  appreciation for the efforts of contributors, past or present, which
-  is better done in documentation--and with explicit expression!
+* The purpose of a copyright notice is to record facts, relevant to a
+  court of law with applicable subject-matter jurisdiction, about a
+  work.  It is not to express acknowledgement of, gratitude regarding,
+  or appreciation for the efforts of contributors, past or present,
+  which is better done in documentation--and with explicit expression!
 
 * Copyright protection is a legal monopoly of limited duration and an
   economic policy scheme for the purpose of promoting, as the U.S.

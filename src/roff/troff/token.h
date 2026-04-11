@@ -113,7 +113,7 @@ public:
   bool operator!=(const token &); // ditto
   unsigned char ch();
   int character_index();
-  charinfo *get_charinfo(bool /* required */ = false,
+  charinfo *get_charinfo(bool /* is_mandatory */ = false,
 			 bool /* suppress_creation */ = false);
   bool add_to_zero_width_node_list(node **);
   void make_space();
@@ -129,10 +129,10 @@ extern token tok;		// the current token
 
 extern bool has_arg(bool /* want_peek */ = false);
 extern void skip_line();
-extern symbol read_identifier(bool /* required */ = false);
-extern symbol read_long_identifier(bool /* required */ = false);
+extern symbol read_identifier(bool /* want_diagnostic */ = false);
+extern symbol read_long_identifier(bool /* want_diagnostic */ = false);
 extern void handle_initial_title();
-extern charinfo *read_character(); // TODO?: bool /* required */ = false
+extern charinfo *read_character(); // TODO?: bool /* want_diagnostic */ = false
 extern char *read_rest_of_line_as_argument();
 
 enum char_mode {
@@ -149,13 +149,15 @@ class hunits;
 extern void read_title_parts(node **part, hunits *part_width);
 
 extern bool read_measurement(units * /* result */,
-			     unsigned char /* scale indicator */,
+			     unsigned char /* si */, // TODO: grochar
 			     bool /* is_mandatory */ = false);
 extern bool read_integer(int *result);
 
-extern bool read_measurement(units *result, unsigned char si,
-			     units prev_value);
-extern bool read_integer(int *result, int prev_value);
+extern bool read_measurement_crement(units * /* result */,
+				     unsigned char /* si */, // TODO: grochar
+				     units /* operand */);
+extern bool read_integer_crement(int * /* result */,
+				 int /* operand */);
 
 extern void interpolate_register(symbol, int);
 

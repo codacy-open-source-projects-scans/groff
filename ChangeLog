@@ -1,3 +1,415 @@
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(remove_hyphenation_exception_words_request): Free the heap
+	storage backing a hyphenation exception word when removing
+	one--specifically, this is its list of hyphenation break points
+	expressed as integers representing character positions in the
+	word, allocated by `add_hyphenation_exception_words_request()`.
+	Fastidiously assign null pointer literal to `word` local
+	addressing that memory afterwards.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Rationalize header file inclusions,
+	adding "<stdlib.h>" and "<string.h>".
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/symbol.h: Preprocessor-include "<string.h>" header
+	file to access strchr(3).
+	(class symbol): Declare new member function
+	`contains()` indicating whether the `char` argument appears the
+	symbol.
+	(symbol::contains): Implement it `inline`, wrapping strchr(3).
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/include/symbol.h (class symbol): Comment formal argument
+	names in function declarations as a compromise with the
+	Stroustrup-style C++ used in most of groff.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Catch
+	`std::bad_alloc` exceptions from `new` operator.  Throw a fatal
+	error indicating how much memory we couldn't allocate.
+
+	Continues the long process of fixing Savannah #68192.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Refactor and add
+	warning diagnostic.  Elevate scope of `c` local variable and
+	rename it to `hc` since it stores the hyphenation code of the
+	character under examination in the hyphenation exception word
+	argument.  Gather that hyphenation code earlier, and mark the
+	word as invalid if the hyphenation code is zero--exception: the
+	character '-' is also valid, since it marks the hyphenation
+	break point.  Consequently, we now throw a warning in category
+	`char` on attempted hyphenation exception words like "non*sense"
+	and "0123456789".  Drop later conditional loop break if the
+	hyphenation code is zero since that now cannot be the case--we
+	didn't enter the containing branch in the first place.  Replace
+	a test of the index into the hyphenation exception word being
+	greater than zero with an assert(3)ion of the same inside the
+	branch, as it's now an invariant that a valid hyphenation
+	exception word contains a nonzero count of characters bearing
+	hyphenation codes.
+
+	* doc/groff.texi.in (Warnings):
+	* src/roff/troff/troff.1.man (Warnings): Document new warning
+	circumstance.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Slightly refactor.
+	memset(3) stack-allocated character arrays `buf` and `pos` with
+	null terminators/zeroes as a paranoid hedge.  Drop later
+	null-termination of `buf` as redundant.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Fix code style nits.
+	Assign unsigned literal to array element of type `unsigned
+	char`.  Explicitly compare value of pointer type to null pointer
+	literal instead of letting it pun down to a Boolean.
+	Parenthesize formally complex expressions.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/symbol.cpp (symbol::symbol): Fix code style
+	nits.  Use explicit `const_cast` C++ operator instead of C-style
+	cast.  Parenthesize formally complex expressions.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/symbol.cpp (symbol::symbol): Improve fatal
+	diagnostic message; when construction of a larger symbol table
+	is impossible, describe the failure better and report the
+	exceeded table capacity.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Trivially refactor.
+
+	* src/include/symbol.h (class symbol): Rename `table_used`
+	member variable, which could suggest a Boolean value, to
+	`table_occupancy`.
+	* src/libs/libgroff/symbol.cpp: Update dereference sites.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.h (class diversion, class macro_diversion):
+	Use Boolean, not numeric, literals as default values for
+	function arguments of type `bool`.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Use `UCHAR_MAX` from ISO C99's
+	standard library instead of the literal `256` to configure the
+	`WORD_MAX` constant.  Preprocessor-include "<limits.h>" header
+	file to access `UCHAR_MAX`.  Declare `WORD_MAX` as `static`;
+	external linkage is not required.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (read_measurement_crement)
+	(read_integer_crement): Trivially refactor for semantic clarity.
+	Rename the last argument from `prev_value` to `operand`.
+	Nothing in the implementation of these functions imparts a
+	"previous value" meaning to that argument; that matter is
+	context-dependent.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor for semantic clarity.  We had two
+	pairs of functions where the pair members differed by signature
+	but not by name, and which moreover did somewhat different
+	things, interpreting different expression types.  Rename them to
+	more obviously distinguish their purposes.  ("crement" is a
+	nonce usage I devised to generalize "{in,de}crement".)
+
+	* src/roff/troff/token.h: Rename functions in declarations.
+	- read_measurement() -> read_measurement_crement()
+	- read_integer()     -> read_integer_crement()
+	* src/roff/troff/number.cpp (read_measurement): Rename this...
+	(read_measurement_crement): ...to this.
+	(read_integer): Rename this...
+	(read_integer_crement): ...to this.
+	* src/roff/troff/div.cpp (begin_page, page_number):
+	* src/roff/troff/env.cpp (number_lines): Migrate callers of
+	two-argument `read_integer()` to `read_integer_crement()`.
+	* src/roff/troff/env.cpp (point_size):
+	* src/roff/troff/input.cpp (read_delimited_measurement)
+	(do_register):
+	* src/roff/troff/reg.cpp (define_register_request)
+	(inline_define_register): Migrate callers of three-argument
+	`read_measurement()` to `read_measurement_crement()`.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp:
+	* src/roff/troff/token.h: Comment formal argument names in
+	function declarations as a compromise with the Stroustrup-style
+	C++ used in most of groff.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Work on Savannah #67735.
+
+	Improve type discipline with respect to internal character
+	representation.
+
+	* src/roff/troff/env.cpp (embolden_font_request)
+	(configure_track_kerning_request)
+	(constantly_space_font_request):
+	* src/roff/troff/reg.cpp (inline_define_register): Improve type
+	discipline with respect to groff's internal character
+	representation.  Call `read_measurement()` with explicitly
+	constructed literal argument of type `unsigned char` for
+	conceptual clarity.  "groff characters" are, for now, unsigned
+	bytes.
+
+	Continues the long process of fixing Savannah #67735.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor for semantic clarity.  The parameter
+	named `required` used by many functions was employed for two
+	slightly different purposes.  In some instances, it indicated
+	whether emission of a diagnostic message was desired in the
+	event a token expected on the input stream (or similar) was
+	absent.  In others, it encoded whether the presence of such a
+	token was _optional_, in which case both its presence and
+	absence were valid.  The latter tends to be the case when a
+	token is present but might or might not have associated
+	`charinfo` data.  Detangle these issues by renaming `required`
+	arguments to `want_diagnostic` and `is_mandatory` as
+	appropriate.
+
+	* src/roff/troff/token.h: Rename `required` argument in
+	declarations.
+
+	* src/roff/troff/input.cpp (diagnose_missing_identifier):
+	(token::get_charinfo): Rename `required` argument to
+	`is_mandatory` in definitions.
+	(read_identifier, read_long_identifier)
+	(read_input_until_terminator): Rename `required` argument to
+	`want_diagnostic` in definitions.
+
+	* src/roff/troff/column.cpp (column_justify) [COLUMN]:
+	* src/roff/troff/div.cpp (change_trap):
+	* src/roff/troff/env.cpp (do_input_trap)
+	(add_hyphenation_exception_words_request):
+	* src/roff/troff/input.cpp (read_rgb, read_cmy, read_cmyk)
+	(read_gray, do_overstrike, do_bracket, token::next)
+	(token::description, read_input_until_terminator)
+	(do_define_string, define_character, print_character_request)
+	(remove_character, do_define_macro, read_line_rule_expression)
+	(do_register, encode_special_character_for_device_output)
+	(device_request, device_macro_request)
+	(is_conditional_expression_true, ps_bbox_request, open_file)
+	(do_write_request, stream_write_macro_request, do_translate)
+	(set_character_flags_request, define_class_request)
+	(vjustify) [COLUMN]:
+	* src/roff/troff/node.cpp (translate_font_request)
+	(mount_font_at_position_request)
+	(associate_style_with_font_position_request)
+	(read_font_identifier, remove_font_specific_character_request)
+	* src/roff/troff/reg.cpp (inline_define_register): Update
+	annotations at call sites and in declarations.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[build]: Drop no longer needed check for `struct exception`.  It
+	was used only by the now-deleted "src/libs/libgroff/matherr.c".
+
+	* m4/groff.m4 (GROFF_STRUCT_EXCEPTION): Delete.
+	* configure.ac: Drop interpolation of `GROFF_STRUCT_EXCEPTION`.
+	* Makefile.am: Stop advertising availability of
+	`HAVE_STRUCT_EXCEPTION` preprocessor symbol.
+
+2026-04-09  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Drop "matherr.c" file, declaring (under the
+	preprocessor conditions `HAVE_STRUCT_EXCEPTION` and `TLOSS`)
+	`matherr()` and `struct exception`.  The former is K&R-style,
+	thus prohibited in ISO C23, and can (should) cause build
+	failures with compilers configured for that version of the C
+	language.  Autoconf 2.73, released last month, tries harder to
+	arrange builds to use C23 by default.  Also we straight up don't
+	_need_ this declaration (anymore); nothing in groff calls
+	`matherr()`.  It dates back to the Clark days, when there was no
+	gnulib for groff to use (or maybe it didn't support C++ projects
+	at the time).  Whatever gnulib needs, it transitively closures
+	for us, so we no longer need to and can throw this 30-year old
+	stuff of ours away.
+
+	* src/libs/libgroff/matherr.c: Delete.
+	* src/libs/libgroff/libgroff.am (libgroff_a_SOURCES): Drop
+	aforementioned file from macro definition.
+
+	Fixes <https://savannah.gnu.org/bugs/?68220>.  Thanks to Alexis
+	Hildebrandt for the report.  Also continues the long process of
+	fixing Savannah #66518.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (space_size): Clarify warning
+	diagnostics in category "range".
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp (is_valid_term): Compare local
+	`scaling_unit` and return value of `token::char()` to literals
+	of type `unsigned char` instead of signed literals for
+	conceptual clarity.  "groff characters" are, for now, unsigned
+	bytes.
+
+	Continues the long process of fixing Savannah #67735.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Refactor.  Migrate
+	`valid_scaling_units` global constant from type array-of-`char`
+	to a groff `string`.
+	(is_valid_term): Employ `contains()` function of
+	`valid_scaling_units`'s new type instead of the standard C
+	library's strchr(3).
+
+	Continues the long process of fixing Savannah #67735.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Add `contains()` member function to `string` class.
+
+	* src/include/stringclass.h (class string): Declare it,
+	returning `bool`.
+	* src/libs/libgroff/string.cpp (string::contains): Define it.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Improve type discipline with respect to internal
+	character representation.
+
+	* src/roff/troff/env.cpp (point_size): Call `read_measurement()`
+	with explicitly constructed literal argument of type `unsigned
+	char` for conceptual clarity.  "groff characters" are, for now,
+	unsigned bytes.
+	* src/roff/troff/number.cpp (is_valid_term): Demote local
+	variable `si` from `int` to `unsigned char`.
+
+	Continues the long process of fixing Savannah #67735.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment_copy, environment_switch):
+	Declare as `static`; external linkage is not required.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (fill, no_fill): Declare as `static`;
+	external linkage is not required.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Separate engine logic from parsing logic
+	with respect to an environment's filling enablement.
+
+	* src/roff/troff/env.h: Stop globally declaring `fill()` and
+	`no_fill()`.
+	(class environment): Declare new member function returning
+	`void`: `configure_filling()`.  Drop declaration of `friend`
+	functions `fill()` and `no_fill()`.
+	* src/roff/troff/env.cpp (environment::configure_filling): New
+	function mutates object of `environment` class.
+	(fill, no_fill): Replace manipulation of `environment` object's
+	private member variable with calls of the foregoing new public
+	member function.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/env.h (get_fill): Rename this declaration...
+	(get_filling): ...to this.
+	* src/roff/troff/env.cpp (environment::get_fill): Rename this
+	definition...
+	(environment::get_filling): ...to this.
+	(init_env_requests): Update wire-uppery to `.u` register.
+	* src/roff/troff/input.cpp (diverted_space_node::need_reread):
+	Update call site.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `fi` and `nf` requests.
+
+	* src/roff/groff/tests/fi-and-nf-requests-work.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (family_change, point_size)
+	(space_size): Declare as `static`; external linkage is not
+	required.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Separate engine logic from input parsing
+	logic with respect to an environment's "line tabs" enablement (a
+	GNU troff feature altering how tab stop positions are computed).
+
+	* src/roff/troff/env.h: Stop globally declaring
+	`line_tabs_request()`.
+	(class environment): Declare new member function returning
+	`void`: `configure_line_tabs()`.  Drop declaration of `friend`
+	function `line_tabs_request()`.
+	* src/roff/troff/env.cpp (environment::configure_line_tabs): New
+	function mutates object of `environment` class.
+	(line_tabs_request): Replace manipulation of `environment`
+	object's private member variable with call of the foregoing new
+	public member function.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `linetabs` request.
+
+	* src/roff/groff/tests/linetabs-request-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Refactor.  Separate engine logic from input parsing
+	logic with respect to configuration of an environment's
+	inter-word and supplemental inter-sentence space sizes.
+
+	* src/roff/troff/env.h: Stop globally declaring `space_size()`.
+	(class environment): Declare new member functions returning
+	`void`: `set_interword_space_size()`,
+	`reset_supplemental_intersentence_space_size()`, and
+	`set_supplemental_intersentence_space_size()`.  (The last two
+	differ because callers of the former require no knowledge of the
+	default supplemental inter-sentence space size.)  Drop
+	declaration of `friend` function `space_size()`.
+	* src/roff/troff/env.cpp (environment::set_interword_space_size)
+	(environment::reset_supplemental_intersentence_space_size)
+	(environment::set_supplemental_intersentence_space_size): New
+	functions mutate object of `environment` class.
+	(space_size): Replace manipulation of `environment` object's
+	private member variables with calls of public member functions.
+
+2026-04-08  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `ss` request.
+
+	* src/roff/groff/tests/ss-request-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
 2026-04-04  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/preproc/eqn/box.cpp (get_param): Add strictly unnecessary
@@ -310,7 +722,7 @@
 2026-04-01  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an.tmac (BI, BR, IB, IR, RB, RI): Trivially refactor;
-	rename `an-result` (a temporary string into these macros'
+	rename `an-result` (a temporary string into which these macros'
 	arguments are catenated with font style changes and italic
 	corrections as appropriate) to `an*result`.
 
@@ -333,7 +745,7 @@
 	* src/libs/libgroff/relocate.cpp (set_current_prefix): Move call
 	of `msw2posixpath()` from an all-configurations path through the
 	function to an `#ifdef _WIN32`-only one.
-	(msw2posixpath) [_WIN32]: Since this function is now only called
+	(msw2posixpath) [_WIN32]: Since this function is now called only
 	if `_WIN32` is defined, shift an `#endif` to also define it only
 	under that circumstance.
 
@@ -1067,8 +1479,8 @@
 	bash(1), this meant many repeated trips through
 	new/memcpy()/delete sequences, giving the language runtime
 	allocator a lot of work to do.  In an extreme case {formatting
-	64 copies of bash(1) in sequence}, this led to long runtimes
-	with two-thirds of program time spent in the kernel.
+	64 catenated copies of bash(1)}, this led to long runtimes with
+	two-thirds of program time spent in the kernel.
 
 	The new strategy is to double the allocation size every time it
 	is exceeded, but also to free any resized allocation at the end
@@ -1078,7 +1490,11 @@
 	page length frequently--which is the approach that groff 1.23.0
 	and earlier took to continuous rendering, and that other macro
 	packages or documents might still.  (tbl(1) users should beware
-	of the sort of problem observed in Savannah #65189.)
+	of the sort of problem observed in Savannah #65189.)  This
+	change reduces grotty(1)'s wall-clock time for the
+	aforementioned 64 copies of bash(1) from 92.1 seconds to 3.5,
+	and the proportion of process time spent in the system from
+	63.3% to 6.38%.
 
 	* src/devices/grotty/tty.cpp: Define new global constant
 	integer, `default_lines_per_page`, obviating a local literal in

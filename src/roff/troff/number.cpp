@@ -55,12 +55,13 @@ units vresolution = 1;
 units units_per_inch;
 int sizescale; // subdivisions per point
 
-static bool is_valid_expression(units *u, int scaling_unit,
-				bool is_parenthesized,
-				bool is_mandatory = false);
+static bool is_valid_expression(units * /* u */,
+				unsigned char /* scaling_unit */, // TODO: grochar
+				bool /* is_parenthesized */,
+				bool /* is_mandatory */ = false);
 static bool is_valid_expression_start();
 
-bool read_vunits(vunits *res, unsigned char si)
+bool read_vunits(vunits *res, unsigned char si) // TODO: grochar
 {
   if (!is_valid_expression_start())
     return false;
@@ -73,7 +74,7 @@ bool read_vunits(vunits *res, unsigned char si)
     return false;
 }
 
-bool read_hunits(hunits *res, unsigned char si)
+bool read_hunits(hunits *res, unsigned char si) // TODO: grochar
 {
   if (!is_valid_expression_start())
     return false;
@@ -86,7 +87,9 @@ bool read_hunits(hunits *res, unsigned char si)
     return false;
 }
 
-bool read_measurement(units *res, unsigned char si, bool is_mandatory)
+bool read_measurement(units *res,
+		      unsigned char si, // TODO: grochar
+		      bool is_mandatory)
 {
   if (!is_valid_expression_start())
     return false;
@@ -116,9 +119,12 @@ bool read_integer(int *res)
 
 enum incr_number_result { INVALID, ASSIGN, INCREMENT, DECREMENT };
 
-static incr_number_result get_incr_number(units *res, unsigned char);
+static incr_number_result get_incr_number(units * /* res */,
+					  unsigned char /* si */); // TODO: grochar
 
-bool read_vunits(vunits *res, unsigned char si, vunits prev_value)
+bool read_vunits(vunits *res,
+		 unsigned char si, // TODO: grochar
+		 vunits prev_value)
 {
   units v;
   // Use a primitive temporary because having the ckd macros store to
@@ -146,7 +152,9 @@ bool read_vunits(vunits *res, unsigned char si, vunits prev_value)
   return true;
 }
 
-bool read_hunits(hunits *res, unsigned char si, hunits prev_value)
+bool read_hunits(hunits *res,
+		 unsigned char si, // TODO: grochar
+		 hunits prev_value)
 {
   units h;
   // Use a primitive temporary because having the ckd macros store to
@@ -174,8 +182,9 @@ bool read_hunits(hunits *res, unsigned char si, hunits prev_value)
   return true;
 }
 
-// TODO: Default `prev_value` to 0.
-bool read_measurement(units *res, unsigned char si, units prev_value)
+bool read_measurement_crement(units *res,
+			      unsigned char si, // TODO: grochar
+			      units operand)
 {
   units u;
   switch (get_incr_number(&u, si)) {
@@ -185,11 +194,11 @@ bool read_measurement(units *res, unsigned char si, units prev_value)
     *res = u;
     break;
   case INCREMENT:
-    if (ckd_add(res, prev_value, u))
+    if (ckd_add(res, operand, u))
       warning(WARN_RANGE, "integer incrementation saturated");
     break;
   case DECREMENT:
-    if (ckd_sub(res, prev_value, u))
+    if (ckd_sub(res, operand, u))
       warning(WARN_RANGE, "integer decrementation saturated");
     break;
   default:
@@ -198,7 +207,7 @@ bool read_measurement(units *res, unsigned char si, units prev_value)
   return true;
 }
 
-bool read_integer(int *res, int prev_value)
+bool read_integer_crement(int *res, int operand)
 {
   units i;
   switch (get_incr_number(&i, 0)) {
@@ -208,11 +217,11 @@ bool read_integer(int *res, int prev_value)
     *res = i;
     break;
   case INCREMENT:
-    if (ckd_add(res, prev_value, i))
+    if (ckd_add(res, operand, i))
       warning(WARN_RANGE, "integer incrementation saturated");
     break;
   case DECREMENT:
-    if (ckd_sub(res, prev_value, i))
+    if (ckd_sub(res, operand, i))
       warning(WARN_RANGE, "integer decrementation saturated");
     break;
   default:
@@ -221,8 +230,8 @@ bool read_integer(int *res, int prev_value)
   return true;
 }
 
-
-static incr_number_result get_incr_number(units *res, unsigned char si)
+static incr_number_result get_incr_number(units *res,
+					  unsigned char si) // TODO: grochar
 {
   if (!is_valid_expression_start())
     return INVALID;
@@ -253,12 +262,15 @@ static bool is_valid_expression_start()
 
 enum { OP_LEQ = 'L', OP_GEQ = 'G', OP_MAX = 'X', OP_MIN = 'N' };
 
-static const char valid_scaling_units[] = "icfPmnpuvMsz";
+static const string valid_scaling_units("icfPmnpuvMsz");
 
-static bool is_valid_term(units *u, int scaling_unit,
-			  bool is_parenthesized, bool is_mandatory);
+static bool is_valid_term(units * /* u */,
+			  unsigned char  /* scaling_unit */, // TODO: grochar
+			  bool  /* is_parenthesized */,
+			  bool  /* is_mandatory */);
 
-static bool is_valid_expression(units *u, int scaling_unit,
+static bool is_valid_expression(units *u,
+				unsigned char scaling_unit, // TODO: grochar
 				bool is_parenthesized,
 				bool is_mandatory)
 {
@@ -387,8 +399,10 @@ static bool is_valid_expression(units *u, int scaling_unit,
   return result;
 }
 
-static bool is_valid_term(units *u, int scaling_unit,
-			  bool is_parenthesized, bool is_mandatory)
+static bool is_valid_term(units *u,
+			  unsigned char scaling_unit, // TODO: grochar
+			  bool is_parenthesized,
+			  bool is_mandatory)
 {
   bool is_negative = false;
   bool is_overflowing = false;
@@ -440,7 +454,7 @@ static bool is_valid_term(units *u, int scaling_unit,
       *u = 0;
       return true;
     }
-    else if ((c != 0) && (strchr(valid_scaling_units, char(c)) != 0)) {
+    else if ((c != 0) && valid_scaling_units.contains(c)) {
       tok.next();
       if (tok.ch() == int(';')) { // TODO: grochar
 	tok.next();
@@ -538,12 +552,11 @@ static bool is_valid_term(units *u, int scaling_unit,
       tok.next();
     }
   }
-  int si = scaling_unit;
+  unsigned char si = scaling_unit; // TODO: grochar
   bool do_next = false;
-  if (((c = tok.ch()) != 0)
-      && (strchr(valid_scaling_units, c) != 0 /* nullptr */)) {
+  if (((c = tok.ch()) != 0U) && valid_scaling_units.contains(c)) {
     switch (scaling_unit) {
-    case int(0): // TODO: grochar; null character, not digit zero
+    case int(0U): // TODO: grochar; null character, not digit zero
       // We know it's a recognized scaling unit because it matched the
       // `strchr()` above, so we don't use `tok.description()`.
       warning(WARN_SCALE, "a scaling unit is not valid in this context"

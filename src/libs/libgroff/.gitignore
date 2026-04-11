@@ -28,7 +28,6 @@
 /libgroff_a-lineno.o
 /libgroff_a-localcharset.o
 /libgroff_a-macropath.o
-/libgroff_a-matherr.o
 /libgroff_a-maxfilename.o
 /libgroff_a-maxpathname.o
 /libgroff_a-mksdir.o

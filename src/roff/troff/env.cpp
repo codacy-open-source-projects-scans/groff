@@ -24,8 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <assert.h>
 #include <errno.h>
+#include <limits.h> // UCHAR_MAX
 #include <math.h> // ceil(), fabs()
 #include <stdio.h> // prerequisite of mtsm.h, searchpath.h
+#include <stdlib.h> // strtol()
+#include <string.h> // strchr(), strcpy(), strerror(), strncmp(),
+		    // strstr()
 
 #include <stack> // prerequisite of mtsm.h
 #include <vector>
@@ -237,7 +241,7 @@ void environment::mark_last_line()
     p->is_last_line = true;
 }
 
-void widow_control_request()
+void widow_control_request() // .wdc
 {
   int n;
   if (has_arg() && read_integer(&n))
@@ -338,7 +342,7 @@ void init_environments()
 // Set tab character, used to fill out the remainder of a tab stop where
 // a tab (TAB, U+0009) occurs in the input.  If a null pointer,
 // horizontal motion "fills" the tab stop.
-void tab_character_request()
+void tab_character_request() // .tc
 {
   curenv->tab_char = read_character();
   skip_line();
@@ -349,7 +353,7 @@ void tab_character_request()
 // horizontal motion "fills" the tab stop.  Used when the behavior of a
 // null pointer tab character is also desired on the same output line
 // (or more generally).
-void leader_character_request()
+void leader_character_request() // .lc
 {
   curenv->leader_char = read_character();
   skip_line();
@@ -1067,6 +1071,26 @@ bool environment::set_no_break_control_character(unsigned char c)
   return true;
 }
 
+void environment::set_interword_space_size(int n)
+{
+  space_size = n;
+}
+
+void environment::reset_supplemental_intersentence_space_size()
+{
+  sentence_space_size = space_size;
+}
+
+void environment::set_supplemental_intersentence_space_size(int n)
+{
+  sentence_space_size = n;
+}
+
+void environment::configure_line_tabs(bool b)
+{
+  using_line_tabs = b;
+}
+
 hunits environment::get_input_line_position()
 {
   hunits n;
@@ -1137,9 +1161,14 @@ unsigned int environment::get_adjust_mode()
   return adjust_mode;
 }
 
-int environment::get_fill()
+int environment::get_filling()
 {
   return is_filling;
+}
+
+void environment::configure_filling(bool b)
+{
+  is_filling = b;
 }
 
 hunits environment::get_indent()
@@ -1345,7 +1374,7 @@ static void select_font_request() // .ft
   skip_line();
 }
 
-void family_change()
+static void family_change() // .fam
 {
   if (in_nroff_mode) {
     skip_line();
@@ -1356,7 +1385,7 @@ void family_change()
   skip_line();
 }
 
-void point_size()
+static void point_size() // .ps
 {
   if (in_nroff_mode) {
     skip_line();
@@ -1364,7 +1393,9 @@ void point_size()
   }
   int n;
   if (has_arg()
-      && read_measurement(&n, 'z', curenv->get_requested_point_size()))
+      && read_measurement_crement(&n,
+				  (unsigned char)('z'), // TODO: grochar
+				  curenv->get_requested_point_size()))
   {
     if (n <= 0)
       n = 1;
@@ -1429,7 +1460,7 @@ static void override_available_type_sizes_request() // .sizes
   tok.next();
 }
 
-void space_size()
+static void space_size() // .ss
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "space size configuration request expects"
@@ -1440,38 +1471,39 @@ void space_size()
   int n;
   if (read_integer(&n)) {
     if (n < 0)
-      warning(WARN_RANGE, "ignoring negative word space size: '%1'", n);
+      warning(WARN_RANGE, "ignoring negative interword space size:"
+			  " '%1'", n);
     else
-      curenv->space_size = n;
+      curenv->set_interword_space_size(n);
     if (has_arg() && read_integer(&n))
       if (n < 0)
-	warning(WARN_RANGE, "ignoring negative sentence space size: "
-		"'%1'", n);
+	warning(WARN_RANGE, "ignoring negative supplemental"
+		" inter-sentence space size: '%1'", n);
       else
-	curenv->sentence_space_size = n;
+	curenv->set_supplemental_intersentence_space_size(n);
     else
-      curenv->sentence_space_size = curenv->space_size;
+      curenv->reset_supplemental_intersentence_space_size();
   }
   skip_line();
 }
 
-void fill()
+static void fill() // .fi
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
-  curenv->is_filling = true;
+  curenv->configure_filling(true);
   tok.next();
 }
 
-void no_fill()
+static void no_fill() // .nf
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
-  curenv->is_filling = false;
+  curenv->configure_filling(false);
   curenv->suppress_next_eol = true;
   tok.next();
 }
@@ -1483,7 +1515,7 @@ void cancel_temporary_indentation()
   curdiv->modified_tag.excl(MTSM_TI);
 }
 
-void center()
+void center() // .ce
 {
   int n;
   if (!has_arg() || !read_integer(&n))
@@ -1504,7 +1536,7 @@ void center()
   tok.next();
 }
 
-void right_justify()
+void right_justify() // .rj
 {
   int n;
   if (!has_arg() || !read_integer(&n))
@@ -1525,7 +1557,7 @@ void right_justify()
   tok.next();
 }
 
-void line_length()
+void line_length() // .ll
 {
   hunits temp;
   if (has_arg() && read_hunits(&temp, 'm', curenv->line_length)) {
@@ -1544,7 +1576,7 @@ void line_length()
   skip_line();
 }
 
-void title_length()
+void title_length() // .lt
 {
   hunits temp;
   if (has_arg() && read_hunits(&temp, 'm', curenv->title_length)) {
@@ -1562,7 +1594,7 @@ void title_length()
   skip_line();
 }
 
-void vertical_spacing()
+void vertical_spacing() // .vs
 {
   vunits temp;
   if (has_arg() && read_vunits(&temp, 'p', curenv->vertical_spacing)) {
@@ -1578,7 +1610,7 @@ void vertical_spacing()
   skip_line();
 }
 
-void post_vertical_spacing()
+void post_vertical_spacing() // .pvs
 {
   vunits temp;
   if (has_arg() && read_vunits(&temp, 'p',
@@ -1595,7 +1627,7 @@ void post_vertical_spacing()
   skip_line();
 }
 
-void line_spacing()
+void line_spacing() // .ls
 {
   int temp;
   if (has_arg() && read_integer(&temp)) {
@@ -1612,7 +1644,7 @@ void line_spacing()
   skip_line();
 }
 
-void indent()
+void indent() // .in
 {
   hunits temp;
   if (has_arg() && read_hunits(&temp, 'm', curenv->indent)) {
@@ -1635,7 +1667,7 @@ void indent()
   tok.next();
 }
 
-void temporary_indent()
+void temporary_indent() // .ti
 {
   bool is_valid = true;
   hunits temp = H0;
@@ -1706,17 +1738,17 @@ void configure_underlining(bool want_spaces_underlined)
   skip_line();
 }
 
-void continuous_underline()
+static void continuous_underline() // .cu
 {
   configure_underlining(true /* underline spaces */);
 }
 
-void underline()
+static void underline() // .ul
 {
   configure_underlining(false /* underline spaces */);
 }
 
-void margin_character()
+void margin_character() // .mc
 {
   tok.skip_spaces();
   charinfo *ci = tok.get_charinfo();
@@ -1746,7 +1778,7 @@ void margin_character()
   skip_line();
 }
 
-void number_lines()
+void number_lines() // .nm
 {
   delete_node_list(curenv->numbering_nodes);
   curenv->numbering_nodes = 0 /* nullptr */;
@@ -1765,7 +1797,7 @@ void number_lines()
     curenv->line_number_digit_width = env_digit_width(curenv);
     int n;
     if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
-      if (read_integer(&n, next_line_number)) {
+      if (read_integer_crement(&n, next_line_number)) {
 	next_line_number = n;
 	if (next_line_number < 0) {
 	  warning(WARN_RANGE, "output line number cannot be negative");
@@ -1807,7 +1839,7 @@ void number_lines()
   skip_line();
 }
 
-void no_number()
+void no_number() // .nn
 {
   int n;
   if (has_arg() && read_integer(&n))
@@ -1817,13 +1849,13 @@ void no_number()
   skip_line();
 }
 
-void no_hyphenate()
+void no_hyphenate() // .nh
 {
   curenv->hyphenation_mode = 0;
   skip_line();
 }
 
-void hyphenate_request()
+void hyphenate_request() // .hy
 {
   int n;
   if (has_arg() && read_integer(&n)) {
@@ -1845,7 +1877,7 @@ void hyphenate_request()
   skip_line();
 }
 
-void set_hyphenation_mode_default()
+void set_hyphenation_mode_default() // .hydefault
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "hyphenation mode default setting request"
@@ -1869,7 +1901,7 @@ void set_hyphenation_mode_default()
 
 // Set hyphenation character, which the input uses to mark the position
 // of a discretionary break ("dbreak") in a word.
-void hyphenation_character_request()
+void hyphenation_character_request() // .hc
 {
   curenv->hyphen_indicator_char = read_character();
   // TODO?: If null pointer, set to ESCAPE_PERCENT, eliminating test(s)
@@ -1877,7 +1909,7 @@ void hyphenation_character_request()
   skip_line();
 }
 
-void hyphen_line_max_request()
+void hyphen_line_max_request() // .hlm
 {
   int n;
   if (has_arg() && read_integer(&n))
@@ -2063,7 +2095,7 @@ hunits environment::get_hyphenation_space()
   return hyphenation_space;
 }
 
-void hyphenation_space_request()
+void hyphenation_space_request() // .hys
 {
   hunits n;
   if (read_hunits(&n, 'm')) {
@@ -2081,7 +2113,7 @@ hunits environment::get_hyphenation_margin()
   return hyphenation_margin;
 }
 
-void hyphenation_margin_request()
+void hyphenation_margin_request() // .hym
 {
   hunits n;
   if (read_hunits(&n, 'm')) {
@@ -2711,7 +2743,7 @@ static void break_with_forced_adjustment_request() //. brp
   do_break_request(true);
 }
 
-void title()
+void title() // .tl
 {
   if (!has_arg(true /* peek */)) {
     warning(WARN_MISSING, "title line request expects a delimited"
@@ -2780,7 +2812,7 @@ void title()
   tok.next();
 }
 
-void adjust()
+void adjust() // .ad
 {
   curenv->adjust_mode |= 1;
   if (has_arg()) {
@@ -2816,7 +2848,7 @@ void adjust()
   skip_line();
 }
 
-void no_adjust()
+void no_adjust() // .na
 {
   curenv->adjust_mode &= ~1;
   skip_line();
@@ -2833,7 +2865,7 @@ void do_input_trap(bool respect_continuation)
       warning(WARN_RANGE,
 	      "input trap line count must be greater than zero");
     else {
-      symbol s = read_identifier(true /* required */);
+      symbol s = read_identifier(true /* want_diagnostic */);
       if (!s.is_null()) {
 	curenv->input_trap_count = n;
 	curenv->input_trap = s;
@@ -2843,12 +2875,12 @@ void do_input_trap(bool respect_continuation)
   skip_line();
 }
 
-void input_trap()
+void input_trap() // .it
 {
   do_input_trap(false);
 }
 
-void input_trap_continued()
+void input_trap_continued() // .itc
 {
   do_input_trap(true);
 }
@@ -3124,13 +3156,13 @@ static void field_characters_request() // .fc
   skip_line();
 }
 
-void line_tabs_request()
+void line_tabs_request() // .linetabs
 {
   int n;
   if (has_arg() && read_integer(&n))
-    curenv->using_line_tabs = (n > 0);
+    curenv->configure_line_tabs(n > 0);
   else
-    curenv->using_line_tabs = true;
+    curenv->configure_line_tabs(true);
   skip_line();
 }
 
@@ -3820,7 +3852,7 @@ static void select_hyphenation_language()
   skip_line();
 }
 
-void environment_copy()
+static void environment_copy() // .evc
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "environment copy request expects an"
@@ -3841,7 +3873,7 @@ void environment_copy()
   skip_line();
 }
 
-void environment_switch()
+static void environment_switch() // .ev
 {
   if (curenv->is_dummy()) {
     error("cannot switch out of dummy environment");
@@ -3878,8 +3910,8 @@ void environment_switch()
   skip_line();
 }
 
-const int WORD_MAX = 256;	// we use unsigned char for offsets in
-				// hyphenation exceptions
+// We use `unsigned char` for offsets in hyphenation exception words.
+static const int WORD_MAX = UCHAR_MAX;
 
 static void add_hyphenation_exception_words_request() // .hw
 {
@@ -3895,12 +3927,21 @@ static void add_hyphenation_exception_words_request() // .hw
     skip_line();
     return;
   }
-  char buf[WORD_MAX + 1];
-  unsigned char pos[WORD_MAX + 2];
+  // C++11: constexpr
+  const size_t buflen = WORD_MAX + 1 /* '\0' */;
+  // C++11: char buf[buflen]{};
+  char buf[buflen];
+  (void) memset(buf, 0, buflen);
+  // C++11: constexpr
+  const size_t posbuflen = WORD_MAX + 2 /* leading '-' + '\0' */;
+  // C++11: unsigned char pos[posbuflen]{};
+  unsigned char pos[posbuflen];
+  (void) memset(pos, 0, posbuflen);
   for (;;) {
     if (!has_arg())
       break;
-    int i = 0;
+    int i = 0; // index into hyphenation exception word excluding '-'s
+    unsigned char hc = 0U; // hyphenation code of current character
     int npos = 0;
     // Warn at most once per invalid word, not per request invocation.
     bool is_word_valid = true;
@@ -3909,9 +3950,15 @@ static void add_hyphenation_exception_words_request() // .hw
 	   && !tok.is_space()
 	   && !tok.is_newline()
 	   && !tok.is_eof()) {
-      charinfo *ci = tok.get_charinfo(false /* required */);
-      if (0 /* nullptr */ == ci) {
+      charinfo *ci = tok.get_charinfo(false /* is_mandatory */);
+      if (ci != 0 /* nullptr */) {
+	hc = ci->get_hyphenation_code();
+	if ((0U == hc) && (ci->get_ascii_code() != '-'))
+	  is_word_valid = false;
+      }
+      else
 	is_word_valid = false;
+      if (!is_word_valid) {
 	if (!was_warned) {
 	  warning(WARN_CHAR, "skipping hyphenation exception word"
 		  " containing %1", tok.description());
@@ -3921,15 +3968,11 @@ static void add_hyphenation_exception_words_request() // .hw
       if (is_word_valid) {
 	tok.next();
 	if (ci->get_ascii_code() == '-') {
-	  if (i > 0 && (npos == 0 || pos[npos - 1] != i))
+	  if ((i > 0) && ((npos == 0) || (pos[npos - 1] != i)))
 	    pos[npos++] = i;
 	}
-	else {
-	  unsigned char c = ci->get_hyphenation_code();
-	  if (0U == c)
-	    break;
-	  buf[i++] = c;
-	}
+	else
+	  buf[i++] = hc;
       }
       else {
 	do
@@ -3939,16 +3982,32 @@ static void add_hyphenation_exception_words_request() // .hw
 	       && !tok.is_eof());
       }
     }
-    if (is_word_valid && (i > 0)) {
-      pos[npos] = 0;
-      buf[i] = '\0';
-      // C++03: new unsigned char[npos + 1]();
-      unsigned char *tem = new unsigned char[npos + 1];
-      (void) memset(tem, 0, ((npos + 1) * sizeof(unsigned char)));
-      memcpy(tem, pos, npos + 1);
+    if (is_word_valid) {
+      // A valid hyphenation exception word contains a nonzero count of
+      // characters bearing hyphenation codes.
+      assert(i > 0);
+      // Clark uses `unsigned char` here for a small nonnegative
+      // quantity indicating the positions of hyphenation break points
+      // within a word of maximum size `WORD_MAX` (`UCHAR_MAX`).  That's
+      // kind of confusing because `unsigned char` is also GNU troff's
+      // internal "ordinary" character type.  Might be simpler just to
+      // use vector<int>.  --GBR
+      pos[npos] = 0U;
+      const size_t newposbuflen = npos + 1 /* 0U terminator */;
+      unsigned char *tem = 0 /* nullptr */;
+      try {
+	// C++03: new unsigned char[newposbuflen]();
+	tem = new unsigned char[newposbuflen];
+      }
+      catch (const std::bad_alloc &e) {
+	fatal("cannot allocate %1 bytes to add hyphenation exception"
+	      " word", int(newposbuflen));
+      }
+      (void) memset(tem, 0, ((newposbuflen) * sizeof(unsigned char)));
+      memcpy(tem, pos, newposbuflen);
       tem = static_cast<unsigned char *>
 	    (current_language->exceptions.lookup(symbol(buf), tem));
-      if (tem)
+      if (tem != 0 /* nullptr */)
 	delete[] tem;
     }
   }
@@ -3965,6 +4024,7 @@ static void remove_hyphenation_exception_words_request() // .rhw
   }
   dictionary_iterator iter(current_language->exceptions);
   symbol entry;
+  unsigned char *word = 0 /* nullptr */;
   if (!has_arg()) {
     while (iter.get(&entry, 0 /* nullptr */)) {
       assert(!entry.is_null());
@@ -3973,8 +4033,13 @@ static void remove_hyphenation_exception_words_request() // .rhw
       // fixing without also migrating to an STL unordered_map or
       // similar, and using a `struct` with a string and a `bool` in it
       // as the values.
-      if (strchr(entry.contents(), ' ') == 0 /* nullptr */)
-	current_language->exceptions.remove(entry.contents());
+      if (!entry.contains(' ')) {
+        word = static_cast<unsigned char *>(
+	    current_language->exceptions.remove(entry.contents()));
+	assert(word != 0 /* nullptr */);
+	delete[] word;
+	word = 0 /* nullptr */;
+      }
     }
   }
   // TODO: Else read each argument as a word, normalize any hyphens
@@ -4529,7 +4594,7 @@ void init_env_requests()
   init_string_env_reg(".sr", get_requested_point_size_string);
   init_string_env_reg(".sty", get_style_name_string);
   init_string_env_reg(".tabs", get_tabs);
-  init_int_env_reg(".u", get_fill);
+  init_int_env_reg(".u", get_filling);
   init_int_env_reg(".ul", get_underlined_line_count);
   init_vunits_env_reg(".v", get_vertical_spacing);
   init_hunits_env_reg(".w", get_prev_char_width);

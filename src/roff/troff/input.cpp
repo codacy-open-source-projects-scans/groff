@@ -198,7 +198,7 @@ static bool read_delimited_measurement(units * /* n */,
     unsigned char /* si */);
 static bool read_delimited_measurement(units * /* n */,
     unsigned char /* si */, units /* prev_value */);
-static symbol read_input_until_terminator(bool /* required */,
+static symbol read_input_until_terminator(bool /* want_diagnostic */,
     unsigned char /* end_char */, bool /* want_identifier */ = false);
 static bool read_line_rule_expression(units * /* res */,
     unsigned char /* si */, charinfo ** /* cp */);
@@ -1459,8 +1459,8 @@ static unsigned int read_color_channel_value(const char *scheme,
 
 static color *read_rgb(unsigned char end = 0U)
 {
-  symbol component = read_input_until_terminator(false /* required */,
-						 end);
+  symbol component
+    = read_input_until_terminator(false /* want_diagnostic */, end);
   if (component.is_null()) {
     warning(WARN_COLOR, "missing rgb color values");
     return 0 /* nullptr */;
@@ -1493,8 +1493,8 @@ static color *read_rgb(unsigned char end = 0U)
 
 static color *read_cmy(unsigned char end = 0U)
 {
-  symbol component = read_input_until_terminator(false /* required */,
-						 end);
+  symbol component
+    = read_input_until_terminator(false /* want_diagnostic */, end);
   if (component.is_null()) {
     warning(WARN_COLOR, "missing cmy color values");
     return 0 /* nullptr */;
@@ -1527,8 +1527,8 @@ static color *read_cmy(unsigned char end = 0U)
 
 static color *read_cmyk(unsigned char end = 0U)
 {
-  symbol component = read_input_until_terminator(false /* required */,
-						 end);
+  symbol component
+    = read_input_until_terminator(false /* want_diagnostic */, end);
   if (component.is_null()) {
     warning(WARN_COLOR, "missing cmyk color values");
     return 0 /* nullptr */;
@@ -1563,8 +1563,8 @@ static color *read_cmyk(unsigned char end = 0U)
 
 static color *read_gray(unsigned char end = 0U)
 {
-  symbol component = read_input_until_terminator(false /* required */,
-						 end);
+  symbol component
+    = read_input_until_terminator(false /* want_diagnostic */, end);
   if (component.is_null()) {
     warning(WARN_COLOR, "missing gray value");
     return 0 /* nullptr */;
@@ -1729,7 +1729,7 @@ node *do_overstrike() // \o
     }
     else {
       // TODO: In theory, we could accept spaces and horizontal motions.
-      charinfo *ci = tok.get_charinfo(true /* required */);
+      charinfo *ci = tok.get_charinfo(true /* is_mandatory */);
       if (0 /* nullptr */ == ci) {
 	error("%1 is not supported in an overstrike escape sequence"
 	      " argument", tok.description());
@@ -1788,7 +1788,7 @@ static node *do_bracket() // \b
 	&& (want_att_compat || input_stack::get_level() == start_level))
       break;
     // TODO: In theory, we could accept spaces and horizontal motions.
-    charinfo *ci = tok.get_charinfo(true /* required */);
+    charinfo *ci = tok.get_charinfo(true /* is_mandatory */);
     if (0 /* nullptr */ == ci) {
       error("%1 is not supported in a bracket-building escape sequence"
 	    " argument", tok.description());
@@ -1873,8 +1873,8 @@ static const char *do_expr_test() // \B
   desired_warnings = 0U;
   want_errors_inhibited = true;
   int dummy;
-  // TODO: grochar
-  bool result = read_measurement(&dummy, (unsigned char)('u'),
+  bool result = read_measurement(&dummy,
+				(unsigned char)('u'), // TODO: grochar
 				 true /* is_mandatory */);
   desired_warnings = saved_desired_warnings;
   want_errors_inhibited = saved_want_errors_inhibited;
@@ -2727,7 +2727,7 @@ void token::next()
 	else {
 	  // TODO: In theory, we could accept spaces and horizontal
 	  // motions.
-	  charinfo *ci = get_charinfo(true /* required */);
+	  charinfo *ci = get_charinfo(true /* is_mandatory */);
 	  if (0 /* nullptr */ == ci) {
 	    error("%1 is not supported in a zero-width character"
 		  " escape sequence argument", tok.description());
@@ -3095,7 +3095,7 @@ const char *token::description()
       static const char nonexistent[] = "nonexistent special character"
 					" or class";
       const char *ctype = special_character;
-      charinfo *ci = get_charinfo(false /* required */,
+      charinfo *ci = get_charinfo(false /* is_mandatory */,
 				  true /* suppress creation */);
       if (0 /* nullptr */ == ci)
 	ctype = nonexistent;
@@ -3163,10 +3163,10 @@ void compatible()
   skip_line();
 }
 
-static void diagnose_missing_identifier(bool required)
+static void diagnose_missing_identifier(bool is_mandatory)
 {
   if (tok.is_newline() || tok.is_eof()) {
-    if (required)
+    if (is_mandatory)
       warning(WARN_MISSING, "missing identifier");
   }
   else if (tok.is_right_brace() || tok.is_tab()) {
@@ -3179,11 +3179,11 @@ static void diagnose_missing_identifier(bool required)
     // XXX: unreachable code? --GBR
     if (!tok.is_newline() && !tok.is_eof())
       error("%1 is not allowed before an argument", start);
-    else if (required)
+    else if (is_mandatory)
       warning(WARN_MISSING, "missing identifier");
     free(start);
   }
-  else if (required)
+  else if (is_mandatory)
     error("expected identifier, got %1", tok.description());
   else
     error("expected identifier, got %1; treated as missing",
@@ -3199,7 +3199,7 @@ static void diagnose_invalid_identifier()
     error("%1 is not allowed in an identifier", tok.description());
 }
 
-symbol read_identifier(bool required)
+symbol read_identifier(bool want_diagnostic)
 {
   if (want_att_compat) {
     char buf[3];
@@ -3215,23 +3215,23 @@ symbol read_identifier(bool required)
       return symbol(buf);
     }
     else {
-      diagnose_missing_identifier(required);
+      diagnose_missing_identifier(want_diagnostic);
       return NULL_SYMBOL;
     }
   }
   else
-    return read_long_identifier(required);
+    return read_long_identifier(want_diagnostic);
 }
 
-symbol read_long_identifier(bool required)
+symbol read_long_identifier(bool want_diagnostic)
 {
-  return read_input_until_terminator(required, 0U,
+  return read_input_until_terminator(want_diagnostic, 0U,
 				     true /* want identifier */);
 }
 
 // Read bytes from input until reaching a null byte or the specified
 // `end_char`; construct and return a `symbol` object therefrom.
-static symbol read_input_until_terminator(bool required,
+static symbol read_input_until_terminator(bool want_diagnostic,
 					  unsigned char end_char,
 					  bool want_identifier)
 {
@@ -3282,7 +3282,7 @@ static symbol read_input_until_terminator(bool required,
     tok.next();
   }
   if (0 == i) {
-    diagnose_missing_identifier(required);
+    diagnose_missing_identifier(want_diagnostic /* is_mandatory */);
     delete[] buf;
     return NULL_SYMBOL;
   }
@@ -3478,7 +3478,7 @@ bool have_global_diverted_space = false;
 bool diverted_space_node::need_reread(bool *bolp)
 {
   have_global_diverted_space = true;
-  if (curenv->get_fill())
+  if (curenv->get_filling())
     trapping_blank_line();
   else
     curdiv->space(n);
@@ -5062,7 +5062,7 @@ static void do_define_string(define_mode mode, comp_mode comp)
   symbol nm;
   node *n = 0 /* nullptr */;
   int c;
-  nm = read_identifier(true /* required */);
+  nm = read_identifier(true /* want_diagnostic */);
   if (nm.is_null()) {
     skip_line();
     return;
@@ -5159,7 +5159,7 @@ void define_character(char_mode mode, const char *font_name)
 {
   const char *modestr = character_mode_description(mode);
   tok.skip_spaces();
-  charinfo *ci = tok.get_charinfo(true /* required */);
+  charinfo *ci = tok.get_charinfo(true /* is_mandatory */);
   if (0 /* nullptr */ == ci) {
     assert(0 == "attempted to use token without charinfo in character"
 	   " definition request");
@@ -5261,7 +5261,7 @@ static void print_character_request()
 	    " classes as arguments; got %1", tok.description());
       break;
     }
-    ci = tok.get_charinfo(false /* required */,
+    ci = tok.get_charinfo(false /* is_mandatory */,
 			  true /* suppress creation */);
     if (ci != 0 /* nullptr */) {
       errprint("%1\n", tok.description());
@@ -5284,7 +5284,7 @@ static void remove_character()
   while (!tok.is_newline() && !tok.is_eof()) {
     if (!tok.is_space() && !tok.is_tab()) {
       if (tok.is_any_character()) {
-	charinfo *ci = tok.get_charinfo(true /* required */,
+	charinfo *ci = tok.get_charinfo(true /* is_mandatory */,
 					true /* suppress creation */);
 	if (0 /* nullptr */ == ci)
 	   warning(WARN_CHAR, "%1 is not defined", tok.description());
@@ -5473,7 +5473,7 @@ static void do_define_macro(define_mode mode, calling_mode calling,
 {
   symbol nm, term, dot_symbol(".");
   if (CALLING_INDIRECT == calling) {
-    symbol temp1 = read_identifier(true /* required */);
+    symbol temp1 = read_identifier(true /* want_diagnostic */);
     if (temp1.is_null()) {
       skip_line();
       return;
@@ -5489,7 +5489,7 @@ static void do_define_macro(define_mode mode, calling_mode calling,
     tok.next();
   }
   if ((DEFINE_NORMAL == mode) || (DEFINE_APPEND == mode)) {
-    nm = read_identifier(true /* required */);
+    nm = read_identifier(true /* want_diagnostic */);
     if (nm.is_null()) {
       skip_line();
       return;
@@ -6084,7 +6084,7 @@ static bool read_delimited_measurement(units *n,
     return false;
   }
   tok.next();
-  if (read_measurement(n, si, prev_value)) {
+  if (read_measurement_crement(n, si, prev_value)) {
     if (start_token != tok) {
       // token::description() writes to static, class-wide storage, so
       // we must allocate a copy of it before issuing the next
@@ -6166,7 +6166,7 @@ static bool read_line_rule_expression(units *n, unsigned char si,
       tok.next();
     if (!(start_token == tok
 	  && input_stack::get_level() == start_level)) {
-      *cip = tok.get_charinfo(true /* required */);
+      *cip = tok.get_charinfo(true /* is_mandatory */);
       if (0 /* nullptr */ == *cip)
 	assert(0 == "attempted to use token without charinfo in"
 	       " line-drawing escape sequence");
@@ -6431,7 +6431,7 @@ static void do_register() // \R
     return;
 #endif
   tok.next();
-  symbol nm = read_long_identifier(true /* required */);
+  symbol nm = read_long_identifier(true /* want_diagnostic */);
   if (nm.is_null())
     return;
   tok.skip_spaces();
@@ -6440,8 +6440,9 @@ static void do_register() // \R
   if ((0 /* nullptr */ == r) || !r->get_value(&prev_value))
     prev_value = 0;
   int val;
-  // TODO: grochar
-  if (!read_measurement(&val, (unsigned char)('u'), prev_value))
+  if (!read_measurement_crement(&val,
+				(unsigned char)('u'), // TODO: grochar
+				prev_value))
     return;
   // token::description() writes to static, class-wide storage, so we
   // must allocate a copy of it before issuing the next diagnostic.
@@ -6737,7 +6738,7 @@ static void map_special_character_for_device_output(macro *mac,
 static void encode_special_character_for_device_output(macro *mac)
 {
   const char *sc;
-  charinfo *ci = tok.get_charinfo(true /* required */);
+  charinfo *ci = tok.get_charinfo(true /* is_mandatory */);
   if (0 /* nullptr */ == ci) {
     assert(0 == "attempted to encode token without charinfo for"
 	   " device extension command output");
@@ -6953,7 +6954,7 @@ static void device_request()
 
 static void device_macro_request()
 {
-  symbol s = read_identifier(true /* required */);
+  symbol s = read_identifier(true /* want_diagnostic */);
   if (!(s.is_null() || s.is_empty())) {
     request_or_macro *p = lookup_request(s);
     macro *m = p->to_macro();
@@ -7280,7 +7281,7 @@ static bool is_conditional_expression_true()
   // Check for GNU troff extended conditional expression operators.
   else if ((c == int('d') || (c == int('r')))) { // TODO: grochar
     tok.next();
-    symbol nm = read_identifier(true /* required */);
+    symbol nm = read_identifier(true /* want_diagnostic */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -7291,7 +7292,7 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'm') {
     tok.next();
-    symbol nm = read_long_identifier(true /* required */);
+    symbol nm = read_long_identifier(true /* want_diagnostic */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -7306,7 +7307,7 @@ static bool is_conditional_expression_true()
     // create it if nonexistent even though the default second argument
     // to `token::get_charinfo()` (`suppress_creation`) is `false` (see
     // "token.h").  Why?
-    charinfo *ci = tok.get_charinfo(true /* required */);
+    charinfo *ci = tok.get_charinfo(true /* is_mandatory */);
     if (0 == ci /* nullptr */) {
       skip_branch();
       return false;
@@ -7316,7 +7317,7 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'F') {
     tok.next();
-    symbol nm = read_long_identifier(true /* required */);
+    symbol nm = read_long_identifier(true /* want_diagnostic */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -7325,7 +7326,7 @@ static bool is_conditional_expression_true()
   }
   else if (c == 'S') {
     tok.next();
-    symbol nm = read_long_identifier(true /* required */);
+    symbol nm = read_long_identifier(true /* want_diagnostic */);
     if (nm.is_null()) {
       skip_branch();
       return false;
@@ -8018,7 +8019,7 @@ void ps_bbox_request() // .psbb
   }
   // Parse input line, to extract file name.
   //
-  symbol nm = read_long_identifier(true /* required */);
+  symbol nm = read_long_identifier(true /* want_diagnostic */);
   if (nm.is_null())
     //
     // No file name specified: ignore the entire request.
@@ -8331,7 +8332,7 @@ static void print_stream_request() // .pstream
 
 static void open_file(bool appending)
 {
-  symbol stream = read_identifier(true /* required */);
+  symbol stream = read_identifier(true /* want_diagnostic */);
   if (!stream.is_null()) {
     char *filename = read_rest_of_line_as_argument();
     if (filename != 0 /* nullptr */) {
@@ -8462,7 +8463,7 @@ static void close_request() // .close
 
 static void do_write_request(bool do_append_newline)
 {
-  symbol stream = read_identifier(true /* required */);
+  symbol stream = read_identifier(true /* want_diagnostic */);
   if (stream.is_null()) {
     skip_line();
     return;
@@ -8511,7 +8512,7 @@ static void stream_write_continuation_request() // .writec
 
 static void stream_write_macro_request() // .writem
 {
-  symbol stream = read_identifier(true /* required */);
+  symbol stream = read_identifier(true /* want_diagnostic */);
   if (stream.is_null()) {
     skip_line();
     return;
@@ -8524,7 +8525,7 @@ static void stream_write_macro_request() // .writem
     skip_line();
     return;
   }
-  symbol s = read_identifier(true /* required */);
+  symbol s = read_identifier(true /* want_diagnostic */);
   if (s.is_null()) {
     skip_line();
     return;
@@ -8662,7 +8663,7 @@ static void do_translate(bool transparently, bool as_input)
     // distributed with Sixth Edition Unix did things like `.tr ^\|`, so
     // some support should be added, only for those idioms, and only in
     // compatibility mode.
-    charinfo *ci1 = tok.get_charinfo(true /* required */);
+    charinfo *ci1 = tok.get_charinfo(true /* is_mandatory */);
     if (0 /* nullptr */ == ci1) {
       if (!want_att_compat)
 	error("cannot perform character translation from %1",
@@ -8688,7 +8689,7 @@ static void do_translate(bool transparently, bool as_input)
       ci1->set_special_translation(charinfo::TRANSLATE_HYPHEN_INDICATOR,
 				   transparently);
     else {
-      charinfo *ci2 = tok.get_charinfo(true /* required */);
+      charinfo *ci2 = tok.get_charinfo(true /* is_mandatory */);
       if (0 /* nullptr */ == ci2) {
 	if (!want_att_compat)
 	  error("cannot perform character translation to %1",
@@ -8772,7 +8773,7 @@ static void set_character_flags_request() // .cflags
       return;
     }
     while (has_arg()) {
-      charinfo *ci = tok.get_charinfo(true /* required */);
+      charinfo *ci = tok.get_charinfo(true /* is_mandatory */);
       if (0 /* nullptr */ == ci)
 	assert(0 == "attempted to use token without charinfo in"
 	       " character flags assignment request");
@@ -8889,7 +8890,7 @@ dictionary char_class_dictionary(501);
 static void define_class_request() // .class
 {
   tok.skip_spaces();
-  symbol nm = read_identifier(true /* required */);
+  symbol nm = read_identifier(true /* want_diagnostic */);
   if (nm.is_null()) {
     skip_line();
     return;
@@ -8965,7 +8966,7 @@ static void define_class_request() // .class
       child1 = 0 /* nullptr */;
     }
     if (tok.is_any_character())
-      child1 = tok.get_charinfo(true /* required */);
+      child1 = tok.get_charinfo(true /* is_mandatory */);
     else
       // If we encountered a space or nonsense, we cannot be
       // interpreting a range expression; there should be no "child1".
@@ -9021,7 +9022,7 @@ static void define_class_request() // .class
 static charinfo *get_charinfo_by_index(int n,
 				       bool suppress_creation = false);
 
-charinfo *token::get_charinfo(bool required, bool suppress_creation)
+charinfo *token::get_charinfo(bool is_mandatory, bool suppress_creation)
 {
   if (TOKEN_CHAR == type)
     return charset_table[c];
@@ -9042,7 +9043,7 @@ charinfo *token::get_charinfo(bool required, bool suppress_creation)
       return 0 /* nullptr */;
     }
   }
-  if (required) {
+  if (is_mandatory) {
     if (TOKEN_EOF == type || TOKEN_NEWLINE == type)
       warning(WARN_MISSING, "missing ordinary, special, or indexed"
 			    " character");
@@ -9053,11 +9054,11 @@ charinfo *token::get_charinfo(bool required, bool suppress_creation)
   return 0 /* nullptr */;
 }
 
-charinfo *read_character(/* TODO?: bool required */)
+charinfo *read_character(/* TODO?: bool want_diagnostic */)
 {
   tok.skip_spaces();
   charinfo *ci = tok.get_charinfo();
-  // TODO?: if (required && (0 /* nullptr */ == ci))
+  // TODO?: if (want_diagnostic && (0 /* nullptr */ == ci))
   if (0 /* nullptr */ == ci)
     tok.diagnose_non_character();
   else
@@ -9566,7 +9567,7 @@ void vjustify()
     handle_initial_request(VJUSTIFY_REQUEST);
     return;
   }
-  symbol type = read_long_identifier(true /* required */);
+  symbol type = read_long_identifier(true /* want_diagnostic */);
   if (!type.is_null())
     curdiv->vjustify(type);
   skip_line();
@@ -9826,8 +9827,8 @@ static int evaluate_expression(const char *expr, units *res)
 {
   input_stack::push(make_temp_iterator(expr));
   tok.next();
-  // TODO: grochar
-  int success = read_measurement(res, (unsigned char)('u'));
+  int success = read_measurement(res,
+				 (unsigned char)('u')); // TODO: grochar
   while (input_stack::get(0 /* nullptr */) != EOF)
     ;
   return success;

@@ -110,9 +110,6 @@ class pending_output_line;
 // arguments and then, if everything is kosher, call curenv->[one of the
 // below]?  --GBR, 2026
 void title_length();
-void space_size();
-void fill();
-void no_fill();
 void adjust();
 void no_adjust();
 void center();
@@ -141,7 +138,6 @@ void line_width();
 void tabs_save();
 void tabs_restore();
 #endif
-void line_tabs_request();
 void title();
 #ifdef WIDOW_CONTROL
 void widow_control_request();
@@ -305,7 +301,8 @@ public:
   font_family *get_family() { return family; }
   hunits get_emboldening_offset();	// .b
   unsigned get_adjust_mode();		// .j
-  int get_fill();			// .u
+  int get_filling();			// .u
+  void configure_filling(bool);
   hunits get_indent();			// .i
   hunits get_temporary_indent();
   hunits get_line_length();		// .l
@@ -321,12 +318,16 @@ public:
   hunits get_space_width() { return env_space_width(this); }
   int get_space_size() { return space_size; }	// in ems/36
   int get_sentence_space_size() { return sentence_space_size; }
+  void set_interword_space_size(int);
+  void reset_supplemental_intersentence_space_size();
+  void set_supplemental_intersentence_space_size(int);
   hunits get_narrow_space_width() { return env_narrow_space_width(this); }
   hunits get_half_narrow_space_width()
     { return env_half_narrow_space_width(this); }
   hunits get_input_line_position();
   const char *get_tabs();
   int is_using_line_tabs();
+  void configure_line_tabs(bool);
   unsigned get_hyphenation_mode();
   unsigned get_hyphenation_mode_default();
   int get_hyphen_line_max();
@@ -393,9 +394,6 @@ public:
   void dump_pending_nodes();
 
   friend void title_length();
-  friend void space_size();
-  friend void fill();
-  friend void no_fill();
   friend void adjust();
   friend void no_adjust();
   friend void center();
@@ -426,7 +424,6 @@ public:
   friend void tabs_save();
   friend void tabs_restore();
 #endif
-  friend void line_tabs_request();
   friend void title();
 #ifdef WIDOW_CONTROL
   friend void widow_control_request();

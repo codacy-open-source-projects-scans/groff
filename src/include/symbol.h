@@ -19,24 +19,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stddef.h> // size_t
 #include <stdint.h> // uintptr_t
+#include <string.h> // strchr()
 
 #define DONT_STORE 1
 #define MUST_ALREADY_EXIST 2
 
 class symbol {
   static const char **table;
-  static int table_used;
+  static int table_occupancy; // # of entries in use
   static int table_size;
   static char *block;
   static size_t block_size;
   const char *s;
 public:
-  symbol(const char *p, int /* how */ = 0);
+  symbol(const char * /* p */, int /* how */ = 0);
   symbol();
   uintptr_t hash() const;
   int operator ==(symbol) const;
   int operator !=(symbol) const;
   const char *contents() const;
+  bool contains(char) const;
   bool is_null() const;
   bool is_empty() const;
   size_t json_length() const;
@@ -70,6 +72,11 @@ inline uintptr_t symbol::hash() const
 inline const char *symbol::contents() const
 {
   return s;
+}
+
+inline bool symbol::contains(char c) const
+{
+  return strchr(s, c) != 0 /* nullptr */;
 }
 
 inline bool symbol::is_null() const

@@ -89,7 +89,7 @@ static char *srealloc(char *ptr, int oldsz, int oldlen, int newlen,
   }
 }
 
-string::string() : ptr(0), len(0), sz(0)
+string::string() : ptr(0 /* nullptr */), len(0), sz(0)
 {
 }
 
@@ -290,6 +290,11 @@ int string::search(const char c) const
 		  ? static_cast<const char *>(memchr(ptr, c, len))
 		  : 0 /* nullptr */;
   return (p != 0 /* nullptr */) ? (p - ptr) : -1;
+}
+
+bool string::contains(const char c) const
+{
+  return (search(c) >= 0);
 }
 
 // Return index of substring `c` in string, -1 if not found.

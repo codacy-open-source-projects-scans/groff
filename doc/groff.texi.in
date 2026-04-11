@@ -8432,7 +8432,9 @@ change it.
 @Defesc {\\e, , , }
 Interpolate the escape character.
 @cindex @code{\e}, interpretation in copy mode
-@code{\e} is interpreted even in copy mode (@pxref{Copy Mode}).
+The formatter interprets
+@code{\e}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 @endDefesc
 
 @cindex formatting a backslash glyph (@code{\[rs]})
@@ -8776,7 +8778,9 @@ comment.@footnote{This claim may be more aspirational than descriptive.}
 Start a comment; read everything up to the next newline in copy mode
 (@pxref{Copy Mode}) and discard it.
 @cindex @code{\"}, interpretation in copy mode
-@code{\"} is interpreted even in copy mode.
+The formatter interprets
+@code{\"}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 
 It can be tricky to keep the comments from interfering with the
 appearance of the output.
@@ -8846,7 +8850,9 @@ introduced this extension to avoid the problems described above.
 is still widely seen,
 and remains useful for partial-line comments on control lines.)
 @cindex @code{\#}, interpretation in copy mode
-@code{\#} is interpreted even in copy mode.
+The formatter interprets
+@code{\#}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 
 @Example
 .nr in-indonesia 1
@@ -8975,7 +8981,7 @@ In the
 @code{\R}
 escape sequence,
 the delimiter need not be a neutral apostrophe;
-see @ref{Delimiters}.
+recall @ref{Delimiters}.
 
 @Example
 .nr a (((17 + (3 * 4))) % 4)
@@ -8985,9 +8991,14 @@ see @ref{Delimiters}.
     @result{} 1 1
 @endExample
 
-(Later, we will discuss additional forms of @code{nr} and @code{\R} that
-can change a register's value after it is dereferenced but before it is
-interpolated.  @xref{Auto-increment}.)
+Later,
+we will discuss additional forms of
+@code{nr}
+and
+@code{\R}
+that can change a register's value
+after it is dereferenced
+but before it is interpolated.@footnote{@xref{Auto-increment}.}
 
 @cindex @code{\R} escape sequence, untokenized on input
 @cindex untokenized escape sequence, @code{\R}
@@ -8997,8 +9008,8 @@ does not tokenize
 @code{\R}
 when reading it;
 the escape sequence updates only the formatter's register dictionary
-and does not contribute (directly) to output.
-@xref{GNU @command{troff} Internals}.
+and does not contribute (directly)
+to output.@footnote{@xref{GNU @command{troff} Internals}.}
 
 Further surprise can occur if you use registers like
 @code{.k},@footnote{@xref{Page Motions}.} whose values are not
@@ -9044,9 +9055,16 @@ increment or decrement a register.
 @DefreqItem {nr, ident @t{-}@Var{value}}
 @DefescItemx {\\R, @code{'}, ident @t{+}value, @code{'}}
 @DefescListEnd {\\R, @code{'}, ident @t{-}value, @code{'}}
-Increment (decrement) register @var{ident} by @var{value}.  In the
-@code{\R} escape sequence, the delimiter need not be a neutral
-apostrophe; see @ref{Delimiters}.
+Increment (decrement) register
+@var{ident}
+by
+@var{value}.
+In the
+@code{\R}
+escape sequence,
+the delimiter need not be a neutral apostrophe;
+recall
+@ref{Delimiters}.
 
 @Example
 .nr a 1
@@ -9179,7 +9197,9 @@ emits a warning in category
 @samp{reg}.
 @xref{Warnings}.}
 @cindex @code{\n}, interpretation in copy mode
-@code{\n} is interpreted even in copy mode (@pxref{Copy Mode}).
+The formatter interprets
+@code{\n}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 
 @Example
 .nr a 5
@@ -9431,7 +9451,9 @@ name@tie{}@var{r}, two-character name @var{rg}).  Zeroes represent
 Arabic formats.  If @var{reg} is not defined, @var{reg} is not created
 and nothing is interpolated.
 @cindex @code{\g}, interpretation in copy mode
-@code{\g} is interpreted even in copy mode (@pxref{Copy Mode}).
+The formatter interprets
+@code{\g}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 @endDefesc
 
 @cindex register format, in expressions
@@ -9905,10 +9927,7 @@ we must introduce the concept of ``productive'' input lines.
 A
 @dfn{productive input line}
 directly produces formatted output.
-Text lines produce output,@footnote{though not necessarily to the output
-device;
-see
-@ref{Diversions}}
+Text lines that populate the top-level diversion produce output,
 as do control lines containing requests like
 @samp{.tl //Page %//}
 or an escape sequence like
@@ -10493,6 +10512,7 @@ mandatory.  Value@tie{}8 is possible as an additional restriction, but
 values@tie{}16 and@tie{}32 should be avoided, as should mode@tie{}1.
 Modes@tie{}4 and@tie{}6 are typical.
 
+@need 1000
 A table of left and right minimum character counts for hyphenation as
 needed by the patterns distributed with
 GNU
@@ -11813,8 +11833,9 @@ two exceptions: the @code{|} operator recognizes the new input line
 (@pxref{Numeric Expressions}), and the input line counter register
 @code{.c} increments.
 @cindex @code{\@key{RET}}, interpretation in copy mode
-@code{\RET} is interpreted even in copy mode.@footnote{@xref{Copy
-Mode}.}
+The formatter interprets
+@code{\RET}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 
 @c Wrap example at 56 columns (on the _output_).  We use 50n in the
 @c groff input to avoid line adjustment.
@@ -16687,7 +16708,9 @@ second two digits (01@leq{}@var{nn}@leq{}99)), and the third any
 positive integer @var{nnn}.  Macros and strings accept an unlimited
 number of parameters.
 @cindex @code{\$}, interpretation in copy mode
-@code{\$} is interpreted even in copy mode.@footnote{@xref{Copy Mode}.}
+The formatter interprets
+@code{\$}
+even in copy mode.@footnote{@xref{Copy Mode}.}
 @endDefesc
 
 @Defreq {shift, [@Var{n}]}
@@ -20713,7 +20736,11 @@ two-character
 name @var{ev})
 as returned by @cite{getenv@r{(3)}}.
 @cindex @code{\V}, interpretation in copy mode
-@code{\V} is interpreted even in copy mode;
+GNU
+@command{troff} @c GNU
+interprets
+@code{\V}
+even in copy mode;
 recall @ref{Copy Mode}.
 @endDefesc
 
@@ -20754,7 +20781,7 @@ Embed
 @var{character-sequence}
 into
 GNU
-@command{troff}
+@command{troff} @c GNU
 output as parameters to an
 @w{@samp{x X}}
 device extension command.@footnote{@xref{GNU @command{troff} Output}.}
@@ -21254,7 +21281,7 @@ GNU
 @command{troff} @c GNU
 emits a variety of error diagnostics
 and supports several categories of warning;
-the output of each category can be selectively enabled or suppressed.
+each can be independently issued or suppressed.
 A trace of the formatter's input processing stack
 can be emitted when errors or warnings occur
 by means of
@@ -21804,7 +21831,9 @@ circumstances.
 @itemx 1
 No user-defined character of the requested name or index exists
 and no mounted font defines a glyph for it,
-or input could not be encoded for device-independent output.
+input could not be encoded for device-independent output,
+or a character without a hyphenation code appeared
+in a hyphenation exception word.
 This category is enabled by default.
 
 @c @item number
@@ -22761,17 +22790,6 @@ interpolated@tie{}1 only if
 @command{nroff} @c AT&T
 was the formatter and was run with
 @option{-T}.
-
-@cindex removal of read-only registers, incompatibility with @acronym{AT&T} @code{troff}
-@cindex register, read-only, removal, incompatibility with @acronym{AT&T} @code{troff}
-@cindex read-only register removal, incompatibility with @acronym{AT&T} @code{troff}
-@acronym{AT&T}
-@command{troff} @c AT&T
-ignored attempts to remove read-only registers;
-GNU
-@command{troff} @c GNU
-honors such requests.
-Recall @ref{Built-in Registers}.
 
 @cindex environment availability and naming, incompatibilities with
 @acronym{AT&T}
