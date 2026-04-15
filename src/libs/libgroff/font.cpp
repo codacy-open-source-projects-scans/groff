@@ -818,10 +818,10 @@ void font::copy_entry(glyph *new_glyph, glyph *old_glyph)
   ch_index[new_index] = ch_index[old_index];
 }
 
-font *font::load_font(const char *fn, bool load_header_only)
+font *font::load_font(const char *fn, bool validate_only)
 {
   font *f = new font(fn);
-  if (!f->load(load_header_only)) {
+  if (!f->load(validate_only)) {
     delete f;
     return 0 /* nullptr */;
   }
@@ -895,14 +895,18 @@ again:
   return false;
 }
 
-bool font::load(bool load_header_only)
+bool font::load(bool validate_only)
 {
   char *path;
   FILE *fp = open_file(filename, &path);
-  if (0 /* nullptr */ == fp)
+  if (0 /* nullptr */ == fp) {
+    if (!validate_only)
+      error("cannot open font description file '%1': %2", filename,
+	    strerror(errno));
     return false;
+  }
   text_file t(fp, path);
-  t.silent = load_header_only;
+  t.silent = validate_only;
   char *p = 0 /* nullptr */;
   bool saw_name_directive = false;
   while (t.next_line()) {
@@ -1002,7 +1006,7 @@ bool font::load(bool load_header_only)
   t.recognize_comments = false;
   while (directive) {
     if (strcmp(directive, "kernpairs") == 0) {
-      if (load_header_only)
+      if (validate_only)
 	return true;
       for (;;) {
 	if (!t.next_line()) {
@@ -1036,7 +1040,7 @@ bool font::load(bool load_header_only)
     }
     // TODO: Rename this directive to "ranged-charset".
     else if (strcmp(directive, "charset-range") == 0) {
-      if (load_header_only)
+      if (validate_only)
 	return true;
       saw_charset_directive = true;
       bool had_range = false;
@@ -1113,7 +1117,7 @@ bool font::load(bool load_header_only)
       }
     }
     else if (strcmp(directive, "charset") == 0) {
-      if (load_header_only)
+      if (validate_only)
 	return true;
       saw_charset_directive = true;
       glyph *last_glyph = 0 /* nullptr */;

@@ -658,7 +658,7 @@ adjustment of inter-word space size to justify text, and of
 inter-sentence space size to suit local style conventions
 
 @item
-automatic and manual determination of hyphenation break points
+automatic and manual determination of hyphenation points
 
 @item
 pagination
@@ -6213,13 +6213,13 @@ preprocessor to lay out tables.
 @anchor{Requests} @c 1.22.4
 @subsection Requests and Macros
 
-We have now encountered almost all of the syntax there is in the
+The foregoing describes almost all of the syntax of the
 @code{roff}
 language,
-with an exception already noted in passing.@footnote{The backspace
-character is also meaningful;
-see
-@ref{Page Motions}.}
+with an exception already noted
+in passing.@footnote{The backspace character
+is also meaningful.
+@xref{Page Motions}.}
 @cindex request
 @cindex control character (@code{.})
 @cindex character, control (@code{.})
@@ -6894,12 +6894,16 @@ later.
 @cindex page, geometry of
 @cindex geometry, page
 
-@code{roff} systems format text under certain assumptions about the size
-of the output medium, or page.  For the formatter to correctly break a
-line it is filling, it must know the line length, which it derives from
-the page width (@pxref{Line Layout}).  For it to decide whether to write
-an output line to the current page or wait until the next one, it must
-know the page length (@pxref{Page Layout}).
+@code{roff}
+systems format text
+under certain assumptions about the size of the output medium,
+or page.
+For the formatter to correctly break a line it is filling,
+it must know the line length,
+which it derives from the page width.@footnote{@xref{Line Layout}.}
+For it to decide whether to write an output line
+to the current page or wait until the next one,
+it must know the page length.@footnote{@xref{Page Layout}.}
 
 @cindex device resolution
 @cindex resolution, device
@@ -6907,11 +6911,16 @@ know the page length (@pxref{Page Layout}).
 @cindex units, basic
 @cindex machine units
 @cindex units, machine
-A device's @dfn{resolution} converts practical units like inches or
-centimeters to @dfn{basic units}, a convenient length measure for the
-output device or file format.  The formatter and output driver use basic
-units to reckon page measurements.  The device description file defines
-its resolution and page dimensions (@pxref{DESC File Format}).
+A device's
+@dfn{resolution}
+converts practical units like inches or centimeters to
+@dfn{basic units},
+a length measure convenient for the output device or file format.
+The formatter and output driver
+use basic units to reckon page measurements.
+The device description file
+defines its resolution
+and page dimensions.@footnote{@xref{DESC File Format}.}
 
 @cindex page
 A @dfn{page} is a two-dimensional structure upon which a @code{roff}
@@ -6964,11 +6973,14 @@ terminal output devices have page offsets of zero.}
 @cindex drawing position, initial
 Combining the foregoing facts results in an origin that lies
 at the page offset in the horizontal dimension
-and at the text baseline (using the default vertical spacing)
+and at the text baseline
+(using the default vertical spacing)
 in the vertical dimension.
-A document can change these prior to its first written or drawn output;
-see @ref{Line Layout} and
-@ref{Manipulating Type Size and Vertical Spacing}.
+A document can change these
+prior to its first written or drawn output.@footnote{See
+@ref{Line Layout}
+and
+@ref{Manipulating Type Size and Vertical Spacing}.}
 @c This origin isn't necessarily--and generally is not--the one used by
 @c the device-independent output, but that coordinate system is not
 @c exposed in the *roff language, though it can be expressed in
@@ -7001,8 +7013,7 @@ corresponds to the last output line that fits on the page,
 the break caused by the end of input also breaks the page,
 producing a useless blank one.
 Macro packages keep users from having to confront this difficulty
-by setting ``traps''
-(@pxref{Traps});
+by setting ``traps'';@footnote{@xref{Traps}.}
 moreover,
 all but the simplest page layouts tend to have headers and footers,
 or at least bear vertical margins of at least one vee.
@@ -7245,7 +7256,7 @@ follows.  @xref{Drawing Geometric Objects}.
 A general-purpose register
 (one created or updated with the
 @code{nr}
-request@footnote{@xref{Registers}.})
+request)@footnote{@xref{Registers}.}
 is implicitly dimensionless,
 or reckoned in basic units if interpreted in a measurement context.
 But it is convenient for many requests and escape sequences
@@ -13532,8 +13543,11 @@ Initially, no characters have this property.
 
 In contrast to values 2 and@tie{}4, the values 128, 256, and 512 work
 pairwise.  If, for example, the left character has value 512, and the
-right character 128, no break will be automatically inserted between
-them.  If we use value@tie{}6 instead for the left character, a break
+right character 128,
+GNU
+@command{troff} @c GNU
+does not insert a break between them.
+If we use value@tie{}6 instead for the left character, a break
 after the character can't be suppressed since the neighboring character
 on the right doesn't get examined.
 @endDefreq
@@ -15604,9 +15618,9 @@ and
 @var{end},
 inclusively.
 The first element of the string has index@tie{}0.
-An absent
+Omitting
 @var{end}
-argument implies the largest valid value
+implies the largest valid value
 (the string length minus one).
 Negative indices count backward from the end of the string:@:
 the last element has index@tie{}@minus{}1,
@@ -15655,11 +15669,23 @@ request.
 @cindex uppercasing a string (@code{stringup})
 @cindex lowercasing a string (@code{stringdown})
 @cindex down-casing a string (@code{stringdown})
-Alter the string named @var{str} by replacing each of its bytes with its
-lowercase (@code{stringdown}) or uppercase (@code{stringup}) version (if
-one exists).  Special characters in the string will often transform in
-the expected way due to the regular naming convention for accented
-characters.  When they do not, use substrings and/or catenation.
+Alter the string named
+@var{str}
+by replacing each of its bytes with its
+lowercase
+(@code{stringdown})
+or uppercase
+(@code{stringup})
+version
+(if one exists).
+GNU
+@command{troff}'s @c GNU
+built-in special characters often transform in the expected way
+due to the regular naming convention
+for accented characters.@footnote{See
+@cite{groff_char@r{(7)}.}}
+When they do not,
+use substrings and/or catenation.
 
 @Example
 .ds resume R\['e]sum\['e]\"
@@ -16113,7 +16139,7 @@ resembles
 @samp{.if 1};
 it puts a break on the output if
 @var{input}
-is empty.
+is omitted.
 Unlike
 @code{if},
 it cannot govern conditional blocks.
@@ -16378,7 +16404,8 @@ body again.
 @cindex recursive macros
 @cindex macros, recursive
 @noindent
-An often better solution---and one that is more portable,
+Often,
+a better solution---and a more portable one,
 since @acronym{AT&T}
 @command{troff} @c AT&T
 lacked the
@@ -17110,10 +17137,13 @@ use @code{\E} to keep @samp{..} from ending a macro definition
 prematurely.  If the multiplicity of backslashes complicates
 maintenance, use end macros.
 
-@code{\E} is also convenient to define strings containing escape
-sequences that need to work when used in copy mode (for example, as
-macro arguments), or which will be interpolated at varying macro nesting
-depths.  We might define strings to begin and end superscripting
+@code{\E}
+is also convenient to define strings containing escape sequences that
+need to work when used in copy mode
+(for example,
+as macro arguments),
+or that are interpolated at varying macro nesting depths.
+We might define strings to begin and end superscripting
 as follows.@footnote{These are lightly adapted from the @code{groff}
 implementation of the @file{ms} macros.}
 
@@ -20823,7 +20853,7 @@ of the names documented in the
 @cite{groff_char@r{(7)}} man page.
 Further,
 escape sequences that produce horizontal or vertical motions,
-hyphenation breaks,
+hyphenation points,
 or that are dummy characters
 may appear in strings or be converted to nodes,
 particularly in diversions.@footnote{@xref{GNU @command{troff}
@@ -21037,7 +21067,7 @@ a special character token for
 (representing
 @samp{u}
 with an umlaut),
-a token encoding a hyphenation break point,@footnote{GNU
+a token encoding a hyphenation point,@footnote{GNU
 @command{troff}
 encodes tokens that aren't Unicode Basic Latin characters
 as code points in the C0 and C1 control ranges;
@@ -21525,18 +21555,29 @@ The ``from'' font identifier is listed first,
 followed by its ``to'' translation.
 @endDefreq
 
-@Defreq {phw, }
+@Defreq {phw, [@Var{word} @r{@dots{}}]}
 @cindex dumping hyphenation exception words (@code{phw})
 @cindex hyphenation exception words, dumping (@code{phw})
 @cindex exception words, hyphenation, dumping (@code{phw})
 Report,
 to the standard error stream,
+the hyphenation points of each
+hyphenation exception word
+@var{word}
+defined by the
+@code{hw}
+request,
+or,
+without arguments,
 the list of hyphenation exception words
 associated with the hyphenation language
 selected by the
 @code{hla}
 request;
 recall @ref{Manipulating Hyphenation}.
+Hyphens in
+@var{word}
+are ignored.
 A
 @samp{-}
 marks each hyphenation point.
@@ -21743,12 +21784,23 @@ and the horizontal page location in ens.
 @endDefreq
 
 @Defreq {spreadwarn, [@Var{limit}]}
-Emit a @code{break} warning if the additional space inserted for each
-space between words in an output line adjusted to both margins with
-@w{@samp{.ad b}} is larger than or equal to @var{limit}.  A negative
-value is treated as zero; an absent argument toggles the warning on and
-off without changing @var{limit}.  The default scaling unit is @samp{m}.
-At startup, @code{spreadwarn} is inactive and @var{limit} is 3@dmn{m}.
+Emit a
+@code{break}
+warning if the additional space inserted for each space between words in
+an output line adjusted to both margins with
+@w{@samp{.ad b}}
+is larger than or equal to
+@var{limit}.
+A negative value is treated as zero;
+an absent argument toggles the warning on and off without changing
+@var{limit}.
+The default scaling unit is
+@samp{m}.
+At startup,
+@code{spreadwarn}
+is inactive and
+@var{limit}
+is 3@dmn{m}.
 
 For example,
 
@@ -22119,9 +22171,12 @@ Recall @ref{Host System Service Access}.
 @cindex compatibility mode
 @cindex mode, compatibility
 
-Some syntactical and behavioral differences between GNU and
-@acronym{AT&T}
-@command{troff}s
+GNU
+@command{troff}'s @c GNU
+features sometimes cause incompatibilities with documents written
+assuming old implementations of
+@code{troff}. @c generic
+Some syntactical and behavioral differences between them
 are thought too important to neglect;
 GNU
 @command{troff} @c GNU
@@ -22552,6 +22607,7 @@ GNU
 @command{troff} @c GNU
 extension request names
 tend to ignore them,
+@c "Tend" because a macro of a matching name is possible.
 and if they don't support a
 GNU
 @command{troff} @c GNU
@@ -22582,11 +22638,6 @@ which both render it as
 @c as of this writing, 2022-08-13
 @c NESTED END Keep in sync with groff_man_style(7).
 Recall @ref{Manipulating Filling and Adjustment}.
-GNU
-@command{troff}'s @c GNU
-features sometimes cause incompatibilities with documents written
-assuming old implementations of
-@code{troff}. @c generic
 
 @cindex trailing space, on input lines, difference from @acronym{AT&T} @code{troff}
 @cindex space, trailing, on input lines, difference from @acronym{AT&T} @code{troff}
@@ -23314,8 +23365,12 @@ extend over more than one line.
 
 @item sizescale @var{n}
 @kindex sizescale
-A typographical point is subdivided into @var{n}@tie{}scaled points.
-The default is@tie{}@code{1}.  @xref{Using Fractional Type Sizes}.
+A typographical point is subdivided into
+@var{n}@tie{}scaled
+points.
+The default
+is@tie{}@code{1}.
+Recall @ref{Using Fractional Type Sizes}.
 
 @item styles @var{S1} @r{@dots{}} @var{Sm}
 @kindex styles
@@ -23324,8 +23379,14 @@ The first@tie{}@var{m} mounting positions are associated with styles
 
 @item tcommand
 @kindex tcommand
-The postprocessor can handle the @samp{t} and @samp{u} intermediate
-output commands.
+The postprocessor interprets the
+@code{t}
+and
+@code{u}
+output commands that
+GNU
+@command{troff} @c GNU
+produces.
 
 @item unicode
 @kindex unicode
@@ -23356,9 +23417,13 @@ The @code{grohtml} driver uses this directive.
 @c XXX: Savannah #63074 is trying to make this obsolescent.
 @item use_charnames_in_special
 @kindex use_charnames_in_special
-GNU @code{troff} should encode special characters in arguments to device
-extension commands; see @ref{Postprocessor Access}.  The @code{grohtml}
-driver uses this directive.
+GNU
+@command{troff} @c GNU
+should encode special characters
+in arguments to device extension commands;
+recall @ref{Postprocessor Access}.
+@cite{grohtml@r{(1)}}
+uses this directive.
 
 @item vert @var{n}
 @kindex vert
@@ -23831,7 +23896,11 @@ while
 @dfn{page description}
 denotes the language accepted
 by the parser that interprets this output for the output drivers.
-This parser handles whitespace more flexibly than @acronym{AT&T}
+This parser handles whitespace
+(spaces,
+tabs,
+and newlines)
+more flexibly than @acronym{AT&T}
 @command{troff}'s
 implementation,
 recognizes a GNU extension to the language,
@@ -23953,23 +24022,27 @@ but GNU
 follows each with a newline.
 
 Some commands have a more complex syntax;
-the GNU
+GNU
 @command{troff} @c GNU
-extension command for writing glyph sequences
-(@code{t})
-accepts a variable number of arguments.
+extension commands for writing glyph sequences,
+@code{t}
+and
+@code{u},
+accept a variable number of arguments;
+whitespace must follow them.
 Those that draw geometric objects
 (@code{D})
 or control the device
 (@code{x})
-furthermore recognize subcommand arguments.
-Such commands thus must end with a newline.
+furthermore recognize a variable number of space-
+or tab-separated words as arguments;
+such commands thus must end with a newline.
 In GNU
 @command{troff}, @c GNU
 the device extension (sub)command
 @samp{@w{x X}}
 uniquely supports a line continuation syntax;
-a single input line contains any other.
+a single input line bounds any other.
 
 @node Argument Units
 @subsubsection Argument Units
@@ -23986,12 +24059,18 @@ fonts and special characters.  The names of characters and fonts can be
 of arbitrary length.  A character that is to be printed is always in
 the current font.
 
-A string argument is always terminated by the next whitespace character
-(space, tab, or newline); an embedded @samp{#} character is regarded as
-part of the argument, not as the beginning of a comment command.  An
-integer argument is already terminated by the next non-digit character,
-which then is regarded as the first character of the next argument or
-command.
+A whitespace character
+(space, tab, or newline)
+always terminates a string argument.
+A
+@samp{#}
+character embedded in a string argument is part of that argument,
+not the beginning of a comment command.
+Any character other than a decimal numeral
+terminates a command that mtakes a numeric argument,
+and,
+if not whitespace,
+is interpreted as the start of a new command.
 
 @anchor{Document Parts} @c 1.23.0
 @node Output Structure

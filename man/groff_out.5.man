@@ -201,7 +201,11 @@ while
 denotes the language accepted by the parser that interprets this output
 for the output drivers.
 .
-This parser handles whitespace more flexibly than AT&T
+This parser handles whitespace
+(spaces,
+tabs,
+and newlines)
+more flexibly than AT&T
 .IR troff 's \" AT&T
 implementation,
 recognizes a GNU extension to the language,
@@ -300,25 +304,29 @@ follows each with a newline.
 .
 .P
 Some commands have a more complex syntax;
-the GNU
+GNU
 .I troff \" GNU
-extension command for writing glyph sequences
-.RB ( t )
-accepts a variable number of arguments.
+extension commands for writing glyph sequences,
+.B t
+and
+.BR u ,
+accept a variable number of arguments;
+whitespace must follow them.
+.
 Those that draw geometric objects
 .RB ( D )
 or control the device
 .RB ( x )
-furthermore recognize subcommand arguments.
-.
-Such commands thus must end with a newline.
+furthermore recognize a variable number of space-
+or tab-separated words as arguments;
+such commands thus must end with a newline.
 .
 In GNU
 .I troff, \" GNU
 the device extension (sub)command
 .RB \[lq] x\~X \[rq]
 uniquely supports a line continuation syntax;
-a single input line contains any other.
+a single input line bounds any other.
 .
 .
 .\" ====================================================================
@@ -362,15 +370,20 @@ A glyph that is to be printed will always be in the current font.
 .
 .
 .P
-A string argument is always terminated by the next whitespace
-character (space, tab, or newline); an embedded
-.B #
-character is regarded as part of the argument, not as the beginning of
-a comment command.
+A whitespace character
+(space, tab, or newline)
+always terminates a string argument.
 .
-An integer argument is already terminated by the next non-digit
-character, which then is regarded as the first character of the next
-argument or command.
+A
+.RB \[lq] # \[rq]
+character embedded in a string argument is part of that argument,
+not the beginning of a comment command.
+.
+Any character other than a decimal numeral
+terminates a command that mtakes a numeric argument,
+and,
+if not whitespace,
+is interpreted as the start of a new command.
 .
 .
 .\" ====================================================================

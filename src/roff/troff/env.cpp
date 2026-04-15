@@ -1,5 +1,5 @@
 /* Copyright 1989-2025 Free Software Foundation, Inc.
-             2020-2025 G. Branden Robinson
+             2020-2026 G. Branden Robinson
 
 Written by James Clark (jjc@jclark.com)
 
@@ -626,7 +626,7 @@ static void warn_if_font_name_deprecated(symbol nm)
   }
 }
 
-bool environment::set_font(symbol nm)
+bool environment::select_font(symbol nm)
 {
   if (was_line_interrupted)
     return false;
@@ -642,10 +642,10 @@ bool environment::set_font(symbol nm)
   }
   else {
     prev_fontno = fontno;
-    int n = symbol_fontno(nm);
+    int n = mounting_position_of_font(nm);
     if (n < 0) {
-      n = next_available_font_position();
-      if (!mount_font(n, nm))
+      n = next_available_font_mounting_position();
+      if (!mount_font_at_position(nm, n))
 	return false;
     }
     if (family->resolve(n) == FONT_NOT_MOUNTED)
@@ -653,15 +653,15 @@ bool environment::set_font(symbol nm)
     fontno = n;
   }
   if (underline_spaces && fontno != prev_fontno) {
-    if (fontno == get_underline_fontno())
+    if (fontno == get_selected_underline_font_mounting_position())
       add_node(configure_space_underlining(true));
-    if (prev_fontno == get_underline_fontno())
+    if (prev_fontno == get_selected_underline_font_mounting_position())
       add_node(configure_space_underlining(false));
   }
   return true;
 }
 
-bool environment::set_font(int n)
+bool environment::select_font(int n)
 {
   if (was_line_interrupted)
     return false;
@@ -1349,8 +1349,8 @@ void select_font(symbol s)
 	break;
       }
   }
-  // environment::set_font warns if an unused mounting position is
-  // requested.  We must warn here if a bogus font name is selected.
+  // `environment::select_font()` warns if an unused mounting position
+  // is requested.  We must warn here if a bogus font name is selected.
   if (is_number) {
     errno = 0;
     long val = strtol(s.contents(), NULL, 10);
@@ -1358,12 +1358,12 @@ void select_font(symbol s)
       warning(WARN_RANGE, "font mounting position must be in range"
 	      " 0..%1, got %2", INT_MAX, s.contents());
     else
-      (void) curenv->set_font(int(val));
+      (void) curenv->select_font(int(val));
   }
   else {
     if (s == "DESC")
       error("'%1' is not a valid font name", s.contents());
-    else if (!curenv->set_font(s))
+    else if (!curenv->select_font(s))
       warning(WARN_FONT, "cannot select font '%1'", s.contents());
   }
 }
@@ -1408,7 +1408,7 @@ static void point_size() // .ps
 
 static void override_available_type_sizes_request() // .sizes
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "available font sizes override request"
 	    " expects at least one argument");
     skip_line();
@@ -1418,6 +1418,10 @@ static void override_available_type_sizes_request() // .sizes
     skip_line();
     return;
   }
+  // TODO: Move these fiddly details into a function that reads a
+  // decimal integer or range thereof.
+  // TODO: Migrate this heap array to std::vector<int>.
+  // XXX: But what to do about the ranges?
   int n = 16;
   int *sizes = new int[n]; // C++03: new int[n]();
   (void) memset(sizes, 0, (n * sizeof(int)));
@@ -1729,7 +1733,7 @@ void configure_underlining(bool want_spaces_underlined)
   else {
     curenv->underlined_line_count = n;
     curenv->pre_underline_fontno = curenv->fontno;
-    curenv->fontno = get_underline_fontno();
+    curenv->fontno = get_selected_underline_font_mounting_position();
     if (want_spaces_underlined) {
       curenv->underline_spaces = true;
       curenv->add_node(configure_space_underlining(true));
@@ -2745,7 +2749,7 @@ static void break_with_forced_adjustment_request() //. brp
 
 void title() // .tl
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "title line request expects a delimited"
 	    " argument");
     skip_line();
@@ -3818,7 +3822,7 @@ public:
   hyphen_trie() {}
   ~hyphen_trie() {}
   void hyphenate(const char *, int, int *);
-  void read_patterns_file(const char *, int, dictionary *);
+  void read_patterns_file(const char *, bool, dictionary *);
 };
 
 struct hyphenation_language {
@@ -3911,7 +3915,98 @@ static void environment_switch() // .ev
 }
 
 // We use `unsigned char` for offsets in hyphenation exception words.
+// C++11: constexpr
 static const int WORD_MAX = UCHAR_MAX;
+// C++11: constexpr
+static const size_t wordbuflen = WORD_MAX + 1 /* '\0' */;
+// C++11: constexpr
+static const size_t bpbuflen = WORD_MAX + 2 /* leading '-' + '\0' */;
+
+// Gather a hyphenation exception word from the input, storing it
+// without hyphens as a C string in `word`, advancing the input stream
+// pointer to the end of the word.
+//
+// If further arguments are supplied, store the quantity of hyphenation
+// break points within it in `breakpoint_count`, and the break point
+// positions as an unsigned zero-terminated vector of 1-based character
+// indices in `breakpoints`.  The caller must allocate storage for
+// `word` and `breakpoints`.
+//
+// Return `true` if no invalid characters are read from the input
+// stream.  An invalid character lacks a hyphenation code (`-`
+// excepted).  Otherwise, return `false`; the contents of `word`,
+// `breakpoint_count`, and `breakpoints` are then not meaningful and
+// should not be used.
+static bool read_hyphenation_exception_word(unsigned char *word,
+  int *breakpoint_count = 0 /* nullptr */,
+  unsigned char *breakpoints = 0 /* nullptr */)
+{
+  // Either both pointers must be null, or both non-null.
+  assert(!!(breakpoint_count) == !!(breakpoints));
+  bool want_breakpoints = false;
+  if ((breakpoint_count != 0 /* nullptr */)
+      && (breakpoints != 0 /* nullptr */))
+    want_breakpoints = true;
+  int i = 0; // index into hyphenation exception word excluding '-'s
+  unsigned char hc = 0U; // hyphenation code of current character
+  if (want_breakpoints)
+    *breakpoint_count = 0;
+  // Warn at most once per invalid word, not per request invocation.
+  bool is_word_valid = true;
+  bool was_warned = false;
+  while ((i < WORD_MAX)
+	 && !tok.is_space()
+	 && !tok.is_newline()
+	 && !tok.is_eof()) {
+    charinfo *ci = tok.get_charinfo(false /* is_mandatory */);
+    if (ci != 0 /* nullptr */) {
+      hc = ci->get_hyphenation_code();
+      if ((0U == hc) && (ci->get_ascii_code() != '-'))
+	is_word_valid = false;
+    }
+    else
+      is_word_valid = false;
+    if (!is_word_valid) {
+      if (!was_warned) {
+	warning(WARN_CHAR, "skipping hyphenation exception word"
+		" containing %1", tok.description());
+	was_warned = true;
+      }
+    }
+    if (is_word_valid) {
+      tok.next();
+      if (ci->get_ascii_code() == '-') {
+	if (want_breakpoints
+	    && (i > 0)
+	    && ((*breakpoint_count == 0)
+	        || (breakpoints[((*breakpoint_count) - 1)] != i)))
+	  breakpoints[(*breakpoint_count)++] = i;
+      }
+      else
+	word[i++] = hc;
+    }
+    else {
+      do
+	tok.next();
+      while (!tok.is_space()
+	     && !tok.is_newline()
+	     && !tok.is_eof());
+    }
+  }
+  // A valid hyphenation exception word contains a nonzero count of
+  // characters bearing hyphenation codes.
+  if (is_word_valid)
+    assert(i > 0);
+  word[i] = '\0';
+  // Clark uses `unsigned char` here for a small nonnegative quantity
+  // indicating the positions of hyphenation break points within a word
+  // of maximum size `WORD_MAX` (`UCHAR_MAX`).  That's kind of confusing
+  // because `unsigned char` is also GNU troff's internal "ordinary"
+  // character type.  Might be simpler just to use vector<int>.  --GBR
+  if (want_breakpoints)
+    breakpoints[*breakpoint_count] = 0U;
+  return is_word_valid;
+}
 
 static void add_hyphenation_exception_words_request() // .hw
 {
@@ -3927,86 +4022,40 @@ static void add_hyphenation_exception_words_request() // .hw
     skip_line();
     return;
   }
-  // C++11: constexpr
-  const size_t buflen = WORD_MAX + 1 /* '\0' */;
-  // C++11: char buf[buflen]{};
-  char buf[buflen];
-  (void) memset(buf, 0, buflen);
-  // C++11: constexpr
-  const size_t posbuflen = WORD_MAX + 2 /* leading '-' + '\0' */;
-  // C++11: unsigned char pos[posbuflen]{};
-  unsigned char pos[posbuflen];
-  (void) memset(pos, 0, posbuflen);
-  for (;;) {
-    if (!has_arg())
-      break;
-    int i = 0; // index into hyphenation exception word excluding '-'s
-    unsigned char hc = 0U; // hyphenation code of current character
-    int npos = 0;
-    // Warn at most once per invalid word, not per request invocation.
-    bool is_word_valid = true;
-    bool was_warned = false;
-    while ((i < WORD_MAX)
-	   && !tok.is_space()
-	   && !tok.is_newline()
-	   && !tok.is_eof()) {
-      charinfo *ci = tok.get_charinfo(false /* is_mandatory */);
-      if (ci != 0 /* nullptr */) {
-	hc = ci->get_hyphenation_code();
-	if ((0U == hc) && (ci->get_ascii_code() != '-'))
-	  is_word_valid = false;
-      }
-      else
-	is_word_valid = false;
-      if (!is_word_valid) {
-	if (!was_warned) {
-	  warning(WARN_CHAR, "skipping hyphenation exception word"
-		  " containing %1", tok.description());
-	  was_warned = true;
-	}
-      }
-      if (is_word_valid) {
-	tok.next();
-	if (ci->get_ascii_code() == '-') {
-	  if ((i > 0) && ((npos == 0) || (pos[npos - 1] != i)))
-	    pos[npos++] = i;
-	}
-	else
-	  buf[i++] = hc;
-      }
-      else {
-	do
-	  tok.next();
-	while (!tok.is_space()
-	       && !tok.is_newline()
-	       && !tok.is_eof());
-      }
-    }
-    if (is_word_valid) {
-      // A valid hyphenation exception word contains a nonzero count of
-      // characters bearing hyphenation codes.
-      assert(i > 0);
-      // Clark uses `unsigned char` here for a small nonnegative
-      // quantity indicating the positions of hyphenation break points
-      // within a word of maximum size `WORD_MAX` (`UCHAR_MAX`).  That's
-      // kind of confusing because `unsigned char` is also GNU troff's
-      // internal "ordinary" character type.  Might be simpler just to
-      // use vector<int>.  --GBR
-      pos[npos] = 0U;
-      const size_t newposbuflen = npos + 1 /* 0U terminator */;
+  // C++11: char wordbuf[wordbuflen]{};
+  unsigned char wordbuf[wordbuflen];
+  (void) memset(wordbuf, 0, wordbuflen);
+  // C++11: unsigned char bpbuf[bpbuflen]{};
+  unsigned char bpbuf[bpbuflen];
+  (void) memset(bpbuf, 0, bpbuflen);
+  int bp_count = 0;
+  while (has_arg()) {
+    if (read_hyphenation_exception_word(wordbuf, &bp_count, bpbuf)) {
+      const size_t newbpbuflen = bp_count + 1 /* 0U terminator */;
       unsigned char *tem = 0 /* nullptr */;
       try {
-	// C++03: new unsigned char[newposbuflen]();
-	tem = new unsigned char[newposbuflen];
+	// C++03: new unsigned char[newbpbuflen]();
+	tem = new unsigned char[newbpbuflen];
       }
       catch (const std::bad_alloc &e) {
 	fatal("cannot allocate %1 bytes to add hyphenation exception"
-	      " word", int(newposbuflen));
+	      " word", int(newbpbuflen));
       }
-      (void) memset(tem, 0, ((newposbuflen) * sizeof(unsigned char)));
-      memcpy(tem, pos, newposbuflen);
+      (void) memset(tem, 0, ((newbpbuflen) * sizeof(unsigned char)));
+      memcpy(tem, bpbuf, newbpbuflen);
+      // XXX: GNU troff's slovenly practice of punning `char` with
+      // `unsigned char` (because the deep wisdom of 1990 says that ISO
+      // 8859 has enough code points for anybody) bites us here.  We
+      // read the input stream as a sequence of unsigned chars but the
+      // keys of a `symbol` dictionary are sequences of _plain_ `char`s,
+      // which are of _undefined signedness_, I'd guess so that they can
+      // be dealt with using C standard library <string.h> functions.
+      // But as Gus Fring would say, these types are not the same.  See
+      // Savannah #68230.
+      // --GBR, 2026
+      char *wbuf = reinterpret_cast<char *>(wordbuf);
       tem = static_cast<unsigned char *>
-	    (current_language->exceptions.lookup(symbol(buf), tem));
+	    (current_language->exceptions.lookup(symbol(wbuf), tem));
       if (tem != 0 /* nullptr */)
 	delete[] tem;
     }
@@ -4059,8 +4108,51 @@ static void print_hyphenation_exceptions_request() // .phw
   // Pathologically, we could have a hyphenation point after every
   // character in a word except the last.  The word may have a trailing
   // space; see `hyphen_trie::read_patterns_file()`.
-  const size_t bufsz = WORD_MAX * 2;
-  char wordbuf[bufsz]; // need to `errprint()` it, so not `unsigned`
+  // C++11: constexpr
+  static const size_t bufsz = WORD_MAX * 2;
+  // C++03: char wordbuf[bufsz]();
+  char wordbuf[bufsz]; // We need to `errprint()` it, so not `unsigned`.
+  (void) memset(wordbuf, '\0', bufsz);
+  while (has_arg()) {
+    // C++11: constexp
+    static const size_t readbufsz = WORD_MAX;
+    // C++03: char readbuf[readbufsz]();
+    unsigned char readbuf[readbufsz];
+    if (read_hyphenation_exception_word(readbuf)) {
+      // See above regarding "slovenly typing" and Savannah #68230.
+      char *rbuf = reinterpret_cast<char *>(readbuf);
+      unsigned char *bp
+	= static_cast<unsigned char *>(
+	  current_language->exceptions.lookup(rbuf));
+      if (bp != 0 /* nullptr */) {
+	size_t r = 0;
+	// Array indices are 0-based; breakpoints are 1-based, occurring
+	// after the nth letter of a word.
+	size_t w = 1;
+	unsigned char ch = readbuf[r++];
+	wordbuf[0] = '#'; // Make a screw-up more obvious.
+	while (ch != 0U) {
+	  if (ch != '-') {
+	    wordbuf[w] = ch;
+	    if (r == *bp) {
+	      wordbuf[++w] = '-';
+	      bp++;
+	    }
+	    w++;
+	  }
+	  ch = readbuf[r++];
+	}
+	wordbuf[w] = '\0';
+	errprint("%1\n", &wordbuf[1]); // Don't print the initial '#'.
+	fflush(stderr);
+	assert(0U == *bp);
+      }
+    }
+    if (!has_arg()) {
+      skip_line();
+      return;
+    }
+  }
   // We must use the nuclear `reinterpret_cast` operator because GNU
   // troff's dictionary types use a pre-STL approach to containers.
   while (iter.get(&entry, reinterpret_cast<void **>(&hypoint))) {
@@ -4316,10 +4408,10 @@ fail:
   return c;
 }
 
-void hyphen_trie::read_patterns_file(const char *name, int append,
+void hyphen_trie::read_patterns_file(const char *name, bool appending,
 				     dictionary *ex)
 {
-  if (!append)
+  if (!appending)
     clear();
   char buf[WORD_MAX + 1];
   for (int i = 0; i < WORD_MAX + 1; i++)
@@ -4762,7 +4854,7 @@ static void read_hyphenation_patterns_from_file(bool append)
 
 static void load_hyphenation_patterns_from_file_request() // .hpf
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "hyphenation pattern load request expects"
 	    " argument");
     skip_line();
@@ -4774,7 +4866,7 @@ static void load_hyphenation_patterns_from_file_request() // .hpf
 
 static void append_hyphenation_patterns_from_file_request() // .hpfa
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "hyphenation pattern appendment request"
 	    " expects argument");
     skip_line();

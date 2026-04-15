@@ -26,34 +26,32 @@ wail () {
    fail=yes
 }
 
-# Literal tabs appear in this input.
 input='.
-.linetabs 0
-.ta 1i 3i
-A	\c
-B	\c
-C
-.br
-.linetabs
-D	\c
-E	\c
-F
+.phw foobar
+.hw baz-qux
+.phw bazqux
+.hw tab-le qqq-xxx-zzz
+.phw t-a-b-l-e * qqqxxxzzz
 .'
 
-# Expected output:
-#
-# 1.  J.  Fict. Ch. Soc. 6 (2020), 3-14.  Reprints
-# no longer available through FCS.      2.  Better
-# known for other work.
-
-output=$(printf '%s\n' "$input" | "$groff" -T ascii)
+output=$(printf '%s\n' "$input" | "$groff" -W char 2>&1)
 echo "$output"
 
-echo "checking output when line tabs disabled" >&2
-echo "$output" | grep -Eqx "A {9}B {9}C" || wail
+# No exception word for 'foobar' is defined; expect no output.
+echo "checking report of hyphenation exception word 'foobar'" >&2
+echo "$output" | grep -qx "foo.*bar" && wail
 
-echo "checking output when line tabs enabled" >&2
-echo "$output" | grep -Eqx "D {9}E {19}F" || wail
+echo "checking report of hyphenation exception word 'bazqux'" >&2
+echo "$output" | grep -qx "baz-qux" || wail
+
+echo "checking report of hyphenation exception word 'table'" >&2
+echo "$output" | grep -qx "tab-le" || wail # deliberately incorrect
+
+echo "checking report of hyphenation exception word 'qqqxxxzzz'" >&2
+echo "$output" | grep -qx "qqq-xxx-zzz" || wail
+
+echo "checking for error indicator character" >&2
+echo "$output" | grep -qx "#" && wail
 
 test -z "$fail"
 

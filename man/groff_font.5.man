@@ -390,13 +390,13 @@ The list can extend over more than one line.
 .
 .TP
 .BI sizescale\~ n
-A typographical point
-is subdivided into
+A typographical point is subdivided into
 .IR n \~scaled
 points.
 .
 The default
 .RB is\~ 1 .
+.\" Recall @ref{Using Fractional Type Sizes}.
 .
 .
 .TP
@@ -412,10 +412,14 @@ font mounting positions are associated with styles
 .
 .TP
 .B tcommand
-The postprocessor can handle the
+The postprocessor interprets the
 .B t
-.RB and\~ u
-intermediate output commands.
+and
+.B u
+output commands that
+GNU
+.I troff \" GNU
+produces.
 .
 .
 .TP
@@ -473,13 +477,14 @@ driver uses this directive.
 .\" XXX: Savannah #63074 is trying to make this obsolescent.
 .TP
 .B use_charnames_in_special
-.I @g@troff
-should encode special characters in arguments to device extension
-commands.
+GNU
+.I troff \" GNU
+should encode special characters
+in arguments to device extension commands.
+.\" recall @ref{Postprocessor Access}.
 .
-The
-.I \%grohtml
-driver uses this directive.
+.MR grohtml @MAN1EXT@
+uses this directive.
 .
 .
 .TP

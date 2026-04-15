@@ -702,17 +702,17 @@ inline hyphen_list::hyphen_list(unsigned char code, hyphen_list *p)
 }
 
 extern void read_desc();
-extern bool mount_font(int, symbol,
-		       symbol /* external_name */ = NULL_SYMBOL);
-extern bool is_font_name(symbol, symbol);
+extern bool mount_font_at_position(symbol, int,
+    symbol /* external_name */ = NULL_SYMBOL);
+extern bool is_font_available(symbol /* family */, symbol /* name */);
 extern bool is_abstract_style(symbol);
 extern bool mount_style(int, symbol);
 extern bool is_valid_font_mounting_position(int);
 extern bool is_valid_font(int);
-extern int symbol_fontno(symbol);
-extern int next_available_font_position();
+extern int mounting_position_of_font(symbol);
+extern int next_available_font_mounting_position();
 extern void init_size_list(int *);
-extern int get_underline_fontno();
+extern int get_selected_underline_font_mounting_position();
 
 class output_file {
   char make_g_plus_plus_shut_up;
@@ -752,7 +752,7 @@ public:
   font_family(symbol);
   ~font_family();
   int resolve(int);
-  static void invalidate_fontno(int);
+  static void invalidate_selected_font_mounting_position(int);
 };
 
 extern int resolve_current_font_to_mounting_position(environment *);

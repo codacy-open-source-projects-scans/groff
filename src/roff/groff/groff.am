@@ -56,6 +56,7 @@ groff_TESTS = \
   src/roff/groff/tests/check-delimiter-validity.sh \
   src/roff/groff/tests/class-request-works.sh \
   src/roff/groff/tests/composite-nodes-produce-approximate-output.sh \
+  src/roff/groff/tests/coverage-symbol-cpp.sh \
   src/roff/groff/tests/current-language-and-environment-in-sync.sh \
   src/roff/groff/tests/degenerate-control-flow-works.sh \
   src/roff/groff/tests/detect-evil-link-time-optimizer.sh \
@@ -87,6 +88,7 @@ groff_TESTS = \
   src/roff/groff/tests/draw-spline.sh \
   src/roff/groff/tests/driver-C-and-G-options-work.sh \
   src/roff/groff/tests/dvi-device-smoke-test.sh \
+  src/roff/groff/tests/error-overflow-symbol-table.sh \
   src/roff/groff/tests/evc-request-produces-no-output-if-invalid.sh \
   src/roff/groff/tests/fi-and-nf-requests-work.sh \
   src/roff/groff/tests/fp-request-does-not-traverse-directories.sh \
@@ -111,6 +113,7 @@ groff_TESTS = \
   src/roff/groff/tests/pchar-request-works.sh \
   src/roff/groff/tests/pdf-device-smoke-test.sh \
   src/roff/groff/tests/phw-request-skips-line-if-no-hyph-lang.sh \
+  src/roff/groff/tests/phw-request-works.sh \
   src/roff/groff/tests/pi-request-works.sh \
   src/roff/groff/tests/po-request-works.sh \
   src/roff/groff/tests/ps-device-smoke-test.sh \

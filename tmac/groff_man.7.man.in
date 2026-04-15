@@ -532,7 +532,7 @@ If
 .I identifier
 or
 .I footer-inside
-would overrun the space available in the header and/or footer,
+would overset the space available in the header and/or footer,
 this package may abbreviate them with
 _ifnotstyle()dnl
 ellipses.
@@ -2591,7 +2591,7 @@ Readers with low vision may also benefit from the narrower line length.
 .
 Inspect your documents with
 .RB \[lq] "nroff \-t \-r LL=65n \-man" \[rq]
-to ensure that their output lines don't overrun.
+to ensure that their output lines don't overset the line.
 .
 .
 .P
@@ -3119,6 +3119,10 @@ Some output devices format
 as a right single quotation mark.
 .
 .
+.br
+.\" XXX: We need only 3v, but 1v more is necessary due to bad
+.\" interaction with TP's own use of the ne request.
+.ne 4v
 .TP
 .B \e[oq]
 .TQ

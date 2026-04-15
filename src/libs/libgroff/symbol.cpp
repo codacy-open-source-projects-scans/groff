@@ -1,4 +1,5 @@
-/* Copyright 1989-2025 Free Software Foundation, Inc.
+/* Copyright 1989-1991 Free Software Foundation, Inc.
+                  2025 G. Branden Robinson
 
 Written by James Clark (jjc@jclark.com)
 
@@ -158,7 +159,7 @@ symbol::symbol(const char *p, int how)
   }
 }
 
-symbol concat(symbol s1, symbol s2)
+symbol catenate(symbol s1, symbol s2)
 {
   char *buf = new char [strlen(s1.contents())
 			+ strlen(s2.contents())
@@ -179,12 +180,16 @@ size_t symbol::json_length() const
   int nextrachars = 2; // leading and trailing double quotes
   for (size_t i = 0; p[i] != '\0'; i++, len++) {
     ch = p[i];
-    assert ((ch >= 0) && (ch <= 127));
+    assert ((ch >= 32) && (ch <= 127));
     // These printable characters require escaping.
     if (('"' == ch) || ('\\' == ch) || ('/' == ch))
       nextrachars++;
+#if 0
     else if (csprint(ch))
       ;
+    // We don't support C0 or C1 controls in identifiers; see Savannah
+    // #67734.  In the future we plan to support Latin-1 Extension code
+    // points in multibyte UTF-8 sequences in identifiers.
     else
       switch (ch) {
       case '\b':
@@ -197,6 +202,7 @@ size_t symbol::json_length() const
       default:
 	nextrachars += 5;
     }
+#endif
   }
   return (len + nextrachars);
 }
@@ -212,6 +218,7 @@ const char *symbol::json_extract() const
   size_t i;
   char *q = static_cast<char *>(calloc((this->json_length() + 1),
 				       sizeof (char)));
+  assert(q != 0 /* nullptr */); // We don't support empty identifiers.
   if (q != 0 /* nullptr */) {
     r = q;
     *r++ = '"';
@@ -223,8 +230,11 @@ const char *symbol::json_extract() const
     }
     *r++ = '"';
   }
+  // We don't support empty identifiers.
+#if 0
   else
     return strdup("\"\""); // so it can be free()d
+#endif
   *r++ = '\0';
   return q;
 }

@@ -8,7 +8,8 @@ Font ASCII
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 1989-2020 Free Software Foundation, Inc.
+.\" Copyright 1989-2004 Free Software Foundation, Inc.
+.\"                2023 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are

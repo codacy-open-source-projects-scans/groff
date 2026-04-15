@@ -353,8 +353,8 @@ public:
   node *extract_output_line();
   void width_registers();
   void wrap_up_tab();
-  bool set_font(int);
-  bool set_font(symbol);
+  bool select_font(int);
+  bool select_font(symbol);
   void set_family(symbol);
   void set_size(int);
   void set_char_height(int);

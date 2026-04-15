@@ -276,6 +276,14 @@ AT&T
 .IR troff 's \" AT&T
 hyphenation system (\[lq]suftab\[rq]) was specific to English.
 .
+GNU
+.I troff \" GNU
+support additional hyphenation modes to support other languages.
+.
+New values 16 and\~32 are available;
+the former enables hyphenation before the last character in a word,
+and the latter enables hyphenation after the first character in a word.
+.
 .
 .P
 New requests permit finer control over hyphenation breaking;
@@ -354,10 +362,200 @@ see
 .P
 GNU
 .IR troff 's \" GNU
+.B rhw
+request removes hyphenation exception words defined
+with the
+.B hw
+request.
+.
+.
+.P
+GNU
+.IR troff 's \" GNU
 .B \[rs]:
 escape sequence works like
 .B \[rs]%
 but produces no hyphen if the word breaks at that location.
+.
+.
+.\" ====================================================================
+.SS "Character flags"
+.\" ====================================================================
+.
+Character properties that were immutable in
+AT&T
+.I troff \" AT&T
+are configurable in
+GNU
+.IR troff . \" GNU
+.
+The
+.B cflags
+request manipulates them.
+.
+Any character can be assigned properties
+.I n,
+where
+.I n
+is the sum of any of the following.
+.
+Some combinations are nonsensical,
+such as
+.RB \[lq] 33 \[rq]
+(1 + 32).
+.
+.
+.TP
+.B 1
+Recognize the character as ending a sentence if followed by a newline
+or two spaces.
+.
+Initially,
+characters
+.RB \[lq] .?!\& \[rq]
+have this property.
+.
+.
+.TP
+.B 2
+Enable breaks before the character.
+.
+A line is not broken at a character with this property unless the
+characters on each side both have non-zero hyphenation codes.
+.
+This exception can be overridden by adding 64.
+.
+Initially,
+no characters have this property.
+.
+.
+.TP
+.B 4
+Enable breaks after the character.
+.
+A line is not broken at a character with this property unless the
+characters on each side both have non-zero hyphenation codes.
+.
+This exception can be overridden by adding 64.
+.
+Initially,
+characters
+.RB \[lq] \-\[rs][hy]\[rs][em] \^\[rq]
+have this property.
+.
+.
+.TP
+.B 8
+Mark the glyph associated with this character as overlapping other
+instances of itself horizontally.
+.
+Initially,
+characters
+.RB \[lq]\^ \[rs][ul]\[rs][rn]\[rs][ru]\[rs][radicalex]\[rs][sqrtex]\
+\& \^\[rq]
+have this property.
+.
+.
+.TP
+.B 16
+Mark the glyph associated with this character as overlapping other
+instances of itself vertically.
+.
+Initially,
+the character
+.RB \[lq]\^ \[rs][br] \^\[rq]
+has this property.
+.
+.
+.TP
+.B 32
+Mark the character as transparent for the purpose of end-of-sentence
+recognition.
+.
+In other words,
+an end-of-sentence character followed by any number of characters with
+this property is treated as the end of a sentence if followed by a
+newline or two spaces.
+.
+This is the same as having a zero space factor in \*[tx].
+.
+Initially,
+characters
+.\" The following is ordered with the apostrophe and (single) closing
+.\" quote on the ends so they are more easily visually distinguished
+.\" from the double quotation marks in roman.
+.RB \[lq]\| \[aq]\|"\|)]*\[rs][dg]\[rs][dd]\[rs][rq]\[rs]\^[cq] \|\[rq]
+have this property.
+.
+.
+.TP
+.B 64
+Ignore hyphenation codes of the surrounding characters.
+.
+Use this value in combination with values 2 and\~4.
+.
+Initially,
+no characters have this property.
+.
+.
+.P
+The remaining values were implemented for East Asian language support;
+those who use alphabetic scripts exclusively can disregard them.
+.
+.
+.TP
+.B 128
+Prohibit a break before the character,
+but allow a break after the character.
+.
+This works only in combination with values 256 and 512 and has no effect
+otherwise.
+.
+Initially,
+no characters have this property.
+.
+.
+.TP
+.B 256
+Prohibit a break after the character,
+but allow a break before the character.
+.
+This works only in combination with values 128 and 512 and has no effect
+otherwise.
+.
+Initially,
+no characters have this property.
+.
+.
+.TP
+.B 512
+Allow a break before or after the character.
+.
+This works only in combination with values 128 and 256 and has no effect
+otherwise.
+.
+Initially,
+no characters have this property.
+.
+.
+.P
+In contrast to values 2 and\~4,
+the values 128,
+256,
+and 512 work
+pairwise.
+.
+If,
+for example,
+the left character has value 512,
+and the right character 128,
+GNU
+.I troff \" GNU
+does not insert a break between them.
+.
+If we use value\~6 instead for the left character,
+a break after the character can't be suppressed since the neighboring
+character on the right doesn't get examined.
 .
 .
 .\" ====================================================================
@@ -618,7 +816,7 @@ ignoring scaling units in
 .I e
 if
 .I c
-is empty.
+is omitted.
 .
 .
 .P
@@ -974,7 +1172,7 @@ GNU
 .I troff \" GNU
 closes the polygon by drawing a line from
 .RI ( hn ,\~ vn )
-back to the initial drawing position;
+back to the initial drawing position
 and leaves the drawing position there.
 .\" XXX: That would be the "STUPID_DRAWING_POSITIONING" complained of in
 .\" src/libs/libdriver/input.cpp.
@@ -1028,7 +1226,7 @@ It is also convenient to define strings containing escape sequences that
 need to work when used in copy mode
 (for example,
 as macro arguments),
-or that will be interpolated at varying macro nesting depths.
+or that are interpolated at varying macro nesting depths.
 .
 .
 .TP
@@ -1393,6 +1591,7 @@ transforms to
 .
 .
 .sp \n[PD]u
+.ne 3v
 .\"IP
 Contrariwise,
 GNU
@@ -1814,9 +2013,7 @@ this behavior is so anomalous that we consider it a bug.
 .IP
 GNU
 .I troff \" GNU
-removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq]
-from the argument,
+removes a leading neutral double quote from the argument,
 permitting initial embedded spaces in it,
 and reads it to the end of the input line in copy mode.
 .
@@ -1873,14 +2070,14 @@ even if the interpolation context disables compatibility mode.
 .
 .TP
 .BI .hy\~ n
-New values 16 and\~32 are available;
-the former enables hyphenation before the last character in a word,
-and the latter enables hyphenation after the first character in a word.
-.
-If invoked without an argument,
-the mode configured by the
+If the argument
+.I n
+is omitted,
+the environment's default hyphenation mode,
+configured by the
 .B hydefault
-request is selected.
+request,
+is selected.
 .
 .
 .TP
@@ -1893,9 +2090,7 @@ the first argument becomes the input line number of the
 .I next
 line the formatter reads.
 It also
-removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq]
-from
+removes a leading neutral double quote from
 .I file-identifier,
 permitting initial embedded spaces in it,
 and reads it to the end of the input line in copy mode.
@@ -1906,10 +2101,7 @@ and reads it to the end of the input line in copy mode.
 .IR file ]
 GNU
 .I troff \" GNU
-removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq]
-from
-.IR file ,
+removes a leading neutral double quote from the argument,
 permitting initial embedded spaces in it,
 and reads it to the end of the input line in copy mode.
 .
@@ -1919,8 +2111,9 @@ and reads it to the end of the input line in copy mode.
 .I command
 GNU
 .I troff \" GNU
-strips a leading neutral double quote from the argument,
-permitting initial embedded spaces in it.
+removes a leading neutral double quote from the argument,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
 .
 .
 .TP
@@ -1941,10 +2134,7 @@ or diversion
 .I file
 GNU
 .I troff \" GNU
-removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq]
-from
-.IR file ,
+removes a leading neutral double quote from the argument,
 permitting initial embedded spaces in it,
 and reads it to the end of the input line in copy mode.
 .
@@ -1967,14 +2157,14 @@ emits a warning in category
 .
 .
 .TP
-.BI .ss\~ word-space-size\~\c
-.RI [ additional-sentence-space-size ]
+.BI .ss\~ minimum-inter-word-space-size\~\c
+.RI [ supplemental-inter-sentence-space-size ]
 A second argument sets the amount of additional space separating
 sentences on the same output line.
 .
 If omitted,
 this amount is set to
-.IR word-space-size .
+.IR minimum-inter-word-space-size .
 .
 Both arguments are in twelfths of current font's space width
 (typically one-fourth to one-third em for Western scripts;
@@ -1991,8 +2181,9 @@ Negative values are erroneous.
 .I command
 GNU
 .I troff \" GNU
-strips a leading neutral double quote from the argument,
-permitting initial embedded spaces in it.
+removes a leading neutral double quote from the argument,
+permitting initial embedded spaces in it,
+and reads it to the end of the input line in copy mode.
 .
 .
 .TP
@@ -2352,9 +2543,11 @@ See
 .TP
 .B .brp
 Break and force adjustment of the output line
-per the current adjustment mode.
+per the current adjustment mode,
+like
+.BR \[rs]p .
 .
-Like
+As with
 .BR br ,
 it does nothing if invoked with the no-break control character.
 .
@@ -2372,158 +2565,7 @@ Spaces need not separate
 arguments.
 .
 .
-.\" TODO: Bust discussion of character flags into its own subsection?
-.IP
-.I n
-is the sum of any of the following.
-.
-Some combinations are nonsensical,
-such as
-.RB \[lq] 33 \[rq]
-(1 + 32).
-.
-.
-.RS
-.IP 1
-Recognize the character as ending a sentence if followed by a newline
-or two spaces.
-.
-Initially,
-characters
-.RB \[lq] .?!\& \[rq]
-have this property.
-.
-.
-.IP 2
-Enable breaks before the character.
-.
-A line is not broken at a character with this property unless the
-characters on each side both have non-zero hyphenation codes.
-.
-This exception can be overridden by adding 64.
-.
-Initially,
-no characters have this property.
-.
-.
-.IP 4
-Enable breaks after the character.
-.
-A line is not broken at a character with this property unless the
-characters on each side both have non-zero hyphenation codes.
-.
-This exception can be overridden by adding 64.
-.
-Initially,
-characters
-.RB \[lq] \-\[rs][hy]\[rs][em] \^\[rq]
-have this property.
-.
-.
-.IP 8
-Mark the glyph associated with this character as overlapping other
-instances of itself horizontally.
-.
-Initially,
-characters
-.RB \[lq]\^ \[rs][ul]\[rs][rn]\[rs][ru]\[rs][radicalex]\[rs][sqrtex]\
-\& \^\[rq]
-have this property.
-.
-.
-.IP 16
-Mark the glyph associated with this character as overlapping other
-instances of itself vertically.
-.
-Initially,
-the character
-.RB \[lq]\^ \[rs][br] \^\[rq]
-has this property.
-.
-.
-.IP 32
-Mark the character as transparent for the purpose of end-of-sentence
-recognition.
-.
-In other words,
-an end-of-sentence character followed by any number of characters with
-this property is treated as the end of a sentence if followed by a
-newline or two spaces.
-.
-This is the same as having a zero space factor in \*[tx].
-.
-Initially,
-characters
-.\" The following is ordered with the apostrophe and (single) closing
-.\" quote on the ends so they are more easily visually distinguished
-.\" from the double quotation marks in roman.
-.RB \[lq]\| \[aq]\|"\|)]*\[rs][dg]\[rs][dd]\[rs][rq]\[rs]\^[cq] \|\[rq]
-have this property.
-.
-.
-.IP 64
-Ignore hyphenation codes of the surrounding characters.
-.
-Use this value in combination with values 2 and\~4.
-.
-Initially,
-no characters have this property.
-.
-.
-.P
-The remaining values were implemented for East Asian language support;
-those who use alphabetic scripts exclusively can disregard them.
-.
-.
-.IP 128
-Prohibit a break before the character,
-but allow a break after the character.
-.
-This works only in combination with values 256 and 512 and has no effect
-otherwise.
-.
-Initially,
-no characters have this property.
-.
-.
-.IP 256
-Prohibit a break after the character,
-but allow a break before the character.
-.
-This works only in combination with values 128 and 512 and has no effect
-otherwise.
-.
-Initially,
-no characters have this property.
-.
-.
-.IP 512
-Allow a break before or after the character.
-.
-This works only in combination with values 128 and 256 and has no effect
-otherwise.
-.
-Initially,
-no characters have this property.
-.RE
-.
-.
-.IP
-In contrast to values 2 and\~4,
-the values 128,
-256,
-and 512 work
-pairwise.
-.
-If,
-for example,
-the left character has value 512,
-and the right character 128,
-no break will be automatically inserted between them.
-.
-If we use value\~6 instead for the left character,
-a break after the character can't be suppressed since the neighboring
-character on the right doesn't get examined.
+See subsection \[lq]Character flags\[rq] above.
 .
 .
 .TP
@@ -2894,7 +2936,7 @@ and a
 token at its end.
 .
 See
-.B .am1
+.B am1
 above.
 .
 .
@@ -2939,13 +2981,12 @@ GNU
 .I troff \" GNU
 output as parameters to an
 .RB \[lq] "x X" \[rq]
-device extension command;
-see
-.MR groff_out @MAN5EXT@ .
+device extension command,
+like
+.BR \[rs]X .
 .
-The output driver or other postprocessor interprets
-.I character-sequence
-as it sees fit.
+See
+.MR groff_out @MAN5EXT@ .
 .
 .
 .TP
@@ -2955,6 +2996,9 @@ Write contents of macro or string
 to
 .I @g@troff
 output as the argument to a device extension command.
+.
+See
+.BR \[rs]Y .
 .
 .
 .TP
@@ -3219,7 +3263,7 @@ requests,
 is used.
 If
 .I g
-is missing or identical
+is omitted or identical
 .RI to\~ f ,
 then
 .RI font\~ f
@@ -3805,7 +3849,7 @@ resembles
 .RB \[lq] ".if 1" \[rq];
 it puts a break on the output if
 .I input
-is empty.
+is omitted.
 .
 Unlike
 .RB \[lq]\| if \|\[rq],
@@ -3962,7 +4006,7 @@ to the standard error stream,
 the list of font translations.
 .
 See
-.B pftr
+.B ftr
 above.
 .
 The \[lq]from\[rq] font identifier is listed first,
@@ -3970,14 +4014,27 @@ followed by its \[lq]to\[rq] translation.
 .
 .
 .TP
-.B .phw
+.BR .phw \~[\c
+.IR word \~\&.\|.\|.]
 Report,
 to the standard error stream,
+the hyphenation points of each
+hyphenation exception word
+.I word
+defined by the
+.B hw
+request,
+or,
+without arguments,
 the list of hyphenation exception words
 associated with the hyphenation language
 selected by the
 .B hla
 request.
+.
+Hyphens in
+.I word
+are ignored.
 .
 A
 .RB \[lq] \- \[rq]
@@ -4164,7 +4221,7 @@ Stop interpreting an interpolated macro,
 skipping to the end of its definition.
 .
 Do not confuse
-.RB \[lq] return \[rq]
+.RB \%\[lq] return \[rq]
 with
 .BR rt .
 .
@@ -4239,6 +4296,8 @@ doesn't exist,
 the request is ignored.
 .
 .
+.br
+.ne 4v
 .TP
 .BI .schar\~ c\~\c
 .RB [[ \[dq] ]\c
@@ -4401,7 +4460,7 @@ is larger than or equal to
 .IR limit .
 .
 A negative value is treated as zero;
-an absent argument toggles the warning on and off without changing
+omitting the argument toggles the warning on and off without changing
 .IR limit .
 .
 The default scaling unit is
@@ -4436,11 +4495,13 @@ or uppercase
 version
 (if one exists).
 .
-Special characters
-(see
-.MR groff_char @MAN7EXT@ )
-will often transform in the expected way due to the regular naming
-convention for accented characters.
+GNU
+.IR troff 's \" GNU
+built-in special characters often transform in the expected way
+due to the regular naming convention for accented characters.
+.
+See
+.MR groff_char @MAN7EXT@ .
 .
 When they do not,
 use substrings and/or catenation.
@@ -4467,7 +4528,7 @@ inclusively.
 .
 The first element of the string has index\~0.
 .
-An absent
+Omitting
 .I end
 argument implies the largest valid value
 (the string length minus one).
@@ -4534,10 +4595,7 @@ the increase in width is a linear function of the type size.
 As
 .BR tm ,
 but
-removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq]
-from
-.IR message ,
+removes a leading neutral double quote from the argument,
 permitting initial embedded spaces in it.
 .
 .
@@ -4763,7 +4821,8 @@ it parses and stores the
 .RB \[lq] while \[rq]
 body again.
 .
-An often better solution\[em]and one that is more portable,
+Often,
+a better solution\[em]and a more portable one,
 since AT&T
 .I troff \" AT&T
 lacked the
@@ -6365,8 +6424,12 @@ and the list of output nodes corresponding to the pending input line
 .SH "Compatibility mode"
 .\" ====================================================================
 .
-Some syntactical and behavioral differences between AT&T and GNU
-.IR troff s \" generic
+GNU
+.IR troff 's \" GNU
+features sometimes cause incompatibilities with documents written
+assuming old implementations of
+.IR troff . \" generic
+Some syntactical and behavioral differences between them
 are thought too important to neglect;
 GNU
 .I troff \" GNU
@@ -6657,6 +6720,7 @@ GNU
 .I troff \" GNU
 extension request names
 tend to ignore them,
+.\" "Tend" because a macro of a matching name is possible.
 and if they don't support a
 GNU
 .I troff \" GNU

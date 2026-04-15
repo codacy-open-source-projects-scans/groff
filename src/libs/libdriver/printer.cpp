@@ -48,42 +48,42 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #if (defined(_MSC_VER) || defined(_WIN32)) \
     && !defined(__CYGWIN__) && !defined(_UWIN)
 
-  /* Native MS-Windows doesn't know about SIGPIPE, so we cannot detect
-     the early exit from the pager, and therefore, cannot clean up the
-     error context; thus we use the following static function to
-     identify this particular error context, and so suppress unwanted
-     diagnostics.
-  */
+ /* Native MS Windows doesn't know about SIGPIPE, so we cannot detect
+    the early exit from the pager, and therefore, cannot clean up the
+    error context; thus we use the following static function to identify
+    this particular error context, and so suppress unwanted diagnostics.
+ */
 
-  static int
-  check_for_output_error (FILE* stream)
-  {
-    /* First, clean up any prior error context on the output stream */
-    if (ferror (stream))
-      clearerr (stream);
-    /* Clear errno, in case clearerr() and fflush() don't */
-    errno = 0;
-    /* Flush the output stream, so we can capture any error context,
-       other than the specific case we wish to suppress.
+ static int check_for_output_error(FILE* stream)
+ {
+   /* First, clean up any prior error context on the output stream. */
+   if (ferror (stream))
+     clearerr (stream);
+   /* Clear errno, in case clearerr() and fflush() don't. */
+   errno = 0;
+   /* Flush the output stream, so we can capture any error context,
+      other than the specific case we wish to suppress.
 
-       Microsoft doesn't document it, but the error code for the
-       specific context we are trying to suppress seems to be EINVAL --
-       a strange choice, since it is not normally associated with
-       fflush(); of course, it *should* be EPIPE, but this *definitely*
-       is not used, and *is* so documented.
-    */
-    return ((fflush(stream) < 0) && (errno != EINVAL));
-  }
+      Microsoft doesn't document it, but the error code for the specific
+      context we are trying to suppress seems to be EINVAL -- a strange
+      choice, since it is not normally associated with fflush(); of
+      course, it *should* be EPIPE, but this *definitely* is not used,
+      and *is* so documented.
+   */
+   return ((fflush(stream) < 0) && (errno != EINVAL));
+ }
 
 #else
 
-  /* For other systems, we simply assume that *any* output error context
-     is to be reported.
-  */
-# define check_for_output_error(stream) ferror(stream) || fflush(stream) < 0
+/* For other systems, we simply assume that *any* output error context
+   is to be reported.
+*/
+static inline int check_for_output_error(FILE* stream)
+{
+  return (ferror(stream) || (fflush(stream) < 0));
+}
 
 #endif
-
 
 font_pointer_list::font_pointer_list(font *f, font_pointer_list *fp)
 : p(f), next(fp)
@@ -111,6 +111,9 @@ printer::~printer()
 void printer::load_font(int n, const char *nm)
 {
   assert(n >= 0);
+  assert(nm != 0 /* nullptr */);
+  if ((n < 0) || (0 /* nullptr */ == nm))
+      return;
   if (n >= nfonts) {
     if (0 == nfonts) {
       nfonts = 10;
@@ -141,7 +144,9 @@ void printer::load_font(int n, const char *nm)
 
 font *printer::find_font(const char *nm)
 {
-  for (font_pointer_list *p = font_list; p; p = p->next)
+  for (font_pointer_list *p = font_list;
+       p != 0 /* nullptr */;
+       p = p->next)
     if (strcmp(p->p->get_filename(), nm) == 0)
       return p->p;
   font *f = make_font(nm);
@@ -243,8 +248,8 @@ glyph *printer::set_char_and_width(const char *nm,
   return g;
 }
 
-void printer::set_numbered_char(int num, const environment *env, int
-				*widthp)
+void printer::set_numbered_char(int num, const environment *env,
+				int *widthp)
 {
   glyph *g = number_to_glyph(num);
   int fn = env->fontno;

@@ -1,3 +1,345 @@
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Trivially refactor.
+	(class hyphen_trie): Demote type of `read_patterns_file()`
+	member function's second argument from `int` to `bool`.
+	(hyphen_trie::read_patterns_file): Likewise, and rename it from
+	`append` to `appending`.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (has_arg): Trivially refactor.
+	Rename argument from `want_peek` to `peeking`.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (make_composite_node)
+	(make_glyph_node): Fix code style nit.  Parenthesize formally
+	complex expressions.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor.  Rename class
+	to better align with terminology used in our documentation.
+	(class next_available_font_position_reg): Rename this...
+	(class next_available_font_mounting_position_reg): ...to this.
+	(init_node_requests): Update wire-uppery of built-in register
+	interpolator to its name in the formatter.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor.  Rename objects
+	to better align with terminology used in our documentation.
+	(class troff_output_file): Rename:
+	- font_position -> font_mounting_position
+	- nfont_positions -> mounting_position_count
+	(troff_output_file::set_font)
+	(troff_output_file::really_begin_page)
+	(troff_output_file::really_copy_file)
+	(troff_output_file::~troff_output_file)
+	(troff_output_file::troff_output_file): Update dereference
+	sites.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename functions to better align
+	with terminology used in our documentation.
+
+	* src/roff/troff/node.h: Rename declaration of `symbol_fontno()`
+	to `mounting_position_of_font()`, since it has nothing to do
+	with a "symbol font" (like "S") as discussed by user-facing
+	documentation.
+	* src/roff/troff/node.cpp (symbol_fontno): Rename this...
+	(mounting_position_of_font): ...to this.
+	* src/roff/troff/env.cpp (environment::set_font):
+	* src/roff/troff/node.cpp (is_abstract_style)
+	(font_family::resolve, read_font_identifier): Update call sites.
+
+	* src/roff/troff/node.h: Rename declaration of
+	`next_available_font_position()` to
+	`next_available_font_mounting_position()`.  Yes, it's a
+	mouthful, but the term "position" can apply to many things: the
+	drawing position, an index into an array, and so forth.
+	* src/roff/troff/node.cpp (next_available_font_position): Rename
+	this...
+	(next_available_font_mounting_position): ...to this.
+	* src/roff/troff/env.cpp (environment::set_font):
+	* src/roff/troff/node.cpp
+	(assign_font_and_file_name_to_mounting_position)
+	(font_family::resolve, read_font_identifier, zoom_font_request)
+	(next_available_font_position_reg): Update call sites.
+
+	* src/roff/troff/node.h: Rename declaration of
+	`mount_font()` to `mount_font_at_position()`.  Also resequence
+	arguments to follow the order implies by the English words in
+	the function name.  (Compare fprintf(3) and contrast fputs(3).)
+	* src/roff/troff/node.cpp (mount_font): Rename this...
+	(mount_font_at_position): ...to this.  Resequence arguments.
+	* src/roff/troff/env.cpp (environment::set_font):
+	* src/roff/troff/input.cpp (main):
+	* src/roff/troff/node.cpp (mount_font_at_position_request)
+	(read_font_identifier, zoom_font_request): Update call sites.
+
+	* src/roff/troff/node.cpp
+	(associate_style_with_font_position_request): Rename this...
+	(assign_style_to_font_mounting_position_request): ...to this.
+	(init_node_requests): Update wire-uppery of request handler to
+	its name in the formatter.
+
+	* src/roff/troff/node.h: Rename declaration of
+	`get_underline_fontno()` to
+	`get_selected_underline_font_mounting_position()`.
+	* src/roff/troff/env.cpp (get_underline_fontno): Rename this...
+	(get_selected_underline_font_mounting_position): ...to this.
+	* src/roff/troff/env.cpp (environment::set_font)
+	(configure_underlining): Update call sites.
+
+	* src/roff/troff/node.h (class font_family): Rename declaration
+	of `invalidate_fontno()` to
+	`invalidate_selected_font_mounting_position()`.
+	* src/roff/troff/node.cpp (font_family::invalidate_fontno):
+	Rename this...
+	(font_family::invalidate_selected_font_mounting_position): ...to
+	this.
+	* src/roff/troff/node.cpp
+	(assign_font_and_file_name_to_mounting_position)
+	(mount_style): Update call sites.
+
+	* src/roff/troff/env.h (class environment): Rename declaration
+	of `set_font()` to `select_font()`.
+	* src/roff/troff/env.cpp (environment::set_font): Rename
+	these overloaded names...
+	(environment::select_font): ...to these.
+	(select_font): Update call site.
+
+	* src/roff/troff/node.cpp (class troff_output_file): Rename
+	declaration of `set_font()` to `select_font()`.
+	(troff_output_file::set_font): Rename this...
+	(troff_output_file::select_font): ...to this.
+	(troff_output_file::start_device_extension)
+	(troff_output_file::put_char_width): Update call sites.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Refactor.  Take one of
+	`assign_font_and_file_name_to_mounting_position()`'s jobs away
+	from it, awarding it instead to the only call site that wanted
+	that job done.
+	(assign_font_and_file_name_to_mounting_position): Drop
+	`check_only` parameter and dependent logic, and...
+	(is_font_available): ...open-code that logic here instead.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Trivially refactor.  Rename library's `concat()`
+	function to `catenate()`.
+
+	* src/include/symbol.h: Rename in declaration.
+	* src/libs/libgroff/symbol.cpp (concat): Rename this...
+	(catenate): ...to this.
+	* src/roff/troff/node.cpp (get_font_name, is_abstract_style)
+	(font_family::resolve): Update call sites.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/font.cpp (font::load_font, font::load):
+	Trivially refactor.  Rename `load_header_only` parameter to
+	`validate_only` for clarity.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor.  Relocate
+	`is_abstract_style()` function definition to precede its call
+	site.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (is_abstract_style): Fix code style
+	nits.  Return Boolean instead of integer literal from this
+	function returning `bool`.  Parenthesize formally complex
+	expression.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `is_font_name()` to
+	`is_font_available()`.
+
+	* src/roff/troff/node.h: Update declaration.
+	* src/roff/troff/node.cpp (is_font_name): Rename this...
+	(is_font_available): ...to this.
+	* src/roff/troff/input.cpp (is_conditional_expression_true):
+	Update call site.
+
+2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor.  Rename
+	`mount_font_no_translate()` to
+	`assign_font_and_file_name_to_mounting_position()` and update
+	ordering of parameters to match the function name.
+	(mount_font_at_position_request): Rename this...
+	(assign_font_and_file_name_to_mounting_position): ...to this,
+	and resequence arguments.
+	(mount_font, is_font_name, font_family::resolve): Update
+	call sites.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/preproc/preconv/preconv.cpp (conversion_latin1)
+	(conversion_utf8, conversion_cp1047, conversion_iconv, get_BOM)
+	(get_tag_lines, is_comment_line, get_variable_value_pair)
+	(check_coding_tag, detect_file_encoding, do_file, usage):
+	Declare `static`; external linkage is not required.  Fixes
+	`-Wmissing-declarations` GCC warning.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/font.cpp (font::load): If we're not "loading
+	header only" (that is, not attempting to actually mount a font,
+	but merely checking its availability or validity, as with `.if F
+	ZCMI`), issue an error diagnostic disclosing the problem and the
+	system's reason the file couldn't be opened.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libdriver/printer.cpp (printer::load_font): Validate
+	function arguments.  Add assert(3)ion that the string
+	representing of the font description to load isn't a null
+	pointer.  If a function argument is invalid, return early in
+	`NDEBUG` builds.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libdriver/printer.cpp: Favor idiomatic C++ over C
+	preprocessor hacks.
+	(check_for_output_error)
+	[!(_MSC_VER || _WIN32 && !__CYGWIN && !__UWIN)]: Define as a
+	`static inline` function, not a preprocessor macro.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: The `phw` request now accepts arguments.  Each is
+	interpreted as a possible hyphenation word, ignoring hyphens in
+	the input, looked up in the hyphenation exception list for the
+	hyphenation language, and if found, is reported with its
+	hyphenation points.  Only hyphenation exceptions defined by the
+	`hw` request are reported.
+
+	* src/roff/troff/env.cpp (print_hyphenation_exceptions_request):
+	Implement it.
+
+	* src/roff/groff/tests/phw-request-works.sh: Test it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	* doc/groff.texi.in (Debugging):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?68205>.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (print_hyphenation_exceptions):
+	Slightly refactor.  Declare `const` symbol `bufsz` computed at
+	compile time as `static`.  Explicitly clear the stack memory
+	allocated to `wordbuf` array.
+
+2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (read_hyphenation_exception_word):
+	Generalize.  Support being called with null pointers to store
+	the breakpoint count and positions, so that a request that isn't
+	interested in them need not reserve storage for them.
+	Consequently, default these function parameters to null
+	pointers.  Dereference and populate the breakpoint count and
+	positions only if these data are wanted.  Add assert(3)ion that
+	either both pointers are null or neither one is.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Refactor.  Lift logic for parsing a
+	hyphenation exception word request argument into its own
+	function, so that other requests can use it.
+	(read_hyphenation_exception_word): Implement it.
+	(add_hyphenation_exception_words_request): Call new function
+	from here.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Slightly refactor.
+	Declare `const` symbols computed at compile time as `static`.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Trivially refactor.
+	Rename local variables.
+	- buflen       -> wordbuflen
+	- buf          -> wordbuf
+	- posbuflen    -> bpbuflen
+	- pos          -> bpbuf
+	- npos         -> bp_count
+	- newposbuflen -> newbpbuflen
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(add_hyphenation_exception_words_request): Slightly refactor.
+	Revise loop style.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp: Fix code style nit.  Favor C++
+	`static_cast<>` operator over omnipotent C-style cast.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp: Fix code style nit.  Arrange
+	equality comparisons to avoid inadvertent lvalue assignment.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp: Fix code style nit.  Correctly
+	type-annotate zero literals in comparisons.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/devices/grotty/tty.cpp: Fix code style nit.  Parenthesize
+	formally complex expressions.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/libs/libgroff/symbol.cpp (symbol::json_length): Strengthen
+	assertion, since we don't permit use of C0 controls in
+	identifiers; see Savannah #67734.  Use preprocessor to disable
+	unused code.
+	(symbol::json_extract): Add assertion, since we don't permit
+	empty identifiers.  Use preprocessor to disable unused code.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Test unusual characters in identifiers, improving
+	coverage of src/libs/libgroff/symbol.cpp:symbol::json_extract().
+
+	* src/roff/groff/tests/coverage-symbol-cpp.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-11  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Validate error path in
+	src/libs/libgroff/symbol.cpp:symbol::symbol.
+
+	* src/roff/groff/tests/error-overflow-symbol-table.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Slightly refactor.  Lift `wordbuflen`
+	and `bpbuflen` into file-global scope...
+	(add_hyphenation_exception_words_request): ...from here, because
+	we're going to need them in another function.
+
 2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/env.cpp
@@ -18,9 +360,9 @@
 
 	* src/include/symbol.h: Preprocessor-include "<string.h>" header
 	file to access strchr(3).
-	(class symbol): Declare new member function
-	`contains()` indicating whether the `char` argument appears the
-	symbol.
+	(class symbol): Declare new member function `contains()`
+	indicating whether the `char` argument appears in the symbol's
+	name.
 	(symbol::contains): Implement it `inline`, wrapping strchr(3).
 
 2026-04-10  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -47,15 +389,15 @@
 	character under examination in the hyphenation exception word
 	argument.  Gather that hyphenation code earlier, and mark the
 	word as invalid if the hyphenation code is zero--exception: the
-	character '-' is also valid, since it marks the hyphenation
-	break point.  Consequently, we now throw a warning in category
-	`char` on attempted hyphenation exception words like "non*sense"
-	and "0123456789".  Drop later conditional loop break if the
+	character '-' is also valid, since it marks a hyphenation point.
+	Consequently, we now throw a warning in category `char` on
+	attempted hyphenation exception words like "non*sense" and
+	"0123456789".  Drop later conditional loop break if the
 	hyphenation code is zero since that now cannot be the case--we
-	didn't enter the containing branch in the first place.  Replace
-	a test of the index into the hyphenation exception word being
-	greater than zero with an assert(3)ion of the same inside the
-	branch, as it's now an invariant that a valid hyphenation
+	now don't enter the containing branch in the first place.
+	Replace a test of the index into the hyphenation exception word
+	being greater than zero with an assert(3)ion of the same inside
+	the branch, as it's now an invariant that a valid hyphenation
 	exception word contains a nonzero count of characters bearing
 	hyphenation codes.
 
@@ -392,7 +734,7 @@
 	(class environment): Declare new member functions returning
 	`void`: `set_interword_space_size()`,
 	`reset_supplemental_intersentence_space_size()`, and
-	`set_supplemental_intersentence_space_size()`.  (The last two
+	`set_supplemental_intersentence_space_size()`.  (The latter two
 	differ because callers of the former require no knowledge of the
 	default supplemental inter-sentence space size.)  Drop
 	declaration of `friend` function `space_size()`.
@@ -674,7 +1016,7 @@
 	(add_hyphenation_exception_words_request): Continue interpreting
 	any arguments subsequent to an invalid one.  Doing so is more
 	consistent with AT&T troff (tested: DWB 3.3, Plan 9 from User
-	Space, Heirloom Doctools, Solaris).  Convert diagnostic emitted
+	Space, Heirloom Doctools, Solaris).  Demote diagnostic emitted
 	in this circumstance from an error to a warning in category
 	"char".
 

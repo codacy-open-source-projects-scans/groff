@@ -451,10 +451,13 @@ preprocessor to lay out tables.
 .
 .\" BEGIN Keep roughly parallel with groff.texi node "Requests and
 .\" Macros".
-.\" We have now encountered almost all of the syntax there is in the
-.\" @code{roff} language, with an exception already noted in
-.\" passing.@footnote{The backspace character is another; see
-.\" @ref{Page Motions}.}
+.\" The foregoing describes almost all of the syntax of the
+.\" @code{roff}
+.\" language,
+.\" with an exception already noted in
+.\" in passing.@footnote{The backspace character
+.\" is also meaningful.
+.\" @xref{Page Motions}.}
 A
 .I request
 is an instruction to the formatter that occurs after a
@@ -553,34 +556,36 @@ request defines a macro.
 .
 .\" BEGIN Keep parallel with groff.texi node "Page Geometry".
 .I roff
-systems format text under certain assumptions about the size of the
-output medium,
+systems format text
+under certain assumptions about the size of the output medium,
 or page.
 .
 For the formatter to correctly break a line it is filling,
 it must know the line length,
 which it derives from the page width.
-.\" (@pxref{Line Layout}).
+.\" @footnote{@xref{Line Layout}.}
 .
 For it to decide whether to write an output line to the current page or
 wait until the next one,
 it must know the page length.
-.\" (@pxref{Page Layout}).
+.\" @footnote{@xref{Page Layout}.}
 .
 .
 A device's
 .I resolution
 converts practical units like inches or centimeters to
 .I basic units,
-a convenient length measure for the output device or file format.
+a length measure convenient for the output device or file format.
 .
-The formatter and output driver use basic units to reckon page
-measurements.
+The formatter and output driver
+use basic units to reckon page measurements.
 .
-The device description file defines its resolution and page dimensions
+The device description file
+defines its resolution
+and page dimensions
 (see
 .MR groff_font @MAN5EXT@ ).
-.\" (@pxref{DESC File Format}).
+.\" @footnote{@xref{DESC File Format}.}
 .
 .
 .P
@@ -661,11 +666,15 @@ terminal output devices have page offsets of zero.)
 .P
 Combining the foregoing facts results in an origin that lies
 at the page offset in the horizontal dimension
-and at the text baseline (using the default vertical spacing)
+and at the text baseline
+(using the default vertical spacing)
 in the vertical dimension.
-A document can change these prior to its first written or drawn output.
-.\" see @ref{Line Layout} and
-.\" @ref{Manipulating Type Size and Vertical Spacing}.
+A document can change these
+prior to its first written or drawn output.
+.\" @footnote{See
+.\" @ref{Line Layout}
+.\" and
+.\" @ref{Manipulating Type Size and Vertical Spacing}.}
 .\" This origin isn't necessarily--and generally is not--the one used by
 .\" the device-independent output, but that coordinate system is not
 .\" exposed in the *roff language, though it can be expressed in
@@ -703,7 +712,7 @@ producing a useless blank one.
 .
 Macro packages keep users from having to confront this difficulty
 by setting \[lq]traps\[rq];
-.\" (@pxref{Traps});
+.\" @footnote{@xref{Traps}.}
 moreover,
 all but the simplest page layouts tend to have headers and footers,
 or at least bear vertical margins of at least one vee.

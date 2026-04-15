@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+# Prepared by Bertrand Garrigues <bertrand.garrigues@laposte.net>
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -28,7 +28,6 @@ preconv_TESTS = \
   src/preproc/preconv/tests/smoke-test.sh
 TESTS += $(preconv_TESTS)
 EXTRA_DIST += $(preconv_TESTS)
-
 
 # Local Variables:
 # fill-column: 72

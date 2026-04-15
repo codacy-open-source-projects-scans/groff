@@ -959,7 +959,7 @@ void backtrace_request()
 void next_file()
 {
   char *filename = 0 /* nullptr */;
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     filename = read_rest_of_line_as_argument();
     tok.next();
   }
@@ -2119,15 +2119,15 @@ void token::diagnose_non_character()
 // don't use space to separate their arguments, as with `.tr aAbB` or
 // `\o'^e'`.
 //
-// Specify `want_peek` if request reads the next argument in copy mode,
+// Specify `peeking` if request reads the next argument in copy mode,
 // or otherwise must interpret it specially, as when reading a
 // conditional expression (`if`, `ie`, `while`), or expecting a
 // delimited argument (`tl`).
-bool has_arg(bool want_peek)
+bool has_arg(bool peeking)
 {
   if (tok.is_newline() || tok.is_eof())
     return false;
-  if (want_peek) {
+  if (peeking) {
     int c;
     for (;;) {
       c = input_stack::peek();
@@ -5007,7 +5007,7 @@ void read_request()
   macro_iterator *mi = new macro_iterator;
   bool is_reading_from_terminal = bool(isatty(fileno(stdin)));
   bool had_prompt = false;
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     int c = read_char_in_copy_mode(0 /* nullptr */);
     while (c == ' ')
       c = read_char_in_copy_mode(0 /* nullptr */);
@@ -7091,7 +7091,7 @@ void line_file()
 {
   int n;
   if (read_integer(&n)) {
-    if (has_arg(true /* peek */)) {
+    if (has_arg(true /* peeking */)) {
       const char *reported_file_name = read_rest_of_line_as_argument();
       (void) input_stack::set_location(reported_file_name, (n - 1));
       // TODO: Add `reported_file_name` to file name set.
@@ -7322,7 +7322,7 @@ static bool is_conditional_expression_true()
       skip_branch();
       return false;
     }
-    result = is_font_name(curenv->get_family()->nm, nm);
+    result = is_font_available(curenv->get_family()->nm, nm);
   }
   else if (c == 'S') {
     tok.next();
@@ -7407,7 +7407,7 @@ static bool want_loop_break = false;
 
 static void while_request()
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "while loop request expects arguments");
     skip_line();
     return;
@@ -7515,7 +7515,7 @@ void do_source(bool quietly)
 
 void source_request() // .so
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "file sourcing request expects an argument");
     skip_line();
     return;
@@ -7527,7 +7527,7 @@ void source_request() // .so
 // nonexistence
 void source_quietly_request() // .soquiet
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "quiet file sourcing request expects an"
 	    " argument");
     skip_line();
@@ -7538,7 +7538,7 @@ void source_quietly_request() // .soquiet
 
 void pipe_source_request() // .pso
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "piped command source request expects"
 	    " arguments");
     skip_line();
@@ -8011,7 +8011,7 @@ inline bool psbb_locator::skip_to_trailer(void)
 
 void ps_bbox_request() // .psbb
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "PostScript file bounding box extraction"
 	    " request expects an argument");
     skip_line();
@@ -8174,7 +8174,7 @@ const char *input_char_description(int c)
 
 void tag()
 {
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     string s;
     int c;
     for (;;) {
@@ -8199,7 +8199,7 @@ void tag()
 
 void taga()
 {
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     string s;
     int c;
     for (;;) {
@@ -8237,7 +8237,7 @@ void taga()
 static void terminal_write(bool do_append_newline,
 			   bool interpret_leading_spaces)
 {
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     int c;
     for (;;) {
       c = read_char_in_copy_mode(0 /* nullptr */);
@@ -8368,7 +8368,7 @@ static void open_file(bool appending)
 
 static void open_request() // .open
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "file writing request expects arguments");
     skip_line();
     return;
@@ -8385,7 +8385,7 @@ static void open_request() // .open
 
 static void opena_request() // .opena
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "file appending request expects arguments");
     skip_line();
     return;
@@ -8446,7 +8446,7 @@ static void close_all_streams()
 
 static void close_request() // .close
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "stream closing request expects an argument");
     skip_line();
     return;
@@ -8483,7 +8483,7 @@ static void do_write_request(bool do_append_newline)
     skip_line();
     return;
   }
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     int c = read_char_in_copy_mode(0 /* nullptr */);
     while (' ' == c)
       c = read_char_in_copy_mode(0 /* nullptr */);
@@ -9391,7 +9391,7 @@ const char *readonly_mask_register::get_string()
 
 void abort_request()
 {
-  if (has_arg(true /* peek */)) {
+  if (has_arg(true /* peeking */)) {
     int c;
     if (tok.is_eof())
       c = EOF;
@@ -9457,7 +9457,7 @@ char *read_rest_of_line_as_argument()
 
 void pipe_output()
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "output piping request expects a system"
 	    " command as argument");
     skip_line();
@@ -9502,7 +9502,7 @@ static int system_status;
 
 void system_request()
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "system command execution request expects a"
 	    " system command as argument");
     skip_line();
@@ -9528,7 +9528,7 @@ void system_request()
 
 static void unsafe_transparent_throughput_file_request()
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "file throughput request expects a file name"
 	    " as argument");
     skip_line();
@@ -9577,7 +9577,7 @@ void vjustify()
 
 static void transparent_throughput_file_request()
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "transparent file throughput request expects"
 	    " a file name as argument");
     skip_line();
@@ -9781,7 +9781,7 @@ void do_macro_source(bool quietly)
 
 void macro_source_request() // .mso
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "macro file sourcing request expects an"
 	    " argument");
     skip_line();
@@ -9794,7 +9794,7 @@ void macro_source_request() // .mso
 // their nonexistence
 void macro_source_quietly_request() // .msoquiet
 {
-  if (!has_arg(true /* peek */)) {
+  if (!has_arg(true /* peeking */)) {
     warning(WARN_MISSING, "quiet macro file sourcing request expects an"
 	    " argument");
     skip_line();
@@ -10144,7 +10144,7 @@ int main(int argc, char **argv)
     // In the DESC file, a font name of 0 (zero) means "leave this
     // position empty".
     if (strcmp(font::font_name_table[i], "0") != 0)
-      if (!mount_font(j, symbol(font::font_name_table[i])))
+      if (!mount_font_at_position(symbol(font::font_name_table[i]), j))
 	warning(WARN_FONT, "cannot mount font '%1' directed by 'DESC'"
 		" file for device '%2'", font::font_name_table[i],
 		device);

@@ -105,9 +105,9 @@ in various formats.
 This version is based on the
 .I me
 distributed with 4.4BSD and can be used with the GNU
-.I troff
+.I troff \" GNU
 formatter as well as those descended from AT&T
-.IR troff .
+.IR troff . \" AT&T
 .
 .
 .P
@@ -129,8 +129,8 @@ ellipsis.
 .
 An asterisk
 .B *
-marks
-.I groff
+marks GNU
+.I troff \" GNU
 extensions.
 .
 .

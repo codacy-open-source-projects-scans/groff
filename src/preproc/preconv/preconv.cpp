@@ -1,5 +1,7 @@
-/* Copyright (C) 2005-2025 Free Software Foundation, Inc.
-     Written by Werner Lemberg (wl@gnu.org)
+/* Copyright 2005-2017 Free Software Foundation, Inc.
+                  2022 G. Branden Robinson
+
+Written by Werner Lemberg (wl@gnu.org)
 
 This file is part of groff, the GNU roff typesetting system.
 
@@ -388,7 +390,7 @@ emacs_to_mime[] = {
 // ---------------------------------------------------------
 // Convert encoding name from emacs to mime.
 // ---------------------------------------------------------
-char *
+static char *
 emacs2mime(char *emacs_enc)
 {
   size_t emacs_enc_len = strlen(emacs_enc);
@@ -439,7 +441,7 @@ unicode_entity(int u)
 // ---------------------------------------------------------
 
 // Conversion from ISO-8859-1 (aka Latin-1) to Unicode.
-void
+static void
 conversion_latin1(FILE *fp, const string &data)
 {
   int len = data.length();
@@ -616,7 +618,7 @@ utf8::incomplete()
 }
 
 // Conversion from UTF-8 to Unicode.
-void
+static void
 conversion_utf8(FILE *fp, const string &data)
 {
   utf8 u(fp);
@@ -632,7 +634,7 @@ conversion_utf8(FILE *fp, const string &data)
 }
 
 // Conversion from cp1047 (EBCDIC) to UTF-8.
-void
+static void
 conversion_cp1047(FILE *fp, const string &data)
 {
   static unsigned char cp1047[] = {
@@ -681,7 +683,7 @@ conversion_cp1047(FILE *fp, const string &data)
 
 // Locale-sensible conversion.
 #if HAVE_ICONV
-void
+static void
 conversion_iconv(FILE *fp, const string &data, char *enc)
 {
   iconv_t handle = iconv_open(UNICODE, enc);
@@ -801,7 +803,7 @@ static struct bom_s {
 // Return encoding if a BOM is found, and a null pointer
 // otherwise.
 // ---------------------------------------------------------
-const char *
+static const char *
 get_BOM(FILE *fp, string &BOM, string &data)
 {
   // The BOM is U+FEFF.  We have thus the following possible
@@ -844,7 +846,7 @@ get_BOM(FILE *fp, string &BOM, string &data)
 // or a null pointer in case no coding tag can occur in the
 // data (which is stored unmodified in 'data').
 // ---------------------------------------------------------
-char *
+static char *
 get_tag_lines(FILE *fp, string &data)
 {
   int newline_count = 0;
@@ -887,7 +889,7 @@ get_tag_lines(FILE *fp, string &data)
 // ---------------------------------------------------------
 // Indicate whether C string starts with a comment.
 // ---------------------------------------------------------
-bool
+static bool
 is_comment_line(char *s)
 {
   if (!s || !*s)
@@ -925,7 +927,7 @@ is_comment_line(char *s)
 // Return position of next value/variable pair or a null
 // pointer if at end of data.
 // ---------------------------------------------------------
-char *
+static char *
 get_variable_value_pair(char *d1, char **variable, char **value)
 {
   static char var[MAX_VAR_LEN], val[MAX_VAR_LEN];
@@ -995,7 +997,7 @@ get_variable_value_pair(char *d1, char **variable, char **value)
 // encoded as UTF-16 or UTF-32 (or its siblings) in most
 // cases.
 // ---------------------------------------------------------
-char *
+static char *
 check_coding_tag(FILE *fp, string &data)
 {
   char *inbuf = get_tag_lines(fp, data);
@@ -1028,7 +1030,7 @@ check_coding_tag(FILE *fp, string &data)
   return 0 /* nullptr */;
 }
 
-char *
+static char *
 detect_file_encoding(FILE *fp)
 {
 #ifdef HAVE_UCHARDET
@@ -1106,7 +1108,7 @@ end:
 //
 // Return Boolean indicating successful completion.
 // ---------------------------------------------------------
-bool
+static bool
 do_file(const char *filename)
 {
   FILE *fp;
@@ -1230,7 +1232,7 @@ do_file(const char *filename)
 // ---------------------------------------------------------
 // Print usage.
 // ---------------------------------------------------------
-void
+static void
 usage(FILE *stream)
 {
   fprintf(stream,

@@ -378,7 +378,7 @@ of certain punctuation code points have gotten stricter
 with the successive standards,
 a cause of some frustration among man page writers;
 see
-.MR groff_char @MAN7EXT@ .
+.MR groff_char @MAN7EXT@ .)
 .
 .
 .P
@@ -2279,7 +2279,8 @@ it parses and stores the
 .RB \[lq] while \[rq]
 body again.
 .
-An often better solution\[em]and one that is more portable,
+Often,
+a better solution\[em]and a more portable one,
 since AT&T
 .I troff \" AT&T
 lacked the
@@ -2653,28 +2654,16 @@ or indexed.
 .
 .TPx
 .I command
-is an instance of
-.I contents
-(see below)
-to be passed to the system as a command
-(potentially with arguments).
-.\" ...limiting the file names you can express; see Savannah #64071.
-.
-GNU
-.I troff \" GNU
-strips a leading neutral double quote,
-allowing embedded leading spaces.
+is a
+.I character-sequence
+to be passed to the system as a command.
+.\" ...limiting the characters you can express; see Savannah #64071.
 .
 .TPx
 .I contents
-is arbitrary input,
-excluding an unescaped newline,
+is a
+.I character-sequence
 read in copy mode.
-.
-GNU
-.I troff \" GNU
-strips a leading neutral double quote,
-allowing embedded leading spaces.
 .
 .TPx
 .I div
@@ -2686,15 +2675,10 @@ is an environment identifier.
 .
 .TPx
 .I file
-is an instance of
-.I contents
+is a
+.I character-sequence
 naming a file on the system.
 .\" ...limiting the file names you can express; see Savannah #65108.
-.
-GNU
-.I troff \" GNU
-strips a leading neutral double quote,
-allowing embedded leading spaces.
 .
 GNU
 .I troff \" GNU
@@ -2726,15 +2710,10 @@ is a macro identifier.
 .
 .TPx
 .I message
-is an instance of
-.I contents
+is a
+.I character-sequence
 to emit on the standard error stream.
 .\" ...limiting the messages you can express; see Savannah #62787.
-.
-GNU
-.I troff \" GNU
-strips a leading neutral double quote,
-allowing embedded leading spaces.
 .
 .TPx
 .I n
@@ -3161,7 +3140,7 @@ per the current adjustment mode.
 .TPx
 .REQ .break
 Break out of a
-.RB \[rq] while \[rq]
+.RB \[lq] while \[rq]
 loop.
 .
 .TPx
@@ -4635,6 +4614,22 @@ with a tab and asterisk
 .
 .
 .TPx
+.REQ .phw "word \fR\&.\|.\|.\&\fP"
+Report,
+to the standard error stream,
+the hyphenation points of each
+hyphenation exception word
+.I word
+defined by the
+.B hw
+request.
+.
+Hyphens in
+.I word
+are ignored.
+.
+.
+.TPx
 .REQ .pi command
 Pipe GNU
 .I troff \" GNU
@@ -5019,12 +5014,14 @@ is interpreted in units of scaled points (\c
 .
 GNU
 .I troff \" GNU
-strips a leading neutral double quote from
-.IR s1 ;
-it reads
-each
+removes a leading neutral double quote from
+.I s1
+and reads each
 .IR s i
 in copy mode.
+.\" XXX: ...hinting at an implementation wart.  The request handler uses
+.\" `read_rest_of_line_as_argument()` rather than calling a dedicated
+.\" read-integer-range function, which we don't have.
 .
 .TPx
 .REQ .so file
@@ -5352,9 +5349,7 @@ As
 .REQ .tm1 message
 As
 .request tm ,
-but removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq]
-from
+but removes a leading neutral double quote from
 .IR message ,
 permitting initial embedded spaces in it,
 and reads it to the end of the input line in copy mode.
@@ -6516,7 +6511,7 @@ documented in
 .
 Further,
 escape sequences that produce horizontal or vertical motions,
-hyphenation breaks,
+hyphenation points,
 or that are dummy characters may appear in strings
 or be converted to nodes,
 particularly in diversions. \" (@pxref{GNU troff Internals})
@@ -6834,9 +6829,7 @@ If
 is invoked with only one argument,
 the named string becomes empty.
 .
-The formatter removes a leading neutral double quote
-.RB \[oq] \[dq] \[cq] \" single quotes around double quote
-from
+The formatter removes a leading neutral double quote from
 .I contents
 to permit the embedding of leading spaces.
 .

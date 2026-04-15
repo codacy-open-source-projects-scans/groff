@@ -557,8 +557,6 @@ static bool is_valid_term(units *u,
   if (((c = tok.ch()) != 0U) && valid_scaling_units.contains(c)) {
     switch (scaling_unit) {
     case int(0U): // TODO: grochar; null character, not digit zero
-      // We know it's a recognized scaling unit because it matched the
-      // `strchr()` above, so we don't use `tok.description()`.
       warning(WARN_SCALE, "a scaling unit is not valid in this context"
 	      " (got '%1')", char(c));
       break;

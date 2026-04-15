@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2025 Free Software Foundation, Inc.
+# Prepared by G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 pfbtops="${abs_top_builddir:-.}/pfbtops"
 pfbfont="${abs_top_builddir:-.}/font/devpdf/symbolsl.pfb"
@@ -33,4 +32,4 @@ fi
 printf "%s\n" "$output"
 printf "%s\n" "$output" | grep -Fqx cleartomark
 
-# vim:set ai et sw=4 ts=4 tw=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

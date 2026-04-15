@@ -43,6 +43,12 @@ troff
    the request (and issues a warning in category "range"), leaving the
    operand (first request argument) unchanged instead of emptying it.
 
+*  The `phw` request now accepts arguments.  Each is interpreted as a
+   possible hyphenation word, ignoring hyphens in the input, looked
+   up in the hyphenation exception list for the hyphenation language,
+   and if found, is reported with its hyphenation points.  Only
+   hyphenation exceptions defined by the `hw` request are reported.
+
 *  A new request, `rhw`, clears the current hyphenation language's list
    of user-defined hyphenation exception words.  Those supplied by files
    like "tmac/hyphenex.{cs,en,pl}" are retained.

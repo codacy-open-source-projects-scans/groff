@@ -1,4 +1,6 @@
-# Prepared by Bertrand Garrigues <bertrand.garrigues@laposte.net>
+#!/bin/sh
+#
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -13,21 +15,24 @@
 # for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-bin_PROGRAMS += pfbtops
-man1_MANS += src/utils/pfbtops/pfbtops.1
-EXTRA_DIST += src/utils/pfbtops/pfbtops.1.man
-pfbtops_SOURCES = src/utils/pfbtops/pfbtops.c
-pfbtops_LDADD = libgroff.a $(LIBM) lib/libgnu.a
+groff="${abs_top_builddir:-.}/test-groff"
 
-pfbtops_TESTS = \
-  src/utils/pfbtops/tests/smoke-test.sh
-TESTS += $(pfbtops_TESTS)
-EXTRA_DIST += $(pfbtops_TESTS)
+# Validate error path and improve code coverage.
+#
+# Verify that we get a fatal error from troff if we create more
+# `symbol`s than "src/libs/libgroff/symbol.cpp" can handle.
 
-# Local Variables:
-# fill-column: 72
-# mode: makefile-automake
-# End:
-# vim: set autoindent filetype=automake textwidth=72:
+output=$(
+n=0
+while :
+do
+    n=$(( n + 1 ))
+    echo ".nr a$n 1"
+done | "$groff" 2>&1)
+
+echo "$output"
+echo "$output" | grep -q '^troff:.*: fatal error:'
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

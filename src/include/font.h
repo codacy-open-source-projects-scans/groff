@@ -211,8 +211,8 @@ public:
 			// and return a pointer to a 'font' object.  If
 			// arg2 is true, only the part of the font
 			// description file before the 'charset' and
-			// 'kernpairs' sections is loaded.  Return null
-			// pointer in case of failure.
+			// 'kernpairs' sections is checked for validity.
+			// Return null pointer in case of failure.
   static void command_line_font_dir(const char *);	// Prepend given
 			// path (arg1) to the list of directories in which
 			// to look up fonts.

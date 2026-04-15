@@ -89,7 +89,7 @@ inline bool symbol::is_empty() const
   return ((s != 0 /*  nullptr */) && (0 /* nullptr */ == *s));
 }
 
-symbol concat(symbol, symbol);
+symbol catenate(symbol, symbol);
 
 extern symbol default_symbol;
 
