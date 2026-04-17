@@ -1,3 +1,345 @@
+2026-04-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp
+	(remove_hyphenation_exception_words_request): Implement argument
+	processing; each is normalized (hyphens are removed), looked up
+	in the current hyphenation language's exception word dictionary,
+	and deleted thence if present.
+
+	* src/roff/groff/tests/rhw-request-works.sh: Test functionality.
+
+	* doc/groff.texi.in (Manipulating Hyphenation):
+	* man/groff.7.man (Request short reference):
+	* man/groff_diff.7.man (New requests):
+	* NEWS: Document it.
+
+	Fixes <https://savannah.gnu.org/bugs/?64478>.
+
+2026-04-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `pnr` request.
+
+	* src/roff/groff/tests/pnr-request-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test support for alphabetic register formats.
+
+	* src/roff/groff/tests/\
+	alpha-format-register-interpolation-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-16  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test support for Roman numeral register formats.
+
+	* src/roff/groff/tests/\
+	roman-format-register-interpolation-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	See <https://savannah.gnu.org/bugs/?61999>.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `sv` and `os` requests.
+
+	* src/roff/groff/tests/sv-and-os-requests-work.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (set_page_number_request): Drop logic
+	testing existence of `ps4html` register.  That can easily be
+	handled by macro programming.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Trivially refactor.  Rename request
+	handler functions.
+	(need_space)
+	(page_number)
+	(save_vertical_space)
+	(output_saved_vertical_space): Rename these...
+	(need_vertical_space_request)
+	(set_page_number_request)
+	(save_vertical_space_request)
+	(output_saved_vertical_space): ...to these.
+	(init_div_requests): Update wire-uppery of request names to
+	handler functions.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (diversion_trap_request): Ignore
+	request if arguments are present but nonsensical: either the
+	first is not a valid vertical position expression, or it's
+	present and valid but no second argument is present.
+
+	* src/roff/groff/tests/\
+	error-dt-request-given-bogus-arguments.sh: Test it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+	* doc/groff.texi.in (Other Differences):
+	* man/groff_diff.7.man (Other differences):
+	* NEWS: Document this behavioral difference from AT&T troffs.
+
+	Fixes <https://savannah.gnu.org/bugs/?68246>.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp (diversion_trap_request): Throw warning
+	in category "missing" if a `dist` argument is specified but the
+	then-mandatory `name` argument is omitted.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Trivially refactor.  Rename request
+	handler functions.
+	(diversion_trap)
+	(change_trap)
+	(print_traps)
+	(mark)
+	(vertical_position_traps): Rename these...
+	(diversion_trap_request)
+	(change_trap_request)
+	(print_traps_request)
+	(mark_request)
+	(configure_vertical_position_traps_request): ...to these.
+	(init_div_requests): Update wire-uppery of request names to
+	handler functions.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Improve `dt` request unit test.
+
+	* src/roff/groff/tests/dt-request-works.sh: Verify that
+	diversion trap removal works.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (suppress_node::tprint): Refactor code
+	populating "grohtml-info" output to access the contents of
+	built-in registers `.F` and `.c` directly via their
+	`get_string()` member functions instead of this file's
+	`get_string()` function, which syntactically sugars that
+	procedure.
+	(get_string): Delete now-unused function.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (suppress_node::tprint): Refactor code
+	populating "grohtml-info" output to access the contents of
+	`psbb` request-populated registers `op{min,max}{x,y}` directly
+	via their member functions instead of this file's
+	`get_register()` function, which syntactically sugars that
+	procedure.
+	(get_register): Delete now-unused function.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (suppress_node::tprint): Refactor code
+	populating "grohtml-info" output to access the formatter's page
+	offset and line length parameters directly, instead of going
+	through the register dictionary.  Because we're adding them,
+	check that addition for overflow; preprocessor-include
+	"<stdckdint.h>" accordingly.
+
+	We can consequently drop some now-unused code.
+
+	* src/roff/troff/div.cpp (class page_offset_reg): Drop
+	`get_value()` declaration.
+	(page_offset_reg::get_value): Delete.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Drop unused code introduced in initial
+	commit 351da0dcd, 1991-06-02.  Since the `.p` register is
+	interpolated only by its `get_string()` member function and
+	never `get_value()` (and nothing internally to the formatter
+	attempts to get at it by that means, since accessing the datum
+	via `curdiv->get_page_length()` is more straightforward), we can
+	drop the latter.
+
+	(class page_length_reg): Drop `get_value()` declaration.
+	(page_length_reg::get_value): Delete.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Drop unused code introduced in initial
+	commit 351da0dcd, 1991-06-02.  Since the `.d` register is
+	interpolated only by its `get_string()` member function and
+	never `get_value()` (and nothing internally to the formatter
+	attempts to get at it by that means, since accessing the datum
+	via `curdiv->get_vertical_position()` is more straightforward),
+	we can drop the latter.
+
+	(class vertical_position_reg): Drop `get_value()` declaration.
+	(vertical_position_reg::get_value): Delete.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Drop unused code introduced in initial
+	commit 351da0dcd, 1991-06-02.  Since the `.h` register is
+	interpolated only by its `get_string()` member function and
+	never `get_value()` (and nothing internally to the formatter
+	attempts to get at it by that means, since accessing the datum
+	via `curdiv->get_high_water_mark()` is more straightforward),
+	we can drop the latter.
+
+	(class high_water_mark_reg): Drop `get_value()` declaration.
+	(high_water_mark_reg::get_value): Delete.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Drop unused code introduced in initial
+	commit 351da0dcd, 1991-06-02.  Since the `.t` register is
+	interpolated only by its `get_string()` member function and
+	never `get_value()` (and nothing internally to the formatter
+	attempts to get at it by that means, since accessing the datum
+	via `curdiv->distance_to_next_trap()` is more straightforward),
+	we can drop the latter.
+
+	(class distance_to_next_trap_reg): Drop `get_value()`
+	declaration.
+	(distance_to_next_trap_reg::get_value): Delete.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/div.cpp: Drop unused code introduced in commit
+	0216fc85d3, 2001-05-05.  Since the (now-named) `.ns` register is
+	interpolated only by its `get_string()` member function and
+	never `get_value()` (and nothing internally to the formatter
+	attempts to get at it by that means, since accessing the datum
+	via `curdiv->is_in_no_space_mode` is more straightforward), we
+	can drop the latter.
+
+	(class no_space_mode_reg): Drop `get_value()` declaration.
+	(no_space_mode_reg::get_value): Delete.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `.ns` register.
+
+	* src/roff/groff/tests/dot-ns-register-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `ns` request.
+
+	* src/roff/groff/tests/ns-request-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `dt` request.
+
+	* src/roff/groff/tests/dt-request-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `aln` and `als` requests.
+
+	* src/roff/groff/tests/aln-request-works.sh:
+	* src/roff/groff/tests/als-request-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run tests.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Slightly refactor.  Migrate GNU troff's `dictionary`
+	class to use `ssize_t` for measurement of its capacity and
+	occupancy (and for integer variables iterating through it on
+	that basis).
+
+	* src/roff/troff/dictionary.h (class dictionary_iterator):
+	Migrate member variable `i` from `int` to `ssize_t`.
+	(class dictionary): Migrate member variables `capacity` and
+	`occupancy` from `int` to `ssize_t`.
+	(class dictionary, class object_dictionary): Migrate
+	constructors to take an argument of `ssize_t` instead of `int`
+	type.
+	* src/roff/troff/dictionary.cpp: Preprocessor-include
+	"<sys/types.h"> header defining `ssize_t` type.
+
+	* bootstrap.conf: Add "ssize_t" to `gnulib_modules`, since
+	neither ISO C99 nor ISO C++98 guarantee its existence.  (It's a
+	POSIX 2001 feature).
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/dictionary.h (class dictionary): Rename member
+	variables.
+	- size -> capacity
+	- used -> occupancy
+	* src/roff/troff/dictionary.cpp (dictionary::dictionary)
+	(dictionary::lookup)
+	(dictionary::remove)
+	(dictionary_iterator::dictionary_iterator): Update dereference
+	sites.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/dictionary.cpp: Fix code style nits.
+	(is_good_size)
+	(dictionary::lookup)
+	(dictionary::remove): Parenthesize formally complex expressions.
+	(dictionary::lookup):
+	(object_dictionary::lookup): Favor C++ `static_cast<>` operator
+	over omnipotent C-style cast.
+	(object_dictionary::define)
+	(object_dictionary::rename)
+	(object_dictionary::remove): Explicitly compare value of pointer
+	type to null pointer literal instead of letting it pun down to a
+	Boolean.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/dictionary.h (class dictionary): Drop
+	declaration of unimplemented member function `rehash()`.
+
+2026-04-14  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Drop some code introduced in
+	commit dc3c168c3b, 2004-10-10.  Per lcov(1) it's never used, and
+	deleting it does not adversely affect "make check".  It appears
+	that the `is_diversion()` member function that callers actually
+	use comes from the `macro` and `string_iterator` classes in
+	"input.cpp".
+
+	* src/roff/troff/div.h (class diversion): Drop `is_diversion()`
+	declaration.
+	(macro_diversion::is_diversion)
+	(top_level_diversion::is_diversion): Drop definitions.
+
+2026-04-15  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	Ditch our local (outdated) copy of gnulib's "localcharset"
+	module.  Our build brings it in already via the dependencies of
+	gnulib's "hypot" module.
+
+	* src/include/localcharset.h:
+	* src/libs/libgroff/localcharset.c: Delete.
+
+	* src/libs/libgroff/libgroff.am (libgroff_a_SOURCES): Drop
+	"src/libs/libgroff/localcharset.c" from macro definition.
+	(EXTRA_DIST): Stop shipping "src/libs/libgroff/config.charset",
+	"src/libs/libgroff/ref-add.sin", and
+	"src/libs/libgroff/ref-del.sin" in our distribution archive.
+	(CLEANFILES): Drop "config.charset", "ref-add.sin", and
+	"ref-del.sin" from macro definition.
+	(LIBGROFF_PACKAGE): Delete macro definition.
+	(all, charset.alias, ref-add.sed, ref-del.sed)
+	(install-data-local, install_charset_data)
+	(uninstall-local, uninstall_charset_data): Delete targets.
+
+	* m4/localcharset.m4: Delete.
+	* acinclude.m4: Drop inclusion of "m4/localcharset.m4".
+
+	Continues the long process of fixing Savannah #66518.
+
 2026-04-13  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/env.cpp: Trivially refactor.
@@ -390,7 +732,7 @@
 	argument.  Gather that hyphenation code earlier, and mark the
 	word as invalid if the hyphenation code is zero--exception: the
 	character '-' is also valid, since it marks a hyphenation point.
-	Consequently, we now throw a warning in category `char` on
+	Consequently, we now throw a warning in category "char" on
 	attempted hyphenation exception words like "non*sense" and
 	"0123456789".  Drop later conditional loop break if the
 	hyphenation code is zero since that now cannot be the case--we
@@ -16662,7 +17004,7 @@ Version 1.24.0 released 2026-02-28
 	`was_any_page_in_output_list` tracks this datum; defaults false.
 	(troff_output_file::trailer): When finishing up, don't write a
 	"trailer" grout command (and vertical motion) if no page ever
-	began.  Instead, throw a warning in category `range`.
+	began.  Instead, throw a warning in category "range".
 	(real_output_file::begin_page): Make
 	`was_any_page_in_output_list` true if any page is written.
 
@@ -24741,7 +25083,7 @@ Version 1.24.0 released 2026-02-28
 2023-12-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/input.cpp (if_else_request, if_request): Throw
-	warning in category `missing` if given no arguments.
+	warning in category "missing" if given no arguments.
 
 2023-12-08  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -24859,7 +25201,7 @@ Version 1.24.0 released 2026-02-28
 	(associate_style_with_font_position, select_underline_font)
 	(define_font_specific_character, remove_font_specific_character)
 	(configure_track_kerning, constantly_space_font): Throw warning
-	in category `missing` if given no arguments.
+	in category "missing" if given no arguments.
 
 	(set_font_specific_special_fonts, set_special_fonts): Demote
 	diagnostic when given no arguments to warning in category

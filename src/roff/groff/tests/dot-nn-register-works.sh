@@ -16,20 +16,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
-
-# Unit test .nn register.
 
 fail=
 
 wail () {
-  echo ...FAILED >&2
-  fail=YES
+    echo ...FAILED >&2
+    fail=YES
 }
 
-input='.ec @
+# Unit-test `.nn` register.
+
+input='.
+.ec @
 .de is-numbered
 .  nop This line
 .  ie (@@n[.nm] & (1-@@n[.nn])) IS
@@ -46,7 +46,8 @@ Test line numbering.
 .is-numbered
 .nm
 .is-numbered
-.pl @n[nl]u'
+.pl @n[nl]u
+.'
 
 # Apply line numbers to the output externally for easy grepping.
 output=$(echo "$input" | $groff -Tascii | nl)
@@ -54,24 +55,24 @@ echo "$output"
 
 echo "verifying that line 1 isn't numbered" >&2
 echo "$output" | \
-  grep -Eq "[[:space:]]+1[[:space:]]+Test line numbering\." || wail
+    grep -Eq "[[:space:]]+1[[:space:]]+Test line numbering\." || wail
 
 echo "verifying that line 2 isn't numbered" >&2
 echo "$output" | \
-  grep -Eq "[[:space:]]+2[[:space:]]+This line ISN'T" || wail
+    grep -Eq "[[:space:]]+2[[:space:]]+This line ISN'T" || wail
 
 echo "verifying that line 3 isn't numbered" >&2
 echo "$output" | \
-  grep -Eq "[[:space:]]+3[[:space:]]+This line ISN'T" || wail
+    grep -Eq "[[:space:]]+3[[:space:]]+This line ISN'T" || wail
 
 echo "verifying that line 4 is numbered" >&2
 echo "$output" | \
-  grep -Eq "[[:space:]]+4[[:space:]]+1 +This line IS numbered" || wail
+    grep -Eq "[[:space:]]+4[[:space:]]+1 +This line IS numbered" || wail
 
 echo "verifying that line 5 isn't numbered" >&2
 echo "$output" | \
-  grep -Eq "[[:space:]]+5[[:space:]]+This line ISN'T" || wail
+    grep -Eq "[[:space:]]+5[[:space:]]+This line ISN'T" || wail
 
 test -z "$fail"
 
-# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

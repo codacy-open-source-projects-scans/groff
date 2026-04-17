@@ -17,6 +17,9 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+// TODO: Migrate association -> std::pair
+// TODO: Migrate dictionary -> std::unordered_map
+
 // There is no distinction between a name with no value and a name with
 // a 0 (nullptr) value.  Null names are not permitted; they are ignored.
 
@@ -30,21 +33,20 @@ class dictionary;
 
 class dictionary_iterator {
   dictionary *dict;
-  int i;
+  ssize_t i;
 public:
   dictionary_iterator(dictionary &);
   bool get(symbol *, void **);
 };
 
 class dictionary {
-  int size;
-  int used;
+  ssize_t capacity;
+  ssize_t occupancy;
   double threshold;
   double factor;
   association *table;
-  void rehash(int);
 public:
-  dictionary(int);
+  dictionary(ssize_t);
   void *lookup(symbol, void * = 0 /* nullptr */);
   void *lookup(const char *);
   void *remove(symbol);
@@ -72,7 +74,7 @@ public:
 class object_dictionary {
   dictionary d;
 public:
-  object_dictionary(int);
+  object_dictionary(ssize_t);
   object *lookup(symbol);
   void define(symbol, object *);
   void rename(symbol, symbol);

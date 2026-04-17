@@ -515,10 +515,8 @@ void top_level_diversion::transparent_output(unsigned char c)
     the_output->transparent_char(*s++);
 }
 
-void top_level_diversion::transparent_output(node * /*n*/)
+void top_level_diversion::transparent_output(node *)
 {
-  // TODO: When Savannah #63074 is fixed, the user will have a way to
-  // avoid this error.
   error("cannot write a node to device-independent output");
 }
 
@@ -792,7 +790,7 @@ static void when_request() // .wh
   skip_line();
 }
 
-static void begin_page() // .bp
+static void begin_page_request() // .bp
 {
   bool got_arg = false;
   int n = 0;
@@ -908,7 +906,7 @@ void blank_line()
 /* need_space might spring a trap and so we must be careful that the
 BEGIN_TRAP token is not skipped over. */
 
-static void need_space() // .ne
+static void need_vertical_space_request() // .ne
 {
   vunits n;
   if (!has_arg() || !read_vunits(&n, 'v'))
@@ -919,7 +917,7 @@ static void need_space() // .ne
   tok.next();
 }
 
-static void page_number() // .pn
+static void set_page_number_request() // .pn
 {
   if (!has_arg()) {
     warning(WARN_MISSING, "page number assignment request expects an"
@@ -928,21 +926,14 @@ static void page_number() // .pn
     return;
   }
   int n = 0;
-  // the ps4html register is set if we are using -Tps
-  // to generate images for html
-  // XXX: Yuck!  Get rid of this; macro packages already test the
-  // register before invoking .pn.
-  reg *r = static_cast<reg *>(register_dictionary.lookup("ps4html"));
-  if (0 /* nullptr */ == r)
-    if (has_arg()
-	&& read_integer_crement(&n, topdiv->get_page_number()))
-      topdiv->set_next_page_number(n);
+  if (has_arg() && read_integer_crement(&n, topdiv->get_page_number()))
+    topdiv->set_next_page_number(n);
   skip_line();
 }
 
 vunits saved_space;
 
-static void save_vertical_space() // .sv
+static void save_vertical_space_request() // .sv
 {
   vunits x;
   if (!has_arg() || !read_vunits(&x, 'v'))
@@ -954,7 +945,7 @@ static void save_vertical_space() // .sv
   skip_line();
 }
 
-static void output_saved_vertical_space() // .os
+static void output_saved_vertical_space_request() // .os
 {
   while (!tok.is_newline() && !tok.is_eof())
     tok.next();
@@ -996,22 +987,30 @@ void top_level_diversion::clear_diversion_trap()
   error("cannot clear diversion trap when not diverting output");
 }
 
-static void diversion_trap() // .dt
+static void diversion_trap_request() // .dt
 {
   vunits n;
-  if (has_arg() && read_vunits(&n, 'v')) {
-    symbol s = read_identifier();
-    if (!s.is_null())
-      curdiv->set_diversion_trap(s, n);
-    else
-      curdiv->clear_diversion_trap();
-  }
-  else
+  if (!has_arg())
     curdiv->clear_diversion_trap();
+  else if (read_vunits(&n, 'v')) {
+    if (has_arg()) {
+      symbol s = read_identifier();
+      if (!s.is_null())
+	curdiv->set_diversion_trap(s, n);
+    }
+    else
+      warning(WARN_MISSING, "diversion trap request expects macro"
+	      " identifier argument after vertical position argument");
+  }
+  // We have no `else` branch here; `read_vunits()` already threw an
+  // error diagnostic.  Historically, GNU troff, like other troffs,
+  // treated botched `dt` arguments the same as no arguments at all,
+  // removing the trap.  That behavior was inconsistent with other
+  // request handling.
   skip_line();
 }
 
-static void change_trap() // .ch
+static void change_trap_request() // .ch
 {
   symbol s = read_identifier(true /* want_diagnostic */);
   if (!s.is_null()) {
@@ -1024,13 +1023,13 @@ static void change_trap() // .ch
   skip_line();
 }
 
-static void print_traps() // .pwh
+static void print_traps_request() // .pwh
 {
   topdiv->print_traps();
   skip_line();
 }
 
-static void mark() // .mk
+static void mark_request() // .mk
 {
   symbol s = read_identifier();
   if (s.is_null())
@@ -1065,7 +1064,7 @@ static void return_request() // .rt
   skip_line();
 }
 
-static void vertical_position_traps() // .vpt
+static void configure_vertical_position_traps_request() // .vpt
 {
   int n = 0;
   if (has_arg() && read_integer(&n))
@@ -1077,15 +1076,8 @@ static void vertical_position_traps() // .vpt
 
 class page_offset_reg : public reg {
 public:
-  bool get_value(units *);
   const char *get_string();
 };
-
-bool page_offset_reg::get_value(units *res)
-{
-  *res = topdiv->get_page_offset().to_units();
-  return true;
-}
 
 const char *page_offset_reg::get_string()
 {
@@ -1094,15 +1086,8 @@ const char *page_offset_reg::get_string()
 
 class page_length_reg : public reg {
 public:
-  bool get_value(units *);
   const char *get_string();
 };
-
-bool page_length_reg::get_value(units *res)
-{
-  *res = topdiv->get_page_length().to_units();
-  return true;
-}
 
 const char *page_length_reg::get_string()
 {
@@ -1111,18 +1096,8 @@ const char *page_length_reg::get_string()
 
 class vertical_position_reg : public reg {
 public:
-  bool get_value(units *);
   const char *get_string();
 };
-
-bool vertical_position_reg::get_value(units *res)
-{
-  if ((curdiv == topdiv) && (topdiv->before_first_page_status > 0))
-    *res = -1;
-  else
-    *res = curdiv->get_vertical_position().to_units();
-  return true;
-}
 
 const char *vertical_position_reg::get_string()
 {
@@ -1134,15 +1109,8 @@ const char *vertical_position_reg::get_string()
 
 class high_water_mark_reg : public reg {
 public:
-  bool get_value(units *);
   const char *get_string();
 };
-
-bool high_water_mark_reg::get_value(units *res)
-{
-  *res = curdiv->get_high_water_mark().to_units();
-  return true;
-}
 
 const char *high_water_mark_reg::get_string()
 {
@@ -1151,15 +1119,8 @@ const char *high_water_mark_reg::get_string()
 
 class distance_to_next_trap_reg : public reg {
 public:
-  bool get_value(units *);
   const char *get_string();
 };
-
-bool distance_to_next_trap_reg::get_value(units *res)
-{
-  *res = curdiv->distance_to_next_trap().to_units();
-  return true;
-}
 
 const char *distance_to_next_trap_reg::get_string()
 {
@@ -1270,15 +1231,8 @@ void nl_reg::set_value(units n)
 
 class no_space_mode_reg : public reg {
 public:
-  bool get_value(units *);
   const char *get_string();
 };
-
-bool no_space_mode_reg::get_value(units *val)
-{
-  *val = curdiv->is_in_no_space_mode;
-  return true;
-}
 
 const char *no_space_mode_reg::get_string()
 {
@@ -1289,25 +1243,25 @@ void init_div_requests()
 {
   init_request("box", box);
   init_request("boxa", box_append);
-  init_request("bp", begin_page);
-  init_request("ch", change_trap);
+  init_request("bp", begin_page_request);
+  init_request("ch", change_trap_request);
   init_request("da", divert_append);
   init_request("di", divert);
-  init_request("dt", diversion_trap);
+  init_request("dt", diversion_trap_request);
   init_request("fl", flush_request);
-  init_request("mk", mark);
-  init_request("ne", need_space);
+  init_request("mk", mark_request);
+  init_request("ne", need_vertical_space_request);
   init_request("ns", no_space);
-  init_request("os", output_saved_vertical_space);
+  init_request("os", output_saved_vertical_space_request);
   init_request("pl", configure_page_length_request);
-  init_request("pn", page_number);
+  init_request("pn", set_page_number_request);
   init_request("po", configure_page_offset_request);
-  init_request("pwh", print_traps);
+  init_request("pwh", print_traps_request);
   init_request("rs", restore_spacing);
   init_request("rt", return_request);
   init_request("sp", space_request);
-  init_request("sv", save_vertical_space);
-  init_request("vpt", vertical_position_traps);
+  init_request("sv", save_vertical_space_request);
+  init_request("vpt", configure_vertical_position_traps_request);
   init_request("wh", when_request);
   register_dictionary.define(".a",
       new readonly_register(&last_post_line_extra_space));

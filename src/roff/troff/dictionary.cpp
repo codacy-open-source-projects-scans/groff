@@ -17,11 +17,15 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+// TODO: Migrate association -> std::pair
+// TODO: Migrate dictionary -> std::unordered_map
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <stdio.h> // prerequisite of searchpath.h
+#include <sys/types.h> // ssize_t
 
 // libgroff
 #include "symbol.h" // prerequisite of dictionary.h
@@ -29,12 +33,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 // is 'p' a good size for a hash table
 
-static bool is_good_size(unsigned int p)
+static bool is_good_size(ssize_t p)
 {
-  const unsigned int SMALL = 10;
-  unsigned int i;
+  const ssize_t SMALL = 10;
+  ssize_t i;
   for (i = 2; i <= (p / 2); i++)
-    if (p % i == 0)
+    if ((p % i) == 0)
       return false;
   for (i = 0x100; i != 0; i <<= 8)
     if ((i % p) <= SMALL || (i % p) > (p - SMALL))
@@ -42,7 +46,8 @@ static bool is_good_size(unsigned int p)
   return true;
 }
 
-dictionary::dictionary(int n) : size(n), used(0), threshold(0.5), factor(1.5)
+dictionary::dictionary(ssize_t n)
+  : capacity(n), occupancy(0), threshold(0.5), factor(1.5)
 {
   table = new association[n];
 }
@@ -52,10 +57,10 @@ dictionary::dictionary(int n) : size(n), used(0), threshold(0.5), factor(1.5)
 
 void *dictionary::lookup(symbol s, void *v)
 {
-  int i;
-  for (i = int(s.hash() % size);
+  ssize_t i;
+  for (i = ssize_t(s.hash() % capacity);
        table[i].v != 0 /* nullptr */;
-       i == 0 ? i = size - 1: --i)
+       i == 0 ? i = (capacity - 1) : --i)
     if (s == table[i].s) {
       if (v != 0 /* nullptr */) {
 	void *temp = table[i].v;
@@ -67,18 +72,19 @@ void *dictionary::lookup(symbol s, void *v)
     }
   if (v == 0 /* nullptr */)
     return 0 /* nullptr */;
-  ++used;
+  ++occupancy;
   table[i].v = v;
   table[i].s = s;
-  if ((double(used) / double(size) >= threshold) || used + 1 >= size) {
-    int old_size = size;
-    size = int(size * factor);
-    while (!is_good_size(size))
-      ++size;
+  if (((static_cast<double>(occupancy) / static_cast<double>(capacity))
+      >= threshold) || ((occupancy + 1) >= capacity)) {
+    ssize_t old_capacity = capacity;
+    capacity = ssize_t(capacity * factor);
+    while (!is_good_size(capacity))
+      ++capacity;
     association *old_table = table;
-    table = new association[size];
-    used = 0;
-    for (i = 0; i < old_size; i++)
+    table = new association[capacity];
+    occupancy = 0;
+    for (i = 0; i < old_capacity; i++)
       if (old_table[i].v != 0 /* nullptr */)
 	(void) lookup(old_table[i].s, old_table[i].v);
     delete[] old_table;
@@ -100,28 +106,30 @@ void *dictionary::lookup(const char *p)
 void *dictionary::remove(symbol s)
 {
   // this relies on the fact that we are using linear probing
-  int i;
-  for (i = int(s.hash() % size);
+  // XXX: This method requires us to use a signed type for `i` and thus
+  // for container capacity and occupancy.  -- GBR, 2026
+  ssize_t i;
+  for (i = ssize_t(s.hash() % capacity);
        table[i].v != 0 /* nullptr */ && s != table[i].s;
-       i == 0 ? i = size - 1: --i)
+       i == 0 ? i = (capacity - 1) : --i)
     ;
   void *p = table[i].v;
   while (table[i].v != 0 /* nullptr */) {
     table[i].v = 0 /* nullptr */;
-    int j = i;
-    int r;
+    ssize_t j = i;
+    ssize_t r;
     do {
       --i;
       if (i < 0)
-	i = size - 1;
+	i = capacity - 1;
       if (table[i].v == 0 /* nullptr */)
 	break;
-      r = int(table[i].s.hash() % size);
+      r = ssize_t(table[i].s.hash() % capacity);
     } while ((i <= r && r < j) || (r < j && j < i) || (j < i && i <= r));
     table[j] = table[i];
   }
   if (p != 0 /* nullptr */)
-    --used;
+    --occupancy;
   return p;
 }
 
@@ -131,7 +139,7 @@ dictionary_iterator::dictionary_iterator(dictionary &d) : dict(&d), i(0)
 
 bool dictionary_iterator::get(symbol *sp, void **vp)
 {
-  for (; i < dict->size; i++)
+  for (; i < dict->capacity; i++)
     if (dict->table[i].v) {
       *sp = dict->table[i].s;
       if (vp != 0 /* nullptr */)
@@ -166,29 +174,29 @@ void object::remove_reference()
     delete this;
 }
 
-object_dictionary::object_dictionary(int n) : d(n)
+object_dictionary::object_dictionary(ssize_t n) : d(n)
 {
 }
 
 object *object_dictionary::lookup(symbol nm)
 {
-  return (object *)d.lookup(nm);
+  return static_cast<object *>(d.lookup(nm));
 }
 
 void object_dictionary::define(symbol nm, object *obj)
 {
   obj->add_reference();
   obj = static_cast<object *>(d.lookup(nm, obj));
-  if (obj)
+  if (obj != 0 /* nullptr */)
     obj->remove_reference();
 }
 
 void object_dictionary::rename(symbol oldnm, symbol newnm)
 {
   object *obj = static_cast<object *>(d.remove(oldnm));
-  if (obj) {
+  if (obj != 0 /* nullptr */) {
     obj = (object *)d.lookup(newnm, obj);
-    if (obj)
+    if (obj != 0 /* nullptr */)
       obj->remove_reference();
   }
 }
@@ -196,7 +204,7 @@ void object_dictionary::rename(symbol oldnm, symbol newnm)
 void object_dictionary::remove(symbol nm)
 {
   object *obj = static_cast<object *>(d.remove(nm));
-  if (obj)
+  if (obj != 0 /* nullptr */)
     obj->remove_reference();
 }
 
@@ -205,10 +213,10 @@ void object_dictionary::remove(symbol nm)
 bool object_dictionary::alias(symbol newnm, symbol oldnm)
 {
   object *obj = static_cast<object *>(d.lookup(oldnm));
-  if (obj) {
+  if (obj != 0 /* nullptr */) {
     obj->add_reference();
     obj = static_cast<object *>(d.lookup(newnm, obj));
-    if (obj)
+    if (obj != 0 /* nullptr */)
       obj->remove_reference();
     return true;
   }

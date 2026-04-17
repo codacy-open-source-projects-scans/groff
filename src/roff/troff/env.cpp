@@ -4071,6 +4071,25 @@ static void remove_hyphenation_exception_words_request() // .rhw
     skip_line();
     return;
   }
+  while (has_arg()) {
+    // C++11: constexpr
+    static const size_t readbufsz = WORD_MAX;
+    // C++03: char readbuf[readbufsz]();
+    unsigned char readbuf[readbufsz];
+    if (read_hyphenation_exception_word(readbuf)) {
+      // See above regarding "slovenly typing" and Savannah #68230.
+      char *rbuf = reinterpret_cast<char *>(readbuf);
+      unsigned char *word
+	= static_cast<unsigned char *>(
+	  current_language->exceptions.lookup(rbuf));
+      if (word != 0 /* nullptr */)
+	current_language->exceptions.remove(rbuf);
+    }
+    if (!has_arg()) {
+      skip_line();
+      return;
+    }
+  }
   dictionary_iterator iter(current_language->exceptions);
   symbol entry;
   unsigned char *word = 0 /* nullptr */;
@@ -4091,8 +4110,6 @@ static void remove_hyphenation_exception_words_request() // .rhw
       }
     }
   }
-  // TODO: Else read each argument as a word, normalize any hyphens
-  // (dashes) out of it, and remove it from the exceptions dictionary.
   skip_line();
 }
 
@@ -4114,7 +4131,7 @@ static void print_hyphenation_exceptions_request() // .phw
   char wordbuf[bufsz]; // We need to `errprint()` it, so not `unsigned`.
   (void) memset(wordbuf, '\0', bufsz);
   while (has_arg()) {
-    // C++11: constexp
+    // C++11: constexpr
     static const size_t readbufsz = WORD_MAX;
     // C++03: char readbuf[readbufsz]();
     unsigned char readbuf[readbufsz];

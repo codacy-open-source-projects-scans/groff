@@ -628,7 +628,7 @@ GNU
 @code{roff}
 system make it easier to use than traditional
 @code{roff}s
-that required the construction of pipelines
+that required the explicit construction of pipelines
 or use of temporary files to carry a source document
 from maintainable form to device-ready output.
 @c END Keep parallel with groff(1), section "Usage" (introduction).
@@ -684,6 +684,13 @@ device)
 embedding of hyperlinks, images, document metadata, and other inclusions
 (where supported by the output device)
 @end itemize
+
+@code{roff}
+as a programming language also supports
+evaluation of arithmetic expressions,
+storage and retrieval of parameters
+(``registers'' and ``strings''),
+and altered flow of control dependent on the foregoing.
 
 
 @c =====================================================================
@@ -4980,7 +4987,7 @@ paragraphing macro.  This is a Berkeley extension.
 
 For even greater flexibility,
 @file{ms}
-is designed to permit the redefinition of the macros that are called
+permits the redefinition of the macros that are called
 when formatter traps
 that ordinarily cause the headers and footers to be output are sprung.
 @code{PT} (``page trap'') is called by @file{ms} when the header is to
@@ -5029,9 +5036,14 @@ length @code{\n[LL]} determines it.
 @file{ms} can set text in as many columns as reasonably fit on the page.
 The following macros force a page break if a multi-column layout is
 active when they are called.  The @code{MINGW} register stores the
-default minimum gutter width; it is a GNU extension.  When multiple
-columns are in use, keeps and the @code{HORPHANS} and @code{PORPHANS}
-registers work with respect to column breaks instead of page breaks.
+default minimum gutter width; it is a GNU extension.
+When multiple columns are in use,
+keeps
+and the
+@code{HORPHANS}
+and
+@code{PORPHANS}
+registers work with respect to column breaks in addition to page breaks.
 
 @Defmac {1C, , ms}
 Arrange page text in a single column (the default).
@@ -10273,12 +10285,19 @@ matching a hyphenation exception word defined with
 @code{hw}.
 
 @cindex hyphenation exception words, removing
-@Defreq {rhw}
-Empty the current hyphenation language's exception word list
-of all entries populated by the input.@footnote{GNU
+@Defreq {rhw, [@Var{word} @r{@dots{}}]}
+Remove each
+@var{word}
+from the current hyphenation language's exception word list
+or,
+without arguments,
+empty that list of all entries populated by the input.@footnote{GNU
 @command{troff} @c GNU
 retains those supplied by hyphenation pattern exception files;
 see below.}
+Hyphens in
+@var{word}
+are ignored.
 @endDefreq
 
 Situations also arise when only a specific occurrence of a word needs
@@ -18514,11 +18533,16 @@ caused by the @code{bp} request are not shown in the output.
 @Defreg {.t}
 @cindex distance to next vertical position trap register (@code{.t})
 @cindex trap, distance to next vertical position, register (@code{.t})
-The read-only register @code{.t} holds the distance to the next vertical
-position trap.  If no such traps exist between the drawing position and
-the bottom of the page, it contains the distance to the page bottom.
-Within a diversion, in the absence of a diversion trap, this distance is
-the maximum possible vertical position supported by the output device.
+The read-only register
+@code{.t}
+holds the distance to the next vertical position trap.
+If no such traps exist
+between the drawing position and the bottom of the page,
+it contains the distance to the page bottom.
+Within a diversion,
+in the absence of a pending diversion trap,
+this distance is the maximum possible vertical position
+supported by the output device.
 @endDefreg
 
 @Defreq {ch, name [@Var{dist}]}
@@ -18717,11 +18741,21 @@ exist at most one such vertical position trap per diversion.
 @cindex setting diversion trap (@code{dt})
 @cindex diversion trap, setting (@code{dt})
 @cindex trap, diversion, setting (@code{dt})
-Set a trap @emph{within} a diversion at location @var{dist}, which is
-interpreted relative to diversion rather than page boundaries.  If invoked with
-fewer than two arguments, any diversion trap in the current diversion is
-removed.  The register @code{.t} works within diversions.  It is an
-error to invoke @code{dt} in the top-level diversion.
+Set a trap calling
+@var{name}
+from
+@emph{within}
+a diversion at location
+@var{dist},
+which is interpreted relative to diversion rather than page boundaries.
+If invoked with fewer than two arguments,
+any diversion trap in the current diversion is removed.
+The register
+@code{.t}
+works within diversions.
+It is an error to invoke
+@code{dt}
+in the top-level diversion.
 @xref{Diversions}.
 @endDefreq
 
@@ -19518,9 +19552,18 @@ to a postprocessor that interprets
 @var{character-sequence}
 and filters it out
 before sending it to the output driver.
-@c TODO: Once the dust settles from Savannah #63074, document how these
-@c can be used to construct device extension commands without special
-@c character processing.
+If all you require is to encode character code points
+that are not meaningful in
+@code{roff}
+device-independent output but are to an output driver,
+such as Unicode characters in document metadata,
+bookmarks,
+or URLs,
+consider the
+@code{device}
+request or
+@code{\X}
+escape sequence.@footnote{@xref{Postprocessor Access}.}
 @endDefreq
 
 @Defreq {asciify, div}
@@ -20815,9 +20858,6 @@ GNU
 output as parameters to an
 @w{@samp{x X}}
 device extension command.@footnote{@xref{GNU @command{troff} Output}.}
-The output driver or other postprocessor interprets
-@var{character-sequence}
-as it sees fit.
 
 @cindex @code{device} request, and copy mode
 @cindex copy mode, and @code{device} request
@@ -20904,6 +20944,21 @@ as arguments to device extension commands.@footnote{When encountered,
 these produce warnings in category
 @samp{char}.
 @xref{Warnings}.}
+
+To avoid the transformations
+@code{device}
+and
+@code{\X}
+perform,
+employ the
+@code{output}
+or
+@code{\!}
+or
+@code{\?}
+escape sequences;
+recall
+@xref{Diversions}.
 @endDefesc
 
 GNU
@@ -22697,20 +22752,6 @@ which is not suitable in GNU
 for some languages,
 including English.
 
-Unlike
-GNU
-@command{troff}, @c GNU
-@acronym{AT&T}
-@command{troff} @c AT&T
-does not recognize an occurrence of
-@code{\%}
-at the beginning of a word as suppressing its hyphenation;
-instead,
-it (uselessly) marks the start of the word
-as a potential hyphenation point,
-permitting output lines to end with hyphens
-that are not interior to a word.
-
 GNU
 @command{troff} @c GNU
 handles the dummy character
@@ -22904,6 +22945,19 @@ GNU
 does not accept a scaling unit on the argument,
 a page number;
 the former does (uselessly).
+
+@cindex @code{dt} request, incompatibilities with @acronym{AT&T} @code{troff}
+When the
+@code{dt}
+request is given invalid arguments,
+@acronym{AT&T}
+@command{troff} @c AT&T
+behaves as if it were given no arguments at all,
+removing any existing diversion trap;
+GNU
+@command{troff} @c GNU
+does nothing,
+more consistently with other requests given unintelligible arguments.
 
 @cindex @code{lf} request, incompatibilities with @acronym{AT&T} @code{troff}
 The
@@ -23415,6 +23469,7 @@ Make the font handling module always return unscaled character widths.
 The @code{grohtml} driver uses this directive.
 
 @c XXX: Savannah #63074 is trying to make this obsolescent.
+@c TODO: That bug is fixed.  Can we get rid of this?
 @item use_charnames_in_special
 @kindex use_charnames_in_special
 GNU

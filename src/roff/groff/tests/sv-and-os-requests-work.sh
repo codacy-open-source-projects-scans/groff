@@ -26,27 +26,97 @@ wail () {
    fail=yes
 }
 
-input='.
-.hw baz-qux kwy-ji-bo sa-hu-agin
-.rhw
-.phw
-.'
-
-echo "checking operation of 'rhw' request without arguments"
-output=$(printf '%s\n' "$input" | "$groff" 2>&1)
-echo "$output"
-echo "$output" | grep -Eqx "(baz-qux|kwy-ji-bo|sa-hu-agin)" && wail
+# Unit-test `sv` and `os` requests.
 
 input='.
-.hw baz-qux kwy-ji-bo sa-hu-agin
-.rhw kwyjibo
-.phw
+.nf
+1
+2
+3
+4
+5
+6
+7
+8
+9
+.sv 1i/2u
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+.sv 1i
+A
+B
+C
+D
+E
+F
+.os
+G
+H
+I
+DONE
 .'
 
-echo "checking operation of 'rhw' request with arguments"
-output=$(printf '%s\n' "$input" | "$groff" 2>&1)
+output=$(printf '%s\n' "$input" | "$groff" -T ascii | nl -ba)
 echo "$output"
-echo "$output" | grep -qx "kwy-*ji-*bo" && wail
+output=$(echo $output) # condense onto one line
+
+echo "checking that 'sv' far from a trap works" >&2
+echo "$output" | grep -q "9 9 10 11 12 13 13" || wail
+
+# In GNU troff, the `sv` request does not spring a trap.
+echo "checking that 'sv' close to a trap works" >&2
+echo "$output" \
+    | grep -q \
+    "60 60 61 A 62 B 63 C 64 D 65 E 66 F 67 68 69 70 71 72 73 G" || wail
+
+echo "checking that 'os' works" >&2
+echo "$output" | grep -q "72 73 G 74 H 75 I 76 DONE 77 78" || wail
 
 test -z "$fail"
 

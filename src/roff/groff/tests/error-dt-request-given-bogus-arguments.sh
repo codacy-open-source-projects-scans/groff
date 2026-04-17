@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2020-2024 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -22,50 +22,58 @@ groff="${abs_top_builddir:-.}/test-groff"
 fail=
 
 wail () {
-    echo ...FAILED >&2
-    fail=YES
+   echo "...FAILED"
+   fail=yes
 }
 
-# Unit-test `.cp` register.
+# If the `dt` request is given arguments, two must be present and they
+# must be valid, otherwise GNU troff performs no operation.
 
 input='.
-.pl 1v
-A
-.do if 1 \n[.cp] \" Get initial compatibility state (depends on -C).
-B
-.do if 1 \n[.cp] \" Did observing the state change it?
-.cp 1
-C
-.do if 1 \n[.cp] \" Saved compatibility state should be 1 now.
-.cp 0
-D
-.do if 1 \n[.cp] \" Verify 1->0 transition.
-.cp 1
-E
-.do if 1 \n[.cp] \" Verify 0->1 transition.
-.cp 0
-F
-.if !\n[.C] \n[.cp] \" Outside of .do context, should return -1.
+.de TT
+WHOOPS
+.br
+..
+.di DD
+.dt 3v TT
+.nf
+foo
+bar
+.dt \e
+.sp
+baz
+.di
+.DD
 .'
-
-# Expected:
-#
-# A 0 B 0 C 1 D 0 E 1 F 0
-# A 1 B 1 C 1 D 0 E 1 F 0
 
 output=$(printf '%s\n' "$input" | "$groff" -T ascii)
 echo "$output"
+output=$(echo $output) # condense onto one line
+echo "$output" | grep -q "foo bar WHOOPS baz" || wail
 
-echo "checking value of '.cp' when not started in compatibility mode" \
-    >&2
-echo "$output" | grep -Fqx "A 0 B 0 C 1 D 0 E 1 F 0" || wail
-
-output=$(printf "%s" "$input" | "$groff" -C -T ascii)
-echo "$output"
-
-echo "checking value of '.cp' when started in compatibility mode" \
-    >&2
-echo "$output" | grep -Fqx "A 1 B 1 C 1 D 0 E 1 F 0" || wail
+# TODO: read_identifier() needs to interact differently with its callers
+# for us to support this.
+#input2='.
+#.de TT
+#WHOOPS
+#.br
+#..
+#.di DD
+#.dt 3v TT
+#.nf
+#foo
+#bar
+#.dt 4v foo	bar
+#.sp
+#baz
+#.di
+#.DD
+#.'
+#
+#output2=$(printf '%s\n' "$input2" | "$groff" -a 2>/dev/null)
+#echo "$output2"
+#output2=$(echo $output2) # condense onto one line
+#echo "$output2" | grep -q "foo bar WHOOPS baz" || wail
 
 test -z "$fail"
 

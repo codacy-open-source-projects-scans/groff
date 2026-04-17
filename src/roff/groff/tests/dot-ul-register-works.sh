@@ -19,7 +19,7 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Unit test .ul register.
+# Unit-test `.ul` register.
 
 input='.
 .ec @
@@ -56,4 +56,4 @@ echo "$output" | grep -qx "baz 0" || exit 1
 echo "$output" | grep -qx "qux.*1" || exit 1
 echo "$output" | grep -qx "jat 0" || exit 1
 
-# vim:set autoindent expandtab shiftwidth=2 tabstop=2 textwidth=72:
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

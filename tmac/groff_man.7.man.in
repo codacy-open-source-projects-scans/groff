@@ -2633,8 +2633,8 @@ or register,
 string,
 and macro definitions,
 causing a document's contents
-to be presented incomprehensibly
-or omitted entirely.
+to be omitted
+or presented incomprehensibly.
 .
 If your document uses formatter requests,
 or escape sequences not shown below,
@@ -2743,11 +2743,42 @@ those specified with
 .BR \e% .
 .
 .
+.IP
+Beginning a word with this escape sequence doesn't work
+with font selection macros
+in
+DWB,
+Plan\~9,
+or
+Solaris
+.IR troff s \" DWB, Plan 9, Solaris
+due to the way their
+.I man
+macros are written.
+.\" They're all like this:
+.\"
+.\".deXX
+.\".nh
+.\".ft2 \" or whichever
+.\".it1 }N
+.\".if!<BEL>\\$1<BEL><BEL> \&\\$1 \\$2 \\$3 \\$4 \\$5 \\$6
+.\".HY
+.\"
+.\" The prefixing of the first argument with a dummy character means
+.\" that the argument's `\%` loses its place at the start of the
+.\" interpolated word.  A spurious "inter-word" hyphenation break point
+.\" is the unwelcome result.  GBR knows of no good way to defeat this.
+.\" There are many bad ones that would be intrusive in man(7) document
+.\" source.
+.
+.
 .TP
 .B \e:
 Insert a non-printing break point.
 .
-A word can break at such a point,
+A word can break where
+.B \e:
+appears,
 but a hyphen glyph is not written to the output if it does.
 .
 The remainder of the word is subject to hyphenation as normal.
@@ -2990,11 +3021,12 @@ roman,
 or back to the previous style,
 respectively.
 .
-Either
+Use
+either
 .B \ef
 or
 .B \ec
-is needed when three different font styles are required in a word.
+when three different font styles are required in one word.
 .
 .
 .RS
@@ -3012,6 +3044,8 @@ is needed when three different font styles are required in a word.
 .IP
 Style escape sequences may be more portable than
 .BR \ec .
+.\" _Formatters_ handle \c just fine, but po4a does not.  See
+.\" <https://github.com/mquinson/po4a/issues/527>.
 .
 As shown above,
 it is up to you to account for italic corrections with
@@ -3047,6 +3081,19 @@ usually result in more readable
 source than
 .B \ef
 escape sequences do.
+.
+.
+.IP
+Only the listed font escape sequences are dependable.
+.
+Others,
+such as
+.BR \efC ,
+are not portable,
+are meaningless on terminal devices,
+and can prompt warnings from
+GNU
+.IR troff .\" GNU
 .
 .
 .P
@@ -3633,7 +3680,7 @@ and
 .B X
 registers.
 .
-4.3BSD (1986) added
+4.3BSD (1986) incorporated
 .\" undocumented DS and DE macros for "displays", which are RS/RE
 .\" wrappers with filling disabled and vertical space of 1v before and
 .\" .5v after, as well as...

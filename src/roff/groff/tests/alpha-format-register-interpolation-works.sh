@@ -26,27 +26,41 @@ wail () {
    fail=yes
 }
 
-input='.
-.hw baz-qux kwy-ji-bo sa-hu-agin
-.rhw
-.phw
-.'
-
-echo "checking operation of 'rhw' request without arguments"
-output=$(printf '%s\n' "$input" | "$groff" 2>&1)
-echo "$output"
-echo "$output" | grep -Eqx "(baz-qux|kwy-ji-bo|sa-hu-agin)" && wail
+# Unit-test alphabetic register interpolation format.
+#
+# Also test nonpositive register values.
 
 input='.
-.hw baz-qux kwy-ji-bo sa-hu-agin
-.rhw kwyjibo
-.phw
+.ec @
+.de PR
+.nr r @@$1
+.af r 0
+@@nr
+.ie @nU .af r A
+.el     .af r a
+@@nr
+.br
+..
+.PR -1
+.PR 0
+.PR 1
+.PR 26
+.PR 27
 .'
 
-echo "checking operation of 'rhw' request with arguments"
-output=$(printf '%s\n' "$input" | "$groff" 2>&1)
-echo "$output"
-echo "$output" | grep -qx "kwy-*ji-*bo" && wail
+output1=$(printf '%s\n' "$input" | "$groff" -T ascii)
+output1=$(echo $output1) # condense onto one line
+
+echo "checking that lowercase alphabetic register interpolation" \
+    "format works" >&2
+echo "$output1" | grep -qx -- "-1 -a 0 0 1 a 26 z 27 aa" || wail
+
+output2=$(printf '%s\n' "$input" | "$groff" -rU1 -T ascii)
+output2=$(echo $output2) # condense onto one line
+
+echo "checking that uppercase alphabetic register interpolation" \
+    "format works" >&2
+echo "$output2" | grep -qx -- "-1 -A 0 0 1 A 26 Z 27 AA" || wail
 
 test -z "$fail"
 

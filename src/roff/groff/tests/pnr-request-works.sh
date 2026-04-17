@@ -26,27 +26,30 @@ wail () {
    fail=yes
 }
 
-input='.
-.hw baz-qux kwy-ji-bo sa-hu-agin
-.rhw
-.phw
-.'
+# Unit-test `pnr` request.
+#
+# Check a writable register, a read-only register, and a string-valued
+# (read-only) register.
+#
+# The ordering of registers dumped by `pnr` when given no arguments is
+# not deterministic.
+#
+# nl      -1 +0 0
+# .fam    T
+# .R      2147483647
 
-echo "checking operation of 'rhw' request without arguments"
-output=$(printf '%s\n' "$input" | "$groff" 2>&1)
-echo "$output"
-echo "$output" | grep -Eqx "(baz-qux|kwy-ji-bo|sa-hu-agin)" && wail
+echo "checking that 'pnr' works without arguments" >&2
+output=$(echo .pnr | "$groff" 2>&1)
+echo "$output" | grep -Eqx 'nl[[:space:]]-1[[:space:]]\+0[[:space:]]0' \
+    || fail=yes
+echo "$output" | grep -Eqx '\.fam[[:space:]]T'        || fail=yes
+echo "$output" | grep -Eqx '\.R[[:space:]]2147483647' || fail=yes
+test -z "$fail" || wail
 
-input='.
-.hw baz-qux kwy-ji-bo sa-hu-agin
-.rhw kwyjibo
-.phw
-.'
-
-echo "checking operation of 'rhw' request with arguments"
-output=$(printf '%s\n' "$input" | "$groff" 2>&1)
-echo "$output"
-echo "$output" | grep -qx "kwy-*ji-*bo" && wail
+echo "checking that 'pnr' works with arguments" >&2
+output=$(echo .pnr .hla c. | "$groff" 2>&1)
+output=$(echo $output) # condense onto one line, convert tab -> space
+echo "$output" | grep -Eq '\.hla en c\. 1 \+0 0' || wail
 
 test -z "$fail"
 

@@ -745,7 +745,7 @@ GNU
 .I roff
 system make it easier to use than traditional
 .IR roff s
-that required the construction of pipelines
+that required the explicit construction of pipelines
 or use of temporary files to carry a source document
 from maintainable form to device-ready output.
 .

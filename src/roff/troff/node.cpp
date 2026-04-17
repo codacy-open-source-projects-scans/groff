@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #endif
 
 #include <errno.h>
+#include <stdckdint.h> // ckd_add() in suppress_node::tprint() hackery
 #include <stdio.h> // prerequisite of searchpath.h
 #include <stdlib.h> // free(), malloc()
 #include <string.h> // strerror()
@@ -4611,28 +4612,6 @@ int tag_node::ends_sentence()
   return 2;
 }
 
-// Get contents of register `p` as integer.
-// Used only by suppress_node::tprint().
-static int get_register(const char *p)
-{
-  assert(p != 0 /* nullptr */);
-  reg *r = static_cast<reg *>(register_dictionary.lookup(p));
-  assert(r != 0 /* nullptr */);
-  units value;
-  assert(r->get_value(&value));
-  return int(value);
-}
-
-// Get contents of register `p` as string.
-// Used only by suppress_node::tprint().
-static const char *get_string(const char *p)
-{
-  assert(p != 0 /* nullptr */);
-  reg *r = static_cast<reg *>(register_dictionary.lookup(p));
-  assert(r != 0 /* nullptr */);
-  return r->get_string();
-}
-
 void suppress_node::put(troff_output_file *out, const char *s)
 {
   int i = 0;
@@ -4774,16 +4753,35 @@ void suppress_node::tprint(troff_output_file *out)
 	//	  topdiv->get_page_number(),
 	//	  suppression_starting_page_number);
 	// `name` will contain a "%d" in which the image_no is placed.
+	units opminx, opminy, opmaxx, opmaxy;
+	// XXX: We ignore `get_value()`'s return value.  It's false if
+	// the register didn't already exist.  We assume that it does or
+	// this code won't work anyway.
+	(void) static_cast<reg *>(register_dictionary.lookup("opminx"))
+		->get_value(&opminx);
+	(void) static_cast<reg *>(register_dictionary.lookup("opminy"))
+		->get_value(&opminy);
+	(void) static_cast<reg *>(register_dictionary.lookup("opmaxx"))
+		->get_value(&opmaxx);
+	(void) static_cast<reg *>(register_dictionary.lookup("opmaxy"))
+		->get_value(&opmaxy);
+	units page_width; // not counting the right margin
+	if (ckd_add(&page_width, topdiv->get_page_offset().to_units(),
+		    curenv->get_line_length().to_units()))
+	  // This really should never happen.
+	  warning(WARN_RANGE, "addition saturated when adding"
+		  " page offset and line length for grohtml-info");
 	fprintf(stderr,
 		"grohtml-info:page %d  %d  %d  %d  %d  %d  %s  %d  %d"
 		"  %s:%s\n",
 		topdiv->get_page_number(),
-		get_register("opminx"), get_register("opminy"),
-		get_register("opmaxx"), get_register("opmaxy"),
-		// page offset + line length
-		get_register(".o") + get_register(".l"),
-		name, hresolution, vresolution, get_string(".F"),
-		get_string(".c"));
+		opminx, opminy, opmaxx, opmaxy,
+		page_width,
+		name, hresolution, vresolution,
+		static_cast<reg *>(register_dictionary.lookup(".F"))
+		    ->get_string(),
+		static_cast<reg *>(register_dictionary.lookup(".c"))
+		    ->get_string());
 	fflush(stderr);
       }
     }

@@ -475,6 +475,7 @@ driver uses this directive.
 .
 .
 .\" XXX: Savannah #63074 is trying to make this obsolescent.
+.\" TODO: That bug is fixed.  Can we get rid of this?
 .TP
 .B use_charnames_in_special
 GNU

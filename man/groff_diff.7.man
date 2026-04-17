@@ -4255,9 +4255,18 @@ See
 .
 .
 .TP
-.B .rhw
-Empty the current hyphenation language's exception word list
-of all entries populated by the input.
+.BR .rhw \~[\c
+.IR word \~\&.\|.\|.]
+Remove each
+.I word
+from the current hyphenation language's exception word list
+or,
+without arguments,
+empty that list of all entries populated by the input.
+.
+Hyphens in
+.I word
+are ignored.
 .
 .
 .TP
@@ -6832,22 +6841,6 @@ including English.
 .
 .
 .P
-Unlike
-GNU
-.IR troff , \" GNU
-AT&T
-.I troff \" AT&T
-does not recognize an occurrence of
-.B \[rs]%
-at the beginning of a word as suppressing its hyphenation;
-instead,
-it (uselessly) marks the start of the word
-as a potential hyphenation point,
-permitting output lines to end with hyphens
-that are not interior to a word.
-.
-.
-.P
 GNU
 .I troff \" GNU
 handles the dummy character
@@ -7024,6 +7017,20 @@ GNU
 does not accept a scaling unit on the argument,
 a page number;
 the former does (uselessly).
+.
+.
+.P
+When the
+.B dt
+request is given invalid arguments,
+AT&T
+.I troff \" AT&T
+behaves as if it were given no arguments at all,
+removing any existing diversion trap;
+GNU
+.I troff \" GNU
+does nothing,
+more consistently with other requests given unintelligible arguments.
 .
 .
 .P

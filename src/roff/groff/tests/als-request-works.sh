@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2021 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -19,26 +19,32 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Unit-test `.nm` register.
+fail=
+
+wail () {
+   echo "...FAILED"
+   fail=yes
+}
+
+# Unit-test `als` request.
 
 input='.
-.nf
-foo (\n[.nm])
-.nm 1
-bar (\n[.nm])
-.nn
-baz (\n[.nm])
-.nm
-qux (\n[.nm])
-.fi
+.ds foo FOO
+.als bar foo
+bar=\*[bar]
+.als baz qux
 .'
 
-output=$(printf '%s\n' "$input" | "$groff" -T utf8)
+echo "checking that 'als' request works" >&2
+output=$(printf '%s\n' "$input" | "$groff" -a 2>/dev/null)
 echo "$output"
+echo "$output" | grep -qx "bar=FOO" || wail
 
-echo "$output" | grep -Fqx 'foo (0)'
-echo "$output" | grep -Fqx '  1 bar (1)'
-echo "$output" | grep -Fqx 'baz (1)'
-echo "$output" | grep -Fqx 'qux (0)'
+echo "checking that 'als' request produces error when it should" >&2
+error=$(printf '%s\n' "$input" | "$groff" -z 2>&1)
+echo "$error"
+test -n "$error" || wail
+
+test -z "$fail"
 
 # vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

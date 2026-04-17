@@ -10,7 +10,8 @@ manuscript macro package for formatting documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2021 Free Software Foundation, Inc.
+.\"           2018-2023 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -1975,7 +1976,7 @@ This is a Berkeley extension.
 .P
 For even greater flexibility,
 .I ms
-is designed to permit the redefinition of the macros that are called
+permits the redefinition of the macros that are called
 when formatter traps
 that ordinarily cause the headers and footers to be output are sprung.
 .
@@ -2069,7 +2070,7 @@ and the
 and
 .B \%PORPHANS
 registers
-work with respect to column breaks instead of page breaks.
+work with respect to column breaks in addition to page breaks.
 .
 .
 .TP

@@ -18,6 +18,13 @@ troff
 *  GNU troff, the formatter, now employs the unusual Roman numerals "W"
    and "Z" of AT&T troff only in compatibility mode.
 
+*  The `dt` request, when given invalid arguments, now does nothing
+   instead of removing any existing diversion trap.  This change is
+   inconsistent with AT&T troff but more consistent with general *roff
+   syntax; as a rule, requests given invalid arguments (and that don't
+   process a list of similar objects, as `rm` and `rr` do) perform no
+   operation.
+
 *  The "delim", "syntax", and "escape" warning categories are enabled by
    default.
 
@@ -49,9 +56,9 @@ troff
    and if found, is reported with its hyphenation points.  Only
    hyphenation exceptions defined by the `hw` request are reported.
 
-*  A new request, `rhw`, clears the current hyphenation language's list
-   of user-defined hyphenation exception words.  Those supplied by files
-   like "tmac/hyphenex.{cs,en,pl}" are retained.
+*  A new request, `rhw`, removes user-defined hyphenation exception
+   words from the current hyphenation language's list thereof.  Those
+   supplied by files like "tmac/hyphenex.{cs,en,pl}" are retained.
 
 Macro packages
 --------------
@@ -1018,9 +1025,9 @@ Miscellaneous
    Use `preconv -v` to determine this fact.
 
 *  groff's "configure" script now tries harder to determine an
-   appropriate paper format for the system; its output reports how it
-   made its determination.  Any existing "/etc/papersize" file is one of
-   the resources it consults.
+   appropriate default paper format for the system; its output reports
+   how it made its determination.  Any existing "/etc/papersize" file is
+   one of the resources it consults.
 
 *  groff's "configure" script now supports a "--without-urw-fonts"
    option, for use on systems where the URW replacement fonts for

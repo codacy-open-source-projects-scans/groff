@@ -4872,6 +4872,16 @@ Empty the current hyphenation language's exception word list
 of all entries populated by the input.
 .
 .TPx
+.REQ .rhw "word \fR\&.\|.\|.\&\fP"
+Remove each
+.I word
+from the current hyphenation language's exception word list.
+.
+Hyphens in
+.I word
+are ignored.
+.
+.TPx
 .REQ .rj
 Break,
 right-align the output of the next productive input line without

@@ -16,18 +16,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 groff="${abs_top_builddir:-.}/test-groff"
 
 fail=
 
 wail () {
-  echo ...FAILED >&2
-  fail=yes
+    echo ...FAILED >&2
+    fail=yes
 }
 
-input='.pl 3v
+# Unit-test `.trap` register.
+
+input='.
+.pl 3v
 .de bomb
 .tm Boom!
 ..
@@ -37,9 +39,10 @@ input='.pl 3v
 .tm A: .trap=\n[.trap]
 foo nl=\n[nl]u
 .tm B: .trap=\n[.trap]
-bar nl=\n[nl]u'
+bar nl=\n[nl]u
+.'
 
-error=$(printf "%s\n" "$input" | "$groff" -T ascii 2>&1 > /dev/null)
+error=$(printf '%s\n' "$input" | "$groff" -T ascii 2>&1 > /dev/null)
 echo "$error"
 
 echo "checking operation of .trap register prior to trap"
@@ -69,3 +72,5 @@ echo "checking operation of .trap in diversion, after trap"
 echo "$error" | grep -Fqx 'B: .trap=' || wail
 
 test -z "$fail"
+
+# vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

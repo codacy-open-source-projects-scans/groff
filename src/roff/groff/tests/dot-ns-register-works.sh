@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2021 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -19,26 +19,25 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Unit-test `.nm` register.
+# Unit-test .ns register.
 
 input='.
 .nf
-foo (\n[.nm])
-.nm 1
-bar (\n[.nm])
-.nn
-baz (\n[.nm])
-.nm
-qux (\n[.nm])
-.fi
+foo (.ns=\n[.ns])
+.sp
+bar
+.ns
+baz (.ns=\n[.ns])
+.rs
+.sp
+qux (.ns=\n[.ns])
+.pl \n[nl]u
 .'
 
-output=$(printf '%s\n' "$input" | "$groff" -T utf8)
+output=$(printf '%s\n' "$input" | "$groff" -T ascii | nl -ba)
 echo "$output"
-
-echo "$output" | grep -Fqx 'foo (0)'
-echo "$output" | grep -Fqx '  1 bar (1)'
-echo "$output" | grep -Fqx 'baz (1)'
-echo "$output" | grep -Fqx 'qux (0)'
+output=$(echo $output) # condense onto one line
+echo "$output" \
+    | grep -qx '1 foo (.ns=0) 2 3 bar 4 baz (.ns=1) 5 6 qux (.ns=0)'
 
 # vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

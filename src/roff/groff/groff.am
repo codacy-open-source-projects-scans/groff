@@ -38,6 +38,9 @@ EXTRA_DIST += src/roff/groff/groff.1.man
 groff_TESTS = \
   src/roff/groff/tests/ab-request-works.sh \
   src/roff/groff/tests/adjustment-works.sh \
+  src/roff/groff/tests/aln-request-works.sh \
+  src/roff/groff/tests/alpha-format-register-interpolation-works.sh \
+  src/roff/groff/tests/als-request-works.sh \
   src/roff/groff/tests/arithmetic-works.sh \
   src/roff/groff/tests/asciify-composite-nodes-correctly.sh \
   src/roff/groff/tests/asciify-request-works.sh \
@@ -74,6 +77,7 @@ groff_TESTS = \
   src/roff/groff/tests/dot-cp-register-works.sh \
   src/roff/groff/tests/dot-nm-register-works.sh \
   src/roff/groff/tests/dot-nn-register-works.sh \
+  src/roff/groff/tests/dot-ns-register-works.sh \
   src/roff/groff/tests/dot-trap-register-works.sh \
   src/roff/groff/tests/dot-ul-register-works.sh \
   src/roff/groff/tests/double-do-request-does-not-fail-assertion.sh \
@@ -87,7 +91,9 @@ groff_TESTS = \
   src/roff/groff/tests/draw-polygon.sh \
   src/roff/groff/tests/draw-spline.sh \
   src/roff/groff/tests/driver-C-and-G-options-work.sh \
+  src/roff/groff/tests/dt-request-works.sh \
   src/roff/groff/tests/dvi-device-smoke-test.sh \
+  src/roff/groff/tests/error-dt-request-given-bogus-arguments.sh \
   src/roff/groff/tests/error-overflow-symbol-table.sh \
   src/roff/groff/tests/evc-request-produces-no-output-if-invalid.sh \
   src/roff/groff/tests/fi-and-nf-requests-work.sh \
@@ -109,12 +115,14 @@ groff_TESTS = \
   src/roff/groff/tests/logical-predicates-work.sh \
   src/roff/groff/tests/localization-works.sh \
   src/roff/groff/tests/msoquiet-request-works.sh \
+  src/roff/groff/tests/ns-request-works.sh \
   src/roff/groff/tests/output-request-works.sh \
   src/roff/groff/tests/pchar-request-works.sh \
   src/roff/groff/tests/pdf-device-smoke-test.sh \
   src/roff/groff/tests/phw-request-skips-line-if-no-hyph-lang.sh \
   src/roff/groff/tests/phw-request-works.sh \
   src/roff/groff/tests/pi-request-works.sh \
+  src/roff/groff/tests/pnr-request-works.sh \
   src/roff/groff/tests/po-request-works.sh \
   src/roff/groff/tests/ps-device-smoke-test.sh \
   src/roff/groff/tests/recognize-end-of-sentence.sh \
@@ -124,6 +132,7 @@ groff_TESTS = \
   src/roff/groff/tests/regression_savannah_58337.sh \
   src/roff/groff/tests/regression_savannah_59202.sh \
   src/roff/groff/tests/rhw-request-works.sh \
+  src/roff/groff/tests/roman-format-register-interpolation-works.sh \
   src/roff/groff/tests/safer-mode-works.sh \
   src/roff/groff/tests/set-stroke-thickness.sh \
   src/roff/groff/tests/sizes-request-works.sh \
@@ -135,6 +144,7 @@ groff_TESTS = \
   src/roff/groff/tests/stringup-request-transforms-non-basic-latin.sh \
   src/roff/groff/tests/substring-request-on-invalid-range-is-no-op.sh \
   src/roff/groff/tests/substring-request-works.sh \
+  src/roff/groff/tests/sv-and-os-requests-work.sh \
   src/roff/groff/tests/sy-request-works.sh \
   src/roff/groff/tests/trf-request-works.sh \
   src/roff/groff/tests/unencodable-things-in-grout.sh \
@@ -158,7 +168,6 @@ groff_XFAIL_TESTS = \
   src/roff/groff/tests/html-device-works-with-grn-and-eqn.sh \
   src/roff/groff/tests/stringup-request-transforms-non-basic-latin.sh
 XFAIL_TESTS += $(groff_XFAIL_TESTS)
-
 
 # Local Variables:
 # mode: makefile-automake
