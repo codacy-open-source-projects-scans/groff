@@ -2219,21 +2219,43 @@ The opening and closing brace escape sequences
 .esc {
 and
 .esc }
-perform such grouping.
+define such groups.
 .
-Brace escape sequences outside of control structures have no meaning and
-produce no output.
+These
+.I "conditional blocks"
+can furthermore be nested.
+.
+Brace escape sequences outside of control structures have no meaning
+(but can be used as delimiters)
+and produce no output.
+.
+When its parser can tell that
+a brace escape sequence is useless,
+GNU
+.I troff \" GNU
+emits a warning in category
+.RB \[lq] style \[rq].
+.
 .
 .
 .P
 .esc {
-should appear
+begins a conditional block;
+it must appear
 (after optional spaces and tabs)
-immediately subsequent to the request's conditional expression.
+immediately subsequent to the conditional expression of an
+.RB \[lq] if \[rq],
+.BR ie ,
+or
+.RB \[lq] while \[rq]
+request,\" @footnote{@xref{while}.}
+or as the argument to an
+.B el
+request.
 .
 .esc }
-should appear on a line with other occurrences of itself as necessary to
-match
+ends a conditional block and should appear on an input line
+with other occurrences of itself as necessary to match
 .esc {
 sequences.
 .
@@ -2241,13 +2263,14 @@ It can be preceded by a control character,
 spaces,
 and tabs.
 .
-Input after any quantity of
+Input after any quantity of opening brace escape sequences
 .esc }
-sequences on the same line is processed only if all the preceding
-conditions to which they correspond are true.
+on the same line is processed
+only if all of the preceding conditions to which they correspond
+are true.
 .
 Furthermore,
-a
+a closing brace escape sequence
 .esc }
 closing the body of a
 .RB \[lq] while \[rq]
@@ -2255,6 +2278,23 @@ request must be the last such escape sequence on an input line.
 .
 .
 .P
+.I Caution:
+Input lines using
+.esc {
+often end with
+.escarg \& newline ,
+especially in macros that consist primarily of control lines.
+.
+Forgetting to use
+.escarg \& newline
+on an input line after
+.esc {
+is a common source of error.
+.
+.
+.\" ====================================================================
+.SS "while loops"
+.\" ====================================================================
 GNU
 .I troff \" GNU
 treats the body of a
@@ -2537,7 +2577,9 @@ A
 .I "productive input line"
 directly produces formatted output.
 .
-Text lines that populate the top-level diversion produce output,
+Text lines that populate a diversion
+(include the top-level one)
+produce output,
 as do control lines containing requests such as
 .B tl
 or an escape sequence like
@@ -3044,7 +3086,8 @@ option of
 .TPx
 .REQ .bd font
 Stop emboldening font
-.I font.
+.I font
+by overstriking its glyphs.
 .
 .TPx
 .REQ .bd "font n"
@@ -3342,21 +3385,21 @@ compatibility mode per Boolean expression
 .IR b .
 .
 .TPx
-.REQ .cs f
+.REQ .cs font
 Disable constant-width glyph spacing mode for font
-.I f.
+.I font.
 .
 .TPx
-.REQ .cs "f n"
+.REQ .cs "font n"
 Enable constant-width glyph spacing mode for font
-.I f
+.I font
 at
 .IR n /36
 ems.
 .
 .TPx
-.REQ .cs "f n p"
-Enable constant-width glyph spacing mode for
+.REQ .cs "font n p"
+Enable constant-width glyph spacing mode for font
 .I font
 at
 .IR n /36
@@ -3748,19 +3791,19 @@ at non-negative position
 .IR pos .
 .
 .TPx
-.REQ .fschar "f c"
+.REQ .fschar "font c"
 Define fallback
 .RI character\~ c
-specific to
-.RI font\~ f
+specific to font
+.I font
 as empty.
 .
 .TPx
-.REQ .fschar "f c contents"
+.REQ .fschar "font c contents"
 Define fallback
 .RI character\~ c
-specific to
-.RI font\~ f
+specific to font
+.I font
 as
 .IR contents .
 .
@@ -3777,17 +3820,17 @@ are searched and before those named as arguments to the
 request.
 .
 .TPx
-.REQ .fspecial f
+.REQ .fspecial font
 Empty the list of fonts treated as special when
-.I f
+.I font
 is selected.
 .
 .TPx
-.REQ .fspecial "f s \fR\&.\|.\|.\&\fP"
+.REQ .fspecial "font s \fR\&.\|.\|.\&\fP"
 Declare each font
 .I s
-as special only when
-.RB font\~ f
+as special only when font
+.I font
 is selected.
 .
 .\" TODO: Move this sentence to a new (sub)section describing the glyph
@@ -3804,6 +3847,16 @@ request.
 .REQ .ft
 .TQ
 .REQ ".ft P"
+Select previous font mounting position
+(abstract style or font).
+.
+Also see
+.esc f[]
+and
+.esc fP .
+.
+.TPx
+.REQ .ft font
 Select the typeface
 .I font.
 .
@@ -3846,23 +3899,23 @@ See section \[lq]Warnings\[rq] in
 .MR @g@troff @MAN1EXT@ .)
 .
 Also see
-.B \[rs]f .
+.esc f .
 .
 .TPx
-.REQ .ftr f
-Remove translation of font named
-.IR f .
+.REQ .ftr font
+Remove translation of font
+.IR font .
 .
 .TPx
-.REQ .ftr "f1 f2"
+.REQ .ftr "font1 font2"
 Translate font name
-.I f1
+.I font1
 to
-.IR f2 .
+.IR font2 .
 .
 .TPx
 .REQ .fzoom font\~\f[B]0\f[]
-Stop magnifying
+Stop magnifying font
 .IR font .
 .
 .TPx
@@ -4853,11 +4906,11 @@ but perform the skip twice\[em]once within the macro being interpreted
 and once in an enclosing macro.
 .
 .TPx
-.REQ .rfschar "f c\fR\&.\|.\|.\&\fP"
+.REQ .rfschar "font c\fR\&.\|.\|.\&\fP"
 Remove each fallback special
 .RI character\~ c
 for font
-.IR f .
+.IR font .
 .
 Spaces need not separate
 .I c

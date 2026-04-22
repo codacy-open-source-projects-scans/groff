@@ -2010,6 +2010,7 @@ it can perform tests
 .RB \[lq] "(\[rs]n[i] >= 1)" \[rq]),
 its
 .\" Kerning between bold "i" and "f" and roman \[lq], \[rq] is tight.
+.\" See Savannah #60587.
 .RB \[lq] \|if\| \[rq]
 and related requests alter the flow of control,
 and macro definition permits unbounded recursion.
@@ -2084,6 +2085,8 @@ or
 break suppression at input line endings with
 .RB \[lq] \|\[rs]c \[rq],
 font changes with
+.\" Kerning between bold "i" and "f" and roman \[lq], \[rq] is tight.
+.\" See Savannah #60587.
 .RB \[lq] \|\[rs]f\| \[rq],
 type size changes with
 .RB \[lq] \|\[rs]s \[rq],

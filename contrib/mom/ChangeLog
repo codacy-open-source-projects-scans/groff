@@ -1,3 +1,10 @@
+2026-04-21  Richard Purdie <richard.purdie@linuxfoundation.org>
+
+	* mom.am (MOMPROCESSEDEXAMPLEFILES): Update target to depend on
+	prerequisites "eqn", "pic", "tbl", and "preconv".  [Indeed, the
+	`MOMPDFMOM` macro definition includes `-K utf8 -p -e -t`
+	arguments, which are ultimately passed to groff(1).  --GBR]
+
 2026-02-03  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* mom.am: Populate `MOMPROCESSEDEXAMPLEFILES` unconditionally.

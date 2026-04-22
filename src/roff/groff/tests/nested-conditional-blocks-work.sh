@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2021 G. Branden Robinson
+# Copyright 2026 G. Branden Robinson
 #
 # This file is part of groff, the GNU roff typesetting system.
 #
@@ -19,27 +19,40 @@
 
 groff="${abs_top_builddir:-.}/test-groff"
 
-# Unit-test `.nm` register.
+fail=
+
+wail () {
+   echo "...FAILED"
+   fail=yes
+}
+
+# Tested nested conditional block behavior.
 
 input='.
-.nf
-foo (\n[.nm])
-.nm 1
-bar (\n[.nm])
-.nn
-baz (\n[.nm])
-.nm
-qux (\n[.nm])
-.fi
+.ec @
+A
+.if 0 @{ B
+C
+D
+@}E
+F
+.br
+N
+.if 1 @{ O
+.  if 0 @{ P
+Q
+R@} S@} T
+U
 .'
 
-output=$(printf '%s\n' "$input" | "$groff" -T utf8)
+output=$(printf '%s\n' "$input" | "$groff" -T ascii 2>/dev/null)
 echo "$output"
 
-echo "$output" | grep -Fqx 'foo (0)' || fail=yes
-echo "$output" | grep -Fqx '  1 bar (1)' || fail=yes
-echo "$output" | grep -Fqx 'baz (1)' || fail=yes
-echo "$output" | grep -Fqx 'qux (0)' || fail=yes
+echo "checking brace escape sequences with false conditional" >&2
+echo "$output" | grep -Fqx 'A F' || wail
+
+echo "checking brace escape sequences with true conditional" >&2
+echo "$output" | grep -Fqx 'N O U' || wail
 
 test -z "$fail"
 

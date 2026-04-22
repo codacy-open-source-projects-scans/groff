@@ -174,22 +174,22 @@ class font_info {
 public:
   special_font_list *sf;
   font_info(symbol, int, symbol, font *);
-  int contains(charinfo *);
+  bool contains(charinfo *);
   void set_bold(hunits);
   void unbold();
   void set_conditional_bold(int, hunits);
   void conditional_unbold(int);
   void set_track_kern(track_kerning_function &);
   void set_constant_space(constant_space_type, units = 0);
-  int is_named(symbol);
+  bool is_named(symbol);
   symbol get_name();
   tfont *get_tfont(font_size, int, int, int);
   hunits get_space_width(font_size, int);
   hunits get_narrow_space_width(font_size);
   hunits get_half_narrow_space_width(font_size);
   bool is_emboldened(hunits *); // "by how many hunits?" in argument
-  int is_special();
-  int is_style();
+  bool is_special();
+  bool is_style();
   void set_zoom(int);
   int get_zoom();
   font *get_font() const;
@@ -272,17 +272,17 @@ font_info::font_info(symbol nm, int n, symbol enm, font *f)
 {
 }
 
-inline int font_info::contains(charinfo *ci)
+inline bool font_info::contains(charinfo *ci)
 {
   return (fm != 0 /* nullptr */) && fm->contains(ci->as_glyph());
 }
 
-inline int font_info::is_special()
+inline bool font_info::is_special()
 {
   return (fm != 0 /* nullptr */) && fm->is_special();
 }
 
-inline int font_info::is_style()
+inline bool font_info::is_style()
 {
   return (0 /* nullptr */ == fm);
 }
@@ -465,7 +465,7 @@ void font_info::flush()
   last_tfont = 0;
 }
 
-int font_info::is_named(symbol s)
+bool font_info::is_named(symbol s)
 {
   return internal_name == s;
 }
@@ -7002,27 +7002,59 @@ bool is_valid_font(int n)
 // Read the next token and look it up as a font name or position number.
 // Return lookup success.  Store, in the supplied struct argument, the
 // requested name or position, and the position actually resolved.
+//
+// TODO: This duplicates logic from env.cpp:select_font().  Refactor.
+// Need read_font_mounting_position_or_identifier(), storing the
+// resolved mounting position in an argument.
 static bool read_font_identifier(font_lookup_info *finfo)
 {
-  int n;
   tok.skip_spaces();
-  if (tok.is_usable_as_delimiter()) {
-    symbol s = read_identifier(true /* want_diagnostic */);
-    finfo->requested_name = const_cast<char *>(s.contents());
-    if (!s.is_null()) {
-      n = mounting_position_of_font(s);
-      if (n < 0) {
-	n = next_available_font_mounting_position();
-	if (mount_font_at_position(s, n))
-	  finfo->position = n;
+  // Painful.  We read the whole argument as a symbol, then see if it's
+  // interpretable as an (unsigned) decimal integer.  If is, we treat it
+  // as a mounting position.  If not, we treat it as a font "name".
+  symbol s = read_identifier();
+  bool is_number = true;
+  assert(!s.is_null() && !s.is_empty());
+  if (!s.is_null() && !s.is_empty()) {
+    const char *p = s.contents();
+    assert(*p != 0 /* nullptr */);
+    // Silently ignore a leading minus sign so we can issue a range
+    // warning later.
+    if ((csdigit(*p)) || ('-' == *p))
+      p++;
+    for (; (p != 0 /* nullptr */) && (*p != '\0'); p++) {
+      if (!csdigit(*p)) {
+	is_number = false;
+	break;
       }
-      finfo->position = curenv->get_family()->resolve(n);
     }
   }
-  else if (read_integer(&n)) {
-    finfo->requested_position = n;
-    if (is_valid_font_mounting_position(n))
-      finfo->position = curenv->get_family()->resolve(n);
+  if (is_number) {
+    errno = 0;
+    long val = strtol(s.contents(), NULL, 10);
+    if ((ERANGE == errno) || (val > INT_MAX) || (val < 0)) {
+      warning(WARN_RANGE, "font mounting position must be in range"
+	      " 0..%1, got %2", INT_MAX, s.contents());
+      return false;
+    }
+    int mp = int(val);
+    if (!is_valid_font_mounting_position(mp)) {
+      warning(WARN_FONT, "no font mounted at position %1", mp);
+      return false;
+    }
+    finfo->position = curenv->get_family()->resolve(mp);
+  }
+  else {
+    finfo->requested_name = const_cast<char *>(s.contents());
+    if (!s.is_null()) {
+      int mp = mounting_position_of_font(s);
+      if (mp < 0) {
+	mp = next_available_font_mounting_position();
+	if (mount_font_at_position(s, mp))
+	  finfo->position = mp;
+      }
+      finfo->position = curenv->get_family()->resolve(mp);
+    }
   }
   return (finfo->position != FONT_NOT_MOUNTED);
 }
@@ -7087,7 +7119,7 @@ static void remove_font_specific_character_request() // .rfschar
 		      " character");
   else {
     symbol f = font_table[finfo.position]->get_name();
-    while (!tok.is_newline() && !tok.is_eof()) {
+    while (!tok.is_terminator()) {
       if (!tok.is_space() && !tok.is_tab()) {
 	charinfo *s = tok.get_charinfo(true /* is_mandatory */);
 	if (0 /* nullptr */ == s)
@@ -7114,7 +7146,12 @@ static void remove_font_specific_character_request() // .rfschar
   skip_line();
 }
 
-static void read_special_fonts(special_font_list **sp)
+// Consume *roff arguments from the input stream, interpret them as font
+// identifiers, and associate them with the special font list argument
+// `sp`.  The list is erased first, which is how you clear it.  There is
+// no appending operation, which can be achieved with *roff string
+// interpolation.
+static void read_special_font_identifiers(special_font_list **sp)
 {
   special_font_list *s = *sp;
   *sp = 0 /* nullptr */;
@@ -7151,13 +7188,13 @@ static void set_font_specific_special_fonts_request() // .fspecial
     font_lookup_error(finfo, "to mark other fonts as special"
 			     " contingently upon it"); // a mouthful :-/
   else
-    read_special_fonts(&font_table[finfo.position]->sf);
+    read_special_font_identifiers(&font_table[finfo.position]->sf);
   skip_line();
 }
 
 static void set_special_fonts_request() // .special
 {
-  read_special_fonts(&global_special_fonts);
+  read_special_font_identifiers(&global_special_fonts);
   skip_line();
 }
 

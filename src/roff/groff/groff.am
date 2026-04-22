@@ -49,6 +49,7 @@ groff_TESTS = \
   src/roff/groff/tests/backslash-X-works.sh \
   src/roff/groff/tests/backslash-Y-works.sh \
   src/roff/groff/tests/backslash-exclamation-early-does-not-fail.sh \
+  src/roff/groff/tests/backslash-right-brace-ends-string-definition.sh \
   src/roff/groff/tests/backslash-s-works-with-single-digit-argument.sh \
   src/roff/groff/tests/bd-request-works.sh \
   src/roff/groff/tests/br-and-brp-requests-work.sh \
@@ -115,6 +116,7 @@ groff_TESTS = \
   src/roff/groff/tests/logical-predicates-work.sh \
   src/roff/groff/tests/localization-works.sh \
   src/roff/groff/tests/msoquiet-request-works.sh \
+  src/roff/groff/tests/nested-conditional-blocks-work.sh \
   src/roff/groff/tests/ns-request-works.sh \
   src/roff/groff/tests/output-request-works.sh \
   src/roff/groff/tests/pchar-request-works.sh \

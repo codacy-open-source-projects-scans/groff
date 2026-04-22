@@ -248,9 +248,9 @@ box center;
 Lf(CR).
 \&.LP
 Radical novelties are so disturbing that they tend to be
-suppressed or ignored, to the extent that even the
-possibility of their existence in general is more often
-denied than admitted.
+suppressed or ignored,
+to the extent that even the possibility of their existence
+in general is more often denied than admitted.
 .sp
 \[->]That\[aq]s what Dijkstra said, anyway.
 .TE
@@ -388,6 +388,8 @@ T}
 \[rs]|	T{
 Move horizontally by one-sixth em
 (\[lq]thin space\[rq]).
+.\" Keep the descriptions of the last two items distinct; in *roff,
+.\" space is discardable, whereas a motion is not.
 T}
 .TE
 .

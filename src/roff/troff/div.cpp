@@ -797,7 +797,7 @@ static void begin_page_request() // .bp
   if (has_arg()
       && read_integer_crement(&n, topdiv->get_page_number()))
     got_arg = true;
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (curdiv == topdiv) {
     if (topdiv->before_first_page_status > 0) {
@@ -883,7 +883,7 @@ static void space_request() // .sp
   vunits n;
   if (!has_arg() || !read_vunits(&n, 'v'))
     n = curenv->get_vertical_spacing();
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (!unpostpone_traps() && !curdiv->is_in_no_space_mode)
     curdiv->space(n);
@@ -911,7 +911,7 @@ static void need_vertical_space_request() // .ne
   vunits n;
   if (!has_arg() || !read_vunits(&n, 'v'))
     n = curenv->get_vertical_spacing();
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   curdiv->need(n);
   tok.next();
@@ -947,7 +947,7 @@ static void save_vertical_space_request() // .sv
 
 static void output_saved_vertical_space_request() // .os
 {
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (saved_space > V0)
     curdiv->space(saved_space, true /* forcing */);
@@ -957,7 +957,7 @@ static void output_saved_vertical_space_request() // .os
 
 static void flush_request() // .fl
 {
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();

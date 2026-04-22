@@ -129,17 +129,39 @@ document formatting system.
 It is used to compose manual pages
 .\" We use an unbreakable space \~ here to keep the phrase intact for
 .\" its introduction; in subsequent discussion, that is not important.
+_ifstyle()dnl
 (\[lq]man\~pages\[rq])
 like the one you are reading.
+_endif()dnl
+_ifnotstyle()dnl
+(\[lq]man\~pages\[rq]).
+_endif()dnl
 .
 This document presents the macros thematically;
 for those needing only a quick reference,
 the following table lists them alphabetically,
 with references to appropriate subsections below.
+.
+We prefix macro names with
+_ifstyle()dnl
+a dot
+.RB ( . ),
+_endif()dnl
+the default
+.I roff
+control character\c
+_ifstyle()dnl
+,
+_endif()dnl
+_ifnotstyle()dnl
+\&
+_endif()dnl
+in summaries and synopses.
+.
 _ifstyle()dnl
 Experienced
 .I man
-authors may prefer
+authors may prefer to consult
 .MR groff_man @MAN7EXT@ .
 _endif()dnl
 .
@@ -370,12 +392,6 @@ _endif()dnl
 .
 A tagged paragraph describes each macro.
 .
-We present coupled pairs together,
-as with
-.B EX
-and
-.BR EE .
-.
 _ifstyle()dnl
 Square brackets surround optional macro arguments.
 .
@@ -383,11 +399,9 @@ If a macro accepts multiple arguments,
 those containing space \" or tab (in Plan 9 troff [only?])
 characters must be double-quoted to be interpreted correctly.
 .
-_endif()dnl
 If you require an empty macro argument,
 specify it as a pair of neutral double quotes
 .RB ( \[dq]\^\[dq] ).
-_ifstyle()dnl
 .
 See section \[lq]Notes\[rq] below for examples of cases where better
 alternatives to empty arguments in macro calls are available.
@@ -413,18 +427,20 @@ _endif()dnl
 .
 Document structure macros organize a man page's content.
 .
-All of them break the output line.
+All break the output line.
 .
 .B TH
 (title heading)
-identifies the document as a man page and configures the page headers
-and footers.
+initializes the package,
+identifies the document as a man page,
+and configures the page headers and footers.
 .
 Section headings
 .RB ( SH ),
-one of which is mandatory and many of which are conventionally expected,
-facilitate location of material by the reader and aid the man page
-writer to discuss all essential aspects of the topics presented.
+one of which is mandatory and many of which a reader expects,
+facilitate location of material
+and aid the man page writer
+to discuss all essential aspects of the topics presented.
 .
 Subsection headings
 .RB ( SS )
@@ -523,8 +539,10 @@ is centered in the header.
 If
 .I section
 is an integer between 1 and\~9 (inclusive),
-there is no need to specify
+_ifstyle()dnl
+do not specify
 .I header-middle;
+_endif()dnl
 .I an.tmac
 supplies text for it.
 .
@@ -533,7 +551,8 @@ If
 or
 .I footer-inside
 would overset the space available in the header and/or footer,
-this package may abbreviate them with
+.I "groff man"
+may abbreviate them with
 _ifnotstyle()dnl
 ellipses.
 _endif()dnl
@@ -552,13 +571,12 @@ suppresses headers and footers in HTML output.
 .
 .
 .IP
-A typical
+Do not redefine
+.BR TH .
+.
+Call it prior to any other
 .I man
-document calls
-.B TH
-only once,
-early in the file,
-prior to any other macro calls.
+macros.
 _ifstyle()dnl
 .
 By convention,
@@ -3652,14 +3670,17 @@ which had been internal to Seventh Edition Unix
 .\" This inference is based on RCS idents of "PWB Manual Entry Macros"
 .\" from various forms of "an.src" distributed with System III (an.src
 .\" 1.35, dated 5/6/80, lacks the Tm string), Research Unix Version 10
-.\" (1.36, dated 11/11/80, has it), Ultrix 3.1 (1.37, dated 12/19/80,
-.\" retains it) and "pdp11v" (also 1.37).  One source (S. S. Pirzada)
-.\" says PWB 2.0 was released in June 1979.  I found no record of later
-.\" releases and cannot account for the discrepancy (field updates?).
-.\" -- GBR
+.\" (1.36, dated 11/11/80, has it), System V (retrospectively labelled
+.\" "Release 1", released January 1983) and Ultrix 3.1 (1.37, dated
+.\" 12/19/80, retains it) and "pdp11v" (also 1.37).  One source (S. S.
+.\" Pirzada) says PWB 2.0 was released in June 1979.  I found no record
+.\" of later releases and cannot account for the discrepancy (field
+.\" updates?).  -- GBR
 PWB/Unix 2.0 (1980) added the
 .B Tm
-string.
+string,
+subsequently incorporated into
+Unix System\~V (1983).
 .
 4BSD (1980) added
 .\" undocumented VS and VE macros to mark regions with 12-point box
@@ -3681,12 +3702,12 @@ and
 registers.
 .
 4.3BSD (1986) incorporated
+.B P
+and added
 .\" undocumented DS and DE macros for "displays", which are RS/RE
 .\" wrappers with filling disabled and vertical space of 1v before and
 .\" .5v after, as well as...
-.B AT
-and
-.BR P .
+.BR AT .
 .
 .\" Per Doug McIlroy in
 .\" <https://lists.gnu.org/archive/html/groff/2019-07/msg00038.html>...
@@ -3795,11 +3816,9 @@ for left alignment
 .
 Any valid argument to
 .IR groff 's
-\[lq]ad\[rq] request may be used.
-.
-See
-.MR groff @MAN7EXT@
-for less-common choices.
+\[lq]ad\[rq] request may be used;
+see
+.MR groff @MAN7EXT@ .
 .
 .
 .TP
@@ -3915,9 +3934,8 @@ the default is
 .
 Any valid argument to
 .IR groff 's
-\[lq]ft\[rq] request may be used.
-.
-See
+\[lq]ft\[rq] request may be used;
+see
 .MR groff @MAN7EXT@ .
 .
 .
@@ -3936,20 +3954,20 @@ see section \[lq]Localization\[lq] of
 .
 .
 .TP
-.BI \-rIN= standard-indentation
+.BI \-rIN= indentation-increment
 Set the default indentation amount used by
 .BR IP ,
 .BR TP ,
 .\" TQ inherits its indentation from the preceding TP.
 and
 .BR HP ,
-and the inset amount used by
+and the default inset amount used by
 .BR RS .
 .
 The default is 7n on terminals and 7.2n on typesetters.
 .
-Use only integer multiples of unit \[lq]n\[rq] on terminals for consistent
-indentation.
+Use only integer multiples of unit \[lq]n\[rq] on terminals
+for consistent indentation.
 .
 .
 .TP
@@ -3991,7 +4009,9 @@ the default is
 .
 Any valid argument to
 .IR groff 's
-\[lq]ft\[rq] request may be used.
+\[lq]ft\[rq] request may be used;
+see
+.MR groff @MAN7EXT@ .
 .
 If the
 .B MF
@@ -4074,9 +4094,11 @@ as
 .IR p c,
 and so forth.
 .
-The register tracking the suffixed page letter uses format \[lq]a\[rq]
-(see the \[lq]af\[rq] request in
-.MR groff @MAN7EXT@ ).
+The register tracking the suffixed page letter uses format \[lq]a\[rq];
+.\" We shouldn't have to manually adjust kerning between a roman f and a
+.\" roman \[rq].  See Savannah #67544.
+see the \[lq]af\|\[rq] request in
+.MR groff @MAN7EXT@ .
 .
 _ifstyle()dnl
 For example,
@@ -4231,7 +4253,7 @@ _ifstyle()dnl
 .EX
 .ne 2v
 \&.\e" Put only one space after the end of a sentence.
-\&.ss 12 0 \e" See groff(@MAN7EXT@).
+\&.ss \n[.ss] 0 \e" See groff(@MAN7EXT@).
 .ne 2v
 \&.\e" Keep pages narrow even on wide terminals.
 \&.if n .if \en[LL]>80n .nr LL 80n
@@ -4306,6 +4328,8 @@ you can type
 .RB \[lq] "man fprintf" \|\[rq],
 and other pages can refer to it,
 without knowing whether the installed document uses
+.\" We shouldn't have to manually adjust kerning between a roman f and a
+.\" roman \[rq].  See Savannah #67544.
 \[lq]printf\|\[rq],
 \[lq]fprintf\|\[rq],
 or even \[lq]c_printf\|\[rq]
@@ -4883,6 +4907,14 @@ James Clark wrote the initial GNU implementation of the
 macro package. \" by 1.01
 .
 Later,
+.MT ru@\:FreeBSD\:.org
+Ruslan Ermilov
+.ME
+contributed implementations of
+.B AT \" 1.18
+and
+.BR UC , \" 1.18
+while
 .MT wl@\:gnu\:.org
 Werner Lemberg
 .ME

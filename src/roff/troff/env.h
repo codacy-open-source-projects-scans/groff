@@ -438,6 +438,8 @@ extern void push_env(int);
 void select_font(symbol);
 void init_environments();
 
+extern void init_size_list(int *);
+
 extern double spread_limit;
 
 extern symbol default_family;

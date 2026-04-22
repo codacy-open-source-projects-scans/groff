@@ -3045,9 +3045,9 @@ Our @file{radical.ms} document might look like this.
 @Example
 .LP
 Radical novelties are so disturbing that they tend to be
-suppressed or ignored, to the extent that even the
-possibility of their existence in general is more often
-denied than admitted.
+suppressed or ignored,
+to the extent that even the possibility of their existence
+in general is more often denied than admitted.
 
 @arrow{}That's what Dijkstra said, anyway.
 @endExample
@@ -3145,6 +3145,8 @@ Insert an unbreakable space that is adjustable like a normal space.
 
 @item \|
 Move horizontally by one-sixth em (``thin space'').
+@c Keep the descriptions of the last two items distinct; in *roff,
+@c space is discardable, whereas a motion is not.
 @end table
 
 Prefix any words that start with a dot @samp{.} or neutral apostrophe
@@ -9950,7 +9952,9 @@ we must introduce the concept of ``productive'' input lines.
 A
 @dfn{productive input line}
 directly produces formatted output.
-Text lines that populate the top-level diversion produce output,
+Text lines that populate a diversion
+(include the top-level one)
+produce output,
 as do control lines containing requests like
 @samp{.tl //Page %//}
 or an escape sequence like
@@ -16244,10 +16248,28 @@ To conveniently nest conditionals, keep reading.
 @cindex blocks, conditional
 
 It is frequently desirable for a control structure to govern more than
-one request, macro call, text line, or combination of the foregoing.
-The opening and closing brace escape sequences @code{\@{} and @code{\@}}
-define such groups.  These @dfn{conditional blocks} can furthermore be
-nested.
+one request,
+macro call,
+text line,
+or combination of the foregoing.
+The opening and closing brace escape sequences
+@code{\@{}
+and
+@code{\@}}
+define such groups.
+These
+@dfn{conditional blocks}
+can furthermore be nested.
+
+Brace escape sequences outside of control structures have no meaning
+(but can be used as delimiters)
+and produce no output.@footnote{When its parser can tell
+that a brace escape sequence is useless,
+GNU
+@command{troff} @c GNU
+emits a warning in category
+@samp{style}.
+@xref{Warnings}.}
 
 @DefescList {\@\{, , , }
 @DefescListEnd {\@\}, , , }
@@ -16263,26 +16285,50 @@ nested.
 @cindex escape sequences, brace (@code{\@{}, @code{\@}})
 @cindex opening brace escape sequence (@code{\@}})
 @cindex closing brace escape sequence (@code{\@})}
-@code{\@{} begins a conditional block; it must appear (after optional
-spaces and tabs) immediately subsequent to the conditional expression of
-an @code{if}, @code{ie}, or @code{while}
-request,@footnote{@xref{while}.} or as the argument to an @code{el}
+@code{\@{}
+begins a conditional block;
+it must appear
+(after optional spaces and tabs)
+immediately subsequent to the conditional expression of an
+@code{if},
+@code{ie},
+or
+@code{while}
+request,@footnote{@xref{while}.}
+or as the argument to an
+@code{el}
 request.
 
-@code{\@}} ends a conditional block and should appear on a line with
-other occurrences of itself as necessary to match @code{\@{} sequences.
-It can be preceded by a control character, spaces, and tabs.  Input
-after any quantity of @code{\@}} sequences on the same line is processed
-only if all of the preceding conditions to which they correspond are
-true.  Furthermore, a @code{\@}} closing the body of a @code{while}
+@code{\@}}
+ends a conditional block and should appear on an input line
+with other occurrences of itself as necessary to match
+@code{\@{}
+sequences.
+It can be preceded by a control character,
+spaces,
+and tabs.
+Input after any quantity of opening brace escape sequences
+@code{\@}}
+on the same line is processed
+only if all of the preceding conditions to which they correspond
+are true.
+Furthermore,
+a closing brace escape sequence
+@code{\@}}
+closing the body of a
+@code{while}
 request must be the last such escape sequence on an input line.
 
-Brace escape sequences outside of control structures have no meaning and
-produce no output.
-
-@strong{Caution:@:} Input lines using @code{\@{} often end with
-@code{\RET}, especially in macros that consist primarily of control
-lines.  Forgetting to use @code{\RET} on an input line after @code{\@{}
+@strong{Caution:@:}
+Input lines using
+@code{\@{}
+often end with
+@code{\RET},
+especially in macros that consist primarily of control lines.
+Forgetting to use
+@code{\RET}
+on an input line after
+@code{\@{}
 is a common source of error.
 @endDefesc
 
@@ -16320,13 +16366,32 @@ U
     @result{} N O U
 @endExample
 
-The above behavior may challenge the intuition; it was implemented to
-retain compatibility with @acronym{AT&T} @code{troff}.  For clarity, it
+@Example
+.ie 1 \@{\
+.  ds a abc\@}def
+a="\*a"
+.el ghi
+    @result{} a="abcdef"
+@endExample
+
+The above behavior may challenge the intuition;
+it was implemented to retain compatibility with @acronym{AT&T}
+@command{troff}.
+A right-brace escape sequence governs flow of control this way:@:
+if a branch is
+@emph{not}
+taken,
+then the closing brace that closes a conditional block
+causes the formatter to ignore the entire input line
+on which it appears for all purposes except matching braces.
+
+For clarity, it
 is idiomatic to end input lines with @code{\@{} (followed by
 @code{\@key{RET}} if appropriate), and to precede @code{\@}} on an input
 line with nothing more than a control character, spaces, tabs, and other
 instances of itself.
 
+@need 1000
 We can use @code{ie}, @code{el}, and conditional blocks to simulate the
 multi-way ``switch'' or ``case'' control structures of other languages.
 The following example is adapted from the @code{groff} @file{man}
@@ -21995,6 +22060,7 @@ ambiguous delimiters are accepted without warning.
 Input was non-idiomatic or likely to produce an unexpected result
 (or none at all),
 but is not invalid:
+a brace escape sequence was employed uselessly;
 the end of a sentence was detected prior to the end of a text line;
 or
 an attempt was made to combine temporary indentation
@@ -23026,6 +23092,25 @@ GNU
 @command{troff} @c GNU
 rounds down the values of minimum inter-word and additional
 inter-sentence space each to the nearest multiple of@tie{}12.
+
+@cindex @code{sv} request, incompatibilities with @acronym{AT&T} @code{troff}
+In AT&T
+@command{troff}, @c AT&T
+the
+@code{sv}
+request springs a page location trap
+if it is nearer to the drawing position
+than the amount of vertical space requested;
+GNU
+@command{troff} @c GNU
+saves the space but does not spring the trap.
+To simulate AT&T behavior,
+consider the following.
+
+@Example
+.sv 3i \" or however much space you need
+.if \n(.g .ne 3i
+@endExample
 
 @cindex @code{bd} request, incompatibilities with @acronym{AT&T} @code{troff}
 @cindex @code{cs} request, incompatibilities with @acronym{AT&T} @code{troff}

@@ -124,7 +124,7 @@ appropriately.
 
 3.  If the contributor also proposed a ChangeLog entry or commit
     message, editorially revise it if necessary to fit our conventions.
-    If you feel that substanial additional commentary is warranted, add
+    If you feel that substantial additional commentary is warranted, add
     it between square brackets and mark it with your initials.  For
     example, "[I added a parallel change to foobar().  -- JRH]".
 

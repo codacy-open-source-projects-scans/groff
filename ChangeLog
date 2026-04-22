@@ -1,3 +1,423 @@
+2026-04-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Throw warning in category "style" when nilpotent brace
+	escape sequences are encountered.
+
+	* src/roff/troff/input.cpp (read_character_in_copy_mode): Do it.
+
+	* doc/groff.texi.in (Conditional Blocks, Warnings):
+	* man/groff.7.man (Conditional blocks):
+	* src/roff/troff/troff.1.man (Warnings): Document new warning
+	circumstance.
+
+2026-04-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Handle brace escape sequences
+	better.  In AT&T troff, a brace escape sequence not occurring in
+	a macro definition is discarded when read in copy mode--make GNU
+	troff do likewise.  When occurring in a macro definition, it
+	_is_ being read in copy mode and must be preserved, so retain
+	existing behavior.  Unfortunately, the datum "we are defining
+	a macro right now" was not consistently being passed from
+	`do_define_macro()` to `read_character_in_copy_mode()`, so fix
+	that problem too.  Fixing one of these without the other
+	produces chaos in the formatter and wrecks a build; couple them.
+	(read_character_in_copy_mode): Return an
+	`ESCAPE_{LEFT,RIGHT}_BRACE` encoded token (character code) only
+	if `is_defining_macro`.
+	(do_define_macro): Supply `true` parameter (`is_defining_macro`)
+	in _all_ `read_character_in_copy_mode()` calls.
+
+	Fixes <https://savannah.gnu.org/bugs/?68260>.  Problems appear
+	mostly to date back to groff's birth: see groff 1.01,[1]
+	"input/troff.cc", lines 741-746, 3113, and 3119.  Commit
+	5ba4c4ddb3, 2001-11-16, added another instance of
+	`read_character_in_copy_mode()` (then called `get_copy()`) being
+	given only one argument.
+
+	[1] https://minnie.tuhs.org/cgi-bin/utree.pl?file=Net2/usr/src/\
+	usr.bin/groff/troff/input.cc
+
+2026-04-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Regression-test Savannah #68257.
+
+	* src/roff/groff/tests/\
+	backslash-right-brace-ends-string-definition.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (token::is_terminator): Add
+	`TOKEN_RIGHT_BRACE` to the set of tokens that can terminate a
+	sequence of nonterminal symbols (such as the character sequence
+	producing a *roff identifier, transparent throughput argument,
+	contents of a string definition, or other string-like request
+	argument like file names or system commands).
+
+	Fixes <https://savannah.gnu.org/bugs/?68257>.
+
+2026-04-20  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	`read_character_in_copy_mode()` function parameter from
+	`is_defining` to `is_defining_macro` in declaration.
+	(read_character_in_copy_mode): Update definition.
+	(read_character_in_escape_sequence_parameter):
+	(do_define_macro): Update call sites.
+
+2026-04-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Test conditional block nesting.
+
+	* src/roff/groff/tests/nested-conditional-blocks-work.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run test.
+
+2026-04-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/token.h (class token): Add new member function,
+	`is_terminator()` returning `bool`.  The idea is to make
+	handlers of formatter instructions more consistent by having one
+	source of truth regarding whether, in the parlance of parser
+	theory, the token on the input stream terminates a "nonterminal
+	symbol" (like an identifier or numeric expression, which can
+	comprise multiple "terminal" or "primitive" tokens).  Right now,
+	GNU troff pretty consistently regards newline and EOF tokens as
+	terminating a sequence of such nonterminals.  It's less
+	consistent regarding whether a right brace escape sequence does,
+	causing inconsistency in its handling of numeric expressions as
+	arguments to `nr` requests on the one hand and "contents"
+	arguments to `ds` requests on the other, and divergence between
+	AT&T and GNU troff parsers.  See Savannah #68257.
+	(token::is_terminator): Define it `inline`.  Equivalent to
+	`tok.is_newline() && tok.is_eof()`.
+
+	* src/roff/troff/div.cpp (begin_page_request)
+	(space_request)
+	(need_vertical_space_request)
+	(save_vertical_space_request)
+	(output_saved_vertical_space_request)
+	(flush_request):
+	* src/roff/troff/env.cpp (fill)
+	(no_fill)
+	(center)
+	(right_justify)
+	(indent)
+	(temporary_indent)
+	(number_lines)
+	(do_break_request):
+	* src/roff/troff/input.cpp (diagnose_missing_identifier)
+	(diagnose_invalid_identifier)
+	(flush_pending_lines)
+	(decode_macro_call_arguments)
+	(remove_character)
+	(do_define_macro)
+	(read_title_parts)
+	(ps_bbox_request)
+	(do_translate)
+	(hyphenation_patterns_file_code)
+	(define_class_request)
+	(read_drawing_command):
+	* src/roff/troff/node.cpp
+	(remove_font_specific_character_request): Migrate input handlers
+	to call `token::is_terminator()` rather than the evaluating
+	Boolean expression `tok.is_newline() && tok.is_eof()`.
+
+2026-04-19  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/dt-request-works.sh: Add test case: a
+	diversion trap is removed when `dt` is called with one argument.
+	If that argument is a valid numeric expression (albeit a
+	meaningless one), the diversion's trap is removed.
+
+2026-04-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Slightly refactor.  Demote return
+	types of `font_info` class's member functions returning Boolean
+	values from `int` to `bool`.
+	(class font_info): Update declarations.
+	(font_info::contains)
+	(font_info::is_special)
+	(font_info::is_style)
+	(font_info::is_named): Update definitions.
+
+2026-04-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (read_font_identifier): Rewrite to fix
+	Savannah #68252, an assertion failure I introduced in commit
+	8b83fd3dd8, 2 November, in "src/roff/troff/input.cpp:token::
+	is_usable_as_delimiter()".
+
+	Time to fire up the development mailing list critical homunculus
+	and have a Socratic dialogue with it.
+
+	"Rewrite?"  Why hit such a small thing with such a big hammer?
+	Why not just fix my stupid mistake of adding an assertion?  {A}
+	I couldn't--wouldn't--just rip the assertion out, because it's
+	in a hot-path function where much sanity checking takes place.
+	{B} This code implicates one of the more challenging parts of
+	the *roff language grammar: (almost) anywhere you can read a
+	font identifier like `B`, `TR`, or `MARIGOLD`, it's also valid
+	to read a font mounting position, a nonnegative integer.  In
+	*roff, nonnegative integers also happen to be valid identifier
+	names!  You can have a register named `55` or a string/macro/
+	diversion named `10` {hello, eqn(1)}.  {C} This function is
+	called only by uncommonly used request handlers, those for `uf`,
+	`fschar`, `rfschar`, `special`, `fspecial`, `fzoom`, `bd`, and
+	`tkf`.  {It's a rare groff user who can say with confidence what
+	_all_ of those requests do.}  "But wait," you say, "isn't this
+	same kind of font lookup done wildly commonly, like with every
+	`ft` request or `\f` escape sequence?  {D} Yes!  So there's good
+	news and bad news, and they're the same news.  There is logic to
+	do exactly that--to disambiguate and resolve font mounting
+	positions and identifiers behind that request and that escape
+	sequence.  It lives, duplicatively, in another function in a
+	different source file.  {E} "But wait," you say, "why was this
+	function, a supporting function for request handlers that read
+	only space-delimited arguments, calling `token::
+	is_usable_as_delimiter()`?"  Good question!  I don't know, but
+	it's been doing that, modulus the renamings for which I fear I
+	am becoming notorious, at least since groff 1.22.3 in November
+	2014.  Within the request handlers, we aren't in a delimited
+	input context at all--as the GNU troff code base uses that
+	term--so it's a mystery.
+
+	`token::is_usable_as_delimiter()` used to be known as
+	`token::delimiter()`.  I invite the reader to compare and
+	contrast the following.
+
+	https://cgit.git.savannah.gnu.org/cgit/groff.git/tree/src/roff/\
+	troff/node.cpp?h=1.22.3#n6163
+
+	https://cgit.git.savannah.gnu.org/cgit/groff.git/tree/troff/\
+	node.c?h=1.02#n4373
+
+	Why not just have `read_font_identifier()` call `select_font()`
+	over in "env.cpp"?  Side effects.  As with many GNU troff
+	functions, parsing logic is entangled with engine logic; see
+	Savannah #68240.  So instead I copy the lexical analysis bits of
+	`select_font()` into this function, replacing most of it.  How
+	can I be confident this will work well?  Apart from a build
+	proceeding successfully and passing our test suite (now with 340
+	automated tests), the `select_font()` logic is a hotter code
+	path and, I suspect, always has been.  After my last push
+	earlier this week, I gathered coverage statistics from a full
+	build with tests.  `read_font_identifier() was hit 12,023 times.
+	That seems like a lot, right?
+
+	`select_font()` was hit 254,489 times.  If you can't
+	successfully change fonts in GNU troff, a lot more people (and
+	test scripts of ours) will notice than can observe malfunctions
+	of the `uf`, `fschar`, `rfschar`, `special`, `fspecial`,
+	`fzoom`, `bd`, or `tkf` requests.  (And, in fact, `bd` _doesn't_
+	work well.  See Savannah #68256.)  So if I have to violate DRY,
+	I'm cribbing the battle-hardened code.  Moreover there's no
+	reason at all, on any principle, to be checking for delimiters
+	in this input context, as noted above.
+
+	Fixes <https://savannah.gnu.org/bugs/?68252>.  The root cause of
+	the problem depends on what you consider the defect to be.  As
+	noted above, the assertion came in with commit 8b83fd3dd8, 2
+	November, affecting groff 1.24.0.  But the code path
+	_containing_ the assertion should never have been taken in the
+	first place by the request handlers for `bd` et al.--yet it has
+	been, ever since groff's birth.  Until now.
+
+2026-04-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp (read_font_identifier): Trivially
+	refactor.  Rename local variable `n` to `mp` to prepare for
+	subsequent, larger change.
+
+2026-04-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (select_font): Fix code style nit.
+	Parenthesize formally complex expression.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.
+
+	* src/roff/troff/env.h: Declare `init_size_list()` here,
+	corresponding to its definition in "env.cpp", and along with
+	other "size_list"-related stuff...
+	* src/roff/troff/node.h: ...instead of here.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.h: Drop declaration of unused symbol
+	`read_desc()`.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/node.cpp: Trivially refactor.
+	(read_special_fonts): Rename this...
+	(read_special_font_identifiers): ...to this.
+	(set_font_specific_special_fonts_request)
+	(set_special_fonts_request): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_request): Rename this...
+	(read_from_terminal_request): ...to this.  It's a *roff
+	input-reading function, but an oddball and highly specific one.
+	Make its name less apparently general.
+	(init_input_requests): Update wire-uppery of request name to
+	handler function.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_escape_sequence_parameter)
+	(read_long_escape_sequence_parameters): Rename function
+	parameter `mode`, a heavily overloaded term in *roff
+	parlance--like "transparent" and "special"--to `arity`.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_char_in_copy_mode): Rename this...
+	(read_character_in_copy_mode): ...to this.
+
+	(read_character_in_escape_sequence_parameter)
+	(has_arg)
+	(process_input_stack)
+	(decode_macro_call_arguments)
+	(decode_escape_sequence_arguments)
+	(read_request)
+	(do_define_string)
+	(define_character)
+	(do_define_macro)
+	(length_request)
+	(do_non_interpreted)
+	(device_request)
+	(output_request)
+	(tag)
+	(taga)
+	(terminal_write)
+	(do_write_request)
+	(abort_request)
+	(read_rest_of_line_as_argument): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (abort_request): Fix code style nit.
+	Drop extraneous parentheses; no formally complex operation is
+	occurring here, in the sense I use the term.  Only one dyadic
+	operator is involved in the `for` loop's updating expression.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_char_in_escape_sequence_parameter): Rename this...
+	(read_character_in_escape_sequence_parameter): ...to this.
+	(read_two_character_escape_sequence_parameter)
+	(read_long_escape_sequence_parameters)
+	(read_escape_sequence_parameter): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_two_char_escape_parameter): Rename this...
+	(read_two_character_escape_sequence_parameter): ...to this.
+	(read_escape_sequence_parameter)
+	(read_increment_and_escape_sequence_parameter)
+	(token::next): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_long_escape_parameters): Rename this...
+	(read_long_escape_sequence_parameters): ...to this.
+	(read_escape_sequence_parameter)
+	(read_increment_and_escape_sequence_parameter)
+	(token::next)
+	(device_request): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_increment_and_escape_parameter): Rename this...
+	(read_increment_and_escape_sequence_parameter): ...to this.
+	(read_char_in_copy_mode)
+	(token::next): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_escape_parameter): Rename this...
+	(read_escape_sequence_parameter): ...to this.
+	(read_increment_and_escape_parameter)
+	(read_char_in_copy_mode)
+	(token::next): Update call sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	constant in `escape_sequence_parameter_cardinality` enumeration
+	from `ALLOW_EMPTY` to `ARGUMENTS_OPTIONAL`.
+	(read_long_escape_parameters)
+	(token::next): Update dereference sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	constant in `escape_sequence_parameter_cardinality` enumeration
+	from `WITH_ARGS` to `ARGUMENTS_MANDATORY`.
+	(read_long_escape_parameters)
+	(read_char_in_copy_mode)
+	(token::next)
+	(device_request): Update dereference sites.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	constant in `escape_sequence_parameter_cardinality` enumeration
+	from `NO_ARGS` to `ARGUMENTS_FORBIDDEN`.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.  Rename
+	`read_mode` enumeration type to `escape_parameter_cardinality`.
+	(read_escape_parameter, read_long_escape_parameters): Update
+	function declarations and definitions accordingly.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (class hyphen_trie): Trivially
+	refactor.  Rename member function `read_patterns_file()` to
+	`interpret_patterns_file()`.  We're pretty close to exclusive
+	use of function names starting with "read_" for input stream
+	reading operations; that is, interpretation of *roff language.
+	This change moves us closer to that goal.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp: Trivially refactor.  Rename
+	`hyphen_trie` class's member function `read_patterns_file()` to
+	`interpret_patterns_file()`.  We're pretty close to exclusive
+	use of function names starting with "read_" for input stream
+	reading operations; that is, interpretation of *roff language.
+	This change moves us closer to that goal.
+	(class hyphen_trie): Update declaration.
+	(hyphen_trie::read_patterns_file): Rename this...
+	(hyphen_trie::interpret_patterns_file): ...to this.
+	(read_hyphenation_patterns_from_file): Update call site.
+
+2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (read_hyphenation_patterns_from_file):
+	Trivially refactor.  Rename function parameter `append` to
+	`appending`.  (Elsewhere, we have member functions named
+	`append()` that have side effects.)
+
+2026-04-18  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/dot-nm-register-works.sh: Repair test
+	script so it can fail again.  Problem introduced by me in commit
+	7aaeddf570, 14 April.
+
 2026-04-16  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* src/roff/troff/env.cpp
@@ -64,7 +484,7 @@
 	(need_vertical_space_request)
 	(set_page_number_request)
 	(save_vertical_space_request)
-	(output_saved_vertical_space): ...to these.
+	(output_saved_vertical_space_request): ...to these.
 	(init_div_requests): Update wire-uppery of request names to
 	handler functions.
 

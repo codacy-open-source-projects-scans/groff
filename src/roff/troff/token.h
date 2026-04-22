@@ -109,6 +109,7 @@ public:
   bool is_page_ejector();
   bool is_hyphen_indicator();
   bool is_zero_width_break();
+  bool is_terminator();
   bool operator==(const token &); // for delimiters & conditional exprs
   bool operator!=(const token &); // ditto
   unsigned char ch();
@@ -290,6 +291,22 @@ inline bool token::is_hyphen_indicator()
 inline bool token::is_zero_width_break()
 {
   return (TOKEN_ZERO_WIDTH_BREAK == type);
+}
+
+// Does this token terminate a nonterminal symbol such as an identifier
+// or numeric expression?
+inline bool token::is_terminator()
+{
+  // Why other token types don't qualify as terminators (expand this
+  // list as necessary):
+  //
+  // 1.  A left brace escape sequence doesn't terminate the contents of
+  //     a string assignment in Plan 9 or DWB troffs, but is discarded,
+  //     instead of populating the string.
+  // 2.  A tab can populate string contents.
+  return ((TOKEN_NEWLINE == type)
+	  || (TOKEN_EOF == type)
+	  || (TOKEN_RIGHT_BRACE == type));
 }
 
 // Local Variables:

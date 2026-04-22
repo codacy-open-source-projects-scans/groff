@@ -144,8 +144,8 @@ SUFFIXES += .mom .pdf
 	&& LC_ALL=C $(MOMPDFMOM) $< >$@
 
 $(MOMPROCESSEDEXAMPLEFILES): $(MOMNORMALFILES) \
-  test-groff groff troff gropdf pdfmom penguin.ps penguin.pdf \
-  font/devpdf/stamp tmac/pdf.tmac
+  test-groff groff troff gropdf pdfmom eqn pic tbl preconv \
+  penguin.ps penguin.pdf font/devpdf/stamp tmac/pdf.tmac
 
 penguin.ps:
 	$(AM_V_at)cp $(mom_srcdir)/examples/penguin.ps $@

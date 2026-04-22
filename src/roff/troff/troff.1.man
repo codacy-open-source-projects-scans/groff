@@ -853,6 +853,7 @@ style	16	T{
 Input was non-idiomatic or likely to produce an unexpected result
 (or none at all),
 but is not invalid:
+a brace escape sequence was employed uselessly;
 the end of a sentence was detected prior to the end of a text line;
 or
 an attempt was made to combine temporary indentation

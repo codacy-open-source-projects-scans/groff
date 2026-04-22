@@ -75,6 +75,30 @@ echo "$output2"
 output2=$(echo $output2) # condense onto one line
 echo "$output2" | grep -q "foo bar baz" || wail
 
+# Test trap removal when given one argument.
+
+input3='.
+.de TT
+WHOOPS
+.br
+..
+.di DD
+.dt 3v
+.nf
+foo
+bar
+.dt
+.sp
+baz
+.di
+.DD
+.'
+
+output3=$(printf '%s\n' "$input3" | "$groff" -a 2>/dev/null)
+echo "$output3"
+output3=$(echo $output3) # condense onto one line
+echo "$output3" | grep -q "foo bar baz" || wail
+
 test -z "$fail"
 
 # vim:set autoindent expandtab shiftwidth=4 tabstop=4 textwidth=72:

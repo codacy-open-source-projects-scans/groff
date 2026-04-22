@@ -1331,6 +1331,10 @@ static void select_stroke_color_request() // .gcolor
 static symbol P_symbol("P");
 
 // Select font with name or mounting position `s`.
+//
+// TODO: This duplicates logic from node.cpp:read_font_identifier().
+// Refactor.  Need read_font_mounting_position_or_identifier(), storing
+// the resolved mounting position in an argument.
 void select_font(symbol s)
 {
   bool is_number = true;
@@ -1341,9 +1345,11 @@ void select_font(symbol s)
   else {
     const char *p = s.contents();
     assert(*p != 0 /* nullptr */);
+    // Silently ignore a leading minus sign so we can issue a range
+    // warning later.
     if ((csdigit(*p)) || ('-' == *p))
       p++;
-    for (; p != 0 /* nullptr */ && *p != '\0'; p++)
+    for (; (p != 0 /* nullptr */) && (*p != '\0'); p++)
       if (!csdigit(*p)) {
 	is_number = false;
 	break;
@@ -1493,7 +1499,7 @@ static void space_size() // .ss
 
 static void fill() // .fi
 {
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
@@ -1503,7 +1509,7 @@ static void fill() // .fi
 
 static void no_fill() // .nf
 {
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
@@ -1526,7 +1532,7 @@ void center() // .ce
     n = 1;
   else if (n < 0)
     n = 0;
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
@@ -1547,7 +1553,7 @@ void right_justify() // .rj
     n = 1;
   else if (n < 0)
     n = 0;
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
@@ -1660,7 +1666,7 @@ void indent() // .in
   }
   else
     temp = curenv->prev_indent;
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break();
@@ -1696,7 +1702,7 @@ void temporary_indent() // .ti
     if (!read_hunits(&temp, 'm', curenv->get_indent()))
       is_valid = false;
     // XXX: Why not `skip_line()`?
-    while (!tok.is_newline() && !tok.is_eof())
+    while (!tok.is_terminator())
       tok.next();
   }
   if (was_invoked_with_regular_control_character)
@@ -1810,7 +1816,7 @@ void number_lines() // .nm
       }
     }
     else
-      while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
+      while (!tok.is_space() && !tok.is_terminator())
 	tok.next();
     if (has_arg()) {
       if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
@@ -1824,7 +1830,7 @@ void number_lines() // .nm
 	}
       }
       else
-	while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
+	while (!tok.is_space() && !tok.is_terminator())
 	  tok.next();
       if (has_arg()) {
 	if (!tok.is_usable_as_delimiter()) { // XXX abuse of function
@@ -1832,7 +1838,7 @@ void number_lines() // .nm
 	    curenv->number_text_separation = n;
 	}
 	else
-	  while (!tok.is_space() && !tok.is_newline() && !tok.is_eof())
+	  while (!tok.is_space() && !tok.is_terminator())
 	    tok.next();
 	if (has_arg() && !tok.is_usable_as_delimiter() // XXX abuse of function
 	    && read_integer(&n))
@@ -2730,7 +2736,7 @@ bool environment::is_empty()
 
 void do_break_request(bool want_adjustment)
 {
-  while (!tok.is_newline() && !tok.is_eof())
+  while (!tok.is_terminator())
     tok.next();
   if (was_invoked_with_regular_control_character)
     curenv->do_break(want_adjustment);
@@ -3822,7 +3828,7 @@ public:
   hyphen_trie() {}
   ~hyphen_trie() {}
   void hyphenate(const char *, int, int *);
-  void read_patterns_file(const char *, bool, dictionary *);
+  void interpret_patterns_file(const char *, bool, dictionary *);
 };
 
 struct hyphenation_language {
@@ -4124,7 +4130,7 @@ static void print_hyphenation_exceptions_request() // .phw
   unsigned char *hypoint;
   // Pathologically, we could have a hyphenation point after every
   // character in a word except the last.  The word may have a trailing
-  // space; see `hyphen_trie::read_patterns_file()`.
+  // space; see `hyphen_trie::interpret_patterns_file()`.
   // C++11: constexpr
   static const size_t bufsz = WORD_MAX * 2;
   // C++03: char wordbuf[bufsz]();
@@ -4425,8 +4431,9 @@ fail:
   return c;
 }
 
-void hyphen_trie::read_patterns_file(const char *name, bool appending,
-				     dictionary *ex)
+void hyphen_trie::interpret_patterns_file(const char *name,
+					  bool appending,
+					  dictionary *ex)
 {
   if (!appending)
     clear();
@@ -4857,15 +4864,15 @@ static void hyphenate(hyphen_list *h, unsigned int flags)
   }
 }
 
-static void read_hyphenation_patterns_from_file(bool append)
+static void update_hyphenation_patterns_from_file(bool appending)
 {
   char *filename = read_rest_of_line_as_argument();
   if (filename != 0 /* nullptr */) {
     if (0 /* nullptr */ == current_language)
       error("no current hyphenation language");
     else
-      current_language->patterns.read_patterns_file(filename, append,
-	&current_language->exceptions);
+      current_language->patterns.interpret_patterns_file(filename,
+	  appending, &current_language->exceptions);
   }
 }
 
@@ -4877,7 +4884,7 @@ static void load_hyphenation_patterns_from_file_request() // .hpf
     skip_line();
     return;
   }
-  read_hyphenation_patterns_from_file(false /* append */);
+  update_hyphenation_patterns_from_file(false /* appending */);
   skip_line();
 }
 
@@ -4889,7 +4896,7 @@ static void append_hyphenation_patterns_from_file_request() // .hpfa
     skip_line();
     return;
   }
-  read_hyphenation_patterns_from_file(true /* append */);
+  update_hyphenation_patterns_from_file(true /* appending */);
   skip_line();
 }
 
