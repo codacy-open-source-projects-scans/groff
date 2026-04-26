@@ -1089,7 +1089,9 @@ arguments is a GNU extension.
 .IR text \~[ post \~[ pre ]]]
 Style
 .I text
-in bold,
+in bold\[em]\c
+that is,
+with a heavier stroke weight\[em]\c
 followed by
 .I post
 in the previous font style without intervening space,
@@ -1123,7 +1125,9 @@ Argument recognition is a GNU extension.
 .IR text \~[ post \~[ pre ]]]
 As
 .BR B ,
-but use an italic or oblique style instead of bold.
+but use an italic
+(slanted or oblique)
+style instead of bold.
 .
 .
 .TP
@@ -2359,27 +2363,23 @@ and adds several of its own.
 .IP \[bu] 3n
 The internals of
 .I groff ms
-differ from those of
-AT&T
+differ from those of AT&T and Berkeley
 .IR ms .
 .
-Documents that depend upon implementation details of
-AT&T
-.I ms
-may not format properly with
-.IR "groff ms" .
+Documents that depend upon undocumented behavioral details of
+those implementations
+might not format as expected with
+.I groff ms.
 .
-Such details include macros whose function was not documented in the
-AT&T
-.I ms
-manual
-(\[lq]Typing Documents on the UNIX System: Using the \-ms Macros with
-Troff and Nroff\[rq],
-M.\& E.\& Lesk,
-Bell Laboratories,
-1978).
-.\" TODO: Use refer(1)?
-.\" XXX: We support RT anyway; maybe we should stop?
+It therefore defines the register
+.BR GS ,
+which AT&T and Berkeley do not use,
+as\~1.
+.
+A document can test its value to determine whether it is being formatted
+with
+.I groff ms
+or another implementation.
 .
 .
 .IP \[bu]

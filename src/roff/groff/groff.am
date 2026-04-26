@@ -45,6 +45,8 @@ groff_TESTS = \
   src/roff/groff/tests/asciify-composite-nodes-correctly.sh \
   src/roff/groff/tests/asciify-request-works.sh \
   src/roff/groff/tests/asciify-special-characters-correctly.sh \
+  src/roff/groff/tests/backslash-L-works.sh \
+  src/roff/groff/tests/backslash-l-works.sh \
   src/roff/groff/tests/backslash-X-is-transparent-to-hyphenation.sh \
   src/roff/groff/tests/backslash-X-works.sh \
   src/roff/groff/tests/backslash-Y-works.sh \

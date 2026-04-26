@@ -1672,7 +1672,9 @@ _
 Style
 .I text
 in
-.B bold ,
+.B bold \[em]\c
+that is,
+with a heavier stroke weight\[em]\c
 followed by
 .I post
 in the previous font style without intervening space,
@@ -1704,7 +1706,8 @@ As
 .CW B ,
 but use an
 .I italic
-or oblique style instead of bold.
+(slanted or oblique)
+style instead of bold.
 T}
 _
 \&.BI \f[R][\f[I]text\f[] [\f[I]post\f[] [\f[I]pre\f[]]]]	T{
@@ -2580,7 +2583,7 @@ T{
 .br
 \&.PF
 T}	T{
-.CW .PS
+.CW PS
 marks the start of a
 .I pic (1)
 preprocessor
@@ -4084,7 +4087,7 @@ might not format as expected with
 It therefore defines the register
 .CW GS ,
 which AT&T and Berkeley do not use,
-to\~1.
+as\~1.
 .
 A document can test its value to determine whether it is being formatted
 with

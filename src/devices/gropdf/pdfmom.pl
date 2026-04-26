@@ -206,7 +206,9 @@ if ($dev eq 'pdf')
 }
 elsif ($dev eq 'ps')
 {
-	$waitstatus = system("$groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
+        my $pdfroff=`which pdfroff 2>/dev/null`;
+        abort("Since version 1.24.0 of groff, the pdfmark files (including pdfroff)\nare no longer included with groff. They can be seprately downloaded from:-\n\nhttps://savannah.nongnu.org/projects/groff-pdfmark\n\n") if !$pdfroff;
+	$waitstatus = system("$groff -Tpdf -dLABEL.REFS=1 $mom -z $cmdstring 2>&1 | LC_ALL=C grep '^\\. *ds' | $pdfroff -mpdfmark $mom --no-toc - $preconv $cmdstring");
 	abort(autopsy($?)) unless $waitstatus == 0;
 }
 elsif ($dev eq '-z') # pseudo dev - just compile for warnings

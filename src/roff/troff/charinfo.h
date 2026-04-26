@@ -20,8 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <vector>
 #include <utility>
 
-extern bool using_character_classes;	// if `.class` is invoked
-extern void get_flags();
+extern bool using_character_classes;	// was `class` request invoked?
+
+// input.cpp
+extern void recompute_character_flags();
 
 class macro;
 
@@ -42,7 +44,6 @@ class charinfo : glyph {
   char_mode mode;
   // Unicode character classes
   std::vector<std::pair<int, int> > ranges;
-  std::vector<charinfo *> nested_classes; // XXX: see Savannah #67770
 public:
   // Values for the flags bitmask.  See groff manual, description of the
   // '.cflags' request.
@@ -115,7 +116,6 @@ public:
   symbol *get_symbol();
   void add_to_class(int);
   void add_to_class(int, int);
-  void add_to_class(charinfo *);
   bool is_class();
   bool contains(int, bool = false);
   bool contains(symbol, bool = false);
@@ -132,70 +132,70 @@ extern charinfo *charset_table[];
 inline bool charinfo::overlaps_horizontally()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & OVERLAPS_HORIZONTALLY);
 }
 
 inline bool charinfo::overlaps_vertically()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & OVERLAPS_VERTICALLY);
 }
 
 inline bool charinfo::allows_break_before()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & ALLOWS_BREAK_BEFORE);
 }
 
 inline bool charinfo::allows_break_after()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & ALLOWS_BREAK_AFTER);
 }
 
 inline bool charinfo::ends_sentence()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & ENDS_SENTENCE);
 }
 
 inline bool charinfo::is_transparent_to_end_of_sentence()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & IS_TRANSPARENT_TO_END_OF_SENTENCE);
 }
 
 inline bool charinfo::ignores_surrounding_hyphenation_codes()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & IGNORES_SURROUNDING_HYPHENATION_CODES);
 }
 
 inline bool charinfo::prohibits_break_before()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & PROHIBITS_BREAK_BEFORE);
 }
 
 inline bool charinfo::prohibits_break_after()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & PROHIBITS_BREAK_AFTER);
 }
 
 inline bool charinfo::is_interword_space()
 {
   if (using_character_classes)
-    ::get_flags();
+    recompute_character_flags();
   return (flags & IS_INTERWORD_SPACE);
 }
 
@@ -302,15 +302,9 @@ inline void charinfo::add_to_class(int lo,
   ranges.push_back(std::pair<int, int>(lo, hi));
 }
 
-inline void charinfo::add_to_class(charinfo *ci)
-{
-  using_character_classes = true;
-  nested_classes.push_back(ci);
-}
-
 inline bool charinfo::is_class()
 {
-  return (!ranges.empty() || !nested_classes.empty());
+  return !ranges.empty();
 }
 
 // Local Variables:

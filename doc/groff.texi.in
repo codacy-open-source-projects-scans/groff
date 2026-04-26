@@ -1191,7 +1191,9 @@ preprocessor.
 @item -E
 Inhibit
 @command{@g@troff}
-error messages.
+error messages;
+implies
+@code{-Ww}.
 This option does
 @emph{not}
 suppress messages sent to the standard error stream
@@ -1575,9 +1577,12 @@ processed in the usual way, passing @option{-v} to the formatter and any
 pre- or postprocessors invoked.
 
 @item -V
-Output the pipeline that @command{groff} would run to the standard
-output stream and exit.  If given more than once, @command{groff} both
-writes the pipeline to the standard error stream and runs it.
+Write the command pipeline that
+@command{groff}
+would run to the standard output stream and exit.
+If given more than once,
+@command{groff}
+both writes the pipeline to the standard error stream and runs it.
 
 @item -w @var{cat}
 @itemx -W @var{cat}
@@ -2384,16 +2389,28 @@ start of the subsequent paragraph.
 @node Headers and Footers
 @subsection Headers and Footers
 
-@slanted{Headers} and @slanted{footers} occupy the top and bottom of
-each page, respectively, and contain data like the page number and the
-article or chapter title.  Their appearance is not affected by the
-running text.  Some packages allow for different titles on even- and
-odd-numbered pages (for printed, bound material).
+@slanted{Headers}
+and
+@slanted{footers}
+occupy the top and bottom of each page,
+respectively,
+and contain data like the page number
+and the article or chapter title.
+Their appearance is not affected by the running text.
 
-Headers and footers are together called @slanted{titles}, and comprise
-three parts:@: left-aligned, centered, and right-aligned.  A @samp{%}
-character appearing anywhere in a title is automatically replaced by the
-page number.  @xref{Page Layout}.
+Headers and footers are together called
+@slanted{titles},
+and comprise three parts:@:
+left-aligned,
+centered,
+and right-aligned.
+The formatter replaces a
+@samp{%}
+character appearing anywhere in a title with the page number.
+@xref{Page Layout}.
+Some packages allow for different titles on even- and
+odd-numbered pages
+(for printed, bound material).
 
 @c ---------------------------------------------------------------------
 
@@ -4091,11 +4108,23 @@ boldface.  By Version@tie{}7 (1979) it recognized a second argument; in
 to avoid breaking support for older documents.}
 
 @Defmac {B, [@Var{text} [@Var{post} [@Var{pre}]]], ms}
-Style @var{text} in @b{bold}, followed by @var{post} in the previous
-font style without intervening space, and preceded by @var{pre}
-similarly.  Without arguments, @file{ms} styles subsequent text in bold
-until the next paragraphing, heading, or no-argument typeface macro
-call.
+Style
+@var{text}
+in
+@b{bold}---that is,
+with a heavier stroke weight---followed by
+@var{post}
+in the previous font style without intervening space,
+and preceded by
+@var{pre}
+similarly.
+Without arguments,
+@file{ms}
+styles subsequent text in bold
+until the next
+paragraphing,
+heading,
+or no-argument typeface macro call.
 @endDefmac
 
 @Defmac {R, [@Var{text} [@Var{post} [@Var{pre}]]], ms}
@@ -4104,7 +4133,12 @@ instead of bold.  Argument recognition is a GNU extension.
 @endDefmac
 
 @Defmac {I, [@Var{text} [@Var{post} [@Var{pre}]]], ms}
-As @code{B}, but use an @i{italic} or oblique style instead of bold.
+As
+@code{B},
+but use an
+@i{italic}
+(slanted or oblique)
+style instead of bold.
 @endDefmac
 
 @Defmac {BI, [@Var{text} [@Var{post} [@Var{pre}]]], ms}
@@ -5254,33 +5288,38 @@ and adds several of its own.
 The internals of
 @code{groff}
 @file{ms}
-differ from those of @acronym{AT&T}
+differ from those of @acronym{AT&T} and Berkeley
 @file{ms}.
-Documents that depend upon implementation details of @acronym{AT&T}
-@file{ms}
-may not format properly with
+Documents that depend upon implementation details of
+those implementations
+might not format as expected with
 @code{groff}
 @file{ms}.
-Such details include macros whose function was not documented in the
-@acronym{AT&T}
+It therefore defines the register
+@code{GS}
+.CW GS ,
+which @acronym{AT&T} and Berkeley do not use,
+as@tie{}1.
+A document can test its value to determine whether it is being formatted
+with
+@code{groff}
 @file{ms}
-@c XXX: Texinfo's @cite command conceives only of citations of long-form
-@c works, like books, and forces italics.  APA, MLA, and Chicago styles
-@c all agree that article citations are set in roman.  MLA and Chicago
-@c furthermore place them within quotation marks.
-manual.@footnote{``Typing Documents on the UNIX System: Using the
--ms Macros with Troff and Nroff'', M.@tie{}E.@: Lesk, Bell Laboratories,
-1978}
-@c XXX: We support RT anyway; maybe we should stop?
+or another implementation.
 
 @item
-The error-handling policy of @code{groff} @file{ms} is to detect and
-report errors, rather than to ignore them silently.
+The error-handling policy of
+@code{groff}
+@file{ms}
+is to detect and report errors,
+rather than to ignore them silently.
 
 @item
 Research Tenth Edition @c possibly 9th
-Unix supported @code{P1}/@code{P2} macros to bracket code
-examples; @code{groff} @file{ms} does not.
+Unix supported
+@code{P1}/@code{P2}
+macros to bracket code examples;
+@code{groff}
+@file{ms} does not.
 
 @item
 @code{groff}
@@ -19360,9 +19399,11 @@ interchangeably.
 @cindex nested diversions
 @cindex diversion, nested
 @cindex diversion name register (@code{.z})
-@cindex vertical position in diversion register (@code{.d})
-@cindex position, vertical, in diversion, register (@code{.d})
-@cindex diversion, vertical position in, register (@code{.d})
+@cindex vertical drawing position on page or in diversion register (@code{.d})
+@cindex drawing position, vertical, on page or in diversion, register (@code{.d})
+@cindex position, vertical drawing, on page or in diversion, register (@code{.d})
+@cindex diversion, vertical drawing position in or on page, register (@code{.d})
+@cindex page, vertical drawing position on or in diversion, register (@code{.d})
 Diversion requests may be nested.  The read-only string-valued register
 @code{.z} contains the name of the current diversion.  The read-only
 register @code{.d} contains the vertical drawing position in the

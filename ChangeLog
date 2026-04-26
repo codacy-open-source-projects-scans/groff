@@ -1,3 +1,122 @@
+2026-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* tmac/an.tmac (SH, SS, TP): Throw warning if macro called while
+	an input trap is pending (for example, `.TP` followed
+	immediately by `.SH`).  This input is not specified or
+	countenanced by any man(7) documentation I know of, and produces
+	unpredictable output across implementations.  (Given the
+	foregoing example, Plan 9 troff truncates the input at that
+	point.)  Seen in the wild in fvwm-config(1).
+
+	Fixes <https://savannah.gnu.org/bugs/?68279>.
+
+2026-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/env.cpp (environment::newline): Reset contents
+	of read-only `.itm` register (introduced in groff 1.24.0) to
+	null after an input trap has sprung, so that it doesn't
+	interpolate a stale and/or misleading value.
+
+	Fixes <https://savannah.gnu.org/bugs/?68278>.  Continues commit
+	1fce75f6ba, 2024-02-11.
+
+2026-04-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/groff/tests/\
+	roman-format-register-interpolation-works.sh: Fix missing
+	parentheses in AT&T troff register interpolation syntax.  Make
+	final two test cases capable of actually failing.
+
+	Continues commit 5050eecc10, 16 April.
+
+2026-04-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[groff]: Unit-test `\l` and `\L` escape sequences.
+
+	* src/roff/groff/tests/backslash-L-works.sh:
+	* src/roff/groff/tests/backslash-l-works.sh: Do it.
+	* src/roff/groff/groff.am (groff_TESTS): Run tests.
+
+2026-04-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Trivially refactor.  Rename `get_flags()` global
+	function to `recompute_character_flags()`.  In addition to being
+	more clear and explicit, it avoids a collision with the
+	`charinfo` class's own `get_flags()` member function.
+
+	* src/roff/troff/input.cpp (get_flags): Rename this...
+	(recompute_character_flags): ...to this.
+	* src/roff/troff/charinfo.h: Update `extern` declaration
+	"importing" the symbol.
+	(charinfo::overlaps_horizontally)
+	(charinfo::overlaps_vertically)
+	(charinfo::allows_break_before)
+	(charinfo::allows_break_after)
+	(charinfo::ends_sentence)
+	(charinfo::is_transparent_to_end_of_sentence)
+	(charinfo::ignores_surrounding_hyphenation_codes)
+	(charinfo::prohibits_break_before)
+	(charinfo::prohibits_break_after)
+	(charinfo::is_interword_space): Update call sites.  Drop now-
+	unneeded namespace access operator.
+
+2026-04-22  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Drop dead/unreachable nested character class code.
+
+	* src/roff/troff/charinfo.h (class charinfo): Drop
+	`nested_classes` member variable.  Drop declaration of
+	overloaded `add_to_class()` member function taking a pointer to
+	a `charinfo` as argument.
+	(charinfo::add_to_class): Drop definition per above.
+	(charinfo::is_class): Simplify test to eliminate dereference of
+	now-vanished `nested_classes` member variable.
+	* src/roff/troff/input.cpp (define_class_request): Generalize
+	condition under which warning diagnostics about inability to
+	nest character classes are thrown.  Drop branches unreached in a
+	"make check" build that required the aforementioned member
+	function signature.
+	(charinfo::contains, charinfo::dump): Drop iterators of nested
+	classes `#if 0`-ed out in groff 1.24.0 release.
+
+2022-04-17  Dave Kemper <saint.snit@gmail.com>
+
+	* tmac/pspic.tmac: Allow `PSPIC` macro to place image at bottom
+	of page.  From groff 1.01 through 1.04, the macro did not invoke
+	a break, explicitly or implicitly; thus the vertical space
+	`.ne`eded for the image was incremented by 1v to account for a
+	possible partially collected output line.  The "ChangeLog.old"
+	file shows that James Clark added a break to this macro in a
+	1992-03-16 change (the Git history for this era is too coarse to
+	show this change alone; it first shows up in commit a48ab7b6d,
+	containing all changes between groff 1.04 and groff 1.05).
+	However, the 1v increment was (presumably) inadvertently left in
+	place, preventing an image that would exactly fit at the bottom
+	of a page from being placed there.  This adjustment has been
+	unnecessary for over 34 years, so get rid of it.
+
+	[Fixes <https://savannah.gnu.org/bugs/?50770>.  Per the
+	foregoing, problem dates back to groff 1.05, March 1992.  Thanks
+	to Dave and Deri for sorting this out! --GBR]
+
+2026-04-24  Deri James  <deri@chuzzlewit.myzen.co.uk>
+
+	[pdfmom]: Don't try to pass commands to pdfroff (-Tps) if
+	pdfroff is not installed.
+
+	* src/devices/gropdf/pdfmom.pl: Check if pdfroff is available
+	before using it. (Withdrawn from groff since 1.24.0)
+
+	See: <https://savannah.gnu.org/bugs/?68207>
+
+2026-04-21  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (do_error): Report warning category
+	governing diagnostic message even if the type of diagnostic is
+	not `WARNING` but `OUTPUT_WARNING`.
+
+	Continues commit 0220f00c3c, 18 March.
+
 2026-04-21  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	[troff]: Throw warning in category "style" when nilpotent brace

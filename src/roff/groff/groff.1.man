@@ -519,7 +519,7 @@ to the formatter and any pre- or postprocessors invoked.
 .
 .TP
 .B \-V
-Output the pipeline that
+Write the command pipeline that
 .I groff
 would run to the standard output stream and exit.
 .

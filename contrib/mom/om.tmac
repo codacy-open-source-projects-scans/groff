@@ -4927,7 +4927,7 @@ y\R'#DESCENDER \\n[.cdp]'
 "\\*[$\\*[COVER_]AUTHOR_\\n[#\\*[COVER_]AUTHOR_NUM]], \"
 .    \}
 .    ds $AUTHOR \\*[$AUTHOR_1]
-.    substring $AUTHORS 0 -2
+.    substring $AUTHORS 0 -3
 .    ds PDF_AUTHORS \\*[$AUTHORS]
 .    if '\\*[.T]'ps' .pdfmomclean PDF_AUTHORS
 .    nop \!x X ps:exec [/Author (\\*[PDF_AUTHORS]) /DOCINFO pdfmark
@@ -13830,6 +13830,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 \#   for each footnote the user wants indented.
 \#
 .MAC FOOTNOTE END
+.    if \\n[#SQ_ON] .if \\n[#OPEN_CLOSE]=1 .nr #OPEN_CLOSE 0
 .    ie '\\$1'' \{\
 .       if \\n[#UNDERLINE_ON] \{\
 .          UNDERLINE OFF
@@ -14282,6 +14283,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .\" Turn off indent possibly set by FOOTNOTE INDENT
 .          in 0
 .          ev
+.          if \\n[#SQ_ON] .if \\n[#OPEN_CLOSE]=0 .nr #OPEN_CLOSE 1
 .          if \\n[#UNDERLINE_WAS_ON_FN] \{\
 .             UNDERLINE
 .             rr #UNDERLINE_WAS_ON_FN
@@ -15160,6 +15162,7 @@ E\\R'#CAP_HEIGHT \\n[.cht]'
 .    ie '\\$1'' \{\
 .       nr #ENDNOTE 1
 .       ds $PRE_EN_QUAD \\*[$QUAD_VALUE]
+.       if \\n[#SQ_ON] .if \\n[#OPEN_CLOSE]=1 .nr #OPEN_CLOSE 0
 .       ie !\\n[#EN_MARKER_STYLE]=2 \{\
 .          if \\n[#CONDENSE] .nop \*[CONDX]\c
 .          if \\n[#EXTEND] .nop \*[EXTX]\c
@@ -15402,6 +15405,7 @@ EN-\\n[#CH_NUM]\\n[#EN_NUMBER]-body \s-2\v'-\\n[#DOC_LEAD]u/7u'\\n[#EN_NUMBER]\|
 \*[SLANT]\c
 .       \}
 .       ds $QUAD_VALUE \\*[$PRE_EN_QUAD]
+.       if \\n[#SQ_ON] .if \\n[#OPEN_CLOSE]=0 .nr #OPEN_CLOSE 1
 .    \}
 .    if \\n[#NUM_ARGS]=2 \{\
 .       if '\\$2'BREAK' .BR

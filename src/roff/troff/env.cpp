@@ -2013,8 +2013,10 @@ void environment::newline()
   }
   if (input_trap_count > 0) {
     if (!(continued_input_trap && (was_previous_line_interrupted > 0)))
-      if (--input_trap_count == 0)
+      if (--input_trap_count == 0) {
 	spring_trap(input_trap);
+	curenv->input_trap = NULL_SYMBOL;
+      }
   }
 }
 

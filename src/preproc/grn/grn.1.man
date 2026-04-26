@@ -10,7 +10,9 @@ documents
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright (C) 2000-2024 Free Software Foundation, Inc.
+.\" Copyright      2000 Free Software Foundation, Inc.
+.\"                2000 Daniel Senderowicz
+.\"           2020-2024 G. Branden Robinson
 .\"
 .\" Permission is granted to make and distribute verbatim copies of this
 .\" manual provided the copyright notice and this permission notice are
@@ -114,8 +116,9 @@ the picture in that file is converted and placed in the
 .I @g@troff
 input stream.
 .
-.B .GS
-may be called with a
+Follow
+.RB \[lq] .GS \[rq]
+with a
 .BR C ,
 .BR L ,
 or
@@ -124,8 +127,12 @@ argument to center,
 left-,
 or right-align the whole
 .I gremlin
-picture
-(the default is to center).
+picture,
+if a supporting macro package implements a
+.B GS
+macro.
+.
+The default is to center it.
 .
 If no
 .I file
@@ -806,7 +813,7 @@ and its coordinates reflect the AED coordinate space.
 .
 For vertical pictures,
 .IR x \~values
-range 116 to 511,
+range from 116 to 511,
 and
 .IR y \~values
 from 0 to 483.

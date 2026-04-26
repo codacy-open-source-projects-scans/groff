@@ -9018,12 +9018,9 @@ static void define_class_request() // .class
     }
     else if (child1 != 0 /* nullptr */) {
       if (child1->is_class()) {
-	if (ci == child1) {
-	  warning(WARN_SYNTAX, "cannot nest character classes");
-	  skip_line();
-	  return;
-	}
-	ci->add_to_class(child1);
+	warning(WARN_SYNTAX, "cannot nest character classes");
+	skip_line();
+	return;
       }
       else {
 	int u1 = child1->get_unicode_mapping();
@@ -9059,12 +9056,9 @@ static void define_class_request() // .class
   }
   if (child1 != 0 /* nullptr */) {
     if (child1->is_class()) {
-      if (ci == child1) {
-	warning(WARN_SYNTAX, "cannot nest character classes");
-	skip_line();
-	return;
-      }
-      ci->add_to_class(child1);
+      warning(WARN_SYNTAX, "cannot nest character classes");
+      skip_line();
+      return;
     }
     else {
       int u1 = child1->get_unicode_mapping();
@@ -10881,7 +10875,7 @@ static void do_error(error_type type,
     break;
   }
   errprint(format, arg1, arg2, arg3);
-  if (WARNING == type) {
+  if ((WARNING == type) || (OUTPUT_WARNING == type)) {
       const char *category_name = lookup_warning_by_bitset(wc);
       assert(category_name != 0 /* nullptr */);
       if (category_name != 0 /* nullptr */)
@@ -11052,7 +11046,7 @@ void charinfo::set_translation(charinfo *ci, bool transparently,
 }
 
 // Recompute flags for all entries in the charinfo dictionary.
-void get_flags()
+void recompute_character_flags()
 {
   dictionary_iterator iter(charinfo_dictionary);
   charinfo *ci;
@@ -11156,18 +11150,6 @@ bool charinfo::contains(int c, bool already_called)
     }
     ++ranges_iter;
   }
-
-  // Nested classes don't work.  See Savannah #67770.
-#if 0
-  std::vector<charinfo *>::const_iterator nested_iter;
-  nested_iter = nested_classes.begin();
-  while (nested_iter != nested_classes.end()) {
-    if ((*nested_iter)->contains(c, true))
-      return true;
-    ++nested_iter;
-  }
-#endif
-
   return false;
 }
 
@@ -11298,21 +11280,6 @@ void charinfo::dump()
     if (!has_ranges)
       errprint("(none)");
     errprint("\n");
-#if 0
-    // Nested classes don't work.  See Savannah #67770.
-    errprint("  contains nested classes: ");
-    std::vector<charinfo *>::const_iterator nested_iter;
-    nested_iter = nested_classes.begin();
-    bool has_nested_classes = false;
-    while (nested_iter != nested_classes.end()) {
-      has_nested_classes = true;
-      // TODO: Here's where JSON would really pay off.
-      (*nested_iter)->dump();
-    }
-    if (!has_nested_classes)
-      errprint("(none)");
-    errprint("\n");
-#endif
     dump_flags();
   }
   else {

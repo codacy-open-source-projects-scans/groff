@@ -93,13 +93,13 @@ echo "$output2b" | grep -qx "4000 MW 9000 MZ 39999 ZZZMZCMXCIX" || wail
 
 echo "checking that lowercase roman numeral register interpolation" \
     "format works with nonpositive values" >&2
-printf '.nr r0\n.nr r1 -1\n\n.af r0 i\n.af r1 i\n\\nr0 \\nr1\n' \
-    | "$groff" -T ascii | grep -qx -- '0 -i'
+printf '.nr r0\n.nr r1 -1\n\n.af r0 i\n.af r1 i\n\\n(r0 \\n(r1\n' \
+    | "$groff" -T ascii | grep -qx -- '0 -i' || wail
 
 echo "checking that uppercase roman numeral register interpolation" \
     "format works with nonpositive values" >&2
-printf '.nr r0\n.nr r1 -1\n\n.af r0 I\n.af r1 I\n\\nr0 \\nr1\n' \
-    | "$groff" -T ascii | grep -qx -- '0 -I'
+printf '.nr r0\n.nr r1 -1\n\n.af r0 I\n.af r1 I\n\\n(r0 \\n(r1\n' \
+    | "$groff" -T ascii | grep -qx -- '0 -I' || wail
 
 test -z "$fail"
 

@@ -7394,7 +7394,7 @@ see
 .
 .TP
 .REG .d
-Vertical drawing position in diversion.
+Vertical drawing position on page or in diversion.
 .
 .TP
 .REG .ev

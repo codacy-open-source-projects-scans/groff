@@ -770,6 +770,7 @@ contains unsupported escape sequence
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) as a section heading.
 .de1 SH
+.  if \\n[.it] .an-warn cannot call .\\$0 while an input trap is pending
 .  an*reset-section-parameters
 .  an*break-paragraph
 .  fi
@@ -798,6 +799,7 @@ contains unsupported escape sequence
 .\" Set arguments (or next input line producing written or drawn output
 .\" if none) as a subsection heading.
 .de1 SS
+.  if \\n[.it] .an-warn cannot call .\\$0 while an input trap is pending
 .  an*reset-section-parameters
 .  an*break-paragraph
 .  fi
@@ -885,6 +887,7 @@ contains unsupported escape sequence
 .\" producing written or drawn output.
 .\" .TP [indent]
 .de1 TP
+.  if \\n[.it] .an-warn cannot call .\\$0 while an input trap is pending
 .  an*break-paragraph
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
 .  if '\\n[.z]'an*paragraph-tag' \{\
