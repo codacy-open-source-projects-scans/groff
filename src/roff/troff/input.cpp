@@ -1137,7 +1137,7 @@ static symbol read_escape_sequence_parameter(
   return symbol(buf);
 }
 
-static symbol read_increment_and_escape_sequence_parameter(int *incp)
+static symbol read_crement_and_escape_sequence_parameter(int *incp)
 {
   char c = read_character_in_escape_sequence_parameter();
   switch (c) {
@@ -1298,7 +1298,7 @@ static int read_character_in_copy_mode(node **nd,
       {
 	(void) input_stack::get(0 /* nullptr */);
 	int inc;
-	symbol s = read_increment_and_escape_sequence_parameter(&inc);
+	symbol s = read_crement_and_escape_sequence_parameter(&inc);
 	if (!(s.is_null() || s.is_empty()))
 	  interpolate_register(s, inc);
 	break;
@@ -2668,7 +2668,7 @@ void token::next()
       case 'n':
 	{
 	  int inc;
-	  symbol s = read_increment_and_escape_sequence_parameter(&inc);
+	  symbol s = read_crement_and_escape_sequence_parameter(&inc);
 	  if (!(s.is_null() || s.is_empty()))
 	    interpolate_register(s, inc);
 	  break;
@@ -10436,7 +10436,7 @@ void init_input_requests()
   register_dictionary.define(".br", new break_flag_reg);
   register_dictionary.define(".C", new readonly_boolean_register(&want_att_compat));
   register_dictionary.define(".cp", new enclosing_want_att_compat_reg);
-  register_dictionary.define(".O", new variable_reg(&suppression_level));
+  register_dictionary.define(".O", new readonly_register(&suppression_level));
   register_dictionary.define(".c", new lineno_reg);
   register_dictionary.define(".color", new readonly_boolean_register(&want_color_output));
   register_dictionary.define(".F", new filename_reg);

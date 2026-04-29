@@ -1541,18 +1541,21 @@ numeric; got '\\$1'
 .			ie (\\n[P]=1)&((\\n[N]=1):(\\n[N]=2)) .sp
 .			el \{\
 .				if \\n[D]>=3 \
-.					tm Header "\\*[pg*header]"
+.					tm primary header: \
+"\\*[pg*header]"
 .				tl \\*[pg*header]
 .			\}
 .			af P \\*[hd*format]
 .			ie o \{\
 .				if \\n[D]>=3 \
-.					tm Header "\\*[pg*odd-header]"
+.					tm secondary odd-page header: \
+"\\*[pg*odd-header]"
 .				tl \\*[pg*odd-header]
 .			\}
 .			el \{\
 .				if \\n[D]>=3 \
-.					tm Header "\\*[pg*even-header]"
+.					tm secondary even-page header: \
+"\\*[pg*even-header]"
 .				tl \\*[pg*even-header]
 .			\}
 '			sp 2
@@ -1633,21 +1636,24 @@ numeric; got '\\$1'
 .\}
 .el \{\
 .	ie o \{\
-.		if \\n[D]>=3 .tm Footer "\\*[pg*odd-footer]"
+.		if \\n[D]>=3 .tm secondary odd-page footer: \
+"\\*[pg*odd-footer]"
 .		tl \\*[pg*odd-footer]
 .	\}
 .	el \{\
-.		if \\n[D]>=3 .tm Footer "\\*[pg*even-footer]"
+.		if \\n[D]>=3 .tm secondary even-page footer: \
+"\\*[pg*even-footer]"
 .		tl \\*[pg*even-footer]
 .	\}
 .	ds hd*format \\g[P]
 .	af P 0
 .	ie (\\n[P]=1)&(\\n[N]=1) \{\
-.		if \\n[D]>=3 .tm Footer "\\*[pg*header]" \" that's right
+.		if \\n[D]>=3 .tm substitute primary footer: \
+"\\*[pg*header]" \" that's right
 .		tl \\*[pg*header]
 .	\}
 .	el \{\
-.		if \\n[D]>=3 .tm Footer "\\*[pg*footer]"
+.		if \\n[D]>=3 .tm primary footer: "\\*[pg*footer]"
 .		tl \\*[pg*footer]
 .	\}
 .	af P \\*[hd*format]

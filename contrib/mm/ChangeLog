@@ -1,3 +1,9 @@
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* m.tmac (pg@header, pg@print-footer): Revise debugging output
+	to be clear about the contents of the several possible headers
+	and footers this package supports.
+
 2026-03-31  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* m.tmac (IA, WA): Stop disabling the escape character.
@@ -205,7 +211,7 @@
 	spurious output to the standard error stream with any use of
 	these macros.
 	(IE, WE): Same, but also sequence the argument dump _after_
-	these macro's `ec` invokations so we can accurately dump them.
+	these macros' `ec` invokations so we can accurately dump them.
 	See "Punning Names" in our Texinfo manual or in groff(7).
 
 2026-01-13  G. Branden Robinson <g.branden.robinson@gmail.com>

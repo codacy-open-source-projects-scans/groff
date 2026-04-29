@@ -206,13 +206,15 @@ public:
 			// of the paper format and arg3 and arg4 with
 			// its length and width, respectively.  Return
 			// whether paper size was successfully set.
-  static font *load_font(const char *, bool = false); // Load the font
-			// description file with the given name (arg1)
-			// and return a pointer to a 'font' object.  If
-			// arg2 is true, only the part of the font
-			// description file before the 'charset' and
-			// 'kernpairs' sections is checked for validity.
-			// Return null pointer in case of failure.
+  static font *load_font(const char *, bool = true, bool = false);
+			// Load the font description file with the given
+			// name (arg1) and return a pointer to a 'font'
+			// object.  If arg2 is true, failure to open it
+			// produces an error diagnostic.  If arg3 is
+			// true, only the part of the font description
+			// file before the 'charset' and 'kernpairs'
+			// sections is checked for validity.  Return
+			// null pointer in case of failure.
   static void command_line_font_dir(const char *);	// Prepend given
 			// path (arg1) to the list of directories in which
 			// to look up fonts.
@@ -345,10 +347,11 @@ private:
 
 protected:
   // Load the font description file with the name in member variable
-  // `name` into this object.  If arg1 is true, only the part of the
-  // font description file before the 'charset' and 'kernpairs' sections
-  // is loaded.  Return success/failure status of load.
-  bool load(bool = false);
+  // `name` into this object.  If arg1 is true, failure to open it
+  // produces an error diagnostic.  If arg2 is true, the part of
+  // the font description file before the 'charset' and 'kernpairs'
+  // sections is loaded.  Return success/failure status of load.
+  bool load(bool = true, bool = false);
 };
 
 // Local Variables:

@@ -38,6 +38,8 @@ implement_ptable(unicode_to_glyph)
 
 PTABLE(unicode_to_glyph) unicode_to_glyph_table;
 
+// See "uniglyph.cpp".  The GGL <-> Unicode relation is _not_ bijective.
+
 struct S {
   const char *key;
   const char *value;

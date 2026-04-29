@@ -1,12 +1,89 @@
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp: Trivially refactor.
+	(read_increment_and_escape_sequence_parameter): Rename this...
+	(read_crement_and_escape_sequence_parameter): ...to this.
+	(read_character_in_copy_mode, token::next): Update call sites.
+
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Trivially refactor.  Rename
+	`incr_number_result` enumeration type to `crement`.  Annotate
+	it.  Rename `get_incr_number()` to `read_crement()`.  We're
+	pretty close to exclusive use of function names starting with
+	"read_" for input stream reading operations; that is,
+	interpretation of *roff language.  This change moves us closer
+	to that goal.
+	(get_incr_number): Rename this...
+	(read_crement): ...to this.  Update its return type.
+	(read_vunits, read_hunits, read_measurement_crement)
+	(read_integer_crement): Update call sites.
+
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/number.cpp: Slightly refactor.  Convince any
+	compiler that we're not falling off the end of functions
+	returning `bool` (or `incr_number_result`).  End function bodies
+	with an unconditional `return`.
+	(read_vunits, read_hunits, read_measurement, read_integer)
+	(get_incr_number): Do it.
+
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[troff]: Stop reporting number format for read-only registers.
+
+	* src/roff/troff/reg.h (class reg, class general_reg): Define
+	new public member function `has_format()` returning `bool`.
+	* src/roff/troff/reg.cpp (reg::has_format): Return `false`.
+	(general_reg::has_format): Return `true`.
+	(dump_register): Report register format only if register's
+	`has_format()` member function returns `true`.
+
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	* src/roff/troff/input.cpp (init_input_requests): Make `.O`
+	read-only register actually read-only.
+
+	Fixes <https://savannah.gnu.org/bugs/?68284>.  Problem appears
+	to date back to feature addition in commit bc34881980,
+	2007-09-19.
+
+2026-04-27  G. Branden Robinson <g.branden.robinson@gmail.com>
+
+	[libgroff]: Decouple diagnosis of file I/O error from font
+	description file content validation.
+
+	* src/include/font.h (class font): Update declaration of
+	`load_font()` public member function to insert new `bool`-valued
+	argument defaulting `true`.  It governs whether an error
+	diagnostic is issued if a font description file can't be opened.
+	Update declaration of `load` protected member function with a
+	new `bool`-valued first argument defaulting true, for the same
+	purpose, since the former function wraps the latter.
+	* src/libs/libgroff/font.cpp (font::load_font): Update
+	definition and pass new argument to `load()` member function of
+	object.
+	(font::load): Condition `error()` diagnostic on
+	`want_diagnostic` argument, not `validate_only`.
+	* src/roff/troff/node.cpp
+	(assign_font_and_file_name_to_mounting_position): Update
+	`font::load_font()` call to pass `!in_nroff_mode` as the value
+	of the former's `want_diagnostic` parameter.  Annotate why.
+	(is_font_available): Pass `font::load_font()` a `false`
+	`want_diagnostic` parameter.
+
+	Continues commit 48ab338d25, 12 April.
+
 2026-04-24  G. Branden Robinson <g.branden.robinson@gmail.com>
 
 	* tmac/an.tmac (SH, SS, TP): Throw warning if macro called while
 	an input trap is pending (for example, `.TP` followed
 	immediately by `.SH`).  This input is not specified or
-	countenanced by any man(7) documentation I know of, and produces
-	unpredictable output across implementations.  (Given the
-	foregoing example, Plan 9 troff truncates the input at that
-	point.)  Seen in the wild in fvwm-config(1).
+	countenanced by any man(7) documentation I know of, mandoc(1)'s
+	"-T lint" warns about it, and it produces unpredictable output
+	across implementations.  (Given the foregoing example, Plan 9
+	troff truncates the input at that point.)  Seen in the wild in
+	fvwm-config(1).
 
 	Fixes <https://savannah.gnu.org/bugs/?68279>.
 
@@ -239,7 +316,7 @@
 	(read_drawing_command):
 	* src/roff/troff/node.cpp
 	(remove_font_specific_character_request): Migrate input handlers
-	to call `token::is_terminator()` rather than the evaluating
+	to call `token::is_terminator()` rather than evaluating the
 	Boolean expression `tok.is_newline() && tok.is_eof()`.
 
 2026-04-19  G. Branden Robinson <g.branden.robinson@gmail.com>
@@ -504,15 +581,6 @@
 
 2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
 
-	* src/roff/troff/env.cpp (class hyphen_trie): Trivially
-	refactor.  Rename member function `read_patterns_file()` to
-	`interpret_patterns_file()`.  We're pretty close to exclusive
-	use of function names starting with "read_" for input stream
-	reading operations; that is, interpretation of *roff language.
-	This change moves us closer to that goal.
-
-2026-04-17  G. Branden Robinson <g.branden.robinson@gmail.com>
-
 	* src/roff/troff/env.cpp: Trivially refactor.  Rename
 	`hyphen_trie` class's member function `read_patterns_file()` to
 	`interpret_patterns_file()`.  We're pretty close to exclusive
@@ -694,7 +762,7 @@
 	* src/roff/troff/div.cpp: Drop unused code introduced in initial
 	commit 351da0dcd, 1991-06-02.  Since the `.p` register is
 	interpolated only by its `get_string()` member function and
-	never `get_value()` (and nothing internally to the formatter
+	never `get_value()` (and nothing internal to the formatter
 	attempts to get at it by that means, since accessing the datum
 	via `curdiv->get_page_length()` is more straightforward), we can
 	drop the latter.
@@ -707,7 +775,7 @@
 	* src/roff/troff/div.cpp: Drop unused code introduced in initial
 	commit 351da0dcd, 1991-06-02.  Since the `.d` register is
 	interpolated only by its `get_string()` member function and
-	never `get_value()` (and nothing internally to the formatter
+	never `get_value()` (and nothing internal to the formatter
 	attempts to get at it by that means, since accessing the datum
 	via `curdiv->get_vertical_position()` is more straightforward),
 	we can drop the latter.
@@ -720,7 +788,7 @@
 	* src/roff/troff/div.cpp: Drop unused code introduced in initial
 	commit 351da0dcd, 1991-06-02.  Since the `.h` register is
 	interpolated only by its `get_string()` member function and
-	never `get_value()` (and nothing internally to the formatter
+	never `get_value()` (and nothing internal to the formatter
 	attempts to get at it by that means, since accessing the datum
 	via `curdiv->get_high_water_mark()` is more straightforward),
 	we can drop the latter.
@@ -733,7 +801,7 @@
 	* src/roff/troff/div.cpp: Drop unused code introduced in initial
 	commit 351da0dcd, 1991-06-02.  Since the `.t` register is
 	interpolated only by its `get_string()` member function and
-	never `get_value()` (and nothing internally to the formatter
+	never `get_value()` (and nothing internal to the formatter
 	attempts to get at it by that means, since accessing the datum
 	via `curdiv->distance_to_next_trap()` is more straightforward),
 	we can drop the latter.
@@ -747,7 +815,7 @@
 	* src/roff/troff/div.cpp: Drop unused code introduced in commit
 	0216fc85d3, 2001-05-05.  Since the (now-named) `.ns` register is
 	interpolated only by its `get_string()` member function and
-	never `get_value()` (and nothing internally to the formatter
+	never `get_value()` (and nothing internal to the formatter
 	attempts to get at it by that means, since accessing the datum
 	via `curdiv->is_in_no_space_mode` is more straightforward), we
 	can drop the latter.
@@ -952,7 +1020,7 @@
 
 	* src/roff/troff/node.h: Rename declaration of
 	`mount_font()` to `mount_font_at_position()`.  Also resequence
-	arguments to follow the order implies by the English words in
+	arguments to follow the order implied by the English words in
 	the function name.  (Compare fprintf(3) and contrast fputs(3).)
 	* src/roff/troff/node.cpp (mount_font): Rename this...
 	(mount_font_at_position): ...to this.  Resequence arguments.
@@ -1084,9 +1152,9 @@
 
 	* src/libs/libdriver/printer.cpp (printer::load_font): Validate
 	function arguments.  Add assert(3)ion that the string
-	representing of the font description to load isn't a null
-	pointer.  If a function argument is invalid, return early in
-	`NDEBUG` builds.
+	representing the font description to load isn't a null pointer.
+	If a function argument is invalid, return early in `NDEBUG`
+	builds.
 
 2026-04-12  G. Branden Robinson <g.branden.robinson@gmail.com>
 
@@ -1273,14 +1341,16 @@
 	character '-' is also valid, since it marks a hyphenation point.
 	Consequently, we now throw a warning in category "char" on
 	attempted hyphenation exception words like "non*sense" and
-	"0123456789".  Drop later conditional loop break if the
-	hyphenation code is zero since that now cannot be the case--we
-	now don't enter the containing branch in the first place.
-	Replace a test of the index into the hyphenation exception word
-	being greater than zero with an assert(3)ion of the same inside
-	the branch, as it's now an invariant that a valid hyphenation
-	exception word contains a nonzero count of characters bearing
-	hyphenation codes.
+	"0123456789".  (You can still make these eligible for
+	hyphenation breaking by using the `hcode` request to assign
+	hyphenation codes to non-letters.)  Drop later conditional loop
+	break if the hyphenation code is zero since that now cannot be
+	the case--we now don't enter the containing branch in the first
+	place.  Replace a test of the index into the hyphenation
+	exception word being greater than zero with an assert(3)ion of
+	the same inside the branch, as it's now an invariant that a
+	valid hyphenation exception word contains a nonzero count of
+	characters bearing hyphenation codes.
 
 	* doc/groff.texi.in (Warnings):
 	* src/roff/troff/troff.1.man (Warnings): Document new warning
@@ -2310,8 +2380,8 @@
 	`int` to store the value fails to communicate that constraint to
 	snprintf(3).
 
-	Even the use of `int` a bit slippery of us, since it's a signed
-	type with a 31-bit significand.  But libgroff's
+	Even the use of `int` is a bit slippery of us, since it's a
+	signed type with a 31-bit significand.  But libgroff's
 	`glyph_to_unicode()`, which `get_unicode_code()` calls, uses
 	"-1" to signal an error in-band.
 
@@ -2405,7 +2475,8 @@
 	use its stored length to decide when to stop instead of relying
 	on the `string_iterator` accessing each element to return an
 	`EOF` character.  This change prepares for a future where GNU
-	troff's internal character type does not encode `EOF`.  This
+	troff's internal character type might not encode `EOF` (at least
+	not in the same way that the C standard I/O library does).  This
 	change also weakens the resemblance of file and string
 	iterators, but that seems acceptable to me, because string and
 	macro contents have already undergone input processing.  In the

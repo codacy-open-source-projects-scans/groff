@@ -29,6 +29,7 @@ public:
   virtual const char *get_format();
   virtual void set_value(units);
   virtual bool can_autoincrement() const;
+  virtual bool has_format() const;
 };
 
 // TODO: Use template to parameterize class in the pointed-to data type?
@@ -60,6 +61,7 @@ public:
   void set_increment(units);
   int get_increment() const;
   bool can_autoincrement() const;
+  bool has_format() const;
   const char *get_format();
   void add_value(units);
 

@@ -1,5 +1,5 @@
 /* Copyright 1989-2010 Free Software Foundation, Inc.
-             2021-2025 G. Branden Robinson
+             2021-2026 G. Branden Robinson
 
 Written by James Clark (jjc@jclark.com)
 
@@ -6677,7 +6677,28 @@ static bool assign_font_and_file_name_to_mounting_position(
   font *fm = 0 /* nullptr */;
   void *p = font_dictionary.lookup(filename);
   if (0 /* nullptr */ == p) {
-    fm = font::load_font(filename.contents());
+    // XXX: Most nroff mode users are readers of man pages, and man
+    // pages have a tendency to spray-and-pray with respect to font
+    // selections.  There's a long tradition of employing `\fC` and
+    // `\f(CW` escape sequences even when (on a terminal device) they
+    // can't possibly do anything.[*]  The unpredictable resulting value
+    // of the previous font selection (see "Other differences" in
+    // groff_diff(7) or our Texinfo manual) does not seem to deter
+    // this practice.  Some day, if enough man pages wean themselves
+    // from this carelessness, we can drop the second argument.
+    //
+    // [*] One _could_ copy the terminal device's `B` font's description
+    //     file (AT&T: "driving table") to a file named "C" or "CW" (or,
+    //     for smooth interoperation with groff in troff mode, "CR"),
+    //     and if one avoided setting bold adjacently to it, one could
+    //     get a meaningful change of typeface.  As far as I know, no
+    //     one has ever bothered to try.  Perhaps the typing of
+    //     inscrutable runes with no evident effect is a comfort to the
+    //     hacker saddled with the hateful task of writing
+    //     documentation.  See <https://lists.gnu.org/archive/html/
+    //     groff/2026-04/msg00039.html>.  --GBR
+    fm = font::load_font(filename.contents(),
+			 !in_nroff_mode /* want_diagnostic */);
     if (0 /* nullptr */ == fm) {
       (void) font_dictionary.lookup(filename, &nonexistent_font);
       return false;
@@ -6751,7 +6772,8 @@ bool is_font_available(symbol fam, symbol name)
   void *p = font_dictionary.lookup(name);
   if (0 /* nullptr */ == p) {
     // The font is not already mounted; could it be?
-    fm = font::load_font(name.contents(), true /* validate_only */);
+    fm = font::load_font(name.contents(), false /* want_diagnostic */,
+			 true /* validate_only */);
     return (fm != 0 /* nullptr */);
   }
   else if (&nonexistent_font == p)

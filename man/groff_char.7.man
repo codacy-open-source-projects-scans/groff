@@ -10,7 +10,8 @@ special character and glyph repertoire
 .\" Legal Terms
 .\" ====================================================================
 .\"
-.\" Copyright 1989-2025 Free Software Foundation, Inc.
+.\" Copyright 1989-2003 Free Software Foundation, Inc.
+.\"           2018-2023 G. Branden Robinson
 .\"
 .\" This file is part of groff, the GNU roff typesetting system.
 .\"
@@ -162,16 +163,16 @@ primarily using font
 .
 .P
 A few escape sequences that are not
-.I groff
 special characters also produce glyphs;
 these exist for syntactical or historical reasons.
 .
+The formatter translates the four escape sequences
 .BR \e\[aq] ,
 .BR \e\[ga] ,
 .BR \e\- ,
 and
 .B \e_
-are translated on input to the special character escape sequences
+on input to the special character escape sequences
 .BR \e[aa] ,
 .BR \e[ga] ,
 .BR \e[\-] ,
@@ -746,7 +747,7 @@ suppressing advancement.
 .
 .
 .P
-You can obtain a report of mappings defined by the
+Obtain a report of mappings defined by the
 .B \%composite
 request on the standard error stream with the
 .B \%pcomposite
@@ -834,6 +835,20 @@ at present it also accepts
 .RB \[lq]caf \[rs][u00E9] \[rq]
 on ISO\~Latin-1 systems.)
 .
+.
+Except for the special character names listed
+in the \[lq]Input\[rq] columns of the glyph tables below,
+GNU
+.I troff \" GNU
+derives special character names algorithmically,
+using a simplified version of the technique employed by the
+.UR https://\:github\:.com/\:adobe\-type\-tools/\:agl\-aglfn
+Adobe Glyph List (AGL) algorithm
+.UE .
+.
+The (frozen) set of names that can't be derived algorithmically
+is called the
+@dfn{@code{groff} glyph list (GGL)}.
 .
 .TP
 .BI \[rs][u base-character\c

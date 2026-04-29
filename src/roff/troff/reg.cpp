@@ -88,6 +88,11 @@ bool reg::can_autoincrement() const
   return false;
 }
 
+bool reg::has_format() const
+{
+  return false;
+}
+
 general_reg::general_reg() : format('1'), width(0), inc(0)
 {
 }
@@ -276,6 +281,11 @@ int general_reg::get_increment() const
 }
 
 bool general_reg::can_autoincrement() const
+{
+  return true;
+}
+
+bool general_reg::has_format() const
 {
   return true;
 }
@@ -577,10 +587,12 @@ static void dump_register(symbol *id, reg *r)
       (void) snprintf(inc, sz, "%+d", r->get_increment());
       errprint("\t%1", inc);
     }
-    const char *f = r->get_format();
-    assert(f != 0 /* nullptr */);
-    if (f != 0 /* nullptr*/)
-      errprint("\t%1", f);
+    if (r->has_format()) {
+      const char *f = r->get_format();
+      assert(f != 0 /* nullptr */);
+      if (f != 0 /* nullptr*/)
+	errprint("\t%1", f);
+    }
   }
   else {
     const char *s = r->get_string();

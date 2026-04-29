@@ -818,10 +818,11 @@ void font::copy_entry(glyph *new_glyph, glyph *old_glyph)
   ch_index[new_index] = ch_index[old_index];
 }
 
-font *font::load_font(const char *fn, bool validate_only)
+font *font::load_font(const char *fn, bool want_diagnostic,
+		      bool validate_only)
 {
   font *f = new font(fn);
-  if (!f->load(validate_only)) {
+  if (!f->load(want_diagnostic, validate_only)) {
     delete f;
     return 0 /* nullptr */;
   }
@@ -895,12 +896,12 @@ again:
   return false;
 }
 
-bool font::load(bool validate_only)
+bool font::load(bool want_diagnostic, bool validate_only)
 {
   char *path;
   FILE *fp = open_file(filename, &path);
   if (0 /* nullptr */ == fp) {
-    if (!validate_only)
+    if (want_diagnostic)
       error("cannot open font description file '%1': %2", filename,
 	    strerror(errno));
     return false;

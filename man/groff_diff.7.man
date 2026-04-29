@@ -200,13 +200,18 @@ or
 .B \%fspecial
 to an abstract style affects the member of the default family
 corresponding to that style.
-.\" END Keep parallel with node "Font Families" in our Texinfo manual.
 .
-The default family can be set with the
-.B fam
-request or
+.
+.P
+GNU
+.IR troff 's \" GNU
 .B \-f
-command-line option.
+command-line option
+(see
+.MR @g@troff @MAN1EXT@ )
+and
+.B fam
+request set the default family.
 .
 The
 .B styles
@@ -214,10 +219,11 @@ directive in the output device's
 .I DESC
 file controls which mounting positions
 (if any)
-are initially associated with abstract styles rather than fonts,
+initially associate with abstract styles rather than fonts,
 and the
 .B sty
-request can update this association.
+request updates this association.
+.\" END Keep parallel with node "Font Families" in our Texinfo manual.
 .
 .
 .\" ====================================================================
@@ -1232,12 +1238,24 @@ or that are interpolated at varying macro nesting depths.
 .
 .
 .TP
+.BI \[rs]f f
+.TQ
+.BI \[rs]f( ft
+.TQ
 .BI \[rs]f\^[ fnt ]
-Select typeface
-.IR fnt ,
-which may be a mounting position,
-abstract style,
-or font name.
+If
+.I f,
+.I ft,
+or
+.I fnt
+names an abstract style or its mounting position,
+GNU
+.I troff \" GNU
+combines it with the default family to make a resolved font name
+before attempting to access it.
+.
+See subsction
+\[lq]Font families, abstract styles, and translation\[rq] above.
 .
 .BR \[rs]f\^[] ,
 .BR \[rs]f\^[P] ,
@@ -2071,6 +2089,20 @@ even if the interpolation context disables compatibility mode.
 .
 .
 .TP
+.BI .ft\~ fnt
+If
+.I fnt
+names an abstract style or its mounting position,
+GNU
+.I troff \" GNU
+combines it with the default family to make a resolved font name
+before attempting to access it.
+.
+See subsction
+\[lq]Font families, abstract styles, and translation\[rq] above.
+.
+.
+.TP
 .BI .hy\~ n
 If the argument
 .I n
@@ -2148,14 +2180,6 @@ in any directories specified by
 .B \-I
 command-line options,
 followed by the current working directory.
-.
-If
-.I file
-does not exist or is not readable,
-GNU
-.I troff \" GNU
-emits a warning in category
-.RB \[lq] file \[rq].
 .
 .
 .TP
@@ -2622,9 +2646,9 @@ the
 .I groff
 Texinfo manual),
 disabling compatibility mode
-and setting the escape character to
-.RB to\~ \[rs]
-while interpreting
+and treating
+.B \[rs]
+as the escape character while interpreting
 .I contents.
 .
 Any emboldening,
@@ -2670,16 +2694,17 @@ in kerning adjustments or italic corrections.
 .
 .
 .IP
-The formatter prevents infinite recursion
-by treating an occurrence
-of a character in its own definition
-as if it were undefined;
-when interpolating such a character,
 GNU
 .I troff \" GNU
-emits a warning in category
-.RB \[lq] char \[rq].
-(Mutually recursive character definitions are handled similarly.)
+prevents infinite recursion
+by treating an occurrence
+of a character in its own definition
+as if it had no user-directed definition;
+if a component character remains undefined at the time
+it is interpolated,
+it does not format.
+.
+Mutually recursive character definitions are handled similarly.
 .
 .
 .IP
@@ -3277,19 +3302,21 @@ is not translated.
 .RI [ zoom ]
 Set zoom factor
 .I zoom
-for font\~\c
+for
+.RI font\~ f .
 .IR f .
 .I zoom
 must be a non-negative integer;
-it scales the magnification by thousandths with 1000 as a basis.
+it scales the magnification by thousandths with 1000 as a default.
+.
 If
 .I zoom
 is missing or equal to zero or 1000,
-.RI font\~ f
+.I f
 is not magnified.
 .
-.IR f \~\c
-must be a resolved font name,
+.IR f \~must
+be a resolved font name,
 not an abstract style or mounting position.
 .
 .
@@ -4077,14 +4104,16 @@ and lacks a line number and margin character
 .TP
 .BR .pnr \~[\c
 .IR reg \~.\|.\|.]
-Report the name and value and,
-if its type is numeric,
-the autoincrement amount and assigned format of each register
-.IR reg ,
-or,
-without arguments,
-those of all defined registers,
+Report the name,
+value,
+and
+(as applicable)
+autoincrement amount and assigned format of each register
+.I reg
 to the standard error stream.
+.
+If arguments are omitted,
+report the foregoing properties of all defined registers.
 .
 .
 .TP
@@ -4524,6 +4553,20 @@ Associate abstract
 .I style
 with non-negative font mounting
 .RI position\~ pos .
+.
+.
+.IP
+.I Caution:
+GNU
+.I troff \" GNU
+does not validate the
+.I style
+argument.
+.\" XXX: This would be a really good thing to fix.
+.
+Errors may occur later,
+when the formatter attempts to construct a resolved font name,
+or format a character for output.
 .
 .
 .TP
@@ -5727,7 +5770,9 @@ does not strictly enforce adherence.
 .I troff \" GNU
 looks up fonts by name with a search that is
 .RI O( n )
-in the length of the dynamically sized mounting position list.)
+in the length
+.I n
+of the dynamically sized mounting position list.)
 .
 .
 .P
@@ -6723,6 +6768,38 @@ spaces or tabs between the ordinary control character and a
 .RB \[lq] .\& \[rq]
 or macro name that would normally end a macro definition
 prevent it from doing so.
+.
+.
+.P
+GNU
+.I troff \" GNU
+regards a failed attempt to select a different font
+as a meaningful action
+and updates the the identity of the previous font selection.
+Most AT&T-descended
+.IR troff s \" AT&T
+do not.
+.
+The only way to determine if a font selection operation succeeded
+in the latter group of formatters
+is to save the value of the
+.B .f
+register prior to attempting the change,
+make the attempt,
+then compare the saved value to the current one;
+if it changed,
+the font selection presumably succeeded.
+.
+Since doing so requires
+.B nr
+and
+.RB \[lq] if \^\[rq]
+(or
+.BR ie )
+requests,
+such a procedure cannot be performed amid
+.B \[rs]f
+sequences on an input line.
 .
 .
 .P

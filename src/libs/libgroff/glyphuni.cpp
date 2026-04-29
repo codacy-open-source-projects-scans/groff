@@ -48,6 +48,9 @@ PTABLE(glyph_to_unicode_map) glyph_to_unicode_table;
 //
 // TODO: Uncomment them, then?
 
+// This is the groff glyph list (GGL).  See groff_char(7).  Also see
+// "uniglyph.cpp".  The GGL <-> Unicode relation is _not_ bijective.
+
 struct S {
   const char *key;
   const char *value;
